@@ -1,0 +1,60 @@
+{
+  "SessionStart": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node .agents/hooks/session-start.mjs",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "PreToolUse": [
+    {
+      "matcher": "^exec$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node .agents/hooks/block-dangerous.mjs",
+          "timeout": 10
+        }
+      ]
+    },
+    {
+      "matcher": "^(read|grep|glob|edit|write|apply_patch)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node .agents/hooks/protect-paths.mjs",
+          "timeout": 10
+        }
+      ]
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "^(edit|write|apply_patch)$",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node .agents/hooks/format-changed.mjs",
+          "timeout": 30
+        }
+      ]
+    }
+  ],
+  "Stop": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node .agents/hooks/stop-check.mjs",
+          "timeout": 10
+        }
+      ]
+    }
+  ]
+}
