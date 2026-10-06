@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Planea tu visita al Zoológico Tulancingo: descubre animales, actividades, instalaciones y opciones para tu próxima visita.">
+<title>Zoológico Nicolás Bravo</title>
+<link rel="icon" href="https://2020-2024.tulancingo.gob.mx/wp-content/uploads/2023/02/ZooologicoNicolasBravo-1024x1024.jpg">
+<script type="module" src="assets/model-viewer.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="page-shell">
+<header class="topbar">
+  <a class="brand" href="#inicio" aria-label="Zoológico Nicolás Bravo, inicio"><img class="brand-logo" src="assets/TransformandoTulancingo-2024-300x261.png" alt=""><span>Zoológico <strong>Nicolás Bravo</strong></span></a>
+  <nav class="main-nav" aria-label="Navegación principal">
+    <a href="#inicio">Inicio</a><a href="#animales">Animales</a><a href="#mapa">Mapa</a><a href="#instalaciones">Instalaciones</a><a href="#noticias">Noticias</a><a href="#eventos">Eventos</a><a href="#preguntas">Preguntas</a><a href="#galeria">Galería</a><a href="#visita">Contacto</a>
+  </nav>
+  <div class="top-actions">
+    <form class="search" role="search" id="searchForm">
+      <input type="search" id="searchInput" placeholder="Buscar un animal..." aria-label="Buscar animales">
+    </form>
+    <a class="user" href="#boletos">Comprar boletos</a>
+  </div>
+</header>
+
+<main id="inicio">
+<section class="hero">
+  <div class="hero-content">
+    <span class="tag">Una aventura para toda la familia</span>
+    <h1>La naturaleza está más cerca de lo que imaginas</h1>
+    <p>Explora nuevos hábitats, conoce a sus habitantes y descubre cómo podemos cuidar juntos la vida silvestre.</p>
+    <div class="actions">
+      <a href="#boletos" class="btn btn-primary">Planear mi visita <span aria-hidden="true">→</span></a>
+      <a href="#animales" class="btn btn-ghost">TulanPedia</a>
+    </div>
+    <div class="hero-stats" aria-label="Datos del zoológico">
+      <div><strong>45+</strong><span>especies por descubrir</span></div>
+      <div><strong>18 ha</strong><span>para explorar</span></div>
+      <div><strong>Todo el año</strong><span>aprendizaje y aventura</span></div>
+    </div>
+  </div>
+  <div class="hero-aside">
+    <div class="info-card">
+      <span class="eyebrow">Tu próxima aventura</span>
+      <strong>Un día para conectar con la naturaleza</strong>
+      <p>Recorre los senderos a tu ritmo y disfruta cada encuentro.</p>
+      <a href="#mapa" class="card-link">Explora el mapa <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="infobar" aria-label="Información para planear tu visita">
+  <div><span class="info-icon" aria-hidden="true">◷</span><span><small>Horario</small><strong>Mar–dom · 9:00–17:00</strong></span></div>
+  <div><span class="info-icon" aria-hidden="true">⌖</span><span><small>Estamos en</small><strong>Tulancingo de Bravo, Hidalgo</strong></span></div>
+  <div><span class="info-icon" aria-hidden="true">🎟</span><span><small>Tu visita comienza aquí</small><a href="#boletos"><strong>Consulta boletos y precios →</strong></a></span></div>
+</section>
+
+<section class="why-us" id="porque-visitar">
+  <div class="section-heading">
+    <span class="tag tag-dark">Más que un paseo</span>
+    <h2>Descubre, disfruta y aprende</h2>
+    <p>Un espacio para compartir en familia y acercarnos al mundo natural.</p>
+  </div>
+  <div class="benefits">
+    <article class="benefit-item"><div class="benefit-icon" aria-hidden="true">🌱</div><h3>Conservación</h3><p>Conoce la importancia de proteger a las especies y sus hábitats.</p></article>
+    <article class="benefit-item"><div class="benefit-icon" aria-hidden="true">🦜</div><h3>Un recorrido a tu ritmo</h3><p>Explora senderos y zonas de observación con toda la familia.</p></article>
+    <article class="benefit-item"><div class="benefit-icon" aria-hidden="true">🤝</div><h3>Aprendizaje para todos</h3><p>Actividades que inspiran curiosidad y respeto por la vida silvestre.</p></article>
+  </div>
+</section>
+
+<section class="animals-section" id="animales">
+  <div class="section-heading">
+    <span class="tag tag-dark">Encuentros inolvidables</span>
+    <h2>TulanPedia</h2>
+    <p>Busca por nombre o filtra por especie y hábitat. Selecciona una ficha para conocer más.</p>
+  </div>
+  <div class="animal-filters">
+    <label>Especie
+      <select id="speciesFilter" aria-label="Filtrar animales por especie">
+        <option value="">Todas las especies</option><option value="mamífero">Mamíferos</option><option value="ave">Aves</option><option value="reptil">Reptiles</option>
+      </select>
+    </label>
+    <label>Hábitat
+      <select id="habitatFilter" aria-label="Filtrar animales por hábitat">
+        <option value="">Todos los hábitats</option><option value="sabana">Sabana</option><option value="bosque">Bosque</option><option value="aviario">Aviario</option><option value="reptilario">Reptilario</option>
+      </select>
+    </label>
+    <button class="btn btn-outline" id="clearFilters" type="button">Limpiar filtros</button>
+    <p id="animalCount" class="results-count" aria-live="polite"></p>
+  </div>
+  <div class="animal-grid" id="animalGrid">
+    <article class="animal-card" data-name="león" data-species="mamífero" data-habitat="sabana">
+      <img src="assets/lion.jpg" alt="León descansando entre la vegetación" loading="lazy">
+      <div class="animal-card-body"><span class="animal-label">Mamífero · Sabana</span><h3>León</h3><p>Un gran felino conocido por su vida social y su potente rugido.</p><details><summary>Ver ficha del animal</summary><dl><dt>Especie</dt><dd>León · Panthera leo</dd><dt>Edad y sexo</dt><dd>Consulta la información en el recinto</dd><dt>Alimentación</dt><dd>Plan alimenticio supervisado por especialistas</dd><dt>Hábitat y recinto</dt><dd>Zona de sabana</dd><dt>Curiosidad</dt><dd>El rugido puede escucharse a varios kilómetros.</dd><dt>Estado general</dt><dd>Seguimiento diario por el equipo de cuidado</dd></dl><p class="model-note">Modelo 3D próximamente.</p></details></div>
+    </article>
+    <article class="animal-card" data-name="jirafa" data-species="mamífero" data-habitat="sabana">
+      <img src="assets/giraffe.jpg" alt="Jirafa en su hábitat" loading="lazy">
+      <div class="animal-card-body"><span class="animal-label">Mamífero · Sabana</span><h3>Jirafa</h3><p>El animal terrestre más alto del mundo: alcanza las hojas más lejanas.</p><details><summary>Ver ficha del animal</summary><dl><dt>Especie</dt><dd>Jirafa · Giraffa camelopardalis</dd><dt>Edad y sexo</dt><dd>Consulta la información en el recinto</dd><dt>Alimentación</dt><dd>Hojas y ramas según su dieta supervisada</dd><dt>Hábitat y recinto</dt><dd>Zona de sabana</dd><dt>Curiosidad</dt><dd>Su lengua puede medir alrededor de 45 centímetros.</dd><dt>Estado general</dt><dd>Seguimiento diario por el equipo de cuidado</dd></dl><div class="giraffe-model-wrap"><model-viewer class="giraffe-model" src="assets/nyilonelycompany-nature-51.glb" alt="Modelo 3D interactivo de una jirafa joven" camera-controls auto-rotate auto-rotate-delay="800" rotation-per-second="18deg" shadow-intensity="1" exposure="1.1" loading="lazy" reveal="auto"></model-viewer><p class="model-note">Arrastra para girar la jirafa y usa la rueda o pellizca para acercar.</p></div></details></div>
+    </article>
+    <article class="animal-card" data-name="guacamaya" data-species="ave" data-habitat="aviario">
+      <img src="assets/macaw.jpg" alt="Ave tropical de plumaje colorido" loading="lazy">
+      <div class="animal-card-body"><span class="animal-label">Ave · Aviario</span><h3>Guacamaya</h3><p>Sus colores brillantes y su inteligencia la hacen imposible de olvidar.</p><details><summary>Ver ficha del animal</summary><dl><dt>Especie</dt><dd>Guacamaya · Ara sp.</dd><dt>Edad y sexo</dt><dd>Consulta la información en el recinto</dd><dt>Alimentación</dt><dd>Frutas, semillas y dieta supervisada</dd><dt>Hábitat y recinto</dt><dd>Aviario</dd><dt>Curiosidad</dt><dd>Puede imitar sonidos y comunicarse con otras aves.</dd><dt>Estado general</dt><dd>Seguimiento diario por el equipo de cuidado</dd></dl><p class="model-note">Modelo 3D próximamente.</p></details></div>
+    </article>
+    <article class="animal-card" data-name="tortuga" data-species="reptil" data-habitat="reptilario">
+      <img src="assets/turtle.jpg" alt="Tortuga en un entorno natural" loading="lazy">
+      <div class="animal-card-body"><span class="animal-label">Reptil · Reptilario</span><h3>Tortuga</h3><p>Un reptil tranquilo que nos recuerda la importancia de cuidar los humedales.</p><details><summary>Ver ficha del animal</summary><dl><dt>Especie</dt><dd>Tortuga · especie por confirmar</dd><dt>Edad y sexo</dt><dd>Consulta la información en el recinto</dd><dt>Alimentación</dt><dd>Dieta específica supervisada por especialistas</dd><dt>Hábitat y recinto</dt><dd>Reptilario</dd><dt>Curiosidad</dt><dd>El caparazón forma parte de su esqueleto.</dd><dt>Estado general</dt><dd>Seguimiento diario por el equipo de cuidado</dd></dl><p class="model-note">Modelo 3D próximamente.</p></details></div>
+    </article>
+  </div>
+  <p class="empty-state" id="noAnimals" hidden>No encontramos animales con esos filtros. Prueba con otra búsqueda.</p>
+  <p class="demo-note">Fichas de muestra: confirma en el zoológico los datos de ejemplares, edades y recintos.</p>
+</section>
+
+<section class="map-section" id="mapa">
+  <div class="section-heading">
+    <span class="tag tag-dark">Muévete con facilidad</span>
+    <h2>Mapa del zoológico</h2>
+    <p>Selecciona una zona para ubicarla en este mapa ilustrativo.</p>
+  </div>
+  <div class="map-layout">
+    <div class="mapcard">
+      <div class="map-title">TU RECORRIDO</div>
+      <div class="map" aria-label="Mapa ilustrativo del zoológico">
+        <span class="map-path" aria-hidden="true"></span>
+        <button class="zone z1" data-name="Felinos" type="button">Felinos</button><button class="zone z2" data-name="Aviario" type="button">Aviario</button>
+        <button class="zone z3" data-name="Reptilario" type="button">Reptilario</button><button class="zone z4" data-name="Primates" type="button">Primates</button>
+        <button class="zone z5" data-name="Granja" type="button">Granja</button><button class="zone z6" data-name="Lago" type="button">Lago</button>
+        <button class="map-point entrance" type="button" data-name="Entrada">Entrada</button>
+      </div>
+      <p class="map-disclaimer">Mapa demostrativo, no a escala. Consulta al personal para orientarte en el recinto.</p>
+    </div>
+    <div class="map-legend">
+      <h3>Servicios y zonas</h3>
+      <p>Selecciona cualquier punto para ver su referencia.</p>
+      <div class="legend"><button type="button" class="map-point" data-name="Entrada">🚪 Entrada y salida</button><button type="button" class="map-point" data-name="Baños">🚻 Baños</button><button type="button" class="map-point" data-name="Alimentos">🍽 Alimentos</button><button type="button" class="map-point" data-name="Bebederos">🚰 Bebederos</button><button type="button" class="map-point" data-name="Áreas de descanso">🪑 Áreas de descanso</button><button type="button" class="map-point" data-name="Enfermería">➕ Enfermería</button><button type="button" class="map-point" data-name="Tiendas">🛍 Tiendas</button></div>
+      <p class="map-selection" id="mapSelection" aria-live="polite">Elige una zona o servicio del mapa.</p>
+    </div>
+  </div>
+</section>
+
+<section class="installations" id="instalaciones">
+  <div class="section-heading"><span class="tag tag-dark">Espacios para disfrutar</span><h2>Todo para un gran día</h2><p>Encuentra lugares para descansar, aprender y recargar energía durante tu visita.</p></div>
+  <div class="cards">
+    <article class="card"><div class="thumb t1" role="img" aria-label="Senderos rodeados de vegetación"></div><h3>Senderos y áreas verdes</h3><p>Recorre el zoológico a tu ritmo y disfruta de sus espacios al aire libre.</p><span class="service-label">🌿 Naturaleza · 🪑 Descanso</span></article>
+    <article class="card"><div class="thumb t2" role="img" aria-label="Zona de observación de animales"></div><h3>Áreas de observación</h3><p>Acércate con respeto a los animales desde zonas preparadas para observar.</p><span class="service-label">📍 Miradores · 🦜 Observación</span></article>
+    <article class="card"><div class="thumb t3" role="img" aria-label="Espacio familiar al aire libre"></div><h3>Zona familiar</h3><p>Un espacio para hacer una pausa y compartir un momento en familia.</p><span class="service-label">👨‍👩‍👧 Familiar · 🍽 Alimentos</span></article>
+  </div>
+</section>
+
+<section class="news-section" id="noticias">
+  <div class="section-heading"><span class="tag tag-dark">Del zoológico</span><h2>Noticias y novedades</h2><p>Historias, avisos y actividades para mantenerte al día.</p></div>
+  <div class="news-grid">
+    <article class="news-card"><span class="news-date">Conservación</span><h3>Pequeñas acciones, grandes cambios</h3><p>Descubre cómo reducir residuos y cuidar la fauna desde casa y durante tu visita.</p><a href="#preguntas" class="link">Consejos para tu visita →</a></article>
+    <article class="news-card"><span class="news-date">Aviso a visitantes</span><h3>Planea tu recorrido con tiempo</h3><p>Consulta horarios y recomendaciones antes de llegar para disfrutar mejor el día.</p><a href="#visita" class="link">Ver información →</a></article>
+    <article class="news-card"><span class="news-date">Próximamente</span><h3>Nuevas actividades para descubrir</h3><p>Vuelve a consultar esta sección para conocer las próximas actividades educativas.</p><a href="#eventos" class="link">Explorar eventos →</a></article>
+  </div>
+  <p class="demo-note">Las noticias son contenido de muestra. Confirma los avisos vigentes con el zoológico.</p>
+</section>
+
+<section class="events-section" id="eventos">
+  <div class="section-heading"><span class="tag tag-dark">Guarda la fecha</span><h2>Próximos eventos</h2><p>Actividades de ejemplo; las fechas oficiales se publicarán próximamente.</p></div>
+  <div class="event-grid">
+    <article class="event-card"><div class="event-date"><strong>01</strong><span>Próximamente</span></div><div><span class="animal-label">Actividad familiar</span><h3>Exploradores de la naturaleza</h3><p>Recorrido educativo para observar y aprender sobre la vida silvestre.</p><span class="service-label">🕘 Horario por confirmar · 📍 Punto de encuentro por confirmar</span></div></article>
+    <article class="event-card"><div class="event-date"><strong>02</strong><span>Próximamente</span></div><div><span class="animal-label">Taller educativo</span><h3>Guardianes de los hábitats</h3><p>Una actividad participativa para descubrir por qué cada hábitat importa.</p><span class="service-label">🕘 Horario por confirmar · 📍 Punto de encuentro por confirmar</span></div></article>
+  </div>
+</section>
+
+<section class="ticket-section" id="boletos">
+  <div class="ticket-intro">
+    <span class="tag">Prepara tu visita</span><h2>Un día inolvidable empieza aquí</h2>
+    <p>Elige una fecha y calcula el costo estimado de tu grupo. Esta demostración no procesa pagos ni reserva entradas.</p>
+    <div class="price-note"><strong>Precios de entrada</strong><span>Adulto: $25 MXN · Niño: $16 MXN</span></div>
+  </div>
+  <form class="ticket-form" id="ticketForm">
+    <h3>Calcula tus boletos</h3>
+    <label for="visitDate">Fecha de visita</label><input id="visitDate" name="visitDate" type="date" required>
+    <div class="ticket-quantities">
+      <label for="adults">Adultos <span>$25 MXN c/u</span><input id="adults" name="adults" type="number" min="0" max="20" value="1" required></label>
+      <label for="children">Niños <span>$16 MXN c/u</span><input id="children" name="children" type="number" min="0" max= "20" value= "0" required></label>
+    </div>
+    <label for="visitorName">Nombre del visitante</label><input id="visitorName" name="visitorName" type="text" autocomplete="name" maxlength="80" required>
+    <label for="visitorEmail">Correo electrónico</label><input id="visitorEmail" name="visitorEmail" type="email" autocomplete="email" maxlength="120" required>
+    <fieldset class="payment-demo">
+      <legend>Pago · vista de demostración</legend>
+      <p class="payment-warning">Solo es una muestra visual. No escribas datos de una tarjeta real: no se aceptan pagos ni se guardan o envían datos.</p>
+      <div class="payment-card-preview" aria-hidden="true">
+        <span class="payment-card-brand">Zoológico Nicolás Bravo</span>
+        <span class="payment-card-chip"></span>
+        <strong>•••• &nbsp; •••• &nbsp; •••• &nbsp; 0000</strong>
+        <span class="payment-card-name">NOMBRE DEL TITULAR</span>
+      </div>
+      <label for="demoCardName">Nombre del titular
+        <input id="demoCardName" type="text" autocomplete="off" placeholder="Nombre como aparece en la tarjeta">
+      </label>
+      <label for="demoCardNumber">Número de tarjeta
+        <input id="demoCardNumber" type="text" inputmode="numeric" autocomplete="off" maxlength="23" placeholder="0000 0000 0000 0000">
+      </label>
+      <div class="payment-expiry">
+        <label for="demoCardExpiry">Vencimiento
+          <input id="demoCardExpiry" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="MM/AA">
+        </label>
+        <label for="demoCardCvc">CVV
+          <input id="demoCardCvc" type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="000">
+        </label>
+      </div>
+    </fieldset>
+    <div class='ticket-total'><span>Total estimado</span><strong id='ticketTotal'>$25 MXN</strong></div>
+    <button class="btn btn-primary" type="submit">Ver comprobante de demostración</button>
+    <p class="form-note">La demostración no procesa pagos ni reserva boletos. Nunca uses información bancaria real.</p>
+  </form>
+  <div class="receipt" id="receipt" hidden aria-live="polite"></div>
+</section>
+
+<section class="faq-section" id="preguntas">
+  <div class="section-heading"><span class="tag tag-dark">¿Tienes dudas?</span><h2>Preguntas frecuentes</h2><p>Información útil para organizar tu recorrido.</p></div>
+  <div class="faq-list">
+    <details><summary>¿Cuál es el horario?</summary><p>El horario de referencia es de martes a domingo, de 9:00 a 17:00. Confirma días festivos y horarios vigentes antes de tu visita.</p></details>
+    <details><summary>¿Cuánto cuestan los boletos?</summary><p>Los precios que aparecen en el formulario son solo de muestra y no son tarifas oficiales. Consulta directamente con el zoológico.</p></details>
+    <details><summary>¿Puedo llevar mascotas?</summary><p>Por seguridad y bienestar de los animales, consulta las reglas vigentes con el personal antes de llevar mascotas.</p></details>
+    <details><summary>¿Puedo ingresar alimentos?</summary><p>Las reglas pueden cambiar. Revisa los avisos del zoológico o pregunta al personal al planear tu visita.</p></details>
+    <details><summary>¿Hay estacionamiento y accesibilidad?</summary><p>Confirma la disponibilidad de estacionamiento, accesos y apoyos de movilidad con el zoológico antes de acudir.</p></details>
+    <details><summary>¿Cómo puedo cambiar o cancelar mis boletos?</summary><p>Esta página es una demostración y no emite boletos reales. Para compras y cambios, contacta directamente al zoológico.</p></details>
+  </div>
+</section>
+
+<section class="galeria" id="galeria">
+  <div class="galeria-head"><div><span class="tag tag-dark">Un vistazo a la aventura</span><h2>Momentos para recordar</h2><p class="sub">Un adelanto de los paisajes y animales que puedes descubrir.</p></div><a href="#animales" class="link">Descubre los animales →</a></div>
+  <div class="fotos"><button class="foto f1" type="button" aria-label="Ver foto de un león"></button><button class="foto f2" type="button" aria-label="Ver foto de un perro"></button><button class="foto f3" type="button" aria-label="Ver foto de un zorro"></button></div>
+</section>
+</main>
+
+<footer class="footer" id="visita">
+  <div class="footer-info">
+    <h3><img class="footer-logo" src="assets/TransformandoTulancingo-2024-300x261.png" alt=""> Zoológico Nicolás Bravo</h3>
+    <p>Un espacio para aprender, convivir y acercarnos a la vida silvestre.</p>
+    <dl><dt>Dirección de referencia</dt><dd>Calle Sinaloa s/n, Col. Morelos Bravo, Tulancingo de Bravo, Hidalgo</dd><dt>Horario de referencia</dt><dd>Mar–dom · 9:00–17:00 hrs</dd><dt>Teléfono y correo</dt><dd>Consulta los canales oficiales del zoológico para datos actualizados.</dd></dl>
+    <div class="social" aria-label="Redes sociales"><a href="#visita" aria-label="Facebook">f</a><a href="#visita" aria-label="Instagram">◎</a><a href="#visita" aria-label="X">𝕏</a></div>
+  </div>
+  <form class="contact-form" id="contactForm">
+    <h3>Escríbenos</h3><p>Déjanos un mensaje y nuestro equipo podrá orientarte.</p>
+    <label for="contactName">Nombre</label><input id="contactName" name="contactName" type="text" maxlength="80" required>
+    <label for="contactEmail">Correo electrónico</label><input id="contactEmail" name="contactEmail" type="email" maxlength="120" required>
+    <label for="contactMessage">Mensaje</label><textarea id="contactMessage" name="contactMessage" rows="3" maxlength="1000" required></textarea>
+    <button class="btn btn-primary" type="submit">Preparar mensaje</button>
+    <p class="form-note">Formulario de demostración; no envía datos a un servidor.</p>
+  </form>
+</footer>
+
+<div class="bottombar"><span>© 2026 Zoológico Tulancingo · Sitio demostrativo</span><span><a href="#preguntas">Preguntas frecuentes</a><a href="#visita">Contacto</a></span></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
