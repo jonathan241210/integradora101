@@ -2,7 +2,7 @@
 
 Sistema multiplataforma para el Zoológico Municipal Nicolás Bravo, de la Presidencia Municipal de Tulancingo. El zoológico es un centro de rescate, conservación y rehabilitación de fauna silvestre, incluidos ejemplares decomisados por maltrato o tráfico ilegal.
 
-**Estado actual: fase inicial.** Este repositorio contiene el análisis y la estructura documental; las aplicaciones aún no están inicializadas.
+**Estado actual: fase inicial.** Este repositorio contiene el análisis y la estructura documental; las aplicaciones aún no están inicializadas. En V1 la venta de boletos es solo en efectivo. Payments queda FUTURO/INACTIVO: no está implementado ni activable y ahora no hay código, tablas, endpoints, SDK ni feature flag de pagos.
 
 ## Necesidades que atiende
 1. **Administración y finanzas:** venta digital de boletos en taquilla, cierre/arqueo diario automático e informes para la Dirección de Ingresos.
@@ -16,7 +16,7 @@ Sistema multiplataforma para el Zoológico Municipal Nicolás Bravo, de la Presi
 - `apps/mobile`: app de visitantes con mapa interactivo, lector QR y visores 3D.
 - **Juego educativo:** decisión tecnológica pendiente (ADR 0005 abierto); todavía no tiene carpeta.
 - `apps/api`: API Laravel central, única autoridad de negocio y datos.
-- `packages/`: propuesta de tokens, UI compartida, cliente tipado de API y configuración.
+- `packages/`: propuesta de tokens, UI compartida, cliente tipado de API, configuración y recursos institucionales autorizados (`assets`, solo documentación por ahora).
 
 ## Roles de negocio
 `admin` (Administrador General / Dirección de Informática), `executive` (Altos Directivos, métricas de solo lectura), `cashier` (Cajero), `veterinarian` (Médico Veterinario) y visitantes/niños desde 6 años como público anónimo. Los roles describen acceso al sistema, no asignan responsabilidades al equipo de desarrollo.
@@ -72,9 +72,9 @@ apps/
     tasks/      # pasos implementables
     src/        # único lugar de código de la app
 packages/
-  tokens/ ui/ api-client/ config/  # propuesta @arca/*; npm workspaces planeados
+  tokens/ ui/ api-client/ config/ assets/  # propuesta @arca/*; assets sin binarios
 docs/          # visión, arquitectura, permisos, SDD, convenciones, glosario
-  adr/ templates/
+  arquitectura/ adr/ templates/
 infra/         # diseño de infraestructura, todavía no implementado
 .agents/       # skills y hooks de agentes
 .devin/        # configuración de hooks
@@ -95,7 +95,9 @@ Antes de cambiar código, se aprueba una spec; después se redactan el plan con 
 - [Flujo SDD](docs/05-flujo-sdd.md)
 - [Convenciones](docs/06-convenciones.md)
 - [Glosario](docs/07-glosario.md)
-- [ADRs](docs/adr/README.md) · [Plantillas](docs/templates/spec.md)
+- [Patrones arquitectónicos](docs/08-patrones-arquitectonicos.md)
+- [Vistas de arquitectura](docs/arquitectura/README.md)
+- [ADRs](docs/adr/README.md) · [Plantilla de spec](docs/templates/spec.md) · [Plantilla de arquitectura por app](docs/templates/arquitectura-app.md)
 
 ## Agentes de IA
 

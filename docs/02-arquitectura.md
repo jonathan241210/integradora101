@@ -1,53 +1,84 @@
-# Arquitectura
+# Arquitectura general de ARCA-NB
 
-## Límites de responsabilidad
+- **Estado:** Propuesta
+- **Aprobación:** un PR revisado y aprobado por todo el equipo; el merge será la evidencia.
 
-- `apps/api` es la API central Laravel 12, única dueña del esquema de negocio, reglas, autorizaciones, auditoría y escrituras en MySQL. Los controladores HTTP validan y delegan las reglas en Actions.
-- `apps/dashboard`, `apps/pwa` y `apps/web` son SPAs independientes en React 19 + TypeScript + Vite. El portal presenta contenido público; dashboard y PWA requieren permisos. Ningún cliente replica reglas de negocio.
-- `apps/mobile` es el cliente React Native para visitantes. El videojuego no tiene carpeta hasta decidirse su tecnología.
-- `packages/api-client` ofrece el contrato tipado común a los clientes; `packages/ui`, `packages/tokens` y `packages/config` centralizan presentación y configuración compartida.
+## Objetivo, alcance y exclusiones
 
-## Comunicación y autenticación
+Esta línea base define límites comunes para las cinco aplicaciones, paquetes, datos e integraciones. Es una arquitectura documental: no aprueba entidades, tablas, endpoints, clases internas ni infraestructura. Cada capacidad se concreta mediante spec, plan y tasks.
 
-Los clientes consumen endpoints JSON bajo `/api`. La API define rutas Laravel con nombres (`->name()`); los clientes no dependen de Inertia ni Wayfinder y llaman a través de `@arca/api-client` y hooks. Las SPAs autenticadas usan Sanctum con autenticación de cookie y protección CSRF. Mobile usa tokens Sanctum; nunca se colocan credenciales de servicio en la app pública. Fortify se configura en modo headless para flujos de autenticación que correspondan.
+ARCA-NB será un monorepo modular, cliente-servidor JSON. `apps/api` seguirá una API modular en capas y MVC en sus límites Laravel; los clientes se organizarán por features y usarán MVVM explícito. Quedan fuera la implementación de apps, infraestructura, juego y pagos electrónicos.
 
-Los endpoints aplican Form Requests, Policies y permisos de Spatie; responden con API Resources consistentes. Cada endpoint de escritura llama a una Action de negocio y registra los eventos auditables pertinentes.
+**V1 vende boletos solo en efectivo. Payments es FUTURO/INACTIVO y hoy no puede activarse:** no hay código, tablas, endpoints, SDK ni feature flag de pagos, ni se crearán ahora.
 
-## Datos y tema
+## Principios y responsabilidades
 
-La BD principal es MySQL 8 estándar, gestionada inicialmente como servicio administrado de Google Cloud (por ejemplo, Cloud SQL). Solo `apps/api` modifica sus tablas, mediante migraciones Laravel. `settings_colores` es una fuente externa de solo lectura en una conexión separada llamada `mysql2`; su lectura puede usar `mysql2`, nunca se migra ni se escribe desde ARCA-NB. La API entrega los valores validados y su mapeo mediante `GET /api/theme`.
+- La API es la única autoridad de reglas, autorización, auditoría y datos de negocio.
+- Los clientes presentan datos y llaman a `@arca/api-client`; no duplican reglas.
+- MySQL 8 de `apps/api` es la fuente de verdad. Los borradores offline no son autoritativos.
+- Las dependencias apuntan hacia contratos y dominio, no hacia proveedores externos.
+- Menor privilegio, trazabilidad e idempotencia en operaciones financieras e integraciones.
+- Portabilidad por configuración: ninguna regla depende de servicios propietarios de GCP.
 
-Todas las conexiones se configuran exclusivamente con variables de entorno. No se utilizan extensiones propietarias de Cloud SQL ni SDK de GCP en reglas de negocio. Archivos, si se almacenan en la nube, usan discos/interfaz de Laravel Filesystem configurables. Así, la futura migración a MySQL Server local requiere configurar `.env` y el destino de archivos, no reescribir el dominio. La portabilidad debe verificarse frente a MySQL 8 estándar.
+## Componentes principales
 
-## Conectividad de la PWA
+| Componente | Estado | Responsabilidad |
+|---|---|---|
+| `apps/api` | Propuesto | API Laravel, reglas, persistencia, autorización y auditoría |
+| `apps/dashboard` | Propuesto | Taquilla en efectivo, caja, métricas y administración |
+| `apps/pwa` | Propuesto | Captura veterinaria y borradores offline |
+| `apps/web` | Propuesto | Portal institucional público |
+| `apps/mobile` | Propuesto | Experiencia de visita, QR, mapa y 3D |
+| `packages/api-client` | Propuesto | Contrato tipado para clientes |
+| `packages/ui`, `tokens`, `config`, `assets` | Propuesto | Presentación, configuración y recursos autorizados compartidos |
+| MySQL 8 | Propuesto | Datos de negocio autoritativos |
+| `settings_colores` | Actual externo | Fuente de tema de solo lectura mediante `mysql2` |
+| IndexedDB | Propuesto | Borradores temporales de PWA |
+| Almacenamiento de archivos | Propuesto | Archivos mediante Laravel Filesystem intercambiable |
+| Sistema municipal | Integración pendiente | Recibe ingresos y cortes después de un cierre confirmado; mecanismo por confirmar |
+| Proveedor/banco | Futuro/inactivo | Posible procesamiento electrónico, no activo en V1 |
 
-La PWA conservará borradores de captura veterinaria en IndexedDB y los sincronizará al recuperar conexión. `vite-plugin-pwa` e `idb` son propuestas sujetas al ADR 0003. Los datos locales no son autoridad: la API valida, resuelve conflictos según una política aprobada y confirma la sincronización antes de considerar persistido un cambio.
+## Dominios y dependencias
 
-## Diagrama
+| Dominio | Responsabilidad general | Dependencias permitidas |
+|---|---|---|
+| Identity & Access | Identidad, sesiones, roles y permisos | Configuration, Audit |
+| Ticketing | Oferta y emisión de boletos | Cash Management en V1; Identity & Access, Configuration, Audit |
+| Payments | **Futuro/inactivo**; límite reservado | Ninguna dependencia activa en V1 |
+| Cash Management | Movimientos, arqueos y cierres de efectivo | Identity & Access, Reporting, Audit |
+| Animal Care | Expedientes y atención animal | Identity & Access, Audit, Configuration |
+| Public Content | Noticias, eventos y fichas públicas | Configuration, Audit |
+| Visitor Experience | Mapa, QR, 3D y experiencia móvil | Public Content, Ticketing |
+| Reporting | Consultas y proyecciones de lectura | Datos publicados por dominios; no escribe en ellos |
+| Configuration | Configuración validada y tema | Sin dependencia de dominios de negocio |
+| Audit | Registro transversal inmutable | Sin dependencia inversa hacia consumidores |
 
-```mermaid
-flowchart LR
-  Web[apps/web<br/>React SPA] --> SDK[@arca/api-client]
-  Dash[apps/dashboard<br/>React SPA] --> SDK
-  PWA[apps/pwa<br/>React PWA + borradores] --> SDK
-  Mobile[apps/mobile<br/>React Native] --> SDK
-  SDK --> API[apps/api<br/>Laravel 12 JSON API]
-  API --> DB[(MySQL 8<br/>Cloud SQL administrado)]
-  API -.lectura.-> Theme[(mysql2<br/>settings_colores)]
-  API -.Filesystem disk.-> Files[(Almacenamiento cloud intercambiable)]
-  Local[(MySQL Server local)] -.cambio de configuración .env.-> API
-```
+Se prohíben accesos directos de clientes a BD, reglas de negocio en UI, escrituras a `settings_colores`, dependencias de dominio hacia UI y acoplamiento de Ticketing a un proveedor de pago. Reporting no modifica los datos que consulta. Las dependencias adicionales requieren spec y, si cambian límites, ADR.
 
-## Estructura de cada app
+## Comunicación, seguridad y datos
 
-```text
-apps/<app>/
-  AGENTS.md
-  docs/       documentación local de la app
-  specs/      requisitos e historias NNN-slug.md
-  plan/       solución técnica NNN-slug.md
-  tasks/      checklist de trabajo NNN-slug.md
-  src/        único lugar para el código fuente
-```
+Los clientes consumen JSON versionado bajo `/api/v1` mediante `@arca/api-client`. Las SPAs autenticadas usarán cookie Sanctum con CSRF; mobile usará tokens. Form Requests validan, Policies y permisos autorizan, Controllers delgados delegan en Actions y API Resources serializan. Cada operación sensible registra actor, acción, fecha y correlación sin secretos.
 
-El número NNN se asigna por app. Las decisiones tecnológicas pendientes se documentan en [ADRs](adr/README.md).
+El esquema cambia solo por migraciones. Datos clínicos y financieros usan borrado lógico y auditoría. Las conexiones y secretos se inyectan por entorno. GCP previsto y MySQL Server local deben ejecutar el mismo diseño; almacenamiento queda detrás de Laravel Filesystem.
+
+La PWA puede mantener Draft Repository y Outbox locales, sujetos al [ADR 0003](adr/0003-mysql-y-pwa-offline.md) y a una spec de seguridad, conflicto, retención y reintentos. La API confirma cuándo un cambio es persistente.
+
+## Venta y cierre activos en V1
+
+Ticketing registra la venta **solo en efectivo** y emite el boleto conforme a la regla aprobada. Cash Management registra el movimiento de efectivo y lo incorpora al cierre. Al confirmar el cierre, se prepara el envío de ingresos y cortes al sistema municipal mediante un Adapter. El disparador está confirmado; si será BD directa o servicio interno, así como protocolo y contrato, está por confirmar.
+
+## Payments: extensión futura no implementada
+
+Payments es un límite reservado, no un módulo implementado ni activable. Ticketing nunca dependerá de un proveedor concreto. Una spec futura podrá introducir `PaymentGateway` y un Adapter por proveedor; solicitará el cobro y solo emitirá o activará un boleto tras `payment confirmed` válido.
+
+En ese futuro, Payments gestionaría intentos, estados, referencias, webhooks verificados, reembolsos y conciliación. Se preferirá checkout alojado o tokenización; ARCA-NB nunca almacenará PAN completo, CVV ni datos sensibles de tarjeta. Esa implementación futura creará su propia feature flag apagada por defecto y requerirá proveedor aprobado, sandbox, seguridad, idempotencia, webhooks, conciliación y aprobación operativa. Estar preparado arquitectónicamente no significa estar implementado ni listo para activar.
+
+## Documentación normativa
+
+- [Diagramas y guía de arquitectura](arquitectura/README.md)
+- [Patrones arquitectónicos](08-patrones-arquitectonicos.md)
+- [Contratos compartidos](arquitectura/contratos.md)
+- [ADR 0007 · Línea base](adr/0007-linea-base-arquitectura-general.md)
+- [ADR 0008 · Sistema municipal](adr/0008-integracion-sistema-municipal.md)
+- [ADR 0009 · Pagos futuros](adr/0009-pagos-electronicos-futuros.md)
+- [Plantilla por app](templates/arquitectura-app.md)

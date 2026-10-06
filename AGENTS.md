@@ -22,6 +22,7 @@ Sistema del Zoológico Municipal Nicolás Bravo (Tulancingo). Monorepo con Spec-
 | `docs/` | Documentación propia de la app |
 
 ## Procedimiento obligatorio en cada cambio
+- Si la petición es ambigua o falta una decisión necesaria, investiga primero el contexto disponible y después formula preguntas concretas antes de actuar; máximo 8 preguntas por ronda. No inventes requisitos.
 1. Identifica la app y lee su `AGENTS.md`.
 2. Busca la spec en `specs/`; si no existe o no está **Aprobada**, sigue `/sdd-spec` y espera su aprobación.
 3. Sigue `/sdd-plan` → `/sdd-tasks` → `/sdd-implement`; código solo en `src/`, con al menos un test por CA-xx.
@@ -30,12 +31,14 @@ Sistema del Zoológico Municipal Nicolás Bravo (Tulancingo). Monorepo con Spec-
 
 ## Reglas
 - Código, BD, rutas, permisos y commits en inglés; UI, mensajes, specs y documentación en español.
-- La lógica de negocio vive en Actions de `apps/api`; las interfaces usan `@arca/api-client`.
+- La API sigue MVC en los límites de Laravel: Models para datos, Controllers HTTP delgados y Views sustituidas por respuestas JSON; la lógica de negocio vive en Actions.
+- Los clientes React y React Native siguen MVVM explícito: componentes como Views, hooks como ViewModels y tipos/datos mediante `@arca/api-client`; React no impone este patrón automáticamente.
 - Esquema solo por migraciones; modelos de negocio extienden `BaseModel`; datos clínicos y financieros usan SoftDeletes y auditoría.
 - MySQL 8 estándar, configuración por `.env`, portable entre Google Cloud y MySQL Server local.
 - No fijar colores de marca en componentes: usar tokens semánticos y el tema de `GET /api/theme`; modo claro.
 - SPAs con rutas del cliente y API con rutas Laravel nombradas; no usar Inertia ni Wayfinder.
 - Dependencia o tecnología nueva requiere ADR aprobado en `docs/adr/`.
+- Cada app documenta su arquitectura con `docs/templates/arquitectura-app.md`; toda excepción requiere ADR, y Payments no se implementa sin spec, ADR/proveedor y aprobación.
 - No leer ni modificar `PLANTILLA_V4_Con colores/`; la referencia permitida es `ANALISIS_PLANTILLA_V4.md`.
 - No commitear `.env` ni secretos; no editar `vendor/`, `node_modules/` ni archivos generados.
 

@@ -16,6 +16,9 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0004 · Mobile React Native](0004-mobile-react-native.md) — Propuesto
 - [0005 · Videojuego pendiente](0005-videojuego-pendiente.md) — Abierto
 - [0006 · Google Cloud portable](0006-hosting-google-cloud-portable.md) — Aceptado
+- [0007 · Línea base de arquitectura general](0007-linea-base-arquitectura-general.md) — Propuesto
+- [0008 · Integración con el sistema municipal](0008-integracion-sistema-municipal.md) — Abierto
+- [0009 · Pagos electrónicos futuros](0009-pagos-electronicos-futuros.md) — Propuesto
 
 ## Plantilla
 
