@@ -1,2 +1,9 @@
 venv/
 .env
+PLANTILLA_V4_Con colores/
+node_modules/
+vendor/
+.env.*
+!.env.example
+AGENTS.local.md
+.devin/config.local.json
