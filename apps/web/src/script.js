@@ -104,6 +104,44 @@ mapControls.forEach(point => {
   });
 });
 
+const mapScene = document.getElementById('mapScene');
+const mapZoomIn = document.getElementById('mapZoomIn');
+const mapZoomOut = document.getElementById('mapZoomOut');
+const mapZoomReset = document.getElementById('mapZoomReset');
+const mapZoomStatus = document.getElementById('mapZoomStatus');
+const mapZoomMin = 100;
+const mapZoomMax = 150;
+const mapZoomStep = 10;
+let mapZoom = mapZoomMin;
+
+const renderMapZoom = () => {
+  mapScene.style.setProperty('--map-scale', String(mapZoom / 100));
+  mapZoomOut.disabled = mapZoom === mapZoomMin;
+  mapZoomIn.disabled = mapZoom === mapZoomMax;
+  mapZoomStatus.textContent = `Vista: ${mapZoom} %`;
+};
+
+mapZoomIn.addEventListener('click', () => {
+  if (mapZoom < mapZoomMax) {
+    mapZoom = Math.min(mapZoom + mapZoomStep, mapZoomMax);
+    renderMapZoom();
+  }
+});
+
+mapZoomOut.addEventListener('click', () => {
+  if (mapZoom > mapZoomMin) {
+    mapZoom = Math.max(mapZoom - mapZoomStep, mapZoomMin);
+    renderMapZoom();
+  }
+});
+
+mapZoomReset.addEventListener('click', () => {
+  mapZoom = mapZoomMin;
+  renderMapZoom();
+});
+
+renderMapZoom();
+
 document.querySelectorAll('.foto').forEach((photo, index) => {
   photo.addEventListener('click', () => showToast(`Fotografía ${index + 1} de la galería`));
 });

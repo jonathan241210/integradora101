@@ -144,11 +144,63 @@ function mountMapSelection() {
   };
   const script = readFileSync(path.join(webSource, 'script.js'), 'utf8');
   const start = script.indexOf('const mapControls =');
-  const end = script.indexOf("document.querySelectorAll('.foto')", start);
+  const end = script.indexOf('const mapScene =', start);
   assert.ok(start >= 0 && end > start, 'No se encontró el controlador de selección del mapa');
   runInNewContext(script.slice(start, end), { document });
 
   return { controls, listeners, selection, selectedClasses };
+}
+
+function mountMapZoom() {
+  const listeners = new Map();
+  const selectedAttributes = new Map([['aria-pressed', 'false']]);
+  const selectedClasses = new Set();
+  const controls = [{
+    dataset: { name: 'Lago' },
+    addEventListener: (type, listener) => listeners.set(`mapSelection:${type}`, listener),
+    setAttribute: (name, value) => selectedAttributes.set(name, value),
+    classList: {
+      toggle: (name, enabled) => enabled ? selectedClasses.add(name) : selectedClasses.delete(name),
+    },
+  }];
+  const makeButton = (id) => ({
+    disabled: false,
+    addEventListener: (type, listener) => listeners.set(`${id}:${type}`, listener),
+  });
+  const mapScene = { style: { setProperty: (name, value) => listeners.set(`style:${name}`, value) } };
+  const zoomIn = makeButton('mapZoomIn');
+  const zoomOut = makeButton('mapZoomOut');
+  const zoomReset = makeButton('mapZoomReset');
+  const zoomStatus = { textContent: '' };
+  const selection = { textContent: '' };
+  const elements = new Map([
+    ['mapScene', mapScene],
+    ['mapZoomIn', zoomIn],
+    ['mapZoomOut', zoomOut],
+    ['mapZoomReset', zoomReset],
+    ['mapZoomStatus', zoomStatus],
+    ['mapSelection', selection],
+  ]);
+  const document = {
+    activeElement: null,
+    querySelectorAll: () => controls,
+    getElementById: (id) => elements.get(id),
+  };
+  const script = readFileSync(path.join(webSource, 'script.js'), 'utf8');
+  const start = script.indexOf('const mapControls =');
+  const end = script.indexOf("document.querySelectorAll('.foto')", start);
+  assert.ok(start >= 0 && end > start, 'No se encontró el controlador de zoom del mapa');
+  runInNewContext(script.slice(start, end), { document });
+
+  return { listeners, mapScene, zoomIn, zoomOut, zoomReset, zoomStatus, selection, selectedAttributes, selectedClasses, document };
+}
+
+function mapSection(html) {
+  const mapId = html.indexOf('id="mapa"');
+  const start = html.lastIndexOf('<section', mapId);
+  const end = html.indexOf('</section>', start);
+  assert.ok(mapId >= 0 && start >= 0 && end > start, 'No se encontró la sección del mapa');
+  return html.slice(start, end);
 }
 
 test('CA-01 brand-color-refresh centraliza la paleta y tipografía aprobadas', () => {
@@ -296,8 +348,8 @@ test('CA-01 lion-hero-mobile-navigation recupera el degradado verde solo en el h
 test('CA-02 lion-hero-mobile-navigation conserva el menú desplegado en escritorio', () => {
   const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
   const css = readFileSync(path.join(webSource, 'styles.css'), 'utf8');
-  assert.match(html, /<button[^>]*id="menuToggle"[^>]*aria-controls="mainNav"[^>]*hidden>/);
-  assert.match(html, /<nav class="main-nav" id="mainNav"/);
+  assert.match(html, /<button[^>]*id="menuToggle"[^>]*aria-controls="mainNav"[^>]*hidden\s*>/);
+  assert.match(html, /<nav\s+class="main-nav"\s+id="mainNav"/);
   assert.match(css, /@media \(min-width: 821px\)\s*\{\s*\.menu-toggle\s*\{\s*display:\s*none;/);
   assert.match(css, /\.main-nav\s*\{[^}]*display:\s*flex/s);
 });
@@ -351,11 +403,14 @@ test('CA-03 lion-hero-mobile-navigation opera apertura, Escape, enlace y breakpo
 
 test('CA-04 lion-hero-mobile-navigation aplica controles fluidos en los anchos objetivo', () => {
   const css = readFileSync(path.join(webSource, 'styles.css'), 'utf8');
-  assert.match(css, /html,\s*body\s*\{[^}]*overflow-x:\s*clip/s);
+  assert.doesNotMatch(css, /html,\s*body\s*\{[^}]*overflow-x:\s*clip/s);
   assert.match(css, /@media \(max-width: 820px\)/);
   assert.match(css, /@media \(max-width: 560px\)/);
   assert.match(css, /\.top-actions\s*\{[^}]*flex:\s*1 0 100%[^}]*width:\s*100%/s);
   assert.match(css, /\.search input\s*\{[^}]*width:\s*100%[^}]*min-width:\s*0/s);
+  assert.match(css, /\.hero h1\s*\{\s*max-width:\s*18ch/s);
+  assert.match(css, /\.event-date span\s*\{\s*overflow-wrap:\s*anywhere/s);
+  assert.match(css, /\.page-shell\s*\{\s*max-width:\s*none/s);
 });
 
 test('CA-05 lion-hero-mobile-navigation tiene pruebas CA-01..CA-05 sin paquetes nuevos', () => {
@@ -373,28 +428,72 @@ test('CA-05 lion-hero-mobile-navigation tiene pruebas CA-01..CA-05 sin paquetes 
   assert.equal(existsSync(path.join(webSource, 'package.json')), false);
 });
 
+test('CA-01 visit-info-icons-and-favicon centra iconos y contenido de visita en responsive', () => {
+  const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
+  const css = readFileSync(path.join(webSource, 'styles.css'), 'utf8');
+  assert.match(css, /\.infobar\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/s);
+  assert.match(css, /\.infobar\s*>\s*div\s*\{[^}]*flex-direction:\s*column[^}]*align-items:\s*center[^}]*text-align:\s*center/s);
+  assert.match(css, /\.infobar\s*>\s*div\s*>\s*span\s*\{[^}]*max-width:\s*100%/s);
+  assert.match(css, /@media \(max-width: 560px\)\s*\{[\s\S]*?\.infobar[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/);
+  assert.equal((html.match(/class="bi bi-(?:clock|geo-alt|ticket-perforated) info-icon"/g) ?? []).length, 3);
+});
+
+test('CA-02 visit-info-icons-and-favicon carga el logo del favicon desde un asset local', () => {
+  const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
+  const favicon = html.match(/<link\s+rel="icon"[^>]*>/s)?.[0];
+  assert.ok(favicon, 'No se encontró la referencia del favicon');
+  const href = favicon.match(/href=["']([^"']+)["']/)?.[1];
+  assert.equal(href, 'assets/zoo-logo.jpeg');
+  assert.doesNotMatch(href, /^(?:https?:|\/\/|\/)/i);
+  assert.doesNotMatch(href, /(?:^|\/)\.\.(?:\/|$)/);
+  const logo = readFileSync(path.join(webSource, href));
+  assert.deepEqual([...logo.subarray(0, 3)], [0xff, 0xd8, 0xff], 'El favicon no contiene el logo JPEG local');
+});
+
+test('CA-03 visit-info-icons-and-favicon conserva las etiquetas y prueba todos los criterios', () => {
+  const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
+  const source = readFileSync(testFile, 'utf8');
+  assert.match(html, /<small>Horario<\/small>/);
+  assert.match(html, /<strong>Tulancingo de Bravo, Hidalgo<\/strong>/);
+  assert.match(html, /<a href="#boletos">[\s\S]*?Consulta boletos y precios/);
+  for (const criterion of [
+    'CA-01 visit-info-icons-and-favicon',
+    'CA-02 visit-info-icons-and-favicon',
+    'CA-03 visit-info-icons-and-favicon',
+  ]) {
+    assert.ok(source.includes(criterion), `Falta el test ${criterion}`);
+  }
+  assert.ok([...source.matchAll(/from\s+['"]([^'"]+)['"]/g)].every((match) => match[1].startsWith('node:')));
+});
+
 test('CA-01 isometric-zoo-map dibuja una escena local con perspectiva y sin proveedor', () => {
   const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
-  const mapSection = html.slice(html.indexOf('<section class="map-section"'), html.indexOf('</section>', html.indexOf('<section class="map-section"')));
-  assert.match(mapSection, /<svg class="map-art" viewBox="0 0 900 560"/);
-  assert.match(mapSection, /<linearGradient id="map-ground"/);
-  assert.match(mapSection, /fill="url\(#map-grass\)"/);
-  assert.match(mapSection, /stroke-dasharray="5 13"/);
-  assert.doesNotMatch(mapSection, /https?:|maps\.google|mapbox|openstreetmap/i);
+  const section = mapSection(html);
+  assert.match(section, /<svg[\s\S]*?class="map-art"[\s\S]*?viewBox="0 0 900 560"/);
+  assert.match(section, /<linearGradient[\s\S]*?id="map-ground"/);
+  assert.match(section, /fill="url\(#map-grass\)"/);
+  assert.match(section, /stroke-dasharray="5 13"/);
+  assert.match(section, /class="map-scene" id="mapScene"/);
+  assert.match(section, /map-icon-(?:felinos|aviario|reptilario|primates|granja|lago|entrada)/);
+  assert.match(section, /id="mapZoomReset"[^>]*aria-controls="mapScene"(?![^>]*\sdisabled)/);
+  assert.doesNotMatch(section, /https?:|maps\.google|mapbox|openstreetmap/i);
 });
 
 test('CA-02 isometric-zoo-map conserva zonas, servicios e iconos SVG accesibles', () => {
   const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
-  const mapSection = html.slice(html.indexOf('<section class="map-section"'), html.indexOf('</section>', html.indexOf('<section class="map-section"')));
+  const section = mapSection(html);
   const names = ['Felinos', 'Aviario', 'Reptilario', 'Primates', 'Granja', 'Lago', 'Entrada', 'Baños', 'Alimentos', 'Bebederos', 'Áreas de descanso', 'Enfermería', 'Tiendas'];
-  const controls = [...mapSection.matchAll(/<button class="map-control[\s\S]*?<\/button>/g)].map((match) => match[0]);
+  const controls = [...section.matchAll(/<button\b(?=[^>]*\bmap-control\b)[\s\S]*?<\/button>/g)].map((match) => match[0]);
+  const symbols = new Set([...section.matchAll(/<symbol id="([^"]+)"/g)].map((match) => match[1]));
   assert.ok(controls.length >= names.length);
   for (const name of names) {
-    assert.ok(mapSection.includes(`data-name="${name}"`), `Falta ${name}`);
+    assert.ok(section.includes(`data-name="${name}"`), `Falta ${name}`);
     const control = controls.find((candidate) => candidate.includes(`data-name="${name}"`));
     assert.ok(control, `Falta un control para ${name}`);
     assert.match(control, /aria-label="[^"]+"/);
     assert.match(control, /<svg class="map-icon"[^>]*aria-hidden="true"/);
+    const symbol = control.match(/<use href="#([^"]+)"/)?.[1];
+    assert.ok(symbols.has(symbol), `Falta el símbolo SVG local de ${name}`);
     assert.match(control, /<span(?: class="map-marker-label")?>[^<]+<\/span>/);
     assert.match(control, /aria-pressed="false"/);
   }
@@ -402,8 +501,8 @@ test('CA-02 isometric-zoo-map conserva zonas, servicios e iconos SVG accesibles'
 
 test('CA-03 isometric-zoo-map advierte que la ilustración no sirve para orientarse con precisión', () => {
   const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
-  const mapSection = html.slice(html.indexOf('<section class="map-section"'), html.indexOf('</section>', html.indexOf('<section class="map-section"')));
-  assert.match(mapSection, /Ilustración aproximada, no está a escala y no sirve para orientarte con precisión/);
+  const section = mapSection(html);
+  assert.match(section, /Ilustración aproximada,\s*no está a escala y no sirve\s*para orientarte con precisión/);
 });
 
 test('CA-04 isometric-zoo-map sincroniza selección, resaltado y anuncio entre controles', () => {
@@ -427,12 +526,56 @@ test('CA-04 isometric-zoo-map sincroniza selección, resaltado y anuncio entre c
 test('CA-05 isometric-zoo-map adapta la ilustración y la leyenda a viewports estrechos', () => {
   const css = readFileSync(path.join(webSource, 'styles.css'), 'utf8');
   assert.match(css, /\.map\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*10[^}]*overflow:\s*hidden/s);
+  assert.match(css, /\.map-scene\s*\{[^}]*position:\s*absolute[^}]*transform:\s*scale\(var\(--map-scale,\s*1\)\)/s);
   assert.match(css, /\.map-art\s*\{[^}]*position:\s*absolute[^}]*width:\s*100%[^}]*height:\s*100%/s);
+  assert.match(css, /\.map-zoom-controls\s*\{[^}]*flex-wrap:\s*wrap/s);
   assert.match(css, /\.map-marker\s*\{[^}]*top:\s*var\(--marker-y\)[^}]*left:\s*var\(--marker-x\)/s);
   assert.match(css, /@media \(max-width: 820px\)\s*\{\s*\.map-layout\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
   assert.match(css, /@media \(max-width: 560px\)\s*\{[\s\S]*?\.map-marker-label\s*\{[^}]*clip:\s*rect\(0,\s*0,\s*0,\s*0\)/);
   assert.match(css, /\.map-control:focus-visible/);
-  assert.match(css, /html,\s*body\s*\{[^}]*overflow-x:\s*clip/s);
+  assert.doesNotMatch(css, /html,\s*body\s*\{[^}]*overflow-x:\s*clip/s);
+});
+
+test('CA-07 isometric-zoo-map controla límites, estado y restablecimiento sin perder selección o foco', () => {
+  const zoom = mountMapZoom();
+  assert.equal(zoom.zoomOut.disabled, true);
+  assert.equal(zoom.zoomReset.disabled, false);
+  assert.equal(zoom.zoomStatus.textContent, 'Vista: 100 %');
+  assert.equal(zoom.listeners.get('style:--map-scale'), '1');
+
+  zoom.listeners.get('mapZoomIn:click')();
+  assert.equal(zoom.zoomStatus.textContent, 'Vista: 110 %');
+  assert.equal(zoom.zoomReset.disabled, false);
+  assert.equal(zoom.listeners.get('style:--map-scale'), '1.1');
+  zoom.listeners.get('mapSelection:click')();
+  assert.equal(zoom.selectedAttributes.get('aria-pressed'), 'true');
+  assert.equal(zoom.selectedClasses.has('active'), true);
+
+  for (let step = 0; step < 5; step += 1) {
+    zoom.listeners.get('mapZoomIn:click')();
+  }
+  assert.equal(zoom.zoomStatus.textContent, 'Vista: 150 %');
+  assert.equal(zoom.zoomIn.disabled, true);
+  assert.equal(zoom.zoomOut.disabled, false);
+  zoom.listeners.get('mapZoomIn:click')();
+  assert.equal(zoom.zoomStatus.textContent, 'Vista: 150 %');
+
+  for (let step = 0; step < 5; step += 1) {
+    zoom.listeners.get('mapZoomOut:click')();
+  }
+  assert.equal(zoom.zoomStatus.textContent, 'Vista: 100 %');
+  assert.equal(zoom.zoomOut.disabled, true);
+  assert.equal(zoom.zoomReset.disabled, false);
+
+  zoom.listeners.get('mapZoomIn:click')();
+  zoom.document.activeElement = zoom.zoomReset;
+  zoom.listeners.get('mapZoomReset:click')();
+  assert.equal(zoom.document.activeElement, zoom.zoomReset);
+  assert.equal(zoom.selectedAttributes.get('aria-pressed'), 'true');
+  assert.equal(zoom.selectedClasses.has('active'), true);
+
+  assert.match(readFileSync(path.join(webSource, 'index.html'), 'utf8'), /aria-label="Controles de zoom del mapa"/);
+  assert.match(readFileSync(path.join(webSource, 'index.html'), 'utf8'), /id="mapZoomStatus" role="status" aria-live="polite"/);
 });
 
 test('CA-06 isometric-zoo-map conserva suite Node local sin nuevas dependencias', () => {
@@ -444,10 +587,18 @@ test('CA-06 isometric-zoo-map conserva suite Node local sin nuevas dependencias'
     'CA-04 isometric-zoo-map',
     'CA-05 isometric-zoo-map',
     'CA-06 isometric-zoo-map',
+    'CA-07 isometric-zoo-map',
   ]) {
     assert.ok(source.includes(criterion), `Falta el test ${criterion}`);
   }
   const imports = [...source.matchAll(/from\s+['"]([^'"]+)['"]/g)].map((match) => match[1]);
   assert.ok(imports.every((specifier) => ['node:test', 'node:assert/strict', 'node:fs', 'node:path', 'node:crypto', 'node:vm'].includes(specifier)));
   assert.equal(existsSync(path.join(webSource, 'package.json')), false);
+});
+
+test('CA-04 visit-info-icons-and-favicon baja 8 px los tres iconos sin alterar el centrado', () => {
+  const css = readFileSync(path.join(webSource, 'styles.css'), 'utf8');
+  assert.match(css, /\.infobar\s*\.info-icon\s*\{\s*margin-top:\s*8px;\s*\}/);
+  assert.match(css, /\.infobar\s*>\s*div\s*\{[^}]*align-items:\s*center[^}]*text-align:\s*center/s);
+  assert.equal((readFileSync(path.join(webSource, 'index.html'), 'utf8').match(/class="bi bi-(?:clock|geo-alt|ticket-perforated) info-icon"/g) ?? []).length, 3);
 });
