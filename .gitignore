@@ -7,6 +7,3 @@ vendor/
 !.env.example
 AGENTS.local.md
 .devin/config.local.json
-opencode.json
-.expo/
-apps/mobile/.expo/
