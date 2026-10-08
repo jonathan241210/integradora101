@@ -63,3 +63,7 @@
 - No modificar diseño, contenido, imágenes, modelo 3D ni comportamiento del portal.
 - No recrear archivos Docker (RN-04).
 - No crear scripts auxiliares permanentes, salvo `apps/web/src/tests/relocation.test.mjs` exigido por Constitución IV y el hook.
+
+## Enmienda aprobada por `002-brand-color-refresh`
+
+La feature `002-brand-color-refresh` autorizó cambios de paleta en `apps/web/src/styles.css`; `003-lion-hero-mobile-navigation` autorizó cambios limitados al menú en `index.html`/`script.js` y al degradado/responsive en `styles.css`; `004-isometric-zoo-map` autoriza cambios limitados de la sección del mapa en esos mismos archivos. La evidencia de T-03..T-06 y la verificación de 14/14 hashes de esta tarea son históricas y corresponden al momento de la reubicación. La prueba persistente conserva los hashes de los 11 assets fuera del alcance y verifica las referencias estructurales, el tema, la navegación y el mapa mediante tests de las specs aprobadas.

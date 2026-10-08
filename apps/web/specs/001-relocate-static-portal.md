@@ -23,7 +23,7 @@ El portal institucional se agregó en `portal-web/`, fuera de la estructura esta
 
 - Convertir HTML, CSS o JavaScript a React/TypeScript.
 - Inicializar Vite, React, Tailwind o un `package.json`.
-- Modificar diseño, contenido, imágenes, modelo 3D o comportamiento del portal.
+- Modificar diseño, contenido, imágenes, modelo 3D o comportamiento del portal dentro del alcance original de reubicación. La paleta visual puede actualizarse únicamente bajo una spec posterior aprobada, como `002-brand-color-refresh`.
 - Implementar API, autenticación, pagos o Docker; tampoco se inicializa un framework de tests ni se crean tests funcionales/UI. Se agrega únicamente la prueba estructural persistente con el runner integrado de Node 22 exigida por Constitución IV y el hook.
 - Mover recursos del portal a `packages/assets`; esa clasificación requiere una revisión posterior de origen y licencias.
 
@@ -40,12 +40,12 @@ Como integrante del equipo, quiero que el portal esté dentro de `apps/web/src/`
 
 ## Criterios de aceptación
 
-- **CA-01:** Dado el contenido actual de `portal-web/`, cuando termine la reorganización, entonces cada archivo estará presente bajo `apps/web/src/` con la misma ruta relativa y contenido.
+- **CA-01:** Dado el contenido actual de `portal-web/`, cuando termine la reorganización, entonces cada archivo estará presente bajo `apps/web/src/` con la misma ruta relativa y contenido. Los cambios posteriores requieren una spec aprobada: `002-brand-color-refresh` autoriza cambios visuales en `styles.css`, `003-lion-hero-mobile-navigation` autoriza cambios limitados de navegación en `index.html`/`script.js` y `styles.css`, y `004-isometric-zoo-map` autoriza cambios limitados a la sección del mapa en esos archivos; las pruebas protegen los 11 assets restantes.
 - **CA-02:** Dado el `index.php` raíz que redirige a `/portal-web/`, cuando termine la reorganización, entonces estará en `apps/web/src/index.php` y redirigirá a `./index.html`.
 - **CA-03:** Dado que el traslado fue verificado, cuando termine el cambio, entonces `portal-web/` y el `index.php` raíz ya no existirán.
 - **CA-04:** Dado que Docker no se utilizará todavía, cuando termine el cambio, entonces `Dockerfile`, `docker-compose.yml` y `.dockerignore` no existirán en la raíz.
 - **CA-05:** Dado el portal reubicado, cuando se comprueben las referencias locales de `index.html`, entonces sus hojas de estilo, scripts, imágenes y modelo 3D resolverán dentro de `apps/web/src/`.
-- **CA-06:** Dado que esta tarea es solo estructural, cuando se revise el diff, entonces no habrá conversión a React ni cambios intencionales al diseño o comportamiento.
+- **CA-06:** Dado que esta tarea es solo estructural, cuando se revise el diff, entonces no habrá conversión a React ni cambios no aprobados al diseño o comportamiento. Los cambios posteriores autorizados por `002-brand-color-refresh`, `003-lion-hero-mobile-navigation` y `004-isometric-zoo-map` quedan fuera de la implementación original de esta spec.
 - **CA-07:** Dada la exigencia de Constitución IV y el feedback del hook, cuando se ejecute `node --test apps/web/src/tests/relocation.test.mjs`, entonces una prueba persistente y sin dependencias nombrará y cubrirá CA-01..CA-06, se nombrará a sí misma como CA-07 y pasará.
 
 ## Reglas de negocio
@@ -81,4 +81,4 @@ Si aparece una colisión o una referencia fuera de la carpeta, se detiene el tra
 ## Revisión
 
 - Aprobadores y fecha: Jonathan, 2026-10-06.
-- Evidencia/enlaces: implementación `web-001` verificada en `apps/web/tasks/001-relocate-static-portal.md`: inventario de 14 archivos, 14/14 SHA-256 conservados, 10 referencias HTML y 8 referencias CSS locales resueltas sin fallos, redirección PHP validada y orígenes autorizados ausentes. La ampliación por Constitución IV/hook agregó `apps/web/src/tests/relocation.test.mjs`; `node --test apps/web/src/tests/relocation.test.mjs` finalizó con 7 tests, 7 pass, 0 fail. También se ejecutaron `git diff --check` y `git status`. Artefactos relacionados: [spec](../specs/001-relocate-static-portal.md), [plan](../plan/001-relocate-static-portal.md) y [tasks](../tasks/001-relocate-static-portal.md).
+- Evidencia/enlaces: implementación `web-001` verificada en `apps/web/tasks/001-relocate-static-portal.md`: inventario de 14 archivos, 14/14 SHA-256 conservados, 10 referencias HTML y 8 referencias CSS locales resueltas sin fallos, redirección PHP validada y orígenes autorizados ausentes. La ampliación por Constitución IV/hook agregó `apps/web/src/tests/relocation.test.mjs`; `node --test apps/web/src/tests/relocation.test.mjs` finalizó con 7 tests, 7 pass, 0 fail. También se ejecutaron `git diff --check` y `git status`. Las specs `002-brand-color-refresh`, `003-lion-hero-mobile-navigation` y `004-isometric-zoo-map` permiten las excepciones visuales y de interacción descritas en sus criterios; las pruebas estructurales continúan protegiendo los 11 assets y verifican el CSS y los contratos de HTML/JavaScript por criterio. Artefactos relacionados: [spec](../specs/001-relocate-static-portal.md), [plan](../plan/001-relocate-static-portal.md) y [tasks](../tasks/001-relocate-static-portal.md).

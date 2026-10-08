@@ -9,13 +9,13 @@
 
 Reubicación mecánica del portal institucional desde `portal-web/` hacia `apps/web/src/`, preservando la estructura interna, nombres de archivo y contenido byte a byte. Para evitar pérdida, primero se copia el contenido, se verifica y solo entonces se elimina el origen. El `index.php` de la raíz se copia a `apps/web/src/index.php` y se modifica **únicamente** en la URL de redirección para apuntar a `./index.html` (ruta relativa al nuevo directorio); el original se elimina después de verificar. Se elimina `apps/web/src/.gitkeep` porque `src/` dejará de estar vacío. Se suprimen los artefactos Docker prematuros de la raíz (`Dockerfile`, `docker-compose.yml` y `.dockerignore`).
 
-El cambio es estrictamente estructural: no se convierte el portal a React/TypeScript, no se inicializa Vite, no se modifica diseño, contenido, imágenes, modelo 3D ni comportamiento del portal.
+El cambio original fue estrictamente estructural: no se convirtió el portal a React/TypeScript, no se inicializó Vite y no se modificó diseño, contenido, imágenes, modelo 3D ni comportamiento. Las features posteriores aprobadas `002-brand-color-refresh`, `003-lion-hero-mobile-navigation` y `004-isometric-zoo-map` autorizan cambios acotados de color, navegación y mapa en `index.html`, `script.js` y `styles.css`; no alteran assets trasladados ni contenidos ajenos a esas secciones.
 
 ## Cambios por área
 
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|
-| `apps/web/src/` | `index.html`, `styles.css`, `script.js`, `assets/*` (11 archivos) | Reubicar el portal estático en la carpeta estándar de la app. |
+| `apps/web/src/` | `index.html`, `styles.css`, `script.js`, `assets/*` (11 archivos) | Reubicar el portal estático en la carpeta estándar de la app; el restyle posterior de `styles.css` está autorizado por la spec 002. |
 | `apps/web/src/index.php` | `index.php` raíz movido | Punto de entrada PHP que redirige a `./index.html`. |
 | `apps/web/src/tests/` | `relocation.test.mjs` | Prueba estructural persistente CA-01..CA-07 con el runner integrado de Node 22, sin package ni dependencias. |
 | `apps/web/src/.gitkeep` | Eliminar | `src/` ya no estará vacío tras el traslado. |
@@ -41,12 +41,12 @@ El cambio es estrictamente estructural: no se convierte el portal a React/TypeSc
 
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
-| **CA-01** | `node --test apps/web/src/tests/relocation.test.mjs`: comprueba los 14 paths y sus SHA-256 completos contra el contenido de `HEAD:portal-web/`. | `apps/web/src/tests/relocation.test.mjs` |
+| **CA-01** | `node --test apps/web/src/tests/relocation.test.mjs`: comprueba paths y SHA-256 de los 13 archivos que la spec 002 no autoriza a cambiar; la paleta de `styles.css` se verifica con los CA de esa feature. | `apps/web/src/tests/relocation.test.mjs` |
 | **CA-02** | El mismo comando valida el contenido exacto de `apps/web/src/index.php` y su redirección a `./index.html`. | `apps/web/src/tests/relocation.test.mjs` |
 | **CA-03** | El mismo comando comprueba que `portal-web/` e `index.php` raíz estén ausentes. | `apps/web/src/tests/relocation.test.mjs` |
 | **CA-04** | El mismo comando comprueba la ausencia raíz de `Dockerfile`, `docker-compose.yml` y `.dockerignore`. | `apps/web/src/tests/relocation.test.mjs` |
 | **CA-05** | El mismo comando resuelve referencias locales `src`/`href` de HTML y `url()` de CSS, ignorando `http:`, `https:`, `//`, `#` y `data:`. | `apps/web/src/tests/relocation.test.mjs` |
-| **CA-06** | El mismo comando rechaza TS/TSX/JSX, manifiesto, configuración Vite y directorios de build/dependencias, y vuelve a comprobar los 14 hashes de `HEAD`. | `apps/web/src/tests/relocation.test.mjs` |
+| **CA-06** | El mismo comando rechaza TS/TSX/JSX, manifiesto, configuración Vite y directorios de build/dependencias, y comprueba hashes de los archivos no visuales. La modificación aprobada de CSS se valida bajo CA-01..CA-05 de spec 002. | `apps/web/src/tests/relocation.test.mjs` |
 | **CA-07** | El mismo comando confirma que la prueba existe, importa solo builtins autorizados y no requiere `package.json`. | `apps/web/src/tests/relocation.test.mjs` |
 
 ## Constitution Check
@@ -82,3 +82,7 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos. La excepci�
 **Estado técnico:** Aprobado para implementar.
 
 > No se realiza `git add` ni `git commit` como parte de este plan.
+
+## Enmienda aprobada por `002-brand-color-refresh`
+
+Las specs 002, 003 y 004 autorizan cambios delimitados de paleta, navegación y mapa en `apps/web/src/styles.css`, `index.html` y `script.js`. La prueba persistente conserva hashes de los 11 assets y referencias locales/estructura, y verifica CSS, accesibilidad e interacción mediante tests nombrados por CA de cada feature.
