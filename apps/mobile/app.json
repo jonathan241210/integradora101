@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "ARCA-NB Mobile",
+    "slug": "mobile",
+    "scheme": "arcanb",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.tulancingo.arcanb"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}
