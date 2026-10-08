@@ -8,6 +8,47 @@ function showToast(message) {
   toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
 }
 
+const menuToggle = document.getElementById('menuToggle');
+const mainNav = document.getElementById('mainNav');
+const mobileNavigation = window.matchMedia('(max-width: 820px)');
+
+function setMobileNavigationOpen(isOpen) {
+  if (!mobileNavigation.matches) return;
+
+  mainNav.hidden = !isOpen;
+  menuToggle.setAttribute('aria-expanded', String(isOpen));
+  menuToggle.setAttribute('aria-label', isOpen ? 'Cerrar menú principal' : 'Abrir menú principal');
+}
+
+function syncNavigationForViewport() {
+  const isMobile = mobileNavigation.matches;
+  const focusWasInNavigation = mainNav.contains(document.activeElement);
+  const toggleHadFocus = document.activeElement === menuToggle;
+
+  menuToggle.hidden = !isMobile;
+  mainNav.hidden = isMobile;
+  menuToggle.setAttribute('aria-expanded', 'false');
+  menuToggle.setAttribute('aria-label', 'Abrir menú principal');
+
+  if (isMobile && focusWasInNavigation) menuToggle.focus();
+  if (!isMobile && toggleHadFocus) mainNav.querySelector('a')?.focus();
+}
+
+menuToggle.addEventListener('click', () => {
+  setMobileNavigationOpen(mainNav.hidden);
+});
+mainNav.addEventListener('click', event => {
+  if (!mobileNavigation.matches || !event.target.closest('a')) return;
+  setMobileNavigationOpen(false);
+});
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape' || !mobileNavigation.matches || mainNav.hidden) return;
+  setMobileNavigationOpen(false);
+  menuToggle.focus();
+});
+mobileNavigation.addEventListener('change', syncNavigationForViewport);
+syncNavigationForViewport();
+
 const searchInput = document.getElementById('searchInput');
 const speciesFilter = document.getElementById('speciesFilter');
 const habitatFilter = document.getElementById('habitatFilter');
@@ -49,13 +90,57 @@ document.getElementById('clearFilters').addEventListener('click', () => {
 });
 filterAnimals();
 
-document.querySelectorAll('.map-point, .zone').forEach(point => {
+const mapControls = [...document.querySelectorAll('.map-control')];
+const mapSelection = document.getElementById('mapSelection');
+
+mapControls.forEach(point => {
   point.addEventListener('click', () => {
-    const selection = document.getElementById('mapSelection');
-    selection.textContent = `Seleccionaste: ${point.dataset.name}. Consulta al personal para encontrar esta zona.`;
-    document.querySelectorAll('.zone').forEach(zone => zone.classList.toggle('active', zone === point));
+    mapControls.forEach(control => {
+      const isSelected = control.dataset.name === point.dataset.name;
+      control.setAttribute('aria-pressed', String(isSelected));
+      control.classList.toggle('active', isSelected);
+    });
+    mapSelection.textContent = `Seleccionaste: ${point.dataset.name}. Consulta al personal para encontrar esta zona.`;
   });
 });
+
+const mapScene = document.getElementById('mapScene');
+const mapZoomIn = document.getElementById('mapZoomIn');
+const mapZoomOut = document.getElementById('mapZoomOut');
+const mapZoomReset = document.getElementById('mapZoomReset');
+const mapZoomStatus = document.getElementById('mapZoomStatus');
+const mapZoomMin = 100;
+const mapZoomMax = 150;
+const mapZoomStep = 10;
+let mapZoom = mapZoomMin;
+
+const renderMapZoom = () => {
+  mapScene.style.setProperty('--map-scale', String(mapZoom / 100));
+  mapZoomOut.disabled = mapZoom === mapZoomMin;
+  mapZoomIn.disabled = mapZoom === mapZoomMax;
+  mapZoomStatus.textContent = `Vista: ${mapZoom} %`;
+};
+
+mapZoomIn.addEventListener('click', () => {
+  if (mapZoom < mapZoomMax) {
+    mapZoom = Math.min(mapZoom + mapZoomStep, mapZoomMax);
+    renderMapZoom();
+  }
+});
+
+mapZoomOut.addEventListener('click', () => {
+  if (mapZoom > mapZoomMin) {
+    mapZoom = Math.max(mapZoom - mapZoomStep, mapZoomMin);
+    renderMapZoom();
+  }
+});
+
+mapZoomReset.addEventListener('click', () => {
+  mapZoom = mapZoomMin;
+  renderMapZoom();
+});
+
+renderMapZoom();
 
 document.querySelectorAll('.foto').forEach((photo, index) => {
   photo.addEventListener('click', () => showToast(`Fotografía ${index + 1} de la galería`));

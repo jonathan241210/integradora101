@@ -1,0 +1,2160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta
+        name="description"
+        content="Planea tu visita al Zoológico Nicolás Bravo: descubre animales, actividades, instalaciones y opciones para tu próxima visita."
+    >
+
+    <title>Zoológico Nicolás Bravo</title>
+
+    <!-- Favicon -->
+    <link
+        rel="icon"
+        href="assets/zoo-logo.jpeg"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    >
+
+    <!-- Model Viewer -->
+    <script type="module" src="assets/model-viewer.min.js"></script>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="styles.css">
+
+
+
+</head>
+
+<body>
+
+<div class="page-shell">
+
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+    <header class="topbar">
+
+        <a
+            class="brand"
+            href="#inicio"
+            aria-label="Zoológico Nicolás Bravo, inicio"
+        >
+            <img
+                class="brand-logo"
+                src="assets/TransformandoTulancingo-2024-300x261.png"
+                alt=""
+            >
+
+            <span>
+                Zoológico <strong>Nicolás Bravo</strong>
+            </span>
+        </a>
+
+        <button
+            class="menu-toggle"
+            id="menuToggle"
+            type="button"
+            aria-label="Abrir menú principal"
+            aria-controls="mainNav"
+            aria-expanded="false"
+            hidden
+        >
+            <i class="bi bi-list" aria-hidden="true"></i>
+            <span>Menú</span>
+        </button>
+
+        <nav
+            class="main-nav"
+            id="mainNav"
+            aria-label="Navegación principal"
+        >
+            <a href="#inicio">Inicio</a>
+            <a href="#animales">Animales</a>
+            <a href="#mapa">Mapa</a>
+            <a href="#ubicacion">Ubicación</a>
+            <a href="#instalaciones">Instalaciones</a>
+            <a href="#noticias">Noticias</a>
+            <a href="#eventos">Eventos</a>
+            <a href="#preguntas">Preguntas</a>
+            <a href="#galeria">Galería</a>
+            <a href="#visita">Contacto</a>
+        </nav>
+
+        <div class="top-actions">
+
+            <form class="search" role="search" id="searchForm">
+
+                <i class="bi bi-search" aria-hidden="true"></i>
+
+                <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Buscar un animal..."
+                    aria-label="Buscar animales"
+                >
+
+            </form>
+
+            <a class="user" href="#boletos">
+                <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+                Comprar boletos
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- =========================================================
+         MAIN
+    ========================================================== -->
+    <main id="inicio">
+
+
+        <!-- =====================================================
+             HERO
+        ====================================================== -->
+        <section class="hero">
+
+            <div class="hero-content">
+
+                <span class="tag">
+                    <i class="bi bi-tree" aria-hidden="true"></i>
+                    Una aventura para toda la familia
+                </span>
+
+                <h1>
+                    La naturaleza está más cerca de lo que imaginas
+                </h1>
+
+                <p>
+                    Explora nuevos hábitats, conoce a sus habitantes y
+                    descubre cómo podemos cuidar juntos la vida silvestre.
+                </p>
+
+                <div class="actions">
+
+                    <a href="#boletos" class="btn btn-primary">
+                        <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+                        Planear mi visita
+                        <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    </a>
+
+                    <a href="#animales" class="btn btn-ghost">
+                        <i class="bi bi-binoculars" aria-hidden="true"></i>
+                        TulanPedia
+                    </a>
+
+                </div>
+
+                <div
+                    class="hero-stats"
+                    aria-label="Datos del zoológico"
+                >
+
+                    <div>
+                        <strong>63+</strong>
+                        <span>especies por descubrir</span>
+                    </div>
+
+                    <div>
+                        <strong>18 ha</strong>
+                        <span>para explorar</span>
+                    </div>
+
+                    <div>
+                        <strong>Todo el año</strong>
+                        <span>aprendizaje y aventura</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="hero-aside">
+
+                <div class="info-card">
+
+                    <span class="eyebrow">
+                        <i class="bi bi-compass" aria-hidden="true"></i>
+                        Tu próxima aventura
+                    </span>
+
+                    <strong>
+                        Un día para conectar con la naturaleza
+                    </strong>
+
+                    <p>
+                        Recorre los senderos a tu ritmo y disfruta cada encuentro.
+                    </p>
+
+                    <a href="#ubicacion" class="card-link">
+                        Cómo llegar al zoológico
+                        <i class="bi bi-arrow-up-right" aria-hidden="true"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             INFO BAR
+        ====================================================== -->
+        <section
+            class="infobar"
+            aria-label="Información para planear tu visita"
+        >
+
+            <div>
+
+                <i
+                    class="bi bi-clock info-icon"
+                    aria-hidden="true"
+                ></i>
+
+                <span>
+                    <small>Horario</small>
+                    <strong>Mar–vie · 10:00–16:00 · Sáb–dom · 10:00–17:00</strong>
+                </span>
+
+            </div>
+
+
+            <div>
+
+                <i
+                    class="bi bi-geo-alt info-icon"
+                    aria-hidden="true"
+                ></i>
+
+                <span>
+                    <small>Estamos en</small>
+                    <strong>Tulancingo de Bravo, Hidalgo</strong>
+                </span>
+
+            </div>
+
+
+            <div>
+
+                <i
+                    class="bi bi-ticket-perforated info-icon"
+                    aria-hidden="true"
+                ></i>
+
+                <span>
+                    <small>Tu visita comienza aquí</small>
+
+                    <a href="#boletos">
+                        <strong>
+                            Consulta boletos y precios
+                            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                        </strong>
+                    </a>
+
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             POR QUÉ VISITAR
+        ====================================================== -->
+        <section
+            class="why-us"
+            id="porque-visitar"
+        >
+
+            <div class="section-heading">
+
+                <span class="tag tag-dark">
+                    <i class="bi bi-stars" aria-hidden="true"></i>
+                    Más que un paseo
+                </span>
+
+                <h2>
+                    Descubre, disfruta y aprende
+                </h2>
+
+                <p>
+                    Un espacio para compartir en familia y acercarnos al mundo natural.
+                </p>
+
+            </div>
+
+
+            <div class="benefits">
+
+                <article class="benefit-item">
+
+                    <div class="benefit-icon">
+                        <i class="bi bi-tree" aria-hidden="true"></i>
+                    </div>
+
+                    <h3>Conservación</h3>
+
+                    <p>
+                        Conoce la importancia de proteger a las especies y sus hábitats.
+                    </p>
+
+                </article>
+
+
+                <article class="benefit-item">
+
+                    <div class="benefit-icon">
+                        <i class="bi bi-binoculars" aria-hidden="true"></i>
+                    </div>
+
+                    <h3>Un recorrido a tu ritmo</h3>
+
+                    <p>
+                        Explora senderos y zonas de observación con toda la familia.
+                    </p>
+
+                </article>
+
+
+                <article class="benefit-item">
+
+                    <div class="benefit-icon">
+                        <i class="bi bi-people" aria-hidden="true"></i>
+                    </div>
+
+                    <h3>Aprendizaje para todos</h3>
+
+                    <p>
+                        Actividades que inspiran curiosidad y respeto por la vida silvestre.
+                    </p>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             ANIMALES
+        ====================================================== -->
+        <section
+            class="animals-section"
+            id="animales"
+        >
+
+            <div class="section-heading">
+
+                <span class="tag tag-dark">
+                    <i class="bi bi-heart" aria-hidden="true"></i>
+                    Encuentros inolvidables
+                </span>
+
+                <h2>TulanPedia</h2>
+
+                <p>
+                    Busca por nombre o filtra por especie y hábitat.
+                    En cada ficha encontrarás información general de la especie: dónde vive, qué come, cuánto puede vivir, tamaño, características y curiosidades.
+                </p>
+
+            </div>
+
+
+            <div class="animal-filters">
+
+                <label>
+                    <i class="bi bi-filter" aria-hidden="true"></i>
+                    Especie
+
+                    <select
+                        id="speciesFilter"
+                        aria-label="Filtrar animales por especie"
+                    >
+                        <option value="">Todas las especies</option>
+                        <option value="mamífero">Mamíferos</option>
+                        <option value="ave">Aves</option>
+                        <option value="reptil">Reptiles</option>
+                    </select>
+
+                </label>
+
+
+                <label>
+                    <i class="bi bi-map" aria-hidden="true"></i>
+                    Hábitat
+
+                    <select
+                        id="habitatFilter"
+                        aria-label="Filtrar animales por hábitat"
+                    >
+                        <option value="">Todos los hábitats</option>
+                        <option value="sabana">Sabana</option>
+                        <option value="bosque">Bosque</option>
+                        <option value="aviario">Aviario</option>
+                        <option value="reptilario">Reptilario</option>
+                    </select>
+
+                </label>
+
+
+                <button
+                    class="btn btn-outline"
+                    id="clearFilters"
+                    type="button"
+                >
+                    <i class="bi bi-x-circle" aria-hidden="true"></i>
+                    Limpiar filtros
+                </button>
+
+                <p
+                    id="animalCount"
+                    class="results-count"
+                    aria-live="polite"
+                ></p>
+
+            </div>
+
+
+            <div
+                class="animal-grid"
+                id="animalGrid"
+            >
+                <!-- LEÓN -->
+                <article class="animal-card" data-name="león" data-species="mamífero" data-habitat="sabana">
+                    <img src="assets/lion.jpg" alt="León" loading="lazy">
+                    <div class="animal-card-body">
+                        <span class="animal-label"><i class="bi bi-circle-fill" aria-hidden="true"></i> Mamífero · Felino</span>
+                        <h3><i class="bi bi-heart" aria-hidden="true"></i> León</h3>
+                        <p>Gran felino conocido por su fuerza, vida social y característico rugido.</p>
+                        <details>
+                            <summary><i class="bi bi-book" aria-hidden="true"></i> Conocer más sobre la especie</summary>
+                            <dl>
+                                <dt>Nombre científico</dt><dd>Panthera leo</dd>
+                                <dt>Tipo de animal</dt><dd>Mamífero · Felino</dd>
+                                <dt>Dónde vive</dt><dd>Sabanas, pastizales y zonas abiertas de África.</dd>
+                                <dt>Qué come</dt><dd>Es carnívoro y se alimenta principalmente de otros mamíferos.</dd>
+                                <dt>Esperanza de vida</dt><dd>Aproximadamente 10 a 15 años en estado silvestre; puede vivir más tiempo bajo cuidado humano.</dd>
+                                <dt>Tamaño</dt><dd>Los machos pueden superar los 2 metros de longitud corporal, sin contar la cola.</dd>
+                                <dt>Peso</dt><dd>Los machos adultos pueden superar los 150 kg.</dd>
+                                <dt>Reproducción</dt><dd>La gestación dura aproximadamente 110 días.</dd>
+                                <dt>Características</dt><dd>Los machos presentan una melena y ambos sexos tienen garras retráctiles y gran fuerza.</dd>
+                                <dt>Curiosidad</dt><dd>El rugido de un león puede escucharse a varios kilómetros.</dd>
+                                <dt>Conservación</dt><dd>La especie enfrenta amenazas relacionadas con la pérdida de hábitat y la reducción de sus presas.</dd>
+                            </dl>
+                            <p class="model-note"><i class="bi bi-box" aria-hidden="true"></i> Modelo 3D próximamente.</p>
+                        </details>
+                    </div>
+                </article>
+                <!-- JIRAFA -->
+                <article class="animal-card" data-name="jirafa" data-species="mamífero" data-habitat="sabana">
+                    <img src="assets/giraffe.jpg" alt="Jirafa" loading="lazy">
+                    <div class="animal-card-body">
+                        <span class="animal-label"><i class="bi bi-circle-fill" aria-hidden="true"></i> Mamífero · Herbívoro</span>
+                        <h3><i class="bi bi-tree" aria-hidden="true"></i> Jirafa</h3>
+                        <p>El animal terrestre más alto del mundo, reconocible por su largo cuello y sus manchas.</p>
+                        <details>
+                            <summary><i class="bi bi-book" aria-hidden="true"></i> Conocer más sobre la especie</summary>
+                            <dl>
+                                <dt>Nombre científico</dt><dd>Giraffa camelopardalis</dd>
+                                <dt>Tipo de animal</dt><dd>Mamífero · Herbívoro</dd>
+                                <dt>Dónde vive</dt><dd>Sabanas, pastizales y zonas boscosas de África.</dd>
+                                <dt>Qué come</dt><dd>Hojas, brotes y ramas de árboles, especialmente de acacias.</dd>
+                                <dt>Esperanza de vida</dt><dd>Aproximadamente 20 a 25 años.</dd>
+                                <dt>Tamaño</dt><dd>Puede alcanzar aproximadamente entre 4.5 y 5.5 metros de altura.</dd>
+                                <dt>Peso</dt><dd>Los machos adultos pueden superar los 1,000 kg.</dd>
+                                <dt>Reproducción</dt><dd>La gestación dura aproximadamente 15 meses.</dd>
+                                <dt>Características</dt><dd>Posee cuello y patas largas, manchas características y una lengua adaptada para alcanzar hojas.</dd>
+                                <dt>Curiosidad</dt><dd>Su lengua puede medir alrededor de 45 centímetros.</dd>
+                                <dt>Conservación</dt><dd>Sus poblaciones están afectadas por la pérdida y fragmentación de hábitat.</dd>
+                            </dl>
+                            <div class="giraffe-model-wrap">
+                                <model-viewer class="giraffe-model" src="assets/nyilonelycompany-nature-51.glb" alt="Modelo 3D interactivo de una jirafa" camera-controls auto-rotate auto-rotate-delay="800" rotation-per-second="18deg" shadow-intensity="1" exposure="1.1" loading="lazy" reveal="auto"></model-viewer>
+                                <p class="model-note"><i class="bi bi-hand-index-thumb" aria-hidden="true"></i> Arrastra para girar la jirafa y usa la rueda o pellizca para acercar.</p>
+                            </div>
+                        </details>
+                    </div>
+                </article>
+                <!-- GUACAMAYA -->
+                <article class="animal-card" data-name="guacamaya" data-species="ave" data-habitat="aviario">
+                    <img src="assets/macaw.jpg" alt="Guacamaya" loading="lazy">
+                    <div class="animal-card-body">
+                        <span class="animal-label"><i class="bi bi-feather" aria-hidden="true"></i> Ave · Tropical</span>
+                        <h3><i class="bi bi-feather" aria-hidden="true"></i> Guacamaya</h3>
+                        <p>Ave de gran colorido, conocida por su inteligencia, fuerte pico y vocalizaciones.</p>
+                        <details>
+                            <summary><i class="bi bi-book" aria-hidden="true"></i> Conocer más sobre la especie</summary>
+                            <dl>
+                                <dt>Nombre científico</dt><dd>Ara spp. — depende de la especie.</dd>
+                                <dt>Tipo de animal</dt><dd>Ave · Psitaciforme</dd>
+                                <dt>Dónde vive</dt><dd>Bosques tropicales, selvas y otros ambientes cálidos de América.</dd>
+                                <dt>Qué come</dt><dd>Frutas, semillas, nueces, flores y otros alimentos vegetales según la especie.</dd>
+                                <dt>Esperanza de vida</dt><dd>Algunas especies pueden vivir aproximadamente entre 30 y 60 años.</dd>
+                                <dt>Tamaño</dt><dd>Dependiendo de la especie, puede medir aproximadamente entre 30 y 90 centímetros.</dd>
+                                <dt>Peso</dt><dd>Varía considerablemente según la especie.</dd>
+                                <dt>Reproducción</dt><dd>Generalmente anida en cavidades de árboles y pone varios huevos.</dd>
+                                <dt>Características</dt><dd>Tiene pico fuerte y curvado, patas adaptadas para sujetarse y plumaje de colores intensos.</dd>
+                                <dt>Curiosidad</dt><dd>Algunas guacamayas pueden imitar sonidos y aprender diferentes vocalizaciones.</dd>
+                                <dt>Conservación</dt><dd>Varias especies enfrentan amenazas por pérdida de hábitat y captura ilegal.</dd>
+                            </dl>
+                            <p class="model-note"><i class="bi bi-box" aria-hidden="true"></i> Modelo 3D próximamente.</p>
+                        </details>
+                    </div>
+                </article>
+                <!-- TORTUGA -->
+                <article class="animal-card" data-name="tortuga" data-species="reptil" data-habitat="reptilario">
+                    <img src="assets/turtle.jpg" alt="Tortuga" loading="lazy">
+                    <div class="animal-card-body">
+                        <span class="animal-label"><i class="bi bi-bug" aria-hidden="true"></i> Reptil · Tortuga</span>
+                        <h3><i class="bi bi-bug" aria-hidden="true"></i> Tortuga</h3>
+                        <p>Reptil caracterizado por su caparazón, que protege gran parte de su cuerpo.</p>
+                        <details>
+                            <summary><i class="bi bi-book" aria-hidden="true"></i> Conocer más sobre la especie</summary>
+                            <dl>
+                                <dt>Nombre científico</dt><dd>Depende de la especie.</dd>
+                                <dt>Tipo de animal</dt><dd>Reptil · Tortuga</dd>
+                                <dt>Dónde vive</dt><dd>Existen especies terrestres, de agua dulce y marinas, con hábitats diferentes.</dd>
+                                <dt>Qué come</dt><dd>Depende de la especie: puede consumir plantas, frutas, vegetales, pequeños animales o una combinación.</dd>
+                                <dt>Esperanza de vida</dt><dd>Varía considerablemente; algunas especies pueden vivir varias décadas.</dd>
+                                <dt>Tamaño</dt><dd>Varía dependiendo de la especie.</dd>
+                                <dt>Peso</dt><dd>Varía dependiendo de la especie.</dd>
+                                <dt>Reproducción</dt><dd>Las tortugas son ovíparas y depositan sus huevos en lugares adecuados para la especie.</dd>
+                                <dt>Características</dt><dd>Su caparazón está unido a su estructura ósea y funciona como protección.</dd>
+                                <dt>Curiosidad</dt><dd>El caparazón no es una cubierta que puedan quitarse; forma parte de su cuerpo.</dd>
+                                <dt>Conservación</dt><dd>El estado de conservación depende de la especie específica.</dd>
+                            </dl>
+                            <p class="model-note"><i class="bi bi-info-circle" aria-hidden="true"></i> Para esta ficha se debe confirmar la especie exacta del ejemplar del zoológico.</p>
+                        </details>
+                    </div>
+                </article>
+
+
+            </div>
+
+
+            <p
+                class="empty-state"
+                id="noAnimals"
+                hidden
+            >
+                <i class="bi bi-search" aria-hidden="true"></i>
+                No encontramos animales con esos filtros.
+                Prueba con otra búsqueda.
+            </p>
+
+
+            <p class="demo-note">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+                Fichas de muestra: confirma en el zoológico los datos
+                de ejemplares, edades y recintos.
+            </p>
+
+        </section>
+
+
+        <!-- =====================================================
+             MAPA
+        ====================================================== -->
+        <section
+            class="map-section"
+            id="mapa"
+        >
+
+            <div class="section-heading">
+
+                <span class="tag tag-dark">
+                    <i class="bi bi-map" aria-hidden="true"></i>
+                    Muévete con facilidad
+                </span>
+
+                <h2>Mapa del zoológico</h2>
+
+                <p>
+                    Explora las zonas y servicios en una ilustración elevada
+                    del zoológico.
+                </p>
+
+            </div>
+
+
+            <div class="map-layout">
+
+                <div class="mapcard">
+
+                    <div class="map-title">
+                        <i class="bi bi-signpost-2" aria-hidden="true"></i>
+                        TU RECORRIDO
+                    </div>
+
+
+                    <div
+                        class="map"
+                        role="group"
+                        aria-label="Ilustración aproximada de las zonas del zoológico"
+                    >
+
+                        <svg
+                            class="map-symbols"
+                            aria-hidden="true"
+                            focusable="false"
+                        >
+                            <symbol id="map-icon-felinos" viewBox="0 0 24 24">
+                                <path d="M12 21s-8-4.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.6-8 11-8 11Z" />
+                            </symbol>
+                            <symbol id="map-icon-aviario" viewBox="0 0 24 24">
+                                <path d="M20 4C11 4 5 7 4 13c-.6 3.5 2.5 6.5 6 6 6-1 9-7 10-15ZM4 20l8-8m-4 4h5m-1-6v5" />
+                            </symbol>
+                            <symbol id="map-icon-reptilario" viewBox="0 0 24 24">
+                                <path d="M12 3v18m-5-8 5-3 5 3m-9-6 4 3 4-3m-9 9-3 2m15-2 3 2M8 5 5 3m11 2 3-2" />
+                                <circle cx="12" cy="12" r="8" />
+                            </symbol>
+                            <symbol id="map-icon-primates" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="7" />
+                                <circle cx="4" cy="11" r="2.5" />
+                                <circle cx="20" cy="11" r="2.5" />
+                                <path d="M9 14h6m-5 3h4m-2-6v2" />
+                            </symbol>
+                            <symbol id="map-icon-granja" viewBox="0 0 24 24">
+                                <path d="m3 11 9-7 9 7v9H3v-9Zm6 9v-6h6v6" />
+                            </symbol>
+                            <symbol id="map-icon-lago" viewBox="0 0 24 24">
+                                <path d="M12 3C9 7 6 10 6 14a6 6 0 0 0 12 0c0-4-3-7-6-11Z" />
+                                <path d="M8 15c1.5 1 2.5 1 4 0s2.5-1 4 0" />
+                            </symbol>
+                            <symbol id="map-icon-entrada" viewBox="0 0 24 24">
+                                <path d="M4 21V3h16v18M8 21V7h8v14m-5-7h.01" />
+                            </symbol>
+                            <symbol id="map-icon-banos" viewBox="0 0 24 24">
+                                <path d="M5 4h14v4H5zm2 4v12m10-12v12M4 20h16M9 12h6m-6 3h6" />
+                            </symbol>
+                            <symbol id="map-icon-alimentos" viewBox="0 0 24 24">
+                                <path d="M7 3v7m4-7v7M9 10v11m7-18v18m0-18c3 3 3 7 0 9" />
+                            </symbol>
+                            <symbol id="map-icon-bebederos" viewBox="0 0 24 24">
+                                <path d="M12 3C9 7 6 10 6 14a6 6 0 0 0 12 0c0-4-3-7-6-11Z" />
+                            </symbol>
+                            <symbol id="map-icon-descanso" viewBox="0 0 24 24">
+                                <path d="M12 3 5 12h4l-5 6h7v3m1-18 7 9h-4l5 6h-7" />
+                            </symbol>
+                            <symbol id="map-icon-enfermeria" viewBox="0 0 24 24">
+                                <path d="M12 21s-8-4.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.6-8 11-8 11Z" />
+                                <path d="M12 8v7m-3.5-3.5h7" />
+                            </symbol>
+                            <symbol id="map-icon-tiendas" viewBox="0 0 24 24">
+                                <path d="M4 10v11h16V10M3 10l2-6h14l2 6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 21v-6h6v6" />
+                            </symbol>
+                        </svg>
+
+                        <div class="map-scene" id="mapScene">
+                        <svg
+                            class="map-art"
+                            viewBox="0 0 900 560"
+                            preserveAspectRatio="none"
+                            aria-hidden="true"
+                            focusable="false"
+                        >
+
+                            <defs>
+
+                                <linearGradient
+                                    id="map-ground"
+                                    x1="0"
+                                    y1="0"
+                                    x2="1"
+                                    y2="1"
+                                >
+                                    <stop
+                                        offset="0"
+                                        stop-color="#d3e1b0"
+                                    />
+
+                                    <stop
+                                        offset="1"
+                                        stop-color="#93b778"
+                                    />
+                                </linearGradient>
+
+                                <pattern
+                                    id="map-grass"
+                                    width="36"
+                                    height="36"
+                                    patternUnits="userSpaceOnUse"
+                                >
+                                    <path
+                                        d="M5 28q4-11 8-13m8 14q-1-8 4-13"
+                                        fill="none"
+                                        stroke="#7e9e65"
+                                        stroke-width="2"
+                                        opacity=".35"
+                                    />
+                                </pattern>
+
+                            </defs>
+
+
+                            <path
+                                d="M105 78 746 36 844 399 202 520 54 289Z"
+                                fill="#667e58"
+                                opacity=".24"
+                                transform="translate(0 18)"
+                            />
+
+                            <path
+                                d="M105 59 746 17 844 380 202 501 54 270Z"
+                                fill="url(#map-ground)"
+                                stroke="#6f9362"
+                                stroke-width="10"
+                                stroke-linejoin="round"
+                            />
+
+                            <path
+                                d="M105 59 746 17 844 380 202 501 54 270Z"
+                                fill="url(#map-grass)"
+                            />
+
+                            <path
+                                d="m94 255 118 37 138-114 138 47 91-102 158 85 69-47M203 480l99-132 146 45 118-106 170 58M184 105l75 105-89 118m385-290 17 123 146 29"
+                                fill="none"
+                                stroke="#d7bd8c"
+                                stroke-width="32"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            />
+
+                            <path
+                                d="m94 255 118 37 138-114 138 47 91-102 158 85 69-47M203 480l99-132 146 45 118-106 170 58M184 105l75 105-89 118m385-290 17 123 146 29"
+                                fill="none"
+                                stroke="#f5e8ca"
+                                stroke-width="5"
+                                stroke-dasharray="5 13"
+                                stroke-linecap="round"
+                            />
+
+                            <path
+                                d="m179 105 117-14 43 86-98 47-81-39Zm281 29 113-24 36 82-99 40-70-36Zm-203 191 111-26 42 86-111 35-65-44Zm252-43 117-38 53 78-112 47-73-43Z"
+                                fill="#b2c98d"
+                                stroke="#708a62"
+                                stroke-width="7"
+                                stroke-linejoin="round"
+                            />
+
+                            <path
+                                d="M605 302q47-44 102-20 28 13 22 43-8 37-57 44-53 6-76-24-14-22 9-43Z"
+                                fill="#77b8b1"
+                                stroke="#4d9694"
+                                stroke-width="8"
+                            />
+
+                            <path
+                                d="M619 326q34-17 72 0m-67 19q30-13 59 0"
+                                fill="none"
+                                stroke="#d9f0df"
+                                stroke-width="5"
+                                stroke-linecap="round"
+                            />
+
+                        </svg>
+
+
+                        <!-- MAP MARKERS -->
+
+                        <button
+                            class="map-control map-marker zone z1"
+                            data-name="Felinos"
+                            type="button"
+                            aria-label="Felinos"
+                            aria-pressed="false"
+                            style="--marker-x: 25%; --marker-y: 28%"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-felinos"></use></svg>
+
+                            <span class="map-marker-label">
+                                Felinos
+                            </span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-marker zone z2"
+                            data-name="Aviario"
+                            type="button"
+                            aria-label="Aviario"
+                            aria-pressed="false"
+                            style="--marker-x: 56%; --marker-y: 24%"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-aviario"></use></svg>
+
+                            <span class="map-marker-label">
+                                Aviario
+                            </span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-marker zone z3"
+                            data-name="Reptilario"
+                            type="button"
+                            aria-label="Reptilario"
+                            aria-pressed="false"
+                            style="--marker-x: 77%; --marker-y: 42%"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-reptilario"></use></svg>
+
+                            <span class="map-marker-label">
+                                Reptilario
+                            </span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-marker zone z4"
+                            data-name="Primates"
+                            type="button"
+                            aria-label="Primates"
+                            aria-pressed="false"
+                            style="--marker-x: 46%; --marker-y: 55%"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-primates"></use></svg>
+
+                            <span class="map-marker-label">
+                                Primates
+                            </span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-marker zone z5"
+                            data-name="Granja"
+                            type="button"
+                            aria-label="Granja"
+                            aria-pressed="false"
+                            style="--marker-x: 27%; --marker-y: 75%"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-granja"></use></svg>
+
+                            <span class="map-marker-label">
+                                Granja
+                            </span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-marker zone z6"
+                            data-name="Lago"
+                            type="button"
+                            aria-label="Lago"
+                            aria-pressed="false"
+                            style="--marker-x: 69%; --marker-y: 72%"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-lago"></use></svg>
+
+                            <span class="map-marker-label">
+                                Lago
+                            </span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-marker map-point entrance"
+                            data-name="Entrada"
+                            type="button"
+                            aria-label="Entrada"
+                            aria-pressed="false"
+                            style="--marker-x: 48%; --marker-y: 91%"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-entrada"></use></svg>
+
+                            <span class="map-marker-label">
+                                Entrada
+                            </span>
+                        </button>
+
+                        </div>
+
+                    </div>
+
+                    <div class="map-zoom-controls" role="group" aria-label="Controles de zoom del mapa">
+                        <button class="map-zoom-button" id="mapZoomOut" type="button" aria-label="Alejar mapa" aria-controls="mapScene" disabled>−</button>
+                        <button class="map-zoom-button" id="mapZoomIn" type="button" aria-label="Acercar mapa" aria-controls="mapScene">+</button>
+                        <button class="map-zoom-button map-zoom-reset" id="mapZoomReset" type="button" aria-label="Restablecer zoom del mapa" aria-controls="mapScene">Restablecer</button>
+                        <span class="map-zoom-status" id="mapZoomStatus" role="status" aria-live="polite">Vista: 100 %</span>
+                    </div>
+
+                    <p class="map-disclaimer">
+
+                        <i
+                            class="bi bi-exclamation-circle"
+                            aria-hidden="true"
+                        ></i>
+
+                        Ilustración aproximada, no está a escala y no sirve
+                        para orientarte con precisión. Consulta al personal
+                        para ubicarte en el recinto.
+
+                    </p>
+
+                </div>
+
+
+                <!-- MAP LEGEND -->
+
+                <div class="map-legend">
+
+                    <h3>
+                        <i class="bi bi-list-ul" aria-hidden="true"></i>
+                        Zonas y servicios
+                    </h3>
+
+                    <p>
+                        Selecciona cualquier punto para ver su referencia.
+                    </p>
+
+
+                    <div class="legend">
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Felinos"
+                            aria-label="Felinos"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-felinos"></use></svg>
+                            <span>Felinos</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Aviario"
+                            aria-label="Aviario"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-aviario"></use></svg>
+                            <span>Aviario</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Reptilario"
+                            aria-label="Reptilario"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-reptilario"></use></svg>
+                            <span>Reptilario</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Primates"
+                            aria-label="Primates"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-primates"></use></svg>
+                            <span>Primates</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Granja"
+                            aria-label="Granja"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-granja"></use></svg>
+                            <span>Granja</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Lago"
+                            aria-label="Lago"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-lago"></use></svg>
+                            <span>Lago</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Entrada"
+                            aria-label="Entrada y salida"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-entrada"></use></svg>
+                            <span>Entrada y salida</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Baños"
+                            aria-label="Baños"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-banos"></use></svg>
+                            <span>Baños</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Alimentos"
+                            aria-label="Alimentos"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-alimentos"></use></svg>
+                            <span>Alimentos</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Bebederos"
+                            aria-label="Bebederos"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-bebederos"></use></svg>
+                            <span>Bebederos</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Áreas de descanso"
+                            aria-label="Áreas de descanso"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-descanso"></use></svg>
+                            <span>Áreas de descanso</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Enfermería"
+                            aria-label="Enfermería"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-enfermeria"></use></svg>
+                            <span>Enfermería</span>
+                        </button>
+
+
+                        <button
+                            class="map-control map-point"
+                            type="button"
+                            data-name="Tiendas"
+                            aria-label="Tiendas"
+                            aria-pressed="false"
+                        >
+                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-tiendas"></use></svg>
+                            <span>Tiendas</span>
+                        </button>
+
+                    </div>
+
+
+                    <p
+                        class="map-selection"
+                        id="mapSelection"
+                        aria-live="polite"
+                    >
+                        <i class="bi bi-hand-index" aria-hidden="true"></i>
+                        Elige una zona o servicio del mapa.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =====================================================
+             UBICACIÓN
+        ====================================================== -->
+        <section class="location-section" id="ubicacion">
+            <div class="section-heading">
+                <span class="tag tag-dark">
+                    <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                    Visítanos
+                </span>
+                <h2>¿Dónde está el Zoológico Nicolás Bravo?</h2>
+                <p>Encuentra la ubicación del zoológico y consulta cómo llegar antes de tu visita.</p>
+            </div>
+            <div class="location-layout">
+                <div class="location-info">
+                    <div class="location-item">
+                        <div class="location-icon"><i class="bi bi-geo-alt"></i></div>
+                        <div><span>Dirección</span><strong>Calle Pleasenton S/N, Colonia Lindavista, C.P. 43680, Tulancingo de Bravo, Hidalgo.</strong></div>
+                    </div>
+                    <div class="location-item">
+                        <div class="location-icon"><i class="bi bi-clock"></i></div>
+                        <div><span>Horario</span><strong>Martes a viernes: 10:00 a 16:00 hrs<br>Sábado y domingo: 10:00 a 17:00 hrs</strong></div>
+                    </div>
+                    <div class="location-item">
+                        <div class="location-icon"><i class="bi bi-building"></i></div>
+                        <div><span>Nombre</span><strong>Zoológico Municipal Nicolás Bravo</strong></div>
+                    </div>
+                    <div class="location-actions">
+                        <a href="https://www.google.com/maps/search/?api=1&query=Zool%C3%B3gico%20Nicol%C3%A1s%20Bravo%2C%20Pleasenton%20S%2FN%2C%20Lindavista%2C%20Tulancingo%20de%20Bravo%2C%20Hidalgo" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><i class="bi bi-map"></i> Cómo llegar <i class="bi bi-arrow-up-right"></i></a>
+                    </div>
+                </div>
+                <div class="location-map">
+                    <iframe src="https://www.google.com/maps?q=Zool%C3%B3gico%20Nicol%C3%A1s%20Bravo%2C%20Tulancingo%20de%20Bravo%2C%20Hidalgo&output=embed" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación del Zoológico Nicolás Bravo"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             INSTALACIONES
+        ====================================================== -->
+        <section
+            class="installations"
+            id="instalaciones"
+        >
+
+            <div class="section-heading">
+
+                <span class="tag tag-dark">
+                    <i class="bi bi-buildings" aria-hidden="true"></i>
+                    Espacios para disfrutar
+                </span>
+
+                <h2>Todo para un gran día</h2>
+
+                <p>
+                    Encuentra lugares para descansar, aprender y recargar
+                    energía durante tu visita.
+                </p>
+
+            </div>
+
+
+            <div class="cards">
+
+                <article class="card">
+
+                    <div
+                        class="thumb t1"
+                        role="img"
+                        aria-label="Senderos rodeados de vegetación"
+                    ></div>
+
+                    <h3>
+                        <i class="bi bi-tree" aria-hidden="true"></i>
+                        Senderos y áreas verdes
+                    </h3>
+
+                    <p>
+                        Recorre el zoológico a tu ritmo y disfruta
+                        de sus espacios al aire libre.
+                    </p>
+
+                    <span class="service-label">
+                        <i class="bi bi-tree"></i>
+                        Naturaleza ·
+                        <i class="bi bi-person-walking"></i>
+                        Descanso
+                    </span>
+
+                </article>
+
+
+                <article class="card">
+
+                    <div
+                        class="thumb t2"
+                        role="img"
+                        aria-label="Zona de observación de animales"
+                    ></div>
+
+                    <h3>
+                        <i class="bi bi-binoculars" aria-hidden="true"></i>
+                        Áreas de observación
+                    </h3>
+
+                    <p>
+                        Acércate con respeto a los animales desde zonas
+                        preparadas para observar.
+                    </p>
+
+                    <span class="service-label">
+                        <i class="bi bi-geo-alt"></i>
+                        Miradores ·
+                        <i class="bi bi-binoculars"></i>
+                        Observación
+                    </span>
+
+                </article>
+
+
+                <article class="card">
+
+                    <div
+                        class="thumb t3"
+                        role="img"
+                        aria-label="Espacio familiar al aire libre"
+                    ></div>
+
+                    <h3>
+                        <i class="bi bi-people" aria-hidden="true"></i>
+                        Zona familiar
+                    </h3>
+
+                    <p>
+                        Un espacio para hacer una pausa y compartir
+                        un momento en familia.
+                    </p>
+
+                    <span class="service-label">
+                        <i class="bi bi-people"></i>
+                        Familiar ·
+                        <i class="bi bi-cup-straw"></i>
+                        Alimentos
+                    </span>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             NOTICIAS
+        ====================================================== -->
+        <section
+            class="news-section"
+            id="noticias"
+        >
+
+            <div class="section-heading">
+
+                <span class="tag tag-dark">
+                    <i class="bi bi-newspaper" aria-hidden="true"></i>
+                    Del zoológico
+                </span>
+
+                <h2>Noticias y novedades</h2>
+
+                <p>
+                    Historias, avisos y actividades para mantenerte al día.
+                </p>
+
+            </div>
+
+
+            <div class="news-grid">
+
+                <article class="news-card">
+
+                    <span class="news-date">
+                        <i class="bi bi-tree" aria-hidden="true"></i>
+                        Conservación
+                    </span>
+
+                    <h3>
+                        Pequeñas acciones, grandes cambios
+                    </h3>
+
+                    <p>
+                        Descubre cómo reducir residuos y cuidar la fauna
+                        desde casa y durante tu visita.
+                    </p>
+
+                    <a href="#preguntas" class="link">
+                        Consejos para tu visita
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </article>
+
+
+                <article class="news-card">
+
+                    <span class="news-date">
+                        <i class="bi bi-megaphone" aria-hidden="true"></i>
+                        Aviso a visitantes
+                    </span>
+
+                    <h3>
+                        Planea tu recorrido con tiempo
+                    </h3>
+
+                    <p>
+                        Consulta horarios y recomendaciones antes de llegar
+                        para disfrutar mejor el día.
+                    </p>
+
+                    <a href="#visita" class="link">
+                        Ver información
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </article>
+
+
+                <article class="news-card">
+
+                    <span class="news-date">
+                        <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                        Próximamente
+                    </span>
+
+                    <h3>
+                        Nuevas actividades para descubrir
+                    </h3>
+
+                    <p>
+                        Vuelve a consultar esta sección para conocer
+                        las próximas actividades educativas.
+                    </p>
+
+                    <a href="#eventos" class="link">
+                        Explorar eventos
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+
+                </article>
+
+            </div>
+
+
+            <p class="demo-note">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+                Las noticias son contenido de muestra.
+                Confirma los avisos vigentes con el zoológico.
+            </p>
+
+        </section>
+
+
+        <!-- =====================================================
+             EVENTOS
+        ====================================================== -->
+        <section
+            class="events-section"
+            id="eventos"
+        >
+
+            <div class="section-heading">
+
+                <span class="tag tag-dark">
+                    <i class="bi bi-calendar-event" aria-hidden="true"></i>
+                    Guarda la fecha
+                </span>
+
+                <h2>Próximos eventos</h2>
+
+                <p>
+                    Actividades de ejemplo; las fechas oficiales
+                    se publicarán próximamente.
+                </p>
+
+            </div>
+
+
+            <div class="event-grid">
+
+                <article class="event-card">
+
+                    <div class="event-date">
+                        <strong>01</strong>
+                        <span>Próximamente</span>
+                    </div>
+
+                    <div>
+
+                        <span class="animal-label">
+                            <i class="bi bi-people"></i>
+                            Actividad familiar
+                        </span>
+
+                        <h3>
+                            Exploradores de la naturaleza
+                        </h3>
+
+                        <p>
+                            Recorrido educativo para observar y aprender
+                            sobre la vida silvestre.
+                        </p>
+
+                        <span class="service-label">
+                            <i class="bi bi-clock"></i>
+                            Horario por confirmar ·
+                            <i class="bi bi-geo-alt"></i>
+                            Punto de encuentro por confirmar
+                        </span>
+
+                    </div>
+
+                </article>
+
+
+                <article class="event-card">
+
+                    <div class="event-date">
+                        <strong>02</strong>
+                        <span>Próximamente</span>
+                    </div>
+
+                    <div>
+
+                        <span class="animal-label">
+                            <i class="bi bi-mortarboard"></i>
+                            Taller educativo
+                        </span>
+
+                        <h3>
+                            Guardianes de los hábitats
+                        </h3>
+
+                        <p>
+                            Una actividad participativa para descubrir
+                            por qué cada hábitat importa.
+                        </p>
+
+                        <span class="service-label">
+                            <i class="bi bi-clock"></i>
+                            Horario por confirmar ·
+                            <i class="bi bi-geo-alt"></i>
+                            Punto de encuentro por confirmar
+                        </span>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             BOLETOS
+        ====================================================== -->
+        <section
+            class="ticket-section"
+            id="boletos"
+        >
+
+            <div class="ticket-intro">
+
+                <span class="tag">
+                    <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+                    Prepara tu visita
+                </span>
+
+                <h2>
+                    Un día inolvidable empieza aquí
+                </h2>
+
+                <p>
+                    Elige una fecha y calcula el costo estimado de tu grupo.
+                    Esta demostración no procesa pagos ni reserva entradas.
+                </p>
+
+
+                <div class="price-note">
+
+                    <strong>
+                        <i class="bi bi-tag" aria-hidden="true"></i>
+                        Precios de entrada
+                    </strong>
+
+                    <span>
+                        Adulto: $25 MXN · Niño: $16 MXN
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <form
+                class="ticket-form"
+                id="ticketForm"
+            >
+
+                <h3>
+                    <i class="bi bi-calculator" aria-hidden="true"></i>
+                    Calcula tus boletos
+                </h3>
+
+
+                <label for="visitDate">
+                    Fecha de visita
+                </label>
+
+                <input
+                    id="visitDate"
+                    name="visitDate"
+                    type="date"
+                    required
+                >
+
+
+                <div class="ticket-quantities">
+
+                    <label for="adults">
+
+                        Adultos
+                        <span>$25 MXN c/u</span>
+
+                        <input
+                            id="adults"
+                            name="adults"
+                            type="number"
+                            min="0"
+                            max="20"
+                            value="1"
+                            required
+                        >
+
+                    </label>
+
+
+                    <label for="children">
+
+                        Niños
+                        <span>$16 MXN c/u</span>
+
+                        <input
+                            id="children"
+                            name="children"
+                            type="number"
+                            min="0"
+                            max="20"
+                            value="0"
+                            required
+                        >
+
+                    </label>
+
+                </div>
+
+
+                <label for="visitorName">
+                    Nombre del visitante
+                </label>
+
+                <input
+                    id="visitorName"
+                    name="visitorName"
+                    type="text"
+                    autocomplete="name"
+                    maxlength="80"
+                    required
+                >
+
+
+                <label for="visitorEmail">
+                    Correo electrónico
+                </label>
+
+                <input
+                    id="visitorEmail"
+                    name="visitorEmail"
+                    type="email"
+                    autocomplete="email"
+                    maxlength="120"
+                    required
+                >
+
+
+                <fieldset class="payment-demo">
+
+                    <legend>
+                        <i class="bi bi-credit-card" aria-hidden="true"></i>
+                        Pago · vista de demostración
+                    </legend>
+
+                    <p class="payment-warning">
+
+                        <i
+                            class="bi bi-shield-exclamation"
+                            aria-hidden="true"
+                        ></i>
+
+                        Solo es una muestra visual. No escribas datos
+                        de una tarjeta real: no se aceptan pagos ni se
+                        guardan o envían datos.
+
+                    </p>
+
+
+                    <div
+                        class="payment-card-preview"
+                        aria-hidden="true"
+                    >
+
+                        <span class="payment-card-brand">
+                            Zoológico Nicolás Bravo
+                        </span>
+
+                        <span class="payment-card-chip"></span>
+
+                        <strong>
+                            •••• &nbsp; •••• &nbsp; •••• &nbsp; 0000
+                        </strong>
+
+                        <span class="payment-card-name">
+                            NOMBRE DEL TITULAR
+                        </span>
+
+                    </div>
+
+
+                    <label for="demoCardName">
+
+                        Nombre del titular
+
+                        <input
+                            id="demoCardName"
+                            type="text"
+                            autocomplete="off"
+                            placeholder="Nombre como aparece en la tarjeta"
+                        >
+
+                    </label>
+
+
+                    <label for="demoCardNumber">
+
+                        Número de tarjeta
+
+                        <input
+                            id="demoCardNumber"
+                            type="text"
+                            inputmode="numeric"
+                            autocomplete="off"
+                            maxlength="23"
+                            placeholder="0000 0000 0000 0000"
+                        >
+
+                    </label>
+
+
+                    <div class="payment-expiry">
+
+                        <label for="demoCardExpiry">
+
+                            Vencimiento
+
+                            <input
+                                id="demoCardExpiry"
+                                type="text"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                maxlength="5"
+                                placeholder="MM/AA"
+                            >
+
+                        </label>
+
+
+                        <label for="demoCardCvc">
+
+                            CVV
+
+                            <input
+                                id="demoCardCvc"
+                                type="password"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                maxlength="4"
+                                placeholder="000"
+                            >
+
+                        </label>
+
+                    </div>
+
+                </fieldset>
+
+
+                <div class="ticket-total">
+
+                    <span>Total estimado</span>
+
+                    <strong id="ticketTotal">
+                        $25 MXN
+                    </strong>
+
+                </div>
+
+
+                <button
+                    class="btn btn-primary"
+                    type="submit"
+                >
+                    <i class="bi bi-receipt" aria-hidden="true"></i>
+                    Ver comprobante de demostración
+                </button>
+
+
+                <p class="form-note">
+
+                    <i class="bi bi-shield-check" aria-hidden="true"></i>
+
+                    La demostración no procesa pagos ni reserva boletos.
+                    Nunca uses información bancaria real.
+
+                </p>
+
+            </form>
+
+
+            <div
+                class="receipt"
+                id="receipt"
+                hidden
+                aria-live="polite"
+            ></div>
+
+        </section>
+
+
+        <!-- =====================================================
+             PREGUNTAS
+        ====================================================== -->
+        <section
+            class="faq-section"
+            id="preguntas"
+        >
+
+            <div class="section-heading">
+
+                <span class="tag tag-dark">
+                    <i class="bi bi-question-circle" aria-hidden="true"></i>
+                    ¿Tienes dudas?
+                </span>
+
+                <h2>Preguntas frecuentes</h2>
+
+                <p>
+                    Información útil para organizar tu recorrido.
+                </p>
+
+            </div>
+
+
+            <div class="faq-list">
+
+                <details>
+
+                    <summary>
+                        <i class="bi bi-clock"></i>
+                        ¿Cuál es el horario?
+                    </summary>
+
+                    <p>
+                        Martes a viernes de 10:00 a 16:00 hrs; sábado y domingo de
+                        10:00 a 17:00 hrs. Confirma días festivos y horarios
+                        vigentes antes de tu visita.
+                    </p>
+
+                </details>
+
+
+                <details>
+
+                    <summary>
+                        <i class="bi bi-ticket"></i>
+                        ¿Cuánto cuestan los boletos?
+                    </summary>
+
+                    <p>
+                        Los precios que aparecen en el formulario son solo
+                        de muestra y no son tarifas oficiales. Consulta
+                        directamente con el zoológico.
+                    </p>
+
+                </details>
+
+
+                <details>
+
+                    <summary>
+                        <i class="bi bi-heart"></i>
+                        ¿Puedo llevar mascotas?
+                    </summary>
+
+                    <p>
+                        Por seguridad y bienestar de los animales,
+                        consulta las reglas vigentes con el personal
+                        antes de llevar mascotas.
+                    </p>
+
+                </details>
+
+
+                <details>
+
+                    <summary>
+                        <i class="bi bi-cup-straw"></i>
+                        ¿Puedo ingresar alimentos?
+                    </summary>
+
+                    <p>
+                        Las reglas pueden cambiar. Revisa los avisos
+                        del zoológico o pregunta al personal al planear
+                        tu visita.
+                    </p>
+
+                </details>
+
+
+                <details>
+
+                    <summary>
+                        <i class="bi bi-universal-access"></i>
+                        ¿Hay estacionamiento y accesibilidad?
+                    </summary>
+
+                    <p>
+                        Confirma la disponibilidad de estacionamiento,
+                        accesos y apoyos de movilidad con el zoológico
+                        antes de acudir.
+                    </p>
+
+                </details>
+
+
+                <details>
+
+                    <summary>
+                        <i class="bi bi-arrow-repeat"></i>
+                        ¿Cómo puedo cambiar o cancelar mis boletos?
+                    </summary>
+
+                    <p>
+                        Esta página es una demostración y no emite
+                        boletos reales. Para compras y cambios,
+                        contacta directamente al zoológico.
+                    </p>
+
+                </details>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             GALERÍA
+        ====================================================== -->
+        <section
+            class="galeria"
+            id="galeria"
+        >
+
+            <div class="galeria-head">
+
+                <div>
+
+                    <span class="tag tag-dark">
+                        <i class="bi bi-images" aria-hidden="true"></i>
+                        Un vistazo a la aventura
+                    </span>
+
+                    <h2>
+                        Momentos para recordar
+                    </h2>
+
+                    <p class="sub">
+                        Un adelanto de los paisajes y animales
+                        que puedes descubrir.
+                    </p>
+
+                </div>
+
+
+                <a href="#animales" class="link">
+                    Descubre los animales
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+
+            </div>
+
+
+            <div class="fotos">
+
+                <button
+                    class="foto f1"
+                    type="button"
+                    aria-label="Ver foto de un león"
+                >
+                </button>
+
+                <button
+                    class="foto f2"
+                    type="button"
+                    aria-label="Ver foto de un perro"
+                >
+                </button>
+
+                <button
+                    class="foto f3"
+                    type="button"
+                    aria-label="Ver foto de un zorro"
+                >
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- =========================================================
+         FOOTER
+    ========================================================== -->
+    <footer
+        class="footer"
+        id="visita"
+    >
+
+        <div class="footer-info">
+
+            <h3>
+
+                <img
+                    class="footer-logo"
+                    src="assets/TransformandoTulancingo-2024-300x261.png"
+                    alt=""
+                >
+
+                Zoológico Nicolás Bravo
+
+            </h3>
+
+
+            <p>
+                Un espacio para aprender, convivir y acercarnos
+                a la vida silvestre.
+            </p>
+
+
+            <dl>
+
+                <dt>
+                    <i class="bi bi-geo-alt"></i>
+                    Dirección de referencia
+                </dt>
+
+                <dd>
+                    Calle Pleasenton S/N, Col. Lindavista, C.P. 43680,
+                    Tulancingo de Bravo, Hidalgo
+                </dd>
+
+
+                <dt>
+                    <i class="bi bi-clock"></i>
+                    Horario de referencia
+                </dt>
+
+                <dd>
+                    Mar–vie · 10:00–16:00 hrs · Sáb–dom · 10:00–17:00 hrs
+                </dd>
+
+
+                <dt>
+                    <i class="bi bi-telephone"></i>
+                    Teléfono y correo
+                </dt>
+
+                <dd>
+                    Consulta los canales oficiales del zoológico
+                    para datos actualizados.
+                </dd>
+
+            </dl>
+
+
+            <div
+                class="social"
+                aria-label="Redes sociales"
+            >
+
+                <a
+                    href="#visita"
+                    aria-label="Facebook"
+                >
+                    <i class="bi bi-facebook"></i>
+                </a>
+
+                <a
+                    href="#visita"
+                    aria-label="Instagram"
+                >
+                    <i class="bi bi-instagram"></i>
+                </a>
+
+                <a
+                    href="#visita"
+                    aria-label="X"
+                >
+                    <i class="bi bi-twitter-x"></i>
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <form
+            class="contact-form"
+            id="contactForm"
+        >
+
+            <h3>
+                <i class="bi bi-envelope" aria-hidden="true"></i>
+                Escríbenos
+            </h3>
+
+            <p>
+                Déjanos un mensaje y nuestro equipo podrá orientarte.
+            </p>
+
+
+            <label for="contactName">
+                Nombre
+            </label>
+
+            <input
+                id="contactName"
+                name="contactName"
+                type="text"
+                maxlength="80"
+                required
+            >
+
+
+            <label for="contactEmail">
+                Correo electrónico
+            </label>
+
+            <input
+                id="contactEmail"
+                name="contactEmail"
+                type="email"
+                maxlength="120"
+                required
+            >
+
+
+            <label for="contactMessage">
+                Mensaje
+            </label>
+
+            <textarea
+                id="contactMessage"
+                name="contactMessage"
+                rows="3"
+                maxlength="1000"
+                required
+            ></textarea>
+
+
+            <button
+                class="btn btn-primary"
+                type="submit"
+            >
+                <i class="bi bi-send" aria-hidden="true"></i>
+                Preparar mensaje
+            </button>
+
+
+            <p class="form-note">
+
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+
+                Formulario de demostración;
+                no envía datos a un servidor.
+
+            </p>
+
+        </form>
+
+    </footer>
+
+
+    <!-- =========================================================
+         BOTTOM BAR
+    ========================================================== -->
+    <div class="bottombar">
+
+        <span>
+            © 2026 Zoológico Tulancingo · Sitio demostrativo
+        </span>
+
+        <span>
+
+            <a href="#ubicacion">
+                <i class="bi bi-geo-alt"></i>
+                Ubicación
+            </a>
+
+            <a href="#preguntas">
+                <i class="bi bi-question-circle"></i>
+                Preguntas frecuentes
+            </a>
+
+            <a href="#visita">
+                <i class="bi bi-envelope"></i>
+                Contacto
+            </a>
+
+        </span>
+
+    </div>
+
+
+    <!-- TOAST -->
+    <div
+        class="toast"
+        id="toast"
+        role="status"
+        aria-live="polite"
+    ></div>
+
+</div>
+
+
+<!-- JavaScript -->
+<script src="script.js"></script>
+
+</body>
+</html>
