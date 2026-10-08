@@ -1,0 +1,15 @@
+{
+  "name": "arca-nb",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "@expo/ui": "~57.0.22",
+    "expo-glass-effect": "~57.0.4",
+    "expo-symbols": "~57.0.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0"
+  }
+}
