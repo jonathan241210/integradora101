@@ -10,3 +10,6 @@ AGENTS.local.md
 opencode.json
 .expo/
 apps/mobile/.expo/
+apps/mobile/coverage/
+apps/mobile/dist/
+apps/mobile/arca-ui-reference/

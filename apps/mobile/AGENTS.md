@@ -16,7 +16,7 @@ Los artefactos comparten `NNN-slug.md`; trabaja solo con spec aprobada y tareas.
 - El alcance previsto incluye mapa, escáner QR y visores 3D cuando los aprueben sus specs.
 - Solicita permisos de cámara explícitamente y minimiza el acceso al dispositivo.
 - Ofrece alternativas accesibles cuando una función dependa de sensores o cámara.
-- Expo es propuesta del ADR 0004; no instalar ni asumir runtime antes de aprobarlo.
+- Expo/React Native está aprobado por el ADR 0004; respeta el alcance de la spec vigente. Cámara real, lectura QR y renderizado 3D requieren dependencias y specs aprobadas propias.
 - No incluir secretos ni tokens de servicio; conserva solo datos públicos necesarios.
 - Zoopedia tiene ADR 0005 abierto: no crear carpeta, motor ni SDK antes de una decisión.
 - Escribe UI/mensajes en español; valida accesibilidad y compatibilidad de dispositivos.

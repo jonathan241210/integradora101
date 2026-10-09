@@ -11,6 +11,11 @@ config.resolver.nodeModulesPaths = [
   path.resolve(projectRoot, 'node_modules'),
   path.resolve(workspaceRoot, 'node_modules'),
 ];
-config.resolver.disableHierarchicalLookup = true;
+
+// Add alias for @arca scope to point to the packages folder in the workspace
+config.resolver.alias = {
+  ...(config.resolver.alias || {}),
+  '@arca': path.resolve(workspaceRoot, 'packages'),
+};
 
 module.exports = config;

@@ -3,7 +3,7 @@
 
 Sistema multiplataforma para el Zoológico Municipal Nicolás Bravo, de la Presidencia Municipal de Tulancingo. El zoológico es un centro de rescate, conservación y rehabilitación de fauna silvestre, incluidos ejemplares decomisados por maltrato o tráfico ilegal.
 
-**Estado actual: fase inicial.** Este repositorio contiene el análisis y la estructura documental; las aplicaciones aún no están inicializadas. En V1 la venta de boletos es solo en efectivo. Payments queda FUTURO/INACTIVO: no está implementado ni activable y ahora no hay código, tablas, endpoints, SDK ni feature flag de pagos.
+**Estado actual: fase inicial.** El repositorio contiene el análisis y la estructura documental, además de trabajo inicial en las aplicaciones. `apps/mobile` ya cuenta con una base React Native y Expo SDK 57 para Android. En V1 la venta de boletos es solo en efectivo. Payments queda FUTURO/INACTIVO: no está implementado ni activable y ahora no hay código, tablas, endpoints, SDK ni feature flag de pagos.
 
 ## Necesidades que atiende
 1. **Administración y finanzas:** venta digital de boletos en taquilla, cierre/arqueo diario automático e informes para la Dirección de Ingresos.
@@ -14,7 +14,7 @@ Sistema multiplataforma para el Zoológico Municipal Nicolás Bravo, de la Presi
 - `apps/web`: portal institucional público con noticias, eventos y catálogo.
 - `apps/dashboard`: taquilla, cierre de caja, panel ejecutivo y administración.
 - `apps/pwa`: módulo veterinario con captura y sincronización de borradores offline.
-- `apps/mobile`: app de visitantes con mapa interactivo, lector QR y visores 3D.
+- `apps/mobile`: prototipo de interfaz móvil para visitantes; mapa, QR y recorrido 3D son visuales/mock en la etapa 002, sin cámara ni ubicación reales.
 - **Juego educativo:** decisión tecnológica pendiente (ADR 0005 abierto); todavía no tiene carpeta.
 - `apps/api`: API Laravel central, única autoridad de negocio y datos.
 - `packages/`: propuesta de tokens, UI compartida, cliente tipado de API, configuración y recursos institucionales autorizados (`assets`, solo documentación por ahora).
@@ -55,11 +55,11 @@ La API centraliza autenticación, permisos y lógica; las SPAs usan Sanctum con 
 | Tooling SPA | Vite, Tailwind CSS | 7 / 4 |
 | UI e iconos | shadcn/ui `new-york`, Radix, Lucide | componentes comunes propuestos en `@arca/ui` |
 | Calidad | Laravel Pint, PHPUnit, Prettier, ESLint, Vitest | Pint ^1.24; PHPUnit ^11.5; configuración en `docs/06-convenciones.md` |
-| Mobile | React Native | Expo propuesto, ADR 0004 pendiente de aprobación |
+| Mobile | React Native | React Native 0.86.3 + Expo SDK 57; Android (ADR 0004 aprobado) |
 | PWA offline | IndexedDB con `idb`, `vite-plugin-pwa` | propuestas, ADR 0003 |
 | Runtime JS | Node.js | 22 |
 
-Las versiones son decisiones de referencia, no manifiestos instalados. React Router se propone para la navegación SPA; Laravel usa rutas con nombre y `@arca/api-client` tipado. No se usa Inertia ni Wayfinder.
+Las versiones son decisiones de referencia salvo donde existe un manifiesto de app. Mobile fija las versiones compatibles con Expo SDK 57. React Router se propone para la navegación SPA; Laravel usa rutas con nombre y `@arca/api-client` tipado. No se usa Inertia ni Wayfinder.
 
 ## Estructura del monorepo
 
@@ -111,4 +111,4 @@ Antes de cambiar código, se aprueba una spec; después se redactan el plan con 
 
 El equipo de seis integrantes usa las ramas indicadas `jonathan`, `ian`, `victor`, `Diego`, `Esteban` y `Felipe`; no se asignan responsabilidades por nombre en esta documentación. Las ramas de integración son `develop` y `main`; las ramas de cambio siguen `feat|fix/<app>-<NNN>-<slug>`. Commits Conventional Commits en inglés; PRs enlazan spec, plan y tasks.
 
-Para iniciar desarrollo se requiere PHP 8.2+, Composer, Node.js 22 y MySQL 8. Docker Compose local se incorporará más adelante; las apps y dependencias aún no están inicializadas. No instales dependencias ni guardes secretos en el repositorio sin una tarea aprobada. Consulta [convenciones](docs/06-convenciones.md) e [infraestructura](infra/README.md).
+Para desarrollo móvil se requiere Node.js 22 y npm; instala las dependencias del monorepo con `npm ci` desde la raíz y sigue la [guía de ejecución móvil](apps/mobile/README.md) para iniciar Expo Go y correr verificaciones. Para la API se requiere PHP 8.2+, Composer y MySQL 8. Docker Compose local se incorporará más adelante. No instales dependencias ni guardes secretos en el repositorio sin una tarea aprobada. Consulta [convenciones](docs/06-convenciones.md) e [infraestructura](infra/README.md).

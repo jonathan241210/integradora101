@@ -2,7 +2,7 @@
 
 - Estado: Aprobado
 - Fecha: 2026-10-07
-- Spec relacionada: Por definir al iniciar la implementación
+- Spec relacionada: [`apps/mobile/specs/002-mobile-ui-base-visitor-journey.md`](../../apps/mobile/specs/002-mobile-ui-base-visitor-journey.md)
 
 ## Contexto
 Los visitantes del Parque Ecológico Nicolás Bravo necesitan un mapa interactivo, lector QR para infografías, visores 3D y contenido pedagógico. El cliente consumirá la API central sin manejar lógica de negocio propia. El desarrollo del módulo enciclopédico ("Zoopedia") está sujeto al futuro ADR 0005.
@@ -20,6 +20,8 @@ Los visitantes del Parque Ecológico Nicolás Bravo necesitan un mapa interactiv
    - **Conectividad:** Wi-Fi 2.4 GHz o superior.
    - **Hardware:** Cámara trasera funcional.
 
+La decisión aprueba Expo como framework y entorno de compilación móvil. No autoriza por sí misma la implementación inmediata de cámara, ubicación o renderizado 3D: esas capacidades requieren alcance y dependencias en specs aprobadas. La etapa 002 implementa prototipos visuales/mock de mapa, QR y recorrido 3D.
+
 ## Alternativas consideradas
 - **Visor 3D en WebView:** Rechazado debido a que consume más memoria y ofrece menor rendimiento de renderizado en comparación con WebGL/OpenGL nativo.
 - **react-native-vision-camera:** Rechazado; aunque ofrece control de fotogramas de bajo nivel, `expo-camera` cubre el requerimiento de escaneo QR con menos overhead de mantenimiento y compatibilidad.
@@ -36,4 +38,4 @@ Los visitantes del Parque Ecológico Nicolás Bravo necesitan un mapa interactiv
 - **Dependencia de Infraestructura EAS:** Riesgo moderado por las cuotas gratuitas en EAS; mitigado con la directriz de contar con soporte de compilación local en los equipos del desarrollador.
 
 ## Validación y revisión
-Decisiones técnicas y matriz de hardware mínimo aprobadas formalmente por el equipo (2026-10-07). Queda pendiente vincular el proyecto a su especificación concreta cuando sea definida en el flujo SDD (`/sdd-spec`).
+Decisiones técnicas y matriz de hardware mínimo aprobadas formalmente por el equipo (2026-10-07). La spec 002 concreta el alcance UI inicial; cámara, GPS y renderizado 3D real siguen pendientes de specs aprobadas.

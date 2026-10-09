@@ -28,7 +28,7 @@ ARCA-NB será un monorepo modular, cliente-servidor JSON. `apps/api` seguirá un
 | `apps/dashboard` | Propuesto | Taquilla en efectivo, caja, métricas y administración |
 | `apps/pwa` | Propuesto | Captura veterinaria y borradores offline |
 | `apps/web` | Propuesto | Portal institucional público |
-| `apps/mobile` | Propuesto | Experiencia de visita, QR, mapa y 3D |
+| `apps/mobile` | Propuesto en la línea base; prototipo UI 002 actual | UI de visitante con flujos QR/mapa/3D simulados; hardware y servicios reales futuros |
 | `packages/api-client` | Propuesto | Contrato tipado para clientes |
 | `packages/ui`, `tokens`, `config`, `assets` | Propuesto | Presentación, configuración y recursos autorizados compartidos |
 | MySQL 8 | Propuesto | Datos de negocio autoritativos |

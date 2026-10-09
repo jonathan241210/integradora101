@@ -13,7 +13,7 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0001 · API central Laravel](0001-api-central-laravel.md) — Aceptado
 - [0002 · SPAs React y Vite](0002-spas-react-vite.md) — Aceptado; router propuesto
 - [0003 · MySQL y PWA offline](0003-mysql-y-pwa-offline.md) — Propuesto
-- [0004 · Mobile React Native](0004-mobile-react-native.md) — Propuesto
+- [0004 · Mobile React Native](0004-mobile-react-native.md) — Aceptado
 - [0005 · Videojuego pendiente](0005-videojuego-pendiente.md) — Abierto
 - [0006 · Google Cloud portable](0006-hosting-google-cloud-portable.md) — Aceptado
 - [0007 · Línea base de arquitectura general](0007-linea-base-arquitectura-general.md) — Propuesto

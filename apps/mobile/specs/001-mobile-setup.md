@@ -2,7 +2,7 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `@arca/api-client`, `@arca/tokens`
-- Estado: Aprobada
+- Estado: Implementada
 - Solicitante / responsable funcional: Equipo Técnico (Arquitectura ARCA-NB)
 - Aprobación funcional: Equipo Técnico, 2026-10-08
 
@@ -57,3 +57,7 @@ En esta etapa estructural no se manipula información clínica o de usuarios ni 
 ## Revisión
 - Aprobadores y fecha: Equipo Técnico ARCA-NB, 2026-10-08
 - Evidencia/enlaces: (PR asociado en el futuro)
+
+## Evolución
+
+La pantalla de bienvenida de CA-03 cumplió el propósito de validar la inicialización del Router en la spec 001. La navegación visitante y Home actuales la sustituyen conforme a la spec 002; no se debe recrear una ruta de bienvenida separada.
