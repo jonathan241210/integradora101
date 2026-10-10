@@ -15,7 +15,7 @@ ARCA-NB será un monorepo modular, cliente-servidor JSON. `apps/api` seguirá un
 
 - La API es la única autoridad de reglas, autorización, auditoría y datos de negocio.
 - Los clientes presentan datos y llaman a `@arca/api-client`; no duplican reglas.
-- MySQL 8 de `apps/api` es la fuente de verdad. Los borradores offline no son autoritativos.
+- MySQL 8.0.x de `apps/api` es la fuente de verdad. Los borradores offline no son autoritativos.
 - Las dependencias apuntan hacia contratos y dominio, no hacia proveedores externos.
 - Menor privilegio, trazabilidad e idempotencia en operaciones financieras e integraciones.
 - Portabilidad por configuración: ninguna regla depende de servicios propietarios de GCP.
@@ -31,7 +31,7 @@ ARCA-NB será un monorepo modular, cliente-servidor JSON. `apps/api` seguirá un
 | `apps/mobile` | Propuesto | Experiencia de visita, QR, mapa y 3D |
 | `packages/api-client` | Propuesto | Contrato tipado para clientes |
 | `packages/ui`, `tokens`, `config`, `assets` | Propuesto | Presentación, configuración y recursos autorizados compartidos |
-| MySQL 8 | Propuesto | Datos de negocio autoritativos |
+| MySQL 8.0.x | Propuesto | Datos de negocio autoritativos |
 | `settings_colores` | Actual externo | Fuente de tema de solo lectura mediante `mysql2` |
 | IndexedDB | Propuesto | Borradores temporales de PWA |
 | Almacenamiento de archivos | Propuesto | Archivos mediante Laravel Filesystem intercambiable |
@@ -59,7 +59,7 @@ Se prohíben accesos directos de clientes a BD, reglas de negocio en UI, escritu
 
 Los clientes consumen JSON versionado bajo `/api/v1` mediante `@arca/api-client`. Las SPAs autenticadas usarán cookie Sanctum con CSRF; mobile usará tokens. Form Requests validan, Policies y permisos autorizan, Controllers delgados delegan en Actions y API Resources serializan. Cada operación sensible registra actor, acción, fecha y correlación sin secretos.
 
-El esquema cambia solo por migraciones. Datos clínicos y financieros usan borrado lógico y auditoría. Las conexiones y secretos se inyectan por entorno. GCP previsto y MySQL Server local deben ejecutar el mismo diseño; almacenamiento queda detrás de Laravel Filesystem.
+El esquema cambia solo por migraciones Laravel que el responsable de BD crea, prueba y aplica tras una DBR aprobada ([gobierno de BD](database/README.md)); backend consume el cambio cuando la DBR está `Lista para backend`, y la aplicación se registra por ambiente (desarrollo/pruebas, staging y producción) sobre bases aisladas. Datos clínicos y financieros usan borrado lógico y auditoría. Las conexiones y secretos se inyectan por entorno. GCP previsto y MySQL Server local deben ejecutar el mismo diseño; almacenamiento queda detrás de Laravel Filesystem.
 
 La PWA puede mantener Draft Repository y Outbox locales, sujetos al [ADR 0003](adr/0003-mysql-y-pwa-offline.md) y a una spec de seguridad, conflicto, retención y reintentos. La API confirma cuándo un cambio es persistente.
 
@@ -82,3 +82,5 @@ En ese futuro, Payments gestionaría intentos, estados, referencias, webhooks ve
 - [ADR 0008 · Sistema municipal](adr/0008-integracion-sistema-municipal.md)
 - [ADR 0009 · Pagos futuros](adr/0009-pagos-electronicos-futuros.md)
 - [Plantilla por app](templates/arquitectura-app.md)
+- [Gobierno de base de datos](database/README.md)
+- [ADR 0010 · MySQL 8.0 y gobierno de cambios](adr/0010-mysql-8-0-database-change-governance.md)

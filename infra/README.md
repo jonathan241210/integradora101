@@ -4,15 +4,19 @@
 
 ## Desarrollo local
 
-Se prevé un `docker-compose` para servicios locales de desarrollo, incluido MySQL 8 compatible con MySQL estándar. Aún no existe archivo Compose ni configuración de contenedores. El equipo debe decidir puertos, volúmenes, datos semilla y estrategia de respaldos en una spec.
+Se prevé un `docker-compose` para servicios locales de desarrollo, incluido MySQL 8.0.x. Aún no existe archivo Compose ni configuración de contenedores. El equipo debe decidir puertos, volúmenes, datos semilla y estrategia de respaldos en una spec.
 
 ## Alojamiento previsto
 
-El primer destino es Google Cloud con MySQL 8 administrado (por ejemplo, Cloud SQL). La API Laravel y los clientes podrán desplegarse en servicios acordados posteriormente. El almacenamiento de archivos que se agregue usará discos configurables de Laravel Filesystem, no llamadas a SDK desde dominio.
+El primer destino es Google Cloud con MySQL 8.0.x administrado (por ejemplo, Cloud SQL). La API Laravel y los clientes podrán desplegarse en servicios acordados posteriormente. El almacenamiento de archivos que se agregue usará discos configurables de Laravel Filesystem, no llamadas a SDK desde dominio.
+
+## Base de datos
+
+La familia MySQL 8.0.x es obligatoria en todos los ambientes; la revisión mínima queda pendiente del inventario inicial (`SELECT VERSION()`, charset/collation, modo SQL, motor y esquema existente). La instancia existente contiene esquema sin datos: no se borra, recrea ni adopta como baseline automáticamente; una decisión aprobada definirá baseline o reconstrucción controlada. Cada ambiente (desarrollo/pruebas, staging y producción) usa una base aislada; los cambios siguen `docs/database/README.md` y los aplica el responsable de BD con respaldo, autorización, evidencia y reversión.
 
 ## Portabilidad
 
-- Usar capacidades compatibles con MySQL 8 estándar; no depender de extensiones exclusivas de Cloud SQL.
+- Usar capacidades compatibles con MySQL 8.0.x; no depender de extensiones exclusivas de Cloud SQL.
 - Configurar acceso, host, base, usuario y secreto mediante variables de entorno; no versionar credenciales.
 - Mantener datos persistentes en migraciones Laravel y planear exportación, respaldo y restauración verificables.
 - Para migrar a MySQL Server local, apuntar conexiones a la instancia local mediante `.env`, validar collation/versión y probar restauración; revisar por separado el driver de archivos.

@@ -35,13 +35,13 @@ flowchart LR
   Dashboard --> Client
   PWA --> Client
   Client --> API[apps/api<br/>Laravel 12 API]
-  API --> MySQL[(MySQL 8<br/>Cloud SQL administrado)]
+  API --> MySQL[(MySQL 8.0.x<br/>Cloud SQL administrado)]
   API -.solo lectura.-> ThemeDB[(MySQL externo<br/>settings_colores / mysql2)]
   API -.disco intercambiable.-> Storage[Almacenamiento Google Cloud<br/>detrás de Laravel Filesystem]
   Local[MySQL Server local] -.migración portable<br/>solo cambia .env.-> API
 ```
 
-La API centraliza autenticación, permisos y lógica; las SPAs usan Sanctum con cookie y la app móvil usa tokens. `settings_colores` se consulta con la conexión `mysql2` en solo lectura. La BD principal usa MySQL 8 estándar, con configuración exclusiva por `.env`; no se incorporan SDK de Google Cloud a la lógica de negocio. Almacenamiento cloud, si se añade, queda detrás de un disco de Laravel intercambiable.
+La API centraliza autenticación, permisos y lógica; las SPAs usan Sanctum con cookie y la app móvil usa tokens. `settings_colores` se consulta con la conexión `mysql2` en solo lectura. La BD principal usa MySQL 8.0.x, con configuración exclusiva por `.env`; no se incorporan SDK de Google Cloud a la lógica de negocio. Almacenamiento cloud, si se añade, queda detrás de un disco de Laravel intercambiable.
 
 ## Stack y versiones de referencia
 
@@ -50,7 +50,7 @@ La API centraliza autenticación, permisos y lógica; las SPAs usan Sanctum con 
 | API | PHP, Laravel | PHP 8.2+; Laravel 12 |
 | Autenticación | Sanctum, Fortify headless | cookie para SPA; tokens para mobile; Fortify ^1.30 |
 | Permisos y auditoría | Spatie Permission / Activitylog | ^6.24 / ^4.12 |
-| Base de datos | MySQL | 8 estándar; Cloud SQL al inicio, portable a MySQL Server local |
+| Base de datos | MySQL | 8.0.x (revisión mínima pendiente del inventario inicial); Cloud SQL al inicio, portable a MySQL Server local; cambios solo mediante DBR y migraciones del responsable de BD ([gobierno de BD](docs/database/README.md)) |
 | SPAs | React, React DOM, TypeScript | 19 / 19 / 5.7+ |
 | Tooling SPA | Vite, Tailwind CSS | 7 / 4 |
 | UI e iconos | shadcn/ui `new-york`, Radix, Lucide | componentes comunes propuestos en `@arca/ui` |
@@ -98,6 +98,7 @@ Antes de cambiar código, se aprueba una spec; después se redactan el plan con 
 - [Glosario](docs/07-glosario.md)
 - [Patrones arquitectónicos](docs/08-patrones-arquitectonicos.md)
 - [Vistas de arquitectura](docs/arquitectura/README.md)
+- [Gobierno de base de datos](docs/database/README.md)
 - [ADRs](docs/adr/README.md) · [Plantilla de spec](docs/templates/spec.md) · [Plantilla de arquitectura por app](docs/templates/arquitectura-app.md)
 
 ## Agentes de IA
@@ -111,4 +112,4 @@ Antes de cambiar código, se aprueba una spec; después se redactan el plan con 
 
 El equipo de seis integrantes usa las ramas indicadas `jonathan`, `ian`, `victor`, `Diego`, `Esteban` y `Felipe`; no se asignan responsabilidades por nombre en esta documentación. Las ramas de integración son `develop` y `main`; las ramas de cambio siguen `feat|fix/<app>-<NNN>-<slug>`. Commits Conventional Commits en inglés; PRs enlazan spec, plan y tasks.
 
-Para iniciar desarrollo se requiere PHP 8.2+, Composer, Node.js 22 y MySQL 8. Docker Compose local se incorporará más adelante; las apps y dependencias aún no están inicializadas. No instales dependencias ni guardes secretos en el repositorio sin una tarea aprobada. Consulta [convenciones](docs/06-convenciones.md) e [infraestructura](infra/README.md).
+Para iniciar desarrollo se requiere PHP 8.2+, Composer, Node.js 22 y MySQL 8.0.x. Docker Compose local se incorporará más adelante; las apps y dependencias aún no están inicializadas. No instales dependencias ni guardes secretos en el repositorio sin una tarea aprobada. Consulta [convenciones](docs/06-convenciones.md) e [infraestructura](infra/README.md).
