@@ -28,6 +28,9 @@
 
     <!-- CSS -->
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="animations.css">
+    <link rel="stylesheet" href="accessibility.css">
+
 
 
 
@@ -166,7 +169,7 @@
                     </div>
 
                     <div>
-                        <strong>18 ha</strong>
+                        <strong>18 hábitats</strong>
                         <span>para explorar</span>
                     </div>
 
@@ -226,7 +229,10 @@
 
                 <span>
                     <small>Horario</small>
-                    <strong>Mar–vie · 10:00–16:00 · Sáb–dom · 10:00–17:00</strong>
+                    <strong>
+                        Mar–vie · 10:00–16:00<br>
+                        Sáb–dom · 10:00–17:00
+                        </strong>
                 </span>
 
             </div>
@@ -2152,9 +2158,61 @@
 
 </div>
 
+<button
+    class="cognitive-launcher"
+    id="cognitiveLauncher"
+    type="button"
+    aria-label="Abrir asistente cognitivo"
+    aria-controls="cognitivePanel"
+    aria-expanded="false"
+>
+    <span aria-hidden="true">Aa</span>
+</button>
+
+<section
+    class="cognitive-panel"
+    id="cognitivePanel"
+    aria-labelledby="cognitiveTitle"
+    aria-describedby="cognitiveDescription"
+    hidden
+>
+    <div class="cognitive-panel-header">
+        <div>
+            <h2 id="cognitiveTitle">Asistente cognitivo</h2>
+            <p id="cognitiveDescription">Adapta la lectura a tus preferencias.</p>
+        </div>
+        <button class="cognitive-close" id="cognitiveClose" type="button" aria-label="Cerrar asistente cognitivo">×</button>
+    </div>
+
+    <div class="cognitive-panel-content">
+        <label class="cognitive-profile-label" for="cognitiveProfile">¿Cómo prefieres leer hoy?</label>
+        <select id="cognitiveProfile">
+            <option value="none">Sin perfil</option>
+            <option value="clear">Lectura clara</option>
+            <option value="focus">Enfoque</option>
+            <option value="calm">Calma</option>
+            <option value="custom" disabled>Personalizado</option>
+        </select>
+
+        <fieldset class="cognitive-options">
+            <legend>Herramientas de lectura</legend>
+            <label><input type="checkbox" data-cognitive-mode="focus"> <span>Modo foco</span></label>
+            <label><input type="checkbox" data-cognitive-mode="dyslexia"> <span>Lectura para dislexia</span></label>
+            <label><input type="checkbox" data-cognitive-mode="bionic"> <span>Bionic Reading</span></label>
+            <label><input type="checkbox" data-cognitive-mode="ruler" aria-describedby="cognitiveRulerHelp"> <span>Regla de lectura</span></label>
+            <p class="cognitive-hint" id="cognitiveRulerHelp">Una banda suave sigue el puntero o el foco, sin bloquear clics.</p>
+            <label><input type="checkbox" data-cognitive-mode="calm"> <span>Interfaz calma</span></label>
+        </fieldset>
+        <button class="cognitive-reset" id="cognitiveReset" type="button">Restablecer preferencias</button>
+    </div>
+</section>
+
+<div class="cognitive-reading-ruler" id="cognitiveReadingRuler" aria-hidden="true" hidden></div>
 
 <!-- JavaScript -->
 <script src="script.js"></script>
+<script src="animations.js"></script>
+<script src="accessibility.js"></script>
 
 </body>
 </html>

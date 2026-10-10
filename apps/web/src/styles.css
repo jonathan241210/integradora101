@@ -1078,7 +1078,7 @@ textarea {
 }
 
 .infobar .info-icon {
-    margin-top: 8px;
+    margin-top: 20px;
 }
 
 .benefit-icon .bi {
@@ -1183,3 +1183,38 @@ textarea {
             .location-layout { grid-template-columns:1fr; }
             .location-map, .location-map iframe { min-height:350px; }
         }
+
+
+        /* Centrado de iconos en la infobar */
+.infobar .info-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  margin: 0 auto;      /* quita el margin-top: 20px y centra la cajita */
+  padding: 0;
+  line-height: 1;
+}
+
+.infobar .info-icon::before {
+  display: block;
+  line-height: 1;
+  vertical-align: 0;
+}
+
+/* Que el texto largo no se corte */
+.infobar > div {
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.infobar > div > span {
+  text-align: center;
+}
+
+.infobar strong {
+  display: block;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
