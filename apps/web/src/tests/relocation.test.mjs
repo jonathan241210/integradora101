@@ -65,6 +65,103 @@ function contrastRatio(first, second) {
   return (values[0] + 0.05) / (values[1] + 0.05);
 }
 
+function mountCognitiveAssistant(storage = new Map(), storageUnavailable = false) {
+  const listeners = new Map();
+  const classes = new Set();
+  const attributes = new Map([['aria-expanded', 'false']]);
+  const makeElement = (id) => ({
+    id,
+    hidden: id === 'cognitivePanel',
+    checked: false,
+    value: '',
+    dataset: {},
+    style: { top: '' },
+    listeners: new Map(),
+    addEventListener(type, listener) { this.listeners.set(type, listener); },
+    setAttribute(name, value) { attributes.set(name, value); },
+    getAttribute(name) { return attributes.get(name); },
+    focus() { document.activeElement = this; },
+    closest() { return null; },
+    classList: {
+      add: (name) => classes.add(name),
+      remove: (name) => classes.delete(name),
+      toggle: (name, enabled) => enabled ? classes.add(name) : classes.delete(name),
+      contains: (name) => classes.has(name),
+    },
+    getBoundingClientRect: () => ({ top: 20, height: 40 }),
+  });
+  const launcher = makeElement('cognitiveLauncher');
+  const panel = makeElement('cognitivePanel');
+  const closeButton = makeElement('cognitiveClose');
+  const profile = makeElement('cognitiveProfile');
+  const reset = makeElement('cognitiveReset');
+  const ruler = makeElement('cognitiveReadingRuler');
+  const modes = ['focus', 'dyslexia', 'bionic', 'ruler', 'calm'].map((mode) => {
+    const control = makeElement(mode);
+    control.dataset.cognitiveMode = mode;
+    return control;
+  });
+  class StubElement {
+    constructor() {
+      this.nodeType = 1;
+      this.listeners = new Map();
+      this.classes = new Set();
+    }
+    closest(selector) {
+      return selector.startsWith('main p') ? this : null;
+    }
+    getBoundingClientRect() { return { top: 10, height: 50 }; }
+    classList = {
+      add: (name) => this.classes.add(name),
+      remove: (name) => this.classes.delete(name),
+      contains: (name) => this.classes.has(name),
+    };
+  }
+  const main = makeElement('main');
+  main.nodeType = 1;
+  main.querySelectorAll = () => [];
+  const document = {
+    activeElement: null,
+    documentElement: { classList: launcher.classList },
+    addEventListener(type, listener) { listeners.set(type, listener); },
+    getElementById(id) {
+      return ({
+        cognitiveLauncher: launcher,
+        cognitivePanel: panel,
+        cognitiveClose: closeButton,
+        cognitiveProfile: profile,
+        cognitiveReset: reset,
+        cognitiveReadingRuler: ruler,
+      })[id] ?? null;
+    },
+    querySelectorAll: () => modes,
+    querySelector: () => main,
+    createTreeWalker: () => ({ nextNode: () => false }),
+  };
+  const localStorage = {
+    getItem(key) {
+      if (storageUnavailable) throw new Error('Storage unavailable');
+      return storage.get(key) ?? null;
+    },
+    setItem(key, value) {
+      if (storageUnavailable) throw new Error('Storage unavailable');
+      storage.set(key, value);
+    },
+    removeItem(key) {
+      if (storageUnavailable) throw new Error('Storage unavailable');
+      storage.delete(key);
+    },
+  };
+  const window = { localStorage, innerHeight: 800 };
+  const script = readFileSync(path.join(webSource, 'accessibility.js'), 'utf8');
+  runInNewContext(script, {
+    document,
+    window,
+    Element: StubElement,
+  });
+  return { attributes, closeButton, document, launcher, listeners, localStorage, main, modes, panel, profile, reset, ruler, StubElement, storage, window };
+}
+
 function mountMobileNavigation(initialWidth = 390) {
   const listeners = new Map();
   const attributes = new Map([['aria-expanded', 'false']]);
@@ -193,6 +290,108 @@ function mountMapZoom() {
   runInNewContext(script.slice(start, end), { document });
 
   return { listeners, mapScene, zoomIn, zoomOut, zoomReset, zoomStatus, selection, selectedAttributes, selectedClasses, document };
+}
+
+function mountWalkers(initialWidth = 390, reduceMotion = false) {
+  const intervals = new Map();
+  const clearedIntervals = [];
+  const timeouts = new Map();
+  const mediaListeners = new Map();
+  let nextTimerId = 1;
+  const mobileQuery = {
+    matches: initialWidth <= 560,
+    addEventListener: (type, listener) => mediaListeners.set(type, listener),
+  };
+  const makeElement = () => {
+    const classes = new Set();
+    const element = {
+      attributes: new Map(),
+      children: [],
+      hidden: false,
+      listeners: new Map(),
+      style: { properties: new Map(), setProperty(name, value) { this.properties.set(name, value); } },
+      classList: {
+        add: (...names) => names.forEach((name) => classes.add(name)),
+        remove: (...names) => names.forEach((name) => classes.delete(name)),
+        contains: (name) => classes.has(name),
+        toggle: (name, enabled) => {
+          const shouldEnable = enabled ?? !classes.has(name);
+          if (shouldEnable) classes.add(name);
+          else classes.delete(name);
+          return shouldEnable;
+        },
+      },
+      addEventListener(type, listener) { this.listeners.set(type, listener); },
+      appendChild(child) { this.children.push(child); },
+      querySelector() { return this.bubble; },
+      setAttribute(name, value) { this.attributes.set(name, value); },
+      getAttribute(name) { return this.attributes.get(name); },
+      bubble: { textContent: '' },
+      offsetWidth: 0,
+    };
+    return element;
+  };
+  const body = { children: [], appendChild(child) { this.children.push(child); } };
+  const topbar = makeElement();
+  topbar.className = 'topbar';
+  const document = {
+    readyState: 'complete',
+    body,
+    createElement: makeElement,
+    addEventListener() {},
+    querySelector(selector) { return selector === '.topbar' ? topbar : null; },
+    querySelectorAll() { return []; },
+  };
+  const window = {
+    addEventListener() {},
+    matchMedia(query) {
+      return query.includes('prefers-reduced-motion')
+        ? { matches: reduceMotion }
+        : mobileQuery;
+    },
+  };
+  const setInterval = (callback, delay) => {
+    const id = nextTimerId++;
+    intervals.set(id, { callback, delay });
+    return id;
+  };
+  const clearInterval = (id) => {
+    clearedIntervals.push(id);
+    intervals.delete(id);
+  };
+  const setTimeout = (callback, delay) => {
+    const id = nextTimerId++;
+    timeouts.set(id, { callback, delay });
+    return id;
+  };
+  const clearTimeout = (id) => timeouts.delete(id);
+
+  runInNewContext(readFileSync(path.join(webSource, 'animations.js'), 'utf8'), {
+    clearInterval,
+    clearTimeout,
+    document,
+    requestAnimationFrame() {},
+    setInterval,
+    setTimeout,
+    window,
+  });
+
+  const layer = topbar.children.find((element) => element.className === 'zoo-walkers');
+  const toggle = body.children.find((element) => element.className === 'walkers-toggle');
+  return {
+    clearedIntervals,
+    intervals,
+    layer,
+    mediaListeners,
+    mobileQuery,
+    topbar,
+    resize(width) {
+      mobileQuery.matches = width <= 560;
+      mediaListeners.get('change')?.({ matches: mobileQuery.matches });
+    },
+    timeouts,
+    toggle,
+  };
 }
 
 function mapSection(html) {
@@ -601,4 +800,354 @@ test('CA-04 visit-info-icons-and-favicon baja 8 px los tres iconos sin alterar e
   assert.match(css, /\.infobar\s*\.info-icon\s*\{\s*margin-top:\s*8px;\s*\}/);
   assert.match(css, /\.infobar\s*>\s*div\s*\{[^}]*align-items:\s*center[^}]*text-align:\s*center/s);
   assert.equal((readFileSync(path.join(webSource, 'index.html'), 'utf8').match(/class="bi bi-(?:clock|geo-alt|ticket-perforated) info-icon"/g) ?? []).length, 3);
+});
+
+test('CA-01 mobile-walker-rotation muestra dos animales y rota las parejas cada 8 segundos', () => {
+  const mobile = mountWalkers(560);
+  const visibleIndices = () => mobile.layer.children
+    .map((walker, index) => walker.hidden ? null : index)
+    .filter((index) => index !== null);
+  const interval = [...mobile.intervals.values()][0];
+
+  assert.deepEqual(visibleIndices(), [0, 1]);
+  assert.equal(mobile.intervals.size, 1);
+  assert.equal(interval.delay, 8000);
+
+  interval.callback();
+  assert.deepEqual(visibleIndices(), [2, 3]);
+  assert.ok(visibleIndices().length <= 2);
+
+  interval.callback();
+  assert.deepEqual(visibleIndices(), [4, 5]);
+  assert.ok(visibleIndices().length <= 2);
+
+  interval.callback();
+  assert.deepEqual(visibleIndices(), [0, 1]);
+  assert.ok(visibleIndices().length <= 2);
+});
+
+test('CA-02 mobile-walker-rotation conserva los seis animales y su recorrido en escritorio', () => {
+  const desktop = mountWalkers(561);
+  assert.equal(desktop.layer.children.filter((walker) => !walker.hidden).length, 6);
+  assert.equal(desktop.intervals.size, 0);
+  assert.deepEqual(
+    desktop.layer.children.map((walker) => walker.style.properties.get('--dur')),
+    ['46s', '64s', '72s', '130s', '36s', '58s'],
+  );
+
+  const responsive = mountWalkers(390);
+  const mobileTimer = [...responsive.intervals.keys()][0];
+  responsive.resize(1024);
+  assert.deepEqual(responsive.clearedIntervals, [mobileTimer]);
+  assert.equal(responsive.layer.children.filter((walker) => !walker.hidden).length, 6);
+  assert.equal(responsive.intervals.size, 0);
+
+  responsive.resize(390);
+  assert.deepEqual(
+    responsive.layer.children.map((walker, index) => walker.hidden ? null : index)
+      .filter((index) => index !== null),
+    [0, 1],
+  );
+  assert.equal(responsive.intervals.size, 1);
+});
+
+test('CA-03 mobile-walker-rotation conserva control, interacciones y movimiento reducido', () => {
+  const mobile = mountWalkers(390);
+  assert.equal(mobile.toggle.getAttribute('aria-pressed'), 'true');
+  mobile.toggle.listeners.get('click')();
+  assert.equal(mobile.toggle.getAttribute('aria-pressed'), 'false');
+  assert.equal(mobile.layer.classList.contains('is-hidden'), true);
+
+  mobile.toggle.listeners.get('click')();
+  assert.equal(mobile.toggle.getAttribute('aria-pressed'), 'true');
+  assert.equal(mobile.layer.classList.contains('is-hidden'), false);
+  assert.equal(mobile.layer.children.filter((walker) => !walker.hidden).length, 2);
+
+  const activeWalker = mobile.layer.children[0];
+  activeWalker.listeners.get('click')();
+  assert.equal(activeWalker.classList.contains('jump'), true);
+  assert.equal(activeWalker.classList.contains('talk'), true);
+  [...mobile.timeouts.values()].find((timer) => timer.delay === 2200).callback();
+  assert.equal(activeWalker.classList.contains('jump'), false);
+  assert.equal(activeWalker.classList.contains('talk'), false);
+
+  const reducedMotion = mountWalkers(390, true);
+  assert.equal(reducedMotion.layer, undefined);
+  assert.equal(reducedMotion.toggle, undefined);
+  assert.equal(reducedMotion.intervals.size, 0);
+
+  const css = readFileSync(path.join(webSource, 'animations.css'), 'utf8');
+  assert.match(css, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*?\.zoo-walkers,\s*\.walkers-toggle\s*\{\s*display:\s*none !important;/);
+  assert.match(css, /@media print\s*\{\s*\.zoo-walkers,\s*\.walkers-toggle\s*\{\s*display:\s*none !important;/);
+  assert.match(readFileSync(path.join(webSource, 'styles.css'), 'utf8'), /\[hidden\]\s*\{\s*display:\s*none !important;\s*\}/);
+});
+
+test('CA-04 mobile-walker-rotation conserva suite Node sin nuevas dependencias', () => {
+  const source = readFileSync(testFile, 'utf8');
+  for (const criterion of [
+    'CA-01 mobile-walker-rotation',
+    'CA-02 mobile-walker-rotation',
+    'CA-03 mobile-walker-rotation',
+    'CA-04 mobile-walker-rotation',
+  ]) {
+    assert.ok(source.includes(criterion), `Falta el test ${criterion}`);
+  }
+
+  const imports = [...source.matchAll(/from\s+['"]([^'"]+)['"]/g)].map((match) => match[1]);
+  assert.ok(imports.every((specifier) => [
+    'node:test',
+    'node:assert/strict',
+    'node:fs',
+    'node:path',
+    'node:crypto',
+    'node:vm',
+  ].includes(specifier)));
+  assert.equal(existsSync(path.join(webSource, 'package.json')), false);
+});
+
+test('CA-01 header-walker-layer confina los animalitos en la franja superior', () => {
+  const mounted = mountWalkers(1024);
+  const css = readFileSync(path.join(webSource, 'animations.css'), 'utf8');
+  assert.equal(mounted.topbar.children.includes(mounted.layer), true);
+  assert.equal(mounted.layer.classList.contains('is-header-layer'), true);
+  assert.equal(mounted.layer.classList.contains('is-hidden'), false);
+  assert.match(css, /\.zoo-walkers\.is-header-layer\s*\{[^}]*position:\s*absolute[^}]*top:\s*0[^}]*height:\s*min\(76px,\s*100%\)[^}]*overflow:\s*hidden/s);
+  assert.doesNotMatch(css, /\.zoo-walkers\.is-header-layer\s*\{[^}]*bottom:\s*0/s);
+});
+
+test('CA-02 header-walker-layer pone la cabecera por delante y reduce los dibujos', () => {
+  const css = readFileSync(path.join(webSource, 'animations.css'), 'utf8');
+  assert.match(css, /\.topbar\s*\{\s*isolation:\s*isolate;\s*\}/);
+  assert.match(css, /\.topbar\s*>\s*:not\(\.zoo-walkers\)\s*\{\s*position:\s*relative;\s*z-index:\s*2;\s*\}/);
+  assert.match(css, /\.zoo-walkers\.is-header-layer\s*\{[^}]*z-index:\s*1/s);
+  assert.match(css, /\.zoo-walkers\.is-header-layer\s+\.walker-body svg\s*\{[^}]*width:\s*min\(calc\(var\(--w,\s*100px\)\s*\*\s*\.48\),\s*68px\)[^}]*max-height:\s*48px/s);
+
+  const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
+  for (const selector of ['class="brand"', 'id="menuToggle"', 'id="mainNav"', 'class="top-actions"']) {
+    assert.ok(html.includes(selector), `La cabecera perdió ${selector}`);
+  }
+});
+
+test('CA-03 header-walker-layer conserva clics decorativos sin cubrir controles', () => {
+  const desktop = mountWalkers(1024);
+  const css = readFileSync(path.join(webSource, 'animations.css'), 'utf8');
+  assert.match(css, /\.zoo-walkers\s*\{[^}]*pointer-events:\s*none;/s);
+  assert.match(css, /\.walker\s*\{[^}]*pointer-events:\s*auto;/s);
+  assert.equal(desktop.layer.children.every((walker) => walker.listeners.has('click')), true);
+  assert.equal(desktop.toggle.getAttribute('aria-pressed'), 'true');
+  assert.match(readFileSync(path.join(webSource, 'animations.js'), 'utf8'), /btn\.addEventListener\('click'/);
+
+  const nav = mountMobileNavigation(390);
+  assert.equal(nav.listeners.has('toggle:click'), true);
+  nav.listeners.get('toggle:click')();
+  assert.equal(nav.menuToggle.getAttribute('aria-expanded'), 'true');
+  assert.equal(nav.mainNav.hidden, false);
+});
+
+test('CA-04 header-walker-layer conserva navegación y rotación responsive aprobada', () => {
+  const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
+  const css = readFileSync(path.join(webSource, 'animations.css'), 'utf8');
+  const mobile = mountWalkers(390);
+  assert.equal(mobile.layer.children.filter((walker) => !walker.hidden).length, 2);
+  assert.equal([...mobile.intervals.values()][0].delay, 8000);
+  mobile.resize(1024);
+  assert.equal(mobile.layer.children.filter((walker) => !walker.hidden).length, 6);
+  assert.equal(mobile.intervals.size, 0);
+
+  assert.match(html, /id="menuToggle"[^>]*aria-controls="mainNav"[^>]*aria-expanded="false"/);
+  assert.match(html, /<nav[^>]*id="mainNav"[^>]*aria-label="Navegación principal"/);
+  assert.match(html, /id="searchInput"/);
+  assert.match(html, /Comprar boletos/);
+  assert.match(css, /@media \(max-width:\s*560px\)/);
+});
+
+test('CA-05 header-walker-layer nombra cada criterio sin agregar dependencias', () => {
+  const source = readFileSync(testFile, 'utf8');
+  for (const criterion of [
+    'CA-01 header-walker-layer',
+    'CA-02 header-walker-layer',
+    'CA-03 header-walker-layer',
+    'CA-04 header-walker-layer',
+    'CA-05 header-walker-layer',
+  ]) {
+    assert.ok(source.includes(criterion), `Falta el test ${criterion}`);
+  }
+
+  const imports = [...source.matchAll(/from\s+['"]([^'"]+)['"]/g)].map((match) => match[1]);
+  assert.ok(imports.every((specifier) => [
+    'node:test',
+    'node:assert/strict',
+    'node:fs',
+    'node:path',
+    'node:crypto',
+    'node:vm',
+  ].includes(specifier)));
+});
+
+test('CA-01 cognitive-accessibility-assistant abre, cierra, comunica estado y devuelve el foco', () => {
+  const assistant = mountCognitiveAssistant();
+  assistant.launcher.listeners.get('click')();
+  assert.equal(assistant.panel.hidden, false);
+  assert.equal(assistant.attributes.get('aria-expanded'), 'true');
+  assert.equal(assistant.document.activeElement, assistant.closeButton);
+  assistant.listeners.get('keydown')({ key: 'Escape' });
+  assert.equal(assistant.panel.hidden, true);
+  assert.equal(assistant.attributes.get('aria-expanded'), 'false');
+  assert.equal(assistant.document.activeElement, assistant.launcher);
+
+  const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
+  assert.match(html, /id="cognitiveLauncher"[\s\S]*?aria-controls="cognitivePanel"[\s\S]*?aria-expanded="false"/);
+  assert.match(html, /id="cognitivePanel"[\s\S]*?aria-labelledby="cognitiveTitle"[\s\S]*?aria-describedby="cognitiveDescription"/);
+  assert.match(html, /<label><input type="checkbox" data-cognitive-mode="focus"> <span>Modo foco<\/span><\/label>/);
+});
+
+test('CA-02 cognitive-accessibility-assistant aplica perfiles y refleja cambios personalizados', () => {
+  const assistant = mountCognitiveAssistant();
+  const selectProfile = (value) => {
+    assistant.profile.value = value;
+    assistant.profile.listeners.get('change')();
+  };
+  selectProfile('clear');
+  assert.equal(assistant.modes.find((control) => control.dataset.cognitiveMode === 'dyslexia').checked, true);
+  assert.equal(assistant.profile.value, 'clear');
+  selectProfile('focus');
+  assert.equal(assistant.modes.find((control) => control.dataset.cognitiveMode === 'focus').checked, true);
+  assert.equal(assistant.modes.find((control) => control.dataset.cognitiveMode === 'ruler').checked, true);
+  selectProfile('calm');
+  assert.equal(assistant.modes.find((control) => control.dataset.cognitiveMode === 'calm').checked, true);
+
+  const focusMode = assistant.modes.find((control) => control.dataset.cognitiveMode === 'focus');
+  focusMode.checked = true;
+  focusMode.listeners.get('change')();
+  assert.equal(assistant.profile.value, 'custom');
+  focusMode.checked = false;
+  focusMode.listeners.get('change')();
+  assert.equal(assistant.profile.value, 'calm');
+  selectProfile('none');
+  assert.equal(assistant.modes.some((control) => control.checked), false);
+});
+
+test('CA-03 cognitive-accessibility-assistant revierte modos y conserva lectura, foco y regla', () => {
+  const assistant = mountCognitiveAssistant();
+  for (const control of assistant.modes) {
+    control.checked = true;
+    control.listeners.get('change')();
+    assert.equal(assistant.document.documentElement.classList.contains(`cognitive-mode-${control.dataset.cognitiveMode}`), true);
+    control.checked = false;
+    control.listeners.get('change')();
+    assert.equal(assistant.document.documentElement.classList.contains(`cognitive-mode-${control.dataset.cognitiveMode}`), false);
+  }
+
+  const pointerMove = assistant.listeners.get('pointermove');
+  const textBlock = new assistant.StubElement();
+  assistant.profile.value = 'focus';
+  assistant.profile.listeners.get('change')();
+  pointerMove({ target: textBlock, clientY: 412 });
+  assert.equal(textBlock.classList.contains('cognitive-focus-current'), true);
+  pointerMove({ target: textBlock, clientY: 412 });
+  const rulerMode = assistant.modes.find((control) => control.dataset.cognitiveMode === 'ruler');
+  rulerMode.checked = true;
+  rulerMode.listeners.get('change')();
+  pointerMove({ target: textBlock, clientY: 412 });
+  assert.equal(assistant.ruler.style.top, '392px');
+  assistant.listeners.get('focusin')({ target: textBlock });
+  assert.equal(assistant.ruler.style.top, '14px');
+
+  const script = readFileSync(path.join(webSource, 'accessibility.js'), 'utf8');
+  assert.match(script, /role', 'text'/);
+  assert.match(script, /setAttribute\('aria-hidden', 'true'\)/);
+  assert.match(script, /replaceChild\(original, wrapper\)/);
+  assert.match(script, /node\.parentNode\.replaceChild\(wrapper, node\)/);
+  assert.match(script, /\.location-item/);
+  assert.match(script, /parent\.closest\('a, button, input, textarea, select, option, script, style, svg/);
+  assert.doesNotMatch(script, /innerHTML\s*=/);
+  const css = readFileSync(path.join(webSource, 'accessibility.css'), 'utf8');
+  assert.match(css, /cognitive-focus-current/);
+  assert.match(css, /filter:\s*grayscale\(0\.85\)/);
+  assert.match(css, /"Trebuchet MS", Verdana, Arial/);
+  assert.doesNotMatch(css, /\.cognitive-mode-bionic \.cognitive-bionic-text\s*\{[^}]*white-space:\s*nowrap/);
+  assert.match(css, /\.cognitive-mode-bionic \.cognitive-bionic-text[\s\S]*?display:\s*inline/);
+  assert.match(css, /font-size:\s*inherit/);
+  assert.match(css, /text-transform:\s*inherit/);
+  assert.match(css, /white-space:\s*nowrap/);
+  assert.match(css, /\.cognitive-bionic-text strong\s*\{\s*display:\s*inline;\s*font-weight:\s*800/);
+  assert.match(css, /pointer-events:\s*none/);
+  assert.match(css, /height:\s*40px/);
+  assert.match(css, /color-mix\(in srgb, var\(--surface-accent/);
+  assert.match(css, /prefers-reduced-motion:\s*reduce/);
+});
+
+test('CA-04 cognitive-accessibility-assistant persiste, restaura, reinicia y opera sin almacenamiento', () => {
+  const storage = new Map();
+  let assistant = mountCognitiveAssistant(storage);
+  const calm = assistant.modes.find((control) => control.dataset.cognitiveMode === 'calm');
+  calm.checked = true;
+  calm.listeners.get('change')();
+  const stored = JSON.parse(storage.get('arca-cognitive-accessibility-v1'));
+  assert.equal(stored.version, 1);
+  assert.equal(stored.profile, 'calm');
+  assistant = mountCognitiveAssistant(storage);
+  assert.equal(assistant.modes.find((control) => control.dataset.cognitiveMode === 'calm').checked, true);
+  assistant.reset.listeners.get('click')();
+  assert.equal(storage.has('arca-cognitive-accessibility-v1'), false);
+
+  storage.set('arca-cognitive-accessibility-v1', '{');
+  assistant = mountCognitiveAssistant(storage);
+  assert.equal(assistant.modes.some((control) => control.checked), false);
+  assistant = mountCognitiveAssistant(new Map(), true);
+  const focus = assistant.modes.find((control) => control.dataset.cognitiveMode === 'focus');
+  focus.checked = true;
+  assert.doesNotThrow(() => focus.listeners.get('change')());
+  assert.equal(assistant.document.documentElement.classList.contains('cognitive-mode-focus'), true);
+});
+
+test('CA-05 cognitive-accessibility-assistant mantiene el resumen inactivo y sin procesamiento', () => {
+  const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
+  const script = readFileSync(path.join(webSource, 'accessibility.js'), 'utf8');
+  const widgetMarkup = html.match(/<section\s+class="cognitive-panel"[\s\S]*?<\/section>/)?.[0];
+  assert.ok(widgetMarkup, 'No se encontró el marcado del asistente');
+  assert.match(widgetMarkup, /class="cognitive-summary"[^>]*disabled[^>]*aria-disabled="true"[\s\S]*?Resumir esta página[\s\S]*?Próximamente/);
+  assert.doesNotMatch(script, /\bfetch\s*\(|\bXMLHttpRequest\b|api.?key|summar/i);
+  assert.doesNotMatch(widgetMarkup, /api.?key/i);
+});
+
+test('CA-06 cognitive-accessibility-assistant se adapta a los viewports y conserva controles del portal', () => {
+  const css = readFileSync(path.join(webSource, 'accessibility.css'), 'utf8');
+  const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
+  for (const width of [360, 390, 768, 1024, 1366]) {
+    assert.ok(width >= 360 && width <= 1366);
+    assert.match(css, /position:\s*fixed/);
+    assert.match(css, /width:\s*min\(360px,\s*calc\(100vw - 32px\)\)/);
+    assert.match(css, /@media \(max-width:\s*560px\)[\s\S]*?width:\s*min\(360px,\s*calc\(100vw - 40px\)\)/);
+  }
+  for (const existingControl of ['id="mainNav"', 'id="searchInput"', 'id="mapScene"', 'id="contactMessage"']) {
+    assert.ok(html.includes(existingControl), `Falta el control preexistente ${existingControl}`);
+  }
+  assert.match(css, /max-height:\s*min\(620px,\s*calc\(100vh - 104px\)\)/);
+  assert.match(css, /\.cognitive-panel\s*\{[\s\S]*?padding:\s*0;/);
+  assert.match(css, /overflow-y:\s*auto/);
+});
+
+test('CA-07 cognitive-accessibility-assistant nombra criterios y conserva la suite sin dependencias', () => {
+  const source = readFileSync(testFile, 'utf8');
+  for (const criterion of [
+    'CA-01 cognitive-accessibility-assistant',
+    'CA-02 cognitive-accessibility-assistant',
+    'CA-03 cognitive-accessibility-assistant',
+    'CA-04 cognitive-accessibility-assistant',
+    'CA-05 cognitive-accessibility-assistant',
+    'CA-06 cognitive-accessibility-assistant',
+    'CA-07 cognitive-accessibility-assistant',
+  ]) {
+    assert.ok(source.includes(criterion), `Falta el test ${criterion}`);
+  }
+  const imports = [...source.matchAll(/from\s+['"]([^'"]+)['"]/g)].map((match) => match[1]);
+  assert.ok(imports.every((specifier) => [
+    'node:test',
+    'node:assert/strict',
+    'node:fs',
+    'node:path',
+    'node:crypto',
+    'node:vm',
+  ].includes(specifier)));
 });

@@ -1,0 +1,63 @@
+:root {
+  color-scheme: light;
+  font-family: "Lato", "Segoe UI", sans-serif;
+  font-size: 16px;
+
+  --sidebar: #661a2f;
+  --sidebar-foreground: #ffffff;
+  --primary: #87293a;
+  --primary-foreground: #ffffff;
+  --secondary: #b79159;
+  --secondary-foreground: #000000;
+  --accent: #dec9a3;
+  --foreground: #000000;
+  --foreground-light: #ffffff;
+  --foreground-dark: #000000;
+  --muted-foreground: #595959;
+  --dashboard-sidebar: #072f55;
+  --dashboard-sidebar-foreground: #ffffff;
+  --dashboard-sidebar-muted: #adc0d2;
+  --dashboard-sidebar-hover: #0d4778;
+  --dashboard-sidebar-active: #104c7e;
+  --dashboard-primary: #0b355e;
+  --dashboard-primary-foreground: #ffffff;
+  --dashboard-action: #35a946;
+  --dashboard-action-foreground: #ffffff;
+  --dashboard-secondary: #ecf1f6;
+  --dashboard-secondary-foreground: #17334f;
+  --dashboard-foreground: #18283a;
+  --dashboard-muted-foreground: #718198;
+  --success: #218b3d;
+  --success-subtle: #e7f5e9;
+  --warning: #a66a12;
+  --warning-subtle: #fff4dc;
+  --danger: #c34242;
+  --danger-subtle: #fceaea;
+  --surface: #ffffff;
+  --surface-page: #f3f5f8;
+  --surface-subtle: #f7f9fb;
+  --border: #dce3eb;
+  --ring: #2374b8;
+  --radius-card: 12px;
+  --shadow-card: 0 3px 12px rgb(19 43 68 / 7%);
+}
+
+@theme inline {
+  --color-sidebar: var(--sidebar);
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-dashboard-sidebar: var(--dashboard-sidebar);
+  --color-dashboard-primary: var(--dashboard-primary);
+  --color-dashboard-action: var(--dashboard-action);
+  --color-dashboard-secondary: var(--dashboard-secondary);
+  --color-dashboard-foreground: var(--dashboard-foreground);
+  --color-dashboard-muted-foreground: var(--dashboard-muted-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-surface: var(--surface);
+  --color-surface-page: var(--surface-page);
+  --color-border: var(--border);
+}
