@@ -1,0 +1,250 @@
+/* =========================================================
+   ANIMALITOS CAMINANDO + ANIMACIONES
+   Cargar DESPUÉS de styles.css
+   ========================================================= */
+
+/* ---------- 1. Animalitos que caminan por la pantalla ---------- */
+.zoo-walkers {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 35;
+  height: 150px;
+  overflow-x: clip;
+  pointer-events: none;
+}
+
+.topbar { isolation: isolate; }
+.topbar > :not(.zoo-walkers) { position: relative; z-index: 2; }
+.zoo-walkers.is-header-layer {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  bottom: auto;
+  left: 0;
+  width: 100%;
+  height: min(76px, 100%);
+  overflow: hidden;
+}
+.zoo-walkers.is-header-layer .walker-body svg {
+  width: min(calc(var(--w, 100px) * .48), 68px);
+  max-height: 48px;
+}
+
+.walker {
+  position: absolute;
+  bottom: var(--y, 0px);
+  left: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  will-change: transform;
+  animation: walk-right var(--dur, 40s) linear var(--delay, 0s) infinite;
+}
+.walker.go-left { animation-name: walk-left; }
+.walker:hover { animation-play-state: paused; }
+.walker:hover .walker-body { animation-play-state: paused; }
+
+@keyframes walk-right {
+  from { transform: translateX(-100px); }
+  to   { transform: translateX(calc(100vw + 100px)); }
+}
+@keyframes walk-left {
+  from { transform: translateX(calc(100vw + 100px)); }
+  to   { transform: translateX(-100px); }
+}
+
+.walker-jump { position: relative; display: block; }
+.walker-flip { display: block; }
+.walker.flip .walker-flip { transform: scaleX(-1); }
+
+.walker-body {
+  display: block;
+  line-height: 0;
+  filter: drop-shadow(0 4px 3px rgba(0, 0, 0, .25));
+  animation: step var(--gait, .9s) ease-in-out infinite;
+  user-select: none;
+}
+.walker-body svg { display: block; width: var(--w, 100px); height: auto; overflow: visible; }
+
+/* Patas: se balancean desde la cadera (diagonales en pareja, como al trotar) */
+.leg {
+  animation: leg-swing var(--gait, .9s) ease-in-out infinite;
+}
+.leg.b { animation-delay: calc(var(--gait, .9s) * -.5); }
+@keyframes leg-swing {
+  0%, 100% { transform: rotate(calc(var(--amp, 24deg) * -1)); }
+  50%      { transform: rotate(var(--amp, 24deg)); }
+}
+
+/* Cola, orejas, trompa, cuello y cabeza: vaivén suave */
+.sway { animation: sway var(--sd, 1.4s) ease-in-out infinite alternate; }
+@keyframes sway {
+  from { transform: rotate(calc(var(--r, 8deg) * -1)); }
+  to   { transform: rotate(var(--r, 8deg)); }
+}
+
+/* El "pasito": sube y baja y se balancea */
+@keyframes step {
+  0%, 100% { transform: translateY(0); }
+  25%, 75% { transform: translateY(-2px); }
+  50%      { transform: translateY(0); }
+}
+
+/* Salto cuando le das clic */
+.walker.jump .walker-jump { animation: hop .6s cubic-bezier(.3, .8, .4, 1); }
+@keyframes hop {
+  0%   { transform: translateY(0) scale(1, 1); }
+  25%  { transform: translateY(0) scale(1.15, .85); }
+  55%  { transform: translateY(-46px) scale(.92, 1.1); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+
+/* Globito de texto */
+.walker-bubble {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(var(--sidebar-rgb), .2);
+  color: var(--primary);
+  font: 700 13px/1.2 var(--font-family-base);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 6px) scale(.8);
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+}
+.walker.talk .walker-bubble { opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+/* Botón para quitar / poner los animalitos */
+.walkers-toggle {
+  position: fixed;
+  right: 16px;
+  bottom: 160px;
+  z-index: 36;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 8px 18px rgba(var(--sidebar-rgb), .2);
+  cursor: pointer;
+  font-size: 20px;
+  transition: transform .2s, background .2s;
+}
+.walkers-toggle:hover { transform: scale(1.1) rotate(-8deg); }
+.walkers-toggle[aria-pressed="false"] { background: var(--surface-subtle); opacity: .75; }
+.zoo-walkers.is-hidden { display: none; }
+
+@media (max-width: 560px) {
+  .zoo-walkers { height: 110px; }
+  .walkers-toggle { bottom: 120px; right: 10px; width: 40px; height: 40px; }
+  .walker-body svg { width: calc(var(--w, 100px) * .7); }
+}
+
+/* ---------- 2. Entrada del hero (una sola secuencia al cargar) ---------- */
+.hero-content > * { animation: hero-in .8s cubic-bezier(.2, .7, .2, 1) backwards; }
+.hero-content > :nth-child(1) { animation-delay: .05s; }
+.hero-content > :nth-child(2) { animation-delay: .18s; }
+.hero-content > :nth-child(3) { animation-delay: .32s; }
+.hero-content > :nth-child(4) { animation-delay: .46s; }
+.hero-content > :nth-child(5) { animation-delay: .6s; }
+
+.hero-stats div { animation: hero-in .7s cubic-bezier(.2, .7, .2, 1) backwards; }
+.hero-stats div:nth-child(1) { animation-delay: .7s; }
+.hero-stats div:nth-child(2) { animation-delay: .82s; }
+.hero-stats div:nth-child(3) { animation-delay: .94s; }
+
+.hero-aside .info-card {
+  animation:
+    card-in .9s cubic-bezier(.2, .7, .2, 1) .5s backwards,
+    float 6s ease-in-out 1.4s infinite;
+}
+
+@keyframes hero-in {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-9px); }
+}
+
+/* ---------- 3. Detalles que responden al usuario ---------- */
+
+/* Botón "Comprar boletos" con latido suave */
+.top-actions .user { animation: pulse-ring 2.8s ease-out infinite; }
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 8px 18px rgba(var(--sidebar-rgb), .2), 0 0 0 0 rgba(135, 41, 58, .45); }
+  70%  { box-shadow: 0 8px 18px rgba(var(--sidebar-rgb), .2), 0 0 0 14px rgba(135, 41, 58, 0); }
+  100% { box-shadow: 0 8px 18px rgba(var(--sidebar-rgb), .2), 0 0 0 0 rgba(135, 41, 58, 0); }
+}
+
+/* Iconos de la barra de info: se mueven al pasar el cursor */
+.infobar .info-icon { transition: transform .3s cubic-bezier(.3, 1.6, .5, 1), background .2s; }
+.infobar > div:hover .info-icon { transform: translateY(-5px) rotate(-6deg) scale(1.08); }
+
+.benefit-icon { transition: transform .35s cubic-bezier(.3, 1.6, .5, 1); }
+.benefit-item:hover .benefit-icon { transform: scale(1.12) rotate(-8deg); }
+
+/* Fotos de animales con zoom suave */
+.animal-card { overflow: hidden; }
+.animal-card > img { transition: transform .6s ease; }
+.animal-card:hover > img { transform: scale(1.06); }
+
+/* Flecha de los botones se desliza */
+.btn .bi-arrow-right, .link .bi-arrow-right, .card-link .bi-arrow-up-right {
+  display: inline-block;
+  transition: transform .2s;
+}
+.btn:hover .bi-arrow-right,
+.link:hover .bi-arrow-right { transform: translateX(5px); }
+.card-link:hover .bi-arrow-up-right { transform: translate(3px, -3px); }
+
+/* Marcadores del mapa: anillo que late para invitar al clic */
+.map-marker:not(.entrance)::after {
+  position: absolute;
+  inset: -1px;
+  border: 2px solid rgba(135, 41, 58, .55);
+  border-radius: inherit;
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  animation: marker-ping 2.6s ease-out infinite;
+}
+.z2::after { animation-delay: .4s; }
+.z3::after { animation-delay: .8s; }
+.z4::after { animation-delay: 1.2s; }
+.z5::after { animation-delay: 1.6s; }
+.z6::after { animation-delay: 2s; }
+@keyframes marker-ping {
+  0%   { opacity: .9; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+/* Sombra del encabezado al hacer scroll */
+.topbar { transition: box-shadow .25s, min-height .25s; }
+.topbar.is-scrolled { box-shadow: 0 8px 24px rgba(var(--sidebar-rgb), .12); }
+
+/* ---------- 4. Accesibilidad: respetar "reducir movimiento" ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .zoo-walkers, .walkers-toggle { display: none !important; }
+  .leg, .sway { animation: none !important; }
+  .hero-content > *, .hero-stats div, .hero-aside .info-card,
+  .top-actions .user, .map-marker::after { animation: none !important; }
+}
+
+@media print {
+  .zoo-walkers, .walkers-toggle { display: none !important; }
+}
