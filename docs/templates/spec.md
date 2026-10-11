@@ -32,6 +32,8 @@ Como `<actor>`, quiero `<capacidad>` para `<beneficio>`.
 ## Datos, privacidad y auditoría
 ¿Qué datos se crean/consultan? ¿Hay datos clínicos o financieros, retención, auditoría, SoftDeletes o consentimiento?
 
+¿Requiere crear o modificar esquema, funciones o procedimientos? Indica la DBR que acompaña a esta spec (`docs/database/requests/DBR-NNN-slug.md`); la DBR no sustituye la spec.
+
 ## Flujos y errores
 Incluye conectividad offline si aplica, casos alternos, validación y recuperación.
 

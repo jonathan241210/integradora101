@@ -19,7 +19,10 @@ Los tres artefactos usan el mismo `NNN-slug.md`; lee la spec aprobada y el plan 
 - Los modelos de dominio extienden `BaseModel` cuando requieren auditoría.
 - Agrega `created_by`/`updated_by` a la migración cuando el modelo lo requiera.
 - Usa SoftDeletes y Activitylog para datos clínicos y financieros; nunca los borres físicamente.
-- El esquema cambia solo mediante migraciones Laravel sobre MySQL 8 estándar.
+- El esquema cambia solo mediante migraciones Laravel sobre MySQL 8.0.x; cada migración nace de una DBR aprobada (`docs/database/`) y la crea, prueba y aplica el responsable de BD. Nunca SQL manual, ni siquiera en la base de pruebas.
+- Backend implementa modelos, Actions y endpoints consumidores solo cuando la DBR está en `Lista para backend`; no modifica una migración aprobada: si el contrato diverge, devuelve la DBR a revisión.
+- Funciones y procedimientos almacenados son excepcionales: se justifican frente a una Action, se versionan en migraciones con `DB::statement()` y se prueban en MySQL 8.0; las reglas principales siguen en Actions. Vistas y triggers no están autorizados.
+- Conectar la API y probar conectividad no requiere DBR mientras no altere el esquema; requiere SDD, `.env` e inventario (versión, charset/collation, modo SQL, motor y esquema). El esquema existente no se borra, recrea ni adopta como baseline automáticamente; una decisión aprobada definirá baseline o reconstrucción controlada.
 - Configura conexiones únicamente mediante `.env`; la lógica debe ser portable GCP/local.
 - `settings_colores` en `mysql2` es fuente externa de solo lectura; no escribir ni migrar esa tabla.
 - Protege producción con `DB::prohibitDestructiveCommands` y conserva los controles de seguridad.

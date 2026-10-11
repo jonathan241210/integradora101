@@ -19,6 +19,7 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0007 · Línea base de arquitectura general](0007-linea-base-arquitectura-general.md) — Propuesto
 - [0008 · Integración con el sistema municipal](0008-integracion-sistema-municipal.md) — Abierto
 - [0009 · Pagos electrónicos futuros](0009-pagos-electronicos-futuros.md) — Propuesto
+- [0010 · MySQL 8.0 y gobierno de cambios de base de datos](0010-mysql-8-0-database-change-governance.md) — Aceptado
 
 ## Plantilla
 
