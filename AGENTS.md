@@ -9,7 +9,7 @@ Sistema del Zoológico Municipal Nicolás Bravo (Tulancingo). Monorepo con Spec-
 - `apps/pwa` — React PWA veterinaria; expedientes y borradores offline.
 - `apps/web` — React SPA del portal institucional público.
 - `apps/mobile` — React Native para visitantes: mapa, QR y 3D.
-- `packages/` — `@arca/{ui,tokens,api-client,config}`; `docs/` — documentación y ADRs; `infra/` — infraestructura planeada.
+- `packages/` — `@arca/{ui,tokens,api-client,config}`; `docs/` — documentación y ADRs; `docs/database/` — gobierno de BD y solicitudes DBR; `infra/` — infraestructura planeada.
 
 ## Estructura de cada app
 | Carpeta | Contenido |
@@ -33,8 +33,9 @@ Sistema del Zoológico Municipal Nicolás Bravo (Tulancingo). Monorepo con Spec-
 - Código, BD, rutas, permisos y commits en inglés; UI, mensajes, specs y documentación en español.
 - La API sigue MVC en los límites de Laravel: Models para datos, Controllers HTTP delgados y Views sustituidas por respuestas JSON; la lógica de negocio vive en Actions.
 - Los clientes React y React Native siguen MVVM explícito: componentes como Views, hooks como ViewModels y tipos/datos mediante `@arca/api-client`; React no impone este patrón automáticamente.
-- Esquema solo por migraciones; modelos de negocio extienden `BaseModel`; datos clínicos y financieros usan SoftDeletes y auditoría.
-- MySQL 8 estándar, configuración por `.env`, portable entre Google Cloud y MySQL Server local.
+- Esquema solo por migraciones Laravel que el responsable de BD crea, prueba y aplica tras una DBR aprobada en `docs/database/requests/`; ningún agente, solicitante ni cliente crea SQL ejecutable, migraciones ni cambios directos; la aplicación se registra por ambiente. Modelos de negocio extienden `BaseModel`; datos clínicos y financieros usan SoftDeletes y auditoría.
+- MySQL 8.0.x (revisión mínima pendiente del inventario inicial), configuración por `.env`, portable entre Google Cloud y MySQL Server local.
+- Conectar la API o probar conectividad sin alterar el esquema no requiere DBR, pero sí spec, plan y tasks aprobados, `.env` y cero secretos versionados.
 - No fijar colores de marca en componentes: usar tokens semánticos y el tema de `GET /api/theme`; modo claro.
 - SPAs con rutas del cliente y API con rutas Laravel nombradas; no usar Inertia ni Wayfinder.
 - Dependencia o tecnología nueva requiere ADR aprobado en `docs/adr/`.

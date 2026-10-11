@@ -15,6 +15,7 @@ Esta carpeta reúne la referencia funcional y técnica compartida por todas las 
 
 ## Decisiones y formatos
 - [Registro de decisiones (ADRs)](adr/README.md)
+- [Gobierno de base de datos y solicitudes DBR](database/README.md)
 - [Plantilla de spec](templates/spec.md)
 - [Plantilla de plan](templates/plan.md)
 - [Plantilla de tareas](templates/tasks.md)

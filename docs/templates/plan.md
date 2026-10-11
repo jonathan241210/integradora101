@@ -17,7 +17,7 @@ Resumen del flujo, límites y responsabilidades. La API es autoridad de negocio;
 ## Contrato y datos
 - Endpoints con rutas nombradas, autenticación y permisos:
 - Validación/Form Requests, Actions, Resources y Policies:
-- Migraciones, `BaseModel`, auditoría y SoftDeletes:
+- DBR relacionada (`docs/database/requests/DBR-NNN-slug.md`) y estado; migraciones, `BaseModel`, auditoría y SoftDeletes las crea el responsable de BD:
 - Errores y compatibilidad:
 
 ## Seguridad, offline y operación
