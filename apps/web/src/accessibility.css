@@ -1,0 +1,282 @@
+.cognitive-launcher,
+.cognitive-panel,
+.cognitive-reading-ruler {
+  --cognitive-ink: var(--foreground, #000);
+  --cognitive-brand: var(--primary, #87293a);
+  --cognitive-surface: var(--surface, #fff);
+  --cognitive-border: var(--border, #e3d9c6);
+}
+
+.cognitive-launcher {
+  position: fixed;
+  z-index: 60;
+  right: 18px;
+  bottom: 18px;
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border: 2px solid var(--cognitive-surface);
+  border-radius: 50%;
+  background: var(--cognitive-brand);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 24%);
+  color: #fff;
+  cursor: pointer;
+  font: 700 19px/1 var(--font-family-base, sans-serif);
+}
+
+.cognitive-launcher:hover { filter: brightness(1.12); }
+.cognitive-launcher:focus-visible,
+.cognitive-panel :focus-visible {
+  outline: 3px solid #124c8c;
+  outline-offset: 3px;
+}
+
+.cognitive-panel {
+  position: fixed;
+  z-index: 61;
+  right: 18px;
+  bottom: 84px;
+  display: flex;
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(620px, calc(100vh - 104px));
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--cognitive-border);
+  border-radius: 16px;
+  background: var(--cognitive-surface);
+  box-shadow: 0 12px 36px rgb(0 0 0 / 22%);
+  color: var(--cognitive-ink);
+}
+
+.cognitive-panel[hidden] { display: none; }
+.cognitive-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--cognitive-border);
+}
+
+.cognitive-panel-header h2 {
+  margin: 0;
+  color: var(--cognitive-brand);
+  font: 700 20px/1.25 var(--font-family-base, sans-serif);
+}
+
+.cognitive-panel-header p {
+  margin: 5px 0 0;
+  color: var(--cognitive-ink);
+  font-size: 14px;
+}
+
+.cognitive-close {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--cognitive-border);
+  border-radius: 8px;
+  background: var(--cognitive-surface);
+  color: var(--cognitive-ink);
+  cursor: pointer;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.cognitive-panel-content {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 18px 18px;
+}
+
+.cognitive-profile-label,
+.cognitive-options legend {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--cognitive-ink);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+#cognitiveProfile {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 36px 8px 12px;
+  border: 1px solid #767676;
+  border-radius: 8px;
+  background: var(--cognitive-surface);
+  color: var(--cognitive-ink);
+  font: inherit;
+}
+
+.cognitive-options {
+  display: grid;
+  gap: 4px;
+  margin: 18px 0;
+  padding: 0;
+  border: 0;
+}
+
+.cognitive-options legend { margin-bottom: 7px; }
+.cognitive-options label {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 11px;
+  padding: 7px 9px;
+  border-radius: 8px;
+  color: var(--cognitive-ink);
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.cognitive-options label:hover { background: var(--surface-subtle, #f4efe5); }
+.cognitive-hint {
+  margin: -2px 9px 4px 40px;
+  color: #454545;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.cognitive-options input {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  accent-color: var(--cognitive-brand);
+}
+
+.cognitive-summary,
+.cognitive-reset {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--cognitive-border);
+  border-radius: 8px;
+  background: var(--cognitive-surface);
+  color: var(--cognitive-ink);
+  font: 600 14px var(--font-family-base, sans-serif);
+}
+
+.cognitive-summary { background: var(--surface-subtle, #f4efe5); }
+.cognitive-summary:disabled { cursor: not-allowed; }
+.cognitive-summary span { color: #454545; font-size: 12px; }
+.cognitive-reset {
+  justify-content: center;
+  margin-top: 9px;
+  color: var(--cognitive-brand);
+  cursor: pointer;
+}
+
+.cognitive-reading-ruler {
+  position: fixed;
+  z-index: 59;
+  right: 0;
+  left: 0;
+  height: 40px;
+  border-top: 1px solid color-mix(in srgb, var(--primary, #87293a) 42%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--primary, #87293a) 42%, transparent);
+  background: color-mix(in srgb, var(--surface-accent, #f3e8d3) 38%, transparent);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 8%);
+  pointer-events: none;
+}
+
+.cognitive-reading-ruler[hidden] { display: none; }
+
+.cognitive-mode-dyslexia main p,
+.cognitive-mode-dyslexia main li,
+.cognitive-mode-dyslexia main h1,
+.cognitive-mode-dyslexia main h2,
+.cognitive-mode-dyslexia main h3,
+.cognitive-mode-dyslexia main blockquote {
+  font-family: "Trebuchet MS", Verdana, Arial, sans-serif;
+  letter-spacing: 0.035em;
+}
+
+.cognitive-mode-dyslexia main p,
+.cognitive-mode-dyslexia main li,
+.cognitive-mode-dyslexia main h1,
+.cognitive-mode-dyslexia main h2,
+.cognitive-mode-dyslexia main h3,
+.cognitive-mode-dyslexia main blockquote {
+  line-height: 1.85;
+}
+
+.cognitive-mode-bionic .cognitive-bionic-text {
+  display: inline;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.cognitive-mode-bionic .cognitive-bionic-text [role="text"],
+.cognitive-mode-bionic .cognitive-bionic-text [aria-hidden="true"] {
+  display: inline;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  white-space: nowrap;
+}
+
+.cognitive-mode-bionic .cognitive-bionic-text strong {
+  display: inline;
+  font-weight: 800;
+}
+
+.cognitive-mode-focus main .cognitive-focus-current {
+  outline: 3px solid var(--cognitive-brand);
+  outline-offset: 5px;
+  background: var(--surface-accent, #f3e8d3);
+  color: #111;
+}
+
+.cognitive-mode-focus main .cognitive-focus-muted {
+  filter: grayscale(0.85);
+}
+
+.cognitive-mode-calm,
+.cognitive-mode-calm *,
+.cognitive-mode-calm *::before,
+.cognitive-mode-calm *::after {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+@media (max-width: 560px) {
+  .cognitive-launcher {
+    right: 12px;
+    bottom: 12px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .cognitive-panel {
+    right: 12px;
+    left: auto;
+    bottom: 72px;
+    width: min(360px, calc(100vw - 40px));
+    max-height: calc(100vh - 88px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cognitive-launcher,
+  .cognitive-panel,
+  .cognitive-panel * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
