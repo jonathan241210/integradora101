@@ -32,7 +32,7 @@ Los comandos previstos se declararán en los manifiestos cuando las apps se inic
 - Fortify se integra headless; Sanctum gestiona autenticación de clientes. No usar Inertia ni Wayfinder.
 - React SPA: alias `@/`, `@arca/ui`, hooks vía `@arca/api-client`, UI en español y componentes accesibles; React Router es propuesta del ADR 0002, no dependencia aprobada.
 - PWA: persistir solo borradores offline y sincronizarlos mediante el contrato de API aprobado.
-- MySQL: MySQL 8 estándar, migraciones como única fuente de esquema, conexión externa `mysql2` de solo lectura y configuración por `.env`.
+- MySQL: MySQL 8.0.x (revisión mínima pendiente del inventario inicial); migraciones Laravel como única fuente de esquema, creadas, probadas y aplicadas por el responsable de BD tras una DBR aprobada; funciones y procedimientos almacenados solo de forma excepcional, justificados, versionados en migraciones y con las reglas principales en Actions; vistas y triggers no autorizados; conexión externa `mysql2` de solo lectura y configuración por `.env`.
 - UI: tokens semánticos; nunca colores de marca hex/oklch directos en componentes. Iconos `lucide-react` en web; `cn()` según convención de UI compartida.
 
 ## Política de dependencias y seguridad
