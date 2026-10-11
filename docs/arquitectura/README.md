@@ -23,7 +23,7 @@ Esta carpeta desglosa la [arquitectura normativa](../02-arquitectura.md). Despu�
 | Arquitectura de `apps/dashboard` | Pendiente | MVVM, efectivo/caja, permisos y secuencias |
 | Arquitectura de `apps/pwa` | Pendiente | MVVM, offline, privacidad, conflictos y ADR 0003 |
 | Arquitectura de `apps/web` | Pendiente | MVVM, contenido público y pagos solo como futuro |
-| Arquitectura de `apps/mobile` | Pendiente | MVVM, QR/3D, tokens y ADR 0004 |
+| Arquitectura de `apps/mobile` | Borrador; pendiente aprobación en PR | MVVM, prototipo 002, límites futuros de hardware, tokens y ADR 0004 |
 | Contratos cruzados | Pendiente | API v1, errores, compatibilidad y ownership |
 | Revisión de seguridad | Pendiente | Autenticación, autorización, secretos, privacidad y auditoría |
 | Diagramas y secuencias | Pendiente | GitHub Mermaid y estados actual/propuesto/futuro |
