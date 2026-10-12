@@ -45,8 +45,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   placeholderText: {
-    color: colors.background,
+    color: colors.textOnPrimary,
+    backgroundColor: colors.text,
     fontWeight: '600' as const,
     fontSize: 14,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
   },
 });

@@ -46,7 +46,7 @@ export function AnimalDetailScreen({ animal, loading = false, onBackPress, onNav
             <>
               <View pointerEvents="none" style={styles.lockedImageShade} />
               <View style={styles.lockedImageOverlay}>
-                <Icon name="lock" size={32} color={colors.background} />
+                <Icon name="lock" size={32} color={colors.textOnPrimary} />
                 <AppText variant="small" bold color="textOnPrimary">Animal por descubrir</AppText>
               </View>
             </>

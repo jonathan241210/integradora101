@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
   animalName: {
-    color: colors.background,
+    color: colors.textOnPrimary,
     fontWeight: '600' as const,
   },
   content: {

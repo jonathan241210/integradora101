@@ -10,7 +10,7 @@ interface LocationPillProps {
 export function LocationPill({ label, variant = 'filled' }: LocationPillProps) {
   return (
     <View style={[styles.container, styles[variant]]}>
-      <Text style={[styles.text, { color: variant === 'filled' ? colors.background : colors.primary }]}>
+      <Text style={[styles.text, { color: variant === 'filled' ? colors.textOnPrimary : colors.primary }]}>
         {label}
       </Text>
     </View>
