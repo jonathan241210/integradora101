@@ -12,3 +12,4 @@ opencode.json
 apps/mobile/.expo/
 apps/mobile/coverage/
 apps/mobile/dist/
+/SSL_CA/ca.pem
