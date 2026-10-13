@@ -1,0 +1,33 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "PWA: ejecutar en desarrollo",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"run",
+				"dev",
+				"--",
+				"--host",
+				"0.0.0.0"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "PWA dev server (apps/pwa)",
+			"type": "shell",
+			"command": "cd apps/pwa && npm run dev -- --host 0.0.0.0",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "PWA dev server fixed config",
+			"type": "shell",
+			"command": "cd apps/pwa && npm run dev",
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}
