@@ -32,6 +32,22 @@ Cada permiso usa `<resource>.<action>` en inglés, por ejemplo `tickets.create` 
 | `specimens.view` | Consultar ejemplares | ✓ | — | — | ✓ | — |
 | `specimens.update` | Actualizar datos del ejemplar | ✓ | — | — | ✓ | — |
 | `users.manage` | Administrar usuarios y permisos | ✓ | — | — | — | — |
+| `news.manage` | Administrar noticias | ✓ | — | — | — | — |
+| `events.manage` | Administrar eventos | ✓ | — | — | — | — |
+| `enclosures.manage` | Administrar recintos | ✓ | — | — | — | — |
 | `public-content.view` | Consultar contenido público | ✓ | ✓ | ✓ | ✓ | Público |
 
 La lista no sustituye Policies por registro ni restricciones de datos sensibles. El acceso de visitantes se limita a contenido marcado explícitamente como público; no se le asigna `public-content.view` como permiso de cuenta.
+
+## Áreas y roles
+
+`departments` (antes `areas`; DBR-001/DBR-002) es el catálogo de áreas del personal. Cada área tiene un `code` estable en inglés, un `name` visible en español y un **rol sugerido** que solo se propone al crear la cuenta (editable en `arca:create-staff`):
+
+| code | name (UI) | Rol sugerido |
+|---|---|---|
+| `information-technology` | Informática | `admin` |
+| `management` | Dirección | `executive` |
+| `box-office` | Taquilla | `cashier` |
+| `veterinary` | Servicios veterinarios | `veterinarian` |
+
+El área **no otorga acceso**: solo organiza al personal para reportes, filtros y auditoría. La autorización la dan exclusivamente los roles y permisos de esta matriz, verificados en el servidor.

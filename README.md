@@ -83,6 +83,22 @@ infra/         # diseño de infraestructura, todavía no implementado
 
 Cada app numera sus features independientemente. Una feature usa el mismo `NNN-slug.md` en `specs/`, `plan/` y `tasks/`; el detalle está en [flujo SDD](docs/05-flujo-sdd.md).
 
+## Comandos de base de datos (API)
+
+Se ejecutan desde `apps/api/src` con el `.env` local configurado. Son comandos de **solo lectura**, útiles para que cualquier integrante o agente inspeccione el esquema antes de proponer una DBR:
+
+| Comando | Qué muestra |
+|---|---|
+| `php artisan db:show` | Resumen del servidor y de la base conectada |
+| `php artisan db:show --counts` | Lo anterior, con conteo de filas por tabla |
+| `php artisan db:table <tabla>` | Columnas, tipos e índices de una tabla (ej. `users_admins`; tras DBR-001, `users`) |
+| `php artisan migrate:status` | Estado de las migraciones |
+
+**Avisos:**
+
+- Nunca ejecutar `migrate`, `migrate:fresh`, `db:wipe` ni `db:seed` contra las bases compartidas sin una DBR aplicada por el responsable de BD ([gobierno de BD](docs/database/README.md)).
+- `arca_zoo` es la base de **desarrollo** (configurada en `.env`); `arca_pruebas` se usa **solo para PHPUnit**.
+
 ## Flujo SDD resumido
 
 Antes de cambiar código, se aprueba una spec; después se redactan el plan con revisión de los seis principios de la Constitución y las tareas T-xx vinculadas a criterios CA-xx. Se implementa en `src/`, con al menos un test automatizado por CA-xx, y se verifica antes del PR. La guía normativa está en [docs/05-flujo-sdd.md](docs/05-flujo-sdd.md); los formatos están en `docs/templates/`.
