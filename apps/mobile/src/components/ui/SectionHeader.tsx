@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
   },
   actionText: {
-    color: colors.background,
+    color: colors.textOnPrimary,
     fontSize: 14,
     fontWeight: '500' as const,
   },

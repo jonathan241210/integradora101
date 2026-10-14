@@ -4,7 +4,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
 <View
   style={
     {
-      "backgroundColor": "#F5F5F5",
+      "backgroundColor": "#f3f5f8",
       "flex": 1,
       "paddingBottom": 0,
       "paddingLeft": 0,
@@ -33,7 +33,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
       <View
         style={
           {
-            "backgroundColor": "#2E7D32",
+            "backgroundColor": "#87293a",
             "borderRadius": 12,
             "padding": 24,
           }
@@ -42,7 +42,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
         <Text
           style={
             {
-              "color": "#F5F5F5",
+              "color": "#ffffff",
               "fontSize": 12,
               "fontWeight": "500",
               "letterSpacing": 0.5,
@@ -56,7 +56,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
         <Text
           style={
             {
-              "color": "#F5F5F5",
+              "color": "#ffffff",
               "fontSize": 20,
               "fontWeight": "700",
               "marginBottom": 4,
@@ -68,7 +68,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
         <Text
           style={
             {
-              "color": "#F5F5F5",
+              "color": "#ffffff",
               "fontSize": 14,
               "opacity": 0.9,
             }
@@ -81,7 +81,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
         style={
           [
             {
-              "backgroundColor": "#F5F5F5",
+              "backgroundColor": "#f3f5f8",
               "borderRadius": 8,
               "elevation": 1,
               "marginVertical": 4,
@@ -100,7 +100,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
                 "lineHeight": 20,
               },
               {
-                "color": "#212121",
+                "color": "#000000",
               },
               undefined,
               undefined,
@@ -143,8 +143,8 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
         onStartShouldSetResponder={[Function]}
         style={
           {
-            "backgroundColor": "#2E7D32",
-            "borderColor": "#2E7D32",
+            "backgroundColor": "#87293a",
+            "borderColor": "#87293a",
             "borderRadius": 9999,
             "borderWidth": 1,
             "justifyContent": "center",
@@ -159,7 +159,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
           style={
             [
               {
-                "color": "#F5F5F5",
+                "color": "#ffffff",
                 "fontSize": 14,
                 "fontWeight": "500",
               },
@@ -201,9 +201,9 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
         style={
           {
             "alignItems": "center",
-            "backgroundColor": "#2E7D32",
+            "backgroundColor": "#87293a",
             "borderRadius": 8,
-            "color": "#FFFFFF",
+            "color": "#ffffff",
             "justifyContent": "center",
             "minHeight": 48,
             "opacity": 1,
@@ -219,7 +219,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
                 "fontWeight": "600",
               },
               {
-                "color": "#FFFFFF",
+                "color": "#ffffff",
               },
             ]
           }
@@ -242,7 +242,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
         <View
           style={
             {
-              "backgroundColor": "#C8E6C9",
+              "backgroundColor": "#f7f9fb",
               "borderRadius": 9999,
               "height": 4,
               "overflow": "hidden",
@@ -253,7 +253,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
             style={
               [
                 {
-                  "backgroundColor": "#FFD700",
+                  "backgroundColor": "#dec9a3",
                   "borderRadius": 9999,
                   "height": "100%",
                 },
@@ -273,7 +273,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
                 "lineHeight": 16,
               },
               {
-                "color": "#212121",
+                "color": "#000000",
               },
               undefined,
               undefined,

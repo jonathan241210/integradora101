@@ -24,7 +24,7 @@ export function CollectionScreen({ animals, progress, onAnimalPress }: Collectio
       <View style={styles.header}>
         <AppText variant="title">Mi Colección</AppText>
         <View style={styles.progressCard}>
-          <AppText variant="overline" color="accent">Nivel de explorador</AppText>
+          <AppText variant="overline" color="textOnPrimary">Nivel de explorador</AppText>
           <AppText variant="title" color="textOnPrimary">
             {progress.discovered} de {progress.total} descubiertos
           </AppText>

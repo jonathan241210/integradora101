@@ -51,3 +51,7 @@ La lista no sustituye Policies por registro ni restricciones de datos sensibles.
 | `veterinary` | Servicios veterinarios | `veterinarian` |
 
 El área **no otorga acceso**: solo organiza al personal para reportes, filtros y auditoría. La autorización la dan exclusivamente los roles y permisos de esta matriz, verificados en el servidor.
+
+## Visitantes con cuenta
+
+Los visitantes de la app móvil que crean cuenta (`api-004`, ADR 0011) **no** reciben roles de Spatie ni permisos de esta matriz: su sesión usa tokens Sanctum con ability `visitor`, aislada de la sesión del personal. Para el contenido público siguen siendo equivalentes a un visitante anónimo; su cuenta solo habilita el progreso personal (colección, puntos, logros y misiones) en los endpoints `/api/v1/visitor/*`.

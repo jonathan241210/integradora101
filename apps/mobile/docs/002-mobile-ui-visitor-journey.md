@@ -8,6 +8,12 @@ La implementación móvil de esta etapa usa Expo Router, datos simulados y las v
 - [Guía de instalación](../README.md)
 - [Arquitectura móvil](./arquitectura.md)
 
+## Tema y colores
+
+Los componentes y pantallas consumen `@arca/tokens` mediante el adaptador `src/theme/`; no definen colores de marca propios. La paleta institucional y sus defaults se documentan en [`docs/04-sistema-de-diseno.md`](../../../docs/04-sistema-de-diseno.md): base `#661a2f`, primario `#87293a`, secundario `#b79159` y complemento `#DEC9A3`. Los tokens de foreground seleccionan blanco o negro según el fondo para conservar contraste WCAG AA. El error usa el token semántico `danger` compartido.
+
+Los tintes `placeholderTint` de los animales son datos mock exclusivamente ilustrativos que aparecen cuando una ficha no tiene fotografía; no pertenecen a la identidad institucional. Mobile no consulta `settings_colores` ni `GET /api/theme` en esta etapa.
+
 ## Navegación
 
 | Pantalla | Ruta | Acceso |
