@@ -59,3 +59,9 @@
 - [x] **T-41** (CA-06): Ocultar el control de favorito sin persistencia; posponer favoritos compartidos y su filtro en Colección a la siguiente etapa.
 - [x] **T-42** (CA-06): Alinear a la izquierda los botones de regreso de detalle de logro y Aventura en el Zoo; añadir regreso contextual a Game.
 - [x] **T-43**: Documentar instalación y arquitectura local, sincronizar el estado ADR 0004, retirar la ruta móvil duplicada fuera de su app y excluir artefactos generados.
+
+### Enmienda CA-07: Paleta institucional móvil
+- [x] **T-44** (CA-07, RN-09): Alinear las exportaciones de `packages/tokens/index.ts` con los defaults institucionales definidos en `docs/04-sistema-de-diseno.md`, conservar aliases neutrales, cambiar `danger` al token semántico compartido y ajustar los usos visuales de tokens de marca en `apps/mobile/src/components/` y `apps/mobile/src/screens/`. Mantener sin cambios `placeholderTint` de los mocks por especie y mejorar el contraste de su etiqueta.
+- [x] **T-45** (CA-07, RN-09): Ampliar `apps/mobile/__tests__/theme.test.ts` con `test-ca-07` para valores institucionales exactos, adaptador móvil, retiro de los colores de marca verde/amarilla, valor compartido `danger`, contraste WCAG AA ≥ 4.5:1 en combinaciones de texto/superficie y conservación de tintes ilustrativos de especie.
+- [x] **T-46** (CA-07, RN-09): Actualizar `packages/tokens/README.md`, `apps/mobile/README.md` y `apps/mobile/docs/002-mobile-ui-visitor-journey.md` para documentar la fuente institucional, el uso de tokens móviles, el color semántico de error y la excepción de los tintes mock por especie.
+- [x] **T-47** (CA-07): Ejecutar las pruebas focalizadas y suite de Mobile, TypeScript, compatibilidad Expo, exportación Android y revisiones estáticas; registrar resultados. No hubo dispositivo/emulador Android disponible para repetir la validación visual manual.

@@ -2,7 +2,7 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `@arca/tokens`, `@arca/api-client`
-- Estado: Implementada
+- Estado: En progreso
 - Solicitante / responsable funcional: Solicitante / responsable funcional (sin registrar nombre personal, según acuerdo en sesión)
 - Aprobación funcional: Solicitante / responsable funcional, 2026-10-09
 
@@ -51,6 +51,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     - *Prueba:* `test-ca-06-auto`: Snapshot tests de los componentes base de la UI para asegurar consistencia estructural.
 - **CA-07 (Integración de Tokens):** Dado cualquier componente visual, cuando se verifique su estilo, entonces debe utilizar valores provenientes de `@arca/tokens` a través de un adaptador de tema.
     - *Prueba:* `test-ca-07`: Análisis de estilos en componentes seleccionados verificando la procedencia de los valores desde el adaptador.
+    - **Aclaración aprobada el 2026-10-11:** el adaptador nativo y sus consumidores deben respetar los defaults de `docs/04-sistema-de-diseno.md`: `color-base` `#661a2f`, `color-primario` `#87293a`, `color-secundario` `#b79159`, `color-complemento` `#DEC9A3`, `colorFuenteB` `#ffffff` y `colorFuenteN` `#000000`. Los colores de marca se centralizan en `@arca/tokens`; no se define una paleta verde/amarilla independiente para Mobile. El color semántico de error se alinea con `danger` de los tokens compartidos (`#c34242`). Los cinco tintes mock de placeholders por especie se conservan porque solo ilustran tarjetas y fichas sin fotografía.
 - **CA-08 (Pruebas Automatizadas):** Dado el desarrollo de la funcionalidad, entonces se deben implementar y pasar los siguientes tests:
     1. **Views:** Tests de renderizado y disparo de callbacks (Jest + RTL).
     2. **ViewModels:** Tests de transformación de datos y gestión de estado de presentación.
@@ -79,6 +80,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
 - **RN-06 (Dependencias):** No se añadirán dependencias externas sin aprobación previa.
 - **RN-07 (Contenido demostrativo):** El contenido de eventos y misiones en esta etapa es exclusivamente visual y simulado; los campos descriptivos e imágenes no implican integración con servicios ni reglas de negocio.
 - **RN-08 (Revelado gradual):** Los animales no descubiertos permiten abrir una vista previa y navegar al escáner, pero ocultan características, alimentación, curiosidades y datos científicos hasta su descubrimiento. Logros, puntajes, fechas y requisitos son información mock.
+- **RN-09 (Paleta institucional):** Los tokens móviles de marca derivan exclusivamente de los valores iniciales documentados en `docs/04-sistema-de-diseno.md`. El token semántico `danger` usa el valor compartido `#c34242`; los tintes mock específicos de especie se conservan solo como placeholders ilustrativos, no como colores de marca. No se consulta ni modifica `settings_colores`.
 
 ## Datos, privacidad y auditoría
 En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `src/mocks/`. No hay persistencia de datos, manejo de sesiones ni acceso a información sensible del usuario.
@@ -94,10 +96,11 @@ En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `sr
 - **Riesgos:** 
     - Conflictos de resolución de módulos en el monorepo al importar `@arca/tokens`.
     - Discrepancias visuales entre el diseño y la renderización real en Android.
-- **Preguntas pendientes:** Ninguna. Las decisiones de acceso a Game y Tour 3D fueron confirmadas por la persona solicitante el 2026-10-09.
+- **Preguntas pendientes:** Ninguna para la enmienda de CA-07/RN-09, aprobada funcionalmente el 2026-10-11. Las decisiones de acceso a Game y Tour 3D fueron confirmadas por la persona solicitante el 2026-10-09.
 - **Ajustes visuales aprobados:** Se agregan detalles mock básicos para eventos/misiones, tarjeta independiente de aventura, lista/detalle de logros y vista previa de animales pendientes; se corrigen desplazamiento y legibilidad, y la selección de destino del recorrido 3D queda como flujo visual local. No se agregan dependencias de iconos: la UI usa los símbolos disponibles mediante `expo-symbols`.
 
 ## Revisión
 - Aprobación funcional: Solicitante / responsable funcional, 2026-10-09.
 - Aprobación técnica del plan: Solicitante, 2026-10-09.
+- **Enmienda CA-07/RN-09:** Aprobada funcional y técnicamente el 2026-10-11; implementación y verificación completadas. La feature conserva el estado En progreso hasta el cierre del PR asociado.
 - Evidencia/enlaces: Referencia de UI en `apps/mobile/arca-ui-reference`

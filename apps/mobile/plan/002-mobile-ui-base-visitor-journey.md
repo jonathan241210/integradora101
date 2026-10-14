@@ -1,9 +1,10 @@
 # Plan técnico · 002 · mobile-ui-base-visitor-journey
 
 - Spec: `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md`
-- Estado de spec: Implementada
+- Estado de spec: Aprobada
 - Aprobación funcional: Solicitante / responsable funcional, 2026-10-09
 - Aprobación técnica: Solicitante, 2026-10-09
+- Aprobación funcional de enmienda CA-07/RN-09: Solicitante, 2026-10-11
 - Estado del plan: Aprobado
 
 ## Diseño de solución
@@ -14,6 +15,12 @@ Implementación de la capa de interfaz de usuario para el visitante siguiendo el
 
 Las rutas solo orquestan navegación y presentan estado proveniente de ViewModels. No importan Repositories ni mocks. Para conservar inyección y testabilidad sin añadir dependencias, los hooks ViewModel encapsulan la selección del Repository y permiten sustituirlo en pruebas.
 
+### Enmienda propuesta a CA-07: tema móvil institucional
+
+El adaptador React Native existente seguirá siendo el punto único de acceso de la app a `@arca/tokens`. Se alinearán las exportaciones TypeScript del paquete con `docs/04-sistema-de-diseno.md`: `base` `#661a2f`, `primary` `#87293a`, `secondary` `#b79159`, `accent` `#DEC9A3`, texto blanco `#ffffff` y texto negro `#000000`. El token semántico `danger` se alineará con el valor compartido `#c34242`. Los aliases de superficie neutra (`background`, `surface`, `border`, `primarySoft`) usarán los valores equivalentes ya publicados por `tokens.css`. Los consumidores no definirán hex de marca.
+
+Para conservar contraste, los textos sobre `primary` y `base` usarán blanco; sobre `secondary` y `accent`, negro. Los usos de `accent` como color de texto sobre fondos claros se sustituirán por `primary`; `accent` se mantiene para fondos, bordes e iconos con contraste suficiente. `primarySoft` se mapeará a la superficie neutral sutil existente, no a una nueva variante de marca. Los cinco valores mock de `placeholderTint` se conservan: solo colorean el placeholder de un animal cuando falta su fotografía y no representan la identidad institucional. La etiqueta del placeholder usa fondo neutral oscuro y texto blanco para mantener legibilidad con cualquiera de esos tintes.
+
 ## Cambios por área
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|
@@ -23,13 +30,16 @@ Las rutas solo orquestan navegación y presentan estado proveniente de ViewModel
 | **Modelos** | `src/models/*.ts` | Entidades y tipos de dominio (Animal, User, etc.). |
 | **Vistas** | `src/screens/*.tsx` | Componentes de pantalla props-driven (presentación pura). |
 | **Componentes** | `src/components/ui/*.tsx`, `src/components/domain/*.tsx` | Kit UI base, símbolos de `expo-symbols` y componentes especializados por dominio; placeholders de imagen seguros cuando falte una URL. |
-| **Tema** | `src/theme/tokens.ts`, `src/theme/index.ts` | Adaptador para consumir `@arca/tokens`. |
+| **Tema** | `apps/mobile/src/theme/tokens.ts`, `apps/mobile/src/theme/index.ts`, `packages/tokens/index.ts` | Adaptador nativo y exportaciones institucionales alineadas con los defaults documentados, conservando aliases neutrales y semánticos. |
+| **UI móvil** | `apps/mobile/src/components/`, `apps/mobile/src/screens/` | Corregir los usos de tokens de marca y foreground para aplicar la identidad institucional con contraste. |
+| **Pruebas y documentación** | `apps/mobile/__tests__/theme.test.ts`, pruebas CA-07, `packages/tokens/README.md`, `apps/mobile/README.md`, `apps/mobile/docs/002-mobile-ui-visitor-journey.md` | Verificar el mapeo y contraste, documentar la fuente de valores y la exclusión de tonos ilustrativos por especie. |
 | **Mocks** | `src/mocks/*.ts` | Fuente de datos simulados utilizada por los repositorios. |
 
 ## Contrato y datos
 Dado que esta Spec es puramente de UI y utiliza mocks, no se definen endpoints de API ni migraciones de base de datos.
 - **Mocks:** Se implementarán en `src/mocks/` siguiendo la estructura de datos propuesta en la referencia visual.
 - **Contratos:** Los repositorios definirán interfaces que serán compatibles con los DTOs futuros de `@arca/api-client`.
+- **Enmienda de tema:** Se utilizan los defaults documentados como fuente; no se consulta `GET /api/theme`, no se accede ni escribe en `settings_colores`, y no se altera su contrato.
 
 ## Seguridad, offline y operación
 - **Datos:** No se manejan datos sensibles ni persistencia local en esta fase.
@@ -45,7 +55,7 @@ Dado que esta Spec es puramente de UI y utiliza mocks, no se definen endpoints d
 | CA-04 | `test-ca-04` (búsqueda, navegación a detalle, estado descubierto y caso inexistente) | `apps/mobile/__tests__/` |
 | CA-05 | `test-ca-05` (tres resultados de simulación QR y sus rutas) | `apps/mobile/__tests__/` |
 | CA-06 | `test-ca-06-auto` (estructura UI) y `test-ca-06-manual` (Android real o emulador) | `apps/mobile/__tests__/` y evidencia de validación |
-| CA-07 | `test-ca-07` (adaptador de tokens y verificación de componentes) | `apps/mobile/__tests__/` |
+| CA-07 | `test-ca-07` (mapeo exacto de defaults institucionales, `danger` compartido, uso de tokens, exclusión de la paleta de marca verde/amarilla y contraste WCAG AA ≥ 4.5:1; conservación de tintes mock por especie) | `apps/mobile/__tests__/theme.test.ts` y pruebas de componentes en `apps/mobile/__tests__/` |
 | CA-08 | `test-ca-08` (Views, ViewModels, Repositories y rutas; cobertura mínima 80% en ViewModels/Repositories) | `apps/mobile/__tests__/` |
 | CA-09 | `test-ca-09` (detalle de evento/misión y selección de destino 3D) | `apps/mobile/__tests__/` |
 | CA-10 | `test-ca-10` (promoción de aventura, logros, clasificación y vista previa de animales pendientes) | `apps/mobile/__tests__/` |
@@ -57,7 +67,7 @@ Dado que esta Spec es puramente de UI y utiliza mocks, no se definen endpoints d
 | I. Stack mínimo y portable | Conforme al diseño | Expo SDK 57 y RN 0.86.3 según ADR 0004; no se proponen dependencias nuevas. |
 | II. La spec manda | Conforme al diseño | Se implementan las pantallas y flujos aprobados, incluyendo CA-09 y CA-10; cámara, GPS/mapa real, 3D real y persistencia quedan fuera. |
 | III. Lógica separada de la interfaz | Conforme | `test-ca-01` pasó; Routes y Views no acceden a mocks/Repositories y ViewModels coordinan Repositories. |
-| IV. Un test por criterio | Conforme | Criterios CA-01 a CA-10 cubiertos por pruebas automatizadas; CA-06 incluye además la validación manual confirmada en Android con Expo Go. |
+| IV. Un test por criterio | Conforme al diseño | Criterios CA-01 a CA-10 tienen pruebas; la actualización de CA-07 añade verificación automatizada de valores exactos y contraste WCAG AA antes de cerrar la tarea. |
 | V. Una sola fuente de verdad para los datos | Conforme al diseño | Para esta etapa, mocks accesibles solo mediante Repositories; no hay persistencia local ni remota. |
 | VI. Código en inglés, personas en español | Conforme | Identificadores y rutas en inglés; textos de UI y documentación para la persona visitante en español. |
 
@@ -66,6 +76,8 @@ Dado que esta Spec es puramente de UI y utiliza mocks, no se definen endpoints d
 - **Rendimiento Visual:** Riesgo de solapamientos en Android. Mitigación: Uso obligatorio de `react-native-safe-area-context`.
 - **Activos de animales:** La referencia no incluye fotos; el UI usará placeholders de forma segura si no hay URL, sin depender de archivos de `arca-ui-reference`.
 - **Validación CA-06:** La inspección manual en Android con Expo Go fue confirmada por la persona solicitante el 2026-10-09; queda registrada en T-28.
+- **Paleta móvil desalineada:** `packages/tokens/index.ts` todavía exporta verde/amarillo aunque la guía de diseño y `tokens.css` definen los valores institucionales; la enmienda los alinea y añade comprobaciones del contrato.
+- **Contraste de acento:** El acento claro no debe utilizarse como texto sobre superficies blancas; se reemplazará ese uso por el primario y se verificará el contraste de las combinaciones expuestas.
 
 ## Orden y aprobación
 1. **T1: Adaptador de Tema y Tokens:** Configurar `src/theme` consumiendo `@arca/tokens`.
@@ -76,6 +88,8 @@ Dado que esta Spec es puramente de UI y utiliza mocks, no se definen endpoints d
 6. **T6: Pantallas de Soporte:** Collection, Game, Profile.
 7. **T7: Flujos secundarios:** Scanner, estados QR, Tour 3D, detalles mock de eventos/misiones/logros, filtros de logros y selección visual de destino.
 8. **T8: Verificación Final:** Ejecución de todos los tests y validación visual en Android, incluyendo legibilidad, iconografía y desplazamiento.
+9. **Enmienda CA-07 (aprobada técnicamente el 2026-10-11):** Alinear `@arca/tokens` para React Native con los defaults institucionales, conservar tintes de placeholders por especie, alinear el color semántico `danger`, corregir usos de acento con contraste insuficiente, ampliar `test-ca-07` y actualizar documentación móvil y del paquete.
 
 **Aprobación funcional:** Solicitante / responsable funcional, 2026-10-09.
 **Revisión y aprobación técnica:** Solicitante, 2026-10-09.
+**Enmienda CA-07/RN-09:** Aprobada funcionalmente y técnicamente por la persona solicitante el 2026-10-11.

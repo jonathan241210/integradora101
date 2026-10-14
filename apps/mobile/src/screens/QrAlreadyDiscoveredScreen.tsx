@@ -14,7 +14,7 @@ export function QrAlreadyDiscoveredScreen({ animal, onCollectionPress, onContinu
   return (
     <ScreenContainer>
       <View style={styles.content}>
-        <AppText variant="title" color="accent" center>¡Ya descubierto!</AppText>
+        <AppText variant="title" color="primary" center>¡Ya descubierto!</AppText>
         <AppText variant="body" center>
           {animal ? `Ya descubriste a ${animal.nickname}, ${animal.commonName}.` : 'Este animal ya está guardado en tu colección.'}
         </AppText>

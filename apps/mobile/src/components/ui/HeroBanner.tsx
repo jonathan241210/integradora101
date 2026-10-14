@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
   overline: {
     fontSize: 12,
     fontWeight: '500' as const,
-    color: colors.background,
+    color: colors.textOnPrimary,
     marginBottom: 4,
     textTransform: 'uppercase' as const,
     letterSpacing: 0.5,
@@ -35,12 +35,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700' as const,
-    color: colors.background,
+    color: colors.textOnPrimary,
     marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.background,
+    color: colors.textOnPrimary,
     opacity: 0.9,
   },
 });
