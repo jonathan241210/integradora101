@@ -64,3 +64,14 @@ Conforme a la Constitución y la spec `001-database-change-governance`:
 - Este esquema preexistente **no se borra ni se adopta como baseline automáticamente**.
 - La adopción o normalización de estas tablas a modelos Laravel (`BaseModel`, SoftDeletes, auditoría, campos en inglés) se canalizará a través de las correspondientes solicitudes DBR aprobadas en `docs/database/requests/`.
 - La conexión de la API con Aiven queda verificada y lista para desarrollo.
+
+---
+
+## 5. Esquemas de la instancia y normalización
+
+La instancia aloja dos esquemas con usos distintos:
+
+- **`arca_zoo`:** base de **desarrollo compartido**; es la que configura el `.env` local de `apps/api`.
+- **`arca_pruebas`:** base **solo para PHPUnit**; `RefreshDatabase`/`migrate:fresh` pueden borrarla y reconstruirla. El inventario de las secciones 1–3 se levantó sobre esta base.
+
+La normalización del esquema a identificadores en inglés se solicita mediante [DBR-001 · english-schema-normalization](../../../docs/database/requests/DBR-001-english-schema-normalization.md); las columnas y tablas de autenticación del personal mediante DBR-002. Ambas se aplican primero en `arca_zoo` y se verifican en `arca_pruebas`.
