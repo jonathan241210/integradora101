@@ -1,8 +1,8 @@
 # @arca/tokens
 
-**Estado:** paquete CSS semántico inicializado; la actualización dinámica desde `GET /api/theme` queda pendiente de integración aprobada.
+**Estado:** tokens semánticos CSS y React Native inicializados; la actualización dinámica desde `GET /api/theme` queda pendiente de integración aprobada.
 
-Centraliza valores semánticos de marca para SPAs y React Native. Las apps consumen tokens, no copian colores directos en componentes. Los valores de respaldo provienen del contrato externo de `settings_colores` y se pueden actualizar desde `GET /api/theme` tras validación.
+Centraliza valores semánticos de marca para SPAs y React Native. Los defaults son los documentados en `docs/04-sistema-de-diseno.md` y corresponden al contrato externo de solo lectura `settings_colores`. Las apps consumen tokens, no copian colores directos en componentes. Una integración dinámica futura podrá actualizar el tema desde `GET /api/theme` tras validación; Mobile actualmente usa estos defaults estáticos.
 
 | Clave externa | Default | Token/CSS |
 |---|---|---|
@@ -18,6 +18,12 @@ Centraliza valores semánticos de marca para SPAs y React Native. Las apps consu
 | `extra` | `variable comodin` | valor reservado, sin token CSS |
 
 Los hex son valores de fallback centralizados, no clases ni literales para vistas. Mantener modo claro como tema inicial y verificar contraste/accesibilidad. Mapeo normativo: `docs/04-sistema-de-diseno.md`.
+
+### Adaptación para React Native
+
+`index.ts` exporta el objeto `colors` que consume React Native mediante el adaptador de tema de Mobile. Sus tokens `base`, `primary`, `secondary`, `accent` y los foregrounds corresponden a los defaults de la tabla anterior. `background`, `surface`, `border` y `primarySoft` son aliases neutrales de las superficies CSS (`--surface-page`, `--surface`, `--border` y `--surface-subtle`); `danger` usa el token semántico CSS `--danger`. Los textos sobre `primary`/`base` y `danger` usan blanco; sobre `secondary`/`accent`, negro.
+
+Los valores `placeholderTint` de animales son fixtures ilustrativos de Mobile cuando una ficha no tiene fotografía; no representan ni sustituyen colores de marca.
 
 ### Tokens del prototipo administrativo
 

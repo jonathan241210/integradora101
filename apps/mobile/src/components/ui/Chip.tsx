@@ -17,7 +17,7 @@ export function Chip({ label, selected = false, onPress }: ChipProps) {
       accessibilityState={{ selected }}
       accessibilityLabel={label}
     >
-      <Text style={[{ color: selected ? colors.background : colors.text, fontSize: 14, fontWeight: '500' as const }]}>
+      <Text style={[{ color: selected ? colors.textOnPrimary : colors.text, fontSize: 14, fontWeight: '500' as const }]}>
         {label}
       </Text>
     </TouchableOpacity>
