@@ -2,7 +2,7 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `@arca/tokens`, `@arca/api-client`
-- Estado: En progreso
+- Estado: Implementada
 - Solicitante / responsable funcional: Solicitante / responsable funcional (sin registrar nombre personal, según acuerdo en sesión)
 - Aprobación funcional: Solicitante / responsable funcional, 2026-10-09
 
@@ -102,5 +102,6 @@ En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `sr
 ## Revisión
 - Aprobación funcional: Solicitante / responsable funcional, 2026-10-09.
 - Aprobación técnica del plan: Solicitante, 2026-10-09.
-- **Enmienda CA-07/RN-09:** Aprobada funcional y técnicamente el 2026-10-11; implementación y verificación completadas. La feature conserva el estado En progreso hasta el cierre del PR asociado.
-- Evidencia/enlaces: Referencia de UI en `apps/mobile/arca-ui-reference`
+- **Enmienda CA-07/RN-09:** Aprobada funcional y técnicamente el 2026-10-11; implementación y verificación completadas.
+- **Cierre de entrega:** PR aprobado e integrado vía DevOps / rama principal (confirmado equipo, 2026-10-14). Spec en estado **Implementada**.
+- Evidencia/enlaces: Referencia de UI en `apps/mobile/arca-ui-reference`; spec, plan y tasks en `apps/mobile/specs|plan|tasks/002-*`; guías en `apps/mobile/docs/002-mobile-ui-visitor-journey.md` y `apps/mobile/README.md`.

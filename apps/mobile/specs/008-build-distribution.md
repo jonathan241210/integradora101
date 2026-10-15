@@ -3,7 +3,7 @@
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile`
 - Estado: Borrador
-- Solicitante / responsable funcional: Aksel
+- Solicitante / responsable funcional: Aksel (redacción provisional hasta acuerdo del equipo)
 - Aprobación funcional: pendiente de aprobación
 - Equivalencia en el documento de decisiones previas: 007
 

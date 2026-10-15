@@ -2,7 +2,7 @@
 
 ## 1. Control
 
-- **Estado:** Borrador; arquitectura local del prototipo de UI 002, pendiente aprobación en PR.
+- **Estado:** Vigente; describe el prototipo de UI de la spec **002** (implementada, PR aprobado 2026-10-14).
 - **Capacidades descritas:** rutas, interfaz, mocks y pruebas: actual; API, favoritos persistentes, cámara, GPS y 3D: futuros.
 - **Spec de referencia:** [002 · mobile-ui-base-visitor-journey](../specs/002-mobile-ui-base-visitor-journey.md).
 - **Decisión tecnológica:** [ADR 0004 · Mobile React Native](../../../docs/adr/0004-mobile-react-native.md).
@@ -13,7 +13,7 @@ La aplicación presenta al visitante una experiencia móvil de exploración del 
 
 - **Actual:** cinco pestañas, búsqueda y detalle de animales, colección, perfil, eventos, misiones, logros y resultados QR simulados.
 - **No incluido en 002:** conexión de datos de negocio a la API, persistencia, cámara/lectura QR real, GPS, mapa interactivo y renderizado 3D.
-- **Futuro:** capacidades de dispositivo o persistencia solo se implementan con alcance aprobado en una spec correspondiente.
+- **Futuro:** capacidades de dispositivo o persistencia solo se implementan con alcance aprobado en una spec correspondiente. Roadmap y responsables de specs 003–008: [003-008-roadmap-y-asignacion.md](./003-008-roadmap-y-asignacion.md).
 
 ## 3. Actores
 

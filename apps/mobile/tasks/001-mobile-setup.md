@@ -19,4 +19,4 @@
 ## Calidad y entrega
 
 - [x] **T-07**: Revisar las herramientas estáticas existentes. No hay scripts de lint/formato configurados; TypeScript, pruebas Jest y Expo install check se ejecutaron como parte de la verificación móvil 002.
-- [ ] **T-08**: Enlazar exitosamente los 3 documentos (Spec, Plan, Tasks) al PR de inicialización.
+- [x] **T-08**: Spec, plan y tasks vinculados con la entrega móvil integrada en rama principal vía DevOps (2026-10-14; cadena validada con spec 002).

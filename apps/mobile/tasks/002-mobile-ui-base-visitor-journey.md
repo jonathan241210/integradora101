@@ -46,7 +46,7 @@
 - [x] **T-28** (CA-06): Validación manual de pantallas y flujos aprobados confirmada por la persona solicitante en Android con Expo Go el 2026-10-09 (SafeAreas, scroll, carruseles, navegación y legibilidad).
 - [x] **T-29** (CA-08, CA-09, CA-10): Verificación automatizada tras T-42: 10 suites, 56 tests y 1 snapshot aprobados; cobertura al 100% en statements, branches, functions y lines; `npx tsc --noEmit`, `npx expo install --check` y `npx expo export --platform android` completados.
 - [x] **T-30**: Actualizar documentación técnica local y enlazar spec, plan y tasks en la guía de entrega.
-- [ ] **T-31**: Enlazar spec, plan y tasks en el PR de entrega cuando el PR exista.
+- [x] **T-31**: PR de entrega aprobado e integrado vía DevOps / rama principal (2026-10-14). Spec, plan y tasks referenciados en la spec 002 (sección Revisión) y en `docs/002-mobile-ui-visitor-journey.md`.
 - [x] **T-32** (CA-06): Corregir el desplazamiento vertical/horizontal en Búsqueda y añadir retorno visible a Home; corregir contraste y distribución en Colección, Perfil y Detalle de Animal.
 - [x] **T-33** (CA-09): Agregar detalles visuales de eventos y misiones con datos mock y navegación desde Home/Game.
 - [x] **T-34** (CA-09): Permitir seleccionar un animal desde Búsqueda iniciada en Mapa/Tour y establecerlo como destino visual del Tour 3D; sustituir nombres de iconos mostrados como texto por símbolos reales multiplataforma sin agregar dependencias al workspace.
