@@ -1,6 +1,6 @@
 # DBR-003 · visitor-accounts
 
-- Estado: Borrador
+- Estado: Lista para backend
 - Feature/spec origen: `apps/api/specs/004-visitor-authentication.md`
 - Solicitante: Aksel
 - Responsable de BD: Victor Adrian
@@ -150,21 +150,26 @@ No aplica.
 
 ## Pruebas y evidencia
 
-- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: pendiente
-- Resultado y evidencia (sin secretos ni datos sensibles): pendiente
-- Pruebas integradas del backend: pendiente
+- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0/8.4 aislada (`arca_pruebas`): Ejecutadas exitosamente.
+- Resultado y evidencia (sin secretos ni datos sensibles):
+  - Migración `2026_10_15_000003_visitor_accounts_schema.php` ejecutada sin errores (12s).
+  - Columna `nickname` actualizada a `NOT NULL`.
+  - Columnas añadidas a `visitors`: `email_verified_at`, `avatar_code`, `adult_confirmed_at`, `privacy_notice_version`, `privacy_accepted_at`, `last_login_at`, timestamps.
+  - Tablas nuevas creadas: `personal_access_tokens` (Sanctum móvil), `visitor_refresh_tokens`, `visitor_verification_codes`.
+  - Borrado en cascada verificado para datos de visitantes.
+- Pruebas integradas del backend: lista para consumo.
 
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Responsable de BD | Victor Adrian | | pendiente |
-| Responsable backend | Por definir | | pendiente |
+| Responsable de BD | Victor Adrian | 2026-10-15 | Aprobada |
+| Solicitante / Backend | Aksel / Jonathan | 2026-10-15 | Aprobada |
 
 ## Aplicación por ambiente
 
 | Ambiente | Estado | Fecha | Evidencia |
 |---|---|---|---|
-| desarrollo/pruebas | pendiente | | |
+| desarrollo/pruebas (`arca_pruebas`) | aplicada | 2026-10-15 | Migración 2026_10_15_000003 ejecutada y verificada |
 | staging | pendiente | | |
 | producción | pendiente | | |
