@@ -1,6 +1,6 @@
 # Guía de validación · 002 · Experiencia visitante
 
-La implementación móvil de esta etapa usa Expo Router, datos simulados y las vistas en `src/screens/`. La especificación define el alcance funcional y el plan describe su arquitectura:
+La spec **002** está **Implementada** (PR aprobado e integrado vía DevOps / main, 2026-10-14). Esta guía sirve para validar manualmente el prototipo con Expo Router, datos simulados y las vistas en `src/screens/`. La especificación define el alcance funcional y el plan describe su arquitectura:
 
 - [Spec 002](../specs/002-mobile-ui-base-visitor-journey.md)
 - [Plan 002](../plan/002-mobile-ui-base-visitor-journey.md)
