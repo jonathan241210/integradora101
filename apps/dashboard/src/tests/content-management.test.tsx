@@ -11,10 +11,10 @@ describe("CA-03 admin-dashboard-prototype", () => {
     expect(news).toContain("Registrar noticia");
     expect(news).toContain('for="news-title"');
     expect(news).toContain("Noticias publicadas");
-    expect(news).toContain("no se guardan cambios");
+    expect(news).not.toContain("Prototipo de demostración.");
     expect(events).toContain("Registrar evento");
     expect(events).toContain("Hora de inicio");
     expect(events).toContain("Próximos eventos");
-    expect(events).toContain("no se guardan cambios");
+    expect(events).not.toContain("Prototipo de demostración.");
   });
 });

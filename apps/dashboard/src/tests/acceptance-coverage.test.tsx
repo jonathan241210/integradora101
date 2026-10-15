@@ -23,8 +23,8 @@ const applicationSource = [
   .join("\n");
 
 describe("CA-07 admin-dashboard-prototype", () => {
-  it("tiene pruebas nombradas para cada criterio CA-01..CA-14", () => {
-    for (let number = 1; number <= 14; number += 1) {
+  it("tiene pruebas nombradas para cada criterio CA-01..CA-15", () => {
+    for (let number = 1; number <= 15; number += 1) {
       const criterion = `CA-${String(number).padStart(2, "0")} admin-dashboard-prototype`;
       expect(testSource).toContain(criterion);
     }

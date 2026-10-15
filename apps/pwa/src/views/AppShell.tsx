@@ -3,12 +3,16 @@ import type { ComponentType } from 'react';
 import type { PwaInstallController } from '@/viewmodels/usePwaInstall';
 import { InstallAppAction } from '@/views/InstallAppAction';
 import {
+  getSectionLabel,
+  isNavigationActive,
   pwaSections,
   type PwaSection,
 } from '@/viewmodels/pwaDemo';
 import { AnimalFormView } from '@/views/AnimalFormView';
 import { AnimalsView } from '@/views/AnimalsView';
-import { DiagnosisFormView } from '@/views/DiagnosisFormView';
+import { DiagnosisChooserView } from '@/views/DiagnosisChooserView';
+import { DiagnosisIntenseView } from '@/views/DiagnosisIntenseView';
+import { DiagnosisQuickView } from '@/views/DiagnosisQuickView';
 import { HomeView } from '@/views/HomeView';
 import { ReviewFormView } from '@/views/ReviewFormView';
 
@@ -27,7 +31,9 @@ const sectionViews: Record<PwaSection, ComponentType<ActiveViewProps>> = {
   home: HomeView,
   animals: AnimalsView,
   'animal-form': AnimalFormView,
-  'diagnosis-form': DiagnosisFormView,
+  'diagnosis-form': DiagnosisChooserView,
+  'diagnosis-intense': DiagnosisIntenseView,
+  'diagnosis-quick': DiagnosisQuickView,
   'review-form': ReviewFormView,
 };
 
@@ -38,9 +44,7 @@ export function AppShell({
   onLogout,
 }: AppShellProps) {
   const ActiveView = sectionViews[activeSection];
-  const currentLabel = pwaSections.find(
-    (section) => section.id === activeSection,
-  )?.label;
+  const currentLabel = getSectionLabel(activeSection);
 
   return (
     <div className="app-shell">
@@ -132,10 +136,10 @@ function Navigation({
     <div className={`navigation navigation-${variant}`}>
       {pwaSections.map((section) => (
         <button
-          aria-current={activeSection === section.id ? 'page' : undefined}
+          aria-current={isNavigationActive(section.id, activeSection) ? 'page' : undefined}
           aria-label={section.label}
           className={`navigation-item ${
-            activeSection === section.id ? 'is-active' : ''
+            isNavigationActive(section.id, activeSection) ? 'is-active' : ''
           }`}
           key={section.id}
           onClick={() => onNavigate(section.id)}

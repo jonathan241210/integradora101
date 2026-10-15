@@ -4,6 +4,7 @@
 - Estado de spec: Aprobada
 - Estado técnico de la ampliación anterior: Aprobado por el solicitante, 2026-10-09
 - Estado técnico de la nueva ampliación (login administrativo, paleta institucional y entrada HTML): Aprobado por el solicitante, 2026-10-09
+- Aprobación funcional de la mejora de avisos: Solicitante, 2026-10-13; una advertencia general en la shell autenticada, sin duplicados en vistas internas.
 - Aprobación de la versión anterior: Solicitante, 2026-10-08
 - Responsable técnico de esta ampliación: Por identificar según acuerdo del equipo
 - Fecha: 2026-10-09
@@ -30,10 +31,10 @@ Añadir una guía local en español bajo `apps/dashboard/docs/` que explique có
 
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|
-| `apps/dashboard` | `src/App.tsx`, `src/viewmodels/dashboard-demo.ts`, `src/viewmodels/useDashboardDemo.ts` | Modelar perfiles y transiciones locales en el reducer/ViewModel existente; filtrar secciones según perfil de demostración. Al salir, limpiar la sesión activa y conservar cuentas creadas solo hasta recargar. Sin lógica de negocio ni persistencia. |
-| `apps/dashboard` | `src/views/LoginView.tsx`, `src/views/DashboardView.tsx`, `src/views/EnclosuresView.tsx`, `src/views/TicketUsersView.tsx`, `src/views/TicketSaleView.tsx`, `src/views/TicketHistoryView.tsx`, `src/views/TicketReportView.tsx` | Selector y login separado por perfil, incluyendo login administrativo; modificación temporal de recintos, alta temporal de cuentas, venta e historial de muestra y reporte administrativo. Reutilizar `NewsView` y `EventsView`. |
+| `apps/dashboard` | `src/App.tsx`, `src/viewmodels/dashboard-demo.ts`, `src/viewmodels/useDashboardDemo.ts` | Modelar perfiles y transiciones locales en el reducer/ViewModel existente; filtrar secciones según perfil de demostración. Al salir, limpiar la sesión activa y conservar cuentas creadas solo hasta recargar. La shell autenticada mantiene una única advertencia general. Sin lógica de negocio ni persistencia. |
+| `apps/dashboard` | `src/views/LoginView.tsx`, `src/views/DashboardView.tsx`, `src/views/EnclosuresView.tsx`, `src/views/TicketUsersView.tsx`, `src/views/TicketSaleView.tsx`, `src/views/TicketHistoryView.tsx`, `src/views/TicketReportView.tsx` | Selector y login separado por perfil, incluyendo login administrativo; modificación temporal de recintos, alta temporal de cuentas, venta e historial de muestra y reporte administrativo. Las vistas administrativas no repiten la advertencia de la shell; las vistas de taquilla conservan sus avisos actuales. Reutilizar `NewsView` y `EventsView`. |
 | `apps/dashboard` | `src/data/demo-data.ts`, `src/styles.css` | Definir fixtures ficticios y centralizar aliases del dashboard en la paleta institucional, manteniendo colores de estado, foco, contraste y responsive. |
-| `apps/dashboard` | `src/tests/*.test.tsx` | Cubrir CA-01..CA-14 mediante tests Vitest nombrados; usar renderer server de React y pruebas puras del reducer/ViewModel. Conservar el patrón existente de Vitest, que descubre `*.test.tsx`; no añadir jsdom ni testing-library. |
+| `apps/dashboard` | `src/tests/*.test.tsx` | Cubrir CA-01..CA-15 mediante tests Vitest nombrados; usar renderer server de React y pruebas puras del reducer/ViewModel. Conservar el patrón existente de Vitest, que descubre `*.test.tsx`; no añadir jsdom ni testing-library. |
 | `apps/dashboard/docs` | `manual-demo.md`, `arquitectura.md` | Documentar ejecución, perfiles, credenciales ficticias, recorridos, organización del código, pruebas y límites; describir la arquitectura SPA/MVVM conforme a la plantilla por app, sin presentar los mocks como capacidades operativas. |
 | `apps/dashboard` y `packages/tokens` | `README.md`, `docs/manual-demo.md`, `docs/arquitectura.md`, `packages/tokens/README.md` | Documentar los credenciales, colores y el uso de `index.html`; corregir la referencia anterior a los roles azules/verdes de la demo. |
 | `packages/ui`, `packages/tokens` | API y CSS actuales | Consumir controles compartidos y defaults semánticos existentes. No cambiar APIs ni CSS del paquete; la SPA mapea sus roles localmente a la paleta institucional. |
@@ -45,7 +46,7 @@ Añadir una guía local en español bajo `apps/dashboard/docs/` que explique có
 - Validación/Form Requests, Actions, Resources y Policies: No aplica en el prototipo. Las vistas validan solo campos de presentación requeridos y una comparación de credenciales ficticias en memoria; no se implementan reglas operativas.
 - Migraciones, `BaseModel`, auditoría y SoftDeletes: No aplica; no hay persistencia.
 - Datos: constantes ficticias y estado efímero de React; nada contiene datos de personas reales, ventas reales o montos operativos. Cambios y cuentas desaparecen al recargar. Cerrar sesión oculta las vistas de taquilla y limpia la sesión activa, pero conserva las cuentas ficticias durante esa carga para permitir cambiar de perfil.
-- Errores y compatibilidad: no hay red ni operaciones remotas. Credenciales incorrectas y campos incompletos muestran feedback accesible en español y permiten corregir el formulario. Cada vista mantiene aviso visible de demostración.
+- Errores y compatibilidad: no hay red ni operaciones remotas. Credenciales incorrectas y campos incompletos muestran feedback accesible en español y permiten corregir el formulario. El login conserva su aviso; en administración, la shell muestra una única advertencia general sin duplicarla en las vistas. Las vistas de taquilla conservan sus avisos actuales.
 - Dependencias: se conservan React/React DOM 19, Vite 7, TypeScript, Tailwind CSS 4, Vitest y los paquetes locales `@arca/ui` y `@arca/tokens`. No React Router, cliente HTTP, charting, iconos externos ni proveedores de pago. No se instala ni actualiza ninguna dependencia.
 
 ## Seguridad, offline y operación
@@ -70,7 +71,7 @@ Añadir una guía local en español bajo `apps/dashboard/docs/` que explique có
 | CA-04 | `CA-04 admin-dashboard-prototype` comprueba que venta solo aparece para taquilla con sesión demo y recorre sus estados ficticios sin precio/persistencia. | Vitest, `apps/dashboard/src/tests/ticket-sale.test.tsx` y prueba del reducer/ViewModel. |
 | CA-05 | `CA-05 admin-dashboard-prototype` comprueba Reporte de boletos y su acceso administrativo, separado del historial de taquilla. | Vitest, `apps/dashboard/src/tests/ticket-report.test.tsx`. |
 | CA-06 | `CA-06 admin-dashboard-prototype` comprueba contratos CSS responsive/foco/controles; inspección en navegador registra dimensiones y overflow de los cinco viewports. | Vitest, `apps/dashboard/src/tests/responsive.test.tsx`; navegador integrado. |
-| CA-07 | `CA-07 admin-dashboard-prototype` verifica nombres de pruebas CA-01..CA-14 y presencia de cobertura por pantalla/flujo. | Vitest, `apps/dashboard/src/tests/acceptance-coverage.test.tsx`. |
+| CA-07 | `CA-07 admin-dashboard-prototype` verifica nombres de pruebas CA-01..CA-15 y presencia de cobertura por pantalla/flujo. | Vitest, `apps/dashboard/src/tests/acceptance-coverage.test.tsx`. |
 | CA-08 | `CA-08 admin-dashboard-prototype` conserva pruebas de build/type-check, exports y tokens semánticos. | Scripts del dashboard + `apps/dashboard/src/tests/design-system.test.tsx`; `packages/ui` y `packages/tokens`. |
 | CA-09 | `CA-09 admin-dashboard-prototype` comprueba campos de recinto, estado ficticio y actualización temporal sin persistencia. | Vitest, `apps/dashboard/src/tests/enclosures.test.tsx` y prueba del reducer/ViewModel. |
 | CA-10 | `CA-10 admin-dashboard-prototype` comprueba credenciales válidas/incorrectas, visibilidad condicionada de secciones y cierre de sesión. | Vitest, `apps/dashboard/src/tests/login.test.tsx` y `apps/dashboard/src/tests/acceptance-coverage.test.ts`. |
@@ -78,22 +79,23 @@ Añadir una guía local en español bajo `apps/dashboard/docs/` que explique có
 | CA-12 | `CA-12 admin-dashboard-prototype` comprueba alta de cuenta efímera, login posterior en la misma sesión y documentación de sus límites. | Vitest, `apps/dashboard/src/tests/ticket-users.test.tsx`; guía `apps/dashboard/docs/manual-demo.md`. |
 | CA-13 | `CA-13 admin-dashboard-prototype` comprueba credenciales válidas/incorrectas del perfil administrativo, feedback accesible, navegación condicionada solo en la presentación y cierre de sesión. | Vitest, `apps/dashboard/src/tests/login.test.tsx` y pruebas del reducer/ViewModel. |
 | CA-14 | `CA-14 admin-dashboard-prototype` comprueba los aliases de tokens semánticos, valores de la paleta institucional, tipografía/tamaño base, ausencia de hex de marca en vistas y conservación de colores de estado/foco. | Vitest, `apps/dashboard/src/tests/design-system.test.tsx` y `apps/dashboard/src/tests/responsive.test.tsx`. |
+| CA-15 | `CA-15 admin-dashboard-prototype` renderiza cada vista administrativa autenticada y comprueba que la advertencia general aparece exactamente una vez en la shell. | Vitest, `apps/dashboard/src/tests/global-demo-banner.test.tsx`. |
 
 ## Constitution Check
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Se conserva React 19, TypeScript, Vite 7, Tailwind CSS 4 y Vitest aprobados; no se agregan dependencias, servicios, SDKs ni configuración dependiente de nube. |
-| II. La spec manda | Sí | La spec `001-admin-dashboard-prototype` está Aprobada con CA-01..CA-14 y este plan/checklist aprobados antes de implementar la ampliación. |
+| II. La spec manda | Sí | La spec `001-admin-dashboard-prototype` está Aprobada con CA-01..CA-15 y este plan/checklist aprobados antes de implementar la ampliación. |
 | III. Lógica separada de la interfaz | Sí | Esta ampliación solo simula la interfaz: fixtures y estados efímeros; no ventas reales, cálculos de precios, API ni permisos implementados en UI. |
-| IV. Un test por criterio | Sí, sujeto a implementación | El mapeo de este plan asigna Vitest nombrado para CA-01..CA-14; los tests propuestos se implementarán junto con las vistas y se verificarán con la suite. |
+| IV. Un test por criterio | Sí, sujeto a implementación | El mapeo de este plan asigna Vitest nombrado para CA-01..CA-15; los tests propuestos se implementarán junto con las vistas y se verificarán con la suite. |
 | V. Una sola fuente de verdad para los datos | Sí | No se accede a información real, BD, cookies ni almacenamiento persistente; todo dato es fixture o estado temporal. La versión operativa requiere otra spec y API/MySQL. |
 | VI. Código en inglés, personas en español | Sí | Símbolos, tipos y nombres de archivos en inglés; labels, mensajes, guía y documentación de feature en español. |
 
 ## Riesgos y decisiones
 
 - ADR requerido/aprobado: ADR 0002 cubre el stack actual; no se requiere ADR ni dependencia nueva. No agregar router, librerías de iconos, formularios, gráficos o pagos.
-- Riesgo: el login local y la creación de usuarios podrían confundirse con seguridad real. Mitigar con banners, credenciales visibles de demo, ausencia expresa de claims de autorización y guía sobre datos expuestos al cliente.
+- Riesgo: el login local y la creación de usuarios podrían confundirse con seguridad real. Mitigar con una advertencia general por contexto, credenciales visibles de demo, ausencia expresa de claims de autorización y guía sobre datos expuestos al cliente.
 - Riesgo: los reportes y el historial podrían parecer transacciones reales. Mantenerlos separados por perfil, etiquetarlos como ficticios y no calcular ni guardar importes.
 - Riesgo: los cambios volátiles se pierden al recargar. Indicarlo antes/después de editar recintos o crear usuarios y describirlo en la guía.
 - Riesgo: el login local podría confundirse con seguridad real. Mitigar con credenciales de muestra visibles, mensajes de demo y sin datos ni operaciones reales.
@@ -108,6 +110,7 @@ Añadir una guía local en español bajo `apps/dashboard/docs/` que explique có
 4. Implementar vistas administrativas de modificación de recintos y usuarios de taquilla, con fixtures/estado en memoria y feedback accesible.
 5. Implementar login local ficticio, gating visual por sesión de demostración, historial de taquilla y separación con el reporte administrativo; conservar el flujo de venta existente.
 6. Actualizar estilos responsive y documentación local en español; comprobar etiquetas, teclado, mensajes de error y visibilidad persistente de que es demo.
-7. Añadir tests CA-01..CA-14 y cobertura del reducer; ejecutar `npm run types`, `npm run build`, `npm test`, `/verify` y validar responsive en los viewports especificados.
+7. Añadir tests CA-01..CA-15 y cobertura del reducer; ejecutar `npm run types`, `npm run build`, `npm test`, `/verify` y validar responsive en los viewports especificados.
+8. En la mejora aprobada el 2026-10-13, retirar los banners repetidos de las vistas administrativas, conservar los avisos previos de taquilla y verificar con CA-15 que el aviso general aparece una sola vez en cada vista de administración.
 
 Aprobación funcional de la versión anterior de la spec: solicitante, 2026-10-09. Aprobación funcional y técnica de la ampliación de login administrativo, paleta institucional y alcance de `index.html`: solicitante, 2026-10-09.

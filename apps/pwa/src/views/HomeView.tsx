@@ -20,10 +20,16 @@ const shortcuts: {
     symbol: '+',
   },
   {
-    title: 'Registrar diagnóstico',
-    description: 'Anotar síntomas observados',
-    section: 'diagnosis-form',
+    title: 'Diagnóstico intenso',
+    description: 'Historia y evaluación clínica completas',
+    section: 'diagnosis-intense',
     symbol: '✚',
+  },
+  {
+    title: 'Diagnóstico rápido',
+    description: 'Formato con casillas por sistema',
+    section: 'diagnosis-quick',
+    symbol: '⚡',
   },
   {
     title: 'Registrar revisión',

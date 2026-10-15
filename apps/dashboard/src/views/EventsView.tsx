@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Alert, Badge, Button, Card, Field, SelectField, TextAreaField } from "@arca/ui";
 import { demoEvents } from "../data/demo-data";
-import { DemoBanner } from "../components/DemoBanner";
 import { Icon } from "../components/Icon";
 import { SectionHeading } from "../components/SectionHeading";
 
@@ -32,7 +31,6 @@ export function EventsView({
             <p>Define los datos generales, horario y cupo del evento.</p>
           </div>
         </div>
-        <DemoBanner />
         <form className="form-grid form-grid--events" onSubmit={submitDemo}>
           <Field id="event-name" label="Nombre del evento" placeholder="Noche de safari nocturno" />
           <Field id="event-location" label="Ubicación" placeholder="Sendero principal · Zona norte" />

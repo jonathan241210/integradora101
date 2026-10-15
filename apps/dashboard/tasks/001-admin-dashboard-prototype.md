@@ -3,7 +3,7 @@
 - Spec: `apps/dashboard/specs/001-admin-dashboard-prototype.md` (Estado: **Aprobada**)
 - Plan: `apps/dashboard/plan/001-admin-dashboard-prototype.md` (Estado técnico: **Aprobado**, solicitante, 2026-10-09)
 - Estado del checklist: Aprobado por el solicitante, 2026-10-09
-- Estado de implementación: T-23..T-36 y T-38..T-43 completadas; T-37 y T-22 pendientes
+- Estado de implementación: T-23..T-36, T-38..T-44 completadas; T-37 y T-22 pendientes
 - Nueva ampliación (CA-13/CA-14): aprobada por el solicitante, 2026-10-09
 
 ## Trazabilidad
@@ -22,6 +22,7 @@
 | CA-10 | T-26, T-32 |
 | CA-11 | T-27, T-33 |
 | CA-12 | T-25, T-28, T-34 |
+| CA-15 | T-44 |
 
 ## Implementación
 
@@ -82,6 +83,10 @@
 - [x] **T-42** (CA-01, CA-08, CA-12, CA-13, CA-14; RN-11..RN-13): actualizar README, manual, arquitectura, notas SDD y la documentación de tokens para documentar credenciales administrativas ficticias, paleta y rol de `index.html` como entrada de React/Vite.
 - [x] **T-43** (CA-06..CA-08, CA-13, CA-14): ejecutar verificaciones automatizadas disponibles, types, build, tests y `git diff --check`; registrar la limitación de inspección visual/teclado por falta de navegador.
 
+### Mejora aprobada: aviso único en vistas autenticadas
+
+- [x] **T-44** (CA-15; RN-14): retirar los banners repetidos de las vistas administrativas, conservar los avisos actuales de taquilla y añadir una prueba Vitest de integración que comprueba una única aparición en cada vista administrativa autenticada.
+
 ## Calidad y cierre
 
 - [ ] **T-37** (CA-06..CA-08): ejecutar pruebas responsive en 360, 390, 768, 1024 y 1366 px, `npm run types`, `npm run build`, `npm test`, `/verify` y `git diff --check`; registrar resultados. Verificaciones automatizadas completadas; queda pendiente la inspección visual y de teclado en navegador en esos cinco anchos.
@@ -94,7 +99,7 @@
 - Las pruebas automatizadas revisan los estilos responsive y el indicador de foco visible. No se pudo completar la inspección visual/teclado en navegador para 360, 390, 768, 1024 y 1366 px porque el navegador integrado y Chromium local no están disponibles.
 - El servidor de vista previa en `http://127.0.0.1:4173/` respondió con HTML de la SPA e incluyó el metadato de tema institucional `#661a2f`.
 - El manifiesto real está en `apps/dashboard/package.json`; no existe `apps/dashboard/src/package.json`. Según la convención estricta del skill `/verify`, el dashboard queda marcado como "app aún no inicializada" por faltar ese manifiesto bajo `src/`; se ejecutaron los scripts válidos del proyecto desde `apps/dashboard`. `format:check` y `lint` no están definidos.
-- En esta revisión, `npm run types`, `npm test` (11 archivos, 30 tests), `npm run build` y `git diff --check` terminaron con código 0. Un primer intento de npm desde la raíz del monorepo falló porque no hay `package.json` allí; los comandos correctos se ejecutaron desde `apps/dashboard`.
+- En la revisión del 2026-10-13 para T-44, `npm run types`, `npm test` (12 archivos, 36 tests), `npm run build` y `git diff --check` terminaron con código 0. Los comandos se ejecutaron desde `apps/dashboard`, donde está el manifiesto de la app; `/verify` considera que falta inicializar `src/package.json`, y el manifiesto no define `format:check` ni `lint`.
 - `git diff --check` revisa cambios rastreados; el README nuevo aún no está rastreado por Git.
 - T-22 sigue pendiente de enlazar y cerrar el PR/commit. La spec está Aprobada; T-37 sigue pendiente de inspección visual/teclado en navegador a los cinco anchos indicados.
 
@@ -108,5 +113,7 @@
 - T-29 depende de T-23; T-30 de T-23; T-31 de T-24; T-32 de T-25 y T-26; T-33 de T-27; T-34 de T-25 y T-28; T-35 de T-23..T-27; T-36 de T-29..T-35.
 - T-37 y T-22 (cierre/documentación final) dependen de T-01..T-21 y T-23..T-36.
 - T-40 depende de T-38, T-41 de T-39, T-42 de T-38/T-39 y T-43 de T-38..T-42.
+- T-44 fue aprobada el 2026-10-13 y cubre la eliminación de banners duplicados en administración; conserva el aviso general de la shell y los avisos propios de taquilla.
+- T-44 depende de T-04, T-10, T-35 y T-36, que proporcionan la shell, las vistas y la cobertura automatizada existentes.
 
 No se crean endpoints, migraciones, autorización ni pagos. El login es solo una simulación local; no configura React Router. No se alteran otras apps ni se crea configuración global del monorepo.

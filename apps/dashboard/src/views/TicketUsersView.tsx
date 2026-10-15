@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
 import { Badge, Button, Card, Field } from "@arca/ui";
-import { DemoBanner } from "@/components/DemoBanner";
 import { SectionHeading } from "@/components/SectionHeading";
 import type { DemoTicketUser } from "@/data/demo-data";
 
@@ -27,7 +26,6 @@ export function TicketUsersView({
         title="Usuarios de taquilla"
         description="Crea cuentas ficticias para probar el ingreso al perfil de taquilla."
       />
-      <DemoBanner />
       <Card className="ticket-user-form-card">
         <div className="card-heading">
           <div>
