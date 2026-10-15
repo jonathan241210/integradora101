@@ -7,7 +7,7 @@ describe("CA-05 admin-dashboard-prototype", () => {
   it("presenta filtros e indicadores con una tabla ficticia", () => {
     const markup = renderToStaticMarkup(<TicketReportView />);
     expect(markup).toContain("Reporte de boletos");
-    expect(markup).toContain("no se guardan cambios ni se realizan cobros");
+    expect(markup).not.toContain("Prototipo de demostración.");
     expect(markup).toContain("Ingresos");
     expect(markup).toContain("Importe sin valor financiero real");
     expect(markup).toContain("Tabla demostrativa de ventas de boletos ficticias");

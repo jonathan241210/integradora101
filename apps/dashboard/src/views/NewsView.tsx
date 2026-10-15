@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Alert, Badge, Button, Card, Field, SelectField, TextAreaField } from "@arca/ui";
 import { demoNews } from "../data/demo-data";
-import { DemoBanner } from "../components/DemoBanner";
 import { Icon } from "../components/Icon";
 import { SectionHeading } from "../components/SectionHeading";
 
@@ -32,7 +31,6 @@ export function NewsView({
             <p>Completa la información para publicar una noticia nueva.</p>
           </div>
         </div>
-        <DemoBanner />
         <form className="form-grid form-grid--news" onSubmit={submitDemo}>
           <Field id="news-title" label="Título" placeholder="Nace cría de jaguar en el zoológico" />
           <Field id="news-summary" label="Descripción breve" placeholder="Resumen que se muestra en la tarjeta" />

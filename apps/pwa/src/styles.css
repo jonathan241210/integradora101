@@ -5,6 +5,27 @@
   font-family: "Lato", "Segoe UI", sans-serif;
   color: var(--dashboard-foreground);
   background: var(--surface-page);
+  --dashboard-primary: var(--primary);
+  --dashboard-primary-foreground: var(--primary-foreground);
+  --dashboard-action: var(--primary);
+  --dashboard-action-foreground: var(--primary-foreground);
+  --dashboard-secondary: var(--secondary);
+  --dashboard-secondary-foreground: var(--secondary-foreground);
+  --dashboard-foreground: var(--foreground);
+  --dashboard-muted-foreground: var(--muted-foreground);
+  --dashboard-sidebar: var(--sidebar);
+  --dashboard-sidebar-foreground: var(--sidebar-foreground);
+  --dashboard-sidebar-muted: color-mix(
+    in srgb,
+    var(--sidebar-foreground) 72%,
+    var(--sidebar)
+  );
+  --dashboard-sidebar-hover: color-mix(
+    in srgb,
+    var(--sidebar-foreground) 12%,
+    var(--sidebar)
+  );
+  --ring: var(--primary);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -87,8 +108,8 @@ select:focus-visible {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: var(--success-subtle);
-  color: var(--success);
+  background: var(--accent);
+  color: var(--primary);
 }
 
 .login-heading {
@@ -196,16 +217,18 @@ select:focus-visible {
   flex-direction: column;
   padding: 26px 18px 18px;
   border-right: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--sidebar);
+  color: var(--sidebar-foreground);
 }
 
 .sidebar-brand {
   padding: 0 8px;
+  color: var(--sidebar-foreground);
 }
 
 .sidebar-caption {
   margin: 40px 10px 12px;
-  color: var(--dashboard-muted-foreground);
+  color: var(--dashboard-sidebar-muted);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -240,8 +263,16 @@ select:focus-visible {
 
 .navigation-item.is-active {
   background: var(--dashboard-secondary);
-  color: var(--dashboard-primary);
+  color: var(--dashboard-secondary-foreground);
   font-weight: 800;
+}
+
+.navigation-desktop .navigation-item:not(.is-active) {
+  color: var(--sidebar-foreground);
+}
+
+.navigation-desktop .navigation-item:not(.is-active):hover {
+  background: var(--dashboard-sidebar-hover);
 }
 
 .navigation-symbol {
@@ -307,12 +338,16 @@ select:focus-visible {
 }
 
 .demo-user small {
-  color: var(--dashboard-muted-foreground);
+  color: var(--dashboard-sidebar-muted);
   font-size: 10px;
 }
 
 .sidebar-bottom > .arca-button {
   justify-content: flex-start;
+}
+
+.desktop-sidebar .sidebar-bottom .arca-button--ghost {
+  color: var(--sidebar-foreground);
 }
 
 .app-main {
@@ -496,7 +531,8 @@ select:focus-visible {
   flex: 0 0 auto;
   place-items: center;
   border-radius: 50%;
-  background: var(--success-subtle);
+  background: var(--accent);
+  color: var(--primary);
   font-size: 32px;
 }
 
@@ -537,8 +573,8 @@ select:focus-visible {
   height: 36px;
   place-items: center;
   border-radius: 9px;
-  background: var(--success-subtle);
-  color: var(--success);
+  background: var(--accent);
+  color: var(--primary);
   font-size: 20px;
   font-weight: 800;
 }
@@ -826,7 +862,7 @@ select:focus-visible {
 
   .navigation-mobile .navigation-item.is-active .navigation-symbol {
     background: transparent;
-    color: var(--success);
+    color: var(--primary);
   }
 
   .navigation-mobile .navigation-label {
@@ -1045,5 +1081,167 @@ select:focus-visible {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+.print-header,
+.print-footer {
+  display: none;
+}
+
+.data-form h3,
+.data-form h4 {
+  margin: 0;
+}
+
+.diagnosis-step {
+  display: grid;
+  gap: 18px;
+}
+
+.diagnosis-step.screen-hidden {
+  display: none;
+}
+
+.table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.print-table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+}
+
+.print-table th,
+.print-table td {
+  border: 1px solid var(--border);
+  padding: 2px;
+  font-size: 12px;
+  text-align: left;
+}
+
+.table-input {
+  width: 100%;
+  min-height: 32px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.table-input:focus-visible,
+.score-input:focus-visible,
+.check-group input:focus-visible {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.check-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 13px;
+}
+
+.check-group legend {
+  padding: 0 6px;
+  font-weight: 600;
+}
+
+.check-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.score-input {
+  width: 64px;
+}
+
+.print-signature {
+  margin: 0;
+  font-weight: 600;
+}
+
+@media print {
+  @page {
+    margin: 14mm;
+  }
+
+  .desktop-sidebar,
+  .topbar,
+  .demo-banner,
+  .mobile-navigation,
+  .mobile-logout,
+  .no-print,
+  .form-demo-note {
+    display: none !important;
+  }
+
+  .app-shell,
+  .app-main,
+  .view-content {
+    display: block !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .diagnosis-step.screen-hidden {
+    display: grid;
+  }
+
+  .diagnosis-step + .diagnosis-step {
+    break-before: page;
+  }
+
+  .form-card {
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .print-header {
+    display: block;
+    margin-bottom: 12px;
+    text-align: center;
+    font-family: Georgia, serif;
+  }
+
+  .print-header p {
+    margin: 0;
+  }
+
+  .print-footer {
+    display: block;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-family: Georgia, serif;
+    font-size: 11px;
+  }
+
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .table-scroll {
+    overflow: visible;
+  }
+
+  .print-table {
+    min-width: 0;
+  }
+
+  .check-group,
+  .print-table tr {
+    break-inside: avoid;
   }
 }
