@@ -11,7 +11,31 @@ export const pwaSections = [
   { id: 'review-form', label: 'Registrar revisión', shortLabel: 'Revisión', symbol: '◷' },
 ] as const;
 
-export type PwaSection = (typeof pwaSections)[number]['id'];
+export const diagnosisModeSections = [
+  { id: 'diagnosis-intense', label: 'Diagnóstico intenso' },
+  { id: 'diagnosis-quick', label: 'Diagnóstico rápido' },
+] as const;
+
+export type PwaSection =
+  | (typeof pwaSections)[number]['id']
+  | (typeof diagnosisModeSections)[number]['id'];
+
+export function getSectionLabel(section: PwaSection): string {
+  return (
+    [...pwaSections, ...diagnosisModeSections].find((item) => item.id === section)
+      ?.label ?? ''
+  );
+}
+
+export function isNavigationActive(
+  navigationId: PwaSection,
+  activeSection: PwaSection,
+): boolean {
+  return (
+    navigationId === activeSection ||
+    (navigationId === 'diagnosis-form' && activeSection.startsWith('diagnosis-'))
+  );
+}
 
 export type PwaDemoState = {
   isLoggedIn: boolean;
