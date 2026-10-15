@@ -1,6 +1,6 @@
 # Aplicación móvil ARCA-NB
 
-Prototipo móvil de la etapa 002 construido con React Native y Expo Router. El mapa, el escáner QR y el recorrido 3D son pantallas visuales con datos simulados; no usan cámara, GPS, mapas reales ni renderizado 3D.
+Prototipo móvil de la etapa **002** (spec implementada) construido con React Native y Expo Router. El mapa, el escáner QR y el recorrido 3D son pantallas visuales con datos simulados; no usan cámara, GPS, mapas reales ni renderizado 3D.
 
 ## Requisitos
 
@@ -93,6 +93,7 @@ Las pruebas, el chequeo de tipos y la exportación JavaScript no necesitan telé
 ## Estado y límites
 
 - Sigue la [spec 002](specs/002-mobile-ui-base-visitor-journey.md), el [plan](plan/002-mobile-ui-base-visitor-journey.md), las [tareas](tasks/002-mobile-ui-base-visitor-journey.md) y la [guía de validación](docs/002-mobile-ui-visitor-journey.md).
+- Roadmap 003–008, estado de specs y asignación (Aksel / Víctor): [docs/003-008-roadmap-y-asignacion.md](docs/003-008-roadmap-y-asignacion.md).
 - Consulta la [arquitectura local](docs/arquitectura.md) y el [ADR 0004](../../docs/adr/0004-mobile-react-native.md).
 - La identidad móvil usa los valores institucionales centralizados en `@arca/tokens` (`base`, `primary`, `secondary` y `accent`); los textos y controles conservan contraste con sus tokens de foreground. `danger` es un color semántico de estado. Los tintes `placeholderTint` de animales solo se usan como ilustración cuando falta una foto y no son colores de marca. Mobile no consulta directamente `settings_colores` ni obtiene el tema de `GET /api/theme` en esta etapa.
 - Los iconos de launcher/adaptive icon aún no están definidos. `app.json` no referencia imágenes ficticias; agrega recursos PNG reales antes de preparar distribución nativa.

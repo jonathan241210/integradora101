@@ -3,7 +3,7 @@
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile`, `packages/api-client`
 - Estado: Borrador
-- Solicitante / responsable funcional: Aksel
+- Solicitante / responsable funcional: Víctor (redacción spec); equipo móvil ARCA-NB
 - Aprobación funcional: pendiente de aprobación
 - Equivalencia en el documento de decisiones previas: 006
 
