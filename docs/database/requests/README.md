@@ -24,6 +24,6 @@ La conexión inicial y sus pruebas no requieren DBR mientras no alteren el esque
 | DBR | Slug | Estado | Spec origen | Notas |
 |---|---|---|---|---|
 | [DBR-001](DBR-001-english-schema-normalization.md) | `english-schema-normalization` | Lista para backend | `apps/api/specs/003-staff-authentication.md` | Renombre en sitio de las 16 tablas al inglés |
-| [DBR-002](DBR-002-staff-authentication.md) | `staff-authentication` | Borrador | `apps/api/specs/003-staff-authentication.md` | Columnas de autenticación en `users`/`departments` y tablas nuevas (Spatie, sessions, cache, activity_log); depende de DBR-001 |
+| [DBR-002](DBR-002-staff-authentication.md) | `staff-authentication` | Lista para backend | `apps/api/specs/003-staff-authentication.md` | Columnas de autenticación en `users`/`departments` y tablas nuevas (Spatie, sessions, cache, activity_log); depende de DBR-001 |
 | [DBR-003](DBR-003-visitor-accounts.md) | `visitor-accounts` | Borrador | `apps/api/specs/004-visitor-authentication.md` | Cuenta del visitante: columnas en `visitors`, `personal_access_tokens`, `visitor_refresh_tokens`, `visitor_verification_codes`; depende de DBR-001 |
 | [DBR-004](DBR-004-visitor-progress.md) | `visitor-progress` | Borrador | `apps/api/specs/005-visitor-progress.md` | Colección por especie, `visitor_scans`, logros/misiones y libro mayor de puntos; depende de DBR-001 y DBR-003 |
