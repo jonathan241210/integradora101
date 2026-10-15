@@ -1,6 +1,6 @@
 # DBR-001 · english-schema-normalization
 
-- Estado: Borrador
+- Estado: Lista para backend
 - Feature/spec origen: `apps/api/specs/003-staff-authentication.md`
 - Solicitante: Jonathan (backend)
 - Responsable de BD: Victor Adrian
@@ -144,21 +144,27 @@ No aplica.
 
 ## Pruebas y evidencia
 
-- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: pendiente
-- Resultado y evidencia (sin secretos ni datos sensibles): pendiente
-- Pruebas integradas del backend: pendiente
+- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0/8.4 aislada (`arca_pruebas`): Ejecutadas exitosamente.
+- Resultado y evidencia (sin secretos ni datos sensibles):
+  - Migración `2026_10_14_000001_rename_tables_and_columns_to_english.php` ejecutada sin errores (39s).
+  - 16 tablas y todas sus columnas renombradas al inglés.
+  - Check constraints actualizados a inglés (`chk_animals_can_receive_visits`, `chk_animals_stay_status`, `chk_clinical_evaluations_evaluation_type`, `chk_clinical_evaluations_body_condition_score`).
+  - Verificación `php artisan db:show` confirmó las 16 tablas en inglés en `arca_pruebas`.
+  - Suite de pruebas PHPUnit: 7 passed (21 assertions).
+  - Suite de gobernanza Node: 10 passed (10 tests).
+- Pruebas integradas del backend: lista para consumo.
 
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Responsable de BD | Victor Adrian | | pendiente |
-| Responsable backend | Jonathan | | pendiente |
+| Responsable de BD | Victor Adrian | 2026-10-14 | Aprobada |
+| Responsable backend | Jonathan | 2026-10-14 | Aprobada |
 
 ## Aplicación por ambiente
 
 | Ambiente | Estado | Fecha | Evidencia |
 |---|---|---|---|
-| desarrollo/pruebas | pendiente | | |
+| desarrollo/pruebas (`arca_pruebas`) | aplicada | 2026-10-14 | Migración 2026_10_14_000001 ejecutada y verificada |
 | staging | pendiente | | |
 | producción | pendiente | | |
