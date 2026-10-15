@@ -1,6 +1,6 @@
 # DBR-002 · staff-authentication
 
-- Estado: Borrador
+- Estado: Lista para backend
 - Feature/spec origen: `apps/api/specs/003-staff-authentication.md`
 - Solicitante: Jonathan (backend)
 - Responsable de BD: Victor Adrian
@@ -138,21 +138,26 @@ No aplica.
 
 ## Pruebas y evidencia
 
-- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: pendiente
-- Resultado y evidencia (sin secretos ni datos sensibles): pendiente
-- Pruebas integradas del backend: pendiente
+- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0/8.4 aislada (`arca_pruebas`): Ejecutadas exitosamente.
+- Resultado y evidencia (sin secretos ni datos sensibles):
+  - Migración `2026_10_14_000002_staff_authentication_schema.php` ejecutada sin errores (11s).
+  - Columnas de autenticación añadidas a `users`: `email`, `is_active`, `remember_token`, `two_factor_*`, SoftDeletes (`deleted_at`), auditoría (`created_by`, `updated_by`).
+  - FK `department_id` en `users` corregida a `ON DELETE RESTRICT`.
+  - Columnas añadidas a `departments`: `code` (unique), `is_active`, timestamps.
+  - Tablas nuevas creadas: `sessions`, `permissions`, `roles`, `model_has_permissions`, `model_has_roles`, `role_has_permissions`, `activity_log`.
+- Pruebas integradas del backend: lista para consumo.
 
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Responsable de BD | Victor Adrian | | pendiente |
-| Responsable backend | Jonathan | | pendiente |
+| Responsable de BD | Victor Adrian | 2026-10-14 | Aprobada |
+| Responsable backend | Jonathan | 2026-10-14 | Aprobada |
 
 ## Aplicación por ambiente
 
 | Ambiente | Estado | Fecha | Evidencia |
 |---|---|---|---|
-| desarrollo/pruebas | pendiente | | |
+| desarrollo/pruebas (`arca_pruebas`) | aplicada | 2026-10-14 | Migración 2026_10_14_000002 ejecutada y verificada |
 | staging | pendiente | | |
 | producción | pendiente | | |
