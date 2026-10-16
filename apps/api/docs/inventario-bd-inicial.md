@@ -75,3 +75,15 @@ La instancia aloja dos esquemas con usos distintos:
 - **`arca_pruebas`:** base **solo para PHPUnit**; `RefreshDatabase`/`migrate:fresh` pueden borrarla y reconstruirla. El inventario de las secciones 1–3 se levantó sobre esta base.
 
 La normalización del esquema a identificadores en inglés se solicita mediante [DBR-001 · english-schema-normalization](../../../docs/database/requests/DBR-001-english-schema-normalization.md); las columnas y tablas de autenticación del personal mediante DBR-002. Ambas se aplican primero en `arca_zoo` y se verifican en `arca_pruebas`.
+
+---
+
+## 6. Documentos relacionados
+
+| Documento | Descripción |
+|---|---|
+| [credenciales-desarrollo.md](./credenciales-desarrollo.md) | Usuarios de prueba (`DemoStaffSeeder`), roles y cómo ejecutar los seeders. |
+| [DBR-001](../../../docs/database/requests/DBR-001-english-schema-normalization.md) | Renombre de tablas al inglés. |
+| [DBR-002](../../../docs/database/requests/DBR-002-staff-authentication.md) | Columnas de autenticación del personal. |
+| [DBR-003](../../../docs/database/requests/DBR-003-visitor-accounts.md) | Cuenta del visitante. |
+| [DBR-004](../../../docs/database/requests/DBR-004-visitor-progress.md) | Colección por especie, logros y puntos. |
