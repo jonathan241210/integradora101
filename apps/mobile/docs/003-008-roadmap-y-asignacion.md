@@ -2,7 +2,7 @@
 
 Documento de referencia para el equipo de `apps/mobile`. Resume el cumplimiento de las reglas en `AGENTS.md` (raíz y app), el estado de las ocho specs numeradas y quién redacta cada spec hasta su **aprobación funcional** (SDD: `/sdd-spec` → plan → tasks → implementación).
 
-**Última revisión:** 2026-10-14.
+**Última revisión:** 2026-10-16.
 
 ## Reglas que aplican a todo el trabajo móvil
 
@@ -18,9 +18,9 @@ Documento de referencia para el equipo de `apps/mobile`. Resume el cumplimiento 
 | NNN | Slug | Estado spec | Plan / tasks | Implementación | Notas |
 |-----|------|-------------|--------------|----------------|-------|
 | 001 | mobile-setup | **Implementada** | Sí | Completa | Base Expo, Router, Jest, workspaces. T-08 cerrada con entrega en rama principal (2026-10-14). |
-| 002 | mobile-ui-base-visitor-journey | **Implementada** | Sí | Completa | PR aprobado e integrado vía DevOps / main (2026-10-14). Prototipo con mocks: sin API, cámara, GPS ni 3D real. |
+| 002 | mobile-ui-base-visitor-journey | **Implementada** | Sí | Completa (+ enmienda acceso visual) | Prototipo con mocks: sin API, cámara, GPS ni 3D real. **Enmienda 2026-10-15:** CA-11–CA-15 (Login, registro, recuperación, Ajustes, Privacidad demo); T-48–T-53; **no sustituye** spec `004`. Verificación automatizada 2026-10-16: 11 suites Jest, 70 tests, `tsc --noEmit` OK. |
 | 003 | api-read-integration | Borrador | No | No iniciada | Catálogo animales/eventos + caché; **bloqueada** hasta spec API catálogo público y política de caché. |
-| 004 | visitor-account | Borrador | **Plan borrador** (`plan/004-visitor-account.md`) | No iniciada | Cuenta visitante adulto, tokens, refresh; F1 mock + F2 HTTP cuando `api-004` / DBR; depende ADR 0011. |
+| 004 | visitor-account | Borrador | **Plan borrador** (`plan/004-visitor-account.md`) | No iniciada | Cuenta visitante adulto, tokens, refresh; F1 mock + F2 HTTP cuando `api-004` / DBR; depende ADR 0011. La UI `(auth)` y `visitorAccessRepository` de la enmienda **002** son demostración en memoria, no implementación de 004. |
 | 005 | visitor-progress | Borrador | No | No iniciada | Progreso, colección por especie, cola offline; depende `api-005`, `mobile-004`, `mobile-006`. |
 | 006 | qr-scan | Borrador | No | No iniciada | Cámara y lectura QR → entrega código a cola de 005. |
 | 007 | map-location | Borrador | No | No iniciada | Mapa real, recintos API, GPS; proveedor de mapa por decidir. |
@@ -29,7 +29,7 @@ Documento de referencia para el equipo de `apps/mobile`. Resume el cumplimiento 
 ### Evidencia specs 001 y 002
 
 - **001:** Tareas T-01–T-08 completas; entorno validado en cadena con 002.
-- **002:** CA-01–CA-10 cubiertos (tasks T-01–T-47, T-31 cerrada). Guías: [002-mobile-ui-visitor-journey](./002-mobile-ui-visitor-journey.md), [arquitectura](./arquitectura.md), [README](../README.md).
+- **002:** CA-01–CA-15 cubiertos (tasks T-01–T-53; enmienda acceso/ajustes 2026-10-15). Pruebas `test-ca-11`–`test-ca-15` en `__tests__/access.test.tsx`. Guías: [002-mobile-ui-visitor-journey](./002-mobile-ui-visitor-journey.md), [arquitectura](./arquitectura.md), [README](../README.md). Validación visual Android de acceso/ajustes: ver ítems 12–15 de la guía 002.
 
 ## Asignación: redacción y ownership de specs
 
@@ -74,6 +74,16 @@ flowchart TD
 | [docs/arquitectura.md](./arquitectura.md) | MVVM, módulos, mocks, riesgos |
 | [docs/002-mobile-ui-visitor-journey.md](./002-mobile-ui-visitor-journey.md) | Validación manual y rutas del prototipo |
 | [specs/003-api-read-integration.md](../specs/003-api-read-integration.md) … [008](../specs/008-build-distribution.md) | Borradores 003–008 (CA preliminares, preguntas abiertas) |
+
+## Límite entre enmienda 002 (demo) y spec 004 (cuenta real)
+
+Hasta que la spec **004** tenga **aprobación funcional**, plan y tasks aprobados, y el ADR **0011** quede aceptado, **no** se debe añadir al código de producción móvil:
+
+- Dependencias `expo-secure-store`, `@react-native-async-storage/async-storage` ni otros almacenamientos para sesión o cola (salvo ADR/spec explícitos).
+- Llamadas HTTP de cuenta (`register`, `auth/login`, `auth/refresh`, `me`, etc.) ni uso productivo de `@arca/api-client` en repositorios de autenticación.
+- Pantallas o flujos de spec 004 aún no aprobados: `welcome`, verificación de correo con API, selector de avatar, mayoría de edad, aviso legal desde `legal/privacy-notice`, borrado de cuenta, refresh single-flight ante 401.
+
+La carpeta `(auth)` actual cumple **CA-11–CA-15** de **002** (compuerta `signedOut` / `entered` en memoria). Evolucionar hacia 004 solo tras el SDD completo de esa spec.
 
 ## Preguntas abiertas (para cerrar en spec o con arquitectura/API)
 

@@ -75,6 +75,11 @@ describe('Navegación visitante', () => {
     ['qr-result', 'Escanear'],
     ['qr-invalid', 'Escanear'],
     ['qr-already-discovered', 'Escanear'],
+    ['settings', 'Perfil'],
+    ['account', 'Perfil'],
+    ['privacy', 'Perfil'],
+    ['help', 'Perfil'],
+    ['about', 'Perfil'],
   ])('test-ca-03: la ruta secundaria %s conserva activa la pestaña %s', async (route, activeLabel) => {
     const { getByTestId } = await render(
       <AppTabBar
@@ -83,7 +88,7 @@ describe('Navegación visitante', () => {
       />
     );
 
-    const activeKey = { Home: 'index', Mapa: 'map', Escanear: 'scan' }[activeLabel];
+    const activeKey = { Home: 'index', Mapa: 'map', Escanear: 'scan', Perfil: 'profile' }[activeLabel];
     expect(getByTestId(`tab-${activeKey}`).props.accessibilityState.selected).toBe(true);
   });
 

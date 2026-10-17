@@ -11,6 +11,7 @@ interface AppTextProps {
   bold?: boolean;
   center?: boolean;
   style?: any;
+  accessibilityLiveRegion?: 'none' | 'polite' | 'assertive';
 }
 
 const variantStyles: Record<TextVariant, any> = {
@@ -32,9 +33,11 @@ const colorMap: Record<string, string> = {
   danger: theme.colors.danger,
 };
 
-export function AppText({ variant = 'body', children, color = 'text', bold, center, style }: AppTextProps) {
+export function AppText({ variant = 'body', children, color = 'text', bold, center, style, accessibilityLiveRegion }: AppTextProps) {
   return (
-    <Text style={[
+    <Text
+      accessibilityLiveRegion={accessibilityLiveRegion}
+      style={[
       variantStyles[variant],
       { color: colorMap[color] },
       bold && { fontWeight: 'bold' },

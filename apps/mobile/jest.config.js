@@ -3,6 +3,7 @@ module.exports = {
   collectCoverageFrom: [
     'src/viewmodels/**/*.ts',
     'src/repositories/index.ts',
+    'src/repositories/visitorAccessRepository.ts',
   ],
   coverageThreshold: {
     'src/viewmodels/**/*.ts': {
@@ -12,6 +13,12 @@ module.exports = {
       statements: 80,
     },
     'src/repositories/index.ts': {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+    'src/repositories/visitorAccessRepository.ts': {
       branches: 80,
       functions: 80,
       lines: 80,
