@@ -11,6 +11,8 @@
 
 > **Nota (2026-10-13):** el inicio de sesión ficticio, el selector de perfil y las credenciales de demostración de esta spec quedan **reemplazados por `002-real-staff-login`** (autenticación real contra la API). Los criterios y reglas afectados se marcan con *(Reemplazado por dashboard-002)*; el resto del prototipo sigue vigente hasta que sus propias specs lo sustituyan.
 
+> **Vigencia (2026-10-17):** `dashboard-002-real-staff-login` reemplaza los flujos de login ficticio de CA-01, CA-10 y CA-13, y solo la parte de login con cuentas en memoria de CA-12. La creación/lista demostrativa de Usuarios de taquilla sigue vigente; ninguna cuenta ficticia puede iniciar sesión.
+
 ## Problema y contexto
 
 El dashboard cuenta con un prototipo navegable para administración y taquilla. La persona solicitante pide ampliarlo con funciones de demostración para modificar recintos, iniciar sesión como personal de taquilla, consultar el historial de boletos y crear usuarios de taquilla desde el perfil administrativo. También solicita documentar el código y que la interfaz sea clara y adecuada para cada perfil.

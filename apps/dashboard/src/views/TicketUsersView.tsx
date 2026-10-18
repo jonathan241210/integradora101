@@ -24,13 +24,13 @@ export function TicketUsersView({
       <SectionHeading
         eyebrow="Administración / Taquilla"
         title="Usuarios de taquilla"
-        description="Crea cuentas ficticias para probar el ingreso al perfil de taquilla."
+        description="Registra entradas ficticias para revisar esta lista de muestra."
       />
       <Card className="ticket-user-form-card">
         <div className="card-heading">
           <div>
             <h2>Crear usuario de demostración</h2>
-            <p>La cuenta solo estará disponible mientras esta página siga abierta.</p>
+            <p>El registro solo está disponible mientras esta página siga abierta.</p>
           </div>
           <Badge tone="warning">Sin guardado real</Badge>
         </div>
@@ -67,8 +67,8 @@ export function TicketUsersView({
       <Card className="ticket-user-list-card">
         <div className="card-heading">
           <div>
-            <h2>Cuentas ficticias</h2>
-            <p>Podrás probarlas en el acceso de Taquilla antes de recargar.</p>
+            <h2>Registros de muestra</h2>
+            <p>La lista es demostrativa y no habilita el inicio de sesión.</p>
           </div>
           <Badge tone="info">{users.length} en memoria</Badge>
         </div>

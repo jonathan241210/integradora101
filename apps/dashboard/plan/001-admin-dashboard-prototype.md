@@ -9,6 +9,8 @@
 - Responsable técnico de esta ampliación: Por identificar según acuerdo del equipo
 - Fecha: 2026-10-09
 
+> **Vigencia (2026-10-17):** `dashboard-002-real-staff-login` reemplaza los flujos de login ficticio de CA-01, CA-10 y CA-13, y la parte de login de la cuenta creada en CA-12. La vista de Usuarios de taquilla continúa como demostración, pero sus entradas no autentican.
+
 ## Diseño de solución
 
 Conservar la SPA existente del dashboard con React 19, TypeScript, Vite 7 y Tailwind CSS 4, conforme al ADR 0002. No agregar React Router ni dependencias. Usar la shell actual, componentes de `@arca/ui`, tokens de `@arca/tokens`, el alias `@/` configurado, vistas en español y el patrón View/ViewModel existente. El HTML continúa generado por React; la lógica de presentación está en TypeScript y el diseño en CSS.
@@ -65,7 +67,7 @@ Añadir una guía local en español bajo `apps/dashboard/docs/` que explique có
 
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
-| CA-01 | `CA-01 admin-dashboard-prototype` comprueba selector de perfiles, entrada administrativa y presentación de acceso taquilla sin envío de datos. | Vitest, `apps/dashboard/src/tests/login.test.tsx` y prueba del reducer/ViewModel. |
+| CA-01 | Reemplazado por `dashboard-002`; el selector y los logins ficticios ya no son comportamiento vigente. | Cobertura vigente: `apps/dashboard/src/tests/real-staff-login.test.tsx`. |
 | CA-02 | `CA-02 admin-dashboard-prototype` comprueba opciones administrativas, indicadores y ausencia de vistas de taquilla para ese perfil. | Vitest, `apps/dashboard/src/tests/dashboard.test.tsx`. |
 | CA-03 | `CA-03 admin-dashboard-prototype` comprueba vistas de noticias/eventos, campos y tarjetas, y que las acciones solo muestran estado demo. | Vitest, `apps/dashboard/src/tests/content-management.test.tsx`. |
 | CA-04 | `CA-04 admin-dashboard-prototype` comprueba que venta solo aparece para taquilla con sesión demo y recorre sus estados ficticios sin precio/persistencia. | Vitest, `apps/dashboard/src/tests/ticket-sale.test.tsx` y prueba del reducer/ViewModel. |
@@ -74,10 +76,10 @@ Añadir una guía local en español bajo `apps/dashboard/docs/` que explique có
 | CA-07 | `CA-07 admin-dashboard-prototype` verifica nombres de pruebas CA-01..CA-15 y presencia de cobertura por pantalla/flujo. | Vitest, `apps/dashboard/src/tests/acceptance-coverage.test.tsx`. |
 | CA-08 | `CA-08 admin-dashboard-prototype` conserva pruebas de build/type-check, exports y tokens semánticos. | Scripts del dashboard + `apps/dashboard/src/tests/design-system.test.tsx`; `packages/ui` y `packages/tokens`. |
 | CA-09 | `CA-09 admin-dashboard-prototype` comprueba campos de recinto, estado ficticio y actualización temporal sin persistencia. | Vitest, `apps/dashboard/src/tests/enclosures.test.tsx` y prueba del reducer/ViewModel. |
-| CA-10 | `CA-10 admin-dashboard-prototype` comprueba credenciales válidas/incorrectas, visibilidad condicionada de secciones y cierre de sesión. | Vitest, `apps/dashboard/src/tests/login.test.tsx` y `apps/dashboard/src/tests/acceptance-coverage.test.ts`. |
+| CA-10 | Reemplazado por `dashboard-002`; las cuentas en memoria ya no pueden iniciar sesión. | `apps/dashboard/src/tests/real-staff-login.test.tsx`. |
 | CA-11 | `CA-11 admin-dashboard-prototype` comprueba filas/filtros del historial exclusivamente ficticios y su separación del reporte. | Vitest, `apps/dashboard/src/tests/ticket-history.test.tsx`. |
-| CA-12 | `CA-12 admin-dashboard-prototype` comprueba alta de cuenta efímera, login posterior en la misma sesión y documentación de sus límites. | Vitest, `apps/dashboard/src/tests/ticket-users.test.tsx`; guía `apps/dashboard/docs/manual-demo.md`. |
-| CA-13 | `CA-13 admin-dashboard-prototype` comprueba credenciales válidas/incorrectas del perfil administrativo, feedback accesible, navegación condicionada solo en la presentación y cierre de sesión. | Vitest, `apps/dashboard/src/tests/login.test.tsx` y pruebas del reducer/ViewModel. |
+| CA-12 | `CA-12 admin-dashboard-prototype` comprueba la creación/lista efímera y documenta sus límites; el login de la cuenta creada fue reemplazado por `dashboard-002`. | Vitest, `apps/dashboard/src/tests/ticket-users.test.tsx`; guía `apps/dashboard/docs/manual-demo.md`. |
+| CA-13 | Reemplazado por `dashboard-002`; el login administrativo ficticio ya no es comportamiento vigente. | Cobertura vigente: `apps/dashboard/src/tests/real-staff-login.test.tsx`. |
 | CA-14 | `CA-14 admin-dashboard-prototype` comprueba los aliases de tokens semánticos, valores de la paleta institucional, tipografía/tamaño base, ausencia de hex de marca en vistas y conservación de colores de estado/foco. | Vitest, `apps/dashboard/src/tests/design-system.test.tsx` y `apps/dashboard/src/tests/responsive.test.tsx`. |
 | CA-15 | `CA-15 admin-dashboard-prototype` renderiza cada vista administrativa autenticada y comprueba que la advertencia general aparece exactamente una vez en la shell. | Vitest, `apps/dashboard/src/tests/global-demo-banner.test.tsx`. |
 

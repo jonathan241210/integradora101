@@ -11,8 +11,8 @@
 
 La aplicación presenta al visitante una experiencia móvil de exploración del zoológico y permite validar sus flujos y diseño.
 
-- **Actual:** cinco pestañas, búsqueda y detalle de animales, colección, perfil, eventos, misiones, logros y resultados QR simulados.
-- **No incluido en 002:** conexión de datos de negocio a la API, persistencia, cámara/lectura QR real, GPS, mapa interactivo y renderizado 3D.
+- **Actual:** cinco pestañas, búsqueda y detalle de animales, colección, perfil, eventos, misiones, logros, resultados QR simulados, y el acceso visual (Login, registro, recuperación y Ajustes).
+- **No incluido en 002:** conexión de datos de negocio a la API, persistencia, cuenta real, cámara/lectura QR real, GPS, mapa interactivo y renderizado 3D.
 - **Futuro:** capacidades de dispositivo o persistencia solo se implementan con alcance aprobado en una spec correspondiente. Roadmap y responsables de specs 003–008: [003-008-roadmap-y-asignacion.md](./003-008-roadmap-y-asignacion.md).
 
 ## 3. Actores
@@ -75,7 +75,7 @@ No hay persistencia local o remota en esta etapa. Los repositorios exponen fixtu
 
 ## 11. Seguridad y privacidad
 
-El prototipo no solicita permisos de cámara ni ubicación y no debe contener secretos o tokens de servicio. El QR y el mapa son simulaciones visuales, no flujos de captura de datos.
+El prototipo no solicita permisos de cámara ni ubicación y no debe contener secretos o tokens de servicio. El QR y el mapa son simulaciones visuales, no flujos de captura de datos. Login y Ajustes tampoco guardan credenciales: la compuerta de entrada vive solo en memoria y el aviso de privacidad de la app explica esa limitación. La cuenta recuperable en servidor pertenece a la spec `004`.
 
 ## 12. Pruebas
 
@@ -120,6 +120,7 @@ sequenceDiagram
 | Persistencia y favoritos | Definir en una spec futura; no inferir estado persistente de UI temporal |
 | Cámara/QR real, GPS/mapa y 3D | Requieren alcance aprobado, permisos, dependencias y validación de dispositivos |
 | Retirar referencia visual temporal | `arca-ui-reference` no es una dependencia y se mantiene fuera de Git |
+| Confundir enmienda 002 con spec 004 | Ver sección «Límite entre enmienda 002 y spec 004» en [003-008-roadmap-y-asignacion.md](./003-008-roadmap-y-asignacion.md): no añadir secure store, API de cuenta ni flujos 004 hasta spec/ADR aprobados |
 
 ## 16. Validación
 

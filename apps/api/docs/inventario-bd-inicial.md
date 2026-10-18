@@ -71,10 +71,12 @@ Conforme a la Constitución y la spec `001-database-change-governance`:
 
 La instancia aloja dos esquemas con usos distintos:
 
-- **`arca_zoo`:** base de **desarrollo compartido**; es la que configura el `.env` local de `apps/api`.
-- **`arca_pruebas`:** base **solo para PHPUnit**; `RefreshDatabase`/`migrate:fresh` pueden borrarla y reconstruirla. El inventario de las secciones 1–3 se levantó sobre esta base.
+- **`arca_pruebas`:** base de **trabajo del equipo y de PHPUnit**; es la que configura el `.env` local de `apps/api`. Contiene las cuentas de prueba y **no se borra ni se reconstruye**: los tests usan `DatabaseTransactions` y están prohibidos `RefreshDatabase`, `migrate:fresh` y las migraciones desde los tests. El inventario de las secciones 1–3 se levantó sobre esta base.
+- **`arca_zoo`:** base de **producción**; ningún integrante del equipo de desarrollo, agente ni test la usa ni la modifica.
 
-La normalización del esquema a identificadores en inglés se solicita mediante [DBR-001 · english-schema-normalization](../../../docs/database/requests/DBR-001-english-schema-normalization.md); las columnas y tablas de autenticación del personal mediante DBR-002. Ambas se aplican primero en `arca_zoo` y se verifican en `arca_pruebas`.
+Decisión de Jonathan (2026-10-15), registrada en [ADR 0013](../../../docs/adr/0013-aiven-managed-mysql.md). La política de compatibilidad con Presidencia (MySQL 8.0.x, sección 2) se mantiene.
+
+La normalización del esquema a identificadores en inglés se solicita mediante [DBR-001 · english-schema-normalization](../../../docs/database/requests/DBR-001-english-schema-normalization.md); las columnas y tablas de autenticación del personal mediante DBR-002. Ambas están aplicadas y verificadas en `arca_pruebas` (`Lista para backend`).
 
 ---
 

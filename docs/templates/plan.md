@@ -21,7 +21,7 @@ Resumen del flujo, límites y responsabilidades. La API es autoridad de negocio;
 - Errores y compatibilidad:
 
 ## Seguridad, offline y operación
-Datos sensibles, mínimo privilegio, rate limits, almacenamiento, sincronización, conflictos, secretos, observabilidad y portabilidad GCP/local.
+Datos sensibles, mínimo privilegio, rate limits, almacenamiento, sincronización, conflictos, secretos, observabilidad y portabilidad Aiven/local (MySQL 8.0.x).
 
 ## Mapeo de criterios a pruebas
 | Criterio | Prueba automatizada | App/ubicación |

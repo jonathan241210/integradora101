@@ -101,6 +101,25 @@ export interface MapRoute {
   steps: string[];
 }
 
+export type VisitorPreferenceKey = 'notifications' | 'darkMode' | 'location';
+
+export interface VisitorPreferences {
+  notifications: boolean;
+  darkMode: boolean;
+  location: boolean;
+}
+
+export interface VisitorAccountSummary {
+  displayName: string;
+  email: string;
+}
+
+export interface InfoSection {
+  id: string;
+  title: string;
+  body: string;
+}
+
 export type QrOutcome = 'valid' | 'invalid' | 'already-discovered';
 
 export interface QrSimulation {
