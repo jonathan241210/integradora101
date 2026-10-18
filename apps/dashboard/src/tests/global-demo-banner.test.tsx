@@ -3,10 +3,12 @@ import { describe, expect, it, vi } from "vitest";
 import App from "../App";
 import { initialDashboardDemoState } from "../viewmodels/dashboard-demo";
 
-const { useDashboardDemo } = vi.hoisted(() => ({
+const { useAuthSession, useDashboardDemo } = vi.hoisted(() => ({
+  useAuthSession: vi.fn(),
   useDashboardDemo: vi.fn(),
 }));
 
+vi.mock("../viewmodels/useAuthSession", () => ({ useAuthSession }));
 vi.mock("../viewmodels/useDashboardDemo", () => ({ useDashboardDemo }));
 
 const authenticatedSections = [
@@ -22,15 +24,50 @@ describe("CA-15 admin-dashboard-prototype", () => {
   it.each(authenticatedSections)(
     "muestra una sola advertencia general para administración en %s",
     (activeProfile, activeSection) => {
+      useAuthSession.mockReturnValue({
+        state: {
+          status: "authenticated",
+          profile: {
+            id: 1,
+            first_name: "Personal",
+            last_name: "Prueba",
+            second_last_name: null,
+            full_name: "Personal Prueba",
+            email: "personal@test.arca.invalid",
+            department: null,
+            roles: ["admin"],
+            permissions: [
+              "dashboard.view",
+              "news.manage",
+              "events.manage",
+              "reports.view",
+              "enclosures.manage",
+              "users.manage",
+              "operational-staff.manage",
+            ],
+            home: "administration",
+            pwa_url: null,
+            two_factor_setup_required: false,
+          },
+          error: "",
+          sessionExpired: false,
+          submitting: false,
+          qrSvg: null,
+          recoveryCodes: [],
+        },
+        login: vi.fn(),
+        challenge: vi.fn(),
+        confirmSetup: vi.fn(),
+        acknowledgeCodes: vi.fn(),
+        logout: vi.fn(),
+      });
       useDashboardDemo.mockReturnValue({
         state: {
           ...initialDashboardDemoState,
           activeProfile,
           activeSection,
         },
-        selectProfile: vi.fn(),
-        loginAdministration: vi.fn(),
-        loginTicket: vi.fn(),
+        startSession: vi.fn(),
         signOut: vi.fn(),
         navigate: vi.fn(),
         toggleMenu: vi.fn(),

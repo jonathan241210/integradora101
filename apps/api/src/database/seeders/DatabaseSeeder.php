@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -12,7 +11,13 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seeders will be added here by backend (Jonathan) as part of api-003.
-        // See apps/api/docs/credenciales-desarrollo.md for the expected users.
+        $this->call([
+            DepartmentSeeder::class,
+            RolesAndPermissionsSeeder::class,
+        ]);
+
+        if (! app()->environment('production')) {
+            $this->call(DemoStaffSeeder::class);
+        }
     }
 }

@@ -4,11 +4,14 @@ Los nombres de roles, permisos, recursos y acciones son identificadores en ingl�
 
 ## Roles
 
-- `admin` — Administrador General (Dirección de Informática); administración del sistema y acceso operativo autorizado.
+- `admin` — Administrador General (Presidencia); control total del sistema, incluida la administración de todas las cuentas. Requiere 2FA.
+- `zoo-admin` — Administrador del Zoológico; administra noticias, eventos, recintos y las cuentas de taquilla y veterinaria, y consulta boletos, cierres de caja, panel y reportes. Requiere 2FA.
 - `executive` — Altos Directivos; métricas y reportes de solo lectura.
 - `cashier` — Cajero; operación de taquilla y cierre de caja.
 - `veterinarian` — Médico Veterinario; expedientes y datos clínicos de ejemplares.
 - **Visitante anónimo** — consulta de contenido institucional y pedagógico público; no requiere una cuenta interna ni un rol asignado.
+
+El 2FA obligatorio se configura en la API (`config('arca.two_factor_roles')` = `['admin', 'zoo-admin']`, `api-003`). El destino (`home`) por rol es: `admin` y `zoo-admin` → `administration`, `executive` → `executive`, `cashier` → `ticket`, `veterinarian` → `pwa`.
 
 ## Convención
 
@@ -18,24 +21,27 @@ Cada permiso usa `<resource>.<action>` en inglés, por ejemplo `tickets.create` 
 
 ✓ indica permiso inicial; — indica que no se otorga por defecto. El rol `admin` puede administrar las capacidades privadas aquí enumeradas. La matriz deberá ampliarse mediante una spec aprobada al introducir nuevos recursos.
 
-| Permiso | Etiqueta en español | `admin` | `executive` | `cashier` | `veterinarian` | Anónimo |
-|---|---|:---:|:---:|:---:|:---:|:---:|
-| `dashboard.view` | Ver panel ejecutivo | ✓ | ✓ | — | — | — |
-| `reports.view` | Ver reportes ejecutivos | ✓ | ✓ | — | — | — |
-| `tickets.view` | Consultar boletos | ✓ | — | ✓ | — | — |
-| `tickets.create` | Registrar venta de boletos | ✓ | — | ✓ | — | — |
-| `cash-closings.view` | Consultar cierres de caja | ✓ | — | ✓ | — | — |
-| `cash-closings.create` | Crear cierre/arqueo de caja | ✓ | — | ✓ | — | — |
-| `medical-records.view` | Consultar expedientes clínicos | ✓ | — | — | ✓ | — |
-| `medical-records.create` | Crear expediente clínico | ✓ | — | — | ✓ | — |
-| `medical-records.update` | Actualizar expediente clínico | ✓ | — | — | ✓ | — |
-| `specimens.view` | Consultar ejemplares | ✓ | — | — | ✓ | — |
-| `specimens.update` | Actualizar datos del ejemplar | ✓ | — | — | ✓ | — |
-| `users.manage` | Administrar usuarios y permisos | ✓ | — | — | — | — |
-| `news.manage` | Administrar noticias | ✓ | — | — | — | — |
-| `events.manage` | Administrar eventos | ✓ | — | — | — | — |
-| `enclosures.manage` | Administrar recintos | ✓ | — | — | — | — |
-| `public-content.view` | Consultar contenido público | ✓ | ✓ | ✓ | ✓ | Público |
+| Permiso | Etiqueta en español | `admin` | `zoo-admin` | `executive` | `cashier` | `veterinarian` | Anónimo |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|
+| `dashboard.view` | Ver panel ejecutivo | ✓ | ✓ | ✓ | — | — | — |
+| `reports.view` | Ver reportes ejecutivos | ✓ | ✓ | ✓ | — | — | — |
+| `tickets.view` | Consultar boletos | ✓ | ✓ | — | ✓ | — | — |
+| `tickets.create` | Registrar venta de boletos | ✓ | — | — | ✓ | — | — |
+| `cash-closings.view` | Consultar cierres de caja | ✓ | ✓ | — | ✓ | — | — |
+| `cash-closings.create` | Crear cierre/arqueo de caja | ✓ | — | — | ✓ | — | — |
+| `medical-records.view` | Consultar expedientes clínicos | ✓ | — | — | — | ✓ | — |
+| `medical-records.create` | Crear expediente clínico | ✓ | — | — | — | ✓ | — |
+| `medical-records.update` | Actualizar expediente clínico | ✓ | — | — | — | ✓ | — |
+| `specimens.view` | Consultar ejemplares | ✓ | — | — | — | ✓ | — |
+| `specimens.update` | Actualizar datos del ejemplar | ✓ | — | — | — | ✓ | — |
+| `users.manage` | Administrar usuarios y permisos | ✓ | — | — | — | — | — |
+| `operational-staff.manage` | Administrar cuentas de taquilla y veterinaria | ✓ | ✓ | — | — | — | — |
+| `news.manage` | Administrar noticias | ✓ | ✓ | — | — | — | — |
+| `events.manage` | Administrar eventos | ✓ | ✓ | — | — | — | — |
+| `enclosures.manage` | Administrar recintos | ✓ | ✓ | — | — | — | — |
+| `public-content.view` | Consultar contenido público | ✓ | ✓ | ✓ | ✓ | ✓ | Público |
+
+`users.manage` permite administrar todas las cuentas; `operational-staff.manage` solo las de `cashier` y `veterinarian`. La gestión de cuentas desde el dashboard llega con la feature «Gestión de usuarios»; `api-003` solo siembra estos permisos.
 
 La lista no sustituye Policies por registro ni restricciones de datos sensibles. El acceso de visitantes se limita a contenido marcado explícitamente como público; no se le asigna `public-content.view` como permiso de cuenta.
 
@@ -45,12 +51,13 @@ La lista no sustituye Policies por registro ni restricciones de datos sensibles.
 
 | code | name (UI) | Rol sugerido |
 |---|---|---|
+| `presidency` | Presidencia | `admin` |
 | `information-technology` | Informática | `admin` |
-| `management` | Dirección | `executive` |
+| `management` | Dirección | `zoo-admin` |
 | `box-office` | Taquilla | `cashier` |
 | `veterinary` | Servicios veterinarios | `veterinarian` |
 
-El área **no otorga acceso**: solo organiza al personal para reportes, filtros y auditoría. La autorización la dan exclusivamente los roles y permisos de esta matriz, verificados en el servidor.
+`executive` no tiene área sugerida: se elige manualmente al crear la cuenta. El área **no otorga acceso**: solo organiza al personal para reportes, filtros y auditoría. La autorización la dan exclusivamente los roles y permisos de esta matriz, verificados en el servidor.
 
 ## Visitantes con cuenta
 

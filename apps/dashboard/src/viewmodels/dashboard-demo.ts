@@ -1,5 +1,4 @@
 import {
-  demoAdministrationCredentials,
   demoEnclosures,
   demoTicketUsers,
   type DemoEnclosure,
@@ -16,12 +15,11 @@ export type DashboardSection =
   | "ticket-users"
   | "ticket-history";
 
-export type DemoProfile = "administration" | "ticket";
+export type DemoProfile = "administration" | "executive" | "ticket";
 
 export type SaleStep = "idle" | "confirmation" | "processing" | "complete";
 
 export type DashboardDemoState = {
-  selectedProfile: DemoProfile | null;
   activeProfile: DemoProfile | null;
   activeSection: DashboardSection;
   mobileMenuOpen: boolean;
@@ -29,13 +27,10 @@ export type DashboardDemoState = {
   notice: string;
   ticketUsers: DemoTicketUser[];
   enclosures: DemoEnclosure[];
-  activeTicketUser: string;
 };
 
 export type DashboardDemoAction =
-  | { type: "select-profile"; profile: DemoProfile }
-  | { type: "login-administration"; username: string; password: string }
-  | { type: "login-ticket"; username: string; password: string }
+  | { type: "start-session"; profile: DemoProfile }
   | { type: "sign-out" }
   | { type: "navigate"; section: DashboardSection }
   | { type: "toggle-menu" }
@@ -55,7 +50,6 @@ export type DashboardDemoAction =
   | { type: "reset-sale" };
 
 export const initialDashboardDemoState: DashboardDemoState = {
-  selectedProfile: null,
   activeProfile: null,
   activeSection: "dashboard",
   mobileMenuOpen: false,
@@ -63,7 +57,6 @@ export const initialDashboardDemoState: DashboardDemoState = {
   notice: "",
   ticketUsers: demoTicketUsers,
   enclosures: demoEnclosures,
-  activeTicketUser: "",
 };
 
 const adminSections: DashboardSection[] = [
@@ -76,11 +69,15 @@ const adminSections: DashboardSection[] = [
 ];
 
 const ticketSections: DashboardSection[] = ["tickets", "ticket-history"];
+const executiveSections: DashboardSection[] = ["dashboard", "reports"];
 
 export function getSectionsForProfile(
   profile: DemoProfile,
 ): DashboardSection[] {
-  return profile === "administration" ? adminSections : ticketSections;
+  if (profile === "administration") return adminSections;
+  if (profile === "executive") return executiveSections;
+
+  return ticketSections;
 }
 
 export function dashboardDemoReducer(
@@ -88,63 +85,22 @@ export function dashboardDemoReducer(
   action: DashboardDemoAction,
 ): DashboardDemoState {
   switch (action.type) {
-    case "select-profile":
+    case "start-session":
       return {
         ...state,
-        selectedProfile: action.profile,
+        activeProfile: action.profile,
+        activeSection: action.profile === "ticket" ? "tickets" : "dashboard",
+        mobileMenuOpen: false,
         notice: "",
       };
-    case "login-administration":
-      if (
-        state.selectedProfile !== "administration" ||
-        action.username.trim().toLocaleLowerCase() !==
-          demoAdministrationCredentials.username ||
-        action.password !== demoAdministrationCredentials.password
-      ) {
-        return {
-          ...state,
-          notice: "El usuario o la contraseña no son correctos.",
-        };
-      }
-      return {
-        ...state,
-        activeProfile: "administration",
-        activeSection: "dashboard",
-        notice: "",
-      };
-    case "login-ticket": {
-      const username = action.username.trim().toLocaleLowerCase();
-      const ticketUser = state.ticketUsers.find(
-        (user) =>
-          user.username.toLocaleLowerCase() === username &&
-          user.password === action.password,
-      );
-
-      if (state.selectedProfile !== "ticket" || !ticketUser) {
-        return {
-          ...state,
-          notice: "El usuario o la contraseña no son correctos.",
-        };
-      }
-
-      return {
-        ...state,
-        activeProfile: "ticket",
-        activeTicketUser: ticketUser.name,
-        activeSection: "tickets",
-        notice: "",
-      };
-    }
     case "sign-out":
       return {
         ...state,
-        selectedProfile: null,
         activeProfile: null,
         activeSection: "dashboard",
         mobileMenuOpen: false,
         saleStep: "idle",
         notice: "",
-        activeTicketUser: "",
       };
     case "navigate":
       if (
@@ -187,8 +143,7 @@ export function dashboardDemoReducer(
       if (state.activeProfile !== "administration") return state;
       const name = action.name.trim();
       const username = action.username.trim();
-      const password = action.password;
-      if (!name || !username || !password.trim()) {
+      if (!name || !username || !action.password.trim()) {
         return { ...state, notice: "Completa todos los campos para crear la cuenta." };
       }
       if (
@@ -201,8 +156,8 @@ export function dashboardDemoReducer(
 
       return {
         ...state,
-        ticketUsers: [...state.ticketUsers, { id: username, name, username, password }],
-        notice: "La cuenta de taquilla se creó solo para esta demostración.",
+        ticketUsers: [...state.ticketUsers, { id: username, name, username }],
+        notice: "El registro de muestra se agregó solo a esta lista temporal.",
       };
     }
     case "open-sale":

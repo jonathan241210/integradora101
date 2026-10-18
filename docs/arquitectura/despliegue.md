@@ -1,6 +1,6 @@
 # Despliegue conceptual
 
-No hay infraestructura implementada. La topología prevista debe ser portable entre GCP y un entorno local equivalente.
+No hay infraestructura implementada. La base de datos administrada es Aiven MySQL (ADR 0013); el hosting de la API, los clientes y el almacenamiento están por definir. La topología debe ser portable entre proveedores y un entorno local equivalente.
 
 ```mermaid
 flowchart LR
@@ -8,7 +8,7 @@ flowchart LR
   Edge --> Clients[Apps web, dashboard y PWA]
   Mobile[App mobile] -->|HTTPS| API[API Laravel]
   Clients -->|HTTPS JSON| API
-  API -->|red privada| DB[(MySQL 8<br/>Cloud SQL o MySQL Server)]
+  API -->|TLS| DB[(MySQL 8<br/>Aiven o MySQL Server)]
   API -. solo lectura .-> Theme[(settings_colores)]
   API --> Storage[Almacenamiento<br/>Laravel Filesystem]
   API --> Secrets[Secretos por entorno]
@@ -18,7 +18,7 @@ flowchart LR
 ## Controles
 
 - HTTPS termina en una entrada administrada; API y BD no se exponen innecesariamente.
-- MySQL 8 estándar y configuración `.env` permiten Cloud SQL o MySQL Server local.
+- MySQL 8 estándar y configuración `.env` (con `DB_SSL_CA` para TLS) permiten Aiven o MySQL Server local.
 - Secretos se inyectan fuera del repositorio y se rotan; nunca llegan a clientes.
 - Archivos usan un disco Laravel intercambiable, sin SDK propietario en el dominio.
 - Observabilidad no registra tokens, datos clínicos sensibles ni datos de tarjeta.

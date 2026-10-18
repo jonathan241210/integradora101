@@ -6,11 +6,13 @@
 - Estado de implementación: T-23..T-36, T-38..T-44 completadas; T-37 y T-22 pendientes
 - Nueva ampliación (CA-13/CA-14): aprobada por el solicitante, 2026-10-09
 
+> **Vigencia (2026-10-17):** `dashboard-002-real-staff-login` reemplaza CA-01, CA-10, CA-13 y solo la parte de login de CA-12. Las tareas ya completadas que implementaron esos logins quedan como historial; la creación/lista demostrativa de CA-12 sigue vigente y no permite autenticarse.
+
 ## Trazabilidad
 
 | Criterio | Tareas |
 |---|---|
-| CA-01 | T-05, T-13, T-23, T-26, T-29 |
+| CA-01 | Reemplazado por `dashboard-002`; T-05, T-13, T-23, T-26 y T-29 quedan como historial |
 | CA-02 | T-05, T-14, T-23, T-30 |
 | CA-03 | T-06, T-15, T-35 |
 | CA-04 | T-07, T-16, T-26, T-35 |
@@ -19,9 +21,10 @@
 | CA-07 | T-10, T-19, T-36, T-37 |
 | CA-08 | T-01..T-04, T-20, T-37 |
 | CA-09 | T-23, T-31 |
-| CA-10 | T-26, T-32 |
+| CA-10 | Reemplazado por `dashboard-002`; T-26 y T-32 quedan como historial |
 | CA-11 | T-27, T-33 |
-| CA-12 | T-25, T-28, T-34 |
+| CA-12 | T-25, T-28, T-34 (alta/lista y documentación vigentes; login reemplazado por `dashboard-002`) |
+| CA-13 | Reemplazado por `dashboard-002`; T-38 y T-40 quedan como historial |
 | CA-15 | T-44 |
 
 ## Implementación
@@ -58,7 +61,7 @@
 
 - [x] **T-23** (CA-01, CA-02; RN-02, RN-07): actualizar el selector de perfil y la shell para separar navegación administrativa de taquilla; mantener etiquetas de demostración y limitar el menú administrativo a su perfil.
 - [x] **T-24** (CA-09; RN-09, RN-10): crear `EnclosuresView` con fixtures ficticios y edición local de nombre, descripción y estado; mostrar feedback accesible y conservar cambios solo en memoria.
-- [x] **T-25** (CA-12; RN-08..RN-10): crear `TicketUsersView` para mostrar la cuenta ficticia y capturar cuentas efímeras con campos requeridos; mantenerlas en memoria al cambiar de perfil y permitir usarlas en el login de taquilla durante esa carga.
+- [x] **T-25** (CA-12; RN-08..RN-10): crear `TicketUsersView` para mostrar la cuenta ficticia y capturar cuentas efímeras con campos requeridos; mantenerlas en memoria al cambiar de perfil. La parte que permitía usarlas para iniciar sesión quedó reemplazada por `dashboard-002`.
 - [x] **T-26** (CA-01, CA-04, CA-10; RN-02, RN-07..RN-09): implementar el login local de taquilla con credenciales de la spec, estados de error accesibles, acceso visual condicionado a sesión de demo y cierre de sesión que vuelve al selector sin borrar cuentas creadas.
 - [x] **T-27** (CA-11; RN-01, RN-07, RN-09): crear `TicketHistoryView` con filas ficticias y filtros de presentación; hacer que solo esté disponible en el perfil de taquilla con sesión de demostración.
 - [x] **T-28** (CA-12; RN-11): crear `apps/dashboard/docs/manual-demo.md` en español con instrucciones de ejecución, perfiles, credenciales, alta de usuario, recintos, venta, historial, pruebas y límites/no persistencia; crear `apps/dashboard/docs/arquitectura.md` con la plantilla oficial, distinguiendo claramente el prototipo actual de las futuras funciones operativas.
@@ -70,7 +73,7 @@
 - [x] **T-31** (CA-09; RN-09, RN-10): añadir `CA-09 admin-dashboard-prototype` para probar edición de campos, feedback y estado temporal de recintos sin persistencia.
 - [x] **T-32** (CA-10; RN-02, RN-07, RN-08): añadir `CA-10 admin-dashboard-prototype` para probar credenciales correctas/incorrectas, gating de vistas, cierre de sesión y ocultamiento de venta/historial.
 - [x] **T-33** (CA-11; RN-01, RN-09): añadir `CA-11 admin-dashboard-prototype` para verificar historial ficticio, filtros de presentación y separación del reporte administrativo.
-- [x] **T-34** (CA-12; RN-08..RN-11): añadir `CA-12 admin-dashboard-prototype` para probar campos requeridos, alta de cuenta en memoria, login de la cuenta creada dentro de la misma sesión y contenido de la guía.
+- [x] **T-34** (CA-12; RN-08..RN-11): añadir `CA-12 admin-dashboard-prototype` para probar campos requeridos, alta de cuenta en memoria y contenido de la guía. La comprobación del login de la cuenta creada quedó reemplazada por `dashboard-002`.
 - [x] **T-35** (CA-03, CA-04, CA-05, CA-06; RN-01, RN-03, RN-04, RN-07): mantener o ampliar pruebas nombradas para verificar que Noticias/Eventos, Venta, Reporte y todas las vistas nuevas conservan sus límites por perfil, responsive y feedback accesible.
 - [x] **T-36** (CA-07; RN-01..RN-11): actualizar `CA-07 admin-dashboard-prototype` en `acceptance-coverage.test.tsx` para exigir una prueba nombrada para cada CA-01..CA-14 y verificar que no se incorporen red, persistencia o dependencias no aprobadas. Mantener la extensión `.tsx` para que la prueba quede dentro del patrón Vitest configurado.
 

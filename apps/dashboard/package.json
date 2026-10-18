@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@arca/api-client": "file:../../packages/api-client",
     "@arca/ui": "file:../../packages/ui",
     "@arca/tokens": "file:../../packages/tokens",
     "react": "^19.0.0",

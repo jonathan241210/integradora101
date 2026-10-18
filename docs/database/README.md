@@ -34,6 +34,15 @@ Solicitud DBR (Borrador)
 - `Aprobada` autoriza crear la migración; **no** significa que la base ya cambió.
 - No existe un estado global ambiguo llamado solo `Aplicada`: siempre se registra el ambiente.
 
+## Bases por ambiente
+
+El proveedor administrado es Aiven MySQL (ADR 0013); la conexión usa TLS con `DB_SSL_CA` configurado solo en `.env`.
+
+| Base | Uso | Reglas |
+|---|---|---|
+| `arca_pruebas` | Desarrollo del equipo y PHPUnit; contiene las cuentas de prueba (`apps/api/docs/credenciales-desarrollo.md`) | No se borra ni se reconstruye: prohibidos `migrate:fresh`, `RefreshDatabase` y migraciones desde los tests. Los tests usan `DatabaseTransactions`. Las migraciones las aplica solo el responsable de BD. |
+| `arca_zoo` | Producción | Ningún integrante del equipo de desarrollo, agente ni test la usa ni la modifica. |
+
 ## Funciones y procedimientos almacenados
 
 Se admiten de forma excepcional, con justificación de consistencia, rendimiento o integración que no se resuelva mejor en Laravel. Se versionan dentro de migraciones (habitualmente `DB::statement()`), se prueban en MySQL 8.0 y se especifican entradas, salidas, permisos y reversión. Las **reglas principales de negocio permanecen en Actions**. Vistas y triggers no están autorizados por esta política.
@@ -54,3 +63,4 @@ Conectar la API y probar conectividad **no requiere DBR** mientras no altere el 
 - [Solicitudes DBR](requests/README.md)
 - [Plantilla de solicitud](templates/change-request.md)
 - [ADR 0010 · MySQL 8.0 y gobierno de cambios](../adr/0010-mysql-8-0-database-change-governance.md)
+- [ADR 0013 · Aiven como proveedor de MySQL administrado](../adr/0013-aiven-managed-mysql.md)
