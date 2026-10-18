@@ -67,7 +67,7 @@ Las pantallas en `src/screens/` componen controles de `src/components/ui/` y com
 
 ## 9. Contratos y endpoints
 
-La etapa 002 no consume endpoints. `@arca/api-client` está declarado para contratos compartidos futuros, pero los datos de las pantallas proceden de mocks.
+La etapa 002 no consume endpoints. `@arca/api-client` está declarado para contratos compartidos futuros, pero los datos de las pantallas proceden de mocks. La arquitectura de conexión, contratos y manejo de errores para las etapas 003–008 se regula en [estandares-integracion-api.md](./estandares-integracion-api.md).
 
 ## 10. Datos y flujo
 
