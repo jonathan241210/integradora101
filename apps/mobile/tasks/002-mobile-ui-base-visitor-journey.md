@@ -65,3 +65,11 @@
 - [x] **T-45** (CA-07, RN-09): Ampliar `apps/mobile/__tests__/theme.test.ts` con `test-ca-07` para valores institucionales exactos, adaptador móvil, retiro de los colores de marca verde/amarilla, valor compartido `danger`, contraste WCAG AA ≥ 4.5:1 en combinaciones de texto/superficie y conservación de tintes ilustrativos de especie.
 - [x] **T-46** (CA-07, RN-09): Actualizar `packages/tokens/README.md`, `apps/mobile/README.md` y `apps/mobile/docs/002-mobile-ui-visitor-journey.md` para documentar la fuente institucional, el uso de tokens móviles, el color semántico de error y la excepción de los tintes mock por especie.
 - [x] **T-47** (CA-07): Ejecutar las pruebas focalizadas y suite de Mobile, TypeScript, compatibilidad Expo, exportación Android y revisiones estáticas; registrar resultados. No hubo dispositivo/emulador Android disponible para repetir la validación visual manual.
+
+### Enmienda 2026-10-15: Acceso y ajustes visuales
+- [x] **T-48** (CA-11, CA-12, RN-10): Agregar Login, registro y la advertencia de que la cuenta de demostración no se restaura al eliminar la aplicación. La app abre en Login; invitado e inicio de sesión entran al inicio solo en memoria.
+- [x] **T-49** (CA-13, RN-11): Agregar olvido de contraseña con aviso genérico y restablecimiento con código de 6 dígitos, nueva contraseña y confirmación, sin enviar correo.
+- [x] **T-50** (CA-14, CA-15, RN-12, RN-13): Agregar Ajustes desde Perfil, interruptores solo de pantalla, y las pantallas Mi cuenta, Privacidad, Ayuda y Acerca de. Privacidad explica datos, finalidad, protección y derechos como texto de demostración.
+- [x] **T-51** (CA-11 a CA-15): Cubrir los criterios con `test-ca-11` a `test-ca-15`, conservar la pestaña Perfil en esas rutas y actualizar spec, plan, tasks y la guía `docs/002-mobile-ui-visitor-journey.md`. Verificación tras T-52: 11 suites, 70 tests y 1 snapshot aprobados; `npx tsc --noEmit` sin errores. No se repitió la validación visual en un dispositivo Android.
+- [x] **T-52** (CA-14): Retirar Idioma y Sonidos y efectos de Ajustes, de su ruta y de la documentación. Decisión del equipo, 2026-10-15.
+- [x] **T-53** (CA-11, CA-14): Ajustar Perfil al título con botón circular de ajustes, y el inicio de sesión al panel de marca, el separador «o» y el acceso de invitado en texto.

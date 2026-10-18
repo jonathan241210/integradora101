@@ -37,6 +37,7 @@ export default function ProfileRoute() {
         params: { id, source: 'profile', returnTo: 'profile' },
       })}
       onSeeAllAchievementsPress={() => router.push({ pathname: '/achievements', params: { source: 'profile' } })}
+      onSettingsPress={() => router.push('/settings')}
     />
   );
 }
