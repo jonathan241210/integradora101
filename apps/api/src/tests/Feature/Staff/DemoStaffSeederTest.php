@@ -58,12 +58,13 @@ class DemoStaffSeederTest extends FeatureTestCase
     /** CA-18 staff-authentication */
     public function test_ca18_staff_authentication_demo_seeder_aborts_in_production(): void
     {
-        config([
-            'app.env' => 'production',
-            'arca.demo_staff_password' => 'SafePassphrase12!',
-        ]);
+        (new DepartmentSeeder)->run();
+        (new RolesAndPermissionsSeeder)->run();
+        config(['arca.demo_staff_password' => 'SafePassphrase12!']);
+        $this->app['env'] = 'production';
 
         $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('DemoStaffSeeder no se puede ejecutar en producción.');
         (new DemoStaffSeeder)->run();
     }
 
@@ -80,6 +81,7 @@ class DemoStaffSeederTest extends FeatureTestCase
         };
 
         $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('DemoStaffSeeder no se puede ejecutar en arca_zoo.');
         $seeder->run();
     }
 }

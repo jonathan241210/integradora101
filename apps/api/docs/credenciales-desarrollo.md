@@ -4,7 +4,7 @@
 - **Responsable de base de datos:** Victor Adrian
 - **Responsable de implementación (seeders):** equipo backend, dentro de `api-003`
 - **Feature SDD relacionada:** `apps/api/specs/003-staff-authentication.md` (CA-14, CA-15, CA-18)
-- **Estado:** Pendiente de implementar en `api-003` (los seeders aún no existen). Se ejecutarán solo en `arca_pruebas`.
+- **Estado:** Activo en `arca_pruebas` desde 2026-10-17 (seeders ejecutados con `php artisan db:seed`). Las cuentas administradoras quedan sin 2FA configurado: cada administrador lo enrola en su primer acceso.
 
 ---
 

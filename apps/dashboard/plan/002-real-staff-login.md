@@ -33,6 +33,7 @@ El módulo `auth` de `@arca/api-client` no contiene nada propio del dashboard, p
 - `createHttpClient({ baseUrl, fetchImpl = fetch, onUnauthorized? })`:
   - Todas las peticiones con `credentials: 'include'` y `Accept: application/json`; cuerpo JSON con `Content-Type: application/json`.
   - Antes de cada petición que no sea `GET`, si no existe la cookie `XSRF-TOKEN`, llama a `GET /sanctum/csrf-cookie`; envía `X-XSRF-TOKEN` con el valor decodificado de la cookie.
+  - Si una petición no-GET responde 419, vuelve a obtener CSRF y repite la petición una sola vez; un segundo 419 se normaliza como `ApiError` sin más reintentos.
   - Normaliza errores a `ApiError { status, message, code?, errors?, retryAfterSeconds? }` (`retryAfterSeconds` desde `Retry-After` en 429).
   - Invoca `onUnauthorized` ante 401.
 - `createAuthApi(http)`, endpoints de `api-003`:
@@ -71,8 +72,8 @@ El módulo `auth` de `@arca/api-client` no contiene nada propio del dashboard, p
 ### Vistas
 
 - `LoginView`: un formulario (correo, contraseña), botón mostrar/ocultar con `aria-pressed` y `aria-label` dinámico («Mostrar contraseña»/«Ocultar contraseña»), `Alert` con `role="alert"`, botón deshabilitado con «Ingresando…». Sin selector de perfil, sin credenciales visibles y sin `DemoBanner`.
-- `TwoFactorChallengeView`: campo de código TOTP con opción «Usar un código de recuperación»; errores en `role="alert"`.
-- `TwoFactorSetupView`: instrucciones («Instala una app autenticadora y escanea el código»), QR como `<img src="data:image/svg+xml;utf8,…" alt="Código QR para tu app autenticadora">` sin `innerHTML`, confirmación con código y códigos de recuperación mostrados una vez con «Ya guardé mis códigos».
+- `TwoFactorChallengeView`: campo de código TOTP con opción «Usar un código de recuperación», errores en `role="alert"` y botón para volver al login sin llamar a la API.
+- `TwoFactorSetupView`: instrucciones («Instala una app autenticadora y escanea el código»), QR como `<img src="data:image/svg+xml;utf8,…" alt="Código QR para tu app autenticadora">` sin `innerHTML`, confirmación con código y códigos de recuperación mostrados una vez con «Ya guardé mis códigos». Si falla el alta o la carga del QR, muestra «Reintentar» y vuelve a ejecutar la preparación.
 - `PwaRedirectView`: «Tu cuenta usa la app veterinaria. Te estamos redirigiendo…» con enlace de respaldo a `pwa_url`.
 - `App.tsx`: orquesta `useAuthSession` y la shell; muestra el nombre real del usuario en el encabezado; «Salir» llama a `signOut`. `DemoBanner` permanece solo en las secciones demostrativas.
 - Estilo con tokens semánticos de `@arca/tokens`; sin hex en vistas (CA-13).
@@ -136,4 +137,4 @@ Tests de `dashboard-001`: los criterios reemplazados (CA-01, CA-10, CA-13 y la p
 2. `npm run types`, `npm test`, `npm run build`, `/verify`.
 3. Prueba manual con las cuentas demo contra la API local.
 
-Aprobación técnica: pendiente — Jonathan.
+Aprobación técnica: Jonathan, 2026-10-17 (plan y tasks).

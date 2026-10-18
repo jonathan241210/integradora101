@@ -1,39 +1,26 @@
-import { useEffect, useRef, useState } from "react";
-import { Alert, Button } from "@arca/ui";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Alert, Button, Card } from "@arca/ui";
+import { DemoBanner } from "@/components/DemoBanner";
+import { Icon } from "@/components/Icon";
 import { EnclosuresView } from "@/views/EnclosuresView";
+import { EventsView } from "@/views/EventsView";
+import { LoginView } from "@/views/LoginView";
+import { NewsView } from "@/views/NewsView";
+import { PwaRedirectView } from "@/views/PwaRedirectView";
 import { TicketHistoryView } from "@/views/TicketHistoryView";
+import { TicketReportView } from "@/views/TicketReportView";
+import { TicketSaleView } from "@/views/TicketSaleView";
 import { TicketUsersView } from "@/views/TicketUsersView";
-import { DemoBanner } from "./components/DemoBanner";
-import { Icon, type IconName } from "./components/Icon";
+import { TwoFactorChallengeView } from "@/views/TwoFactorChallengeView";
+import { TwoFactorSetupView } from "@/views/TwoFactorSetupView";
+import {
+  getNavigationForProfile,
+  getPresentationProfile,
+} from "@/viewmodels/navigation";
+import { useAuthSession } from "@/viewmodels/useAuthSession";
+import { useDashboardDemo } from "@/viewmodels/useDashboardDemo";
+import type { DashboardSection } from "@/viewmodels/dashboard-demo";
 import { DashboardView } from "./views/DashboardView";
-import { EventsView } from "./views/EventsView";
-import { LoginView } from "./views/LoginView";
-import { NewsView } from "./views/NewsView";
-import { TicketReportView } from "./views/TicketReportView";
-import { TicketSaleView } from "./views/TicketSaleView";
-import { useDashboardDemo } from "./viewmodels/useDashboardDemo";
-import type {
-  DashboardSection,
-  DemoProfile,
-} from "./viewmodels/dashboard-demo";
-
-const navigation: Record<
-  DemoProfile,
-  { id: DashboardSection; label: string; icon: IconName }[]
-> = {
-  administration: [
-    { id: "dashboard", label: "Panel principal", icon: "dashboard" },
-    { id: "news", label: "Noticias", icon: "news" },
-    { id: "events", label: "Eventos", icon: "calendar" },
-    { id: "reports", label: "Reporte de boletos", icon: "trend" },
-    { id: "enclosures", label: "Modificación de recintos", icon: "building" },
-    { id: "ticket-users", label: "Usuarios de taquilla", icon: "users" },
-  ],
-  ticket: [
-    { id: "tickets", label: "Venta de boletos", icon: "ticket" },
-    { id: "ticket-history", label: "Historial de boletos", icon: "trend" },
-  ],
-};
 
 const sectionTitles: Record<DashboardSection, string> = {
   dashboard: "Panel principal",
@@ -47,44 +34,120 @@ const sectionTitles: Record<DashboardSection, string> = {
 };
 
 function App() {
+  const redirectToPwa = useCallback((url: string) => {
+    window.requestAnimationFrame(() => window.location.assign(url));
+  }, []);
+  const session = useAuthSession(redirectToPwa);
   const demo = useDashboardDemo();
   const [search, setSearch] = useState("");
   const sidebarRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const contentRef = useRef<HTMLElement>(null);
-  const { state } = demo;
+  const profile = session.state.profile;
+  const presentationProfile = profile
+    ? getPresentationProfile(profile.home)
+    : null;
+  const navigation = profile ? getNavigationForProfile(profile) : [];
 
   useEffect(() => {
-    if (state.mobileMenuOpen) {
+    if (session.state.status === "authenticated" && presentationProfile) {
+      if (demo.state.activeProfile !== presentationProfile) {
+        demo.startSession(presentationProfile);
+      }
+    } else if (demo.state.activeProfile !== null) {
+      demo.signOut();
+    }
+  }, [session.state.status, presentationProfile, demo.state.activeProfile]);
+
+  useEffect(() => {
+    if (demo.state.mobileMenuOpen) {
       sidebarRef.current
         ?.querySelector<HTMLButtonElement>(".sidebar-link")
         ?.focus();
     }
-  }, [state.mobileMenuOpen]);
+  }, [demo.state.mobileMenuOpen]);
 
   useEffect(() => {
-    if (!state.activeProfile) return;
+    if (session.state.status !== "authenticated") return;
+
     window.requestAnimationFrame(() => {
       const heading = contentRef.current?.querySelector("h1");
       heading?.setAttribute("tabindex", "-1");
       heading?.focus();
     });
-  }, [state.activeProfile]);
+  }, [session.state.status, demo.state.activeSection]);
 
-  if (!state.activeProfile) {
+  if (session.state.status === "checking") {
+    return (
+      <main className="auth-page">
+        <Card className="auth-card">
+          <p className="auth-loading" role="status" aria-live="polite">
+            Comprobando tu sesión…
+          </p>
+        </Card>
+      </main>
+    );
+  }
+
+  if (session.state.status === "anonymous") {
     return (
       <LoginView
-        selectedProfile={state.selectedProfile}
-        error={state.notice}
-        onSelectProfile={demo.selectProfile}
-        onLoginAdministration={demo.loginAdministration}
-        onLoginTicket={demo.loginTicket}
+        error={session.state.error}
+        submitting={session.state.submitting}
+        sessionExpired={session.state.sessionExpired}
+        onSubmit={session.login}
       />
     );
   }
 
-  const activeNavigation = navigation[state.activeProfile];
+  if (session.state.status === "two-factor-challenge") {
+    return (
+      <TwoFactorChallengeView
+        error={session.state.error}
+        submitting={session.state.submitting}
+        onSubmit={session.challenge}
+        onCancel={session.cancelTwoFactor}
+      />
+    );
+  }
+
+  if (session.state.status === "two-factor-setup") {
+    return (
+      <TwoFactorSetupView
+        qrSvg={session.state.qrSvg}
+        recoveryCodes={session.state.recoveryCodes}
+        error={session.state.error}
+        submitting={session.state.submitting}
+        onConfirm={session.confirmSetup}
+        onAcknowledge={session.acknowledgeCodes}
+        onRetry={session.retryTwoFactorSetup}
+      />
+    );
+  }
+
+  if (session.state.status === "redirecting-pwa") {
+    return <PwaRedirectView pwaUrl={profile?.pwa_url ?? null} />;
+  }
+
+  if (!profile || !presentationProfile) {
+    return (
+      <LoginView
+        error={session.state.error || "Tu cuenta no tiene un rol asignado. Contacta al administrador."}
+        submitting={false}
+        sessionExpired={false}
+        onSubmit={session.login}
+      />
+    );
+  }
+
+  const activeSection = navigation.some(
+    (item) => item.id === demo.state.activeSection,
+  )
+    ? demo.state.activeSection
+    : navigation[0]?.id ?? null;
+
   const navigate = (section: DashboardSection) => {
+    if (!navigation.some((item) => item.id === section)) return;
     demo.navigate(section);
     window.requestAnimationFrame(() => {
       const heading = contentRef.current?.querySelector("h1");
@@ -95,14 +158,21 @@ function App() {
 
   const showNotice = (message: string) => demo.showNotice(message);
   const closeMobileMenu = () => {
-    if (!state.mobileMenuOpen) return;
+    if (!demo.state.mobileMenuOpen) return;
     demo.toggleMenu();
     window.requestAnimationFrame(() => menuButtonRef.current?.focus());
   };
+  const initials = profile.full_name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toLocaleUpperCase())
+    .join("");
+  const permissions = new Set(profile.permissions);
 
   return (
     <div className="dashboard-app">
-      {state.mobileMenuOpen && (
+      {demo.state.mobileMenuOpen && (
         <button
           className="mobile-nav-backdrop"
           type="button"
@@ -113,7 +183,7 @@ function App() {
       <aside
         ref={sidebarRef}
         id="dashboardNavigation"
-        className={`sidebar ${state.mobileMenuOpen ? "sidebar--open" : ""}`}
+        className={`sidebar ${demo.state.mobileMenuOpen ? "sidebar--open" : ""}`}
         aria-label="Navegación del panel"
         onKeyDown={(event) => {
           if (event.key === "Escape") closeMobileMenu();
@@ -126,7 +196,11 @@ function App() {
           <span className="sidebar-brand__text">
             <strong>Zoo Tulancingo</strong>
             <small>
-              {state.activeProfile === "ticket" ? "Perfil de taquilla" : "Panel administrativo"}
+              {presentationProfile === "ticket"
+                ? "Perfil de taquilla"
+                : presentationProfile === "executive"
+                  ? "Panel ejecutivo"
+                  : "Panel administrativo"}
             </small>
           </span>
           <Button
@@ -141,12 +215,12 @@ function App() {
 
         <p className="sidebar-label">Menú</p>
         <nav className="sidebar-nav">
-          {activeNavigation.map((item) => (
+          {navigation.map((item) => (
             <button
-              className={`sidebar-link ${state.activeSection === item.id ? "sidebar-link--active" : ""}`}
+              className={`sidebar-link ${activeSection === item.id ? "sidebar-link--active" : ""}`}
               type="button"
               key={item.id}
-              aria-current={state.activeSection === item.id ? "page" : undefined}
+              aria-current={activeSection === item.id ? "page" : undefined}
               onClick={() => navigate(item.id)}
             >
               <Icon name={item.icon} />
@@ -156,8 +230,13 @@ function App() {
         </nav>
 
         <div className="sidebar-account">
-          <span className="account-avatar" aria-hidden="true">ZT</span>
-          <span><strong>Zoo Tulancingo</strong><small>Sesión de muestra</small></span>
+          <span className="account-avatar" aria-hidden="true">
+            {initials || "AR"}
+          </span>
+          <span>
+            <strong>{profile.full_name}</strong>
+            <small>Sesión institucional</small>
+          </span>
         </div>
       </aside>
 
@@ -169,12 +248,12 @@ function App() {
               variant="secondary"
               aria-label="Abrir menú de navegación"
               aria-controls="dashboardNavigation"
-              aria-expanded={state.mobileMenuOpen}
+              aria-expanded={demo.state.mobileMenuOpen}
               onClick={demo.toggleMenu}
             >
               <Icon name="menu" />
             </Button>
-            <strong>{sectionTitles[state.activeSection]}</strong>
+            <strong>{activeSection ? sectionTitles[activeSection] : "Panel principal"}</strong>
           </div>
           <label className="search-box">
             <Icon name="search" />
@@ -197,15 +276,20 @@ function App() {
               <span aria-hidden="true" />
             </Button>
             <div className="user-profile">
-                <span className="user-profile__avatar" aria-hidden="true">
-                  {state.activeProfile === "ticket" ? "TQ" : "AD"}
-                </span>
-                <span>
-                  <strong>{state.activeProfile === "ticket" ? state.activeTicketUser : "Administración"}</strong>
-                  <small>{state.activeProfile === "ticket" ? "Personal de taquilla demo" : "Perfil administrativo demo"}</small>
-                </span>
+              <span className="user-profile__avatar" aria-hidden="true">
+                {initials || "AR"}
+              </span>
+              <span>
+                <strong>{profile.full_name}</strong>
+                <small>{profile.email}</small>
+              </span>
             </div>
-            <Button className="sign-out-button" variant="ghost" onClick={demo.signOut}>
+            <Button
+              className="sign-out-button"
+              variant="ghost"
+              disabled={session.state.submitting}
+              onClick={() => void session.logout()}
+            >
               Salir
             </Button>
           </div>
@@ -213,9 +297,9 @@ function App() {
 
         <main className="dashboard-content" ref={contentRef}>
           <DemoBanner />
-          {state.notice && (
+          {demo.state.notice && (
             <Alert className="global-feedback" role="status" aria-live="polite">
-              {state.notice}
+              {demo.state.notice}
               <Button
                 className="feedback-close"
                 variant="ghost"
@@ -226,32 +310,43 @@ function App() {
               </Button>
             </Alert>
           )}
-          {state.activeSection === "dashboard" && <DashboardView onNavigate={navigate} />}
-          {state.activeSection === "news" && <NewsView onNotice={showNotice} />}
-          {state.activeSection === "events" && <EventsView onNotice={showNotice} />}
-          {state.activeSection === "tickets" && (
+          {navigation.length === 0 && (
+            <Alert role="alert">
+              Tu cuenta no tiene permisos para mostrar secciones del panel.
+            </Alert>
+          )}
+          {activeSection === "dashboard" && (
+            <DashboardView
+              onNavigate={navigate}
+              canViewNews={permissions.has("news.manage")}
+              canViewEvents={permissions.has("events.manage")}
+            />
+          )}
+          {activeSection === "news" && <NewsView onNotice={showNotice} />}
+          {activeSection === "events" && <EventsView onNotice={showNotice} />}
+          {activeSection === "tickets" && (
             <TicketSaleView
-              saleStep={state.saleStep}
+              saleStep={demo.state.saleStep}
               onOpen={demo.openSale}
               onCancel={demo.cancelSale}
               onConfirm={demo.beginSale}
               onReset={demo.resetSale}
             />
           )}
-          {state.activeSection === "reports" && <TicketReportView />}
-          {state.activeSection === "enclosures" && (
+          {activeSection === "reports" && <TicketReportView />}
+          {activeSection === "enclosures" && (
             <EnclosuresView
-              enclosures={state.enclosures}
+              enclosures={demo.state.enclosures}
               onUpdate={demo.updateEnclosure}
             />
           )}
-          {state.activeSection === "ticket-users" && (
+          {activeSection === "ticket-users" && (
             <TicketUsersView
-              users={state.ticketUsers}
+              users={demo.state.ticketUsers}
               onAdd={demo.addTicketUser}
             />
           )}
-          {state.activeSection === "ticket-history" && <TicketHistoryView />}
+          {activeSection === "ticket-history" && <TicketHistoryView />}
         </main>
       </div>
     </div>

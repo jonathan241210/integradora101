@@ -4,6 +4,20 @@ import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
   plugins: [tailwindcss()],
+  server: {
+    port: 5174,
+    strictPort: true,
+    proxy: {
+      "/api": {
+        target: process.env.ARCA_API_PROXY_TARGET ?? "http://localhost:8000",
+        changeOrigin: false,
+      },
+      "/sanctum": {
+        target: process.env.ARCA_API_PROXY_TARGET ?? "http://localhost:8000",
+        changeOrigin: false,
+      },
+    },
+  },
   esbuild: {
     jsx: "automatic",
   },

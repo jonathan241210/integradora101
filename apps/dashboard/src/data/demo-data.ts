@@ -123,12 +123,6 @@ export type DemoTicketUser = {
   id: string;
   name: string;
   username: string;
-  password: string;
-};
-
-export const demoAdministrationCredentials = {
-  username: "administrador@demo.local",
-  password: "demo1234",
 };
 
 export const demoTicketUsers: DemoTicketUser[] = [
@@ -136,7 +130,6 @@ export const demoTicketUsers: DemoTicketUser[] = [
     id: "taquilla-demo",
     name: "Personal de taquilla",
     username: "taquilla@demo.local",
-    password: "demo1234",
   },
 ];
 

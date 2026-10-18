@@ -1,7 +1,7 @@
 # Plan técnico · 003 · staff-authentication
 
 - Spec: `apps/api/specs/003-staff-authentication.md`
-- Estado de spec: Aprobada (Jonathan, 2026-10-15)
+- Estado de spec: Implementada (aprobada por Jonathan, 2026-10-15; cerrada 2026-10-17)
 - Responsable técnico: Jonathan (backend) / Victor Adrian (BD)
 - Consumidores: dashboard (`dashboard-002`) y PWA veterinaria (spec futura)
 

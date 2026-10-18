@@ -20,12 +20,8 @@ export function useDashboardDemo() {
 
   return {
     state,
-    selectProfile: (profile: DemoProfile) =>
-      dispatch({ type: "select-profile", profile }),
-    loginAdministration: (username: string, password: string) =>
-      dispatch({ type: "login-administration", username, password }),
-    loginTicket: (username: string, password: string) =>
-      dispatch({ type: "login-ticket", username, password }),
+    startSession: (profile: DemoProfile) =>
+      dispatch({ type: "start-session", profile }),
     signOut: () => dispatch({ type: "sign-out" }),
     navigate: (section: DashboardSection) =>
       dispatch({ type: "navigate", section }),

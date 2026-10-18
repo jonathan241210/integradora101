@@ -2,7 +2,7 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard`, `packages/api-client`
-- Estado: Aprobada
+- Estado: Aprobada · En progreso (implementación iniciada 2026-10-17)
 - Solicitante / responsable funcional: Jonathan
 - Aprobación funcional: Jonathan, 2026-10-15
 

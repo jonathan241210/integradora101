@@ -3,7 +3,7 @@
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `dashboard` (consumidor), `packages/api-client`
 - Consumidores: dashboard (`dashboard-002`) y PWA veterinaria (spec futura con su propia pantalla de login)
-- Estado: Aprobada · En progreso (implementación iniciada 2026-10-16)
+- Estado: Implementada (2026-10-17; implementación iniciada 2026-10-16)
 - Solicitante / responsable funcional: Jonathan
 - Responsable de BD: Victor Adrian
 - Aprobación funcional: Jonathan, 2026-10-15
