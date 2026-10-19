@@ -4,15 +4,16 @@
 - **Fecha:** 2026-10-17
 - **Responsables:** Víctor Adrián, Aksel
 - **Specs relacionadas:** `mobile-003` (catálogo y caché), `mobile-004` (cuenta), `mobile-005` (progreso), `mobile-006` (QR), `mobile-007` (mapa)
+- **Specs API de referencia:** `api-004` (visitor-authentication), `api-005` (visitor-progress)
 - **ADRs de referencia:** [ADR 0004](../../../docs/adr/0004-mobile-react-native.md) (React Native/Expo), [ADR 0011](../../../docs/adr/0011-visitor-identity-and-mobile-session.md) (Identidad visitante y sesión)
 
 ---
 
 ## 1. Propósito y regla de oro
 
-Este documento establece los **estándares técnicos y de arquitectura** para conectar la aplicación móvil (`apps/mobile`) con la API central Laravel (`apps/api`). 
+Este documento establece los **estándares técnicos y de arquitectura** para conectar la aplicación móvil (`apps/mobile`) con la API central Laravel (`apps/api`).
 
-Su objetivo es garantizar que tanto **Víctor** como **Aksel** desarrollen sus respectivas features de forma consistente, desacoplada y sin colisiones de código.
+Su objetivo es garantizar que tanto **Víctor** como **Aksel** desarrollen sus respectivas features de forma consistente, desacoplada y alineada a las especificaciones aprobadas.
 
 > [!IMPORTANT]
 > **Regla de oro (Constitución Principio III):**
@@ -49,7 +50,7 @@ flowchart LR
 1. **Screen / View:** Solo dibuja la interfaz. Recibe `data`, `isLoading`, `error` y funciones de acción por `props`. No sabe si los datos vienen de la red, de un mock o de una base de datos local.
 2. **ViewModel (Hook `use*ViewModel`):** Gestiona el estado de la pantalla (`loading`, `error`, `empty`, `offline`). Llama a los métodos del Repositorio.
 3. **Repository (`repositories/*`):** Abstrae la fuente de datos. Implementa la lógica de caché offline (leer de caché local si la red falla) y normaliza los modelos de la API a los modelos de UI de la app.
-4. **`@arca/api-client`:** Cliente HTTP tipado compartido. Maneja la URL base, cabeceras, serialización y el token de autenticación.
+4. **`@arca/api-client`:** Cliente HTTP tipado compartido. Provee `createHttpClient` para gestionar la URL base, cabeceras, serialización y el token de autenticación.
 
 ---
 
@@ -77,17 +78,17 @@ Todas las peticiones enviadas por `@arca/api-client` deben incluir:
 
 ---
 
-## 4. Reparto de responsabilidades y tipos de endpoints
+## 4. Reparto de responsabilidades y rutas aprobadas
 
-Para evitar duplicidad y mantener claras las dependencias, el trabajo entre Víctor y Aksel se divide según el tipo de acceso:
+Para evitar discrepancias con las specs aprobadas de la API (`api-004` y `api-005`), las rutas exactas se dividen de la siguiente manera:
 
-| Tipo | Responsable | Features / Specs | Endpoints previstos | Autenticación |
+| Dominio | Responsable | Specs móvil / API | Rutas contractuales (API v1) | Autenticación |
 |---|---|---|---|---|
-| **Catálogo Público** | **Víctor** | `mobile-003` (Animales, Eventos) | `GET /species`, `GET /species/{id}`, `GET /events` | Ninguna (Público / Anónimo) |
-| **Mapa y Geolocalización** | **Víctor** | `mobile-007` (Recintos, Puntos de interés) | `GET /enclosures`, `GET /map/locations` | Ninguna (Público) |
-| **Cuenta del Visitante** | **Aksel** | `mobile-004` (Registro, Login, Perfil) | `POST /visitor/register`, `POST /visitor/login`, `POST /visitor/refresh-token`, `GET /visitor/profile` | Bearer Token (Sanctum) + Refresh Token |
-| **Progreso y Colección** | **Aksel** | `mobile-005` (Colección, Puntos, Misiones) | `GET /visitor/collection`, `GET /visitor/achievements`, `GET /visitor/missions` | Bearer Token obligatorio |
-| **Escaneo QR** | **Aksel** | `mobile-006` (Cámara y validación QR) | `POST /visitor/scans` (idempotente) | Bearer Token obligatorio |
+| **Catálogo Público** | **Víctor** | `mobile-003` | `GET /species`, `GET /species/{id}`, `GET /events` | Ninguna (Público) |
+| **Mapa y Ubicación** | **Víctor** | `mobile-007` | `GET /enclosures`, `GET /map/locations` | Ninguna (Público) |
+| **Cuenta Visitante** | **Aksel** | `mobile-004` / `api-004` | `POST /visitor/auth/register`<br>`POST /visitor/auth/email/verify`<br>`POST /visitor/auth/login`<br>`POST /visitor/auth/refresh`<br>`POST /visitor/auth/logout`<br>`GET /visitor/me` | Bearer Token (Sanctum) + Refresh Token |
+| **Progreso y Colección** | **Aksel** | `mobile-005` / `api-005` | `GET /visitor/progress`<br>`GET /visitor/collection`<br>`GET /visitor/achievements`<br>`GET /visitor/missions` | Bearer Token obligatorio |
+| **Escaneo QR / Descubrimientos** | **Aksel** | `mobile-006` / `api-005` | `POST /visitor/discoveries` (idempotente vía `client_scan_id`) | Bearer Token obligatorio |
 
 ---
 
@@ -114,7 +115,7 @@ La API Laravel utiliza **API Resources**. Las respuestas llegan envueltas en un 
 ### 5.2 Nomenclatura (camelCase vs snake_case)
 - **API (Laravel):** Retorna atributos en `snake_case` (`scientific_name`, `image_url`).
 - **Mobile (TypeScript):** Usa `camelCase` (`scientificName`, `imageUrl`).
-- **Regla:** El Repositorio o el cliente API es responsable de mapear las claves de `snake_case` a `camelCase` al construir los modelos de dominio móvil (`src/models/index.ts`). **Nunca expongas `snake_case` a las pantallas de UI.**
+- **Regla:** El Repositorio o el adaptador es responsable de mapear las claves de `snake_case` a `camelCase` al construir los modelos de dominio móvil (`src/models/index.ts`). **Nunca expongas `snake_case` a las pantallas de UI.**
 
 ### 5.3 Errores estándar y su traducción a UI
 
@@ -167,18 +168,16 @@ Dado que en el zoológico la señal móvil puede ser irregular, la aplicación a
 
 ### 7.2 Progreso y Escaneos QR (Aksel · `mobile-005`, `mobile-006`)
 - **Estrategia:** Cola local persistente (*Offline Sync Queue*).
-- **Flujo (según ADR 0011):**
-  1. Si el visitante escanea un QR sin señal, el escaneo se guarda en una cola local en `AsyncStorage`.
-  2. En cuanto se detecta conexión a internet, la cola se vacía llamando a `POST /visitor/scans`.
-  3. La API es idempotente gracias a `visitor_scans.qr_code_hash`, evitando duplicación de puntos.
+- **Flujo (según spec `api-005` y ADR 0011):**
+  1. Si el visitante escanea un QR sin señal, el escaneo se guarda con un identificador único generado por el cliente (`client_scan_id`) en `AsyncStorage`.
+  2. En cuanto se detecta conexión a internet, la cola se vacía llamando a `POST /api/v1/visitor/discoveries`.
+  3. La API procesa el descubrimiento de forma idempotente por `client_scan_id`, evitando duplicación de especies o puntos.
 
 ---
 
-## 8. Patrón de transición de Mocks a API Real
+## 8. Patrón de transición de Mocks a API Real con `@arca/api-client`
 
-Actualmente, `apps/mobile/src/repositories/index.ts` expone interfaces con implementaciones mock.
-
-Para conectar la API sin romper las pruebas ni el trabajo en curso:
+El paquete `@arca/api-client` exporta la factoría `createHttpClient` para inicializar el cliente HTTP.
 
 ### Paso 1: Mantener la interfaz intacta
 ```typescript
@@ -190,23 +189,30 @@ export interface AnimalRepository {
 }
 ```
 
-### Paso 2: Crear la implementación real con API
+### Paso 2: Crear la implementación real usando `createHttpClient`
 ```typescript
 // src/repositories/apiAnimalRepository.ts
-import { apiClient } from '@arca/api-client';
+import { createHttpClient, type HttpClient } from '@arca/api-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Animal } from '../models';
 import { AnimalRepository } from './animalRepository';
 
 export class ApiAnimalRepository implements AnimalRepository {
   private readonly CACHE_KEY = '@arca:animals_cache';
+  private readonly httpClient: HttpClient;
+
+  constructor() {
+    this.httpClient = createHttpClient({
+      baseUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8000/api/v1',
+    });
+  }
 
   async getAllAnimals(): Promise<Animal[]> {
     try {
-      // 1. Llamada mediante el cliente API
-      const response = await apiClient.get<SpeciesApiResponse[]>('/species');
+      // 1. Llamada tipada mediante el cliente HTTP
+      const response = await this.httpClient.get<{ data: SpeciesApiResponse[] }>('/species');
       const animals = response.data.map(mapSpeciesToAnimalModel);
-      
+
       // 2. Guardar en caché para uso offline
       await AsyncStorage.setItem(this.CACHE_KEY, JSON.stringify(animals));
       return animals;
@@ -219,7 +225,6 @@ export class ApiAnimalRepository implements AnimalRepository {
       throw error;
     }
   }
-  // ...
 }
 ```
 
@@ -241,7 +246,11 @@ Esto permite alternar instantáneamente entre datos simulados y la API real tant
 Conforme a la **Constitución (Principio IV)**, cada criterio de aceptación (`CA-xx`) debe contar con al menos una prueba automatizada:
 
 - **Los tests de UI y ViewModels no hacen peticiones reales de red.** Se usa un `MockRepository` en las pruebas de Jest.
-- **Los tests de Repositorios API** prueban la llamada al cliente simulado (`jest.spyOn(apiClient, 'get')`) y la correcta persistencia/lectura en `AsyncStorage`.
+- **Los tests de Repositorios API** prueban la llamada al cliente simulado (`jest.spyOn(httpClient, 'get')`) y la correcta persistencia/lectura en `AsyncStorage`.
+- **Ejecución en entorno local / CI:** En entornos Windows y emuladores, Jest debe ejecutarse en serie con `--runInBand` para evitar timeouts por concurrencia de hilos de React Native:
+  ```powershell
+  npm test -- --runInBand
+  ```
 
 ---
 
@@ -249,8 +258,10 @@ Conforme a la **Constitución (Principio IV)**, cada criterio de aceptación (`C
 
 Antes de abrir o aprobar un PR de integración móvil:
 - [ ] ¿La llamada a la red se hace dentro de un Repositorio (nunca en la pantalla)?
+- [ ] ¿Las rutas coinciden exactamente con las specs de la API (`/visitor/auth/*`, `/visitor/discoveries`)?
+- [ ] ¿Se utiliza `createHttpClient` de `@arca/api-client`?
 - [ ] ¿Las claves de respuesta están mapeadas a `camelCase` en los modelos de UI?
 - [ ] ¿La pantalla maneja los estados `loading`, `empty`, `error` y `offline`?
 - [ ] ¿Los textos y mensajes de error están en español comprensible?
 - [ ] ¿No se versionaron secretos, tokens de prueba ni contraseñas en el código?
-- [ ] ¿Los tests unitarios de Jest corren en verde (`npm test`)?
+- [ ] ¿Los tests unitarios de Jest corren en verde (`npm test -- --runInBand`)?
