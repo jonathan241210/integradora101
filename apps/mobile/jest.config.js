@@ -33,6 +33,7 @@ module.exports = {
     './jest.setup.js'
   ],
   moduleNameMapper: {
+    '^@arca/api-client$': '<rootDir>/../../packages/api-client/index.ts',
     '^react$': require.resolve('react'),
     '^react/jsx-runtime$': require.resolve('react/jsx-runtime'),
     '^react/jsx-dev-runtime$': require.resolve('react/jsx-dev-runtime'),

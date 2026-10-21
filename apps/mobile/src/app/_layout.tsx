@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { nextGateRoute } from '../viewmodels/authForm';
-import { useSessionViewModel } from '../viewmodels/useAccessViewModels';
+import { useAccountSession } from '../viewmodels/useAccountSession';
 
 export default function RootLayout() {
-  const { status } = useSessionViewModel();
+  const { status } = useAccountSession();
   const segments = useSegments();
   const router = useRouter();
 

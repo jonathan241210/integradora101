@@ -58,7 +58,7 @@ Con la cuenta del visitante (spec `mobile-004`, API en `api-004`) y el progreso 
 - **RN-03:** La cola admite escaneos de hasta 24 h de antigüedad (el servidor rechaza los más viejos con `expired_scan`); se acepta porque no hay premios.
 - **RN-04:** `client_scan_id` es un UUID generado por la app al escanear; la idempotencia del servidor evita duplicar puntos ante reintentos.
 - **RN-05:** No hay tabla de líderes ni premios: las recompensas de los mocks pasan a puntos o logros del servidor.
-- **RN-06:** La cola y el caché no sensible usan AsyncStorage (dependencia pendiente de ADR 0011); los tokens siguen en `expo-secure-store`.
+- **RN-06:** La cola y el caché no sensible usan AsyncStorage, dependencia autorizada por ADR 0011 (aceptado el 2026-10-21). Se instala en esta spec, no en `mobile-004`. Los tokens siguen en `expo-secure-store`.
 - **RN-07:** La implementación real espera `api-005` con sus DBR en `Lista para backend`; hasta entonces se usa repositorio simulado con el mismo contrato.
 
 ## Datos, privacidad y auditoría

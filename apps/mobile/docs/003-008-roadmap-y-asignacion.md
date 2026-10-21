@@ -2,7 +2,7 @@
 
 Documento de referencia para el equipo de `apps/mobile`. Resume el cumplimiento de las reglas en `AGENTS.md` (raíz y app), el estado de las ocho specs numeradas y quién redacta cada spec hasta su **aprobación funcional** (SDD: `/sdd-spec` → plan → tasks → implementación).
 
-**Última revisión:** 2026-10-16.
+**Última revisión:** 2026-10-21.
 
 ## Reglas que aplican a todo el trabajo móvil
 
@@ -20,7 +20,7 @@ Documento de referencia para el equipo de `apps/mobile`. Resume el cumplimiento 
 | 001 | mobile-setup | **Implementada** | Sí | Completa | Base Expo, Router, Jest, workspaces. T-08 cerrada con entrega en rama principal (2026-10-14). |
 | 002 | mobile-ui-base-visitor-journey | **Implementada** | Sí | Completa (+ enmienda acceso visual) | Prototipo con mocks: sin API, cámara, GPS ni 3D real. **Enmienda 2026-10-15:** CA-11–CA-15 (Login, registro, recuperación, Ajustes, Privacidad demo); T-48–T-53; **no sustituye** spec `004`. Verificación automatizada 2026-10-16: 11 suites Jest, 70 tests, `tsc --noEmit` OK. |
 | 003 | api-read-integration | Borrador | No | No iniciada | Catálogo animales/eventos + caché; **bloqueada** hasta spec API catálogo público y política de caché. |
-| 004 | visitor-account | Borrador | **Plan borrador** (`plan/004-visitor-account.md`) | No iniciada | Cuenta visitante adulto, tokens, refresh; F1 mock + F2 HTTP cuando `api-004` / DBR; depende ADR 0011. La UI `(auth)` y `visitorAccessRepository` de la enmienda **002** son demostración en memoria, no implementación de 004. |
+| 004 | visitor-account | **Implementada** (2026-10-21; aprobación de Aksel, 2026-10-20) | Plan aprobado. T-01 a T-44 hechas. La fase HTTP la firmó Aksel el 2026-10-21 | Cuenta real con `EXPO_PUBLIC_API_URL`, `expo-secure-store` y el cliente visitante. Sin esa variable, y en Jest, sigue el mock | ADR 0011 aceptado el 2026-10-21. `api-004` Implementada el mismo día. La demo `123456` sigue en Jest y cuando no hay URL. |
 | 005 | visitor-progress | Borrador | No | No iniciada | Progreso, colección por especie, cola offline; depende `api-005`, `mobile-004`, `mobile-006`. |
 | 006 | qr-scan | Borrador | No | No iniciada | Cámara y lectura QR → entrega código a cola de 005. |
 | 007 | map-location | Borrador | No | No iniciada | Mapa real, recintos API, GPS; proveedor de mapa por decidir. |
@@ -77,18 +77,16 @@ flowchart TD
 
 ## Límite entre enmienda 002 (demo) y spec 004 (cuenta real)
 
-Hasta que la spec **004** tenga **aprobación funcional**, plan y tasks aprobados, y el ADR **0011** quede aceptado, **no** se debe añadir al código de producción móvil:
+La spec **004** quedó Implementada el 2026-10-21. ADR **0011** está aceptado desde ese día y el checklist HTTP (T-31 a T-44) lo aprobó Aksel e quedó implementado.
 
-- Dependencias `expo-secure-store`, `@react-native-async-storage/async-storage` ni otros almacenamientos para sesión o cola (salvo ADR/spec explícitos).
-- Llamadas HTTP de cuenta (`register`, `auth/login`, `auth/refresh`, `me`, etc.) ni uso productivo de `@arca/api-client` en repositorios de autenticación.
-- Pantallas o flujos de spec 004 aún no aprobados: `welcome`, verificación de correo con API, selector de avatar, mayoría de edad, aviso legal desde `legal/privacy-notice`, borrado de cuenta, refresh single-flight ante 401.
+`expo-secure-store`, `HttpAuthRepository` y el módulo visitante de `@arca/api-client` se usan cuando `EXPO_PUBLIC_API_URL` tiene valor. `@react-native-async-storage/async-storage` sigue reservado a `mobile-005` y no se instala aquí.
 
-La carpeta `(auth)` actual cumple **CA-11–CA-15** de **002** (compuerta `signedOut` / `entered` en memoria). Evolucionar hacia 004 solo tras el SDD completo de esa spec.
+La carpeta `(auth)` cumple la cuenta de **004** sobre las pantallas de **002**. Sin la variable de la API, esa cuenta sigue simulada.
 
 ## Preguntas abiertas (para cerrar en spec o con arquitectura/API)
 
 1. **003:** Endpoints del catálogo público y política de caché (TTL, invalidación) — bloquean aprobación de 003.
-2. **004–005:** Ilustraciones finales de avatares; aviso de privacidad desde API; DBR/`api-004` y `api-005` en estado «Lista para backend».
+2. **005:** las ilustraciones finales de avatares y el texto definitivo del aviso los entrega el zoológico; no bloquean la spec 004, ya implementada. `api-005` sigue pendiente de su propia spec.
 3. **006:** Dependencia concreta de cámara/QR (ADR); captura manual como alternativa; operación física de QR en recintos.
 4. **007:** Proveedor de mapa, claves/costos y posible salida de Expo Go (development build).
 5. **008:** Confirmación final de quién redacta/implementa distribución (Aksel provisional).
