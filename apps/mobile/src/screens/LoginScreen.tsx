@@ -11,7 +11,6 @@ interface LoginScreenProps {
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onSubmit: () => void;
-  onGuest: () => void;
   onForgotPassword: () => void;
   onRegister: () => void;
 }
@@ -23,7 +22,6 @@ export function LoginScreen({
   onEmailChange,
   onPasswordChange,
   onSubmit,
-  onGuest,
   onForgotPassword,
   onRegister,
 }: LoginScreenProps) {
@@ -63,10 +61,6 @@ export function LoginScreen({
         </Pressable>
         {error ? <AppText variant="small" color="danger" accessibilityLiveRegion="polite">{error}</AppText> : null}
         <Button label="Iniciar sesión" onPress={onSubmit} />
-        <AppText variant="small" center color="textMuted">o</AppText>
-        <Pressable onPress={onGuest} accessibilityRole="button" accessibilityLabel="Entrar como invitado" style={styles.guest}>
-          <AppText variant="small" center>Entrar como invitado</AppText>
-        </Pressable>
         <View style={styles.footer}>
           <AppText variant="small" color="textMuted">¿No tienes cuenta?</AppText>
           <Pressable onPress={onRegister} accessibilityRole="button" accessibilityLabel="Regístrate">
@@ -98,6 +92,5 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   forgot: { alignSelf: 'flex-end', minHeight: 44, justifyContent: 'center' },
-  guest: { alignSelf: 'center', minHeight: 44, justifyContent: 'center', paddingHorizontal: spacing.md },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: spacing.xs },
 });

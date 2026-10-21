@@ -6,6 +6,8 @@ import { Achievement, Milestone, User } from '../models';
 
 interface ProfileScreenProps {
   user: User;
+  displayName?: string;
+  avatarLabel?: string;
   achievements: Achievement[];
   milestones: Milestone[];
   onAchievementPress: (id: string) => void;
@@ -13,7 +15,7 @@ interface ProfileScreenProps {
   onSettingsPress: () => void;
 }
 
-export function ProfileScreen({ user, achievements, milestones, onAchievementPress, onSeeAllAchievementsPress, onSettingsPress }: ProfileScreenProps) {
+export function ProfileScreen({ user, displayName, avatarLabel, achievements, milestones, onAchievementPress, onSeeAllAchievementsPress, onSettingsPress }: ProfileScreenProps) {
   return (
     <ScreenContainer>
       <View style={styles.container}>
@@ -29,8 +31,10 @@ export function ProfileScreen({ user, achievements, milestones, onAchievementPre
           </Pressable>
         </View>
         <Card style={styles.profileCard}>
-          <View style={styles.avatarPlaceholder} />
-          <AppText variant="title" center>{user.name}</AppText>
+          <View style={styles.avatarPlaceholder} accessibilityLabel={avatarLabel ? `Avatar ${avatarLabel}` : 'Avatar'}>
+            {avatarLabel ? <AppText variant="caption" center>{avatarLabel}</AppText> : null}
+          </View>
+          <AppText variant="title" center>{displayName ?? user.name}</AppText>
           <AppText variant="small" center color="primary">{user.rank}</AppText>
           
           <View style={styles.statsRow}>
@@ -101,7 +105,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   profileCard: { padding: spacing.lg, alignItems: 'center', gap: spacing.md },
-  avatarPlaceholder: { width: 80, height: 80, borderRadius: radius.pill, backgroundColor: colors.border },
+  avatarPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: radius.pill,
+    backgroundColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xs,
+  },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, marginTop: spacing.md, width: '100%' },
   statItem: { flex: 1, alignItems: 'center', gap: spacing.xs },
   achievementsList: { gap: spacing.sm, marginTop: spacing.sm },

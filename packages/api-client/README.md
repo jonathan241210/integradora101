@@ -18,4 +18,14 @@ El paquete usa `fetch` nativo y no tiene dependencias externas. Para el dashboar
 
 Los errores HTTP se representan como `ApiError`, con estado, mensaje, código, errores de validación y `retryAfterSeconds` cuando el servidor responde `Retry-After`.
 
-El paquete no guarda credenciales, perfiles ni códigos de recuperación. Cada cliente decide cómo presentar los estados; la sesión permanece en la cookie HttpOnly administrada por la API.
+El paquete no guarda credenciales, perfiles ni códigos de recuperación. Cada cliente decide cómo presentar los estados; la sesión de personal permanece en la cookie HttpOnly administrada por la API.
+
+## Sesión de visitante
+
+`createVisitorApi` es un módulo aparte. No usa `createAuthApi` ni las cookies y el CSRF de `createHttpClient`.
+
+Recibe la base URL, `fetch` opcional y callbacks para leer el access token, leer el refresh y guardar el par nuevo. Las rutas viven bajo `/api/v1/visitor`: aviso, registro, verificación, reenvío, login, refresh, logout, olvido, restablecimiento, perfil, contraseña y borrado. El login envía `device_name`. El access token viaja en `Authorization: Bearer`.
+
+Si una petición autenticada responde 401, hay un solo `POST /api/v1/visitor/auth/refresh` en vuelo. El cuerpo es `{ "refresh_token": "…" }` y no usa el access token vencido. Si el refresh funciona, se guarda el par y la petición original se reintenta una vez. Si el refresh falla o responde 401, no hay otro intento y se avisa para cerrar la sesión.
+
+Los errores son `ApiError`: estado, `message`, `code`, `errors` y `retryAfterSeconds`.

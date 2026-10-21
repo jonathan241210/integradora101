@@ -2,14 +2,16 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile`, `packages/api-client`
-- Estado: Borrador
+- Estado: Implementada (2026-10-21; aprobación funcional 2026-10-20)
 - Solicitante / responsable funcional: Aksel
-- Aprobación funcional: pendiente de aprobación
+- Aprobación funcional: Aksel, 2026-10-20
 - Equivalencia en el documento de decisiones previas: 004a
 
 ## Problema y contexto
 
-La app muestra hoy un prototipo con datos simulados (spec `mobile-002`). Con la autenticación de visitantes definida en `api-004` (ADR 0011), la app necesita las pantallas y el flujo completos de cuenta: registro de adulto, verificación por código, inicio de sesión, recuperación de contraseña, edición de perfil, cambio de contraseña, borrado de cuenta y cierre de sesión, guardando los tokens en el almacenamiento seguro del teléfono.
+La spec `mobile-002` dejó el prototipo visual de acceso: login, registro, recuperación de contraseña y ajustes, con datos solo en memoria. Esta spec integra sobre esas pantallas la cuenta real del visitante definida en `api-004` (ADR 0011): registro de adulto, verificación por código, inicio de sesión, recuperación de contraseña, edición de perfil, cambio de contraseña, borrado de cuenta y cierre de sesión, guardando los tokens en el almacenamiento seguro del teléfono.
+
+La web, el dashboard y el login de personal no son fuente de código. El visitante usa Bearer y `/api/v1/visitor/*`, aislado de la sesión por cookie del personal.
 
 ## Objetivos
 
@@ -20,7 +22,9 @@ La app muestra hoy un prototipo con datos simulados (spec `mobile-002`). Con la 
 
 ## Fuera de alcance
 
-- Lógica de servidor, endpoints y validaciones (spec `api-004`).
+- Implementar en esta app la lógica de servidor. Los endpoints viven en `api-004`; este equipo puede añadirlos ahí, sin convertir esta spec en spec de API.
+- Cambios en `apps/web`, `apps/dashboard`, el login de personal (`api-003`) y el módulo de personal de `@arca/api-client` (`auth.ts`). Si hace falta cliente HTTP, es un modo visitante nuevo, no una edición de ese módulo.
+- «Entrar como invitado» del prototipo 002. La cuenta es obligatoria (ADR 0011). Se retira al integrar esta spec, no antes de spec, plan y tasks aprobados.
 - Progreso, colección, logros y misiones (spec `mobile-005`).
 - Escaneo QR con cámara (spec `mobile-006`) y mapa/ubicación (spec `mobile-007`).
 - Login con Google u otros proveedores.
@@ -60,17 +64,17 @@ La app muestra hoy un prototipo con datos simulados (spec `mobile-002`). Con la 
 ## Reglas de negocio
 
 - **RN-01:** Solo adultos (18+) crean cuenta: la casilla de mayoría de edad y la aceptación del aviso son obligatorias para registrarse; la versión del aviso aceptada se envía a la API.
-- **RN-02:** El avatar se elige solo del catálogo de ilustraciones incluido en la app (códigos propuestos: `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`); no se admiten fotos.
+- **RN-02:** El avatar se elige solo del catálogo incluido en la app. Los códigos aceptados son `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer` y `wolf`. No se admiten fotos. El arte final del zoológico puede sustituir los placeholders sin cambiar los códigos.
 - **RN-03:** El perfil visible del menor (cuenta del tutor) muestra solo apodo y avatar.
-- **RN-04:** Los tokens viven solo en `expo-secure-store`; la cola de escaneos y el caché no sensible usan `@react-native-async-storage/async-storage` (spec `mobile-005`). Ambas dependencias requieren la aprobación de ADR 0011.
+- **RN-04:** Los tokens viven solo en `expo-secure-store`; la cola de escaneos y el caché no sensible usan `@react-native-async-storage/async-storage` (spec `mobile-005`). ADR 0011 aceptó ambas dependencias el 2026-10-21. `expo-secure-store` se instala con el checklist HTTP de esta spec, cuando ese checklist esté aprobado. AsyncStorage se instala en `mobile-005`.
 - **RN-05:** La app no lleva claves ni secretos con privilegios: todo lo que va dentro del paquete puede extraerse.
 - **RN-06:** Mensajes y textos en español; identificadores en inglés (Constitución VI).
 - **RN-07:** El borrado de cuenta es definitivo e inmediato; la app lo comunica claramente antes de pedir la contraseña.
-- **RN-08:** La implementación espera a que `api-004` tenga sus DBR en `Lista para backend`; hasta entonces se trabaja con repositorio simulado.
+- **RN-08:** DBR-001 y DBR-003 ya están en `Lista para backend`. El cliente puede avanzar con repositorio simulado en cuanto esta spec, su plan y sus tasks estén aprobados. La fase HTTP espera a que `api-004` esté aprobada y sus endpoints existan. Login y registro no se encolan sin red: se muestra «Sin conexión».
 
 ## Datos, privacidad y auditoría
 
-La app transporta correo, contraseña y códigos hacia la API por HTTPS; guarda solo los tokens en el almacenamiento seguro y no registra secretos en logs ni pantallas. El aviso de privacidad se muestra desde el contenido que sirve la API (`legal/privacy-notice`).
+La app transporta correo, contraseña y códigos hacia la API por HTTPS; guarda solo los tokens en el almacenamiento seguro y no registra secretos en logs ni pantallas. El aviso de privacidad se muestra desde `GET /api/v1/visitor/legal/privacy-notice` (`version` y contenido). El texto lo aporta el zoológico; la app envía `privacy_notice_version` al registrarse y no bloquea esta spec por el redactado final.
 
 ## Flujos y errores
 
@@ -78,16 +82,19 @@ La app transporta correo, contraseña y códigos hacia la API por HTTPS; guarda 
 2. Login → sesión; `email_not_verified` → pantalla de verificación.
 3. 401 → refresh single-flight → reintento; refresh fallido → login.
 4. Perfil: editar datos/avatar, cambiar contraseña, cerrar sesión, borrar cuenta.
+5. Sin red en registro o login: mensaje accesible «Sin conexión»; no se guardan ni se encolan credenciales.
+6. El prototipo 002 se conserva hasta integrar esta spec. Al integrar, desaparece «Entrar como invitado».
 
 ## Dependencias, riesgos y preguntas
 
-- **Dependencias/ADR:** `api-004` (endpoints), ADR 0011 (modelo de sesión y dependencias nuevas `expo-secure-store`, `@react-native-async-storage/async-storage`), ADR 0004 (Expo/Android), `api-003` si define la base de `packages/api-client` (se amplía con modo Bearer con refresh).
+- **Dependencias/ADR:** `api-004` (endpoints del visitante ya implementados; no se toca el login de personal), ADR 0011 (Aceptado, Aksel, 2026-10-21; `expo-secure-store` se instala con el checklist HTTP, no antes de aprobarlo), ADR 0004 (Expo/Android). `@arca/api-client` recibe un modo Bearer de visitante con refresh, sin editar el módulo de personal.
+- **Base visual:** rutas y pantallas de `(auth)` y ajustes de la spec 002. La integración sustituye el repositorio en memoria por `AuthRepository`. Las pantallas que el prototipo no tiene (bienvenida, verificación de correo, edición de cuenta, cambio de contraseña y borrado) se agregan en esta spec.
 - **Riesgos:** el refresh single-flight requiere pruebas de concurrencia; la fricción del registro adulto puede reducir altas (registro corto como mitigación).
-- **Preguntas pendientes:**
-  - Ilustraciones finales del catálogo de avatares (8 códigos propuestos).
-  - Texto del aviso de privacidad y términos (lo provee el zoológico).
+- **Decisiones cerradas (2026-10-20):** códigos de avatar de RN-02; el texto del aviso lo sirve la API y lo redacta el zoológico; no hay acceso de invitado en la cuenta real; la web no se reutiliza.
+- **Preguntas pendientes:** ninguna que bloquee la aprobación funcional.
 
 ## Revisión
 
-- Aprobadores y fecha: pendiente de aprobación.
-- Evidencia/enlaces: `docs/adr/0011-visitor-identity-and-mobile-session.md`, `apps/api/specs/004-visitor-authentication.md`, `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md`.
+- Aprobadores y fecha: Aksel, 2026-10-20. Aprobó la spec y el plan técnico de `mobile-004`. La spec de API `api-004` quedó aprobada en el mismo acto. ADR 0011 fue aceptado por Aksel el 2026-10-21. El checklist HTTP (T-31 a T-44) lo aprobó Aksel el 2026-10-21 y quedó implementado el mismo día.
+- Cierre: Implementada el 2026-10-21. La suite Jest de `apps/mobile` quedó en 95 pruebas en verde y `npx tsc --noEmit` sin errores. Con sesión, Perfil muestra el apodo y el animal del catálogo; Ajustes muestra el nombre y el correo. Sin sesión se conserva la ficha de demostración. Puntos, nivel, rango y logros siguen en el prototipo de la spec 005. El PR de esta entrega enlaza spec, plan y tasks.
+- Evidencia/enlaces: `docs/adr/0011-visitor-identity-and-mobile-session.md`, `apps/api/specs/004-visitor-authentication.md`, `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md`, `docs/database/requests/DBR-003-visitor-accounts.md`.

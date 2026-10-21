@@ -1,4 +1,4 @@
-import { AccessGate } from '../repositories/visitorAccessRepository';
+import { AccountSessionStatus } from '../session/accountSession';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -43,8 +43,9 @@ export function validateResetPassword(input: ResetPasswordInput): string | null 
   return null;
 }
 
-export function nextGateRoute(status: AccessGate, inAuthGroup: boolean): '/login' | '/' | null {
-  if (status === 'signedOut' && !inAuthGroup) return '/login';
-  if (status === 'entered' && inAuthGroup) return '/';
+export function nextGateRoute(status: AccountSessionStatus, inAuthGroup: boolean): '/welcome' | '/' | null {
+  if (status === 'bootstrapping') return null;
+  if (status === 'guest' && !inAuthGroup) return '/welcome';
+  if (status === 'authenticated' && inAuthGroup) return '/';
   return null;
 }

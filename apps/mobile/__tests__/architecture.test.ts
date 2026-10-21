@@ -32,6 +32,29 @@ describe('Arquitectura móvil', () => {
     }
   });
 
+  it('test-ca-12-auth-mvvm: las pantallas y viewmodels de cuenta no usan fetch ni axios', () => {
+    const mobileSource = path.join(__dirname, '..', 'src');
+    const accountAreas = [
+      path.join(mobileSource, 'screens'),
+      path.join(mobileSource, 'viewmodels'),
+      path.join(mobileSource, 'app'),
+    ];
+    const directNetwork = /\bfetch\s*\(|\baxios\b/;
+    for (const file of accountAreas.flatMap(sourceFiles)) {
+      const source = fs.readFileSync(file, 'utf8');
+      expect(source).not.toMatch(directNetwork);
+    }
+    const sessionSource = fs.readFileSync(path.join(mobileSource, 'session', 'accountSession.ts'), 'utf8');
+    const httpSource = fs.readFileSync(path.join(mobileSource, 'repositories', 'httpAuthRepository.ts'), 'utf8');
+    expect(sessionSource).toContain('tokenStorage');
+    expect(sessionSource).not.toMatch(directNetwork);
+    expect(httpSource).not.toMatch(directNetwork);
+    const staffClient = /@arca\/api-client\/auth|api-client\/auth/;
+    for (const file of sourceFiles(mobileSource)) {
+      expect(fs.readFileSync(file, 'utf8')).not.toMatch(staffClient);
+    }
+  });
+
   it('test-ca-07: componentes y vistas no fijan colores de marca fuera del adaptador', () => {
     const mobileSource = path.join(__dirname, '..', 'src');
     const styledDirectories = [path.join(mobileSource, 'components'), path.join(mobileSource, 'screens')];

@@ -1,7 +1,8 @@
 # 0011 · Identidad del visitante y sesión móvil
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-10-13
+- Aceptado: 2026-10-21
 - Autor / solicitante: Aksel
 - Spec relacionada: `apps/api/specs/004-visitor-authentication.md`, `apps/mobile/specs/004-visitor-account.md`
 
@@ -69,4 +70,9 @@ Método de acceso — comparación registrada:
 
 ## Validación y revisión
 
-Se aprueba junto con las specs `api-004` y `mobile-004` y las solicitudes DBR-003/DBR-004. La implementación debe incluir pruebas de rotación, detección de reuso y concurrencia de refresh tokens, y de la cola de escaneos sin conexión.
+- Aceptado por Aksel el 2026-10-21, como responsable de `mobile-004` y `api-004`, antes de instalar dependencias móviles y antes de conectar la app a la API.
+- Esta aceptación autoriza `expo-secure-store` para los tokens del visitante y `@react-native-async-storage/async-storage` para la cola de escaneos y el caché no sensible.
+- `expo-secure-store` se instaló el 2026-10-21, cuando Aksel aprobó el checklist HTTP de `apps/mobile/tasks/004-visitor-account.md`. AsyncStorage queda para la spec `mobile-005` y no se instaló en este corte.
+- El módulo visitante de `@arca/api-client` y `HttpAuthRepository` pertenecen a ese checklist. Aksel lo aprobó el 2026-10-21 y quedó implementado ese día. No se edita `packages/api-client/auth.ts`.
+- La spec `api-004` quedó Implementada el 2026-10-21, sin dependencia nueva: Sanctum sigue en ADR 0001 y el correo sale por el mailer de Laravel.
+- Las pruebas de rotación, reuso y concurrencia del refresh están en la API. La cola de escaneos sin conexión se prueba en `mobile-005`.

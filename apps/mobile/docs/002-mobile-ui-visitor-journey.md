@@ -99,6 +99,8 @@ Con la app iniciada mediante `npx expo start` y abierta en Android/Expo Go o un 
 
 **Registro de verificación (2026-10-16):** suite mobile `npm test -- --runInBand` — 11 suites, 70 tests OK; `npx tsc --noEmit` sin errores. Los flujos funcionales de los ítems 12–15 quedan cubiertos por las pruebas anteriores.
 
+La spec 004 retiró «Entrar como invitado» al integrar la cuenta real. Los pasos 12 a 15 de abajo describen el prototipo de esta spec, antes de ese cambio. La cuenta vigente está en el README de la app y en `specs/004-visitor-account.md`.
+
 12. Al abrir la app, confirmar Login. Entrar como invitado y, tras cerrar sesión, iniciar sesión con cualquier correo válido y contraseña; ambos llevan al inicio.
 13. Crear cuenta con nombre de usuario, correo, contraseña y confirmación; leer la advertencia y comprobar que regresa a Login.
 14. Olvidar la contraseña, leer el aviso genérico y restablecer con un código de 6 dígitos.

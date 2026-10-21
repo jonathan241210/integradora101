@@ -12,6 +12,8 @@ import HelpRoute from '../src/app/(tabs)/help';
 import AboutRoute from '../src/app/(tabs)/about';
 import ProfileRoute from '../src/app/(tabs)/profile';
 import { visitorAccessRepository } from '../src/repositories/visitorAccessRepository';
+import { accountSession } from '../src/session/accountSession';
+import { tokenStorage } from '../src/services/tokenStorage';
 import { nextGateRoute, validateForgotPassword, validateLogin, validateRegister, validateResetPassword } from '../src/viewmodels/authForm';
 import {
   useForgotPasswordFormViewModel,
@@ -40,19 +42,21 @@ describe('Acceso visual del visitante', () => {
     mockBack.mockClear();
     delete mockParams.email;
     visitorAccessRepository.resetDemoState();
+    return accountSession.resetForTests();
   });
 
-  it('test-ca-11: el arranque sin sesión va a Login y, al entrar, regresa al inicio', () => {
-    expect(nextGateRoute('signedOut', false)).toBe('/login');
-    expect(nextGateRoute('signedOut', true)).toBeNull();
-    expect(nextGateRoute('entered', true)).toBe('/');
-    expect(nextGateRoute('entered', false)).toBeNull();
+  it('test-ca-11: el arranque sin sesión va a la bienvenida y, al entrar, regresa al inicio', () => {
+    expect(nextGateRoute('guest', false)).toBe('/welcome');
+    expect(nextGateRoute('guest', true)).toBeNull();
+    expect(nextGateRoute('authenticated', true)).toBe('/');
+    expect(nextGateRoute('authenticated', false)).toBeNull();
+    expect(nextGateRoute('bootstrapping', false)).toBeNull();
   });
 
   it('test-ca-11: iniciar sesión, invitado, registro y contraseña olvidada navegan sin guardar credenciales', async () => {
     const login = await render(<LoginRoute />);
     expect(login.queryByText('Login')).toBeNull();
-    expect(login.getByText('o')).toBeTruthy();
+    expect(login.queryByText('Entrar como invitado')).toBeNull();
     await fireEvent.press(login.getByRole('button', { name: 'Iniciar sesión' }));
     expect(login.getByText('Escribe tu correo y tu contraseña.')).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalled();
@@ -60,13 +64,13 @@ describe('Acceso visual del visitante', () => {
     await fireEvent.changeText(login.getByLabelText('Correo electrónico'), 'correo@ejemplo.com');
     await fireEvent.changeText(login.getByLabelText('Contraseña'), 'secreta');
     await fireEvent.press(login.getByRole('button', { name: 'Iniciar sesión' }));
-    expect(visitorAccessRepository.getGate()).toBe('entered');
+    await waitFor(async () => {
+      expect(await tokenStorage.read()).toEqual({
+        accessToken: 'access-correo@ejemplo.com',
+        refreshToken: 'refresh-correo@ejemplo.com',
+      });
+    });
     expect(mockReplace).toHaveBeenCalledWith('/');
-
-    visitorAccessRepository.resetDemoState();
-    await fireEvent.press(login.getByRole('button', { name: 'Entrar como invitado' }));
-    expect(visitorAccessRepository.getGate()).toBe('entered');
-    expect(mockReplace).toHaveBeenLastCalledWith('/');
 
     await fireEvent.press(login.getByRole('button', { name: '¿Olvidaste tu contraseña?' }));
     expect(mockPush).toHaveBeenCalledWith('/forgot-password');
@@ -74,24 +78,19 @@ describe('Acceso visual del visitante', () => {
     expect(mockPush).toHaveBeenCalledWith('/register');
   }, 20000);
 
-  it('test-ca-12: el registro pide los cuatro campos y advierte que la demostración no se restaura', async () => {
+  it('test-ca-12: el registro pide nombre, apodo y contraseña antes de crear la cuenta', async () => {
     const register = await render(<RegisterRoute />);
-    expect(register.getByText(/Si eliminas la aplicación, no se podrá restaurar esta información/)).toBeTruthy();
     await fireEvent.press(register.getByRole('button', { name: 'Crear cuenta' }));
-    expect(register.getByText('Completa nombre de usuario, correo, contraseña y confirmación.')).toBeTruthy();
+    expect(register.getByText('Completa nombre, apodo, correo, contraseña y confirmación.')).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalled();
 
-    await fireEvent.changeText(register.getByLabelText('Nombre de usuario'), 'María');
-    await fireEvent.changeText(register.getByLabelText('Correo electrónico'), 'maria@correo.com');
+    await fireEvent.changeText(register.getByLabelText('Nombre'), 'María');
+    await fireEvent.changeText(register.getByLabelText('Apodo'), 'Mari');
+    await fireEvent.changeText(register.getByLabelText('Correo electrónico'), 'nueva@correo.com');
     await fireEvent.changeText(register.getByLabelText('Contraseña'), 'secreta');
     await fireEvent.changeText(register.getByLabelText('Confirmar contraseña'), 'otra');
     await fireEvent.press(register.getByRole('button', { name: 'Crear cuenta' }));
     expect(register.getByText('La confirmación no coincide con la contraseña.')).toBeTruthy();
-
-    await fireEvent.changeText(register.getByLabelText('Confirmar contraseña'), 'secreta');
-    await fireEvent.press(register.getByRole('button', { name: 'Crear cuenta' }));
-    expect(mockReplace).toHaveBeenCalledWith('/login');
-    expect(visitorAccessRepository.getGate()).toBe('signedOut');
   });
 
   it('test-ca-13: la recuperación avisa sin revelar el correo y luego pide código y contraseña nueva', async () => {
@@ -101,7 +100,7 @@ describe('Acceso visual del visitante', () => {
 
     await fireEvent.changeText(forgot.getByLabelText('Correo electrónico'), 'correo@ejemplo.com');
     await fireEvent.press(forgot.getByRole('button', { name: 'Enviar código' }));
-    expect(forgot.getByText(/Si el correo está registrado, enviamos un código de 6 dígitos/)).toBeTruthy();
+    expect(await forgot.findByText(/Si el correo está registrado, enviamos un código de 6 dígitos/)).toBeTruthy();
     await fireEvent.press(forgot.getByRole('button', { name: 'Ya tengo el código' }));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/reset-password', params: { email: 'correo@ejemplo.com' } });
 
@@ -116,7 +115,7 @@ describe('Acceso visual del visitante', () => {
 
     await fireEvent.changeText(reset.getByLabelText('Código'), '123456');
     await fireEvent.press(reset.getByRole('button', { name: 'Restablecer contraseña' }));
-    expect(mockReplace).toHaveBeenCalledWith('/login');
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/login'));
   });
 
   it('test-ca-14: Ajustes cambia interruptores en pantalla y abre las filas; cerrar sesión vuelve a Login', async () => {
@@ -134,7 +133,7 @@ describe('Acceso visual del visitante', () => {
     expect(settings.queryByText('Idioma')).toBeNull();
 
     await fireEvent.press(settings.getByLabelText('Cuenta de María García'));
-    expect(mockPush).toHaveBeenCalledWith('/account');
+    expect(mockPush).toHaveBeenCalledWith('/account-settings');
     await fireEvent.press(settings.getByLabelText('Privacidad'));
     expect(mockPush).toHaveBeenCalledWith('/privacy');
     await fireEvent.press(settings.getByLabelText('Ayuda y soporte'));
@@ -143,8 +142,7 @@ describe('Acceso visual del visitante', () => {
     expect(mockPush).toHaveBeenCalledWith('/about');
 
     await fireEvent.press(settings.getByRole('button', { name: 'Cerrar sesión' }));
-    expect(visitorAccessRepository.getGate()).toBe('signedOut');
-    expect(mockReplace).toHaveBeenCalledWith('/login');
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/welcome'));
   });
 
   it('test-ca-14 y test-ca-15: Perfil abre Ajustes y las filas muestran cuenta, aviso, ayuda y acerca de', async () => {

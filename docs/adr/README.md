@@ -20,7 +20,7 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0008 · Integración con el sistema municipal](0008-integracion-sistema-municipal.md) — Abierto
 - [0009 · Pagos electrónicos futuros](0009-pagos-electronicos-futuros.md) — Propuesto
 - [0010 · MySQL 8.0 y gobierno de cambios de base de datos](0010-mysql-8-0-database-change-governance.md) — Aceptado
-- [0011 · Identidad del visitante y sesión móvil](0011-visitor-identity-and-mobile-session.md) — Propuesto
+- [0011 · Identidad del visitante y sesión móvil](0011-visitor-identity-and-mobile-session.md) — Aceptado
 - [0012 · Canal de distribución Android](0012-android-distribution-channel.md) — Propuesto
 - [0013 · Aiven como proveedor de MySQL administrado](0013-aiven-managed-mysql.md) — Aceptado
 

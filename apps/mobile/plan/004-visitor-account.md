@@ -1,15 +1,17 @@
 # Plan técnico · 004 · visitor-account
 
 - Spec: `apps/mobile/specs/004-visitor-account.md`
-- Estado de spec: **Borrador** (pendiente aprobación funcional; este plan no sustituye esa aprobación)
+- Estado de spec: **Implementada** (2026-10-21; aprobación funcional de Aksel, 2026-10-20)
 - Solicitante / responsable funcional: Aksel
 - Responsable técnico: Aksel
-- Estado del plan: **Borrador** — presentar para aprobación técnica tras aprobar la spec
-- Dependencias documentales: `apps/api/specs/004-visitor-authentication.md`, `docs/adr/0011-visitor-identity-and-mobile-session.md`, spec **002** implementada
+- Estado del plan: **Aprobado** — Aksel, 2026-10-20
+- Dependencias documentales: `apps/api/specs/004-visitor-authentication.md` (Implementada el 2026-10-21), `docs/adr/0011-visitor-identity-and-mobile-session.md` (**Aceptado**, Aksel, 2026-10-21), spec **002** (prototipo visual integrado en la fase simulada)
 
 ## Diseño de solución
 
-Implementar el flujo completo de cuenta del visitante adulto en Android, manteniendo **MVVM** y delegando toda la red en `@arca/api-client` (modo Bearer con refresh). La API (`api-004`) es autoridad de validación, tokens y aviso legal; Mobile solo presenta formularios, persiste tokens en almacenamiento seguro y reacciona a códigos HTTP documentados en la spec API.
+Integrar la cuenta real del visitante adulto sobre el prototipo visual de la spec 002 (`src/app/(auth)/`, `src/screens/LoginScreen.tsx` y el resto de pantallas de acceso y ajustes). Se mantiene **MVVM**. La red va en un modo visitante nuevo de `@arca/api-client` (Bearer con refresh). No se importa ni se edita el login de personal, `apps/web`, `apps/dashboard` ni `packages/api-client/auth.ts`.
+
+La API (`api-004`) es autoridad de validación, tokens y aviso legal. Este equipo puede añadir esos endpoints cuando `api-004` esté aprobada, con su propio plan y tasks. Mobile presenta formularios, persiste tokens en almacenamiento seguro y reacciona a los códigos HTTP de esa spec. El repositorio en memoria `visitorAccessRepository` se sustituye por `AuthRepository`; no se parte de una interfaz paralela.
 
 ### Arquitectura de capas
 
@@ -62,51 +64,51 @@ Grupo **`(tabs)`** existente (002), accesible solo con sesión:
 
 ### Avatar y RN-02
 
-Catálogo fijo en código (`src/constants/avatarCatalog.ts`) con los 8 códigos propuestos; assets PNG/SVG en `src/assets/avatars/` (placeholders vectoriales o ilustraciones provisionales hasta arte final). El registro y `PATCH me` envían `avatar_code` validado en cliente contra el catálogo antes de llamar API.
+Catálogo fijo en código (`src/constants/avatarCatalog.ts`) con los 8 códigos aceptados; assets PNG/SVG en `src/assets/avatars/` (placeholders hasta el arte final del zoológico). El registro y `PATCH me` envían `avatar_code` validado en cliente contra el catálogo antes de llamar API.
 
 ### Integración `@arca/api-client`
 
-El paquete hoy es **propuesta** (`packages/api-client/README.md`). Para esta feature:
+El paquete ya tiene el cliente de personal (`createAuthApi` en `auth.ts`: cookie, CSRF y 2FA). Esta feature no lo modifica. Añade un módulo visitante aparte:
 
-| Módulo propuesto | Responsabilidad |
+| Módulo nuevo | Responsabilidad |
 |---|---|
-| `createVisitorApiClient(config)` | Base URL por `EXPO_PUBLIC_API_URL`, timeout, parseo de errores JSON en español |
-| Tipos DTO | Alineados a `api-004` (register, verify, login, refresh, me, legal) |
+| Cliente visitante (nombre a fijar en tasks; no vive en `auth.ts`) | Base URL por `EXPO_PUBLIC_API_URL`, timeout, parseo de errores JSON en español |
+| Tipos DTO | Alineados a `api-004` (register, verify, resend, login, refresh, logout, forgot, reset, me, password, delete, legal) |
 | `Authorization: Bearer` | Inyectado desde callback que lee access token vía `TokenStorage` |
-| **Refresh single-flight** | Interceptor interno: ante 401 retryable, una promesa compartida de `POST auth/refresh`; actualiza tokens en storage vía callback |
+| **Refresh single-flight** | Ante 401 retryable, una promesa compartida de `POST /api/v1/visitor/auth/refresh`; actualiza tokens en storage vía callback |
 | Sin reglas de negocio | No calcula mayoría de edad ni valida contraseña más allá de UX previa al envío |
 
-Mobile **no** usa `fetch`/`axios` fuera del paquete (CA-12). Hasta que el paquete exista, `MockAuthRepository` simula respuestas; tests usan dobles del cliente.
+Mobile no usa `fetch`/`axios` fuera del paquete (CA-12). La fase simulada ya usa `MockAuthRepository`. En la fase HTTP los tests de Jest siguen con dobles; el teléfono usa el módulo visitante cuando `EXPO_PUBLIC_API_URL` tiene valor.
 
 ### Fases de entrega (RN-08)
 
 | Fase | Condición | Entregable |
 |---|---|---|
-| **F1 — Mock** | Spec mobile-004 aprobada + plan/tasks aprobados | UI completa, `MockAuthRepository`, Secure Store real, tests CA-xx con simulaciones |
-| **F2 — HTTP** | `api-004` implementada, DBR en Lista para backend, ADR 0011 aprobado, `@arca/api-client` con contrato visitor | `HttpAuthRepository`, pruebas de integración con cliente simulado + smoke manual contra API de pruebas |
+| **F1 — Mock** | Cumplida. Spec, plan y T-01 a T-30 aprobados e integrados. El ADR 0011 se aceptó después de ese corte, así que `TokenStorage` quedó en memoria. | `MockAuthRepository` y pruebas CA-xx con simulaciones. Las cuentas de prueba y el código `123456` siguen en la app mientras no haya URL de API. |
+| **F2 — HTTP** | `api-004` implementada, ADR 0011 aceptado y checklist HTTP (T-31 en adelante) aprobado | Módulo visitante de `@arca/api-client`, `expo-secure-store`, `HttpAuthRepository`, pruebas con cliente simulado y smoke manual contra la API de pruebas |
 
-No conectar a producción ni asumir esquema BD hasta que backend confirme contrato estable.
+DBR-001 y DBR-003 ya están en `Lista para backend` y aplicadas en `arca_pruebas`. `api-004` tiene plan, tasks y endpoints. F2 espera la aprobación del checklist HTTP. No se conecta a producción ni a `arca_zoo`. No se crean migraciones desde mobile.
 
 ## Cambios por área
 
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|
-| **Rutas** | `src/app/_layout.tsx`, `src/app/(auth)/*`, guards; ampliar `(tabs)` con rutas de cuenta | Bienvenida, auth flows, protección de tabs |
+| **Rutas** | Evolucionar `src/app/_layout.tsx` y `src/app/(auth)/*` (login, register, forgot-password, reset-password); agregar welcome, verify-email y guards; ampliar `(tabs)` con rutas de cuenta | Integrar el prototipo 002; bienvenida y verificación nuevas; protección de tabs |
 | **Sesión** | `src/session/SessionProvider.tsx`, `src/viewmodels/useSessionViewModel.ts` | Estado global guest/authenticated, bootstrap |
 | **Almacenamiento** | `src/services/tokenStorage.ts` (wrapper `expo-secure-store`) | Único lugar que lee/escribe tokens (RN-04, CA-05) |
-| **Repositorio** | `src/repositories/authRepository.ts`, `mockAuthRepository.ts`, `httpAuthRepository.ts` | CA-12; swap mock ↔ HTTP |
+| **Repositorio** | `src/repositories/authRepository.ts`, `mockAuthRepository.ts`, `httpAuthRepository.ts`; dejar de usar `visitorAccessRepository` para la sesión | CA-12; el prototipo en memoria no autentica la cuenta real |
 | **ViewModels** | `useRegisterViewModel`, `useLoginViewModel`, `useVerifyEmailViewModel`, `useForgotPasswordViewModel`, `useResetPasswordViewModel`, `useAccountSettingsViewModel`, `useChangePasswordViewModel`, `useDeleteAccountViewModel` | Formularios y estados de carga/error |
-| **Vistas** | `src/screens/auth/*`, `src/screens/AccountSettingsScreen.tsx`, etc. | Presentación; textos en español |
+| **Vistas** | Evolucionar `src/screens/LoginScreen.tsx` y las pantallas de acceso existentes; agregar las que falten (bienvenida, verificación, ajustes de cuenta) | Presentación en español; se quita «Entrar como invitado» al integrar |
 | **Componentes** | Reutilizar `src/components/ui/*`; `AvatarPicker`, `PasswordField`, `LegalCheckbox`, `OtpCodeInput` | CA-02, accesibilidad |
 | **Constantes / assets** | `src/constants/avatarCatalog.ts`, `src/assets/avatars/*` | RN-02 |
 | **Modelos** | `src/models/visitor.ts`, `AuthTokens`, `PrivacyNotice` | Tipos de dominio cliente |
-| **Paquete** | `packages/api-client/src/visitor/*` (estructura a definir en tasks) | Cliente HTTP compartido |
+| **Paquete** | Módulo visitante nuevo en `packages/api-client` (no editar `auth.ts`) | Cliente Bearer del visitante |
 | **Config Android** | `app.json` / config plugin Expo: `android.usesCleartextTraffic: false` | CA-13 |
 | **Env** | `EXPO_PUBLIC_API_URL` documentado en README; sin secretos en bundle (RN-05) | Desarrollo vs producción HTTPS |
 | **Pruebas** | `apps/mobile/__tests__/auth/*.test.ts`, ampliar `architecture.test.ts` | CA-14, CA-12 |
 | **Docs** | `apps/mobile/README.md` (auth, env), actualizar `docs/arquitectura.md` sección seguridad | Operación local |
 
-**Fuera de este plan (otras specs):** progreso/logros (`mobile-005`), QR (`mobile-006`), catálogo público (`mobile-003`). Solo se define el **puerto** para limpiar cola al borrar cuenta.
+**Fuera de este plan:** `apps/web`, `apps/dashboard`, `api-003` y `packages/api-client/auth.ts`. También progreso/logros (`mobile-005`), QR (`mobile-006`) y catálogo público (`mobile-003`). Solo se define el puerto para limpiar la cola al borrar cuenta. La API visitante se diseña en el plan de `api-004`, después de aprobar esa spec; no en este documento.
 
 ## Contrato y datos
 
@@ -127,7 +129,7 @@ Mobile **no** define migraciones ni SQL. Consume el contrato de **`apps/api/spec
 | Borrar cuenta | `DELETE /api/v1/visitor/me` | CA-10 |
 | Aviso privacidad | `GET /api/v1/visitor/legal/privacy-notice` | CA-02, RN-01 |
 
-**DBR:** `DBR-003-visitor-accounts` (y DBR-001 base) — estado gestionado por API/BD; mobile no avanza F2 hasta **Lista para backend** (RN-08 api y RN-05 mobile).
+**DBR:** `DBR-003-visitor-accounts` y DBR-001 están en `Lista para backend`. Mobile no crea migraciones. F2 espera endpoints de `api-004`, no un cambio de estado de la DBR.
 
 **Errores:** Mapear cuerpos API a mensajes UI en español (422 validación, 403 `email_not_verified`, 429 con retry-after o texto de espera). No loguear contraseñas, códigos ni tokens.
 
@@ -139,7 +141,7 @@ Mobile **no** define migraciones ni SQL. Consume el contrato de **`apps/api/spec
 - **Rate limits:** UI respeta 429 (deshabilitar botones reenvío/registro temporalmente).
 - **Privacidad:** Aviso desde API; versión aceptada en registro (`privacy_notice_version`).
 - **Observabilidad:** Sin PII en logs de consola en producción.
-- **Dependencias nuevas (ADR 0011, aún Propuesto):** `expo-secure-store` obligatoria en F1; `@react-native-async-storage/async-storage` solo si F1 implementa el puerto de limpieza de cola (implementación real en 005) — puede quedar como interfaz no-op en 004.
+- **Dependencias nuevas (ADR 0011, Aceptado el 2026-10-21):** `expo-secure-store` se instala en el checklist HTTP, no en este documento. `@react-native-async-storage/async-storage` queda para `mobile-005`. El puerto de la cola sigue sin implementación en 004.
 
 ## Mapeo de criterios a pruebas
 
@@ -167,49 +169,49 @@ Pruebas manuales complementarias: registro feliz y refresh en dispositivo Androi
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | **Conforme al diseño** | Expo/RN ADR 0004; dependencias nuevas limitadas a ADR 0011 (`expo-secure-store`; AsyncStorage diferido a puerto 005). |
-| II. La spec manda | **Condicionado** | Spec mobile-004 debe pasar a **Aprobada** antes de implementar; plan no amplía OAuth, iOS ni progreso (005). |
+| II. La spec manda | **Conforme** | Spec mobile-004 **Implementada** el 2026-10-21 (aprobación funcional de Aksel, 2026-10-20). Este plan no amplía OAuth, iOS ni progreso (005). |
 | III. Lógica separada de la interfaz | **Conforme al diseño** | MVVM + AuthRepository; SessionProvider delgado; reglas de negocio en API. |
 | IV. Un test por criterio | **Conforme al diseño** | Tabla CA-01–CA-14; refresh concurrente con test dedicado CA-06. |
-| V. Una sola fuente de verdad | **Conforme al diseño** | Perfil y tokens autoritativos en API; local solo tokens + estado UI. Mocks solo en F1. |
+| V. Una sola fuente de verdad | **Conforme al diseño** | Con `EXPO_PUBLIC_API_URL`, el perfil y los tokens salen de la API; el teléfono solo guarda el par. Sin esa variable, y en Jest, sigue el mock de la fase simulada. |
 | VI. Código en inglés, personas en español | **Conforme** | Rutas/archivos en inglés; copy UI en español. |
 
-**Brechas a resolver antes de F2 (código HTTP real):** spec mobile-004 aprobada; ADR 0011 aprobado; `@arca/api-client` implementado; `api-004` + DBR lista.
+**Código HTTP:** ADR 0011 está aceptado y el checklist T-31 a T-44 lo aprobó Aksel el 2026-10-21. `api-004` quedó Implementada el mismo día. El módulo visitante vive en `@arca/api-client` sin tocar `auth.ts`. Las DBR ya están aplicadas en `arca_pruebas`.
 
 ## Riesgos y decisiones
 
 | Riesgo | Mitigación |
 |---|---|
-| ADR 0011 aún **Propuesto** | No mergear dependencias Secure Store en main sin aprobación ADR; plan asume aprobación conjunta con specs. |
-| `@arca/api-client` no implementado | F1 con mock; definir interfaces en paquete en paralelo con backend. |
+| Instalar `expo-secure-store` antes de ADR y checklist | ADR 0011 está aceptado y T-31 a T-44 están aprobadas. AsyncStorage sigue fuera, en la spec 005. |
+| Reutilizar el cliente de personal | Prohibido. Módulo visitante nuevo; `auth.ts`, web y dashboard no se editan. |
 | Refresh single-flight incorrecto | Test CA-06 con promesas concurrentes; alinear con pruebas de concurrencia api-004 CA-07. |
 | Fricción registro adulto | Formulario corto, aviso legible, reenvío código claro (spec UX). |
 | Arte avatares pendiente | Placeholders aceptables en F1; códigos fijos RN-02. |
 | Expo Go vs dev build | Auth no requiere cámara; Secure Store funciona en Expo Go; validar en dispositivo real. |
 | Perfil 002 mezcla gamificación y cuenta | Separar **Account settings** (004) de **Profile** (005); botón configuración → edición CA-08. |
 
-**ADR requeridos:** 0004 (aprobado), **0011 (pendiente aprobación formal)**.
+**ADR requeridos:** 0004 (aprobado), **0011 (Aceptado, Aksel, 2026-10-21)**.
 
 ## Orden y aprobación
 
 ### Secuencia de implementación (tasks derivarán T-xx)
 
-1. **Aprobaciones:** Spec mobile-004 funcional → aprobación técnica de **este plan** → `/sdd-tasks`.
-2. **Infra sesión:** TokenStorage, SessionProvider, guards de rutas, `(auth)` shell.
-3. **UI auth F1:** Welcome, register, verify, login, forgot/reset (MockAuthRepository).
-4. **UI cuenta autenticada:** Account settings, change password, delete account, logout; enlace desde perfil.
-5. **Legal:** Fetch/mock aviso privacidad en registro.
-6. **Pruebas CA-01–CA-14** y ampliación architecture test.
-7. **Config CA-13** y documentación README/arquitectura.
-8. **Paquete api-client (paralelo permitido):** tipos visitor + refresh single-flight.
-9. **F2 HttpAuthRepository** cuando api-004 + DBR listos; smoke manual.
+1. **Hecho:** spec mobile-004, spec api-004 y este plan, por Aksel el 2026-10-20. El plan, las tasks y los endpoints de `api-004` quedaron listos el 2026-10-21. Ambas specs quedaron Implementadas el 2026-10-21.
+2. **Primer corte de tasks:** sesión, login y logout sobre las pantallas 002 (`TokenStorage`, `SessionProvider`, guards, `MockAuthRepository`). Se retira el acceso de invitado en este corte.
+3. **Resto de la misma spec:** registro, verificación, recuperación, aviso, perfil, contraseña y borrado.
+4. **Pruebas CA-01–CA-14** y ampliación del test de arquitectura, repartidas en esos cortes.
+5. **Config CA-13** y documentación README/arquitectura.
+6. **Checklist HTTP** en `tasks/004-visitor-account.md` (T-31 en adelante): módulo visitante de `@arca/api-client`, sin editar `auth.ts`, y `HttpAuthRepository`. Aprobado por Aksel el 2026-10-21.
+7. **Implementar F2** tras esa aprobación. Smoke manual contra la API de pruebas, nunca contra `arca_zoo`.
 
-### Aprobaciones pendientes
+### Aprobaciones
 
 | Paso | Responsable | Estado |
 |---|---|---|
-| Aprobación funcional spec 004 | Aksel / equipo | Pendiente |
-| Aprobación técnica plan 004 | Aksel / revisor técnico | Pendiente |
-| Aprobación ADR 0011 | Equipo / arquitectura | Propuesto |
-| Tasks 004 | Tras plan aprobado | No creado |
+| Aprobación funcional spec mobile-004 | Aksel | Aprobada, 2026-10-20. Implementada, 2026-10-21 |
+| Aprobación funcional spec api-004 | Aksel | Aprobada, 2026-10-20. Plan y tasks aprobados el 2026-10-21. Implementada, 2026-10-21 |
+| Aprobación técnica plan mobile-004 | Aksel | Aprobado, 2026-10-20 |
+| Aprobación ADR 0011 | Aksel | Aceptado, 2026-10-21. Autoriza las dependencias. Este documento no las instala |
+| Tasks fase simulada (T-01 a T-30) | Aksel | Aprobadas, 2026-10-20, e integradas |
+| Tasks fase HTTP (T-31 en adelante) | Aksel | Aprobadas, 2026-10-21, e implementadas |
 
-**No iniciar implementación en `src/`** hasta spec **Aprobada** y plan **Aprobado**, salvo acuerdo explícito del equipo para spike desechable (no recomendado por SDD).
+**La fase simulada está integrada.** La fase HTTP quedó aprobada e implementada el 2026-10-21. `apps/web` y `apps/dashboard` quedan fuera.
