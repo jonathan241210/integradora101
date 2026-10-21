@@ -13,6 +13,7 @@ import MissionDetailRoute from '../src/app/(tabs)/mission-detail';
 import AchievementsRoute from '../src/app/(tabs)/achievements';
 import AchievementDetailRoute from '../src/app/(tabs)/achievement-detail';
 import AnimalDetailRoute from '../src/app/animal/[id]';
+import { accountSession } from '../src/session/accountSession';
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
@@ -40,6 +41,7 @@ describe('Navegación visitante', () => {
     delete mockParams.returnTo;
     delete mockParams.destination;
     delete mockParams.source;
+    return accountSession.resetForTests();
   });
 
   it('test-ca-02: permite navegar a las cinco pestañas principales', async () => {
