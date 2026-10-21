@@ -2,17 +2,35 @@ import React from 'react';
 import { View, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing } from '../theme/tokens';
-import { AppText, BackButton, Button, Card, Icon, ImageOrPlaceholder, LocationPill, SectionTitle, Stat } from '../components/ui';
+import {
+  AppText,
+  BackButton,
+  Button,
+  Card,
+  Icon,
+  ImageOrPlaceholder,
+  LocationPill,
+  SectionTitle,
+  Stat,
+} from '../components/ui';
 import { Animal } from '../models';
 
 interface AnimalDetailProps {
   animal: Animal | null;
   loading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   onBackPress?: () => void;
   onNavigatePress?: () => void;
 }
 
-export function AnimalDetailScreen({ animal, loading = false, onBackPress, onNavigatePress }: AnimalDetailProps) {
+export function AnimalDetailScreen({
+  animal,
+  loading = false,
+  error = null,
+  onBackPress,
+  onNavigatePress,
+}: AnimalDetailProps) {
   const insets = useSafeAreaInsets();
 
   if (loading) {
@@ -23,7 +41,7 @@ export function AnimalDetailScreen({ animal, loading = false, onBackPress, onNav
     );
   }
 
-  if (!animal) {
+  if (error || !animal) {
     return (
       <View style={[styles.center, { marginTop: insets.top }]}>
         <AppText variant="body" center>No se encontró el animal.</AppText>
@@ -32,17 +50,19 @@ export function AnimalDetailScreen({ animal, loading = false, onBackPress, onNav
     );
   }
 
+  const isDiscovered = Boolean(animal.isDiscovered);
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: spacing.xxl }}>
         <View>
           <ImageOrPlaceholder
             source={animal.imageUrl?.trim() ? { uri: animal.imageUrl.trim() } : null}
-            tint={animal.placeholderTint} 
-            style={styles.heroImage} 
-            blurRadius={animal.isDiscovered ? 0 : 16}
+            tint={animal.placeholderTint}
+            style={styles.heroImage}
+            blurRadius={isDiscovered ? 0 : 16}
           />
-          {!animal.isDiscovered && (
+          {!isDiscovered && (
             <>
               <View pointerEvents="none" style={styles.lockedImageShade} />
               <View style={styles.lockedImageOverlay}>
@@ -60,20 +80,22 @@ export function AnimalDetailScreen({ animal, loading = false, onBackPress, onNav
 
         <View style={styles.content}>
           <View style={styles.titleGroup}>
-            <AppText variant="title">{animal.nickname} — {animal.commonName}</AppText>
-            {animal.isDiscovered && (
+            <AppText variant="title">
+              {animal.nickname} — {animal.commonName}
+            </AppText>
+            {isDiscovered && animal.scientificName ? (
               <AppText variant="small" color="textMuted" style={{ fontStyle: 'italic' }}>
                 {animal.scientificName}
               </AppText>
-            )}
+            ) : null}
           </View>
 
           <LocationPill label={animal.zone} variant="filled" />
-          <AppText variant="caption" color={animal.isDiscovered ? 'primary' : 'textMuted'}>
-            {animal.isDiscovered ? 'Descubierto' : 'Por descubrir'}
+          <AppText variant="caption" color={isDiscovered ? 'primary' : 'textMuted'}>
+            {isDiscovered ? 'Descubierto' : 'Por descubrir'}
           </AppText>
 
-          {animal.isDiscovered ? (
+          {isDiscovered ? (
             <>
               <Card style={styles.card}>
                 <SectionTitle icon="information-circle-outline" text="Características" />

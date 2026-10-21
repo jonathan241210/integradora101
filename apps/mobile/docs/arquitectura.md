@@ -2,18 +2,18 @@
 
 ## 1. Control
 
-- **Estado:** Vigente; describe el prototipo de UI de la spec **002** (implementada, PR aprobado 2026-10-14).
-- **Capacidades descritas:** rutas, interfaz, mocks y pruebas: actual; API, favoritos persistentes, cámara, GPS y 3D: futuros.
-- **Spec de referencia:** [002 · mobile-ui-base-visitor-journey](../specs/002-mobile-ui-base-visitor-journey.md).
+- **Estado:** Vigente; describe el prototipo de UI de la spec **002** y la integración de lectura API y caché de la spec **003**.
+- **Capacidades descritas:** rutas, interfaz, mocks, integración de lectura API para catálogo/eventos, caché SWR y pruebas: actual; cuenta persistente, cámara, GPS y 3D: futuros.
+- **Spec de referencia:** [002 · mobile-ui-base-visitor-journey](../specs/002-mobile-ui-base-visitor-journey.md) y [003 · api-read-integration](../specs/003-api-read-integration.md).
 - **Decisión tecnológica:** [ADR 0004 · Mobile React Native](../../../docs/adr/0004-mobile-react-native.md).
 
 ## 2. Propósito, alcance y exclusiones
 
 La aplicación presenta al visitante una experiencia móvil de exploración del zoológico y permite validar sus flujos y diseño.
 
-- **Actual:** cinco pestañas, búsqueda y detalle de animales, colección, perfil, eventos, misiones, logros, resultados QR simulados, y el acceso visual (Login, registro, recuperación y Ajustes).
-- **No incluido en 002:** conexión de datos de negocio a la API, persistencia, cuenta real, cámara/lectura QR real, GPS, mapa interactivo y renderizado 3D.
-- **Futuro:** capacidades de dispositivo o persistencia solo se implementan con alcance aprobado en una spec correspondiente. Roadmap y responsables de specs 003–008: [003-008-roadmap-y-asignacion.md](./003-008-roadmap-y-asignacion.md).
+- **Actual:** cinco pestañas, búsqueda y detalle de animales, colección, perfil, eventos, misiones, logros, resultados QR simulados, acceso visual (Login, registro, recuperación y Ajustes), y consumo real/mock desacoplado de catálogo de especies y eventos con caché SWR de 5 minutos y fallback de imágenes.
+- **No incluido en 003:** cuenta real persistente en servidor, cámara/lectura QR real, GPS, mapa interactivo y renderizado 3D.
+- **Futuro:** capacidades de dispositivo o persistencia de cuenta/progreso se implementan con alcance aprobado en una spec correspondiente (004 a 008). Roadmap y responsables de specs 003–008: [003-008-roadmap-y-asignacion.md](./003-008-roadmap-y-asignacion.md).
 
 ## 3. Actores
 
@@ -67,11 +67,18 @@ Las pantallas en `src/screens/` componen controles de `src/components/ui/` y com
 
 ## 9. Contratos y endpoints
 
-La etapa 002 no consume endpoints. `@arca/api-client` está declarado para contratos compartidos futuros, pero los datos de las pantallas proceden de mocks. La arquitectura de conexión, contratos y manejo de errores para las etapas 003–008 se regula en [estandares-integracion-api.md](./estandares-integracion-api.md).
+La etapa 003 implementa la integración de lectura para el catálogo público y eventos (`GET /species`, `GET /species/{id}`, `GET /events`, `GET /events/{id}`) utilizando `@arca/api-client` (`createHttpClient`) a través de `ApiAnimalRepository` y `ApiZooRepository`.
+Los datos de la API en `snake_case` se normalizan a modelos de dominio en `camelCase` mediante `src/repositories/mappers.ts`.
+Si la variable `EXPO_PUBLIC_USE_MOCKS` está activa o el entorno no cuenta con API disponible, la fábrica `createAnimalRepository()` y `createZooRepository()` recurre limpiamente a las implementaciones mock de `src/mocks/`.
+La arquitectura de conexión, contratos y manejo de errores para las siguientes etapas (004–008) continúa regulada en [estandares-integracion-api.md](./estandares-integracion-api.md).
 
 ## 10. Datos y flujo
 
-No hay persistencia local o remota en esta etapa. Los repositorios exponen fixtures de `src/mocks/`; cambiar o cerrar la app restablece el estado temporal. El servidor/API será autoridad de los datos de negocio cuando una spec futura integre esos flujos.
+La etapa 003 incorpora una estrategia de caché local *Stale-While-Revalidate* (SWR) con un tiempo de vida (TTL) de 5 minutos (300,000 ms) a través de una abstracción `KeyValueStorage` (`src/repositories/storage.ts`).
+Cuando hay datos en caché válidos se retornan inmediatamente; en caso de fallo de red se utiliza el caché disponible mostrando una alerta no intrusiva (`OfflineBanner`).
+Las pantallas manejan 5 estados de presentación: carga (`loading`), éxito (`success`), error con reintento accesible (`error`), datos vacíos (`empty`) y modo sin conexión (`offline`).
+La autoridad de datos de negocio reside en el servidor/API Laravel.
+Persistencia de cuenta y sincronización de colecciones/QR pertenecen a las specs futuras 004, 005 y 006.
 
 ## 11. Seguridad y privacidad
 
