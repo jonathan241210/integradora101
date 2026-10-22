@@ -5,11 +5,13 @@ import { CollectionScreen } from '../../screens/CollectionScreen';
 import { Animal } from '../../models';
 import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
 import { useUserViewModel } from '../../viewmodels/useUserViewModel';
+import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 
 export default function CollectionRoute() {
   const router = useRouter();
   const { getAnimals } = useAnimalViewModel();
   const { user, error } = useUserViewModel();
+  const { isOffline } = useNetworkStatus();
   const [animals, setAnimals] = useState<Animal[]>([]);
 
   useEffect(() => {
@@ -36,6 +38,7 @@ export default function CollectionRoute() {
     <CollectionScreen
       animals={animals}
       progress={{ discovered: user?.discoveredCount ?? 0, total: user?.totalAnimals ?? 0 }}
+      isOffline={isOffline}
       onAnimalPress={(id) => router.push({ pathname: '/animal/[id]', params: { id } })}
     />
   );

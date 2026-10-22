@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Auth\MeController;
+use App\Http\Controllers\Catalog\EventController;
+use App\Http\Controllers\Catalog\SpeciesController;
 use App\Http\Controllers\Visitor\PrivacyNoticeController;
 use App\Http\Controllers\Visitor\VisitorAuthenticationController;
 use App\Http\Controllers\Visitor\VisitorProfileController;
@@ -10,6 +12,11 @@ Route::get('/auth/me', MeController::class)
     ->middleware(['auth:sanctum', 'staff.user'])
     ->name('auth.me');
 
+Route::get('/species', [SpeciesController::class, 'index'])->name('species.index');
+Route::get('/species/{species}', [SpeciesController::class, 'show'])->name('species.show');
+
+Route::get('/events', [EventController::class, 'index'])->name('events.index');
+Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
 Route::prefix('visitor')->name('visitor.')->group(function () {
     Route::get('legal/privacy-notice', PrivacyNoticeController::class)
         ->name('legal.privacy-notice');

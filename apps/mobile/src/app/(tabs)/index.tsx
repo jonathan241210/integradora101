@@ -1,32 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { HomeScreen } from '../../screens/HomeScreen';
 import { useHomeViewModel } from '../../viewmodels/useHomeViewModel';
+import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 import { Animal, News, ZooEvent } from '../../models';
 
 export default function HomeRoute() {
   const router = useRouter();
-  const { getFeaturedAnimals, getEvents, getNews } = useHomeViewModel();
+  const { loadHomeData } = useHomeViewModel();
+  const { isOffline } = useNetworkStatus();
   const [featuredAnimals, setFeaturedAnimals] = useState<Animal[]>([]);
   const [events, setEvents] = useState<ZooEvent[]>([]);
   const [news, setNews] = useState<News>({ title: '', body: '' });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    loadHomeData()
+      .then(({ animals, events, news }) => {
+        setFeaturedAnimals(animals);
+        setEvents(events);
+        setNews(news);
+      })
+      .catch(() => {
+        setError('No fue posible actualizar la información del zoológico.');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [loadHomeData]);
 
   useEffect(() => {
-    let isActive = true;
-    Promise.all([getFeaturedAnimals(), getEvents(), getNews()])
-      .then(([animals, zooEvents, zooNews]) => {
-        if (isActive) {
-          setFeaturedAnimals(animals);
-          setEvents(zooEvents);
-          setNews(zooNews);
-        }
-      })
-      .catch((error: unknown) => console.error('Error loading home data:', error));
-
-    return () => {
-      isActive = false;
-    };
-  }, [getEvents, getFeaturedAnimals, getNews]);
+    reload();
+  }, [reload]);
 
   return (
     <HomeScreen
@@ -34,6 +42,10 @@ export default function HomeRoute() {
       featuredAnimals={featuredAnimals}
       events={events}
       news={news}
+      loading={loading}
+      error={error}
+      isOffline={isOffline}
+      onRetry={reload}
       onSeeAllAnimalsPress={() => router.push('/search')}
       onAnimalPress={(id) => router.push({ pathname: '/animal/[id]', params: { id } })}
       onEventPress={(id) => router.push({ pathname: '/event-detail', params: { id } })}
