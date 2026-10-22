@@ -1,7 +1,6 @@
 import { Alert, Badge, Button, Card, Field, SelectField } from "@arca/ui";
 import { useState } from "react";
 import { demoSales } from "../data/demo-data";
-import { DemoBanner } from "../components/DemoBanner";
 import { SectionHeading } from "../components/SectionHeading";
 
 export function TicketReportView() {
@@ -14,7 +13,6 @@ export function TicketReportView() {
         title="Reporte de boletos"
         description="Consulta un resumen demostrativo de ventas de taquilla."
       />
-      <DemoBanner />
       <div className="report-metric-grid">
         <Card className="report-metric">
           <span>Boletos vendidos</span>

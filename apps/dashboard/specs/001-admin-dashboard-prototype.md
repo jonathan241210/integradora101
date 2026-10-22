@@ -7,8 +7,11 @@
 - Aprobación funcional de la versión anterior: Solicitante, 2026-10-08; aprobó interfaces, preparación base del dashboard, `@arca/ui` y después la ampliación a `@arca/tokens`
 - Aprobación funcional de esta ampliación: Solicitante, 2026-10-09; aprobó CA-01..CA-12, las credenciales ficticias propuestas y el alcance local sin persistencia.
 - Aprobación funcional de login administrativo, paleta institucional y mantenimiento de React/index.html como entrada: Solicitante, 2026-10-09.
+- Aprobación funcional de esta mejora: Solicitante, 2026-10-13; aprobó conservar un único aviso general en la shell autenticada y retirar sus duplicados de las vistas.
 
 > **Nota (2026-10-13):** el inicio de sesión ficticio, el selector de perfil y las credenciales de demostración de esta spec quedan **reemplazados por `002-real-staff-login`** (autenticación real contra la API). Los criterios y reglas afectados se marcan con *(Reemplazado por dashboard-002)*; el resto del prototipo sigue vigente hasta que sus propias specs lo sustituyan.
+
+> **Vigencia (2026-10-17):** `dashboard-002-real-staff-login` reemplaza los flujos de login ficticio de CA-01, CA-10 y CA-13, y solo la parte de login con cuentas en memoria de CA-12. La creación/lista demostrativa de Usuarios de taquilla sigue vigente; ninguna cuenta ficticia puede iniciar sesión.
 
 ## Problema y contexto
 
@@ -63,7 +66,7 @@ Como personal de taquilla, quiero iniciar sesión con una cuenta de muestra y ve
 - **CA-04:** Dado un perfil de taquilla con sesión de demostración válida, cuando abra Venta de boletos, entonces muestra opciones y cantidades ficticias y permite recorrer confirmación, procesamiento y resultado simulado sin cobrar ni guardar transacciones; sin sesión válida no muestra esta sección.
 - **CA-05:** Dado el perfil administrativo, cuando abra Reporte de boletos, entonces presenta filtros, indicadores y filas claramente ficticios, sin consultar datos financieros reales ni dar acceso al historial privado de taquilla.
 - **CA-06:** Dadas las pantallas del prototipo, cuando se usen a anchos de 360, 390, 768, 1024 y 1366 px y con teclado, entonces la navegación y los controles permanecen operables, legibles, con foco visible y sin desbordamiento horizontal.
-- **CA-07:** Dado el conjunto de interfaces, cuando se ejecute la suite de pruebas del dashboard, entonces hay pruebas automatizadas nombradas para todos los criterios CA-01..CA-14, incluyendo roles, flujos demostrativos, límites de sesión, accesibilidad básica, adaptación responsive y tema institucional.
+- **CA-07:** Dado el conjunto de interfaces, cuando se ejecute la suite de pruebas del dashboard, entonces hay pruebas automatizadas nombradas para todos los criterios CA-01..CA-15, incluyendo roles, flujos demostrativos, límites de sesión, accesibilidad básica, adaptación responsive y tema institucional.
 - **CA-08:** Dado el dashboard y los componentes compartidos, cuando se inicialicen para esta feature, entonces los paquetes permiten ejecutar, probar y compilar la SPA, y exportar componentes accesibles con tokens semánticos de la paleta institucional de `docs/04-sistema-de-diseno.md`, sin router ni dependencias ajenas al stack aprobado.
 - **CA-09:** Dado el perfil administrativo, cuando abra Modificación de recintos, entonces puede editar los campos ficticios definidos (nombre, descripción y estado) y ver una confirmación visual; los cambios viven solo en memoria y no persisten tras recargar.
 - **CA-10:** Dado el perfil de taquilla, cuando ingrese el usuario y contraseña ficticios indicados en esta spec, entonces accede a Venta de boletos e Historial de boletos; credenciales incorrectas muestran un error accesible, y cerrar sesión devuelve al selector de perfil sin dejar visibles estas secciones. *(Reemplazado por dashboard-002)*
@@ -71,6 +74,7 @@ Como personal de taquilla, quiero iniciar sesión con una cuenta de muestra y ve
 - **CA-12:** Dado el perfil administrativo, cuando abra Usuarios de taquilla, entonces puede capturar un nombre de muestra, usuario y clave ficticios, crear una cuenta solo en memoria y usar esa cuenta en el login de taquilla durante la misma sesión; la lista y cuenta se reinician al recargar. La guía en español explica este flujo, las credenciales iniciales y las limitaciones del prototipo. *(Reemplazado por dashboard-002 en la parte del inicio de sesión con cuentas en memoria)*
 - **CA-13:** Dado el selector de perfiles, cuando la persona elija Administración, entonces se muestra un formulario con usuario y contraseña ficticios; únicamente las credenciales `administrador@demo.local` / `demo1234` permiten entrar al panel de administración de muestra. Credenciales incorrectas muestran un error accesible y ninguna credencial se transmite ni persiste. *(Reemplazado por dashboard-002)*
 - **CA-14:** Dado cualquier perfil del dashboard, cuando se presente la interfaz, entonces el menú lateral, acciones principales, superficies y tipografía usan tokens semánticos mapeados a la paleta institucional de `docs/04-sistema-de-diseno.md` (`#661a2f`, `#87293a`, `#b79159`, `#DEC9A3`, blanco/negro, 16px y Lato 400), en lugar de los acentos azules/verdes actuales. Conserva colores semánticos para estados y foco accesible; no declara hex de marca en vistas, no consulta ni escribe `settings_colores`, y `index.html` continúa como entrada de la SPA React/Vite.
+- **CA-15:** Dado el perfil administrativo con sesión de demostración activa, cuando se muestre cualquier vista administrativa, entonces la shell presenta una sola advertencia general sobre el carácter ficticio y la falta de persistencia; las vistas administrativas no repiten ese banner.
 
 ## Reglas de negocio
 
@@ -84,6 +88,7 @@ Como personal de taquilla, quiero iniciar sesión con una cuenta de muestra y ve
 - **RN-08:** La cuenta inicial de taquilla es ficticia y se muestra junto al formulario para facilitar la demostración: usuario `taquilla@demo.local`, contraseña `demo1234`. Las cuentas creadas desde administración solo existen en memoria hasta recargar. *(Reemplazado por dashboard-002)*
 - **RN-12:** Administración también requiere login ficticio local: usuario `administrador@demo.local`, contraseña `demo1234`. Estas credenciales son públicas en el cliente, no constituyen autenticación y no protegen rutas ni datos. *(Reemplazado por dashboard-002)*
 - **RN-13:** Los tokens del dashboard se mapean de forma centralizada en `apps/dashboard/src/styles.css` a los valores y roles de `docs/04-sistema-de-diseno.md`; no modificar `settings_colores`, no agregar lecturas de API en esta demo y no fijar colores de marca en componentes.
+- **RN-14:** En el perfil administrativo, la shell autenticada muestra una sola advertencia general de demostración y las vistas administrativas no duplican ese banner; el selector/login y las vistas de taquilla conservan sus avisos actuales.
 - **RN-09:** Los recintos, cuentas, ventas e historiales son fixtures ficticios o estados efímeros; no se guardan en almacenamiento local, cookies, servidor ni base de datos.
 - **RN-10:** Los formularios de recintos y usuarios tienen etiquetas, validación de campos requeridos y feedback accesible; esta validación solo mejora la demostración y no representa reglas operativas.
 - **RN-11:** Los comentarios del código se limitan a aclarar comportamiento no obvio; la guía de la app documenta ejecución, perfiles, flujos y límites del prototipo sin describirlo como sistema real.
@@ -108,7 +113,7 @@ No se consulta ni persiste información. Usar solo datos ficticios estáticos o 
 ## Dependencias, riesgos y preguntas
 
 - Dependencias/ADR: ADR 0002 acepta React 19, TypeScript, Vite 7 y Tailwind CSS 4 para SPAs; React Router permanece fuera de alcance. La persona solicitante aprobó preparar la base del dashboard y los paquetes mínimos `@arca/ui` y `@arca/tokens`. Las pruebas usarán Vitest conforme a la Constitución.
-- Riesgos: Una interfaz de login o pago de demostración puede confundirse con un sistema real; se mitiga con rótulos persistentes de demostración y datos ficticios.
+- Riesgos: Una interfaz de login o pago de demostración puede confundirse con un sistema real; se mitiga con una advertencia general visible en cada contexto y datos ficticios.
 - Preguntas pendientes: Ninguna. Se aclaró que `index.html` debe seguir como entrada React/Vite; la interfaz permanece en la SPA y sus módulos HTML/CSS/TypeScript. La persona solicitante aprobó `administrador@demo.local` / `demo1234` para el login ficticio administrativo y la paleta institucional en todo el dashboard, sustituyendo sus acentos azules/verdes de marca.
 
 ## Revisión

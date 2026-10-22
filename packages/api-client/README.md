@@ -1,9 +1,31 @@
-# @arca/api-client
+# `@arca/api-client`
 
-**Estado:** propuesta; el paquete no está implementado.
+Cliente HTTP tipado y compartido para las aplicaciones ARCA-NB. La API mantiene la autoridad de autenticación, permisos y reglas de negocio.
 
-Cliente tipado compartido para las SPAs y mobile. Encapsulará URL base por ambiente, autenticación/CSRF para SPAs, envío de tokens Sanctum para mobile cuando aplique, tipos de request/response, errores y serialización. Los hooks de los clientes llaman a este paquete.
+## Inicio
 
-El cliente no contiene reglas de negocio, credenciales de servicio ni acceso directo a BD. La API Laravel es la autoridad; sus rutas se nombran en backend y los contratos se documentan/versionan sin Wayfinder. Evitar `fetch` o `axios` ad hoc en páginas/componentes.
+El paquete usa `fetch` nativo y no tiene dependencias externas. Para el dashboard se enlaza como paquete local:
 
-Definir timeout, cancelación, errores, retry y estrategia de compatibilidad en specs antes de implementación. Aún no existe `package.json` ni dependencia instalada.
+```json
+"@arca/api-client": "file:../../packages/api-client"
+```
+
+## Sesión de personal
+
+`createHttpClient({ baseUrl, fetchImpl, onUnauthorized })` envía las cookies de sesión y `Accept: application/json`. Antes de una petición distinta de GET, obtiene `/sanctum/csrf-cookie` si no existe la cookie `XSRF-TOKEN` y envía su valor decodificado en `X-XSRF-TOKEN`.
+
+`createAuthApi(http)` expone `login`, `twoFactorChallenge`, `me`, `logout`, `enableTwoFactor`, `twoFactorQrCode`, `confirmTwoFactor` y `recoveryCodes`. `me` devuelve `StaffProfile` aunque la respuesta de Laravel venga envuelta en `data`.
+
+Los errores HTTP se representan como `ApiError`, con estado, mensaje, código, errores de validación y `retryAfterSeconds` cuando el servidor responde `Retry-After`.
+
+El paquete no guarda credenciales, perfiles ni códigos de recuperación. Cada cliente decide cómo presentar los estados; la sesión de personal permanece en la cookie HttpOnly administrada por la API.
+
+## Sesión de visitante
+
+`createVisitorApi` es un módulo aparte. No usa `createAuthApi` ni las cookies y el CSRF de `createHttpClient`.
+
+Recibe la base URL, `fetch` opcional y callbacks para leer el access token, leer el refresh y guardar el par nuevo. Las rutas viven bajo `/api/v1/visitor`: aviso, registro, verificación, reenvío, login, refresh, logout, olvido, restablecimiento, perfil, contraseña y borrado. El login envía `device_name`. El access token viaja en `Authorization: Bearer`.
+
+Si una petición autenticada responde 401, hay un solo `POST /api/v1/visitor/auth/refresh` en vuelo. El cuerpo es `{ "refresh_token": "…" }` y no usa el access token vencido. Si el refresh funciona, se guarda el par y la petición original se reintenta una vez. Si el refresh falla o responde 401, no hay otro intento y se avisa para cerrar la sesión.
+
+Los errores son `ApiError`: estado, `message`, `code`, `errors` y `retryAfterSeconds`.

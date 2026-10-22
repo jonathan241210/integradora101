@@ -23,6 +23,14 @@ export default function VisitorTabsLayout() {
       <Tabs.Screen name="qr-result" options={{ href: null }} />
       <Tabs.Screen name="qr-invalid" options={{ href: null }} />
       <Tabs.Screen name="qr-already-discovered" options={{ href: null }} />
+      <Tabs.Screen name="settings" options={{ href: null }} />
+      <Tabs.Screen name="account" options={{ href: null }} />
+      <Tabs.Screen name="account-settings" options={{ href: null }} />
+      <Tabs.Screen name="change-password" options={{ href: null }} />
+      <Tabs.Screen name="delete-account" options={{ href: null }} />
+      <Tabs.Screen name="privacy" options={{ href: null }} />
+      <Tabs.Screen name="help" options={{ href: null }} />
+      <Tabs.Screen name="about" options={{ href: null }} />
     </Tabs>
   );
 }

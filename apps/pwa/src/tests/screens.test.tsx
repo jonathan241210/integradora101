@@ -35,10 +35,10 @@ describe('CA-03 PWA responsive demo screens', () => {
     expect(markupBySection[0]).toContain('Resumen de hoy');
     expect(markupBySection[1]).toContain('Listado ficticio');
     expect(markupBySection[2]).toContain('Nuevo ejemplar');
-    expect(markupBySection[3]).toContain('Captura de muestra');
+    expect(markupBySection[3]).toContain('Elige el tipo de diagnóstico');
     expect(markupBySection[4]).toContain('Seguimiento');
     expect(markupBySection[2]).not.toContain('Síntomas observados');
-    expect(markupBySection[3]).not.toContain('Hallazgos y notas');
+    expect(markupBySection[3]).not.toContain('Descargar PDF');
   });
 
   it('ofrece navegación con nombres completos para todas las secciones', () => {

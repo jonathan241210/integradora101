@@ -1,6 +1,6 @@
 # Aplicación móvil ARCA-NB
 
-Prototipo móvil de la etapa 002 construido con React Native y Expo Router. El mapa, el escáner QR y el recorrido 3D son pantallas visuales con datos simulados; no usan cámara, GPS, mapas reales ni renderizado 3D.
+Prototipo móvil de la etapa **002** (spec implementada) construido con React Native y Expo Router. El mapa, el escáner QR y el recorrido 3D son pantallas visuales con datos simulados; no usan cámara, GPS, mapas reales ni renderizado 3D.
 
 ## Requisitos
 
@@ -90,10 +90,44 @@ Los botones de simulación QR solo aparecen en desarrollo. Los archivos de salid
 
 Las pruebas, el chequeo de tipos y la exportación JavaScript no necesitan teléfono Android. La exportación de Metro no equivale a compilar ni instalar un APK.
 
+## Cuenta del visitante
+
+La spec 004 tiene sesión, registro, verificación, recuperación, edición, cambio de contraseña y borrado. Hay dos caminos. No pongas secretos en `EXPO_PUBLIC_API_URL`, no versiones `apps/mobile/.env` y no apuntes a producción ni a la base `arca_zoo`.
+
+### Sin API: cuentas de prueba
+
+Si `EXPO_PUBLIC_API_URL` no existe o está vacía, la app y Jest usan el repositorio simulado. Los tokens quedan en memoria. Esas cuentas no existen en la API.
+
+- `correo@ejemplo.com` o `maria@correo.com`, contraseña `secreta`.
+- Una cuenta creada en esa simulación usa el código de prueba `123456`.
+
+### Con la API de pruebas, en cada máquina
+
+Con la variable definida, los tokens se guardan con `expo-secure-store` y las llamadas salen por el módulo visitante de `@arca/api-client`. `usesCleartextTraffic` sigue en `false` en el build de Android. Expo Go, en desarrollo y en la misma red, usa el `http://` de abajo. Un APK compilado sigue exigiendo HTTPS.
+
+1. En una terminal, desde `apps/api/src`, deja la API escuchando en la red. Si Windows pregunta, permite el puerto 8000 en redes privadas.
+
+```powershell
+Set-Location .\apps\api\src
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+2. En `ipconfig`, copia la IPv4 del adaptador de la Wi-Fi. No uses `127.0.0.1`: en el teléfono esa dirección es el propio teléfono. Tampoco uses una tarjeta virtual (por ejemplo `192.168.56.1`).
+3. Crea `apps/mobile/.env` con la IP de esa máquina. El archivo no se sube a git.
+
+```text
+EXPO_PUBLIC_API_URL=http://ESA-IP:8000
+```
+
+4. Reinicia Expo. La variable se lee al arrancar: si ya estaba `npm start`, detenlo con `Ctrl+C` y vuelve a lanzarlo. El teléfono y la computadora tienen que estar en la misma red.
+5. El alta real pide al menos 8 caracteres, con letras y números. El código de 6 dígitos no llega a una bandeja: con `MAIL_MAILER=log` queda en `apps/api/src/storage/logs/laravel.log`.
+
 ## Estado y límites
 
 - Sigue la [spec 002](specs/002-mobile-ui-base-visitor-journey.md), el [plan](plan/002-mobile-ui-base-visitor-journey.md), las [tareas](tasks/002-mobile-ui-base-visitor-journey.md) y la [guía de validación](docs/002-mobile-ui-visitor-journey.md).
+- Roadmap 003–008, estado de specs y asignación (Aksel / Víctor): [docs/003-008-roadmap-y-asignacion.md](docs/003-008-roadmap-y-asignacion.md).
 - Consulta la [arquitectura local](docs/arquitectura.md) y el [ADR 0004](../../docs/adr/0004-mobile-react-native.md).
+- Estándares de conexión y arquitectura con la API: [docs/estandares-integracion-api.md](docs/estandares-integracion-api.md).
 - La identidad móvil usa los valores institucionales centralizados en `@arca/tokens` (`base`, `primary`, `secondary` y `accent`); los textos y controles conservan contraste con sus tokens de foreground. `danger` es un color semántico de estado. Los tintes `placeholderTint` de animales solo se usan como ilustración cuando falta una foto y no son colores de marca. Mobile no consulta directamente `settings_colores` ni obtiene el tema de `GET /api/theme` en esta etapa.
 - Los iconos de launcher/adaptive icon aún no están definidos. `app.json` no referencia imágenes ficticias; agrega recursos PNG reales antes de preparar distribución nativa.
 - Favoritos persistentes, cámara/QR real, geolocalización y 3D real quedan fuera de la etapa 002.

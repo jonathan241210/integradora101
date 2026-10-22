@@ -1,6 +1,6 @@
 # Guía de validación · 002 · Experiencia visitante
 
-La implementación móvil de esta etapa usa Expo Router, datos simulados y las vistas en `src/screens/`. La especificación define el alcance funcional y el plan describe su arquitectura:
+La spec **002** está **Implementada** (PR aprobado e integrado vía DevOps / main, 2026-10-14). Esta guía sirve para validar manualmente el prototipo con Expo Router, datos simulados y las vistas en `src/screens/`. La especificación define el alcance funcional y el plan describe su arquitectura:
 
 - [Spec 002](../specs/002-mobile-ui-base-visitor-journey.md)
 - [Plan 002](../plan/002-mobile-ui-base-visitor-journey.md)
@@ -23,6 +23,15 @@ Los tintes `placeholderTint` de los animales son datos mock exclusivamente ilust
 | Escáner QR | `/scan` | Pestaña Escanear |
 | Colección | `/collection` | Pestaña Colección |
 | Perfil | `/profile` | Pestaña Perfil |
+| Ajustes | `/settings` | Botón circular con icono, junto al título «Perfil» |
+| Mi cuenta | `/account` | Ficha de Ajustes |
+| Aviso de privacidad | `/privacy` | Fila Privacidad |
+| Ayuda y soporte | `/help` | Fila Ayuda y soporte |
+| Acerca de | `/about` | Fila Acerca de ARCA-NB |
+| Login | `/login` | Arranque sin sesión y cierre de sesión |
+| Registro | `/register` | «Regístrate» en Login |
+| Olvido de contraseña | `/forgot-password` | «¿Olvidaste tu contraseña?» |
+| Nueva contraseña | `/reset-password` | Continuar después del aviso de olvido |
 | Búsqueda | `/search` | Acción «Ver todo» en Home |
 | Detalle | `/animal/[id]` | Tarjetas de Home, búsqueda y colección |
 | Game | `/game` | Acción «Cómo conseguir puntos» en Home |
@@ -47,7 +56,7 @@ npm run test:coverage -- --runInBand
 npx tsc --noEmit
 ```
 
-La verificación manual de Android con Expo Go fue confirmada por la persona solicitante el 2026-10-09. La suite automatizada pasó con 10 suites, 56 tests y 1 snapshot; cobertura al 100% en las cuatro métricas configuradas; TypeScript sin errores; dependencias compatibles con Expo y export Android generado correctamente. La prueba `user_logic.test.tsx` todavía imprime advertencias React `act(...)`, pero no provoca fallos.
+La verificación manual de Android con Expo Go fue confirmada por la persona solicitante el 2026-10-09. Tras retirar Idioma y Sonidos y efectos, la suite pasó con 11 suites, 70 tests y 1 snapshot, y TypeScript no reportó errores. La prueba `user_logic.test.tsx` todavía imprime advertencias React `act(...)`, pero no provoca fallos. Los flujos de Login y Ajustes (CA-11–CA-15) se verificaron con `access.test.tsx` el 2026-10-16; la revisión visual complementaria en Android queda registrada en la tabla de ítems 12–15 más abajo.
 
 ## Límites de esta etapa
 
@@ -56,6 +65,7 @@ La verificación manual de Android con Expo Go fue confirmada por la persona sol
 - Los botones para simular resultados QR solo aparecen en builds de desarrollo.
 - Las fotos no vienen incluidas en la referencia; las tarjetas muestran placeholders si falta una URL. La app no carga recursos desde `arca-ui-reference`.
 - No hay persistencia de favoritos o perfil.
+- Login, registro, recuperación y Ajustes son interfaz de demostración. No hay sesión, correo ni preferencias guardadas. Los interruptores no activan notificaciones, modo oscuro ni ubicación. El aviso de privacidad de esta versión no sustituye el que publicará el zoológico.
 - Los favoritos quedan fuera de esta etapa; su estado compartido/persistente y un filtro propio en Colección se definirán en 003. El botón «Ver todo» de Animales Destacados en Home ya abre la búsqueda general; los animales destacados por contenido no deben confundirse con los favoritos del visitante.
 
 ## Verificación manual (Android)
@@ -77,3 +87,21 @@ Con la app iniciada mediante `npx expo start` y abierta en Android/Expo Go o un 
 9. Desde Game y Perfil, abrir todos los logros y detalles; comprobar filtros, orden por fecha/nombre, iconos y regreso a la pantalla de origen. Desde Home, entrar por la tarjeta de aventura y comprobar el mismo listado sin advertencias de listas anidadas.
 10. Probar el gesto de regreso de Android después de navegar Home → Game → Logros y Game → Detalle de misión; confirmar que vuelve a la acción/pantalla previa y que estando en la raíz de una pestaña el gesto no cambia a Home.
 11. Confirmar iconos gráficos, que no aparece `source.uri should not be an empty string`, que carruseles y listas se desplazan, que los textos no se comprimen y que no hay solapamiento con barras del sistema.
+
+### Enmienda acceso y ajustes (ítems 12–15)
+
+| Ítem | Comprobación en Android / Expo Go | Cobertura automatizada (2026-10-16) |
+|------|-----------------------------------|-------------------------------------|
+| 12 | Login al arranque; invitado e inicio de sesión válido entran al inicio; cerrar sesión vuelve a Login. | `test-ca-11` en `__tests__/access.test.tsx` |
+| 13 | Registro con cuatro campos, advertencia de demostración y regreso a Login. | `test-ca-12` |
+| 14 | Olvido con aviso genérico; restablecer con código de 6 dígitos y nueva contraseña. | `test-ca-13` |
+| 15 | Ajustes desde Perfil: interruptores, Mi cuenta, Privacidad, Ayuda, Acerca de; pestaña Perfil activa; sin idioma ni sonidos. | `test-ca-14`, `test-ca-15`, `navigation.test.tsx` |
+
+**Registro de verificación (2026-10-16):** suite mobile `npm test -- --runInBand` — 11 suites, 70 tests OK; `npx tsc --noEmit` sin errores. Los flujos funcionales de los ítems 12–15 quedan cubiertos por las pruebas anteriores.
+
+La spec 004 retiró «Entrar como invitado» al integrar la cuenta real. Los pasos 12 a 15 de abajo describen el prototipo de esta spec, antes de ese cambio. La cuenta vigente está en el README de la app y en `specs/004-visitor-account.md`.
+
+12. Al abrir la app, confirmar Login. Entrar como invitado y, tras cerrar sesión, iniciar sesión con cualquier correo válido y contraseña; ambos llevan al inicio.
+13. Crear cuenta con nombre de usuario, correo, contraseña y confirmación; leer la advertencia y comprobar que regresa a Login.
+14. Olvidar la contraseña, leer el aviso genérico y restablecer con un código de 6 dígitos.
+15. Desde Perfil abrir Ajustes, mover los interruptores de notificaciones, modo oscuro y ubicación, y entrar a Mi cuenta, Privacidad, Ayuda y Acerca de. Confirmar que Perfil sigue resaltado, que el tema no cambia a oscuro y que no aparecen Idioma ni Sonidos y efectos.

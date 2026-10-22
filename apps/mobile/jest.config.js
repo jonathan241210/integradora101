@@ -3,6 +3,7 @@ module.exports = {
   collectCoverageFrom: [
     'src/viewmodels/**/*.ts',
     'src/repositories/index.ts',
+    'src/repositories/visitorAccessRepository.ts',
   ],
   coverageThreshold: {
     'src/viewmodels/**/*.ts': {
@@ -17,6 +18,12 @@ module.exports = {
       lines: 80,
       statements: 80,
     },
+    'src/repositories/visitorAccessRepository.ts': {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
   },
   setupFilesAfterEnv: [],
   transformIgnorePatterns: [
@@ -26,6 +33,7 @@ module.exports = {
     './jest.setup.js'
   ],
   moduleNameMapper: {
+    '^@arca/api-client$': '<rootDir>/../../packages/api-client/index.ts',
     '^react$': require.resolve('react'),
     '^react/jsx-runtime$': require.resolve('react/jsx-runtime'),
     '^react/jsx-dev-runtime$': require.resolve('react/jsx-dev-runtime'),

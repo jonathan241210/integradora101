@@ -34,7 +34,7 @@ Sistema del Zoológico Municipal Nicolás Bravo (Tulancingo). Monorepo con Spec-
 - La API sigue MVC en los límites de Laravel: Models para datos, Controllers HTTP delgados y Views sustituidas por respuestas JSON; la lógica de negocio vive en Actions.
 - Los clientes React y React Native siguen MVVM explícito: componentes como Views, hooks como ViewModels y tipos/datos mediante `@arca/api-client`; React no impone este patrón automáticamente.
 - Esquema solo por migraciones Laravel que el responsable de BD crea, prueba y aplica tras una DBR aprobada en `docs/database/requests/`; ningún agente, solicitante ni cliente crea SQL ejecutable, migraciones ni cambios directos; la aplicación se registra por ambiente. Modelos de negocio extienden `BaseModel`; datos clínicos y financieros usan SoftDeletes y auditoría.
-- MySQL 8.0.x (revisión mínima pendiente del inventario inicial), configuración por `.env`, portable entre Google Cloud y MySQL Server local.
+- MySQL 8.0.x (revisión mínima pendiente del inventario inicial), configuración por `.env`, portable entre Aiven (proveedor MySQL administrado, ADR 0013) y MySQL Server local. `arca_pruebas` es la base de trabajo y de tests; `arca_zoo` es producción y ningún agente la usa.
 - Conectar la API o probar conectividad sin alterar el esquema no requiere DBR, pero sí spec, plan y tasks aprobados, `.env` y cero secretos versionados.
 - No fijar colores de marca en componentes: usar tokens semánticos y el tema de `GET /api/theme`; modo claro.
 - SPAs con rutas del cliente y API con rutas Laravel nombradas; no usar Inertia ni Wayfinder.

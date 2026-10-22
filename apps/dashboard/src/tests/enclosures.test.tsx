@@ -7,14 +7,9 @@ import {
 } from "../viewmodels/dashboard-demo";
 
 function administrativeState() {
-  const selected = dashboardDemoReducer(initialDashboardDemoState, {
-    type: "select-profile",
+  return dashboardDemoReducer(initialDashboardDemoState, {
+    type: "start-session",
     profile: "administration",
-  });
-  return dashboardDemoReducer(selected, {
-    type: "login-administration",
-    username: "administrador@demo.local",
-    password: "demo1234",
   });
 }
 

@@ -1,24 +1,40 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import { ScreenContainer, AppText, Card, Button, Icon } from '../components/ui';
 import { colors, spacing, radius } from '../theme/tokens';
 import { Achievement, Milestone, User } from '../models';
 
 interface ProfileScreenProps {
   user: User;
+  displayName?: string;
+  avatarLabel?: string;
   achievements: Achievement[];
   milestones: Milestone[];
   onAchievementPress: (id: string) => void;
   onSeeAllAchievementsPress: () => void;
+  onSettingsPress: () => void;
 }
 
-export function ProfileScreen({ user, achievements, milestones, onAchievementPress, onSeeAllAchievementsPress }: ProfileScreenProps) {
+export function ProfileScreen({ user, displayName, avatarLabel, achievements, milestones, onAchievementPress, onSeeAllAchievementsPress, onSettingsPress }: ProfileScreenProps) {
   return (
     <ScreenContainer>
       <View style={styles.container}>
+        <View style={styles.header}>
+          <AppText variant="heading">Perfil</AppText>
+          <Pressable
+            onPress={onSettingsPress}
+            accessibilityRole="button"
+            accessibilityLabel="Ajustes"
+            style={styles.settingsButton}
+          >
+            <Icon name="settings" size={22} color={colors.primary} />
+          </Pressable>
+        </View>
         <Card style={styles.profileCard}>
-          <View style={styles.avatarPlaceholder} />
-          <AppText variant="title" center>{user.name}</AppText>
+          <View style={styles.avatarPlaceholder} accessibilityLabel={avatarLabel ? `Avatar ${avatarLabel}` : 'Avatar'}>
+            {avatarLabel ? <AppText variant="caption" center>{avatarLabel}</AppText> : null}
+          </View>
+          <AppText variant="title" center>{displayName ?? user.name}</AppText>
           <AppText variant="small" center color="primary">{user.rank}</AppText>
           
           <View style={styles.statsRow}>
@@ -77,8 +93,27 @@ function StatItem({ label, value }: { label: string, value: string }) {
 
 const styles = StyleSheet.create({
   container: { padding: spacing.lg, gap: spacing.lg },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  settingsButton: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   profileCard: { padding: spacing.lg, alignItems: 'center', gap: spacing.md },
-  avatarPlaceholder: { width: 80, height: 80, borderRadius: radius.pill, backgroundColor: colors.border },
+  avatarPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: radius.pill,
+    backgroundColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.xs,
+  },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, marginTop: spacing.md, width: '100%' },
   statItem: { flex: 1, alignItems: 'center', gap: spacing.xs },
   achievementsList: { gap: spacing.sm, marginTop: spacing.sm },

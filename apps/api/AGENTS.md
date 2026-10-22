@@ -23,9 +23,9 @@ Los tres artefactos usan el mismo `NNN-slug.md`; lee la spec aprobada y el plan 
 - Backend implementa modelos, Actions y endpoints consumidores solo cuando la DBR está en `Lista para backend`; no modifica una migración aprobada: si el contrato diverge, devuelve la DBR a revisión.
 - Funciones y procedimientos almacenados son excepcionales: se justifican frente a una Action, se versionan en migraciones con `DB::statement()` y se prueban en MySQL 8.0; las reglas principales siguen en Actions. Vistas y triggers no están autorizados.
 - Conectar la API y probar conectividad no requiere DBR mientras no altere el esquema; requiere SDD, `.env` e inventario (versión, charset/collation, modo SQL, motor y esquema). El esquema existente no se borra, recrea ni adopta como baseline automáticamente; una decisión aprobada definirá baseline o reconstrucción controlada.
-- Configura conexiones únicamente mediante `.env`; la lógica debe ser portable GCP/local.
+- Configura conexiones únicamente mediante `.env`; la lógica debe ser portable Aiven/local (ADR 0013). `arca_pruebas` es la base de trabajo y de tests; `arca_zoo` es producción y nunca se usa.
 - `settings_colores` en `mysql2` es fuente externa de solo lectura; no escribir ni migrar esa tabla.
 - Protege producción con `DB::prohibitDestructiveCommands` y conserva los controles de seguridad.
-- Tests Feature con `RefreshDatabase`; cada CA-xx aparece en al menos un test PHPUnit.
+- Tests Feature con `DatabaseTransactions` sobre `arca_pruebas`; prohibido `RefreshDatabase`, `migrate:fresh` o cualquier migración desde los tests. Cada CA-xx aparece en al menos un test PHPUnit.
 - La lógica de negocio no se traslada a SPAs ni a paquetes clientes.
 - No instalar dependencias ni generar manifests sin spec, plan, tasks y aprobación.

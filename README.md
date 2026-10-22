@@ -35,13 +35,13 @@ flowchart LR
   Dashboard --> Client
   PWA --> Client
   Client --> API[apps/api<br/>Laravel 12 API]
-  API --> MySQL[(MySQL 8.0.x<br/>Cloud SQL administrado)]
+  API --> MySQL[(MySQL 8.0.x<br/>Aiven administrado)]
   API -.solo lectura.-> ThemeDB[(MySQL externo<br/>settings_colores / mysql2)]
-  API -.disco intercambiable.-> Storage[Almacenamiento Google Cloud<br/>detrás de Laravel Filesystem]
+  API -.disco intercambiable.-> Storage[Almacenamiento por definir<br/>detrás de Laravel Filesystem]
   Local[MySQL Server local] -.migración portable<br/>solo cambia .env.-> API
 ```
 
-La API centraliza autenticación, permisos y lógica; las SPAs usan Sanctum con cookie y la app móvil usa tokens. `settings_colores` se consulta con la conexión `mysql2` en solo lectura. La BD principal usa MySQL 8.0.x, con configuración exclusiva por `.env`; no se incorporan SDK de Google Cloud a la lógica de negocio. Almacenamiento cloud, si se añade, queda detrás de un disco de Laravel intercambiable.
+La API centraliza autenticación, permisos y lógica; las SPAs usan Sanctum con cookie y la app móvil usa tokens. `settings_colores` se consulta con la conexión `mysql2` en solo lectura. La BD principal usa MySQL 8.0.x, con configuración exclusiva por `.env`; no se incorporan SDK de proveedores cloud a la lógica de negocio. La BD administrada es Aiven MySQL (ADR 0013); el hosting de la API queda por definir. Almacenamiento cloud, si se añade, queda detrás de un disco de Laravel intercambiable.
 
 ## Stack y versiones de referencia
 
@@ -50,7 +50,7 @@ La API centraliza autenticación, permisos y lógica; las SPAs usan Sanctum con 
 | API | PHP, Laravel | PHP 8.2+; Laravel 12 |
 | Autenticación | Sanctum, Fortify headless | cookie para SPA; tokens para mobile; Fortify ^1.30 |
 | Permisos y auditoría | Spatie Permission / Activitylog | ^6.24 / ^4.12 |
-| Base de datos | MySQL | 8.0.x (revisión mínima pendiente del inventario inicial); Cloud SQL al inicio, portable a MySQL Server local; cambios solo mediante DBR y migraciones del responsable de BD ([gobierno de BD](docs/database/README.md)) |
+| Base de datos | MySQL | 8.0.x (revisión mínima pendiente del inventario inicial); Aiven administrado (ADR 0013), portable a MySQL Server local; cambios solo mediante DBR y migraciones del responsable de BD ([gobierno de BD](docs/database/README.md)) |
 | SPAs | React, React DOM, TypeScript | 19 / 19 / 5.7+ |
 | Tooling SPA | Vite, Tailwind CSS | 7 / 4 |
 | UI e iconos | shadcn/ui `new-york`, Radix, Lucide | componentes comunes propuestos en `@arca/ui` |
@@ -85,19 +85,24 @@ Cada app numera sus features independientemente. Una feature usa el mismo `NNN-s
 
 ## Comandos de base de datos (API)
 
-Se ejecutan desde `apps/api/src` con el `.env` local configurado. Son comandos de **solo lectura**, útiles para que cualquier integrante o agente inspeccione el esquema antes de proponer una DBR:
+Se ejecutan desde `apps/api/src` con `.env` configurado para `arca_pruebas`. Los siguientes comandos de inspección son de solo lectura y ayudan a revisar el esquema antes de proponer una DBR:
 
 | Comando | Qué muestra |
 |---|---|
 | `php artisan db:show` | Resumen del servidor y de la base conectada |
 | `php artisan db:show --counts` | Lo anterior, con conteo de filas por tabla |
-| `php artisan db:table <tabla>` | Columnas, tipos e índices de una tabla (ej. `users_admins`; tras DBR-001, `users`) |
+| `php artisan db:table <tabla>` | Columnas, tipos e índices de una tabla (por ejemplo, `users`) |
 | `php artisan migrate:status` | Estado de las migraciones |
+
+Para preparar las cuentas demo, el responsable configura `DEMO_STAFF_PASSWORD` en su `.env` local y ejecuta `php artisan db:seed` en `arca_pruebas`. El comando crea las cinco áreas, roles/permisos y las seis cuentas de prueba de [credenciales de desarrollo](apps/api/docs/credenciales-desarrollo.md). Las cuentas `admin` y `zoo-admin` configuran 2FA en su primer acceso. Las cuentas reales se crean con `php artisan arca:create-staff`.
 
 **Avisos:**
 
-- Nunca ejecutar `migrate`, `migrate:fresh`, `db:wipe` ni `db:seed` contra las bases compartidas sin una DBR aplicada por el responsable de BD ([gobierno de BD](docs/database/README.md)).
-- `arca_zoo` es la base de **desarrollo** (configurada en `.env`); `arca_pruebas` se usa **solo para PHPUnit**.
+- `arca_pruebas` es la base de trabajo y de PHPUnit; no se borra ni reconstruye. Tests usan `DatabaseTransactions`; no ejecutar `RefreshDatabase`, `migrate:fresh` ni migraciones desde tests.
+- `arca_zoo` es producción: ningún integrante ni agente la usa. No apuntar a ella comandos de lectura o escritura.
+- No ejecutar migraciones ni comandos destructivos. `db:seed` solo se ejecuta en `arca_pruebas` por el responsable de BD después de configurar la contraseña demo.
+- Los tests activan `DB::prohibitDestructiveCommands()` y verifican que su base sea `arca_pruebas`.
+- Consulta el [gobierno de BD](docs/database/README.md) para el flujo DBR y la aplicación de esquema por ambiente.
 
 ## Flujo SDD resumido
 
@@ -130,5 +135,3 @@ El equipo de seis integrantes usa las ramas indicadas `jonathan`, `ian`, `victor
 
 
 Para desarrollo móvil se requiere Node.js 22 y npm; instala las dependencias del monorepo con `npm ci` desde la raíz y sigue la [guía de ejecución móvil](apps/mobile/README.md) para iniciar Expo Go y correr verificaciones. Para la API se requiere PHP 8.2+, Composer y MySQL 8.0.x. Docker Compose local se incorporará más adelante. No instales dependencias ni guardes secretos en el repositorio sin una tarea aprobada. Consulta [convenciones](docs/06-convenciones.md) e [infraestructura](infra/README.md).
-
-

@@ -20,7 +20,7 @@ Roles de negocio: `admin`, `executive`, `cashier`, `veterinarian` y visitante an
 
 ## Alcance inicial
 - Definir fuentes de datos, permisos, contratos de API y procesos mediante SDD antes de implementar.
-- Mantener MySQL 8 estándar, API central y configuración por entorno, compatible con Google Cloud y una futura instalación de MySQL Server local.
+- Mantener MySQL 8 estándar, API central y configuración por entorno, compatible con el proveedor MySQL administrado (Aiven, ADR 0013) y una futura instalación de MySQL Server local.
 - Entregar interfaz en español y persistir identificadores de código en inglés.
 - Permitir borradores veterinarios offline que se sincronizan; la API y MySQL mantienen la autoridad final.
 

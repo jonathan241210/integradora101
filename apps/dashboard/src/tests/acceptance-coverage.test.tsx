@@ -14,6 +14,9 @@ const applicationSource = [
   "../App.tsx",
   "../data/demo-data.ts",
   "../viewmodels/dashboard-demo.ts",
+  "../views/TwoFactorChallengeView.tsx",
+  "../views/TwoFactorSetupView.tsx",
+  "../views/PwaRedirectView.tsx",
   "../views/LoginView.tsx",
   "../views/EnclosuresView.tsx",
   "../views/TicketHistoryView.tsx",
@@ -21,12 +24,24 @@ const applicationSource = [
 ]
   .map((path) => readFileSync(new URL(path, import.meta.url), "utf8"))
   .join("\n");
+const loginViewSource = readFileSync(
+  new URL("../views/LoginView.tsx", import.meta.url),
+  "utf8",
+);
 
 describe("CA-07 admin-dashboard-prototype", () => {
-  it("tiene pruebas nombradas para cada criterio CA-01..CA-14", () => {
-    for (let number = 1; number <= 14; number += 1) {
+  it("tiene pruebas nombradas para cada criterio vigente de dashboard-001", () => {
+    const currentCriteria = [2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 14, 15];
+
+    for (const number of currentCriteria) {
       const criterion = `CA-${String(number).padStart(2, "0")} admin-dashboard-prototype`;
       expect(testSource).toContain(criterion);
+    }
+
+    for (const replacedCriterion of [1, 10, 13]) {
+      expect(testSource).not.toContain(
+        `CA-${String(replacedCriterion).padStart(2, "0")} admin-dashboard-prototype`,
+      );
     }
   });
 
@@ -34,5 +49,9 @@ describe("CA-07 admin-dashboard-prototype", () => {
     expect(applicationSource).not.toMatch(/\b(?:fetch|axios)\b/);
     expect(applicationSource).not.toMatch(/\b(?:localStorage|sessionStorage)\b/);
     expect(applicationSource).not.toMatch(/(?:stripe|paypal|mercadopago)/i);
+    expect(applicationSource).not.toContain("demoAdministrationCredentials");
+    expect(loginViewSource).not.toContain("administrador@demo.local");
+    expect(loginViewSource).not.toContain("taquilla@demo.local");
+    expect(loginViewSource).not.toContain("demo1234");
   });
 });

@@ -39,6 +39,15 @@ const symbols: Record<string, SymbolViewProps['name']> = {
   'sparkles-outline': { android: 'auto_awesome', ios: 'sparkles' },
   water: { android: 'water', ios: 'water.waves' },
   visibility: { android: 'visibility', ios: 'eye' },
+  'visibility-off': { android: 'visibility_off', ios: 'eye.slash' },
+  mail: { android: 'mail', ios: 'envelope' },
+  settings: { android: 'settings', ios: 'gearshape' },
+  'chevron-forward': { android: 'chevron_right', ios: 'chevron.right' },
+  'moon-outline': { android: 'dark_mode', ios: 'moon' },
+  'shield-outline': { android: 'privacy_tip', ios: 'lock.shield' },
+  'help-outline': { android: 'help_outline', ios: 'questionmark.circle' },
+  logout: { android: 'logout', ios: 'rectangle.portrait.and.arrow.right' },
+  notifications: { android: 'notifications', ios: 'bell' },
 };
 
 export function Icon({ name, size = 24, color = colors.text }: IconProps) {

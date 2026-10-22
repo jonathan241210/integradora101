@@ -2,7 +2,7 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `@arca/tokens`, `@arca/api-client`
-- Estado: En progreso
+- Estado: Implementada
 - Solicitante / responsable funcional: Solicitante / responsable funcional (sin registrar nombre personal, según acuerdo en sesión)
 - Aprobación funcional: Solicitante / responsable funcional, 2026-10-09
 
@@ -62,6 +62,16 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     - *Prueba:* `test-ca-09`: pruebas de navegación y renderizado de detalles de eventos/misiones y selección de destino.
 - **CA-10 (Aventura, logros y colección):** La tarjeta de noticias no promociona misiones; una tarjeta separada conduce a Aventura en el Zoo. Los logros obtenidos y pendientes tienen lista y detalle propios, se pueden abrir desde Game y Perfil, filtrar por estado y ordenar por nombre o fecha de obtención. Los animales pendientes abren una vista previa con imagen difuminada y bloqueo de características y curiosidades; la acción invita a escanear el QR.
     - *Prueba:* `test-ca-10`: pruebas automatizadas de navegación, filtros/orden de logros y vista previa de animales pendientes.
+- **CA-11 (Acceso visual):** Dado el arranque sin sesión, cuando se abre la app, entonces se muestra el inicio de sesión con el panel de marca redondeado, sin el título «Login». Iniciar sesión con correo y contraseña, o Entrar como invitado, abre el inicio. Debajo del botón principal hay un separador «o» y el acceso de invitado en texto más pequeño. ¿Olvidaste tu contraseña? y Regístrate abren sus pantallas. Cerrar sesión en Ajustes vuelve al inicio de sesión. Nada de esto comprueba ni guarda una cuenta.
+    - *Prueba:* `test-ca-11`: resolución de la compuerta visual y navegación de Login.
+- **CA-12 (Registro visual):** Dada la pantalla de registro, cuando se muestra, entonces pide nombre de usuario, correo, contraseña y confirmación, y advierte que en esta versión la cuenta solo existe en pantalla: si se elimina la aplicación, esa información no se puede restaurar. Crear cuenta válida regresa a Login.
+    - *Prueba:* `test-ca-12`: campos, advertencia, confirmación distinta y regreso a Login.
+- **CA-13 (Recuperación visual):** Dado el olvido de contraseña, cuando se envía un correo, entonces la app muestra un aviso genérico que no revela si la cuenta existe y continúa a una pantalla con código de 6 dígitos, nueva contraseña y confirmación. Al completarla, vuelve a Login. En la demostración el correo no se envía y cualquier código de 6 dígitos permite continuar.
+    - *Prueba:* `test-ca-13`: aviso genérico, código incompleto y regreso a Login.
+- **CA-14 (Ajustes):** Dado Perfil, cuando se abre Ajustes desde el botón circular junto al título «Perfil», entonces se ve la ficha de ejemplo, los interruptores de notificaciones, modo oscuro y ubicación, y las filas Privacidad, Ayuda y soporte y Acerca de ARCA-NB. La pestaña Perfil permanece activa. Los interruptores solo cambian en pantalla. Cada fila abre su pantalla. No hay selector de idioma ni interruptor de sonidos.
+    - *Prueba:* `test-ca-14`: acceso desde Perfil, interruptores, filas y pestaña activa.
+- **CA-15 (Aviso de privacidad de demostración):** Dada Privacidad, cuando se muestra el aviso, entonces explica qué datos recopila la demostración, para qué se utilizarían, cómo se protegerían y cómo ejercer derechos. El texto se identifica como explicación de demostración; el aviso oficial lo publicará el zoológico.
+    - *Prueba:* `test-ca-15`: presencia de las cuatro secciones del aviso. La prueba comparte el caso de filas de `test-ca-14`.
 
 ## Reglas de negocio
 - **RN-01 (MVVM Obligatorio):** 
@@ -81,15 +91,20 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
 - **RN-07 (Contenido demostrativo):** El contenido de eventos y misiones en esta etapa es exclusivamente visual y simulado; los campos descriptivos e imágenes no implican integración con servicios ni reglas de negocio.
 - **RN-08 (Revelado gradual):** Los animales no descubiertos permiten abrir una vista previa y navegar al escáner, pero ocultan características, alimentación, curiosidades y datos científicos hasta su descubrimiento. Logros, puntajes, fechas y requisitos son información mock.
 - **RN-09 (Paleta institucional):** Los tokens móviles de marca derivan exclusivamente de los valores iniciales documentados en `docs/04-sistema-de-diseno.md`. El token semántico `danger` usa el valor compartido `#c34242`; los tintes mock específicos de especie se conservan solo como placeholders ilustrativos, no como colores de marca. No se consulta ni modifica `settings_colores`.
+- **RN-10 (Acceso solo visual):** Login, registro, recuperación, ajustes y cierre de sesión no crean sesión, no envían correo y no guardan credenciales ni preferencias. La cuenta real, la verificación de mayoría de edad, el avatar y el aviso oficial siguen en la spec `004`, todavía en borrador.
+- **RN-11 (Recuperación prevista):** La recuperación visual sigue el flujo ya descrito para la API: correo con respuesta genérica, código de 6 dígitos y nueva contraseña con confirmación. Esta versión no entrega el código.
+- **RN-12 (Preferencias de pantalla):** Los interruptores no activan notificaciones del sistema, no cambian el tema y no solicitan ubicación. La app permanece en modo claro.
+- **RN-13 (Aviso de demostración):** El texto de Privacidad explica el tratamiento de esta versión y el previsto al conectar la cuenta. No sustituye el aviso que debe proveer el zoológico.
 
 ## Datos, privacidad y auditoría
-En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `src/mocks/`. No hay persistencia de datos, manejo de sesiones ni acceso a información sensible del usuario.
+En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `src/mocks/`. La compuerta de Login vive en memoria y desaparece al recargar. No hay persistencia, tokens ni envío de credenciales. El aviso de Privacidad describe ese límite y el tratamiento previsto cuando la spec `004` conecte la cuenta.
 
 ## Flujos y errores
 - **Flujo Principal:** Home $\rightarrow$ Search $\rightarrow$ Animal Detail $\rightarrow$ Map.
 - **Flujo de Descubrimiento:** Scan $\rightarrow$ QR Result $\rightarrow$ Animal Detail.
-- **Flujo de Progreso:** Collection $\rightarrow$ Animal Detail.
-- **Manejo de Errores:** Se implementará una pantalla de "No encontrado" para rutas dinámicas (animal/[id]) donde el ID no coincida con los mocks.
+- **Flujo de Progreso:** Collection → Animal Detail.
+- **Flujo de acceso visual:** Login → Inicio, por sesión de demostración o como invitado. Login → Registro → Login. Login → Olvido de contraseña → Nueva contraseña → Login. Perfil → Ajustes → Mi cuenta, Privacidad, Ayuda o Acerca de. Ajustes → Cerrar sesión → Login.
+- **Manejo de Errores:** Se implementará una pantalla de "No encontrado" para rutas dinámicas (animal/[id]) donde el ID no coincida con los mocks. Los formularios de acceso muestran en español si faltan datos, el correo no tiene forma válida, las contraseñas no coinciden o el código no tiene 6 dígitos.
 
 ## Dependencias, riesgos y preguntas
 - **Dependencias/ADR:** ADR 0004 (Expo/Android), Spec 001 (Setup).
@@ -102,5 +117,7 @@ En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `sr
 ## Revisión
 - Aprobación funcional: Solicitante / responsable funcional, 2026-10-09.
 - Aprobación técnica del plan: Solicitante, 2026-10-09.
-- **Enmienda CA-07/RN-09:** Aprobada funcional y técnicamente el 2026-10-11; implementación y verificación completadas. La feature conserva el estado En progreso hasta el cierre del PR asociado.
-- Evidencia/enlaces: Referencia de UI en `apps/mobile/arca-ui-reference`
+- **Enmienda CA-07/RN-09:** Aprobada funcional y técnicamente el 2026-10-11; implementación y verificación completadas.
+- **Cierre de entrega:** PR aprobado e integrado vía DevOps / rama principal (confirmado equipo, 2026-10-14). Spec en estado **Implementada**.
+- **Enmienda de acceso y ajustes (CA-11 a CA-15, RN-10 a RN-13):** Confirmada por la persona solicitante el 2026-10-15. Agrega Login, registro, recuperación y Ajustes como interfaz de demostración, sin sustituir la spec `004`. El mismo día el equipo retiró Idioma y Sonidos y efectos: no forman parte del alcance.
+- Evidencia/enlaces: Referencia de UI en `apps/mobile/arca-ui-reference`; spec, plan y tasks en `apps/mobile/specs|plan|tasks/002-*`; guías en `apps/mobile/docs/002-mobile-ui-visitor-journey.md` y `apps/mobile/README.md`.

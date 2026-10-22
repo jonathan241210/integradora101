@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
 import { Alert, Badge, Button, Card, Field, SelectField, TextAreaField } from "@arca/ui";
-import { DemoBanner } from "@/components/DemoBanner";
 import { SectionHeading } from "@/components/SectionHeading";
 import type { DemoEnclosure } from "@/data/demo-data";
 
@@ -45,7 +44,6 @@ export function EnclosuresView({
         title="Modificación de recintos"
         description="Edita datos ficticios para revisar cómo se vería la administración de recintos."
       />
-      <DemoBanner />
       <Alert className="inline-feedback">
         Los cambios solo permanecen en esta página y desaparecen al recargar.
       </Alert>

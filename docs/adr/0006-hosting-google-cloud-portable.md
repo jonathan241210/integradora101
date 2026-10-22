@@ -1,7 +1,9 @@
 # 0006 · Google Cloud con portabilidad a MySQL Server local
 
-- Estado: Aceptado
+- Estado: Superseded por [0013](0013-aiven-managed-mysql.md)
 - Fecha: 2026-10-03
+
+> Nota (2026-10-15): la base de datos administrada es Aiven MySQL y Google Cloud dejó de ser el destino del sistema. Los principios de portabilidad de este ADR siguen vigentes a través del ADR 0013.
 - Spec relacionada: Por definir al iniciar despliegues
 
 ## Contexto

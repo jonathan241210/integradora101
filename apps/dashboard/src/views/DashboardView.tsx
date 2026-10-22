@@ -12,8 +12,12 @@ const metricIcons: Record<string, IconName> = {
 
 export function DashboardView({
   onNavigate,
+  canViewNews = true,
+  canViewEvents = true,
 }: {
   onNavigate: (section: DashboardSection) => void;
+  canViewNews?: boolean;
+  canViewEvents?: boolean;
 }) {
   return (
     <>
@@ -67,30 +71,34 @@ export function DashboardView({
       </Card>
 
       <div className="summary-grid">
-        <Card className="summary-card">
-          <div className="summary-card__icon">
-            <Icon name="news" />
-          </div>
-          <div>
-            <h2>Noticias <span>18</span></h2>
-            <p>Publicadas y en borrador · datos de muestra</p>
-          </div>
-          <Button variant="secondary" onClick={() => onNavigate("news")}>
-            Ir al módulo
-          </Button>
-        </Card>
-        <Card className="summary-card summary-card--green">
-          <div className="summary-card__icon">
-            <Icon name="calendar" />
-          </div>
-          <div>
-            <h2>Eventos <span>7</span></h2>
-            <p>Programación demostrativa del mes</p>
-          </div>
-          <Button variant="secondary" onClick={() => onNavigate("events")}>
-            Ir al módulo
-          </Button>
-        </Card>
+        {canViewNews && (
+          <Card className="summary-card">
+            <div className="summary-card__icon">
+              <Icon name="news" />
+            </div>
+            <div>
+              <h2>Noticias <span>18</span></h2>
+              <p>Publicadas y en borrador · datos de muestra</p>
+            </div>
+            <Button variant="secondary" onClick={() => onNavigate("news")}>
+              Ir al módulo
+            </Button>
+          </Card>
+        )}
+        {canViewEvents && (
+          <Card className="summary-card summary-card--green">
+            <div className="summary-card__icon">
+              <Icon name="calendar" />
+            </div>
+            <div>
+              <h2>Eventos <span>7</span></h2>
+              <p>Programación demostrativa del mes</p>
+            </div>
+            <Button variant="secondary" onClick={() => onNavigate("events")}>
+              Ir al módulo
+            </Button>
+          </Card>
+        )}
       </div>
 
       <Card className="recent-card">
