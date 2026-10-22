@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SearchScreen } from '../../screens/SearchScreen';
 import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
+import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 import { Animal } from '../../models';
 
 type Category = 'all' | NonNullable<Animal['category']>;
@@ -14,6 +15,7 @@ export default function SearchRoute() {
     destination?: string;
   }>();
   const { getAnimals } = useAnimalViewModel();
+  const { isOffline } = useNetworkStatus();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category>('all');
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -36,6 +38,7 @@ export default function SearchRoute() {
       query={query}
       activeFilter={category}
       selectForTour={selectForTour === 'true'}
+      isOffline={isOffline}
       backLabel={
         returnTo === 'tour-3d'
           ? 'Volver al recorrido 3D'

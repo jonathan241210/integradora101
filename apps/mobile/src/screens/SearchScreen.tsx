@@ -1,5 +1,5 @@
 import { View, FlatList, ScrollView, StyleSheet } from 'react-native';
-import { ScreenContainer, AppText, SearchBar, Chip, AnimalListItem, BackButton } from '../components/ui';
+import { ScreenContainer, AppText, SearchBar, Chip, AnimalListItem, BackButton, OfflineBanner } from '../components/ui';
 import { colors, spacing } from '../theme/tokens';
 import { Animal } from '../models';
 
@@ -9,6 +9,7 @@ interface SearchScreenProps {
   activeFilter: 'all' | NonNullable<Animal['category']>;
   selectForTour?: boolean;
   backLabel?: string;
+  isOffline?: boolean;
   onQueryChange: (query: string) => void;
   onFilterChange: (filter: SearchScreenProps['activeFilter']) => void;
   onAnimalPress: (id: string) => void;
@@ -21,6 +22,7 @@ export function SearchScreen({
   activeFilter,
   selectForTour = false,
   backLabel = 'Volver a inicio',
+  isOffline = false,
   onQueryChange,
   onFilterChange,
   onAnimalPress,
@@ -36,6 +38,7 @@ export function SearchScreen({
 
   return (
     <ScreenContainer scroll={false}>
+      {isOffline && <OfflineBanner />}
       <View style={styles.container}>
         <BackButton onPress={onBackPress} accessibilityLabel={backLabel} />
         <AppText variant="title" style={styles.title}>Explorar Animales</AppText>

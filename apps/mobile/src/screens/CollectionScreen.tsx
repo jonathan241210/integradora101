@@ -1,16 +1,17 @@
 import React from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
-import { ScreenContainer, AppText, ProgressBar, Chip, Card, ImageOrPlaceholder } from '../components/ui';
+import { ScreenContainer, AppText, ProgressBar, Chip, Card, ImageOrPlaceholder, OfflineBanner } from '../components/ui';
 import { colors, spacing, radius } from '../theme/tokens';
 import { Animal } from '../models';
 
 interface CollectionScreenProps {
   animals: Animal[];
   progress: { discovered: number; total: number };
+  isOffline?: boolean;
   onAnimalPress: (id: string) => void;
 }
 
-export function CollectionScreen({ animals, progress, onAnimalPress }: CollectionScreenProps) {
+export function CollectionScreen({ animals, progress, isOffline = false, onAnimalPress }: CollectionScreenProps) {
   const [filter, setFilter] = React.useState('all');
 
   const filteredAnimals = animals.filter(a => {
@@ -21,6 +22,7 @@ export function CollectionScreen({ animals, progress, onAnimalPress }: Collectio
 
   return (
     <ScreenContainer scroll={false}>
+      {isOffline && <OfflineBanner />}
       <View style={styles.header}>
         <AppText variant="title">Mi Colección</AppText>
         <View style={styles.progressCard}>

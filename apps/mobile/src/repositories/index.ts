@@ -18,6 +18,7 @@ export interface UserRepository {
 
 export interface ZooRepository {
   getEvents(): Promise<ZooEvent[]>;
+  getEventById(id: string): Promise<ZooEvent | null>;
   getNews(): Promise<News>;
 }
 
@@ -41,7 +42,6 @@ export class AnimalRepositoryImpl implements AnimalRepository {
   }
 
   async getFeaturedAnimals(): Promise<Animal[]> {
-    // For demo, return first 3 animals as featured
     return Promise.resolve(MOCK_ANIMALS.slice(0, 3));
   }
 }
@@ -77,6 +77,11 @@ export class ZooRepositoryImpl implements ZooRepository {
     return Promise.resolve(MOCK_EVENTS);
   }
 
+  async getEventById(id: string): Promise<ZooEvent | null> {
+    const event = MOCK_EVENTS.find(e => e.id === id);
+    return Promise.resolve(event !== undefined ? event : null);
+  }
+
   async getNews(): Promise<News> {
     return Promise.resolve(MOCK_NEWS);
   }
@@ -96,4 +101,36 @@ export class QrRepositoryImpl implements QrRepository {
   async simulateScan(outcome: QrOutcome): Promise<QrSimulation> {
     return MOCK_QR_SIMULATIONS[outcome];
   }
+}
+
+// Exportamos las implementaciones reales con API y caché
+export { ApiAnimalRepository } from './apiAnimalRepository';
+export { ApiZooRepository } from './apiZooRepository';
+export * from './mappers';
+export * from './storage';
+
+/**
+ * Factorías que resuelven si se usan mocks o la API real según variable de entorno.
+ */
+import { ApiAnimalRepository } from './apiAnimalRepository';
+import { ApiZooRepository } from './apiZooRepository';
+
+export function createAnimalRepository(): AnimalRepository {
+  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
+    return new AnimalRepositoryImpl();
+  }
+  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+    return new AnimalRepositoryImpl();
+  }
+  return new ApiAnimalRepository();
+}
+
+export function createZooRepository(): ZooRepository {
+  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
+    return new ZooRepositoryImpl();
+  }
+  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+    return new ZooRepositoryImpl();
+  }
+  return new ApiZooRepository();
 }

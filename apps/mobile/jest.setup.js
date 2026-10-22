@@ -1,3 +1,15 @@
+jest.mock('@react-native-async-storage/async-storage', () =>
+  require('@react-native-async-storage/async-storage/jest/async-storage-mock')
+);
+
+jest.mock('expo-network', () => ({
+  useNetworkState: jest.fn(() => ({
+    type: 'WIFI',
+    isConnected: true,
+    isInternetReachable: true,
+  })),
+}));
+
 jest.mock('react-native-safe-area-context', () => {
   const RNActual = jest.requireActual('react-native-safe-area-context');
   return {
