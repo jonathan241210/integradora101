@@ -150,7 +150,7 @@ export type ViewState = 'loading' | 'success' | 'empty' | 'error' | 'offline';
 2. **`success`:** Renderiza el contenido con los datos obtenidos.
 3. **`empty`:** Se activa cuando `data` es un arreglo vacío (`[]`). Muestra una ilustración o texto descriptivo (ej. *"No hay eventos programados para este día"*).
 4. **`error`:** Ocurre ante un fallo 500 o de servicio. Muestra un mensaje amigable y un botón **"Reintentar"** (`onRetry`).
-5. **`offline`:** Se activa cuando no hay red pero existen datos previos en caché local. Muestra los datos antiguos junto con un banner o pastilla discreta: *"Modo sin conexión"*.
+5. **`offline`:** Se activa cuando `expo-network` reporta falta de conexión (`isConnected === false` o `isInternetReachable === false`) y existen datos previos en caché local. Muestra los datos antiguos junto con un banner o pastilla discreta: *"Modo sin conexión"*.
 
 ---
 
@@ -164,7 +164,7 @@ Dado que en el zoológico la señal móvil puede ser irregular, la aplicación a
   1. El Repositorio revisa si existen datos en caché local.
   2. Si existen, los entrega inmediatamente a la UI para que la pantalla cargue sin demoras.
   3. En segundo plano, consulta la API: si hay datos actualizados, actualiza la caché y refresca la UI silenciosamente.
-  4. Si la consulta de red falla, conserva los datos de la caché y conmuta al estado `offline`.
+  4. Si la consulta de red falla, conserva los datos de la caché; el estado `offline` lo determina `useNetworkStatus` con `expo-network` (ADR 0014), no el fallo HTTP aislado.
 
 ### 7.2 Progreso y Escaneos QR (Aksel · `mobile-005`, `mobile-006`)
 - **Estrategia:** Cola local persistente (*Offline Sync Queue*).

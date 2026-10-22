@@ -2,11 +2,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { HomeScreen } from '../../screens/HomeScreen';
 import { useHomeViewModel } from '../../viewmodels/useHomeViewModel';
+import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 import { Animal, News, ZooEvent } from '../../models';
 
 export default function HomeRoute() {
   const router = useRouter();
   const { loadHomeData } = useHomeViewModel();
+  const { isOffline } = useNetworkStatus();
   const [featuredAnimals, setFeaturedAnimals] = useState<Animal[]>([]);
   const [events, setEvents] = useState<ZooEvent[]>([]);
   const [news, setNews] = useState<News>({ title: '', body: '' });
@@ -42,6 +44,7 @@ export default function HomeRoute() {
       news={news}
       loading={loading}
       error={error}
+      isOffline={isOffline}
       onRetry={reload}
       onSeeAllAnimalsPress={() => router.push('/search')}
       onAnimalPress={(id) => router.push({ pathname: '/animal/[id]', params: { id } })}

@@ -74,8 +74,8 @@ La arquitectura de conexión, contratos y manejo de errores para las siguientes 
 
 ## 10. Datos y flujo
 
-La etapa 003 incorpora una estrategia de caché local *Stale-While-Revalidate* (SWR) con un tiempo de vida (TTL) de 5 minutos (300,000 ms) a través de una abstracción `KeyValueStorage` (`src/repositories/storage.ts`).
-Cuando hay datos en caché válidos se retornan inmediatamente; en caso de fallo de red se utiliza el caché disponible mostrando una alerta no intrusiva (`OfflineBanner`).
+La etapa 003 incorpora una estrategia de caché local *Stale-While-Revalidate* (SWR) con un tiempo de vida (TTL) de 5 minutos (300,000 ms) a través de una abstracción `KeyValueStorage` (`src/repositories/storage.ts`), persistida con `@react-native-async-storage/async-storage` (ADR 0014).
+Cuando hay datos en caché válidos se retornan inmediatamente; si la red falla se conserva el caché disponible. El banner `OfflineBanner` se muestra cuando `expo-network` reporta falta de conexión mediante `useNetworkStatus` (`isConnected === false` o `isInternetReachable === false`), no por un fallo HTTP aislado.
 Las pantallas manejan 5 estados de presentación: carga (`loading`), éxito (`success`), error con reintento accesible (`error`), datos vacíos (`empty`) y modo sin conexión (`offline`).
 La autoridad de datos de negocio reside en el servidor/API Laravel.
 Persistencia de cuenta y sincronización de colecciones/QR pertenecen a las specs futuras 004, 005 y 006.

@@ -3,11 +3,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { EventDetailScreen } from '../../screens/EventDetailScreen';
 import { ZooEvent } from '../../models';
 import { useHomeViewModel } from '../../viewmodels/useHomeViewModel';
+import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 
 export default function EventDetailRoute() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getEventDetails } = useHomeViewModel();
+  const { isOffline } = useNetworkStatus();
   const [event, setEvent] = useState<ZooEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,6 +45,7 @@ export default function EventDetailRoute() {
       event={event}
       loading={loading}
       error={error}
+      isOffline={isOffline}
       onBackPress={() => router.back()}
     />
   );

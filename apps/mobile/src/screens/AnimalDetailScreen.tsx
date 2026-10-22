@@ -10,6 +10,7 @@ import {
   Icon,
   ImageOrPlaceholder,
   LocationPill,
+  OfflineBanner,
   SectionTitle,
   Stat,
 } from '../components/ui';
@@ -19,6 +20,7 @@ interface AnimalDetailProps {
   animal: Animal | null;
   loading?: boolean;
   error?: string | null;
+  isOffline?: boolean;
   onRetry?: () => void;
   onBackPress?: () => void;
   onNavigatePress?: () => void;
@@ -28,6 +30,7 @@ export function AnimalDetailScreen({
   animal,
   loading = false,
   error = null,
+  isOffline = false,
   onBackPress,
   onNavigatePress,
 }: AnimalDetailProps) {
@@ -51,10 +54,16 @@ export function AnimalDetailScreen({
   }
 
   const isDiscovered = Boolean(animal.isDiscovered);
+  const stats = [
+    { label: 'Peso', value: animal.stats?.avgWeight?.trim() },
+    { label: 'Tamaño', value: animal.stats?.size?.trim() },
+    { label: 'Vida', value: animal.stats?.lifeExpectancy?.trim() },
+  ].filter((stat): stat is { label: string; value: string } => Boolean(stat.value));
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: spacing.xxl }}>
+        {isOffline && <OfflineBanner />}
         <View>
           <ImageOrPlaceholder
             source={animal.imageUrl?.trim() ? { uri: animal.imageUrl.trim() } : null}
@@ -97,14 +106,16 @@ export function AnimalDetailScreen({
 
           {isDiscovered ? (
             <>
-              <Card style={styles.card}>
-                <SectionTitle icon="information-circle-outline" text="Características" />
-                <View style={styles.statsRow}>
-                  <Stat label="Peso" value={animal.stats?.avgWeight} />
-                  <Stat label="Tamaño" value={animal.stats?.size} />
-                  <Stat label="Vida" value={animal.stats?.lifeExpectancy} />
-                </View>
-              </Card>
+              {stats.length > 0 ? (
+                <Card style={styles.card}>
+                  <SectionTitle icon="information-circle-outline" text="Características" />
+                  <View style={styles.statsRow}>
+                    {stats.map((stat) => (
+                      <Stat key={stat.label} label={stat.label} value={stat.value} />
+                    ))}
+                  </View>
+                </Card>
+              ) : null}
 
               <Card style={styles.card}>
                 <SectionTitle icon="restaurant-outline" text="Alimentación" />

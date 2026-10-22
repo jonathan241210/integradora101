@@ -64,6 +64,18 @@ describe('Exploration Core Views', () => {
     expect(getByText(/Sector Felinos/)).toBeTruthy();
   });
 
+  it('test-ca-08: oculta las estadísticas sin dato en lugar de mostrar N/A', async () => {
+    const animal = {
+      ...MOCK_ANIMALS[0],
+      stats: { avgWeight: '', size: '3 m', lifeExpectancy: '15 años' },
+    };
+    const view = await render(<AnimalDetailScreen animal={animal} />);
+
+    expect(view.queryByText('Peso')).toBeNull();
+    expect(view.getByText('Tamaño')).toBeTruthy();
+    expect(view.getByText('Vida')).toBeTruthy();
+  });
+
   it('test-ca-04: el detalle muestra si el animal está descubierto', async () => {
     const discovered = await render(<AnimalDetailScreen animal={MOCK_ANIMALS[0]} />);
     expect(discovered.getByText('Descubierto')).toBeTruthy();

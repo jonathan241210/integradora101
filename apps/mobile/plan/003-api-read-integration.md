@@ -49,10 +49,10 @@ flowchart TD
 | **Adaptadores y Mapeo** | `apps/mobile/src/repositories/mappers.ts` | Normalización de payloads de API en `snake_case` a modelos de dominio en `camelCase` (`Animal`, `ZooEvent`). |
 | **Contratos de Repositorio** | `apps/mobile/src/repositories/index.ts` | Ampliación de la interfaz `ZooRepository` (`getEventById`) y exportación centralizada mediante factoría según `EXPO_PUBLIC_USE_MOCKS`. |
 | **Capa de Presentación / UI** | `apps/mobile/src/components/ui/OfflineBanner.tsx`<br>`apps/mobile/src/components/ui/StateViews.tsx`<br>`apps/mobile/src/components/ui/RemoteImage.tsx` | Componentes reutilizables para banner offline, estados de carga/error/vacío y fallback tolerante a fallos de imágenes. |
-| **ViewModels** | `apps/mobile/src/viewmodels/useHomeViewModel.ts`<br>`apps/mobile/src/viewmodels/useAnimalViewModel.ts`<br>`apps/mobile/src/viewmodels/useEventViewModel.ts` | Exposición tipada de los 5 estados (`ViewState`) y manejo de reintentos (`retry`). |
-| **Rutas y Vistas** | `apps/mobile/src/screens/HomeScreen.tsx`<br>`apps/mobile/src/screens/AnimalDetailScreen.tsx`<br>`apps/mobile/src/app/(tabs)/index.tsx`<br>`apps/mobile/src/app/animal/[id].tsx`<br>`apps/mobile/src/app/(tabs)/event-detail.tsx` | Enlace de las pantallas móviles para mostrar los datos reales de animales y eventos con los 5 estados de UI. |
+| **ViewModels** | `apps/mobile/src/viewmodels/useHomeViewModel.ts`<br>`apps/mobile/src/viewmodels/useAnimalViewModel.ts`<br>`apps/mobile/src/viewmodels/useEventViewModel.ts`<br>`apps/mobile/src/viewmodels/useNetworkStatus.ts` | Exposición tipada de los 5 estados (`ViewState`), reintentos (`retry`) y conectividad (`isOffline`). |
+| **Rutas y Vistas** | `apps/mobile/src/screens/HomeScreen.tsx`<br>`apps/mobile/src/screens/CollectionScreen.tsx`<br>`apps/mobile/src/screens/SearchScreen.tsx`<br>`apps/mobile/src/screens/AnimalDetailScreen.tsx`<br>`apps/mobile/src/screens/EventDetailScreen.tsx`<br>`apps/mobile/src/app/(tabs)/index.tsx`<br>`apps/mobile/src/app/(tabs)/collection.tsx`<br>`apps/mobile/src/app/(tabs)/search.tsx`<br>`apps/mobile/src/app/animal/[id].tsx`<br>`apps/mobile/src/app/(tabs)/event-detail.tsx` | Enlace de las pantallas móviles para mostrar los datos reales de animales y eventos con los 5 estados de UI y el banner offline. |
 | **Datos de Prueba (Backend/BD)** | `docs/database/fixtures/sample-catalog-events.sql` | Registros de prueba de catálogo y eventos en `arca_pruebas` para pruebas locales y en emulador. |
-| **Pruebas Automatizadas** | `apps/mobile/src/__tests__/apiAnimalRepository.test.ts`<br>`apps/mobile/src/__tests__/apiZooRepository.test.ts`<br>`apps/mobile/src/__tests__/catalogUiStates.test.ts` | Tests unitarios Jest que cubren `CA-01` a `CA-07` con cliente simulado y `--runInBand`. |
+| **Pruebas Automatizadas** | `apps/mobile/__tests__/apiAnimalRepository.test.ts`<br>`apps/mobile/__tests__/apiZooRepository.test.ts`<br>`apps/mobile/__tests__/catalogUiStates.test.tsx`<br>`apps/mobile/__tests__/networkStatus.test.tsx` | Tests unitarios Jest que cubren `CA-01` a `CA-07` con cliente simulado y `--runInBand`. |
 
 ---
 
@@ -67,51 +67,55 @@ flowchart TD
 | `GET` | `/events` | Ninguna | `{ data: EventApiResponse[] }` | `ZooEvent[]` |
 | `GET` | `/events/{id}` | Ninguna | `{ data: EventDetailApiResponse }` | `ZooEvent` |
 
-### 2. Estructura de mapeo (snake_case a camelCase)
+### 2. Estructura de mapeo real (snake_case a camelCase)
+
+`mappers.ts` tolera el contrato de `api-006` y campos legados:
 
 ```typescript
 // SpeciesApiResponse -> Animal
 {
-  id: String(apiSpecies.id),
-  nickname: apiSpecies.common_name,
-  commonName: apiSpecies.common_name,
-  scientificName: apiSpecies.scientific_name,
-  imageUrl: apiSpecies.image_url ?? undefined,
-  category: apiSpecies.category, // 'mammals' | 'birds' | 'reptiles' | 'aquatic'
-  zone: apiSpecies.zone_name ?? 'Zona General',
-  isDiscovered: false, // Fuera de alcance en esta spec (reservado para mobile-005)
-  placeholderTint: apiSpecies.placeholder_tint ?? '#8A9A5B',
+  id: String(item.id),
+  nickname: item.common_name,
+  commonName: item.common_name,
+  scientificName: item.scientific_name,
+  imageUrl: item.image_url ?? item.photo_path ?? undefined,
+  category: normalizeCategory(item.category),
+  zone: item.zone_name ?? 'Zona General',
+  isDiscovered: false, // Fuera de alcance en mobile-003, reservado para mobile-005
+  placeholderTint: item.placeholder_tint ?? '#8A9A5B',
   stats: {
-    avgWeight: apiSpecies.avg_weight ?? '',
-    size: apiSpecies.size ?? '',
-    lifeExpectancy: apiSpecies.life_expectancy ?? '',
+    avgWeight: item.avg_weight ?? '',
+    size: item.size ?? (item.size_cm ? `${item.size_cm} cm` : ''),
+    lifeExpectancy: item.life_expectancy ?? item.longevity ?? '',
   },
-  diet: apiSpecies.diet_description ?? '',
-  curiosities: apiSpecies.curiosities ?? '',
-  funFact: apiSpecies.fun_fact ?? '',
+  diet: item.diet ?? item.diet_description,
+  curiosities: item.curiosities ?? item.characteristics,
+  funFact: item.fun_fact,
 }
 
 // EventApiResponse -> ZooEvent
 {
-  id: String(apiEvent.id),
-  title: apiEvent.title,
-  date: apiEvent.date,
-  time: apiEvent.time,
-  location: apiEvent.location,
-  description: apiEvent.description,
-  imageUrls: apiEvent.image_urls ?? [],
+  id: String(item.id),
+  title: item.name ?? item.title ?? 'Evento en el Zoológico',
+  date: item.start_date ?? item.date ?? '',
+  time: item.start_time ? `${item.start_time.substring(0, 5)} hrs` : item.time ?? '',
+  location: item.location ?? 'Nicolás Bravo',
+  description: item.description ?? '',
+  imageUrls: item.image_path ? [item.image_path] : item.image_urls ?? undefined,
 }
 ```
+
+Los campos que `api-006` no expone (`avg_weight`, `fun_fact`, `placeholder_tint`) quedan vacíos o con el valor por defecto; la UI oculta las estadísticas vacías (por ejemplo, «Peso») en lugar de mostrar tarjetas sin contenido.
 
 ### 3. Base de datos y datos de prueba
 
 - **Esquema de BD:** Esta spec móvil no altera el esquema. Utiliza las tablas existentes en `arca_pruebas`:
-  - `species` (columnas: `id`, `common_name`, `scientific_name`, `category`, `description`, etc.)
-  - `animals` (columnas: `id`, `species_id`, `nickname`, `enclosure_id`, etc.)
-  - `enclosures` (columnas: `id`, `name`, `zone`, etc.)
-  - `events` (columnas: `id`, `title`, `description`, `start_date`, `end_date`, `location`, etc.)
+  - `species` (`id`, `common_name`, `scientific_name`, `category`, `distribution`, `conservation_status`, `habitat`, `gestation_period`, `size_cm`, `model_3d_path`).
+  - `animals` (`id`, `species_id`, `enclosure_id`, `photo_path`, `longevity`, `diet`, `characteristics`, `entry_date`, `stay_status`).
+  - `enclosures` (`id`, `name`).
+  - `events` (`id`, `name`, `description`, `image_path`, `start_date`, `end_date`, `start_time`, `end_time`, `location`, `is_active`).
 - **Registros de prueba para desarrollo/emulador:**
-  Para verificar en emulador y que la pantalla móvil muestre eventos y animales reales, se proveerá un script SQL de datos de prueba (`docs/database/fixtures/sample-catalog-events.sql`) aplicable en `arca_pruebas` que introduce:
+  Para verificar en emulador y que la pantalla móvil muestre eventos y animales reales, se provee un script SQL de datos de prueba (`docs/database/fixtures/sample-catalog-events.sql`) aplicable en `arca_pruebas` que introduce:
   - 5 especies de prueba con fotos y datos educativos (Jaguar, León, Guacamaya Verde, Cocodrilo de Pantano, Nutria de Río).
   - 3 eventos del zoológico de prueba (Plática Educativa de Felinos, Taller Infantil de Huellas, Alimentación de Aves).
 
@@ -123,12 +127,14 @@ flowchart TD
    - No se envían credenciales ni cabeceras `Authorization` para estos endpoints.
    - Las URLs base se configuran a través de `process.env.EXPO_PUBLIC_API_URL`.
    - No se exponen claves de base de datos ni tokens en la app móvil.
-2. **Estrategia Offline y Almacenamiento Local:**
+2. **Estrategia Offline y Almacenamiento Local (ADR 0014):**
+   - Persistencia real con `@react-native-async-storage/async-storage`; `MemoryKeyValueStorage` queda disponible solo para inyección en pruebas.
+   - Detección de conectividad con `expo-network` mediante `useNetworkStatus` (`isConnected === false` o `isInternetReachable === false`). El estado offline **no** se infiere de un fallo HTTP.
    - Llaves en `AsyncStorage`:
      - `@arca:cache:species_list`
      - `@arca:cache:species:{id}`
      - `@arca:cache:events_list`
-     - `@arca:cache:events:{id}`
+     - `@arca:cache:event:{id}`
    - Estructura del registro de caché:
      ```typescript
      interface CacheEnvelope<T> {
@@ -139,8 +145,10 @@ flowchart TD
      ```
    - Algoritmo:
      - Si `Date.now() - cachedAt < ttlMs`: Retornar `data` fresco. Estado: `success`.
-     - Si `Date.now() - cachedAt >= ttlMs`: Retornar `data` existente e iniciar `fetch` en segundo plano. Si el `fetch` tiene éxito, actualizar caché y notificar a la UI. Si falla, retener `data` y marcar `isOffline = true`.
+     - Si `Date.now() - cachedAt >= ttlMs`: Retornar `data` existente e iniciar `fetch` en segundo plano. Si el `fetch` tiene éxito, actualizar caché. Si falla, retener `data` y mostrar el banner según `useNetworkStatus`.
      - Si no hay caché y el `fetch` falla: Emitir `error` para renderizar pantalla de error con reintento.
+   - El banner `OfflineBanner` se muestra en Inicio, Colección, Búsqueda y los detalles de animal y evento cuando `isOffline` es verdadero.
+   - Solo se guardan datos públicos del catálogo; nunca tokens, credenciales ni datos personales.
 
 ---
 
@@ -148,13 +156,13 @@ flowchart TD
 
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
-| **CA-01** (Listado de animales desde API vía `@arca/api-client`) | `should fetch and map species list from API using createHttpClient and camelCase format` | `apps/mobile/src/__tests__/apiAnimalRepository.test.ts` |
-| **CA-02** (Detalle de animal desde API) | `should fetch species detail by ID or return null on 404` | `apps/mobile/src/__tests__/apiAnimalRepository.test.ts` |
-| **CA-03** (Listado y detalle de eventos desde API) | `should fetch events list and event detail by ID using ApiZooRepository` | `apps/mobile/src/__tests__/apiZooRepository.test.ts` |
-| **CA-04** (Gestión de los 5 estados de UI: loading, empty, error, success, offline) | `should render loading skeleton, empty state, error view with retry, and offline banner` | `apps/mobile/src/__tests__/catalogUiStates.test.ts` |
-| **CA-05** (Caché SWR y TTL de 5 minutos) | `should return cached data immediately and revalidate in background when TTL > 5 mins` | `apps/mobile/src/__tests__/apiAnimalRepository.test.ts` |
-| **CA-06** (Imágenes con respaldo y tolerancia a fallos) | `should display placeholder tint and fallback component when image fails or loads` | `apps/mobile/src/__tests__/remoteImage.test.ts` |
-| **CA-07** (Arquitectura MVVM y ejecución Jest `--runInBand`) | `suite passes with no direct fetch in screens and covers all CA-xx tags` | `apps/mobile/src/__tests__/*` |
+| **CA-01** (Listado de animales desde API vía `@arca/api-client`) | `should fetch and map species list from API using createHttpClient and camelCase format` | `apps/mobile/__tests__/apiAnimalRepository.test.ts` |
+| **CA-02** (Detalle de animal desde API) | `should fetch species detail by ID or return null on 404` | `apps/mobile/__tests__/apiAnimalRepository.test.ts` |
+| **CA-03** (Listado y detalle de eventos desde API) | `should fetch events list and event detail by ID using ApiZooRepository` | `apps/mobile/__tests__/apiZooRepository.test.ts` |
+| **CA-04** (Gestión de los 5 estados de UI: loading, empty, error, success, offline) | `CA-04: OfflineBanner se muestra cuando isOffline es verdadero` + `useNetworkStatus` marca offline con `isConnected: false` | `apps/mobile/__tests__/catalogUiStates.test.tsx`, `apps/mobile/__tests__/networkStatus.test.tsx` |
+| **CA-05** (Caché SWR y TTL de 5 minutos) | `should return cached data immediately and revalidate in background when TTL > 5 mins` | `apps/mobile/__tests__/apiAnimalRepository.test.ts` |
+| **CA-06** (Imágenes con respaldo y tolerancia a fallos) | `should display placeholder tint and fallback component when image fails or loads` | `apps/mobile/__tests__/catalogUiStates.test.tsx` |
+| **CA-07** (Arquitectura MVVM y ejecución Jest `--runInBand`) | `suite passes with no direct fetch in screens and covers all CA-xx tags` | `apps/mobile/__tests__/*` |
 
 ---
 
@@ -162,7 +170,7 @@ flowchart TD
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
-| **I. Stack mínimo y portable** | SÍ | Se utiliza el stack declarado (React Native / Expo con TypeScript, `@arca/api-client` y `AsyncStorage`). La BD es MySQL 8.4.11 / Aiven sin dependencias propietarias de nube. |
+| **I. Stack mínimo y portable** | SÍ | Se utiliza el stack declarado (React Native / Expo con TypeScript, `@arca/api-client`) y dos dependencias aprobadas por el ADR 0014: `@react-native-async-storage/async-storage` y `expo-network`. La BD es MySQL 8.0.x compatible, en Aiven o local, sin dependencias propietarias de nube. |
 | **II. La spec manda** | SÍ | La spec `apps/mobile/specs/003-api-read-integration.md` está en estado **Aprobada**. Este plan cubre exactamente su alcance sin añadir funcionalidades no contempladas. |
 | **III. Lógica separada de la interfaz** | SÍ | Las pantallas (`screens/`) no realizan llamadas HTTP. Toda la comunicación con la API se delega en Repositorios y `@arca/api-client`. Los ViewModels gestionan el estado y las vistas solo renderizan. |
 | **IV. Un test por criterio** | SÍ | Cada criterio `CA-01` a `CA-07` tiene asignada una prueba unitaria específica en Jest nombrada con el código del criterio. |
@@ -176,6 +184,7 @@ flowchart TD
 - **ADRs aplicables:**
   - [ADR 0004](../../../docs/adr/0004-mobile-react-native.md): React Native y Expo para aplicación de visitantes.
   - [ADR 0011](../../../docs/adr/0011-visitor-identity-and-mobile-session.md): Desacoplamiento de cliente público y arquitectura de sesión.
+  - [ADR 0014](../../../docs/adr/0014-mobile-offline-cache-and-connectivity.md): caché offline con AsyncStorage y detección de conectividad con `expo-network` (Aceptado, 2026-10-22).
 - **Riesgo:** Si los endpoints Laravel aún no están desplegados en el backend mientras se prueba la UI en dispositivo.
   - **Mitigación:** La arquitectura conserva el switch `EXPO_PUBLIC_USE_MOCKS`. Si la variable está en `true`, la app utiliza los mocks locales; si está en `false`, conecta a la API real. De este modo el desarrollo no se bloquea.
 - **Riesgo:** Concurrencia de hilos en pruebas Jest bajo entorno Windows.
@@ -202,4 +211,5 @@ flowchart TD
 
 ### Aprobación:
 - **Aprobador funcional y técnico:** Víctor Adrián (2026-10-20)
+- **ADR 0014 (caché y conectividad):** aceptado por Víctor Adrián (2026-10-22)
 - **Coordinación móvil:** Aksel

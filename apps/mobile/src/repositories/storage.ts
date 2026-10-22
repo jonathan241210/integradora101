@@ -1,6 +1,8 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 /**
  * Abstracción de almacenamiento clave-valor asíncrono.
- * Compatible con AsyncStorage y entornos sin dependencias nativas instaladas.
+ * Permite inyectar una implementación en memoria en pruebas.
  */
 export interface KeyValueStorage {
   getItem(key: string): Promise<string | null>;
@@ -9,7 +11,7 @@ export interface KeyValueStorage {
   clear(): Promise<void>;
 }
 
-class MemoryKeyValueStorage implements KeyValueStorage {
+export class MemoryKeyValueStorage implements KeyValueStorage {
   private readonly store = new Map<string, string>();
 
   async getItem(key: string): Promise<string | null> {
@@ -29,4 +31,8 @@ class MemoryKeyValueStorage implements KeyValueStorage {
   }
 }
 
-export const defaultStorage: KeyValueStorage = new MemoryKeyValueStorage();
+/**
+ * Caché persistente del catálogo público (ADR 0014).
+ * Solo guarda datos públicos; nunca tokens ni datos personales.
+ */
+export const defaultStorage: KeyValueStorage = AsyncStorage;
