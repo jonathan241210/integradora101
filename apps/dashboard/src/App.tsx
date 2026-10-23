@@ -10,15 +10,17 @@ import { PwaRedirectView } from "@/views/PwaRedirectView";
 import { TicketHistoryView } from "@/views/TicketHistoryView";
 import { TicketReportView } from "@/views/TicketReportView";
 import { TicketSaleView } from "@/views/TicketSaleView";
-import { TicketUsersView } from "@/views/TicketUsersView";
+import { UsersView } from "@/views/UsersView";
 import { TwoFactorChallengeView } from "@/views/TwoFactorChallengeView";
 import { TwoFactorSetupView } from "@/views/TwoFactorSetupView";
+import { usersApi } from "@/services/arca-api";
 import {
   getNavigationForProfile,
   getPresentationProfile,
 } from "@/viewmodels/navigation";
 import { useAuthSession } from "@/viewmodels/useAuthSession";
 import { useDashboardDemo } from "@/viewmodels/useDashboardDemo";
+import { useUsers } from "@/viewmodels/useUsers";
 import type { DashboardSection } from "@/viewmodels/dashboard-demo";
 import { DashboardView } from "./views/DashboardView";
 
@@ -29,7 +31,8 @@ const sectionTitles: Record<DashboardSection, string> = {
   tickets: "Venta de boletos",
   reports: "Reporte de boletos",
   enclosures: "Modificación de recintos",
-  "ticket-users": "Usuarios de taquilla",
+  users: "Gestión de usuarios",
+  "ticket-users": "Personal operativo",
   "ticket-history": "Historial de boletos",
 };
 
@@ -48,6 +51,15 @@ function App() {
     ? getPresentationProfile(profile.home)
     : null;
   const navigation = profile ? getNavigationForProfile(profile) : [];
+  const activeSection = navigation.some(
+    (item) => item.id === demo.state.activeSection,
+  )
+    ? demo.state.activeSection
+    : navigation[0]?.id ?? null;
+  const users = useUsers(
+    usersApi,
+    activeSection === "users" || activeSection === "ticket-users",
+  );
 
   useEffect(() => {
     if (session.state.status === "authenticated" && presentationProfile) {
@@ -139,12 +151,6 @@ function App() {
       />
     );
   }
-
-  const activeSection = navigation.some(
-    (item) => item.id === demo.state.activeSection,
-  )
-    ? demo.state.activeSection
-    : navigation[0]?.id ?? null;
 
   const navigate = (section: DashboardSection) => {
     if (!navigation.some((item) => item.id === section)) return;
@@ -296,7 +302,7 @@ function App() {
         </header>
 
         <main className="dashboard-content" ref={contentRef}>
-          <DemoBanner />
+          {activeSection !== "users" && activeSection !== "ticket-users" && <DemoBanner />}
           {demo.state.notice && (
             <Alert className="global-feedback" role="status" aria-live="polite">
               {demo.state.notice}
@@ -340,10 +346,14 @@ function App() {
               onUpdate={demo.updateEnclosure}
             />
           )}
-          {activeSection === "ticket-users" && (
-            <TicketUsersView
-              users={demo.state.ticketUsers}
-              onAdd={demo.addTicketUser}
+          {(activeSection === "users" || activeSection === "ticket-users") && (
+            <UsersView
+              title={activeSection === "users" ? "Gestión de usuarios" : "Personal operativo"}
+              state={users.state}
+              onSave={users.save}
+              onDeactivate={users.deactivate}
+              onRetry={() => void users.retry()}
+              onClearNotice={users.clearNotice}
             />
           )}
           {activeSection === "ticket-history" && <TicketHistoryView />}

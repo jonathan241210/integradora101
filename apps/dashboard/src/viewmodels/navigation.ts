@@ -32,10 +32,6 @@ const administrationNavigation: {
     item: { id: "enclosures", label: "Modificación de recintos", icon: "building" },
     permission: "enclosures.manage",
   },
-  {
-    item: { id: "ticket-users", label: "Usuarios de taquilla", icon: "users" },
-    permission: ["users.manage", "operational-staff.manage"],
-  },
 ];
 
 const executiveNavigation: {
@@ -92,11 +88,21 @@ export function getNavigationForProfile(
           ? ticketNavigation
           : [];
 
-  return candidates
+  const items = candidates
     .filter(({ permission }) =>
       Array.isArray(permission)
         ? permission.some((item) => permissions.has(item))
         : permissions.has(permission),
     )
     .map(({ item }) => item);
+
+  if (profile.home === "administration") {
+    if (permissions.has("users.manage")) {
+      items.push({ id: "users", label: "Gestión de usuarios", icon: "users" });
+    } else if (permissions.has("operational-staff.manage")) {
+      items.push({ id: "ticket-users", label: "Personal operativo", icon: "users" });
+    }
+  }
+
+  return items;
 }

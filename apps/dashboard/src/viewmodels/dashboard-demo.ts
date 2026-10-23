@@ -1,8 +1,6 @@
 import {
   demoEnclosures,
-  demoTicketUsers,
   type DemoEnclosure,
-  type DemoTicketUser,
 } from "../data/demo-data";
 
 export type DashboardSection =
@@ -12,6 +10,7 @@ export type DashboardSection =
   | "tickets"
   | "reports"
   | "enclosures"
+  | "users"
   | "ticket-users"
   | "ticket-history";
 
@@ -25,7 +24,6 @@ export type DashboardDemoState = {
   mobileMenuOpen: boolean;
   saleStep: SaleStep;
   notice: string;
-  ticketUsers: DemoTicketUser[];
   enclosures: DemoEnclosure[];
 };
 
@@ -42,7 +40,6 @@ export type DashboardDemoAction =
       description: string;
       status: DemoEnclosure["status"];
     }
-  | { type: "add-ticket-user"; name: string; username: string; password: string }
   | { type: "open-sale" }
   | { type: "cancel-sale" }
   | { type: "begin-sale" }
@@ -55,7 +52,6 @@ export const initialDashboardDemoState: DashboardDemoState = {
   mobileMenuOpen: false,
   saleStep: "idle",
   notice: "",
-  ticketUsers: demoTicketUsers,
   enclosures: demoEnclosures,
 };
 
@@ -65,6 +61,7 @@ const adminSections: DashboardSection[] = [
   "events",
   "reports",
   "enclosures",
+  "users",
   "ticket-users",
 ];
 
@@ -139,27 +136,6 @@ export function dashboardDemoReducer(
         ),
         notice: "Los cambios del recinto se guardaron en esta demostración.",
       };
-    case "add-ticket-user": {
-      if (state.activeProfile !== "administration") return state;
-      const name = action.name.trim();
-      const username = action.username.trim();
-      if (!name || !username || !action.password.trim()) {
-        return { ...state, notice: "Completa todos los campos para crear la cuenta." };
-      }
-      if (
-        state.ticketUsers.some(
-          (user) => user.username.toLocaleLowerCase() === username.toLocaleLowerCase(),
-        )
-      ) {
-        return { ...state, notice: "Ese nombre de usuario ya existe en esta demostración." };
-      }
-
-      return {
-        ...state,
-        ticketUsers: [...state.ticketUsers, { id: username, name, username }],
-        notice: "El registro de muestra se agregó solo a esta lista temporal.",
-      };
-    }
     case "open-sale":
       if (state.activeProfile !== "ticket") return state;
       return { ...state, saleStep: "confirmation", notice: "" };

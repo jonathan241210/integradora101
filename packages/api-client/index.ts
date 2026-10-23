@@ -9,6 +9,8 @@ export type {
   VisitorRegisterInput,
   VisitorTokenPayload,
 } from "./visitor";
+export { createUsersApi } from "./users";
+export type { UsersApi } from "./users";
 export { createHttpClient } from "./http";
 export type {
   ApiError,
@@ -18,10 +20,15 @@ export type {
 } from "./http";
 export type {
   ApiErrorPayload,
+  CreateStaffUserInput,
   LoginResult,
   StaffDepartment,
   StaffHome,
   StaffProfile,
+  StaffUser,
+  StaffUserCatalog,
+  StaffUserDepartment,
   TwoFactorChallenge,
   TwoFactorQrCode,
+  UpdateStaffUserInput,
 } from "./types";

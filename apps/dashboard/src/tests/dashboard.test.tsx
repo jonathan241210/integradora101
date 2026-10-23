@@ -15,7 +15,7 @@ describe("CA-02 admin-dashboard-prototype", () => {
     expect(markup).toContain("Actividad reciente");
     expect(markup).toContain("Demostración");
     expect(getSectionsForProfile("administration")).toContain("enclosures");
-    expect(getSectionsForProfile("administration")).toContain("ticket-users");
+    expect(getSectionsForProfile("administration")).toContain("users");
     expect(getSectionsForProfile("administration")).not.toContain("tickets");
   });
 });

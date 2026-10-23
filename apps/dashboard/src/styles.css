@@ -1838,3 +1838,157 @@ button:disabled {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.users-view {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.users-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(290px, .75fr);
+  align-items: start;
+  gap: 16px;
+  min-width: 0;
+}
+
+.users-list-card,
+.users-form-card {
+  min-width: 0;
+  padding: clamp(15px, 2vw, 22px);
+}
+
+.users-card-heading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.users-card-heading h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 17px;
+}
+
+.users-card-heading p {
+  margin: 4px 0 0;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+.users-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+
+.users-table {
+  width: 100%;
+  min-width: 700px;
+  border-collapse: collapse;
+  color: var(--foreground);
+  font-size: 13px;
+  text-align: left;
+}
+
+.users-table th,
+.users-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.users-table th {
+  background: var(--surface-subtle);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.users-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.users-row-actions {
+  display: flex;
+  gap: 7px;
+}
+
+.users-row-actions .arca-button {
+  min-height: 34px;
+  padding: 6px 9px;
+  font-size: 12px;
+}
+
+.users-empty {
+  padding: 22px 0;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+
+.users-form {
+  display: grid;
+  gap: 10px;
+}
+
+.users-password-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 5px;
+}
+
+.users-field-error {
+  margin-top: -7px;
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.users-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 4px;
+}
+
+.users-view .arca-dialog {
+  width: min(100% - 28px, 480px);
+  max-width: 480px;
+  padding: clamp(18px, 4vw, 26px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+@media (max-width: 1080px) {
+  .users-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .users-card-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .users-card-heading > .arca-button {
+    width: 100%;
+  }
+
+  .users-row-actions {
+    flex-wrap: wrap;
+  }
+
+  .users-form-actions .arca-button {
+    flex: 1 1 130px;
+  }
+}

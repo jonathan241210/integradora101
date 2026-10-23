@@ -1,4 +1,4 @@
-import { createAuthApi, createHttpClient } from "@arca/api-client";
+import { createAuthApi, createHttpClient, createUsersApi } from "@arca/api-client";
 
 let unauthorizedHandler: (() => void) | undefined;
 
@@ -8,6 +8,7 @@ const http = createHttpClient({
 });
 
 export const authApi = createAuthApi(http);
+export const usersApi = createUsersApi(http);
 
 export function setUnauthorizedHandler(handler?: () => void): () => void {
   unauthorizedHandler = handler;

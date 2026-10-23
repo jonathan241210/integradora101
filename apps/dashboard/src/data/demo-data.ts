@@ -119,20 +119,6 @@ export const demoEnclosures: DemoEnclosure[] = [
   },
 ];
 
-export type DemoTicketUser = {
-  id: string;
-  name: string;
-  username: string;
-};
-
-export const demoTicketUsers: DemoTicketUser[] = [
-  {
-    id: "taquilla-demo",
-    name: "Personal de taquilla",
-    username: "taquilla@demo.local",
-  },
-];
-
 export const demoTicketHistory = [
   {
     id: "MUESTRA-001",

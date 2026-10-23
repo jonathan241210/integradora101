@@ -17,13 +17,23 @@ const authenticatedSections = [
   ["administration", "events"],
   ["administration", "reports"],
   ["administration", "enclosures"],
+  ["administration", "users"],
   ["administration", "ticket-users"],
 ] as const;
 
 describe("CA-15 admin-dashboard-prototype", () => {
   it.each(authenticatedSections)(
-    "muestra una sola advertencia general para administración en %s",
+    "muestra una sola advertencia general para administración en %s / %s",
     (activeProfile, activeSection) => {
+      const permissions = [
+        "dashboard.view",
+        "news.manage",
+        "events.manage",
+        "reports.view",
+        "enclosures.manage",
+        "operational-staff.manage",
+      ];
+      if (activeSection !== "ticket-users") permissions.push("users.manage");
       useAuthSession.mockReturnValue({
         state: {
           status: "authenticated",
@@ -35,16 +45,8 @@ describe("CA-15 admin-dashboard-prototype", () => {
             full_name: "Personal Prueba",
             email: "personal@test.arca.invalid",
             department: null,
-            roles: ["admin"],
-            permissions: [
-              "dashboard.view",
-              "news.manage",
-              "events.manage",
-              "reports.view",
-              "enclosures.manage",
-              "users.manage",
-              "operational-staff.manage",
-            ],
+            roles: [activeSection === "ticket-users" ? "zoo-admin" : "admin"],
+            permissions,
             home: "administration",
             pwa_url: null,
             two_factor_setup_required: false,
@@ -73,7 +75,6 @@ describe("CA-15 admin-dashboard-prototype", () => {
         toggleMenu: vi.fn(),
         showNotice: vi.fn(),
         updateEnclosure: vi.fn(),
-        addTicketUser: vi.fn(),
         openSale: vi.fn(),
         cancelSale: vi.fn(),
         beginSale: vi.fn(),
@@ -83,7 +84,9 @@ describe("CA-15 admin-dashboard-prototype", () => {
       const markup = renderToStaticMarkup(<App />);
       const banners = markup.match(/Prototipo de demostración\./g) ?? [];
 
-      expect(banners).toHaveLength(1);
+      expect(banners).toHaveLength(
+        activeSection === "users" || activeSection === "ticket-users" ? 0 : 1,
+      );
     },
   );
 });
