@@ -21,6 +21,24 @@ class CreateStaffAccountAction
             'department_id' => ['required', 'integer', Rule::exists('departments', 'id')->where('is_active', true)],
             'role' => ['required', 'string', Rule::exists('roles', 'name')->where('guard_name', 'web')],
             'password' => ['required', 'string', Password::defaults()],
+        ], [
+            'required' => 'El campo :attribute es obligatorio.',
+            'email.email' => 'El correo electrónico debe tener un formato válido.',
+            'email.max' => 'El correo electrónico no puede exceder 255 caracteres.',
+            'email.unique' => 'Este correo electrónico ya está registrado.',
+            'string' => 'El campo :attribute debe ser texto.',
+            'max' => 'El campo :attribute no puede exceder 255 caracteres.',
+            'integer' => 'El área seleccionada no es válida.',
+            'department_id.exists' => 'El área seleccionada no existe o está inactiva.',
+            'role.exists' => 'El rol seleccionado no existe.',
+            'password.*' => 'La contraseña no cumple con los requisitos de seguridad.',
+        ], [
+            'first_name' => 'nombre',
+            'last_name' => 'primer apellido',
+            'second_last_name' => 'segundo apellido',
+            'department_id' => 'área',
+            'role' => 'rol',
+            'password' => 'contraseña',
         ])->validate();
 
         return DB::transaction(function () use ($validated) {

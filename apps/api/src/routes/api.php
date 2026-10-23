@@ -1,10 +1,22 @@
 <?php
 
 use App\Http\Controllers\Auth\MeController;
+use App\Http\Controllers\Staff\StaffUserController;
 use App\Http\Controllers\Visitor\PrivacyNoticeController;
 use App\Http\Controllers\Visitor\VisitorAuthenticationController;
 use App\Http\Controllers\Visitor\VisitorProfileController;
 use Illuminate\Support\Facades\Route;
+
+Route::middleware(['auth:sanctum', 'staff.user', 'administrator.two-factor', 'throttle:staff-users'])
+    ->prefix('staff-users')
+    ->name('staff-users.')
+    ->group(function () {
+        Route::get('catalog', [StaffUserController::class, 'catalog'])->name('catalog');
+        Route::get('/', [StaffUserController::class, 'index'])->name('index');
+        Route::post('/', [StaffUserController::class, 'store'])->name('store');
+        Route::patch('{staffUser}', [StaffUserController::class, 'update'])->name('update');
+        Route::delete('{staffUser}', [StaffUserController::class, 'destroy'])->name('destroy');
+    });
 
 Route::get('/auth/me', MeController::class)
     ->middleware(['auth:sanctum', 'staff.user'])

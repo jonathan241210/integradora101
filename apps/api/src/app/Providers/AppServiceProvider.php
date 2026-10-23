@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Listeners\RecordAuthenticationEvent;
+use App\Models\User;
+use App\Policies\StaffUserPolicy;
 use Closure;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
@@ -11,6 +13,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
@@ -46,6 +49,8 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands();
         $this->forceHttps();
         $this->registerVisitorLimiters();
+        $this->registerStaffUserLimiter();
+        Gate::policy(User::class, StaffUserPolicy::class);
 
         Event::listen(Login::class, RecordAuthenticationEvent::class);
         Event::listen(Failed::class, RecordAuthenticationEvent::class);
@@ -85,6 +90,19 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('visitor-forgot', function (Request $request) use ($response) {
             return Limit::perHour(3)->by(Str::lower((string) $request->input('email')))->response($response);
+        });
+    }
+
+    private function registerStaffUserLimiter(): void
+    {
+        $response = $this->visitorThrottleResponse();
+
+        RateLimiter::for('staff-users', function (Request $request) use ($response) {
+            $identity = (string) ($request->user()?->getAuthIdentifier() ?? 'guest');
+
+            return Limit::perMinute(max(1, (int) config('arca.staff_users_per_minute', 60)))
+                ->by($identity.'|'.$request->ip())
+                ->response($response);
         });
     }
 
