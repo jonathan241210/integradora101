@@ -167,12 +167,12 @@ export function createHttpAuthRepository({ baseUrl, storage, fetchImpl }: HttpAu
     },
     async updateProfile(patch) {
       try {
-        profileFrom(await api.updateProfile({
+        const profile = profileFrom(await api.updateProfile({
           first_name: patch.firstName,
           nickname: patch.nickname,
           avatar_code: patch.avatarCode,
         }));
-        return accepted(200, 'Perfil actualizado.');
+        return { ok: true, status: 200, message: 'Perfil actualizado.', profile };
       } catch (error) {
         return failure(error);
       }

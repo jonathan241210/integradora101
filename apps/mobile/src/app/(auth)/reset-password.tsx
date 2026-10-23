@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ResetPasswordScreen } from '../../screens/ResetPasswordScreen';
 import { useResetPasswordFormViewModel } from '../../viewmodels/useAccessViewModels';
@@ -10,16 +10,26 @@ export default function ResetPasswordRoute() {
   const form = useResetPasswordFormViewModel();
   const email = typeof params.email === 'string' ? params.email : '';
   const [serverError, setServerError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const inFlight = useRef(false);
 
   const submit = async () => {
+    if (inFlight.current) return;
     setServerError(null);
     if (!form.submit()) return;
-    const result = await accountSession.resetPassword(email, form.code, form.password);
-    if (!result.ok) {
-      setServerError(result.message);
-      return;
+    inFlight.current = true;
+    setBusy(true);
+    try {
+      const result = await accountSession.resetPassword(email, form.code, form.password);
+      if (!result.ok) {
+        setServerError(result.message);
+        return;
+      }
+      router.replace('/login');
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
     }
-    router.replace('/login');
   };
 
   return (
@@ -34,6 +44,7 @@ export default function ResetPasswordRoute() {
       onConfirmationChange={form.setConfirmation}
       onSubmit={() => submit()}
       onBackPress={() => router.back()}
+      busy={busy}
     />
   );
 }

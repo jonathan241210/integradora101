@@ -89,6 +89,14 @@ describe('Repositorio HTTP de la cuenta', () => {
     });
     const updated = await repository.updateProfile({ firstName: 'Ana', nickname: 'Nita', avatarCode: 'wolf' });
     expect(updated.ok).toBe(true);
+    if (updated.ok) {
+      expect(updated.profile).toEqual({
+        email: 'ana@ejemplo.com',
+        firstName: 'Ana',
+        nickname: 'Nita',
+        avatarCode: 'wolf',
+      });
+    }
     expect(patchBody).toEqual({ first_name: 'Ana', nickname: 'Nita', avatar_code: 'wolf' });
   });
 

@@ -29,3 +29,7 @@ Un token de visitante no entra a `GET /api/v1/auth/me`. Una sesión de personal 
 La contraseña del visitante pide 8 caracteres, letras y números. La del personal no cambia. El correo usa `MAIL_MAILER` del `.env`; en desarrollo el ejemplo deja `log`. El aviso provisional es la versión `2026-10` hasta que el zoológico entregue el texto definitivo.
 
 Los límites responden 429 con «Espera N segundos e inténtalo de nuevo.»
+
+## Progreso
+
+`api-005` añade, con el mismo Bearer `visitor`, el alta `POST /api/v1/visitor/discoveries` y las lecturas `progress`, `collection`, `achievements` y `missions`. El servidor calcula puntos, nivel, rango, logros y misiones. Un `client_scan_id` repetido no suma puntos. Más de 30 escaneos nuevos en un minuto responde 429. El comando `php artisan arca:generate-qr-codes {recinto}` solo imprime en consola un código opaco; no imprime el QR.

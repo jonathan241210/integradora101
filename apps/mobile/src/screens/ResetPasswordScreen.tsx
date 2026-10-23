@@ -14,6 +14,7 @@ interface ResetPasswordScreenProps {
   onConfirmationChange: (value: string) => void;
   onSubmit: () => void;
   onBackPress: () => void;
+  busy?: boolean;
 }
 
 export function ResetPasswordScreen({
@@ -27,9 +28,10 @@ export function ResetPasswordScreen({
   onConfirmationChange,
   onSubmit,
   onBackPress,
+  busy = false,
 }: ResetPasswordScreenProps) {
   return (
-    <ScreenContainer>
+    <ScreenContainer busyMessage={busy ? 'Restableciendo contraseña…' : null}>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver a solicitar el código" />
         <AppText variant="heading">Nueva contraseña</AppText>
@@ -40,7 +42,7 @@ export function ResetPasswordScreen({
         <TextField label="Nueva contraseña" value={password} onChangeText={onPasswordChange} secureTextEntry />
         <TextField label="Confirmar contraseña" value={confirmation} onChangeText={onConfirmationChange} secureTextEntry />
         {error ? <AppText variant="small" color="danger" accessibilityLiveRegion="polite">{error}</AppText> : null}
-        <Button label="Restablecer contraseña" onPress={onSubmit} />
+        <Button label="Restablecer contraseña" onPress={onSubmit} disabled={busy} />
       </View>
     </ScreenContainer>
   );

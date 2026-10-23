@@ -18,6 +18,26 @@ function jsonResponse(status: number, body: unknown) {
 }
 
 describe('Cliente HTTP del visitante', () => {
+  it('la base que ya incluye /api/v1 no duplica la ruta del visitante', async () => {
+    const urls: string[] = [];
+    const fetchImpl = jest.fn(async (input: RequestInfo | URL) => {
+      urls.push(String(input));
+      return jsonResponse(200, { data: profile });
+    });
+
+    const api = createVisitorApi({
+      baseUrl: 'https://api.pruebas.invalid/api/v1',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      getAccessToken: async () => 'access',
+      getRefreshToken: async () => 'refresh',
+      onTokens: async () => undefined,
+      onSessionExpired: async () => undefined,
+    });
+
+    await api.me();
+    expect(urls).toEqual(['https://api.pruebas.invalid/api/v1/visitor/me']);
+  });
+
   it('test-ca-06-visitor-refresh-single-flight: un 401 concurrente renueva una sola vez', async () => {
     let accessToken = 'old-access';
     let refreshToken = 'old-refresh';

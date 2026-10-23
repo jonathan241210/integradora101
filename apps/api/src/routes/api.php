@@ -6,6 +6,7 @@ use App\Http\Controllers\Catalog\SpeciesController;
 use App\Http\Controllers\Visitor\PrivacyNoticeController;
 use App\Http\Controllers\Visitor\VisitorAuthenticationController;
 use App\Http\Controllers\Visitor\VisitorProfileController;
+use App\Http\Controllers\Visitor\VisitorProgressController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/auth/me', MeController::class)
@@ -51,5 +52,15 @@ Route::prefix('visitor')->name('visitor.')->group(function () {
             ->name('me.password.update');
         Route::delete('me', [VisitorProfileController::class, 'destroy'])
             ->name('me.destroy');
+        Route::post('discoveries', [VisitorProgressController::class, 'store'])
+            ->name('discoveries.store');
+        Route::get('progress', [VisitorProgressController::class, 'progress'])
+            ->name('progress.show');
+        Route::get('collection', [VisitorProgressController::class, 'collection'])
+            ->name('collection.show');
+        Route::get('achievements', [VisitorProgressController::class, 'achievements'])
+            ->name('achievements.index');
+        Route::get('missions', [VisitorProgressController::class, 'missions'])
+            ->name('missions.index');
     });
 });

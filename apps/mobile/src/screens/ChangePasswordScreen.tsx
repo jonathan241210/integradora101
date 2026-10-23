@@ -14,11 +14,12 @@ interface ChangePasswordScreenProps {
   onConfirmationChange: (value: string) => void;
   onSubmit: () => void;
   onBackPress: () => void;
+  busy?: boolean;
 }
 
 export function ChangePasswordScreen(props: ChangePasswordScreenProps) {
   return (
-    <ScreenContainer>
+    <ScreenContainer busyMessage={props.busy ? 'Guardando contraseña…' : null}>
       <View style={styles.page}>
         <BackButton onPress={props.onBackPress} accessibilityLabel="Volver a la cuenta" />
         <AppText variant="heading">Cambiar contraseña</AppText>
@@ -27,7 +28,7 @@ export function ChangePasswordScreen(props: ChangePasswordScreenProps) {
         <TextField label="Confirmar contraseña" value={props.confirmation} onChangeText={props.onConfirmationChange} secureTextEntry />
         {props.notice ? <AppText variant="small">{props.notice}</AppText> : null}
         {props.error ? <AppText variant="small" color="danger" accessibilityLiveRegion="polite">{props.error}</AppText> : null}
-        <Button label="Guardar contraseña" onPress={props.onSubmit} />
+        <Button label="Guardar contraseña" onPress={props.onSubmit} disabled={props.busy} />
       </View>
     </ScreenContainer>
   );

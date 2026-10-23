@@ -87,3 +87,14 @@ Aksel aprobó T-31 a T-44 el 2026-10-21. El contrato es el de `apps/api/plan/004
 CA-01 a CA-14 siguen cubiertos por las pruebas de T-08 a T-29. T-33, T-36, T-38, T-40, T-41 y T-43 añaden la evidencia de la fase HTTP. `auth.ts`, la web y el dashboard no se editan.
 
 Cierre 2026-10-21: Jest de `apps/mobile` en verde (95 pruebas) y `npx tsc --noEmit` sin errores. La spec quedó en Implementada. El PR enlaza spec, plan y tasks.
+
+- [x] **T-45** (CA-01, CA-05): Enmienda 2026-10-23. Un segundo toque en la bienvenida no apila otra ruta. Login, registro, verificación, reenvío, olvido y restablecimiento ignoran otro toque mientras la petición sigue, desactivan el botón y tapan la pantalla. `test-ca-05-login-ignores-a-second-tap` cubre el doble toque del login.
+- [x] **T-46** (CA-08, CA-09, CA-10, CA-11): Enmienda 2026-10-23. Guardar perfil, guardar contraseña, borrar cuenta y cerrar sesión ignoran otro toque mientras la petición sigue, desactivan el botón y tapan la pantalla. La validación local no enciende el indicador. Cada acción tiene una prueba de doble toque.
+- [x] **T-47**: Enmienda 2026-10-23. Si la sesión ya está autenticada, `bootstrap()` no vuelve a pedir el perfil. Ajustes sigue leyéndolo una vez para mostrar nombre y correo. La prueba está en `__tests__/auth/http-bootstrap.test.ts`.
+- [x] **T-48** (CA-01, CA-10, CA-11): Enmienda UX 2026-10-23. `nextGateRoute` y logout/borrado van a `/login`; `/welcome` redirige; spec y pruebas de compuerta actualizadas.
+- [x] **T-49** (CA-08): Enmienda UX 2026-10-23. Guardar perfil sin cambios muestra aviso y no llama `PATCH`. Prueba `test-ca-08-profile-unchanged`.
+- [x] **T-50** (CA-08, CA-09): Enmienda UX 2026-10-23. `useFocusEffect` limpia avisos y contraseñas al salir de edición de perfil y cambio de contraseña. Pruebas `test-ca-08-profile-focus-reset` y `test-ca-09-password-focus-reset`.
+- [x] **T-51** (CA-04): Enmienda UX 2026-10-23. Placeholder de contraseña en login en texto claro («Escribe tu contraseña»).
+- [x] **T-52** (CA-08, escenario 7): Enmienda 2026-10-23. Caché de perfil con una sola petición en vuelo en `accountSession`: `peekProfile`, `getProfile`, llenado en bootstrap HTTP, login y verificación, y actualización con el perfil del `PATCH`. Logout, borrado, refresh fallido y `resetForTests` vacían la copia.
+- [x] **T-53** (CA-08, escenario 7): Enmienda 2026-10-23. Hook `useVisitorProfile`. Perfil, ajustes y edición leen la copia. Ajustes no inicia con la ficha de demostración. Editar rellena el formulario desde la copia y solo pide `GET /me` si está vacía.
+- [x] **T-54** (CA-08, escenario 7): Enmienda 2026-10-23. `test-ca-08-profile-single-load` y `test-ca-08-settings-sin-ficha-demo` en `__tests__/auth/profile-single-load.test.tsx`. Dos consumidores comparten un `GET`; el `PATCH` actualiza la interfaz sin otro `GET`. Con la API simulada, Ajustes muestra el perfil real y no «María García».

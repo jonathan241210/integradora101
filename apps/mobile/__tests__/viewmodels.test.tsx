@@ -104,8 +104,6 @@ describe('ViewModels y Repositories', () => {
     const repository: UserRepository = {
       getUser: async () => { throw failure; },
       getMissions: async () => [],
-      getRewards: async () => [],
-      getLeaderboard: async () => [],
       getAchievements: async () => [],
       getMilestones: async () => [],
     };
@@ -131,8 +129,6 @@ describe('ViewModels y Repositories', () => {
     await expect(animalRepository.getFeaturedAnimals()).resolves.toHaveLength(3);
     await expect(userRepository.getUser()).resolves.toMatchObject({ name: 'María García' });
     await expect(userRepository.getMissions()).resolves.toHaveLength(2);
-    await expect(userRepository.getRewards()).resolves.toHaveLength(4);
-    await expect(userRepository.getLeaderboard()).resolves.toHaveLength(3);
     await expect(userRepository.getAchievements()).resolves.toHaveLength(6);
     await expect(userRepository.getMilestones()).resolves.toHaveLength(3);
     await expect(zooRepository.getEvents()).resolves.toHaveLength(2);

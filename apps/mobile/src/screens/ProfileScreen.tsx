@@ -8,6 +8,7 @@ interface ProfileScreenProps {
   user: User;
   displayName?: string;
   avatarLabel?: string;
+  nextThreshold?: number | null;
   achievements: Achievement[];
   milestones: Milestone[];
   onAchievementPress: (id: string) => void;
@@ -15,7 +16,7 @@ interface ProfileScreenProps {
   onSettingsPress: () => void;
 }
 
-export function ProfileScreen({ user, displayName, avatarLabel, achievements, milestones, onAchievementPress, onSeeAllAchievementsPress, onSettingsPress }: ProfileScreenProps) {
+export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, achievements, milestones, onAchievementPress, onSeeAllAchievementsPress, onSettingsPress }: ProfileScreenProps) {
   return (
     <ScreenContainer>
       <View style={styles.container}>
@@ -36,6 +37,9 @@ export function ProfileScreen({ user, displayName, avatarLabel, achievements, mi
           </View>
           <AppText variant="title" center>{displayName ?? user.name}</AppText>
           <AppText variant="small" center color="primary">{user.rank}</AppText>
+          {nextThreshold != null ? (
+            <AppText variant="caption" center>Siguiente umbral: {nextThreshold} puntos</AppText>
+          ) : null}
           
           <View style={styles.statsRow}>
             <StatItem label="Descubiertos" value={`${user.discoveredCount}/${user.totalAnimals}`} />
@@ -49,6 +53,9 @@ export function ProfileScreen({ user, displayName, avatarLabel, achievements, mi
           <Button label="Ver todos" variant="outline" onPress={onSeeAllAchievementsPress} />
         </View>
         <View style={styles.achievementsList}>
+          {achievements.filter((achievement) => achievement.unlocked).length === 0 ? (
+            <AppText variant="body" color="textMuted">Aún no tienes logros</AppText>
+          ) : null}
           {achievements.filter((achievement) => achievement.unlocked).slice(0, 3).map((achievement) => (
             <TouchableOpacity
               key={achievement.id}

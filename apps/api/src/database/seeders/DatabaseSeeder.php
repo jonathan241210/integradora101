@@ -14,6 +14,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DepartmentSeeder::class,
             RolesAndPermissionsSeeder::class,
+            AchievementSeeder::class,
+            MissionSeeder::class,
         ]);
 
         if (! app()->environment('production')) {

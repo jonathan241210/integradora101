@@ -116,8 +116,10 @@ php artisan serve --host=0.0.0.0 --port=8000
 3. Crea `apps/mobile/.env` con la IP de esa máquina. El archivo no se sube a git.
 
 ```text
-EXPO_PUBLIC_API_URL=http://ESA-IP:8000
+EXPO_PUBLIC_API_URL=http://ESA-IP:8000/api/v1
 ```
+
+Ese `/api/v1` es el de la variable, el mismo que usa el catálogo. La cuenta no lo repite.
 
 4. Reinicia Expo. La variable se lee al arrancar: si ya estaba `npm start`, detenlo con `Ctrl+C` y vuelve a lanzarlo. El teléfono y la computadora tienen que estar en la misma red.
 5. El alta real pide al menos 8 caracteres, con letras y números. El código de 6 dígitos no llega a una bandeja: con `MAIL_MAILER=log` queda en `apps/api/src/storage/logs/laravel.log`.

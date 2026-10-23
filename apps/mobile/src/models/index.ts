@@ -7,6 +7,7 @@ export interface Animal {
   category?: 'mammals' | 'birds' | 'reptiles' | 'aquatic';
   zone: string;
   isDiscovered: boolean;
+  discoveredAt?: string | null;
   placeholderTint: string;
   stats?: {
     avgWeight: string;
@@ -36,20 +37,6 @@ export interface Mission {
   progress: number;
   total: number;
   reward: string;
-}
-
-export interface Reward {
-  id: string;
-  name: string;
-  icon: string;
-}
-
-export interface LeaderboardEntry {
-  id: string;
-  name: string;
-  points: number;
-  rank: number;
-  isCurrentUser: boolean;
 }
 
 export interface ZooEvent {
@@ -101,11 +88,10 @@ export interface MapRoute {
   steps: string[];
 }
 
-export type VisitorPreferenceKey = 'notifications' | 'darkMode' | 'location';
+export type VisitorPreferenceKey = 'notifications' | 'location';
 
 export interface VisitorPreferences {
   notifications: boolean;
-  darkMode: boolean;
   location: boolean;
 }
 
