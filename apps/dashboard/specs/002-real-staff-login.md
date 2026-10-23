@@ -10,7 +10,7 @@
 
 El prototipo del dashboard (`dashboard-001`) usa un selector de perfil y credenciales ficticias en memoria. Con la autenticación real del personal definida en `api-003`, el dashboard debe reemplazar ese acceso simulado por un único formulario de correo institucional + contraseña que consuma la API, resuelva el reto/enrolamiento de 2FA de los administradores (`admin` y `zoo-admin`) y presente las secciones según el `home` y los permisos devueltos por `GET /api/v1/auth/me`. El `veterinarian` que entra por error al dashboard se redirige a la PWA; la PWA tendrá su propia pantalla de login en una spec futura de `apps/pwa`.
 
-El prototipo sigue siendo una demostración en sus demás secciones: venta, historial, reportes, recintos y usuarios conservan datos ficticios hasta que sus propias specs los conecten con la API.
+El prototipo sigue siendo una demostración en sus demás secciones: venta, historial, reportes y recintos conservan datos ficticios hasta que sus propias specs los conecten con la API. La gestión de usuarios se conecta con la API mediante `dashboard-003`.
 
 ## Objetivos
 
@@ -22,7 +22,7 @@ El prototipo sigue siendo una demostración en sus demás secciones: venta, hist
 
 ## Fuera de alcance
 
-- Gestión de usuarios desde el dashboard (la vista «Usuarios de taquilla» queda demostrativa).
+- Gestión de usuarios desde el dashboard (sustituida por `dashboard-003`).
 - Registro, recuperación de contraseña ni cambio de contraseña en la interfaz.
 - Conectar a la API las secciones de venta, historial, reportes, noticias, eventos ni recintos (siguen con datos ficticios hasta sus specs).
 - La pantalla de login propia de la PWA veterinaria (spec futura de `apps/pwa`).
@@ -57,7 +57,7 @@ El prototipo sigue siendo una demostración en sus demás secciones: venta, hist
 - **CA-07:** Dado `home: pwa`, cuando la sesión de `veterinarian` queda autenticada, entonces el dashboard muestra una pantalla con el mensaje correspondiente y redirige a `pwa_url`.
 - **CA-08:** Dada cualquier llamada a la API que responda 401, cuando el estado de sesión lo detecte, entonces el dashboard vuelve al login mostrando «Tu sesión expiró».
 - **CA-09:** Dada una sesión activa, cuando la persona elija cerrar sesión, entonces se llama a `logout` de la API y el dashboard regresa al login sin dejar visibles las secciones protegidas.
-- **CA-10:** Dadas las cuentas en memoria de «Usuarios de taquilla», cuando se intente iniciar sesión con ellas, entonces ya no pueden autenticarse; la vista permanece como demostrativa hasta la feature de gestión de usuarios.
+- **CA-10:** Dadas las cuentas en memoria de «Usuarios de taquilla», cuando se intente iniciar sesión con ellas, entonces ya no pueden autenticarse; la vista y el estado demostrativos se retiran al implementar la gestión real de usuarios. *(Reemplazado por `dashboard-003` en la gestión de usuarios.)*
 - **CA-11:** Dado el código del dashboard, cuando se revise, entonces toda llamada a la API pasa por `@arca/api-client` desde hooks que actúan como ViewModels (MVVM); ningún componente usa `fetch`/`axios` directamente.
 - **CA-12:** Dadas las vistas del login y la navegación, cuando se usen con teclado y a anchos de 360 a 1366 px, entonces conservan foco visible, controles operables, estados de carga y error, y no hay desbordamiento horizontal.
 - **CA-13:** Dada la interfaz, cuando se revise su estilo, entonces usa tokens semánticos de `@arca/tokens` y no fija hex de marca en las vistas.
@@ -66,7 +66,7 @@ El prototipo sigue siendo una demostración en sus demás secciones: venta, hist
 ## Reglas de negocio
 
 - **RN-01:** El mapeo permiso → sección es solo presentación; la autorización real la aplican los middlewares y permisos de la API. Ocultar una sección nunca equivale a protegerla.
-- **RN-02:** Las demás pantallas (venta, historial, reporte, noticias, eventos, recintos, usuarios) siguen con datos ficticios hasta que sus specs las conecten con la API.
+- **RN-02:** Las demás pantallas (venta, historial, reporte, noticias, eventos y recintos) siguen con datos ficticios hasta que sus specs las conecten con la API; la gestión de usuarios se conecta mediante `dashboard-003`.
 - **RN-03:** Sin React Router: la navegación entre vistas se resuelve con estado de la SPA conforme a ADR 0002.
 - **RN-04:** Se retiran las credenciales ficticias del prototipo (`administrador@demo.local`, `taquilla@demo.local` y las cuentas en memoria); ninguna cuenta de demostración puede iniciar sesión real.
 - **RN-05:** Mensajes y textos visibles en español; identificadores del código en inglés (Constitución VI).

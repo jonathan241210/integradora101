@@ -9,7 +9,7 @@
 
 El dashboard reemplaza el login ficticio por la autenticación real de `api-003`. Toda llamada HTTP vive en `@arca/api-client` (paquete local, TypeScript sin dependencias externas, `fetch` nativo solo dentro del paquete). El estado de sesión lo gestiona un ViewModel: un reducer puro más funciones de orquestación async que reciben el cliente de autenticación, envueltos por el hook `useAuthSession`. Las vistas solo presentan y emiten intenciones (MVVM).
 
-Estados de sesión (RN-06): `checking → anonymous | two-factor-challenge | two-factor-setup | authenticated | redirecting-pwa`. Con `authenticated`, `home` y permisos de `me` se traducen a un perfil de presentación (`administration | executive | ticket`) y a las secciones visibles; las secciones demostrativas (venta, historial, reporte, noticias, eventos, recintos, usuarios) conservan datos ficticios (RN-02).
+Estados de sesión (RN-06): `checking → anonymous | two-factor-challenge | two-factor-setup | authenticated | redirecting-pwa`. Con `authenticated`, `home` y permisos de `me` se traducen a un perfil de presentación (`administration | executive | ticket`) y a las secciones visibles; las secciones demostrativas (venta, historial, reporte, noticias, eventos y recintos) conservan datos ficticios (RN-02). La gestión de usuarios se conecta mediante `dashboard-003`.
 
 El módulo `auth` de `@arca/api-client` no contiene nada propio del dashboard, para que la PWA lo reutilice en su futura spec de login.
 
@@ -67,7 +67,7 @@ El módulo `auth` de `@arca/api-client` no contiene nada propio del dashboard, p
 - `useAuthSession.ts`: hook delgado (`useReducer` + efecto inicial `checkSession`); con `home: pwa` pasa a `redirecting-pwa` y llama a `window.location.assign(pwa_url)`.
 - `navigation.ts`: `home` → perfil de presentación; en `administration` filtra secciones por permisos: Dashboard (`dashboard.view`), Noticias (`news.manage`), Eventos (`events.manage`), Reporte (`reports.view`), Recintos (`enclosures.manage`), Usuarios (`users.manage` o `operational-staff.manage`). Sirve igual para `admin` y `zoo-admin`. `executive` → Dashboard y Reporte en solo lectura; `ticket` → Venta e Historial.
 - `dashboard-demo.ts`: se eliminan `select-profile`, `login-administration` y `login-ticket`; se añade `start-session(profile)`; `DemoProfile` incluye `executive` con secciones `dashboard` y `reports`; `sign-out` limpia la vista.
-- `demo-data.ts`: se retiran `demoAdministrationCredentials` y las contraseñas de las cuentas de taquilla; `TicketUsersView` queda demostrativa (CA-10).
+- `demo-data.ts`: se retiran `demoAdministrationCredentials` y las contraseñas de las cuentas de taquilla. La vista demostrativa de usuarios se retira en `dashboard-003`.
 
 ### Vistas
 

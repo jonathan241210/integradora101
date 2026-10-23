@@ -3,7 +3,7 @@
 ## Estado y alcance
 
 - La autenticación del personal es actual conforme a `dashboard-002-real-staff-login`.
-- Las secciones de ventas, historial, reportes, noticias, eventos, recintos y usuarios siguen siendo demostrativas hasta que sus specs las conecten con la API.
+- Las secciones de ventas, historial, reportes, noticias, eventos y recintos siguen siendo demostrativas. La gestión de usuarios es real conforme a `dashboard-003-user-management`.
 - No hay React Router, persistencia local, escritura a base de datos ni integración de pagos.
 
 ## Actores
@@ -27,15 +27,16 @@ Los permisos efectivos se aplican en la API. La navegación del dashboard solo p
 | `TwoFactorSetupView` | Mostrar QR, confirmar TOTP y presentar códigos de recuperación una sola vez |
 | `PwaRedirectView` | Informar y redirigir a veterinaria cuando `pwa_url` está configurada |
 | `useAuthSession` | ViewModel de sesión: comprobación inicial, login, reto, enrolamiento, expiración y logout |
-| `navigation` | Traducir `home` y permisos a las secciones demostrativas que se pueden presentar |
+| `navigation` | Traducir `home` y permisos a las secciones que se pueden presentar, incluida gestión real de usuarios |
 | `useDashboardDemo` | Mantener en memoria el estado de las secciones que siguen siendo demo |
+| `useUsers` / `UsersView` | Cargar y administrar cuentas reales mediante `@arca/api-client` |
 | `@arca/api-client` | Encapsular solicitudes JSON, cookie Sanctum y CSRF; es reutilizable por la PWA |
 
 `App.tsx` compone las vistas según el estado de autenticación. `DemoBanner` aparece solo en secciones demostrativas, no en login, 2FA ni redirección PWA.
 
 ## API consumida
 
-`@arca/api-client` usa la respuesta de `me` bajo `data` y normaliza el perfil. Todos los endpoints se originan en `api-003`.
+`@arca/api-client` usa la respuesta de `me` bajo `data` y normaliza el perfil; la gestión de cuentas consume `api-006`.
 
 | Método y ruta | Uso |
 |---|---|
@@ -48,6 +49,11 @@ Los permisos efectivos se aplican en la API. La navegación del dashboard solo p
 | `GET /api/v1/auth/user/two-factor-qr-code` | Obtener el QR SVG |
 | `POST /api/v1/auth/user/confirmed-two-factor-authentication` | Confirmar el TOTP |
 | `GET /api/v1/auth/user/two-factor-recovery-codes` | Obtener códigos para mostrarlos una vez |
+| `GET /api/v1/staff-users` | Listar cuentas de personal administrables |
+| `GET /api/v1/staff-users/catalog` | Obtener departamentos y roles asignables |
+| `POST /api/v1/staff-users` | Crear una cuenta de personal |
+| `PATCH /api/v1/staff-users/{id}` | Actualizar parcialmente una cuenta |
+| `DELETE /api/v1/staff-users/{id}` | Desactivar una cuenta |
 
 ## Patrón y estructura
 
@@ -56,7 +62,8 @@ La SPA sigue MVVM:
 - **View:** componentes React en `src/views/` y la shell `src/App.tsx`.
 - **ViewModel de autenticación:** reducer y orquestación en `src/viewmodels/auth-session.ts`; hook delgado en `useAuthSession.ts`.
 - **ViewModel de navegación:** `src/viewmodels/navigation.ts`.
-- **Servicio:** `src/services/arca-api.ts` crea una instancia compartida del módulo `auth`.
+- **ViewModel de usuarios:** `src/viewmodels/useUsers.ts`; `UsersView` solo presenta su estado y acciones.
+- **Servicio:** `src/services/arca-api.ts` crea instancias compartidas de los módulos `auth` y `users`.
 - **Módulos demostrativos:** reducer/hook y fixtures en `dashboard-demo.ts`, `useDashboardDemo.ts` y `data/demo-data.ts`.
 
 Las vistas, componentes y `App.tsx` no llaman a `fetch` ni a `axios`. El uso de `fetch` queda encapsulado en `packages/api-client`.
@@ -84,6 +91,8 @@ flowchart LR
   Client --> API[API Laravel api-003]
   API --> Me[Perfil, roles, permisos y home]
   Me --> Navigation[navigation ViewModel]
+  Navigation --> Users[Gestión real de usuarios]
   Navigation --> Demo[Secciones demostrativas permitidas]
+  Users --> Client
   Views --> UI[@arca/ui y @arca/tokens]
 ```

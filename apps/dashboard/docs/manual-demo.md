@@ -49,14 +49,16 @@ El mensaje de credenciales incorrectas es genérico. Los errores de límite de i
 
 ## Navegación y límites de la demostración
 
-La API entrega `home` y permisos; el dashboard solo muestra las secciones asociadas:
+La API entrega `home` y permisos; el dashboard muestra las secciones asociadas. La navegación no sustituye la autorización del servidor:
 
-- `administration`: Panel, Noticias, Eventos, Reporte, Recintos y Usuarios según permisos.
+- `administration`: Panel, Noticias, Eventos, Reporte, Recintos y gestión de usuarios según permisos.
 - `executive`: Panel y Reporte.
 - `ticket`: Venta e Historial, con fixtures de muestra.
 - `pwa`: la sesión veterinaria se dirige a `pwa_url`. Si la URL no está configurada, se informa que la aplicación no está disponible y no se redirige.
 
-Noticias, eventos, reporte, recintos, usuarios, venta e historial continúan siendo demostrativos. La lista de Usuarios de taquilla no crea cuentas ni habilita otro login real. Los cambios locales desaparecen al recargar la página; no se guardan en `localStorage` ni `sessionStorage`.
+La sección «Gestión de usuarios» es real: `admin` con `users.manage` administra todas las cuentas y `zoo-admin` con `operational-staff.manage` solo las de taquilla y veterinaria. Permite listar, crear, editar y desactivar cuentas a través de la API; requiere el 2FA establecido por la API. La contraseña solo permanece en el formulario mientras se edita y no se guarda localmente.
+
+Noticias, eventos, reporte, recintos, venta e historial continúan siendo demostrativos. Sus datos son de muestra y no se guardan en `localStorage` ni `sessionStorage`.
 
 ## Verificación local
 

@@ -30,7 +30,7 @@ Precondición: `api-003` implementada y cuentas demo sembradas en `arca_pruebas`
 - [x] **T-18** (CA-07): `CA-07 real-staff-login`.
 - [x] **T-19** (CA-08): `CA-08 real-staff-login`.
 - [x] **T-20** (CA-09): `CA-09 real-staff-login`.
-- [x] **T-21** (CA-10): `CA-10 real-staff-login`.
+- [x] **T-21** (CA-10): `CA-10 real-staff-login` verifica que las cuentas ficticias no autentican; `dashboard-003` retira la vista y el estado demostrativos.
 - [x] **T-22** (CA-11): `CA-11 real-staff-login` (escaneo de `views/`, `components/` y `App.tsx` sin `fetch`/`axios`).
 - [x] **T-23** (CA-12): `CA-12 real-staff-login`.
 - [x] **T-24** (CA-13): `CA-13 real-staff-login`.

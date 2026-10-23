@@ -9,7 +9,7 @@
 - Responsable técnico de esta ampliación: Por identificar según acuerdo del equipo
 - Fecha: 2026-10-09
 
-> **Vigencia (2026-10-17):** `dashboard-002-real-staff-login` reemplaza los flujos de login ficticio de CA-01, CA-10 y CA-13, y la parte de login de la cuenta creada en CA-12. La vista de Usuarios de taquilla continúa como demostración, pero sus entradas no autentican.
+> **Vigencia (2026-10-17):** `dashboard-002-real-staff-login` reemplaza los flujos de login ficticio de CA-01, CA-10 y CA-13, y la parte de login de la cuenta creada en CA-12. `dashboard-003-user-management` reemplaza la vista, alta y estado demostrativos de usuarios de CA-12.
 
 ## Diseño de solución
 
