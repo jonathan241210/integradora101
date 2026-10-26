@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import RegisterRoute from '../../src/app/(auth)/register';
 import VerifyEmailRoute from '../../src/app/(auth)/verify-email';
 import ForgotPasswordRoute from '../../src/app/(auth)/forgot-password';
@@ -19,6 +19,28 @@ jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, replace: mockReplace, back: jest.fn() }),
   useLocalSearchParams: () => mockParams,
 }));
+
+type PressableNode = {
+  props: { onPress?: () => void };
+  parent: unknown;
+  unstable_fiber?: {
+    memoizedProps: { onPress?: () => void } | null;
+    return: PressableNode['unstable_fiber'] | null;
+    type: unknown;
+  } | null;
+};
+
+function pressHandler(button: PressableNode) {
+  if (typeof button.props.onPress === 'function') return button.props.onPress;
+  let fiber = button.unstable_fiber;
+  while (fiber) {
+    if (typeof fiber.memoizedProps?.onPress === 'function') return fiber.memoizedProps.onPress;
+    const parent = fiber.return;
+    if (parent == null || typeof parent.type === 'string') break;
+    fiber = parent;
+  }
+  throw new Error('No hay onPress');
+}
 
 async function fillRegistration(view: Awaited<ReturnType<typeof render>>) {
   await fireEvent.changeText(view.getByLabelText('Nombre'), 'Ana');
@@ -140,14 +162,147 @@ describe('Cuenta visitante, corte 2', () => {
     expect(await tokenStorage.read()).not.toBeNull();
   });
 
-  it('test-ca-10-delete-account: el borrado limpia los tokens y vuelve a la bienvenida', async () => {
+  it('test-ca-10-delete-account: el borrado limpia los tokens y vuelve al login', async () => {
     await accountSession.login('correo@ejemplo.com', 'secreta');
     const screen = await render(<DeleteAccountRoute />);
     expect(screen.getByText(/definitivo e inmediato/)).toBeTruthy();
     await fireEvent.changeText(screen.getByLabelText('Contraseña'), 'secreta');
     await fireEvent.press(screen.getByRole('button', { name: 'Borrar mi cuenta' }));
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/welcome'));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/login'));
     expect(accountSession.getStatus()).toBe('guest');
     expect(await tokenStorage.read()).toBeNull();
+  });
+
+  it('test-ca-08-profile-unchanged: sin cambios no llama PATCH y avisa', async () => {
+    await accountSession.login('correo@ejemplo.com', 'secreta');
+    const updateSpy = jest.spyOn(accountSession, 'updateProfile');
+    const settings = await render(<AccountSettingsRoute />);
+    await waitFor(() => expect(settings.getByDisplayValue('Ana')).toBeTruthy());
+    await fireEvent.press(settings.getByRole('button', { name: 'Guardar perfil' }));
+    expect(await settings.findByText('No has hecho cambios.')).toBeTruthy();
+    expect(updateSpy).not.toHaveBeenCalled();
+    updateSpy.mockRestore();
+  });
+
+  it('test-ca-08-profile-focus-reset: al salir no persisten avisos de éxito', async () => {
+    await accountSession.login('correo@ejemplo.com', 'secreta');
+    const first = await render(<AccountSettingsRoute />);
+    await waitFor(() => expect(first.getByDisplayValue('Ana')).toBeTruthy());
+    await fireEvent.changeText(first.getByLabelText('Nombre'), 'Ana Lucía');
+    await fireEvent.press(first.getByRole('button', { name: 'Guardar perfil' }));
+    await waitFor(() => expect(first.getByText('Perfil actualizado.')).toBeTruthy());
+    await act(async () => {
+      first.unmount();
+      await Promise.resolve();
+    });
+    const second = await render(<AccountSettingsRoute />);
+    await waitFor(() => expect(second.getByDisplayValue('Ana Lucía')).toBeTruthy());
+    expect(second.queryByText('Perfil actualizado.')).toBeNull();
+  });
+
+  it('test-ca-09-password-focus-reset: al salir se limpian contraseñas y avisos', async () => {
+    await accountSession.login('correo@ejemplo.com', 'secreta');
+    const first = await render(<ChangePasswordRoute />);
+    await waitFor(() => expect(first.getByLabelText('Contraseña actual')).toBeTruthy());
+    await fireEvent.changeText(first.getByLabelText('Contraseña actual'), 'secreta');
+    await fireEvent.changeText(first.getByLabelText('Nueva contraseña'), 'nueva123');
+    await fireEvent.changeText(first.getByLabelText('Confirmar contraseña'), 'nueva123');
+    await fireEvent.press(first.getByRole('button', { name: 'Guardar contraseña' }));
+    await waitFor(() => expect(first.getByText('Contraseña actualizada.')).toBeTruthy());
+    await act(async () => {
+      first.unmount();
+      await Promise.resolve();
+    });
+    const second = await render(<ChangePasswordRoute />);
+    await waitFor(() => expect(second.getByLabelText('Contraseña actual')).toBeTruthy());
+    expect(second.queryByText('Contraseña actualizada.')).toBeNull();
+    expect(second.getByLabelText('Contraseña actual').props.value).toBe('');
+    expect(second.getByLabelText('Nueva contraseña').props.value).toBe('');
+    expect(second.getByLabelText('Confirmar contraseña').props.value).toBe('');
+  });
+
+  it('test-ca-08-profile-ignores-a-second-tap: un segundo toque no repite el guardado', async () => {
+    await accountSession.login('correo@ejemplo.com', 'secreta');
+    const settings = await render(<AccountSettingsRoute />);
+    await waitFor(() => expect(settings.getByDisplayValue('Ana')).toBeTruthy());
+    await fireEvent.changeText(settings.getByLabelText('Apodo'), 'Anita2');
+    let release: (value: Awaited<ReturnType<typeof accountSession.updateProfile>>) => void = () => undefined;
+    const spy = jest.spyOn(accountSession, 'updateProfile').mockImplementation(
+      () => new Promise((resolve) => { release = resolve; }),
+    );
+    try {
+      const button = settings.getByRole('button', { name: 'Guardar perfil' });
+      await act(async () => {
+        const handler = pressHandler(button);
+        handler();
+        handler();
+        await Promise.resolve();
+      });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(settings.getByLabelText('Guardando perfil…')).toBeTruthy();
+      await act(async () => {
+        release({ ok: true, status: 200, message: 'Perfil actualizado.' });
+      });
+      expect(spy).toHaveBeenCalledTimes(1);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('test-ca-09-password-ignores-a-second-tap: un segundo toque no repite el cambio de contraseña', async () => {
+    await accountSession.login('correo@ejemplo.com', 'secreta');
+    const screen = await render(<ChangePasswordRoute />);
+    await fireEvent.changeText(screen.getByLabelText('Contraseña actual'), 'secreta');
+    await fireEvent.changeText(screen.getByLabelText('Nueva contraseña'), 'nueva123');
+    await fireEvent.changeText(screen.getByLabelText('Confirmar contraseña'), 'nueva123');
+    let release: (value: Awaited<ReturnType<typeof accountSession.changePassword>>) => void = () => undefined;
+    const spy = jest.spyOn(accountSession, 'changePassword').mockImplementation(
+      () => new Promise((resolve) => { release = resolve; }),
+    );
+    try {
+      const button = screen.getByRole('button', { name: 'Guardar contraseña' });
+      await act(async () => {
+        const handler = pressHandler(button);
+        handler();
+        handler();
+        await Promise.resolve();
+      });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(screen.getByLabelText('Guardando contraseña…')).toBeTruthy();
+      await act(async () => {
+        release({ ok: true, status: 200, message: 'Contraseña actualizada.' });
+      });
+      expect(spy).toHaveBeenCalledTimes(1);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('test-ca-10-delete-ignores-a-second-tap: un segundo toque no repite el borrado', async () => {
+    await accountSession.login('correo@ejemplo.com', 'secreta');
+    const screen = await render(<DeleteAccountRoute />);
+    await fireEvent.changeText(screen.getByLabelText('Contraseña'), 'secreta');
+    let release: (value: Awaited<ReturnType<typeof accountSession.deleteAccount>>) => void = () => undefined;
+    const spy = jest.spyOn(accountSession, 'deleteAccount').mockImplementation(
+      () => new Promise((resolve) => { release = resolve; }),
+    );
+    try {
+      const button = screen.getByRole('button', { name: 'Borrar mi cuenta' });
+      await act(async () => {
+        const handler = pressHandler(button);
+        handler();
+        handler();
+        await Promise.resolve();
+      });
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(screen.getByLabelText('Borrando cuenta…')).toBeTruthy();
+      await act(async () => {
+        release({ ok: true, status: 200, message: 'Cuenta borrada.' });
+      });
+      await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
+      expect(mockReplace).toHaveBeenCalledWith('/login');
+    } finally {
+      spy.mockRestore();
+    }
   });
 });

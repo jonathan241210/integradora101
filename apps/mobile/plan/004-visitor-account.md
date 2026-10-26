@@ -35,7 +35,10 @@ Las rutas **no** importan repositorios ni `@arca/api-client`. Un **SessionProvid
 3. **Login (CA-04, CA-05):** Guardar access + refresh en Secure Store; `email_not_verified` → verificación.
 4. **401 en cualquier llamada autenticada (CA-06):** El cliente HTTP ejecuta **un solo** `auth/refresh` en vuelo; peticiones concurrentes await la misma promesa; éxito → reintento; fallo/revocado → limpiar Secure Store y navegar a Bienvenida.
 5. **Recuperación (CA-07), perfil (CA-08), contraseña (CA-09), borrado (CA-10), logout (CA-11).**
-6. **Borrado / logout (CA-10, CA-11):** Además de tokens, invocar un **ScanQueueClearPort** (interfaz vacía o no-op hasta `mobile-005`) para vaciar cola AsyncStorage cuando exista implementación.
+6. **Caché de perfil (escenario 7, CA-08).** `accountSession` guarda el perfil en memoria con una sola petición en vuelo. `bootstrap` (HTTP), `login` y `verifyEmail` la llenan. `peekProfile()` la lee sin red. `getProfile()` devuelve la copia si existe. `PATCH` exitoso la sustituye con el perfil del cuerpo de la respuesta y avisa a los suscriptores antes de que vuelvan a pintar. `logout`, `deleteAccount`, un refresh fallido y `resetForTests` la vacían. El hook `useVisitorProfile` pinta desde esa copia. Ajustes no usa la ficha de demostración como estado inicial.
+7. **Teclado (spec 002 CA-06).** `ScreenContainer` con scroll envuelve el contenido en `KeyboardAvoidingView` (`padding` en iOS) y el `ScrollView` usa `keyboardShouldPersistTaps="handled"` y `automaticallyAdjustKeyboardInsets`. Android, en `app.json`, usa `softwareKeyboardLayoutMode: resize`.
+8. **Atrás en pestañas (spec 002 CA-02, CA-06).** `(tabs)` usa `backBehavior="none"`. Cambiar de pestaña principal no se deshace con el gesto del sistema. Las rutas secundarias registran la pantalla que las abrió y el botón Volver, igual que el gesto de Android, regresa ahí (Ajustes → Perfil). En la raíz de Home, Mapa, Escanear, Colección o Perfil el gesto no recorre pestañas.
+9. **Borrado / logout (CA-10, CA-11):** Además de tokens, invocar un **ScanQueueClearPort** (interfaz vacía o no-op hasta `mobile-005`) para vaciar cola AsyncStorage cuando exista implementación.
 
 ### Navegación (Expo Router)
 
@@ -43,7 +46,7 @@ Grupo **`(auth)`** (sin TabBar), accesible en guest:
 
 | Pantalla | Ruta propuesta | CA |
 |---|---|---|
-| Bienvenida | `/(auth)/welcome` | CA-01 |
+| Inicio de sesión (entrada única) | `/(auth)/login` | CA-01 |
 | Registro | `/(auth)/register` | CA-02 |
 | Verificación correo | `/(auth)/verify-email` | CA-03, CA-04 |
 | Inicio de sesión | `/(auth)/login` | CA-04, CA-05 |
@@ -147,22 +150,24 @@ Mobile **no** define migraciones ni SQL. Consume el contrato de **`apps/api/spec
 
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
-| CA-01 | `test-ca-01-auth-welcome-redirect` | Guest → welcome; sin tabs |
+| CA-01 | `test-ca-01-auth-login-redirect` | Guest → login; sin tabs. Enmienda UX 2026-10-23. |
 | CA-02 | `test-ca-02-register-form` | Campos, checkboxes, avatar picker, enlace aviso |
 | CA-03 | `test-ca-03-verify-email-flow` | Tras mock 201 register → verify UI; resend cooldown |
 | CA-04 | `test-ca-04-auth-errors` | 422 mensajes; 403 → verify; 429 espera |
-| CA-05 | `test-ca-05-login-stores-tokens` | Mock Secure Store; navegación a tabs |
+| CA-05 | `test-ca-05-login-stores-tokens`, `test-ca-05-login-ignores-a-second-tap` | Mock Secure Store; navegación a tabs una sola vez. El indicador tapa la pantalla mientras la petición sigue. Enmienda 2026-10-23. |
 | CA-06 | `test-ca-06-refresh-single-flight` | Cliente simulado: N requests + 401 → 1 refresh → retry |
 | CA-07 | `test-ca-07-password-recovery-flow` | Forgot 202 → reset → login |
-| CA-08 | `test-ca-08-profile-patch` | Account settings + PATCH mock |
-| CA-09 | `test-ca-09-change-password` | PUT password mock |
-| CA-10 | `test-ca-10-delete-account` | DELETE + clear storage + welcome |
-| CA-11 | `test-ca-11-logout` | Logout + clear + welcome |
+| CA-08 | `test-ca-08-profile-patch`, `test-ca-08-profile-unchanged`, `test-ca-08-profile-focus-reset`, `test-ca-08-profile-ignores-a-second-tap`, `test-ca-08-profile-single-load`, `test-ca-08-settings-sin-ficha-demo` | PATCH mock; sin cambios sin PATCH; blur limpia avisos. Una sola lectura de perfil para varias pantallas; el PATCH actualiza la copia sin otro GET. Ajustes no muestra la ficha de demostración. Enmienda UX 2026-10-23. |
+| CA-09 | `test-ca-09-change-password`, `test-ca-09-password-focus-reset`, `test-ca-09-password-ignores-a-second-tap` | PUT password mock; blur limpia campos y avisos. Enmienda UX 2026-10-23. |
+| CA-10 | `test-ca-10-delete-account`, `test-ca-10-delete-ignores-a-second-tap` | DELETE + clear storage + login una sola vez. Enmienda UX 2026-10-23. |
+| CA-11 | `test-ca-11-logout`, `test-ca-11-logout-ignores-a-second-tap` | Logout + clear + login una sola vez. Enmienda UX 2026-10-23. |
 | CA-12 | `test-ca-12-auth-mvvm` (ampliar `architecture.test.ts`) | Sin fetch en screens/viewmodels; AuthRepository único |
 | CA-13 | `test-ca-13-android-cleartext-config` | Assert `app.json` / config Expo |
 | CA-14 | Meta: suite `__tests__/auth/` nombrada por CA | Jest + RTL |
 
 Pruebas manuales complementarias: registro feliz y refresh en dispositivo Android (Expo Go o dev build) contra API de pruebas en F2.
+
+Enmienda 2026-10-23: si `accountSession` ya está en `authenticated`, `bootstrap()` no vuelve a llamar `GET /api/v1/visitor/me`. La misma enmienda deja una sola copia del perfil para perfil, ajustes y edición; el `PATCH` la actualiza sin otro `GET`. La prueba de arranque vive en `__tests__/auth/http-bootstrap.test.ts` y la de la copia compartida en `__tests__/auth/profile-single-load.test.tsx`. El teclado y el atrás de las pestañas quedan anotados en la spec 002.
 
 ## Constitution Check
 

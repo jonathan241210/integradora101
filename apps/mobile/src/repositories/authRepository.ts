@@ -20,6 +20,7 @@ export interface AccountAccepted {
   status: 200 | 201 | 202 | 204;
   message: string;
   tokens?: AuthTokens;
+  profile?: VisitorProfile;
 }
 
 export type AccountResult = AccountAccepted | AuthFailure;

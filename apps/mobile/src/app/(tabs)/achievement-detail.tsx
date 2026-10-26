@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AchievementDetailScreen } from '../../screens/AchievementDetailScreen';
 import { useUserViewModel } from '../../viewmodels/useUserViewModel';
+import { useVisitorProgress } from '../../viewmodels/useVisitorProgress';
 
 export default function AchievementDetailRoute() {
   const router = useRouter();
@@ -12,7 +13,8 @@ export default function AchievementDetailRoute() {
   }>();
   const source = routeSource === 'profile' ? 'profile' : 'game';
   const { achievements, loading, error } = useUserViewModel();
-  const achievement = achievements.find((item) => item.id === id) ?? null;
+  const progress = useVisitorProgress();
+  const achievement = (progress.snapshot?.achievements ?? achievements).find((item) => item.id === id) ?? null;
 
   return (
     <AchievementDetailScreen

@@ -7,9 +7,10 @@ interface ButtonProps {
   onPress: () => void;
   variant?: 'primary' | 'danger' | 'outline' | 'soft';
   style?: any;
+  disabled?: boolean;
 }
 
-export function Button({ label, onPress, variant = 'primary', style }: ButtonProps) {
+export function Button({ label, onPress, variant = 'primary', style, disabled = false }: ButtonProps) {
   const getVariantStyle = () => {
     switch (variant) {
       case 'danger': return { backgroundColor: theme.colors.danger, color: theme.colors.textOnPrimary };
@@ -22,10 +23,12 @@ export function Button({ label, onPress, variant = 'primary', style }: ButtonPro
   const variantStyle = getVariantStyle();
 
   return (
-    <TouchableOpacity 
-      onPress={onPress} 
-      style={[styles.button, variantStyle, style]}
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={disabled || undefined}
       accessibilityRole="button"
+      accessibilityState={disabled ? { disabled: true } : undefined}
+      style={[styles.button, variantStyle, disabled && styles.disabled, style]}
     >
       <Text style={[styles.text, { color: variantStyle.color }]}>{label}</Text>
     </TouchableOpacity>
@@ -39,6 +42,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 48,
+  },
+  disabled: {
+    opacity: 0.6,
   },
   text: {
     fontSize: 16,

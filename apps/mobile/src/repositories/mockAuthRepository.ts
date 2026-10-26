@@ -175,7 +175,13 @@ export function createMockAuthRepository(): AuthRepository & {
       account.firstName = patch.firstName.trim();
       account.nickname = patch.nickname.trim();
       account.avatarCode = patch.avatarCode;
-      return accepted(200, 'Perfil actualizado.');
+      const profile = {
+        email: account.email,
+        firstName: account.firstName,
+        nickname: account.nickname,
+        avatarCode: account.avatarCode,
+      };
+      return { ok: true, status: 200, message: 'Perfil actualizado.', profile };
     },
     async changePassword(currentPassword: string, password: string): Promise<AccountResult> {
       if (!currentEmail) return { ok: false, status: 401, message: 'Tu sesión ha caducado.' };

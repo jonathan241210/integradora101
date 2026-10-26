@@ -1,39 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { SettingsScreen } from '../../screens/SettingsScreen';
-import { accountSession } from '../../session/accountSession';
-import { useVisitorContentViewModel, useVisitorPreferencesViewModel } from '../../viewmodels/useAccessViewModels';
+import { goBackWithinTabs } from '../../navigation/tabBack';
+import { useVisitorPreferencesViewModel } from '../../viewmodels/useAccessViewModels';
 import { useAccountSession } from '../../viewmodels/useAccountSession';
+import { useVisitorProfile } from '../../viewmodels/useVisitorProfile';
 
 export default function SettingsRoute() {
   const router = useRouter();
-  const { account } = useVisitorContentViewModel();
   const { preferences, setPreference } = useVisitorPreferencesViewModel();
   const { logout } = useAccountSession();
-  const [accountName, setAccountName] = useState(account.displayName);
-  const [accountEmail, setAccountEmail] = useState(account.email);
-
-  useEffect(() => {
-    let active = true;
-    const load = () => {
-      void accountSession.getProfile().then((profile) => {
-        if (!active || !profile) return;
-        setAccountName(profile.firstName);
-        setAccountEmail(profile.email);
-      });
-    };
-    load();
-    const unsubscribe = accountSession.subscribe(load);
-    return () => {
-      active = false;
-      unsubscribe();
-    };
-  }, []);
+  const { profile, loading } = useVisitorProfile();
+  const [busy, setBusy] = useState(false);
+  const inFlight = useRef(false);
 
   return (
     <SettingsScreen
-      accountName={accountName}
-      accountEmail={accountEmail}
+      accountName={profile?.firstName ?? ''}
+      accountEmail={profile?.email ?? ''}
+      accountBusy={loading && !profile}
       preferences={preferences}
       onToggle={setPreference}
       onAccountPress={() => router.push('/account-settings')}
@@ -41,9 +26,18 @@ export default function SettingsRoute() {
       onHelpPress={() => router.push('/help')}
       onAboutPress={() => router.push('/about')}
       onLogout={() => {
-        void logout().then(() => router.replace('/welcome'));
+        if (inFlight.current) return;
+        inFlight.current = true;
+        setBusy(true);
+        void logout()
+          .then(() => router.replace('/login'))
+          .finally(() => {
+            inFlight.current = false;
+            setBusy(false);
+          });
       }}
-      onBackPress={() => router.back()}
+      onBackPress={() => goBackWithinTabs(router)}
+      busy={busy}
     />
   );
 }

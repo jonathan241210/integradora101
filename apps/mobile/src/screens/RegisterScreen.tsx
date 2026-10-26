@@ -26,6 +26,7 @@ interface RegisterScreenProps {
   onOpenPrivacy: () => void;
   onSubmit: () => void;
   onBackPress: () => void;
+  busy?: boolean;
 }
 
 export function RegisterScreen({
@@ -49,9 +50,10 @@ export function RegisterScreen({
   onOpenPrivacy,
   onSubmit,
   onBackPress,
+  busy = false,
 }: RegisterScreenProps) {
   return (
-    <ScreenContainer>
+    <ScreenContainer busyMessage={busy ? 'Creando cuenta…' : null}>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver al inicio de sesión" />
         <AppText variant="heading">Crear cuenta</AppText>
@@ -72,7 +74,7 @@ export function RegisterScreen({
           <AppText variant="small" color="primary">Leer aviso de privacidad</AppText>
         </Pressable>
         {error ? <AppText variant="small" color="danger" accessibilityLiveRegion="polite">{error}</AppText> : null}
-        <Button label="Crear cuenta" onPress={onSubmit} />
+        <Button label="Crear cuenta" onPress={onSubmit} disabled={busy} />
       </View>
     </ScreenContainer>
   );

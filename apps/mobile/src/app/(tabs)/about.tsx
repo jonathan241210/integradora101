@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { goBackWithinTabs } from '../../navigation/tabBack';
 import { InfoSectionsScreen } from '../../screens/InfoSectionsScreen';
 import { useVisitorContentViewModel } from '../../viewmodels/useAccessViewModels';
 
@@ -11,7 +12,7 @@ export default function AboutRoute() {
       title="Acerca de ARCA-NB"
       sections={aboutSections}
       backLabel="Volver a ajustes"
-      onBackPress={() => router.back()}
+      onBackPress={() => goBackWithinTabs(router)}
     />
   );
 }

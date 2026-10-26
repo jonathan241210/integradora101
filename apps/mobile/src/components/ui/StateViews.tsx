@@ -6,6 +6,14 @@ export interface LoadingViewProps {
   message?: string;
 }
 
+export function BusyOverlay({ message }: { message: string }) {
+  return (
+    <View style={styles.overlay} pointerEvents="auto">
+      <LoadingView message={message} />
+    </View>
+  );
+}
+
 export function LoadingView({ message = 'Cargando información del zoológico...' }: LoadingViewProps) {
   return (
     <View style={styles.centerContainer} accessibilityRole="progressbar" accessibilityLabel={message}>
@@ -64,6 +72,13 @@ export function ErrorView({
 }
 
 const styles = StyleSheet.create({
+  overlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2,
+  },
   centerContainer: {
     padding: spacing.xl,
     alignItems: 'center',

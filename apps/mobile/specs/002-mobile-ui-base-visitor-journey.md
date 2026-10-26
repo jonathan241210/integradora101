@@ -35,7 +35,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
 ## Criterios de aceptación
 - **CA-01 (Arquitectura MVVM):** Dado cualquier flujo de pantalla, cuando se analice el código, entonces se debe cumplir estrictamente la jerarquía: `Routes` $\rightarrow$ `ViewModels` $\rightarrow$ `Repositories` $\rightarrow$ `Models`. No debe existir importación de mocks o repositorios directamente en `src/screens/` ni en `app/`.
     - *Prueba:* `test-ca-01`: Análisis estático mediante script de grep/lint para detectar imports prohibidos en las capas de vista y rutas.
-- **CA-02 (Navegación por Tabs):** Dado el arranque de la app, cuando se interactúe con la TabBar, entonces se debe navegar correctamente entre las 5 pestañas principales: Home, Mapa, Escanear, Colección y Perfil.
+- **CA-02 (Navegación por Tabs):** Dado el arranque de la app, cuando se interactúe con la TabBar, entonces se debe navegar correctamente entre las 5 pestañas principales: Home, Mapa, Escanear, Colección y Perfil. El gesto o botón atrás del sistema no recorre las pestañas principales ya visitadas: en la raíz de una de esas cinco pestañas no deshace el cambio de pestaña. Desde una ruta secundaria, atrás vuelve a la pantalla que la abrió (Ajustes vuelve a Perfil). Enmienda de Aksel, 2026-10-23.
     - *Prueba:* `test-ca-02`: Test de integración con `@testing-library/react-native` verificando el cambio de pantalla al presionar tabs.
 - **CA-03 (Rutas Secundarias):** Dado que el usuario navega a rutas como Search, Game, Tour 3D, detalles de eventos/misiones o Resultados QR, entonces la TabBar debe permanecer visible y resaltar la pestaña principal asociada (ej. Game $\rightarrow$ Home, Tour 3D $\rightarrow$ Mapa).
     - *Prueba:* `test-ca-03`: Test de renderizado de `AppTabBar` verificando el estado `active` basado en la ruta actual.
@@ -47,6 +47,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     1. Ausencia de solapamientos con el Status Bar y Navigation Bar (uso de `SafeAreas`).
     2. Correcto renderizado de carruseles horizontales sin cortes abruptos.
     3. Coincidencia de jerarquía visual con la referencia (Header $\rightarrow$ Body $\rightarrow$ Footer).
+    4. El teclado no tapa los campos de contraseña. El contenedor de pantalla desplaza el formulario y Android redimensiona la ventana (`softwareKeyboardLayoutMode: resize`). Enmienda de Aksel, 2026-10-23.
     - *Prueba:* `test-ca-06-manual`: Validación manual en emulador/dispositivo Android.
     - *Prueba:* `test-ca-06-auto`: Snapshot tests de los componentes base de la UI para asegurar consistencia estructural.
 - **CA-07 (Integración de Tokens):** Dado cualquier componente visual, cuando se verifique su estilo, entonces debe utilizar valores provenientes de `@arca/tokens` a través de un adaptador de tema.
@@ -68,7 +69,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     - *Prueba:* `test-ca-12`: campos, advertencia, confirmación distinta y regreso a Login.
 - **CA-13 (Recuperación visual):** Dado el olvido de contraseña, cuando se envía un correo, entonces la app muestra un aviso genérico que no revela si la cuenta existe y continúa a una pantalla con código de 6 dígitos, nueva contraseña y confirmación. Al completarla, vuelve a Login. En la demostración el correo no se envía y cualquier código de 6 dígitos permite continuar.
     - *Prueba:* `test-ca-13`: aviso genérico, código incompleto y regreso a Login.
-- **CA-14 (Ajustes):** Dado Perfil, cuando se abre Ajustes desde el botón circular junto al título «Perfil», entonces se ve la ficha de ejemplo, los interruptores de notificaciones, modo oscuro y ubicación, y las filas Privacidad, Ayuda y soporte y Acerca de ARCA-NB. La pestaña Perfil permanece activa. Los interruptores solo cambian en pantalla. Cada fila abre su pantalla. No hay selector de idioma ni interruptor de sonidos.
+- **CA-14 (Ajustes):** Dado Perfil, cuando se abre Ajustes desde el botón circular junto al título «Perfil», entonces se ve la ficha de ejemplo, los interruptores de notificaciones y ubicación, y las filas Privacidad, Ayuda y soporte y Acerca de ARCA-NB. La pestaña Perfil permanece activa. Los interruptores solo cambian en pantalla. Cada fila abre su pantalla. No hay modo oscuro, selector de idioma ni interruptor de sonidos. La app permanece en modo claro. Enmienda de Aksel, 2026-10-23.
     - *Prueba:* `test-ca-14`: acceso desde Perfil, interruptores, filas y pestaña activa.
 - **CA-15 (Aviso de privacidad de demostración):** Dada Privacidad, cuando se muestra el aviso, entonces explica qué datos recopila la demostración, para qué se utilizarían, cómo se protegerían y cómo ejercer derechos. El texto se identifica como explicación de demostración; el aviso oficial lo publicará el zoológico.
     - *Prueba:* `test-ca-15`: presencia de las cuatro secciones del aviso. La prueba comparte el caso de filas de `test-ca-14`.

@@ -8,7 +8,8 @@
     "userInterfaceStyle": "light",
     "android": {
       "package": "com.tulancingo.arcanb",
-      "usesCleartextTraffic": false
+      "usesCleartextTraffic": false,
+      "softwareKeyboardLayoutMode": "resize"
     },
     "plugins": [
       "expo-router",

@@ -19,6 +19,7 @@ interface AccountSettingsScreenProps {
   onChangePassword: () => void;
   onDeleteAccount: () => void;
   onBackPress: () => void;
+  busy?: boolean;
 }
 
 export function AccountSettingsScreen({
@@ -35,9 +36,10 @@ export function AccountSettingsScreen({
   onChangePassword,
   onDeleteAccount,
   onBackPress,
+  busy = false,
 }: AccountSettingsScreenProps) {
   return (
-    <ScreenContainer>
+    <ScreenContainer busyMessage={busy ? 'Guardando perfil…' : null}>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver a ajustes" />
         <AppText variant="heading">Editar cuenta</AppText>
@@ -48,7 +50,7 @@ export function AccountSettingsScreen({
         <AvatarPicker value={avatarCode} onChange={onAvatarChange} />
         {notice ? <AppText variant="small">{notice}</AppText> : null}
         {error ? <AppText variant="small" color="danger" accessibilityLiveRegion="polite">{error}</AppText> : null}
-        <Button label="Guardar perfil" onPress={onSave} />
+        <Button label="Guardar perfil" onPress={onSave} disabled={busy} />
         <Button label="Cambiar contraseña" variant="outline" onPress={onChangePassword} />
         <Button label="Borrar cuenta" variant="danger" onPress={onDeleteAccount} />
       </View>

@@ -76,6 +76,7 @@ Dado que esta Spec es puramente de UI y utiliza mocks, no se definen endpoints d
 - **Rendimiento Visual:** Riesgo de solapamientos en Android. Mitigación: Uso obligatorio de `react-native-safe-area-context`.
 - **Activos de animales:** La referencia no incluye fotos; el UI usará placeholders de forma segura si no hay URL, sin depender de archivos de `arca-ui-reference`.
 - **Validación CA-06:** La inspección manual en Android con Expo Go fue confirmada por la persona solicitante el 2026-10-09; queda registrada en T-28.
+- **Atrás y teclado (enmienda 2026-10-23):** Las pestañas usan `backBehavior="none"`. El gesto atrás no deshace Home → Mapa → Colección. En una ruta secundaria vuelve a la pantalla que la abrió. Los formularios con scroll usan `KeyboardAvoidingView` y Android `softwareKeyboardLayoutMode: resize`. La comprobación en dispositivo queda en T-55; la automática cubre la historia de rutas y las props del contenedor.
 - **Paleta móvil desalineada:** `packages/tokens/index.ts` todavía exporta verde/amarillo aunque la guía de diseño y `tokens.css` definen los valores institucionales; la enmienda los alinea y añade comprobaciones del contrato.
 - **Contraste de acento:** El acento claro no debe utilizarse como texto sobre superficies blancas; se reemplazará ese uso por el primario y se verificará el contraste de las combinaciones expuestas.
 
@@ -104,7 +105,7 @@ La persona solicitante confirmó cuatro pantallas de demostración y que las fil
 | Registro | `/register` | Nombre de usuario, correo, contraseña y confirmación. Advierte que borrar la app no restaura esta demostración. Volver a Login. |
 | Olvido | `/forgot-password` | Correo y aviso genérico, alineado a `api-004` CA-10. |
 | Nueva contraseña | `/reset-password` | Código de 6 dígitos, nueva contraseña y confirmación. En la demostración cualquier código de 6 dígitos continúa. |
-| Ajustes | `/settings` | Ficha de ejemplo e interruptores visuales de notificaciones, modo oscuro y ubicación. Pestaña Perfil activa. Sin idioma ni sonidos. |
+| Ajustes | `/settings` | Ficha de ejemplo e interruptores visuales de notificaciones y ubicación. Pestaña Perfil activa. Sin modo oscuro, idioma ni sonidos. |
 | Mi cuenta | `/account` | Nombre y correo de ejemplo, con la misma advertencia. |
 | Privacidad | `/privacy` | Cuatro secciones: datos, finalidad, protección y derechos. Texto de demostración. |
 | Ayuda | `/help` | Cómo entrar, crear cuenta, recuperar contraseña y qué hacen los interruptores. |
