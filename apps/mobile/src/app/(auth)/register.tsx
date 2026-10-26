@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { RegisterScreen } from '../../screens/RegisterScreen';
 import { AvatarCode } from '../../constants/avatarCatalog';
@@ -18,12 +18,15 @@ export default function RegisterRoute() {
   const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
   const [privacyVersion, setPrivacyVersion] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const inFlight = useRef(false);
 
   useEffect(() => {
     void accountSession.getPrivacyNotice().then((notice) => setPrivacyVersion(notice.version));
   }, []);
 
   const submit = async () => {
+    if (inFlight.current) return;
     if (!firstName.trim() || !nickname.trim() || !email.trim() || !password || !confirmation) {
       setError('Completa nombre, apodo, correo, contraseña y confirmación.');
       return;
@@ -48,20 +51,28 @@ export default function RegisterRoute() {
       setError('Elige un avatar del catálogo.');
       return;
     }
-    const result = await accountSession.register({
-      email,
-      firstName,
-      nickname,
-      password,
-      avatarCode,
-      isAdult,
-      privacyNoticeVersion: privacyVersion,
-    });
-    if (!result.ok) {
-      setError(result.message);
-      return;
+    inFlight.current = true;
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await accountSession.register({
+        email,
+        firstName,
+        nickname,
+        password,
+        avatarCode,
+        isAdult,
+        privacyNoticeVersion: privacyVersion,
+      });
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+      router.replace({ pathname: '/verify-email', params: { email: email.trim() } });
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
     }
-    router.replace({ pathname: '/verify-email', params: { email: email.trim() } });
   };
 
   return (
@@ -86,6 +97,7 @@ export default function RegisterRoute() {
       onOpenPrivacy={() => router.push('/privacy-notice')}
       onSubmit={() => submit()}
       onBackPress={() => router.back()}
+      busy={busy}
     />
   );
 }

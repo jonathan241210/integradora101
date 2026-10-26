@@ -73,7 +73,11 @@ export function CollectionScreen({ animals, progress, isOffline = false, onAnima
                   style={styles.imagePlaceholder}
                 />
                 <AppText variant="small" bold center style={styles.animalName}>{item.commonName}</AppText>
-                <AppText variant="caption" center>{item.isDiscovered ? '✓ Descubierto' : '🔒 Bloqueado'}</AppText>
+                <AppText variant="caption" center>
+                  {item.isDiscovered
+                    ? `✓ Descubierto${item.discoveredAt ? ` · ${item.discoveredAt}` : ''}`
+                    : '🔒 Bloqueado'}
+                </AppText>
               </Card>
             </TouchableOpacity>
           );

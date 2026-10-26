@@ -1,37 +1,23 @@
-import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { AppText, ScreenContainer } from '../../components/ui';
+import { AppText, LoadingView, ScreenContainer } from '../../components/ui';
 import { avatarLabel } from '../../constants/avatarCatalog';
 import { ProfileScreen } from '../../screens/ProfileScreen';
-import { accountSession } from '../../session/accountSession';
 import { useUserViewModel } from '../../viewmodels/useUserViewModel';
+import { useVisitorProfile } from '../../viewmodels/useVisitorProfile';
+import { useVisitorProgress } from '../../viewmodels/useVisitorProgress';
 
 export default function ProfileRoute() {
   const router = useRouter();
   const { user, achievements, milestones, loading, error } = useUserViewModel();
-  const [identity, setIdentity] = useState<{ nickname: string; avatarLabel: string } | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    const load = () => {
-      void accountSession.getProfile().then((profile) => {
-        if (!active) return;
-        setIdentity(profile
-          ? { nickname: profile.nickname, avatarLabel: avatarLabel(profile.avatarCode) }
-          : null);
-      });
-    };
-    load();
-    const unsubscribe = accountSession.subscribe(load);
-    return () => {
-      active = false;
-      unsubscribe();
-    };
-  }, []);
-  if (loading) {
+  const progress = useVisitorProgress();
+  const { profile } = useVisitorProfile();
+  const identity = profile
+    ? { nickname: profile.nickname, avatarLabel: avatarLabel(profile.avatarCode) }
+    : null;
+  if (loading || (progress.loading && !progress.snapshot)) {
     return (
       <ScreenContainer>
-        <AppText variant="body">Cargando perfil…</AppText>
+        <LoadingView message="Cargando perfil…" />
       </ScreenContainer>
     );
   }
@@ -49,12 +35,24 @@ export default function ProfileRoute() {
       </ScreenContainer>
     );
   }
+  const live = progress.snapshot;
+  const shownUser = live
+    ? {
+        ...user,
+        points: live.progress.points,
+        level: live.progress.level,
+        rank: live.progress.rank,
+        discoveredCount: live.progress.discoveredSpecies,
+        totalAnimals: live.progress.totalSpecies,
+      }
+    : user;
   return (
     <ProfileScreen
-      user={user}
+      user={shownUser}
       displayName={identity?.nickname}
       avatarLabel={identity?.avatarLabel}
-      achievements={achievements}
+      nextThreshold={live?.progress.nextThreshold}
+      achievements={live?.achievements ?? achievements}
       milestones={milestones}
       onAchievementPress={(id) => router.push({
         pathname: '/achievement-detail',

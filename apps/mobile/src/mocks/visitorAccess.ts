@@ -7,7 +7,6 @@ export const MOCK_VISITOR_ACCOUNT: VisitorAccountSummary = {
 
 export const DEFAULT_VISITOR_PREFERENCES: VisitorPreferences = {
   notifications: true,
-  darkMode: false,
   location: true,
 };
 
@@ -59,7 +58,7 @@ export const HELP_SECTIONS: InfoSection[] = [
   {
     id: 'settings',
     title: 'Ajustes',
-    body: 'Notificaciones, modo oscuro y ubicación solo cambian de estado en pantalla. La aplicación permanece en modo claro.',
+    body: 'Notificaciones y ubicación solo cambian de estado en pantalla. La aplicación permanece en modo claro.',
   },
 ];
 

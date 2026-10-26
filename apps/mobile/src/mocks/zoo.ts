@@ -1,4 +1,4 @@
-import { Achievement, Animal, User, Mission, Reward, LeaderboardEntry, ZooEvent, News, MapLocation, MapRoute, QrOutcome } from '../models';
+import { Achievement, Animal, User, Mission, ZooEvent, News, MapLocation, MapRoute, QrOutcome } from '../models';
 
 export const MOCK_ANIMALS: Animal[] = [
   {
@@ -85,21 +85,8 @@ export const MOCK_USER: User = {
 };
 
 export const MOCK_MISSIONS: Mission[] = [
-  { id: 'm1', title: 'Safari Matutino', objective: 'Descubre cinco animales de la sabana durante tu visita.', progress: 3, total: 5, reward: 'Insignia de Oro' },
-  { id: 'm2', title: 'Observador de Aves', objective: 'Encuentra y descubre un ave en el zoológico.', progress: 0, total: 1, reward: 'Certificado de Experto' },
-];
-
-export const MOCK_REWARDS: Reward[] = [
-  { id: 'r1', name: 'Sombrero Gris', icon: 'hat-icon' },
-  { id: 'r2', name: 'Novato', icon: 'newbie-icon' },
-  { id: 'r3', name: 'Explorador', icon: 'explorer-icon' },
-  { id: 'r4', name: 'Maestro', icon: 'master-icon' },
-];
-
-export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
-  { id: 'l1', name: 'Carlos Ruiz', points: 3100, rank: 1, isCurrentUser: false },
-  { id: 'l2', name: 'María García', points: 2450, rank: 2, isCurrentUser: true },
-  { id: 'l3', name: 'Ana López', points: 2100, rank: 3, isCurrentUser: false },
+  { id: 'm1', title: 'Safari Matutino', objective: 'Descubre cinco animales de la sabana durante tu visita.', progress: 3, total: 5, reward: '100 puntos' },
+  { id: 'm2', title: 'Observador de Aves', objective: 'Encuentra y descubre un ave en el zoológico.', progress: 0, total: 1, reward: '50 puntos' },
 ];
 
 export const MOCK_ACHIEVEMENTS: Achievement[] = [

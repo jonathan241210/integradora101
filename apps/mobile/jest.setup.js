@@ -10,6 +10,18 @@ jest.mock('expo-network', () => ({
   })),
 }));
 
+jest.mock('./src/hooks/useScreenFocusEffect', () => {
+  const React = require('react');
+  return {
+    useScreenFocusEffect: (effect) => {
+      React.useEffect(() => {
+        const cleanup = effect();
+        return typeof cleanup === 'function' ? cleanup : undefined;
+      }, [effect]);
+    },
+  };
+});
+
 jest.mock('react-native-safe-area-context', () => {
   const RNActual = jest.requireActual('react-native-safe-area-context');
   return {

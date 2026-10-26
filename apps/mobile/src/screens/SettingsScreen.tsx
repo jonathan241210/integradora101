@@ -15,11 +15,12 @@ interface SettingsScreenProps {
   onAboutPress: () => void;
   onLogout: () => void;
   onBackPress: () => void;
+  busy?: boolean;
+  accountBusy?: boolean;
 }
 
 const preferenceRows: { key: VisitorPreferenceKey; label: string; icon: string; hint: string }[] = [
   { key: 'notifications', label: 'Notificaciones', icon: 'notifications', hint: 'Solo cambia el estado en pantalla' },
-  { key: 'darkMode', label: 'Modo oscuro', icon: 'moon-outline', hint: 'No cambia el tema; la aplicación permanece en modo claro' },
   { key: 'location', label: 'Ubicación', icon: 'location-outline', hint: 'No solicita la ubicación del teléfono' },
 ];
 
@@ -34,20 +35,35 @@ export function SettingsScreen({
   onAboutPress,
   onLogout,
   onBackPress,
+  busy = false,
+  accountBusy = false,
 }: SettingsScreenProps) {
+  const accountLabel = accountBusy
+    ? 'Cargando cuenta'
+    : accountName
+      ? `Cuenta de ${accountName}`
+      : 'Cuenta';
+  const shownName = accountBusy ? 'Cargando…' : accountName;
+
   return (
-    <ScreenContainer>
+    <ScreenContainer busyMessage={busy ? 'Cerrando sesión…' : null}>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver al perfil" />
         <AppText variant="heading">Ajustes</AppText>
-        <Pressable onPress={onAccountPress} accessibilityRole="button" accessibilityLabel={`Cuenta de ${accountName}`}>
+        <Pressable
+          onPress={onAccountPress}
+          disabled={accountBusy}
+          accessibilityRole="button"
+          accessibilityLabel={accountLabel}
+          accessibilityState={{ busy: accountBusy, disabled: accountBusy }}
+        >
           <Card style={styles.accountCard}>
             <View style={styles.avatar}>
               <Icon name="person" size={22} color={colors.primary} />
             </View>
             <View style={styles.accountText}>
-              <AppText variant="subheading" bold>{accountName}</AppText>
-              <AppText variant="small" color="textMuted">{accountEmail}</AppText>
+              <AppText variant="subheading" bold>{shownName}</AppText>
+              <AppText variant="small" color="textMuted">{accountBusy ? '' : accountEmail}</AppText>
             </View>
             <Icon name="chevron-forward" size={20} color={colors.textMuted} />
           </Card>
@@ -77,7 +93,7 @@ export function SettingsScreen({
           <SettingsLink icon="help-outline" label="Ayuda y soporte" onPress={onHelpPress} />
           <SettingsLink icon="information-circle-outline" label="Acerca de ARCA-NB" detail="v1.0.0" onPress={onAboutPress} />
         </Card>
-        <Button label="Cerrar sesión" variant="outline" onPress={onLogout} />
+        <Button label="Cerrar sesión" variant="outline" onPress={onLogout} disabled={busy} />
       </View>
     </ScreenContainer>
   );

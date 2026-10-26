@@ -1,7 +1,9 @@
 import { createHttpAuthRepository } from '../repositories/httpAuthRepository';
 import { authRepository } from '../repositories/mockAuthRepository';
-import type { AccountResult, AuthRepository, AuthResult, RegisterInput } from '../repositories/authRepository';
+import type { AccountResult, AuthRepository, AuthResult, RegisterInput, VisitorProfile } from '../repositories/authRepository';
+import { clearSharedProgress } from '../repositories/sharedProgress';
 import { createSecureTokenStorage, tokenStorage, type TokenStorage } from '../services/tokenStorage';
+import { clearScanQueue } from '../services/scanQueue';
 
 export type AccountSessionStatus = 'bootstrapping' | 'guest' | 'authenticated';
 
@@ -13,20 +15,64 @@ let refreshFlight: Promise<AuthResult> | null = null;
 let repository: AuthRepository = authRepository;
 let activeStorage: TokenStorage = tokenStorage;
 let httpMode = false;
+let cachedProfile: VisitorProfile | null = null;
+let profileFlight: Promise<VisitorProfile | null> | null = null;
+let profileGeneration = 0;
 
 function emit() {
   listeners.forEach((listener) => listener());
 }
 
+function clearProfileCache() {
+  profileGeneration += 1;
+  cachedProfile = null;
+  profileFlight = null;
+}
+
 function setStatus(next: AccountSessionStatus) {
+  const previous = status;
   status = next;
+  if (previous !== next && (next === 'guest' || next === 'authenticated')) {
+    clearSharedProgress();
+  }
+  if (next === 'guest') clearProfileCache();
   emit();
+}
+
+function readProfile(force = false): Promise<VisitorProfile | null> {
+  if (!force && cachedProfile) return Promise.resolve(cachedProfile);
+  if (profileFlight) return profileFlight;
+
+  const generation = profileGeneration;
+  const flight = repository.getProfile().then(
+    (profile) => {
+      if (generation !== profileGeneration) return cachedProfile;
+      if (profile) cachedProfile = profile;
+      if (profileFlight === flight) profileFlight = null;
+      return profile;
+    },
+    (error: unknown) => {
+      if (profileFlight === flight) profileFlight = null;
+      throw error;
+    },
+  );
+  profileFlight = flight;
+  return flight;
+}
+
+async function warmProfile() {
+  try {
+    await readProfile(true);
+  } catch {
+    // The session stays valid. Screens load the profile again when the cache is still empty.
+  }
 }
 
 function useMock() {
   httpMode = false;
   repository = authRepository;
   activeStorage = tokenStorage;
+  clearProfileCache();
 }
 
 function useHttp(apiUrl: string, fetchImpl?: typeof fetch) {
@@ -37,6 +83,7 @@ function useHttp(apiUrl: string, fetchImpl?: typeof fetch) {
     storage: activeStorage,
     fetchImpl,
   });
+  clearProfileCache();
 }
 
 const configuredApiUrl = process.env.EXPO_PUBLIC_API_URL?.trim() ?? '';
@@ -63,6 +110,7 @@ export const accountSession = {
     useHttp(apiUrl, options.fetchImpl);
   },
   async bootstrap() {
+    if (status === 'authenticated') return;
     const tokens = await activeStorage.read();
     if (!tokens) {
       setStatus('guest');
@@ -73,7 +121,7 @@ export const accountSession = {
       return;
     }
     try {
-      const profile = await repository.getProfile();
+      const profile = await readProfile(false);
       if (!profile) {
         await activeStorage.clear();
         setStatus('guest');
@@ -88,6 +136,7 @@ export const accountSession = {
     const result = await repository.login(email, password);
     if (result.ok) {
       await activeStorage.write(result.tokens);
+      await warmProfile();
       setStatus('authenticated');
     }
     return result;
@@ -104,6 +153,7 @@ export const accountSession = {
     const result = await repository.verifyEmail(email, code);
     if (result.ok && result.tokens) {
       await activeStorage.write(result.tokens);
+      await warmProfile();
       setStatus('authenticated');
     }
     return result;
@@ -120,12 +170,27 @@ export const accountSession = {
   getPrivacyNotice() {
     return repository.getPrivacyNotice();
   },
-  getProfile() {
-    return repository.getProfile();
+  peekProfile(): VisitorProfile | null {
+    return cachedProfile;
+  },
+  getProfile(options?: { force?: boolean }) {
+    return readProfile(options?.force ?? false);
   },
   async updateProfile(patch: { firstName: string; nickname: string; avatarCode: string }) {
     const result = await repository.updateProfile(patch);
-    if (result.ok) emit();
+    if (result.ok) {
+      if (result.profile) {
+        cachedProfile = result.profile;
+      } else if (cachedProfile) {
+        cachedProfile = {
+          ...cachedProfile,
+          firstName: patch.firstName.trim(),
+          nickname: patch.nickname.trim(),
+          avatarCode: patch.avatarCode,
+        };
+      }
+      emit();
+    }
     return result;
   },
   changePassword(currentPassword: string, password: string) {
@@ -134,6 +199,7 @@ export const accountSession = {
   async deleteAccount(password: string) {
     const result = await repository.deleteAccount(password);
     if (result.ok) {
+      await clearScanQueue();
       await activeStorage.clear();
       setStatus('guest');
     }
@@ -160,6 +226,8 @@ export const accountSession = {
     status = 'bootstrapping';
     refreshFlight = null;
     listeners.clear();
+    clearProfileCache();
+    clearSharedProgress();
     await activeStorage.clear();
     useMock();
     authRepository.reset();

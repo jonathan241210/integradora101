@@ -11,6 +11,7 @@ interface ForgotPasswordScreenProps {
   onSubmit: () => void;
   onContinue: () => void;
   onBackPress: () => void;
+  busy?: boolean;
 }
 
 export function ForgotPasswordScreen({
@@ -21,9 +22,10 @@ export function ForgotPasswordScreen({
   onSubmit,
   onContinue,
   onBackPress,
+  busy = false,
 }: ForgotPasswordScreenProps) {
   return (
-    <ScreenContainer>
+    <ScreenContainer busyMessage={busy ? 'Enviando código…' : null}>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver al inicio de sesión" />
         <AppText variant="heading">¿Olvidaste tu contraseña?</AppText>
@@ -39,7 +41,7 @@ export function ForgotPasswordScreen({
         />
         {error ? <AppText variant="small" color="danger" accessibilityLiveRegion="polite">{error}</AppText> : null}
         {notice ? <AppText variant="body" accessibilityLiveRegion="polite">{notice}</AppText> : null}
-        <Button label="Enviar código" onPress={onSubmit} />
+        <Button label="Enviar código" onPress={onSubmit} disabled={busy} />
         {notice ? <Button label="Ya tengo el código" variant="outline" onPress={onContinue} /> : null}
       </View>
     </ScreenContainer>

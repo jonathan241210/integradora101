@@ -1,14 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { UserRepository, UserRepositoryImpl } from '../repositories';
-import { Achievement, Milestone, User, Mission, Reward, LeaderboardEntry } from '../models';
+import { Achievement, Milestone, User, Mission } from '../models';
 
 const defaultRepository = new UserRepositoryImpl();
 
 export function useUserViewModel(repository: UserRepository = defaultRepository) {
   const [user, setUser] = useState<User | null>(null);
   const [missions, setMissions] = useState<Mission[]>([]);
-  const [rewards, setRewards] = useState<Reward[]>([]);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [loading, setLoading] = useState(true);
@@ -18,18 +16,14 @@ export function useUserViewModel(repository: UserRepository = defaultRepository)
     setLoading(true);
     setError(null);
     try {
-      const [userData, missionsData, rewardsData, leaderboardData, achievementData, milestoneData] = await Promise.all([
+      const [userData, missionsData, achievementData, milestoneData] = await Promise.all([
         repository.getUser(),
         repository.getMissions(),
-        repository.getRewards(),
-        repository.getLeaderboard(),
         repository.getAchievements(),
         repository.getMilestones(),
       ]);
       setUser(userData);
       setMissions(missionsData);
-      setRewards(rewardsData);
-      setLeaderboard(leaderboardData);
       setAchievements(achievementData);
       setMilestones(milestoneData);
     } catch (error) {
@@ -47,8 +41,6 @@ export function useUserViewModel(repository: UserRepository = defaultRepository)
   return {
     user,
     missions,
-    rewards,
-    leaderboard,
     achievements,
     milestones,
     loading,

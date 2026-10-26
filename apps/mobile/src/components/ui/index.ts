@@ -21,5 +21,5 @@ export { Stat } from './Stat';
 export { ProgressBar } from './ProgressBar';
 export { TextField, PasswordVisibilityToggle } from './TextField';
 export { OfflineBanner } from './OfflineBanner';
-export { LoadingView, EmptyView, ErrorView } from './StateViews';
+export { LoadingView, EmptyView, ErrorView, BusyOverlay } from './StateViews';
 export { RemoteImage } from './RemoteImage';

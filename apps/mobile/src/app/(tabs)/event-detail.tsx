@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { goBackWithinTabs } from '../../navigation/tabBack';
 import { EventDetailScreen } from '../../screens/EventDetailScreen';
 import { ZooEvent } from '../../models';
 import { useHomeViewModel } from '../../viewmodels/useHomeViewModel';
@@ -46,7 +47,7 @@ export default function EventDetailRoute() {
       loading={loading}
       error={error}
       isOffline={isOffline}
-      onBackPress={() => router.back()}
+      onBackPress={() => goBackWithinTabs(router)}
     />
   );
 }

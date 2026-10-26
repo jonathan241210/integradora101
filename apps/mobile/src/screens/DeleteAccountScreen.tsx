@@ -9,11 +9,12 @@ interface DeleteAccountScreenProps {
   onPasswordChange: (value: string) => void;
   onSubmit: () => void;
   onBackPress: () => void;
+  busy?: boolean;
 }
 
-export function DeleteAccountScreen({ password, error, onPasswordChange, onSubmit, onBackPress }: DeleteAccountScreenProps) {
+export function DeleteAccountScreen({ password, error, onPasswordChange, onSubmit, onBackPress, busy = false }: DeleteAccountScreenProps) {
   return (
-    <ScreenContainer>
+    <ScreenContainer busyMessage={busy ? 'Borrando cuenta…' : null}>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver a la cuenta" />
         <AppText variant="heading">Borrar cuenta</AppText>
@@ -22,7 +23,7 @@ export function DeleteAccountScreen({ password, error, onPasswordChange, onSubmi
         </View>
         <TextField label="Contraseña" value={password} onChangeText={onPasswordChange} secureTextEntry />
         {error ? <AppText variant="small" color="danger" accessibilityLiveRegion="polite">{error}</AppText> : null}
-        <Button label="Borrar mi cuenta" variant="danger" onPress={onSubmit} />
+        <Button label="Borrar mi cuenta" variant="danger" onPress={onSubmit} disabled={busy} />
       </View>
     </ScreenContainer>
   );

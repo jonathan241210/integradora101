@@ -83,7 +83,7 @@ Cuando hay datos en caché válidos se retornan inmediatamente; si la red falla 
 Las pantallas manejan 5 estados de presentación: carga (`loading`), éxito (`success`), error con reintento accesible (`error`), datos vacíos (`empty`) y modo sin conexión (`offline`).
 La autoridad de datos de negocio reside en el servidor/API Laravel.
 
-Los recorridos de exploración restantes siguen en fixtures de `src/mocks/`. La cuenta visitante es la excepción: con `EXPO_PUBLIC_API_URL` el perfil sale de la API y el par de tokens queda en `expo-secure-store`; sin esa variable el par vive solo en memoria. Progreso, colecciones y sincronización de QR pertenecen a las specs futuras 005 y 006.
+Los recorridos de exploración que aún no tienen sesión siguen en fixtures de `src/mocks/`. Con sesión, el progreso, la colección por especie, los logros y las misiones salen de `api-005`. Esas pantallas comparten una sola lectura: no la repiten al guardar el perfil ni al abrir Ajustes si la sesión ya está activa, y la descartan al cerrar sesión. El perfil de la cuenta (`GET /me`) también se guarda una sola vez en la sesión: perfil, ajustes y edición leen esa copia, y un `PATCH` la actualiza sin otra lectura. La cola de escaneos vive en AsyncStorage. La cámara sigue en la spec 006. Las pestañas no acumulan historial entre sí; una ruta secundaria vuelve a la pantalla que la abrió.
 
 ## 11. Seguridad y privacidad
 

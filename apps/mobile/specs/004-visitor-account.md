@@ -46,17 +46,17 @@ La web, el dashboard y el login de personal no son fuente de código. El visitan
 
 ## Criterios de aceptación
 
-- **CA-01:** Dada la app sin sesión, cuando arranca, entonces muestra una pantalla de bienvenida con opciones de crear cuenta o iniciar sesión.
+- **CA-01:** Dada la app sin sesión, cuando arranca, entonces muestra la pantalla de inicio de sesión (marca, formulario y enlace «Regístrate»). La ruta `/welcome` no forma parte del flujo: redirige a inicio de sesión si alguien la abre. Un segundo toque en «Regístrate» o en el envío del formulario no apila otra copia de la misma pantalla. Enmienda de Aksel, 2026-10-23.
 - **CA-02:** Dada la pantalla de registro, cuando se muestra el formulario, entonces pide correo, nombre, apodo, contraseña y confirmación, incluye la casilla «Soy mayor de 18 años», la aceptación del aviso de privacidad con enlace a su texto (servido por la API) y un selector de avatar con unas 8 ilustraciones del catálogo incluido en la app.
 - **CA-03:** Dado un registro enviado, cuando la API responde 201, entonces la app muestra la pantalla de verificación con un campo para el código de 6 dígitos y la opción de reenviarlo (con espera según los límites de la API).
 - **CA-04:** Dados errores de la API, cuando el registro, la verificación o el login fallan, entonces los mensajes se muestran en español de forma accesible: 422 muestra «Correo o contraseña incorrectos.» o el mensaje de validación; 403 `email_not_verified` lleva a la pantalla de verificación; 429 muestra la espera indicada.
-- **CA-05:** Dado un visitante registrado, cuando inicia sesión con correo y contraseña, entonces la app guarda el par de tokens en `expo-secure-store` (nunca en almacenamiento común) y entra al flujo principal.
+- **CA-05:** Dado un visitante registrado, cuando inicia sesión con correo y contraseña, entonces la app guarda el par de tokens en `expo-secure-store` (nunca en almacenamiento común) y entra al flujo principal una sola vez. Mientras la petición sigue en curso, un indicador tapa la pantalla y un segundo toque no lanza otra petición ni otra navegación. Lo mismo vale para registro, verificación, reenvío, olvido y restablecimiento. Enmienda de Aksel, 2026-10-23.
 - **CA-06:** Dada una respuesta 401 por token vencido, cuando la app renueva la sesión, entonces ejecuta `auth/refresh` con una sola petición en vuelo (las llamadas concurrentes esperan el mismo refresh); si el refresh falla o es revocado, cierra la sesión y vuelve al login.
 - **CA-07:** Dado el flujo de recuperación, cuando el visitante pide restablecer la contraseña, entonces la app solicita el correo (respuesta genérica 202), captura el código recibido y la nueva contraseña con confirmación, y vuelve al login al completar.
-- **CA-08:** Dada una sesión activa, cuando el visitante abre la edición de perfil (el botón de configuración de cuenta lleva aquí), entonces puede cambiar apodo, nombre y avatar del catálogo, y guarda con `PATCH me`.
-- **CA-09:** Dada la pantalla de cambio de contraseña, cuando el visitante envía contraseña actual, nueva y confirmación, entonces la app llama `PUT me/password` y mantiene la sesión actual (la API revoca las demás).
-- **CA-10:** Dada la opción de borrar cuenta, cuando el visitante confirma con su contraseña, entonces la app llama `DELETE me`, limpia el almacenamiento seguro y la cola local, y vuelve a la bienvenida.
-- **CA-11:** Dada una sesión activa, cuando el visitante cierra sesión, entonces la app llama `auth/logout`, borra los tokens del dispositivo y regresa a la bienvenida.
+- **CA-08:** Dada una sesión activa, cuando el visitante abre la edición de perfil (el botón de configuración de cuenta lleva aquí), entonces puede cambiar apodo, nombre y avatar del catálogo, y guarda con `PATCH me` solo si hubo cambios respecto al perfil cargado; si no hubo cambios, muestra «No has hecho cambios.» sin llamar a la API ni encender el indicador de guardado. Un envío con cambios solo corre una vez. Mientras espera, un indicador tapa la pantalla y el botón queda desactivado. La validación local no enciende el indicador. Al salir de la pantalla y volver, no persisten avisos de éxito ni error. Perfil, ajustes y edición comparten la copia en memoria de la sesión: si ya existe, no repiten `GET /me`. Un `PATCH` exitoso actualiza esa copia con el perfil devuelto y la interfaz lo muestra sin otra lectura. Ajustes no muestra la ficha de demostración mientras llega el perfil real. Enmienda de Aksel, 2026-10-23.
+- **CA-09:** Dada la pantalla de cambio de contraseña, cuando el visitante envía contraseña actual, nueva y confirmación, entonces la app llama `PUT me/password` y mantiene la sesión actual (la API revoca las demás). Un envío solo corre una vez. Mientras espera, un indicador tapa la pantalla y el botón queda desactivado. La validación local no enciende el indicador. Al salir de la pantalla y volver, no persisten avisos ni las contraseñas escritas. Enmienda de Aksel, 2026-10-23.
+- **CA-10:** Dada la opción de borrar cuenta, cuando el visitante confirma con su contraseña, entonces la app llama `DELETE me`, limpia el almacenamiento seguro y la cola local, y regresa al inicio de sesión una sola vez. Mientras espera, un indicador tapa la pantalla y el botón queda desactivado. La validación local no enciende el indicador. Enmienda de Aksel, 2026-10-23.
+- **CA-11:** Dada una sesión activa, cuando el visitante cierra sesión, entonces la app llama `auth/logout` una sola vez, borra los tokens del dispositivo y regresa al inicio de sesión una sola vez. Mientras espera, un indicador tapa la pantalla y el botón queda desactivado. Enmienda de Aksel, 2026-10-23.
 - **CA-12:** Dado el código de la app, cuando se revise, entonces se cumple MVVM: pantallas → ViewModels → `AuthRepository` → `@arca/api-client` (modo Bearer); ningún componente usa `fetch`/`axios` ni guarda tokens fuera del almacenamiento seguro.
 - **CA-13:** Dado el build de Android, cuando se revise su configuración, entonces `usesCleartextTraffic=false` y toda comunicación sale por HTTPS fuera de desarrollo.
 - **CA-14:** Dada la suite de Jest, cuando se ejecute, entonces hay pruebas que nombran cada CA-xx: renderizado de pantallas, estados del ViewModel de sesión y comportamiento del refresh ante 401 (con cliente simulado).
@@ -78,12 +78,13 @@ La app transporta correo, contraseña y códigos hacia la API por HTTPS; guarda 
 
 ## Flujos y errores
 
-1. Bienvenida → Registro → Verificación por código → sesión → flujo principal.
+1. Inicio de sesión → Registro → Verificación por código → sesión → flujo principal.
 2. Login → sesión; `email_not_verified` → pantalla de verificación.
 3. 401 → refresh single-flight → reintento; refresh fallido → login.
 4. Perfil: editar datos/avatar, cambiar contraseña, cerrar sesión, borrar cuenta.
 5. Sin red en registro o login: mensaje accesible «Sin conexión»; no se guardan ni se encolan credenciales.
 6. El prototipo 002 se conserva hasta integrar esta spec. Al integrar, desaparece «Entrar como invitado».
+7. Tras iniciar sesión, verificar el correo o arrancar con tokens, una sola lectura de red de `GET /api/v1/visitor/me` alimenta perfil, ajustes y edición. Guardar el perfil actualiza esa copia con el cuerpo del `PATCH` y las pantallas la muestran sin otro `GET`. Si la sesión ya está autenticada, un nuevo arranque no vuelve a pedir el perfil. Cerrar sesión, borrar la cuenta o perder el refresh vacían la copia. Enmienda de Aksel, 2026-10-23.
 
 ## Dependencias, riesgos y preguntas
 

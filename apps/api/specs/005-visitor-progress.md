@@ -2,10 +2,10 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `mobile` (consumidor), `packages/api-client`
-- Estado: Borrador
+- Estado: En progreso
 - Solicitante / responsable funcional: Aksel
 - Responsable de BD: Victor Adrian
-- Aprobación funcional: pendiente de aprobación
+- Aprobación funcional: Aksel, 2026-10-22
 
 ## Problema y contexto
 
@@ -25,7 +25,7 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 
 - Tabla de líderes, premios físicos y contenido social entre visitantes (decisión confirmada: sin líderes ni premios).
 - Actualización dinámica de misiones: son contenido estático definido una vez por seeder.
-- Impresión y colocación física de los QR (pregunta abierta).
+- Impresión, colocación y reposición física de los QR. El comando solo genera los códigos; la operación en el zoológico queda fuera de esta spec.
 - La interfaz móvil del progreso (spec `mobile-005`) ni el escaneo de cámara (spec `mobile-006`).
 - Favoritos y recorrido 3D real.
 
@@ -55,7 +55,7 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 - **CA-09:** Dado un evento de progreso, cuando `EvaluateVisitorProgressAction` evalúa reglas, entonces soporta `species_count`, `category_species_count` (con `rule_param` = categoría), `enclosure_count` y `missions_completed`; los logros y las misiones otorgan sus puntos y el libro mayor (UNIQUE por `visitor_id, source_type, source_id`) garantiza que no se dupliquen; todo ocurre dentro de una transacción.
 - **CA-10:** Dada la configuración de niveles en `config/visitor_progress.php`, cuando se calcula el nivel, entonces aplica los umbrales: 1 Explorador novato (0), 2 Explorador (500), 3 Explorador avanzado (1500), 4 Explorador experto (3000), 5 Guardián de la fauna (6000).
 - **CA-11:** Dados los seeders, cuando se ejecutan `AchievementSeeder` y `MissionSeeder`, entonces cargan los catálogos de forma idempotente por `code`, basados en los mocks actuales de la app; las recompensas tipo «Certificado» se convierten en puntos o logros porque no hay premios.
-- **CA-12:** Dado el comando `php artisan arca:generate-qr-codes {enclosure}`, cuando el personal lo ejecuta, entonces genera códigos opacos aleatorios para los QR del recinto (la impresión queda como pregunta abierta).
+- **CA-12:** Dado el comando `php artisan arca:generate-qr-codes {enclosure}`, cuando el personal lo ejecuta, entonces genera códigos opacos aleatorios para los QR del recinto. La impresión no forma parte de este comando.
 - **CA-13:** Dada la suite de PHPUnit, cuando se ejecuta `php artisan test`, entonces corre contra `arca_pruebas` (nunca `arca_zoo`) y existe al menos un test que nombra cada CA-xx.
 
 ## Reglas de negocio
@@ -69,6 +69,8 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 - **RN-07:** Rutas nombradas bajo `/api/v1/visitor`; identificadores en inglés y mensajes en español.
 - **RN-08:** Ningún secreto se versiona; los ajustes de puntos y umbrales viven en `config/visitor_progress.php`.
 - **RN-09:** Los tests PHPUnit corren contra `arca_pruebas`.
+- **RN-10:** `enclosure_count` cuenta recintos distintos en los que el visitante descubrió al menos una especie. El recinto sale del código QR que originó la fila de `visitor_collections`. Un recinto cuenta una sola vez aunque aporte varias especies. Si el código ya no apunta a un recinto, ese descubrimiento no suma.
+- **RN-11:** Los puntos por especie nueva son 100 y los umbrales de nivel son los de CA-10. Un ajuste posterior solo cambia `config/visitor_progress.php`; no abre otra spec.
 
 ## Datos, privacidad y auditoría
 
@@ -95,12 +97,9 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 
 - **Dependencias/ADR:** `api-004` (autenticación `visitor`), DBR-001, DBR-003 y DBR-004 (`Lista para backend`), ADR 0011, ADR 0010, catálogo de especies en la base.
 - **Riesgos:** la cola sin conexión admite escaneos hasta 24 h después (se acepta porque no hay premios); el ajuste fino de puntos y umbrales puede requerir cambios de configuración.
-- **Preguntas pendientes:**
-  - Quién imprime y coloca los QR, y su reposición.
-  - Ajuste fino de los puntos por especie y los umbrales de nivel.
-  - Valor exacto de `enclosure_count` en las reglas (¿recintos distintos con especies descubiertas?).
+- **Preguntas cerradas (Aksel, 2026-10-22):** la impresión y la reposición de los QR no son de esta spec. Los puntos y umbrales quedan en los valores de CA-04 y CA-10. `enclosure_count` queda definido en RN-10.
 
 ## Revisión
 
-- Aprobadores y fecha: pendiente de aprobación.
+- Aprobadores y fecha: Aksel, 2026-10-22.
 - Evidencia/enlaces: `docs/adr/0011-visitor-identity-and-mobile-session.md`, `docs/database/requests/DBR-004-visitor-progress.md`, `apps/api/specs/004-visitor-authentication.md`, `apps/mobile/specs/005-visitor-progress.md`.

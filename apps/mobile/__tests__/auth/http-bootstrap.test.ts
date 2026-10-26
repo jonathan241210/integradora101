@@ -60,6 +60,29 @@ describe('Arranque con la API de pruebas', () => {
     expect(accountSession.getStatus()).toBe('authenticated');
   });
 
+  it('con la sesión ya autenticada bootstrap no vuelve a llamar getProfile', async () => {
+    const fetchImpl = jest.fn(async (input: RequestInfo | URL) => {
+      if (String(input).endsWith('/api/v1/visitor/me')) {
+        return jsonResponse(200, { data: profile });
+      }
+      return jsonResponse(404, { message: 'No encontrado.' });
+    });
+    accountSession.configureForTests({
+      apiUrl: 'https://api.pruebas.invalid',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    await createSecureTokenStorage().write({ accessToken: 'access-http', refreshToken: 'refresh-http' });
+
+    await accountSession.bootstrap();
+    expect(accountSession.getStatus()).toBe('authenticated');
+    const callsAfterEntry = fetchImpl.mock.calls.length;
+    expect(callsAfterEntry).toBeGreaterThan(0);
+
+    await accountSession.bootstrap();
+    expect(fetchImpl).toHaveBeenCalledTimes(callsAfterEntry);
+    expect(accountSession.getStatus()).toBe('authenticated');
+  });
+
   it('test-ca-05-http-bootstrap-refresh-failure: CA-05 borra el par si la sesión no se renueva', async () => {
     const fetchImpl = jest.fn(async () => jsonResponse(401, { message: 'La sesión ya no es válida. Vuelve a entrar.' }));
     accountSession.configureForTests({

@@ -4,9 +4,14 @@ export { createVisitorApi } from "./visitor";
 export type {
   CreateVisitorApiOptions,
   VisitorApi,
+  VisitorCatalogItemDto,
+  VisitorDiscoveryDto,
+  VisitorDiscoveryInput,
   VisitorMessage,
   VisitorProfileDto,
+  VisitorProgressDto,
   VisitorRegisterInput,
+  VisitorSpeciesDto,
   VisitorTokenPayload,
 } from "./visitor";
 export { createHttpClient } from "./http";

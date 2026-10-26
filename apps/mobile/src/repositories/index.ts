@@ -1,5 +1,5 @@
-import { Achievement, Animal, User, Mission, Reward, LeaderboardEntry, ZooEvent, News, MapLocation, MapRoute, QrOutcome, QrSimulation } from '../models';
-import { MOCK_ANIMALS, MOCK_USER, MOCK_MISSIONS, MOCK_REWARDS, MOCK_LEADERBOARD, MOCK_EVENTS, MOCK_NEWS, MOCK_ACHIEVEMENTS, MOCK_MILESTONES, MOCK_MAP_LOCATIONS, MOCK_MAP_ROUTE, MOCK_QR_SIMULATIONS } from '../mocks/zoo';
+import { Achievement, Animal, User, Mission, ZooEvent, News, MapLocation, MapRoute, QrOutcome, QrSimulation } from '../models';
+import { MOCK_ANIMALS, MOCK_USER, MOCK_MISSIONS, MOCK_EVENTS, MOCK_NEWS, MOCK_ACHIEVEMENTS, MOCK_MILESTONES, MOCK_MAP_LOCATIONS, MOCK_MAP_ROUTE, MOCK_QR_SIMULATIONS } from '../mocks/zoo';
 
 export interface AnimalRepository {
   getAllAnimals(): Promise<Animal[]>;
@@ -10,8 +10,6 @@ export interface AnimalRepository {
 export interface UserRepository {
   getUser(): Promise<User>;
   getMissions(): Promise<Mission[]>;
-  getRewards(): Promise<Reward[]>;
-  getLeaderboard(): Promise<LeaderboardEntry[]>;
   getAchievements(): Promise<Achievement[]>;
   getMilestones(): Promise<{ id: string; title: string; date: string }[]>;
 }
@@ -53,14 +51,6 @@ export class UserRepositoryImpl implements UserRepository {
 
   async getMissions(): Promise<Mission[]> {
     return Promise.resolve(MOCK_MISSIONS);
-  }
-
-  async getRewards(): Promise<Reward[]> {
-    return Promise.resolve(MOCK_REWARDS);
-  }
-
-  async getLeaderboard(): Promise<LeaderboardEntry[]> {
-    return Promise.resolve(MOCK_LEADERBOARD);
   }
 
   async getAchievements(): Promise<Achievement[]> {

@@ -43,9 +43,23 @@ export function validateResetPassword(input: ResetPasswordInput): string | null 
   return null;
 }
 
-export function nextGateRoute(status: AccountSessionStatus, inAuthGroup: boolean): '/welcome' | '/' | null {
+export interface ProfileEditFields {
+  firstName: string;
+  nickname: string;
+  avatarCode: string;
+}
+
+export function profileUnchanged(saved: ProfileEditFields, current: ProfileEditFields): boolean {
+  return (
+    saved.firstName.trim() === current.firstName.trim()
+    && saved.nickname.trim() === current.nickname.trim()
+    && saved.avatarCode === current.avatarCode
+  );
+}
+
+export function nextGateRoute(status: AccountSessionStatus, inAuthGroup: boolean): '/login' | '/' | null {
   if (status === 'bootstrapping') return null;
-  if (status === 'guest' && !inAuthGroup) return '/welcome';
+  if (status === 'guest' && !inAuthGroup) return '/login';
   if (status === 'authenticated' && inAuthGroup) return '/';
   return null;
 }
