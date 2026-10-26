@@ -10,7 +10,7 @@ Documento de referencia para el equipo de `apps/mobile`. Resume el cumplimiento 
 - Solo implementar con spec **Aprobada**; borradores se refinan con `/sdd-spec` y esperan aprobación explícita.
 - Código únicamente en `apps/mobile/src/`; MVVM: rutas/pantallas → ViewModels → Repositories → `@arca/api-client` o mocks.
 - UI y documentación en español; commits y código en inglés.
-- Cámara, QR real, mapa/GPS, almacenamiento seguro y builds de distribución exigen spec aprobada y, cuando corresponda, ADR (p. ej. 0011, 0012, dependencias de cámara).
+- Cámara, QR real, GPS, almacenamiento seguro y builds de distribución exigen spec aprobada y, cuando corresponda, ADR (p. ej. 0011, 0012, dependencias de cámara).
 - No inventar endpoints ni migraciones: la API es dueña del contrato (`api-003`, `api-004`, `api-005`, etc.).
 
 ## Estado de las specs 001–008
@@ -23,7 +23,7 @@ Documento de referencia para el equipo de `apps/mobile`. Resume el cumplimiento 
 | 004 | visitor-account | **Implementada** (2026-10-21; aprobación de Aksel, 2026-10-20) | Plan aprobado. T-01 a T-44 hechas. La fase HTTP la firmó Aksel el 2026-10-21 | Cuenta real con `EXPO_PUBLIC_API_URL`, `expo-secure-store` y el cliente visitante. Sin esa variable, y en Jest, sigue el mock | ADR 0011 aceptado el 2026-10-21. `api-004` Implementada el mismo día. La demo `123456` sigue en Jest y cuando no hay URL. |
 | 005 | visitor-progress | **En progreso** (Aksel, 2026-10-22) | Plan y tareas aprobados. La implementación consume `api-005`; no está Implementada hasta el PR | Progreso, colección por especie, logros, misiones y cola de escaneos | AsyncStorage ya estaba por el ADR 0014. No se instala otra dependencia. La cámara sigue en `mobile-006`. |
 | 006 | qr-scan | Borrador | No | No iniciada | Cámara y lectura QR → entrega código a cola de 005. |
-| 007 | map-location | Borrador | No | No iniciada | Mapa real, recintos API, GPS; proveedor de mapa por decidir. |
+| 007 | map-location | **Aprobada** (2026-10-22) | Plan aprobado y tasks ejecutadas; T-01 a T-18 completas | V1 implementada y validada | Mapa 2D SVG esquemático con fixture local, filtros, detalle y foco desde búsqueda; sin GPS, API ni DBR en V1. ADR 0015 aceptado. Verificación automatizada: 27 suites Jest, 132 tests y `tsc --noEmit` OK. Validación visual en Android con Expo Go SDK 57 confirmada (2026-10-25). Próxima evolución: V2 (GPS, punto azul y senderos). |
 | 008 | build-distribution | Borrador | No | No iniciada | Play Store pruebas + APK; ADR 0012. Redacción provisional: **Aksel**. |
 
 ### Evidencia specs 001 y 002
@@ -73,6 +73,8 @@ flowchart TD
 | [README.md](../README.md) | Instalación, Expo Go, pruebas, límites del prototipo 002 |
 | [docs/arquitectura.md](./arquitectura.md) | MVVM, módulos, mocks, riesgos |
 | [docs/002-mobile-ui-visitor-journey.md](./002-mobile-ui-visitor-journey.md) | Validación manual y rutas del prototipo |
+| [docs/007-svg-brief.md](./007-svg-brief.md) | Brief del SVG esquemático y coordenadas de la V1 |
+| [docs/007-map-v1-draft.svg](./007-map-v1-draft.svg) | Borrador visual del mapa 2D |
 | [specs/003-api-read-integration.md](../specs/003-api-read-integration.md) … [008](../specs/008-build-distribution.md) | Estado de las specs 003–008 (CA, planes y preguntas abiertas) |
 
 ## Límite entre enmienda 002 (demo) y specs 003/004
@@ -82,13 +84,13 @@ Las specs **003** (2026-10-22) y **004** (2026-10-21) quedaron implementadas. La
 - `expo-secure-store` (ADR 0011) guarda solo el par de tokens de la cuenta.
 - `@react-native-async-storage/async-storage` y `expo-network` (ADR 0014) sirven para la caché de lectura, la conectividad del catálogo público y, desde `mobile-005`, la cola de escaneos. No se vuelve a instalar AsyncStorage.
 - `HttpAuthRepository` y el módulo visitante de `@arca/api-client` se usan cuando `EXPO_PUBLIC_API_URL` tiene valor.
-- Cámara, QR real, mapa/GPS y builds de distribución siguen sujetos a sus specs 006–008.
+- Cámara, QR real y builds de distribución siguen sujetos a sus specs 006–008. El mapa V1 ya usa un SVG local sin GPS; la ubicación real queda para una fase posterior.
 
 ## Preguntas abiertas (para cerrar en spec o con arquitectura/API)
 
 1. **005:** en progreso desde el 2026-10-22. Las ilustraciones finales de avatares y el texto definitivo del aviso los entrega el zoológico. `api-005` ya tiene spec y plan aprobados; esta fila no marca la spec como Implementada.
 2. **006:** Dependencia concreta de cámara/QR (ADR); captura manual como alternativa; operación física de QR en recintos.
-3. **007:** Proveedor de mapa, claves/costos y posible salida de Expo Go (development build).
+3. **007:** V1 resuelta sin proveedor de mapa: SVG propio con `react-native-svg`, sin GPS. ADR 0015 aceptado; quedan la firma técnica de Aksel, el SVG final y la revisión visual en Android/Expo Go.
 4. **008:** Confirmación final de quién redacta/implementa distribución (Aksel provisional).
 
 Cuando una pregunta se resuelva, actualizar la spec correspondiente y, si aplica, un ADR en `docs/adr/`.

@@ -132,14 +132,11 @@ describe('Navegación visitante', () => {
     expect(mockPush).toHaveBeenCalledWith('/scan');
   });
 
-  it('test-ca-02: Mapa ofrece el recorrido 3D, Colección abre animales descubiertos y Perfil carga sus datos', async () => {
+  it('test-ca-02: Mapa abre la búsqueda de destino, Colección abre animales descubiertos y Perfil carga sus datos', async () => {
     const map = await render(<MapRoute />);
-    await waitFor(() => expect(map.getByText('Hábitat Tigre')).toBeTruthy());
+    await waitFor(() => expect(map.getByText('Hábitat del Tigre')).toBeTruthy());
     await fireEvent.press(map.getByText('Buscar animales'));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/search', params: { selectForTour: 'true', returnTo: 'map' } });
-    mockPush.mockClear();
-    await fireEvent.press(map.getByText('Cambiar a recorrido 3D'));
-    expect(mockPush).toHaveBeenCalledWith('/tour-3d');
     await map.unmount();
 
     const collection = await render(<CollectionRoute />);
@@ -152,6 +149,19 @@ describe('Navegación visitante', () => {
 
     const profile = await render(<ProfileRoute />);
     await waitFor(() => expect(profile.getByText('María García')).toBeTruthy());
+  });
+
+  it('test-ca-09: la búsqueda iniciada desde el mapa enfoca el punto elegido', async () => {
+    mockParams.selectForTour = 'true';
+    mockParams.returnTo = 'map';
+    const search = await render(<SearchRoute />);
+    await waitFor(() => expect(search.getByText('Tigre de Bengala')).toBeTruthy());
+
+    await fireEvent.press(search.getByText('Tigre de Bengala'));
+    expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/map',
+      params: { focus: 'juan' },
+    });
   });
 
   it('test-ca-03: Tour 3D mantiene su destino y permite regresar al Mapa 2D', async () => {

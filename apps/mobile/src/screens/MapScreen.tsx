@@ -1,75 +1,175 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { AppText, Button, Card, Chip, Icon, ScreenContainer } from '../components/ui';
-import { MapLocation, MapRoute } from '../models';
-import { colors, radius, spacing } from '../theme/tokens';
+import {
+  AppText,
+  Button,
+  Card,
+  Chip,
+  EmptyView,
+  ErrorView,
+  LoadingView,
+  ScreenContainer,
+} from '../components/ui';
+import { MapMarker, MapPlaceCard, ZooMapSvg } from '../components/map';
+import { MapFilter, MapPlace, MapSection } from '../models';
+import { colors, spacing } from '../theme/tokens';
 
 interface MapScreenProps {
-  locations: MapLocation[];
-  activeRoute: MapRoute;
+  sections: MapSection[];
+  filteredPlaces: MapPlace[];
+  filter: MapFilter;
+  selectedPlace: MapPlace | null;
+  focusedSectionId: string | null;
+  focusedPlaceId: string | null;
+  focusNotFound: boolean;
+  isLoading: boolean;
+  error: string | null;
+  onFilterChange: (filter: MapFilter) => void;
+  onSelectPlace: (id: string) => void;
+  onCloseDetail: () => void;
+  onRetry: () => void;
   onSearchPress: () => void;
-  onTourPress: () => void;
 }
 
-const filters = ['Todo', 'Animales', 'Servicios'] as const;
+const filters: { key: MapFilter; label: string }[] = [
+  { key: 'all', label: 'Todo' },
+  { key: 'animal', label: 'Animales' },
+  { key: 'service', label: 'Servicios' },
+];
 
-export function MapScreen({ locations, activeRoute, onSearchPress, onTourPress }: MapScreenProps) {
-  const [activeFilter, setActiveFilter] = useState<(typeof filters)[number]>('Todo');
-  const visibleLocations = locations.filter((location) =>
-    activeFilter === 'Todo' || (activeFilter === 'Animales' ? location.kind === 'animal' : location.kind === 'service')
-  );
+export function MapScreen({
+  sections,
+  filteredPlaces,
+  filter,
+  selectedPlace,
+  focusedSectionId,
+  focusedPlaceId,
+  focusNotFound,
+  isLoading,
+  error,
+  onFilterChange,
+  onSelectPlace,
+  onCloseDetail,
+  onRetry,
+  onSearchPress,
+}: MapScreenProps) {
+  const selectedSectionName =
+    sections.find((section) => section.id === selectedPlace?.sectionId)?.name ?? 'Sin sección';
+  const hasNoPlaces = !isLoading && !error && filteredPlaces.length === 0;
+  const showFocusNotice = focusNotFound && !selectedPlace;
 
   return (
-    <ScreenContainer scroll={false} contentStyle={styles.screen}>
-      <View style={styles.map}>
-        <View style={styles.controls}>
-          <Button label="Buscar animales" variant="soft" onPress={onSearchPress} />
-          <View style={styles.filters}>
-            {filters.map((filter) => (
-              <Chip
-                key={filter}
-                label={filter}
-                selected={activeFilter === filter}
-                onPress={() => setActiveFilter(filter)}
-              />
-            ))}
-          </View>
-        </View>
-        <View style={[styles.water, styles.waterOne]} />
-        <View style={[styles.water, styles.waterTwo]} />
-        <View style={styles.pathOne} />
-        <View style={styles.pathTwo} />
-        {visibleLocations.map((location) => (
-          <View key={location.id} style={[styles.pin, { left: `${location.left}%`, top: `${location.top}%` }]}>
-            <Icon name={location.kind === 'animal' ? 'paw' : 'water'} size={20} color={colors.primary} />
-            <AppText variant="caption" bold>{location.label}</AppText>
-          </View>
-        ))}
-        <View style={styles.userPin} accessibilityLabel="Tu ubicación aproximada" />
-        <Card style={styles.routeCard}>
-          <AppText variant="overline" color="primary">Ruta a: {activeRoute.destination}</AppText>
-          <AppText variant="small" color="textMuted">{activeRoute.duration} · {activeRoute.distance} · {activeRoute.direction}</AppText>
-          {activeRoute.steps.map((step, index) => (
-            <AppText key={step} variant="caption">{index + 1}. {step}</AppText>
+    <ScreenContainer scroll={false}>
+      <View style={styles.header}>
+        <AppText variant="title">Mapa del zoológico</AppText>
+        <Button label="Buscar animales" variant="soft" onPress={onSearchPress} />
+        <View style={styles.filters}>
+          {filters.map((item) => (
+            <Chip
+              key={item.key}
+              label={item.label}
+              selected={filter === item.key}
+              onPress={() => onFilterChange(item.key)}
+            />
           ))}
-          <Button label="Cambiar a recorrido 3D" variant="soft" onPress={onTourPress} />
-        </Card>
+        </View>
+        <AppText variant="small" color="textMuted">
+          Toca un punto del mapa para ver su información.
+        </AppText>
+      </View>
+
+      <View style={styles.mapArea}>
+        <View style={styles.canvas}>
+          <ZooMapSvg highlightedSectionId={focusedSectionId} />
+          {filteredPlaces.map((place) => (
+            <MapMarker
+              key={place.id}
+              place={place}
+              selected={place.id === focusedPlaceId}
+              onPress={onSelectPlace}
+            />
+          ))}
+        </View>
+
+        {isLoading && (
+          <Card style={styles.stateCard}>
+            <LoadingView message="Cargando mapa del zoológico..." />
+          </Card>
+        )}
+
+        {error && (
+          <Card style={styles.stateCard}>
+            <ErrorView
+              title="No se pudo cargar el mapa"
+              message={error}
+              onRetry={onRetry}
+            />
+          </Card>
+        )}
+
+        {hasNoPlaces && (
+          <Card style={styles.stateCard}>
+            <EmptyView
+              title="No hay puntos para este filtro"
+              message="Prueba con otro filtro para ver los puntos disponibles."
+            />
+          </Card>
+        )}
+
+        {showFocusNotice && (
+          <Card style={styles.noticeCard}>
+            <AppText variant="small" color="textMuted">
+              No encontramos ese destino en el mapa.
+            </AppText>
+          </Card>
+        )}
+
+        {selectedPlace && (
+          <MapPlaceCard
+            place={selectedPlace}
+            sectionName={selectedSectionName}
+            onClose={onCloseDetail}
+          />
+        )}
       </View>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1 },
-  map: { flex: 1, overflow: 'hidden', backgroundColor: colors.primarySoft },
-  controls: { position: 'absolute', zIndex: 2, top: spacing.md, left: spacing.md, right: spacing.md, gap: spacing.sm },
-  filters: { flexDirection: 'row', gap: spacing.xs },
-  water: { position: 'absolute', backgroundColor: colors.border, borderRadius: radius.pill },
-  waterOne: { width: 180, height: 68, top: '37%', left: '5%', transform: [{ rotate: '-20deg' }] },
-  waterTwo: { width: 150, height: 54, top: '56%', right: '3%', transform: [{ rotate: '22deg' }] },
-  pathOne: { position: 'absolute', width: '130%', height: 20, top: '47%', left: '-10%', backgroundColor: colors.surface, transform: [{ rotate: '28deg' }] },
-  pathTwo: { position: 'absolute', width: 20, height: '75%', top: '12%', left: '55%', backgroundColor: colors.surface, transform: [{ rotate: '-18deg' }] },
-  pin: { position: 'absolute', alignItems: 'center', gap: 2, padding: spacing.xs, borderRadius: radius.md, backgroundColor: colors.surface, elevation: 2 },
-  userPin: { position: 'absolute', width: 16, height: 16, top: '48%', left: '48%', borderRadius: radius.pill, borderWidth: 3, borderColor: colors.surface, backgroundColor: colors.primary },
-  routeCard: { position: 'absolute', bottom: spacing.md, left: spacing.md, right: spacing.md, padding: spacing.md, gap: spacing.xs },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    gap: spacing.sm,
+  },
+  filters: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  mapArea: {
+    flex: 1,
+    minHeight: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: spacing.md,
+  },
+  canvas: {
+    width: '100%',
+    maxWidth: 620,
+    aspectRatio: 1000 / 1400,
+    backgroundColor: colors.background,
+    overflow: 'hidden',
+  },
+  stateCard: {
+    position: 'absolute',
+    left: spacing.lg,
+    right: spacing.lg,
+    top: spacing.lg,
+  },
+  noticeCard: {
+    position: 'absolute',
+    left: spacing.lg,
+    right: spacing.lg,
+    top: spacing.lg,
+  },
 });

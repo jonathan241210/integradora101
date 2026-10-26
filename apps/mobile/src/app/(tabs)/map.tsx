@@ -1,44 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'expo-router';
-import { MapLocation, MapRoute as ZooMapRoute } from '../../models';
+import React, { useEffect } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MapScreen } from '../../screens/MapScreen';
 import { useMapViewModel } from '../../viewmodels/useMapViewModel';
 
 export default function MapRoute() {
   const router = useRouter();
-  const { getMapData } = useMapViewModel();
-  const [locations, setLocations] = useState<MapLocation[]>([]);
-  const [activeRoute, setActiveRoute] = useState<ZooMapRoute>({
-    destination: '',
-    duration: '',
-    distance: '',
-    direction: '',
-    steps: [],
-  });
+  const params = useLocalSearchParams<{ focus?: string | string[] }>();
+  const focus = Array.isArray(params.focus) ? params.focus[0] : params.focus;
+  const {
+    sections,
+    filteredPlaces,
+    filter,
+    selectedPlace,
+    focusedSectionId,
+    focusedPlaceId,
+    focusNotFound,
+    isLoading,
+    error,
+    retry,
+    setFilter,
+    selectPlace,
+    clearSelection,
+    focusPlace,
+  } = useMapViewModel();
 
   useEffect(() => {
-    let isActive = true;
-    getMapData()
-      .then((data) => {
-        if (!isActive) return;
-        setLocations(data.locations);
-        setActiveRoute(data.activeRoute);
-      })
-      .catch((error: unknown) => console.error('Error loading map data:', error));
-    return () => {
-      isActive = false;
-    };
-  }, [getMapData]);
+    if (focus) {
+      focusPlace(focus);
+    }
+  }, [focus, focusPlace]);
 
   return (
     <MapScreen
-      locations={locations}
-      activeRoute={activeRoute}
+      sections={sections}
+      filteredPlaces={filteredPlaces}
+      filter={filter}
+      selectedPlace={selectedPlace}
+      focusedSectionId={focusedSectionId}
+      focusedPlaceId={focusedPlaceId}
+      focusNotFound={focusNotFound}
+      isLoading={isLoading}
+      error={error}
+      onFilterChange={setFilter}
+      onSelectPlace={selectPlace}
+      onCloseDetail={clearSelection}
+      onRetry={retry}
       onSearchPress={() => router.push({
         pathname: '/search',
         params: { selectForTour: 'true', returnTo: 'map' },
       })}
-      onTourPress={() => router.push('/tour-3d')}
     />
   );
 }

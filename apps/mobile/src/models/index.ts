@@ -72,21 +72,26 @@ export interface Milestone {
   date: string;
 }
 
-export interface MapLocation {
+export type MapPlaceKind = 'animal' | 'service' | 'entrance';
+
+export interface MapSection {
   id: string;
-  label: string;
-  kind: 'animal' | 'service';
-  left: number;
-  top: number;
+  name: string;
+  svgZoneId: string;
 }
 
-export interface MapRoute {
-  destination: string;
-  duration: string;
-  distance: string;
-  direction: string;
-  steps: string[];
+export interface MapPlace {
+  id: string;
+  name: string;
+  kind: MapPlaceKind;
+  sectionId: string;
+  description?: string;
+  mapX: number;
+  mapY: number;
+  visible: boolean;
 }
+
+export type MapFilter = 'all' | 'animal' | 'service';
 
 export type VisitorPreferenceKey = 'notifications' | 'location';
 

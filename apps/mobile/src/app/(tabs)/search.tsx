@@ -38,6 +38,11 @@ export default function SearchRoute() {
       query={query}
       activeFilter={category}
       selectForTour={selectForTour === 'true'}
+      selectionHint={
+        returnTo === 'map'
+          ? 'Selecciona un animal para ubicarlo en el mapa.'
+          : undefined
+      }
       isOffline={isOffline}
       backLabel={
         returnTo === 'tour-3d'
@@ -50,6 +55,10 @@ export default function SearchRoute() {
       onFilterChange={setCategory}
       onAnimalPress={(id) => {
         if (selectForTour === 'true') {
+          if (returnTo === 'map') {
+            router.replace({ pathname: '/map', params: { focus: id } });
+            return;
+          }
           const animal = animals.find((item) => item.id === id);
           if (animal) {
             router.replace({
