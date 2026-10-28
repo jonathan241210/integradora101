@@ -23,10 +23,10 @@ jobs:
       - name: Descargar el código
         uses: actions/checkout@v4
 
-      - name: Preparar PHP 8.2 y Composer
+      - name: Preparar PHP 8.4 y Composer
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.4'
           tools: composer:v2
           coverage: none
 
@@ -59,3 +59,42 @@ jobs:
         run: npm run test --workspace=apps/mobile -- --runInBand
         env:
           CI: true
+
+  dashboard-build:
+    name: Build y artefacto del Dashboard
+    needs: [api-unit, mobile-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Instalar dependencias del monorepo
+        run: npm ci
+
+      - name: Compilar Dashboard
+        run: npm run build --workspace=@arca/dashboard
+
+      - name: Comprobar salida
+        run: test -f apps/dashboard/dist/index.html
+
+      - name: Crear ZIP de distribución
+        run: zip -r dashboard-dist.zip apps/dashboard/dist
+
+      - name: Comprobar ZIP
+        run: |
+          unzip -t dashboard-dist.zip
+          unzip -Z1 dashboard-dist.zip | grep -Fx 'apps/dashboard/dist/index.html'
+
+      - name: Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-build
+          path: dashboard-dist.zip
