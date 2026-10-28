@@ -1,0 +1,32 @@
+  dashboard-build:
+    name: Build y artefacto del Dashboard
+    needs: [api-unit, mobile-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Instalar dependencias del monorepo
+        run: npm ci
+
+      - name: Compilar Dashboard
+        run: npm run build --workspace=@arca/dashboard
+
+      - name: Comprobar salida
+        run: test -f apps/dashboard/dist/index.html
+
+      - name: Crear ZIP de distribución
+        run: zip -r dashboard-dist.zip apps/dashboard/dist
+
+      - name: Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-build
+          path: dashboard-dist.zip
