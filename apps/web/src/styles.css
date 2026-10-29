@@ -524,6 +524,46 @@ section {
 .f3 { background-image: linear-gradient(160deg, rgba(var(--sidebar-rgb), .18), rgba(var(--sidebar-rgb), .24)), url('assets/fox.jpg'); }
 .footer { display: grid; grid-template-columns: 1fr minmax(300px, .8fr); align-items: start; gap: 96px; padding: 68px max(48px, calc((100% - 1600px) / 2)); border-top: 1px solid #e4e0d6; }
 .footer h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 1.5rem; }
+.animal-card[data-model] { position: relative; }
+.model-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .25);
+  cursor: pointer;
+  transition: background .2s, transform .2s, box-shadow .2s;
+}
+.model-toggle:hover { transform: scale(1.08); }
+.model-toggle:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+/* El PNG tiene fondo blanco: multiply/screen lo hacen invisible sobre el botón */
+.model-toggle img { width: 28px; height: 28px; object-fit: contain; mix-blend-mode: multiply; }
+.model-toggle[aria-pressed="true"] { background: var(--primary); box-shadow: 0 0 0 4px rgba(255, 255, 255, .85), 0 4px 14px rgba(0, 0, 0, .3); }
+.model-toggle[aria-pressed="true"] img { filter: invert(1); mix-blend-mode: screen; }
+.map-toggle { top: 14px; right: 14px; }
+.map-model { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; background: linear-gradient(180deg, var(--surface-page), var(--surface-accent)); --poster-color: transparent; --progress-bar-color: var(--primary); }
+.map-model[hidden] { display: none; }
+.card-model {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(180deg, var(--surface-page), var(--surface-accent));
+  --poster-color: transparent;
+  --progress-bar-color: var(--primary);
+}
+.card-model[hidden] { display: none; }
 .giraffe-model-wrap {
   overflow: hidden;
   margin-top: 18px;
@@ -1218,3 +1258,27 @@ textarea {
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
+
+/* ---------- Rendimiento ----------
+   Versiones WebP de los fondos. Los .jpg originales siguen declarados arriba
+   como respaldo para navegadores sin soporte de image-set(). */
+.bi::before { width: 1em; } /* reserva el ancho del icono para que no haya salto al cargar la fuente */
+.hero {
+  background-image:
+    linear-gradient(90deg, rgba(10, 40, 18, .82) 0%, rgba(10, 40, 18, .62) 35%, rgba(10, 40, 18, .28) 100%),
+    image-set(url('assets/lion-hero.webp') type('image/webp'), url('assets/lion.jpg') type('image/jpeg'));
+}
+@media (max-width: 800px) {
+  .hero {
+    background-image:
+      linear-gradient(90deg, rgba(10, 40, 18, .82) 0%, rgba(10, 40, 18, .62) 35%, rgba(10, 40, 18, .28) 100%),
+      image-set(url('assets/lion-hero-800.webp') type('image/webp'), url('assets/lion.jpg') type('image/jpeg'));
+  }
+}
+.legado-img { background-image: linear-gradient(135deg, rgba(var(--sidebar-rgb), .28), rgba(var(--sidebar-rgb), .45)), image-set(url('assets/savanna.webp') type('image/webp'), url('assets/savanna.jpg') type('image/jpeg')); }
+.t1 { background-image: linear-gradient(135deg, rgba(var(--sidebar-rgb), .08), rgba(var(--sidebar-rgb), .28)), image-set(url('assets/greenery.webp') type('image/webp'), url('assets/greenery.jpg') type('image/jpeg')); }
+.t2 { background-image: linear-gradient(135deg, rgba(var(--sidebar-rgb), .1), rgba(var(--sidebar-rgb), .35)), image-set(url('assets/fox.webp') type('image/webp'), url('assets/fox.jpg') type('image/jpeg')); }
+.t3 { background-image: linear-gradient(135deg, rgba(var(--sidebar-rgb), .05), rgba(var(--sidebar-rgb), .24)), image-set(url('assets/lion-800.webp') type('image/webp'), url('assets/lion.jpg') type('image/jpeg')); }
+.f1 { background-image: linear-gradient(160deg, rgba(var(--sidebar-rgb), .12), rgba(var(--sidebar-rgb), .18)), image-set(url('assets/lion-800.webp') type('image/webp'), url('assets/lion.jpg') type('image/jpeg')); }
+.f2 { background-image: linear-gradient(160deg, rgba(var(--sidebar-rgb), .18), rgba(var(--sidebar-rgb), .24)), image-set(url('assets/dog.webp') type('image/webp'), url('assets/dog.jpg') type('image/jpeg')); }
+.f3 { background-image: linear-gradient(160deg, rgba(var(--sidebar-rgb), .18), rgba(var(--sidebar-rgb), .24)), image-set(url('assets/fox.webp') type('image/webp'), url('assets/fox.jpg') type('image/jpeg')); }
