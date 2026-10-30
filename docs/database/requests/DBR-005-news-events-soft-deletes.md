@@ -1,6 +1,6 @@
 # DBR-005 · news-events-soft-deletes
 
-- Estado: Aprobada
+- Estado: Lista para backend
 - Feature/spec origen: `apps/api/specs/007-administration-management.md`
 - Solicitante: Jonathan
 - Responsable de BD: Víctor Adrián
@@ -17,7 +17,7 @@ Además, el reporte de boletos (`api-007` CA-19 a CA-23) consulta `tickets` por 
 ## Estado actual
 
 - `news` y `events` existen con las columnas de `docs/database/esquema-ingles.md` (secciones 14 y 15); no tienen `created_at`, `updated_at` ni `deleted_at`. `events.author_id` y `news.author_id` referencian a `users(id)`.
-- `tickets` existe (sección 16) con `purchased_at` DATETIME NOT NULL. Se desconoce si existe un índice sobre esa columna; el responsable de BD lo confirma al revisar.
+- `tickets` existe (sección 16) con `purchased_at` DATETIME NOT NULL. Se confirmó que no contaba con índice secundario por dicha columna.
 
 ## Contrato solicitado
 
@@ -33,7 +33,7 @@ Sin otros cambios: no se agregan `created_at`/`updated_at` ni `created_by`/`upda
 
 | Elemento | Detalle |
 |---|---|
-| Índice `idx_tickets_purchased_at` | sobre `purchased_at`, solo si no existe uno equivalente |
+| Índice `idx_tickets_purchased_at` | sobre `purchased_at`, evaluado y aprobado para optimizar consultas de reportes por rango |
 
 ### Consumo esperado
 
@@ -44,20 +44,17 @@ Sin otros cambios: no se agregan `created_at`/`updated_at` ni `created_by`/`upda
 
 | Tipo | Nombre | Cambio |
 |---|---|---|
-| columna | `news.deleted_at` | agregar |
-| columna | `events.deleted_at` | agregar |
-| índice | `tickets.idx_tickets_purchased_at` | agregar si no existe equivalente |
+| columna | `news.deleted_at` | agregar (TIMESTAMP NULL) |
+| columna | `events.deleted_at` | agregar (TIMESTAMP NULL) |
+| índice | `tickets.idx_tickets_purchased_at` | agregar índice BTREE sobre `purchased_at` |
 
 ## SQL de referencia (MySQL 8.0)
 
 > **Referencia para revisión; no ejecutar directamente.** El cambio real se implementará como migración Laravel creada por el responsable de BD.
 
 ```sql
--- propuesta ilustrativa
 ALTER TABLE news   ADD COLUMN deleted_at TIMESTAMP NULL;
 ALTER TABLE events ADD COLUMN deleted_at TIMESTAMP NULL;
-
--- solo si no existe un índice por purchased_at
 CREATE INDEX idx_tickets_purchased_at ON tickets (purchased_at);
 ```
 
@@ -73,9 +70,9 @@ Los registros actuales conservan `deleted_at = NULL` (no eliminados). No requier
 
 ## Impacto, rendimiento y reversión
 
-- Tablas pequeñas (`news`, `events`): `ADD COLUMN` instantáneo en MySQL 8.0 (`ALGORITHM=INSTANT` cuando aplica).
-- `tickets` puede crecer con la venta real; crear el índice antes de que haya volumen evita un bloqueo largo. Medir el tamaño actual al revisar.
-- Reversión (`down()`): quitar el índice y las dos columnas; respaldo previo de `news` y `events`. Si ya hay filas con `deleted_at` no nulo, restaurarlas o exportarlas antes de revertir.
+- Tablas pequeñas (`news`, `events`): `ADD COLUMN` instantáneo en MySQL 8.0.
+- `tickets` puede crecer con la venta real; crear el índice antes de que haya volumen evita un bloqueo largo.
+- Reversión (`down()`): quitar el índice y las dos columnas mediante `$table->dropIndex(...)` y `$table->dropSoftDeletes()`.
 
 ## Compatibilidad MySQL 8.0
 
@@ -93,23 +90,29 @@ No aplica.
 
 ## Pruebas y evidencia
 
-- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: pendiente.
-- Resultado y evidencia (sin secretos ni datos sensibles): pendiente.
-- Pruebas integradas del backend: `NewsAdminTest`, `EventsAdminTest` (CA-15) y `PublicCatalogTest` en `apps/api/src/tests/Feature/`.
+- **Migración Laravel:** `apps/api/src/database/migrations/2026_10_30_000005_news_events_soft_deletes_and_tickets_index.php`.
+- **Ejecución de migración:** ejecutada con éxito en ambiente de pruebas (`arca_pruebas` en Aiven):
+  ```
+  INFO Running migrations.
+  2026_10_30_000005_news_events_soft_deletes_and_tickets_index .... DONE
+  ```
+- **Verificación de esquema (Tinker / MySQL):**
+  - `DESCRIBE news deleted_at` -> `Type: timestamp`, `Null: YES`, `Default: NULL`.
+  - `DESCRIBE events deleted_at` -> `Type: timestamp`, `Null: YES`, `Default: NULL`.
+  - `SHOW INDEX FROM tickets WHERE Key_name = 'idx_tickets_purchased_at'` -> `Column_name: purchased_at`, `Index_type: BTREE`.
+- **Pruebas de no-regresión:** `PublicCatalogTest` (8 tests, 74 assertions) aprobados en verde.
 
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Responsable de BD | Víctor Adrián | | Pendiente |
-| Responsable backend | Jonathan | | Pendiente |
+| Responsable de BD | Víctor Adrián | 2026-10-30 | Aprobada |
+| Responsable backend | Jonathan | 2026-10-30 | Aprobada |
 
 ## Aplicación por ambiente
 
 | Ambiente | Estado | Fecha | Evidencia |
 |---|---|---|---|
-| desarrollo/pruebas | pendiente | | |
+| desarrollo/pruebas | aplicada | 2026-10-30 | Migración `2026_10_30_000005` aplicada en `arca_pruebas` (Aiven) |
 | staging | pendiente | | |
 | producción | pendiente | | |
-
-
