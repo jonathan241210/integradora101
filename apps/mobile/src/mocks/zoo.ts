@@ -182,6 +182,8 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     mapX: 0.23,
     mapY: 0.25,
     visible: true,
+    gpsLat: 20.0838, // TODO: reemplazar con medición real
+    gpsLon: -98.7236, // TODO: reemplazar con medición real
   },
   {
     id: 'simba',
@@ -192,6 +194,8 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     mapX: 0.31,
     mapY: 0.36,
     visible: true,
+    gpsLat: 20.0832, // TODO: reemplazar con medición real
+    gpsLon: -98.7231, // TODO: reemplazar con medición real
   },
   {
     id: 'penguin',
@@ -202,6 +206,8 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     mapX: 0.23,
     mapY: 0.55,
     visible: true,
+    gpsLat: 20.0823, // TODO: reemplazar con medición real
+    gpsLon: -98.7236, // TODO: reemplazar con medición real
   },
   {
     id: 'monkey',
@@ -212,6 +218,8 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     mapX: 0.31,
     mapY: 0.83,
     visible: true,
+    gpsLat: 20.0809, // TODO: reemplazar con medición real
+    gpsLon: -98.7231, // TODO: reemplazar con medición real
   },
   {
     id: 'elephant',
@@ -222,6 +230,8 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     mapX: 0.23,
     mapY: 0.76,
     visible: true,
+    gpsLat: 20.0812, // TODO: reemplazar con medición real
+    gpsLon: -98.7236, // TODO: reemplazar con medición real
   },
   {
     id: 'bird-aviary',
@@ -232,6 +242,8 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     mapX: 0.77,
     mapY: 0.25,
     visible: true,
+    gpsLat: 20.0838, // TODO: reemplazar con medición real
+    gpsLon: -98.7204, // TODO: reemplazar con medición real
   },
   {
     id: 'reptile-house',
@@ -242,6 +254,8 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     mapX: 0.77,
     mapY: 0.55,
     visible: true,
+    gpsLat: 20.0823, // TODO: reemplazar con medición real
+    gpsLon: -98.7204, // TODO: reemplazar con medición real
   },
   {
     id: 'restrooms',
@@ -252,6 +266,8 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     mapX: 0.77,
     mapY: 0.76,
     visible: true,
+    gpsLat: 20.0812, // TODO: reemplazar con medición real
+    gpsLon: -98.7204, // TODO: reemplazar con medición real
   },
   {
     id: 'food-court',
@@ -262,6 +278,8 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     mapX: 0.70,
     mapY: 0.83,
     visible: true,
+    gpsLat: 20.0809, // TODO: reemplazar con medición real
+    gpsLon: -98.7208, // TODO: reemplazar con medición real
   },
   {
     id: 'main-entrance',
@@ -272,6 +290,8 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     mapX: 0.50,
     mapY: 0.90,
     visible: true,
+    gpsLat: 20.0800, // TODO: reemplazar con medición real
+    gpsLon: -98.7220, // TODO: reemplazar con medición real
   },
 ];
 

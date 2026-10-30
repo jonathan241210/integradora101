@@ -89,6 +89,10 @@ export interface MapPlace {
   mapX: number;
   mapY: number;
   visible: boolean;
+  /** Latitud GPS del POI (sintética hasta medición real). */
+  gpsLat?: number;
+  /** Longitud GPS del POI (sintética hasta medición real). */
+  gpsLon?: number;
 }
 
 export type MapFilter = 'all' | 'animal' | 'service';

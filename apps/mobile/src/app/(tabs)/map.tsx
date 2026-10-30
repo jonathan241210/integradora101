@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MapScreen } from '../../screens/MapScreen';
 import { useMapViewModel } from '../../viewmodels/useMapViewModel';
+import { useLocationViewModel } from '../../viewmodels/useLocationViewModel';
 
 export default function MapRoute() {
   const router = useRouter();
@@ -23,6 +24,8 @@ export default function MapRoute() {
     clearSelection,
     focusPlace,
   } = useMapViewModel();
+
+  const { userPosition } = useLocationViewModel();
 
   useEffect(() => {
     if (focus) {
@@ -49,6 +52,7 @@ export default function MapRoute() {
         pathname: '/search',
         params: { selectForTour: 'true', returnTo: 'map' },
       })}
+      userPosition={userPosition}
     />
   );
 }

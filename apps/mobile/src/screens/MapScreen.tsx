@@ -10,9 +10,10 @@ import {
   LoadingView,
   ScreenContainer,
 } from '../components/ui';
-import { MapMarker, MapPlaceCard, ZooMapSvg } from '../components/map';
+import { MapMarker, MapPlaceCard, UserLocationMarker, ZooMapSvg } from '../components/map';
 import { MapFilter, MapPlace, MapSection } from '../models';
 import { colors, spacing } from '../theme/tokens';
+import type { UserPosition } from '../viewmodels/useLocationViewModel';
 
 interface MapScreenProps {
   sections: MapSection[];
@@ -29,6 +30,8 @@ interface MapScreenProps {
   onCloseDetail: () => void;
   onRetry: () => void;
   onSearchPress: () => void;
+  /** Posición GPS del visitante (null si permiso denegado o no disponible). */
+  userPosition?: UserPosition | null;
 }
 
 const filters: { key: MapFilter; label: string }[] = [
@@ -52,6 +55,7 @@ export function MapScreen({
   onCloseDetail,
   onRetry,
   onSearchPress,
+  userPosition,
 }: MapScreenProps) {
   const selectedSectionName =
     sections.find((section) => section.id === selectedPlace?.sectionId)?.name ?? 'Sin sección';
@@ -89,6 +93,13 @@ export function MapScreen({
               onPress={onSelectPlace}
             />
           ))}
+          {userPosition && (
+            <UserLocationMarker
+              svgX={userPosition.svgX}
+              svgY={userPosition.svgY}
+              searching={userPosition.searching}
+            />
+          )}
         </View>
 
         {isLoading && (

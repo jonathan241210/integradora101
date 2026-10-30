@@ -186,3 +186,220 @@ No se muestra un estado “sin conexión” artificial porque la V1 no consume r
 - Plan aprobado funcional y técnicamente el 2026-10-22.
 - ADR 0015 aceptado el 2026-10-22.
 - Implementación V1 ejecutada; revisión técnica de Aksel y validación visual en Android/Expo Go pendientes.
+
+---
+
+## Enmienda V2 — GPS, Punto Azul y Detección de Llegada
+
+- Spec: `apps/mobile/specs/007-map-location.md` (enmienda V2, Aprobada 2026-10-29)
+- Estado del plan: **Aprobado** (Víctor Adrián, 2026-10-29)
+- ADR habilitador: `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado
+- `expo-location ~57.0.22` instalada en `package.json` ✓
+- `app.json` con permiso `ACCESS_FINE_LOCATION` y plugin `expo-location` ✓
+
+---
+
+### Diseño de solución (V2)
+
+La V2 añade tres capacidades sobre la arquitectura MVVM existente sin romper ninguna pieza de V1:
+
+1. **`geoTransform`** — utilidad pura que convierte coordenadas GPS reales a coordenadas SVG normalizadas mediante transformación afín de bounding-box.
+2. **`useLocationViewModel`** — hook separado del ViewModel del mapa; gestiona el ciclo de vida del permiso GPS, la suscripción a `expo-location` y el estado del punto azul. Se inyecta como dependencia a `MapScreen`.
+3. **`UserLocationMarker`** — componente visual que renderiza el punto azul (o el indicador "buscando") sobre el SVG, en la misma capa que `MapMarker`.
+4. **Geocerca Haversine en `useMapViewModel`** — al tener un `destinationPlaceId` activo y coordenadas GPS válidas, calcula la distancia y emite el evento `arrived` cuando ≤ 10 m.
+5. **`ArrivalBanner`** — componente visual que muestra "¡Llegaste a [recinto]!" y permite cerrarse.
+
+```mermaid
+flowchart TD
+    Route["app/(tabs)/map.tsx"] --> Screen[MapScreen]
+    Screen --> VM[useMapViewModel]
+    Screen --> LVM[useLocationViewModel]
+    LVM --> EL[expo-location]
+    LVM --> GT[geoTransform.ts]
+    GT --> ULM[UserLocationMarker]
+    VM --> Haversine[haversine.ts]
+    Haversine --> Banner[ArrivalBanner]
+    VM --> Repo[MapRepository]
+    Repo --> Fixture[MOCK_MAP_PLACES]
+    Screen --> SVG[ZooMapSvg]
+    Screen --> Marker[MapMarker]
+    Screen --> Card[MapPlaceCard]
+```
+
+---
+
+### Cambios por área
+
+| Área | Archivos nuevos / modificados | Propósito |
+|---|---|---|
+| Utilidades | `src/utils/geoTransform.ts` (**nuevo**) | Transformación GPS → SVG (función pura, testeable sin GPS) |
+| Utilidades | `src/utils/haversine.ts` (**nuevo**) | Distancia en metros entre dos puntos GPS (función pura) |
+| Constantes | `src/constants/zoo.ts` (**nuevo**) | `ZOO_BOUNDS`, `ZOO_ENTRANCE_SVG`, `ARRIVAL_RADIUS_METERS = 10` |
+| ViewModel | `src/viewmodels/useLocationViewModel.ts` (**nuevo**) | Permiso, suscripción GPS, posición del usuario, estado "buscando" |
+| ViewModel | `src/viewmodels/useMapViewModel.ts` (**modificado**) | Añade `destinationPlaceId`, `arrivedAtPlace`, `dismissArrival()` |
+| Componentes | `src/components/map/UserLocationMarker.tsx` (**nuevo**) | Punto azul con anillo pulsante de "buscando" |
+| Componentes | `src/components/map/ArrivalBanner.tsx` (**nuevo**) | Banner "¡Llegaste a [recinto]!" con botón cerrar |
+| Componentes | `src/components/map/index.ts` (**modificado**) | Exporta los dos nuevos componentes |
+| Pantalla | `src/screens/MapScreen.tsx` (**modificado**) | Integra `useLocationViewModel`, `UserLocationMarker` y `ArrivalBanner` |
+| Tests | `__tests__/geoTransform.test.ts` (**nuevo**) | CA-11: transformación con coords sintéticas |
+| Tests | `__tests__/haversine.test.ts` (**nuevo**) | Distancia correcta entre puntos conocidos |
+| Tests | `__tests__/mapViewModel.test.ts` (**modificado**) | CA-12: detección de llegada; CA-13: modo degradado |
+| Tests | `__tests__/mapScreen.test.tsx` (**modificado**) | CA-08, CA-09, CA-10, CA-13: permiso, punto azul, posición inicial |
+| Test support | `test-support/locationMocks.ts` (**nuevo**) | Mock de `expo-location` para Jest |
+| Docs | `apps/mobile/docs/007-map-v2-coords.md` (**nuevo**) | Tabla de coordenadas sintéticas y espacio para las reales cuando lleguen |
+
+---
+
+### Contrato y datos
+
+- **Sin API ni DBR.** Los POIs siguen siendo el fixture local. La posición GPS nunca sale del dispositivo.
+- **Permiso:** `requestForegroundPermissionsAsync()` de `expo-location`; si el resultado es `'denied'` o `'undetermined'` después de pedir, el mapa carga sin punto azul.
+- **Modelo de posición interno (solo memoria):**
+  ```ts
+  interface UserPosition {
+    svgX: number;   // coordenada en el viewBox SVG
+    svgY: number;
+    lat: number;    // GPS real (para cálculo Haversine)
+    lon: number;
+    accuracy: number; // metros; < 20 = señal buena
+    searching: boolean; // true mientras accuracy >= 20
+  }
+  ```
+- **`ZOO_BOUNDS`** (sintético hasta medición real):
+  ```ts
+  const ZOO_BOUNDS = {
+    latMin: 20.0800, latMax: 20.0850,
+    lonMin: -98.7250, lonMax: -98.7190,
+  };
+  const SVG_WIDTH = 1000;
+  const SVG_HEIGHT = 1400;
+  const ZOO_ENTRANCE_SVG = { svgX: 500, svgY: 1320 }; // entrada principal (prueba)
+  ```
+  Estas constantes se actualizan en `zoo.ts` sin tocar ningún otro archivo cuando lleguen los datos reales.
+
+---
+
+### Diseño técnico detallado
+
+#### `geoTransform.ts`
+```ts
+// Transformación afín bounding-box
+export function geoTransform(lat: number, lon: number): { svgX: number; svgY: number }
+// Si lat/lon están fuera de ZOO_BOUNDS → devuelve ZOO_ENTRANCE_SVG
+```
+
+#### `haversine.ts`
+```ts
+// Distancia en metros entre dos puntos GPS
+export function haversineMeters(
+  lat1: number, lon1: number,
+  lat2: number, lon2: number
+): number
+```
+
+#### `useLocationViewModel.ts`
+```ts
+export function useLocationViewModel(): {
+  userPosition: UserPosition | null; // null = permiso denegado / no pedido aún
+  permissionGranted: boolean;
+  requestPermission: () => Promise<void>;
+}
+```
+- Al montar: llama `requestForegroundPermissionsAsync`. Si concedido, abre suscripción con `watchPositionAsync` (accuracy: `BestForNavigation`, distanceInterval: 3 m).
+- Al desmontar: cancela la suscripción.
+- Si accuracy ≥ 20 m → `searching: true`, posición en `ZOO_ENTRANCE_SVG`.
+
+#### Cambios en `useMapViewModel`
+```ts
+// Nuevos campos en el return:
+destinationPlaceId: string | null;
+arrivedAtPlace: MapPlace | null;   // no null cuando distancia ≤ 10 m
+setDestination: (id: string | null) => void;
+dismissArrival: () => void;
+```
+- Cuando `destinationPlaceId` y `userPosition` son no-nulos, calcula `haversineMeters` entre la posición del usuario y las coordenadas GPS del POI.
+- POIs en el fixture necesitan campos `gpsLat` y `gpsLon` opcionales (sintéticos por ahora).
+- Si distancia ≤ `ARRIVAL_RADIUS_METERS` → `arrivedAtPlace = place`, `destinationPlaceId = null`.
+
+#### `UserLocationMarker`
+- Círculo azul (`color.brand.primary` o token equivalente) de 16 px.
+- Anillo pulsante exterior cuando `searching: true` (Animated.loop).
+- Se posiciona con `position: 'absolute'` sobre el SVG usando `svgX`/`svgY` → porcentaje del contenedor (igual que `MapMarker`).
+
+#### `ArrivalBanner`
+- Banner en la parte inferior de `MapScreen`.
+- Texto: `"¡Llegaste a {place.name}!"`.
+- Botón "Cerrar" que llama `dismissArrival()`.
+- Solo visible cuando `arrivedAtPlace !== null`.
+
+---
+
+### Seguridad, offline y operación
+
+- Las coordenadas GPS nunca se almacenan (`AsyncStorage`, `SecureStore` ni red).
+- El permiso solo se pide una vez por sesión (RN-14). Si denegado, no se vuelve a pedir hasta que el usuario reinicia la app.
+- En modo offline: GPS sigue funcionando; solo requiere señal de satélite, no de red.
+- `ZOO_BOUNDS` y `ZOO_ENTRANCE_SVG` son constantes en código — fáciles de actualizar sin DBR cuando lleguen las coordenadas reales.
+
+---
+
+### Mapeo de criterios a pruebas
+
+| Criterio | Prueba automatizada | Ubicación |
+|---|---|---|
+| CA-08 (permiso GPS) | `mapScreen.test.tsx` — mock de `expo-location` retorna `'denied'`; verifica que el mapa carga y no hay punto azul | `__tests__/mapScreen.test.tsx` |
+| CA-09 (punto azul) | `mapScreen.test.tsx` — mock retorna posición con accuracy 5 m; verifica `UserLocationMarker` en DOM | `__tests__/mapScreen.test.tsx` |
+| CA-10 (posición entrada) | `mapScreen.test.tsx` — mock retorna accuracy 50 m; verifica `testID="location-searching"` | `__tests__/mapScreen.test.tsx` |
+| CA-11 (geoTransform) | `geoTransform.test.ts` — esquinas del bounding-box sintético → extremos SVG; fuera de bounds → entrada | `__tests__/geoTransform.test.ts` |
+| CA-12 (llegada) | `mapViewModel.test.ts` — posición a 5 m del POI → `arrivedAtPlace` no nulo; a 15 m → nulo | `__tests__/mapViewModel.test.ts` |
+| CA-13 (modo degradado) | `mapViewModel.test.ts` — sin posición GPS: CA-01…CA-07 siguen pasando sin errores | `__tests__/mapViewModel.test.ts` |
+| Haversine | `haversine.test.ts` — distancia Equateur-Meridiano conocida ≈ 111 km; misma coord → 0 | `__tests__/haversine.test.ts` |
+
+---
+
+### Constitution Check
+
+| Principio | Cumple | Evidencia |
+|---|---|---|
+| I. Stack mínimo y portable | ✅ | `expo-location` SDK 57, ADR 0016 Aceptado. Sin proveedores externos de mapas. Funciona sin red. |
+| II. La spec manda | ✅ | Todos los CA de la enmienda V2 cubiertos. Sin features extra. |
+| III. Lógica separada de UI | ✅ | `geoTransform` y `haversine` son funciones puras. `useLocationViewModel` y `useMapViewModel` son ViewModels. `UserLocationMarker` y `ArrivalBanner` son Views puras sin lógica de negocio. |
+| IV. Un test por criterio | ✅ | 6 CA → 6 pruebas + 1 para Haversine. Ver tabla de mapeo. |
+| V. Una sola fuente de verdad | ✅ | `ZOO_BOUNDS`, `ARRIVAL_RADIUS_METERS` y `ZOO_ENTRANCE_SVG` en `zoo.ts`. El fixture de POIs es la única fuente de datos. Posición GPS solo en `useLocationViewModel`. |
+| VI. Inglés código / español UI | ✅ | Identificadores y rutas en inglés. Mensajes ("¡Llegaste a…", "buscando ubicación…", diálogo de permiso) en español. |
+
+---
+
+### Riesgos y decisiones
+
+- **ADR 0016** — Aceptado (2026-10-29). `expo-location ~57.0.22` instalada.
+- **SVG de prueba:** el punto azul no será preciso visualmente hasta tener el SVG real y las coordenadas medidas en campo. No bloquea el desarrollo; sí bloquea la demo real en el zoológico.
+- **Coordenadas sintéticas en POIs:** los campos `gpsLat`/`gpsLon` del fixture serán `null` o valores aproximados hasta la medición. La geocerca funcionará en Jest con coords sintéticas.
+- **`watchPositionAsync` en Jest:** se mockea completamente en `test-support/locationMocks.ts`; no hay llamadas reales al GPS en tests.
+
+---
+
+### Orden de implementación (tareas)
+
+| Paso | Tarea | Depende de |
+|---|---|---|
+| 1 | Crear `src/utils/haversine.ts` + test | — |
+| 2 | Crear `src/constants/zoo.ts` con bounds sintéticos | — |
+| 3 | Crear `src/utils/geoTransform.ts` + test | Paso 2 |
+| 4 | Crear `test-support/locationMocks.ts` (mock expo-location) | — |
+| 5 | Crear `src/viewmodels/useLocationViewModel.ts` | Pasos 2, 3, 4 |
+| 6 | Actualizar `MapPlace` en modelos: añadir `gpsLat?`, `gpsLon?` | — |
+| 7 | Actualizar fixture `MOCK_MAP_PLACES` con coords sintéticas | Paso 6 |
+| 8 | Actualizar `useMapViewModel`: añadir `destinationPlaceId`, `arrivedAtPlace`, geocerca | Pasos 1, 5, 6 |
+| 9 | Crear `UserLocationMarker.tsx` | Paso 5 |
+| 10 | Crear `ArrivalBanner.tsx` | Paso 8 |
+| 11 | Actualizar `MapScreen.tsx` | Pasos 5, 9, 10 |
+| 12 | Tests de `mapScreen.test.tsx` y `mapViewModel.test.ts` | Pasos 4, 8, 11 |
+| 13 | Crear `docs/007-map-v2-coords.md` | — |
+
+### Aprobación
+
+- **Plan aprobado por:** Víctor Adrián (2026-10-29)
+- **Revisión técnica:** Aksel (pendiente — no bloquea inicio de tareas para Víctor como responsable de 007)
+- **Alcance V2 (este plan):** CA-08, CA-09, CA-10, CA-11 — punto azul, permiso GPS, posición inicial en entrada, transformación geoTransform. Sin línea al destino ni detección de llegada.
+- **Alcance V2.1 (plan futuro):** CA-12 — selección de recinto destino, línea SVG hacia el destino, detección de llegada (haversine), `ArrivalBanner`. Requiere su propia enmienda de plan y tasks cuando se inicie.

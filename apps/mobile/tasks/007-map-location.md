@@ -76,3 +76,136 @@
 - Dependencia aprobada: `react-native-svg@15.15.4` (ADR 0015 aceptado).
 - Dependencias transitivas alineadas con Expo SDK 57: `react-native-worklets@0.10.1` y `react-native-reanimated@4.5.1`.
 - Sin cambios de base de datos, API, GPS ni permisos de ubicación en esta V1.
+
+---
+
+## Enmienda V2 — GPS, Punto Azul (CA-08 a CA-11)
+
+- Spec: `apps/mobile/specs/007-map-location.md` (enmienda V2, Aprobada 2026-10-29)
+- Plan: `apps/mobile/plan/007-map-location.md` (enmienda V2, Aprobado 2026-10-29)
+- ADR: `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado
+- Alcance: **solo punto azul** — CA-08, CA-09, CA-10, CA-11
+- Fuera de alcance aquí: línea al destino, detección de llegada (CA-12) → V2.1
+
+> Continúa la numeración desde T-18 (última tarea de V1).
+
+---
+
+## Implementación
+
+### Bloque 1 — Utilidades puras (sin dependencias entre sí)
+
+- [x] **T-19** (RN-12, RN-13): Crear `src/constants/zoo.ts` con:
+  - `ZOO_BOUNDS = { latMin, latMax, lonMin, lonMax }` (valores sintéticos de prueba, comentados como `// TODO: reemplazar con medición real`)
+  - `ZOO_ENTRANCE_SVG = { svgX: 500, svgY: 1320 }` (entrada principal, prueba)
+  - `ARRIVAL_RADIUS_METERS = 10`
+  - `SVG_WIDTH = 1000`, `SVG_HEIGHT = 1400`
+  - Resultado comprobable: archivo existe, exporta todas las constantes, TypeScript sin errores.
+
+- [x] **T-20** (CA-11): Crear `src/utils/geoTransform.ts`:
+  - Función `geoTransform(lat, lon): { svgX, svgY }` usando transformación afín sobre `ZOO_BOUNDS`.
+  - Si `lat`/`lon` cae fuera de los bounds → devuelve `ZOO_ENTRANCE_SVG`.
+  - Resultado comprobable: función exportada, sin efectos secundarios, TypeScript limpio.
+
+- [x] **T-21** (CA-11): Crear `__tests__/geoTransform.test.ts`:
+  - Caso: esquina noroeste del bounding-box → `{ svgX ≈ 0, svgY ≈ 0 }`.
+  - Caso: esquina sureste → `{ svgX ≈ 1000, svgY ≈ 1400 }`.
+  - Caso: punto fuera de bounds → `ZOO_ENTRANCE_SVG`.
+  - Caso: punto central → resultado dentro del rango SVG.
+  - Resultado comprobable: 4 tests en verde, sin mocks de GPS.
+
+### Bloque 2 — Mock de expo-location para Jest
+
+- [x] **T-22** (CA-08, CA-09, CA-10): Crear `test-support/locationMocks.ts`:
+  - `mockGranted(accuracy, lat, lon)` — simula permiso concedido con posición.
+  - `mockDenied()` — simula permiso denegado.
+  - `mockSearching()` — simula permiso concedido pero accuracy = 50 m (señal débil).
+  - Mockea `expo-location` completo (permiso, `watchPositionAsync`, cancelación).
+  - Resultado comprobable: el mock se importa y no lanza errores en Jest.
+
+### Bloque 3 — ViewModel de ubicación
+
+- [x] **T-23** (CA-08, CA-09, CA-10, CA-11): Crear `src/viewmodels/useLocationViewModel.ts`:
+  - `requestPermission()` → llama `requestForegroundPermissionsAsync`.
+  - Si concedido: abre suscripción `watchPositionAsync` (accuracy `BestForNavigation`, `distanceInterval: 3`).
+  - Si `accuracy >= 20` → `userPosition.searching = true`, svgX/Y desde `ZOO_ENTRANCE_SVG`.
+  - Si `accuracy < 20` → `userPosition.searching = false`, svgX/Y desde `geoTransform(lat, lon)`.
+  - Al desmontar → cancela suscripción.
+  - Si denegado → `permissionGranted = false`, `userPosition = null`.
+  - Resultado comprobable: hook exportado, TypeScript sin errores.
+
+### Bloque 4 — Modelo de datos
+
+- [x] **T-24** (CA-11, RN-13): Actualizar `MapPlace` en `src/models/index.ts`:
+  - Añadir campos opcionales `gpsLat?: number` y `gpsLon?: number`.
+  - Resultado comprobable: `tsc --noEmit` sin errores, ningún archivo existente se rompe.
+
+- [x] **T-25** (RN-13): Actualizar `MOCK_MAP_PLACES` en `src/mocks/zoo.ts`:
+  - Añadir `gpsLat` y `gpsLon` sintéticos a cada POI (coordenadas dentro de `ZOO_BOUNDS`).
+  - Comentar cada valor con `// TODO: reemplazar con medición real`.
+  - Resultado comprobable: Jest sigue en verde, sin errores de tipo.
+
+### Bloque 5 — Componentes visuales
+
+- [x] **T-26** (CA-09, CA-10): Crear `src/components/map/UserLocationMarker.tsx`:
+  - Círculo azul (token semántico `color.brand.primary` o equivalente; **no** color fijo hex).
+  - Tamaño: 16 px de diámetro.
+  - Cuando `searching = true`: anillo exterior con `Animated.loop` (pulsa).
+  - Cuando `searching = false`: solo el círculo sólido.
+  - `testID="user-location-marker"` y `testID="location-searching"` (anillo) para tests.
+  - Se posiciona con `position: 'absolute'` usando `svgX`/`svgY` como porcentaje del contenedor (`svgX / SVG_WIDTH * 100 + '%'`).
+  - Accesibilidad: `accessibilityLabel="Tu ubicación actual"`.
+  - Resultado comprobable: componente renderiza sin errores con props de prueba.
+
+- [x] **T-27** (CA-09, CA-10): Exportar `UserLocationMarker` desde `src/components/map/index.ts`.
+
+### Bloque 6 — Integración en pantalla
+
+- [x] **T-28** (CA-08, CA-09, CA-10, CA-13): Actualizar `src/screens/MapScreen.tsx`:
+  - Importar y llamar `useLocationViewModel()`.
+  - Renderizar `<UserLocationMarker>` solo cuando `permissionGranted && userPosition !== null`.
+  - Si `!permissionGranted`: mapa funciona igual que V1, sin ningún mensaje de error GPS.
+  - `useLocationViewModel` se inyecta como prop opcional para facilitar el test (igual que `repository` en el ViewModel del mapa).
+  - Resultado comprobable: pantalla carga, sin regresiones en V1, TypeScript limpio.
+
+### Bloque 7 — Tests de integración de pantalla
+
+- [x] **T-29** (CA-08): Test en `__tests__/mapScreen.test.tsx` — permiso denegado:
+  - Mock `mockDenied()` → renderizar `MapScreen`.
+  - Verificar que `UserLocationMarker` **no** aparece en el árbol.
+  - Verificar que los filtros, marcadores y cards de V1 siguen funcionando.
+
+- [x] **T-30** (CA-09): Test en `__tests__/mapScreen.test.tsx` — GPS con buena señal:
+  - Mock `mockGranted(5, lat, lon)` → renderizar `MapScreen`.
+  - Verificar que `testID="user-location-marker"` está presente.
+  - Verificar que `testID="location-searching"` **no** está presente.
+
+- [x] **T-31** (CA-10): Test en `__tests__/mapScreen.test.tsx` — GPS buscando señal:
+  - Mock `mockSearching()` (accuracy 50 m) → renderizar `MapScreen`.
+  - Verificar que `testID="user-location-marker"` está presente.
+  - Verificar que `testID="location-searching"` está presente (anillo pulsante).
+
+- [x] **T-32** (CA-13): Test en `__tests__/mapScreen.test.tsx` — modo degradado:
+  - Mock `mockDenied()` → renderizar `MapScreen` con un `focusedPlaceId`.
+  - Verificar que CA-04 (filtros) y CA-05 (foco desde búsqueda) siguen pasando sin errores.
+
+### Bloque 8 — Documentación y verificación final
+
+- [x] **T-33**: Crear `apps/mobile/docs/007-map-v2-coords.md`:
+  - Tabla con columnas: `POI`, `gpsLat (prueba)`, `gpsLon (prueba)`, `gpsLat (real)`, `gpsLon (real)`.
+  - Una fila por POI del fixture + fila de entrada principal + fila de las 4 esquinas del zoo.
+  - Columnas "real" vacías con nota "pendiente de medición en campo".
+
+- [x] **T-34**: Ejecutar `npx tsc --noEmit` en `apps/mobile` → 0 errores.
+
+- [x] **T-35**: Ejecutar suite completa de Jest en `apps/mobile` → todas las suites en verde (incluyendo T-29 a T-32 y T-21).
+
+- [x] **T-36**: Actualizar `docs/003-008-roadmap-y-asignacion.md` → fila 007 refleja estado de V2 punto azul.
+
+---
+
+## Notas
+
+- **CA-12 (llegada) y la línea al destino** quedan fuera de este bloque. Se implementarán en una enmienda V2.1 con su propio plan y tasks cuando se decida.
+- **Coordenadas reales:** cuando el zoológico envíe foto/video, se actualizan únicamente `zoo.ts` y `MOCK_MAP_PLACES` — sin tocar ningún otro archivo de código.
+- El test de arquitectura (`architecture.test.ts`) debe seguir aprobado: sin colores hex fijos ni lógica en componentes.

@@ -143,3 +143,116 @@ flowchart TD
   - `docs/adr/0004-mobile-react-native.md`
   - `docs/adr/0005-videojuego-pendiente.md`
   - `docs/adr/0015-mobile-svg-map-rendering.md`
+
+---
+
+## Enmienda V2 — GPS, Punto Azul y Detección de Llegada
+
+- Estado: **Aprobada**
+- Solicitante / responsable funcional: Víctor Adrián
+- Aprobación funcional: Víctor Adrián (2026-10-29)
+- Fecha: 2026-10-29
+- ADR habilitador: `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado (2026-10-29)
+
+### Problema y contexto (V2)
+
+La V1 entregó un mapa 2D consultable pero estático: el visitante no sabe dónde está él dentro del plano. La V2 agrega posicionamiento en tiempo real mediante GPS, sin cambiar el SVG ni la arquitectura base. El SVG actual es de **prueba y no está a escala real**; la calibración geográfica definitiva depende del SVG final y de una medición en campo.
+
+### Objetivos (V2)
+
+- Mostrar un **punto azul** sobre el SVG con la posición aproximada del visitante.
+- Mostrar la posición en la **entrada principal** como punto de partida cuando el GPS no tiene señal suficiente o el permiso acaba de ser otorgado.
+- **Detectar llegada** a un recinto destino cuando el visitante está a ≤ 10 m del POI seleccionado y mostrar una notificación en pantalla.
+- Degradar al modo V1 (sin punto azul) si el permiso GPS es denegado, sin bloquear la app.
+
+### Fuera de alcance (V2)
+
+- Geofencing nativo con tareas en segundo plano (`startGeofencingAsync`).
+- Ruteo paso a paso, instrucciones de giro o cálculo de tiempo/distancia.
+- Orientación por brújula / rotación del punto azul.
+- Integración con API o DBR; los POIs siguen siendo el fixture local.
+- iOS.
+- Calibración geográfica real del SVG (depende del SVG definitivo y medición en campo; hasta entonces las coordenadas GPS de los POIs son de prueba).
+
+### Actores y permisos (V2)
+
+| Actor/rol | Necesidad | Permisos requeridos |
+|---|---|---|
+| Visitante | Saber dónde está en el zoológico | `ACCESS_FINE_LOCATION` (primer plano) — opcional; sin él el mapa funciona en modo V1 |
+
+### Historias de usuario (V2)
+
+- **HU-06 (Punto azul):** Como visitante, quiero ver mi posición sobre el plano del zoológico para orientarme mientras camino.
+- **HU-07 (Posición inicial en entrada):** Como visitante que acaba de entrar, quiero que mi posición inicial aparezca en la entrada principal para no verme ubicado fuera del mapa.
+- **HU-08 (Llegada a recinto):** Como visitante con un destino seleccionado, quiero recibir un aviso cuando llegue al recinto para saber que encontré el lugar.
+- **HU-09 (Sin GPS):** Como visitante que rechazó el permiso, quiero seguir usando el mapa de consulta igual que en V1 sin mensajes repetitivos de error.
+
+### Criterios de aceptación (V2)
+
+- **CA-08 (Permiso GPS):** Dado que el visitante abre la pestaña Mapa por primera vez, cuando se solicita el permiso de ubicación, entonces el diálogo del sistema aparece y el mapa carga el SVG en paralelo; si el permiso es denegado el mapa funciona en modo V1 sin punto azul y sin volver a pedir el permiso en la misma sesión.
+
+- **CA-09 (Punto azul visible):** Dado que el permiso fue concedido y el GPS tiene precisión ≤ 20 m, cuando se recibe una actualización de posición, entonces un marcador circular azul aparece sobre el SVG en la posición transformada (`geoTransform`), animándose suavemente entre actualizaciones.
+
+- **CA-10 (Posición inicial en entrada):** Dado que el permiso fue concedido pero el GPS aún no tiene señal suficiente (precisión > 20 m o sin fix), cuando el visitante abre el mapa, entonces el punto azul se muestra en las coordenadas SVG de la entrada principal con un indicador visual de "buscando ubicación…" (anillo pulsante o texto).
+
+- **CA-11 (Transformación GPS → SVG):** Dado las coordenadas GPS reales del visitante, cuando `geoTransform(lat, lon)` se ejecuta, entonces devuelve `{ svgX, svgY }` dentro del rango `[0, SVG_WIDTH] × [0, SVG_HEIGHT]` sin lanzar excepciones; si las coordenadas caen fuera del bounding-box del zoológico, devuelve la posición de la entrada principal.
+
+- **CA-12 (Detección de llegada):** Dado que el visitante tiene un recinto destino seleccionado y GPS activo, cuando la distancia Haversine entre la posición del visitante y el POI destino es ≤ 10 m, entonces se muestra un **banner visual** en pantalla con el mensaje "¡Llegaste a [nombre del recinto]!" y el estado de destino se limpia; si el visitante cierra el aviso manualmente, no vuelve a aparecer para el mismo destino en la misma sesión. No se usa vibración ni sonido en V2.
+
+- **CA-13 (Modo degradado):** Dado que el permiso GPS fue denegado o `expo-location` no está disponible, cuando el visitante usa el mapa, entonces todas las funciones de V1 (CA-01 a CA-07) siguen funcionando sin errores visibles relacionados con GPS.
+
+### Reglas de negocio (V2)
+
+- **RN-11 (Solo primer plano):** El GPS solo se activa mientras la pantalla Mapa está en primer plano (`requestForegroundPermissionsAsync`). No se usa ubicación en segundo plano.
+- **RN-12 (Radio de llegada):** El umbral de llegada es 10 m, configurable como constante en el ViewModel. No se hardcodea en componentes.
+- **RN-13 (Coordenadas de prueba):** Hasta contar con el SVG definitivo y la medición en campo, los valores de `ZOO_BOUNDS` y las coordenadas de los POIs son sintéticos/de prueba. Los tests usan coordenadas sintéticas; no dependen del GPS real.
+- **RN-14 (Un permiso por sesión):** Si el permiso es denegado, no se vuelve a solicitar hasta que el usuario reinicie la app.
+- **RN-15 (Sin geofencing nativo):** La geocerca se implementa como cálculo Haversine en el ViewModel, no con `startGeofencingAsync`.
+
+### Datos, privacidad y auditoría (V2)
+
+- **Dato nuevo:** coordenadas GPS del visitante — procesadas en memoria, no se persisten, no se envían a ningún servidor en esta versión.
+- **Permiso Android:** `ACCESS_FINE_LOCATION` declarado en `app.json → android.permissions`.
+- **Privacidad:** la posición nunca sale del dispositivo en V2. No se registra historial de movimiento.
+- **DBR:** ninguna. Los POIs siguen en el fixture local.
+
+### Flujos y errores (V2)
+
+```mermaid
+flowchart TD
+    A([Visitante abre Mapa]) --> P[Solicitar permiso GPS]
+    P -- Concedido --> G[Suscribir a actualizaciones de posición]
+    P -- Denegado --> V1[Modo V1 sin punto azul]
+    G --> T{Precisión ≤ 20m?}
+    T -- Sí --> B[Mostrar punto azul en posición real]
+    T -- No --> E[Mostrar punto azul en Entrada + indicador buscando]
+    B --> D{Destino activo y distancia ≤ 10m?}
+    D -- Sí --> N[Aviso: Llegaste a nombre del recinto]
+    D -- No --> B
+```
+
+### Dependencias, riesgos y preguntas (V2)
+
+- **Dependencias:**
+  - `expo-location` — ADR 0016 Aceptado; instalación pendiente de confirmar versión compatible con SDK 57.
+  - `src/utils/geoTransform.ts` — nueva utilidad matemática (bounding-box afín).
+  - `src/constants/zoo.ts` — constantes `ZOO_BOUNDS` y coordenadas de entrada.
+  - SVG y POIs de V1 sin cambios estructurales.
+
+- **Riesgos:**
+  - GPS impreciso bajo techo o en zonas arboladas; mitigado con umbral de precisión y posición de entrada como fallback.
+  - El SVG de prueba hace que el punto azul no sea visualmente preciso hasta tener el SVG real y la medición en campo.
+  - El radio de 10 m puede ser muy pequeño si el GPS tiene deriva; ajustable con `RN-12`.
+
+- **Preguntas abiertas:** ninguna — todas resueltas.
+- **Preguntas resueltas (V2):**
+  1. ¿Cuándo se miden las 4 esquinas + entrada? El zoológico enviará foto/video; Víctor Adrián generará el SVG definitivo a partir de ese material. Hasta entonces se usan coordenadas sintéticas — no bloquea el desarrollo, sí la precisión real.
+  2. ¿Aviso de llegada visual o vibración? Solo visual: banner con "¡Llegaste a [recinto]!". Sin vibración ni sonido en V2.
+  3. ¿Radio de llegada 10 m? Confirmado para V2; se ajustará tras la medición en campo si hay deriva GPS.
+
+### Revisión (V2)
+
+- **Aprobadores y fecha:** Víctor Adrián (2026-10-29).
+- **Evidencia/enlaces:**
+  - `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado
+  - `apps/mobile/docs/007-roadmap-mapa-gps-ar.md`

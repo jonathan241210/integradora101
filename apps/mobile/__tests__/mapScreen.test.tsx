@@ -7,6 +7,7 @@ import { MapPlace } from '../src/models';
 import { MOCK_MAP_PLACES, MOCK_MAP_SECTIONS } from '../src/mocks/zoo';
 import { MapRepository } from '../src/repositories';
 import { LiveMap } from '../test-support/mapHarness';
+import { UserPosition } from '../src/viewmodels/useLocationViewModel';
 
 const tiger = MOCK_MAP_PLACES.find((place) => place.id === 'juan')!;
 const noop = () => undefined;
@@ -167,5 +168,108 @@ describe('MapScreen', () => {
     await fireEvent.press(view.getByText('Reintentar'));
     await waitFor(() => expect(view.getByTestId('map-marker-juan')).toBeTruthy());
     jest.restoreAllMocks();
+  });
+
+  // Pruebas añadidas para V2 (T-29, T-30, T-31, T-32)
+  it('test-ca-08: permiso denegado no muestra punto azul en el mapa', async () => {
+    const view = await render(
+      <MapScreen
+        sections={MOCK_MAP_SECTIONS}
+        filteredPlaces={MOCK_MAP_PLACES}
+        filter="all"
+        selectedPlace={null}
+        focusedSectionId={null}
+        focusedPlaceId={null}
+        focusNotFound={false}
+        isLoading={false}
+        error={null}
+        onFilterChange={noop}
+        onSelectPlace={noop}
+        onCloseDetail={noop}
+        onRetry={noop}
+        onSearchPress={noop}
+        userPosition={null}
+      />,
+    );
+
+    expect(view.queryByTestId('user-location-marker')).toBeNull();
+    expect(view.getByTestId('zoo-map-svg')).toBeTruthy();
+  });
+
+  it('test-ca-09: con señal GPS buena muestra el punto azul sin anillo pulsante de búsqueda', async () => {
+    const position: UserPosition = {
+      svgX: 500,
+      svgY: 700,
+      lat: 20.0825,
+      lon: -98.722,
+      accuracy: 5,
+      searching: false,
+    };
+
+    const view = await render(
+      <MapScreen
+        sections={MOCK_MAP_SECTIONS}
+        filteredPlaces={MOCK_MAP_PLACES}
+        filter="all"
+        selectedPlace={null}
+        focusedSectionId={null}
+        focusedPlaceId={null}
+        focusNotFound={false}
+        isLoading={false}
+        error={null}
+        onFilterChange={noop}
+        onSelectPlace={noop}
+        onCloseDetail={noop}
+        onRetry={noop}
+        onSearchPress={noop}
+        userPosition={position}
+      />,
+    );
+
+    expect(view.getByTestId('user-location-marker')).toBeTruthy();
+    expect(view.queryByTestId('location-searching')).toBeNull();
+  });
+
+  it('test-ca-10: buscando señal muestra el punto azul con indicador pulsante', async () => {
+    const position: UserPosition = {
+      svgX: 500,
+      svgY: 1320,
+      lat: 20.08,
+      lon: -98.722,
+      accuracy: 50,
+      searching: true,
+    };
+
+    const view = await render(
+      <MapScreen
+        sections={MOCK_MAP_SECTIONS}
+        filteredPlaces={MOCK_MAP_PLACES}
+        filter="all"
+        selectedPlace={null}
+        focusedSectionId={null}
+        focusedPlaceId={null}
+        focusNotFound={false}
+        isLoading={false}
+        error={null}
+        onFilterChange={noop}
+        onSelectPlace={noop}
+        onCloseDetail={noop}
+        onRetry={noop}
+        onSearchPress={noop}
+        userPosition={position}
+      />,
+    );
+
+    expect(view.getByTestId('user-location-marker')).toBeTruthy();
+    expect(view.getByTestId('location-searching')).toBeTruthy();
+  });
+
+  it('test-ca-13: modo degradado sin ubicación mantiene filtros y foco intactos', async () => {
+    const view = await render(<LiveMap focus="juan" />);
+    await waitFor(() => expect(view.getByTestId('map-marker-juan')).toBeTruthy());
+
+    expect(view.queryByTestId('user-location-marker')).toBeNull();
+    expect(view.getByTestId('map-zone-highlight-zone-felines')).toBeTruthy();
+    expect(view.getByText('Recinto de Juan, el tigre de Bengala.')).toBeTruthy();
   });
 });

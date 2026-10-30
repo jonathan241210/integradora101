@@ -9,11 +9,21 @@
     "android": {
       "package": "com.tulancingo.arcanb",
       "usesCleartextTraffic": false,
-      "softwareKeyboardLayoutMode": "resize"
+      "softwareKeyboardLayoutMode": "resize",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "El mapa del zoológico necesita tu ubicación para mostrarte dónde estás dentro del parque."
+        }
+      ]
     ]
   }
 }
