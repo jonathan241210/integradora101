@@ -31,7 +31,7 @@ Los permisos solo cambian qué se muestra (RN-01). Los roles asignables, el alca
 - **Refresco tras escribir.** Cada operación exitosa recarga la lista actual y emite un aviso accesible (`role="status"`) en la propia sección; el aviso global de la shell queda para las demos.
 - **Navegación sin router (RN-06).** Se mantiene `DashboardSection` en el reducer de `dashboard-demo.ts`; solo cambia el identificador `ticket-users` por `users` y desaparece el estado ficticio de recintos y usuarios.
 - **Aviso de demostración (CA-02).** `DemoBanner` se muestra únicamente cuando la sección activa es `tickets` o `ticket-history`.
-- **Exportación (CA-12, RN-10).** Los tres botones están siempre visibles y habilitados; si la API responde 422 «Formato de exportación no disponible.» (Excel/PDF hasta el ADR 0015), se muestra ese mensaje en `role="alert"` y el reporte en pantalla se conserva.
+- **Exportación (CA-12, RN-10).** Los tres botones están siempre visibles y habilitados; si la API responde 422 «Formato de exportación no disponible.» (Excel/PDF hasta el ADR 0017), se muestra ese mensaje en `role="alert"` y el reporte en pantalla se conserva.
 - **Contraseñas (RN-07).** Los campos de contraseña viven en estado local del formulario; el ViewModel recibe el valor, lo envía y no lo guarda en ningún estado ni lo muestra.
 - **Qué NO se toca.** El buscador y las notificaciones de la barra superior siguen siendo controles de demostración (fuera del alcance de la spec); se anota como pendiente en Riesgos.
 
@@ -143,7 +143,7 @@ Además se actualizan las pruebas de `dashboard-001` que verifican el comportami
 
 ## Riesgos y decisiones
 
-- **ADR requerido:** ninguno para esta app. La exportación a Excel/PDF queda sujeta al ADR 0015 de la API; la interfaz ya está lista y recibe el error mientras no se habilite.
+- **ADR requerido:** ninguno para esta app. La exportación a Excel/PDF queda sujeta al ADR 0017 de la API; la interfaz ya está lista y recibe el error mientras no se habilite.
 - **Dependencia fuerte de `api-007`.** La interfaz no se puede validar de punta a punta hasta que existan los endpoints. Mitigación: desarrollar contra el cliente simulado y hacer una pasada manual contra `arca_pruebas` cuando la API lo permita. Un cambio de contrato en la API obliga a actualizar `admin-types.ts` y este plan en el mismo cambio.
 - **`previous_date`/`next_date` no están en la spec de la API.** Se agregan como detalle de contrato en `apps/api/plan/007` para que el cliente no calcule periodos (Constitución III); no cambia ningún CA.
 - **Alcance amplio entregado junto (RN-10).** Se ordena internamente por sección y se integra al final; si una sección se atrasa, el plan permite desactivar su entrada de navegación sin afectar las demás.
@@ -176,3 +176,4 @@ Además se actualizan las pruebas de `dashboard-001` que verifican el comportami
 **Verificación antes de cerrar:** `npm run types`, `npm test` y `npm run build` en `apps/dashboard`; pruebas de `packages/api-client` si existe runner (si no, se prueban desde `apps/dashboard`); `/verify`; revisión manual con teclado y a 360, 768 y 1366 px; y recorrido de punta a punta contra la API real en `arca_pruebas` con cuentas demo `presidencia@arca.local`, `direccion_zoo@arca.local` y `ejecutivo@arca.local`.
 
 Evidencias: `apps/dashboard/specs/002-real-staff-login.md`, `apps/dashboard/plan/002-real-staff-login.md`, `docs/03-roles-y-permisos.md`, `apps/dashboard/AGENTS.md`.
+

@@ -38,7 +38,7 @@ Hay cinco bloques independientes entre sí, que comparten únicamente el grupo d
 - **Reporte y panel (RN-08, RN-13).** Una sola Action, `SummarizeTicketSalesAction`, calcula totales y serie diaria; `BuildTicketReportAction`, `BuildDashboardSummaryAction` y la exportación la reutilizan. Así pantalla y archivo coinciden por construcción.
 - **Zona horaria.** La app corre en `UTC` (`config/app.php`). `ResolveReportPeriodAction` construye los límites del periodo en `America/Mexico_City` (semana de lunes a domingo, mes calendario, rango personalizado) y los convierte a UTC para consultar `tickets.purchased_at`. Los totales por día se agrupan **en PHP** con `CarbonImmutable` sobre filas leídas por cursor, en vez de `CONVERT_TZ` (requiere tablas de zonas horarias cargadas y no es portable entre Aiven y local). Supuesto a confirmar con Víctor: `purchased_at` se guarda en UTC (ver Riesgos).
 - **Dinero.** Los importes salen como **cadena con dos decimales** (`"1234.50"`), nunca como float, para no perder precisión entre PHP y JSON.
-- **Exportación (CA-22, CA-23, RN-12).** `GET /api/v1/admin/reports/tickets/export?format=csv|xlsx|pdf`. Solo `csv` está implementado: se escribe en streaming con `fputcsv` (UTF-8 con BOM, separador coma), sin dependencias. `xlsx` y `pdf` están en la lista permitida del Form Request pero responden 422 «Formato de exportación no disponible.» mientras `config('arca.report_export_formats')` solo contenga `csv`. Habilitarlos más adelante será agregar un exportador y su valor en esa lista, sin tocar contrato ni clientes. La dependencia requiere el ADR 0015 (propuesto en este mismo cambio).
+- **Exportación (CA-22, CA-23, RN-12).** `GET /api/v1/admin/reports/tickets/export?format=csv|xlsx|pdf`. Solo `csv` está implementado: se escribe en streaming con `fputcsv` (UTF-8 con BOM, separador coma), sin dependencias. `xlsx` y `pdf` están en la lista permitida del Form Request pero responden 422 «Formato de exportación no disponible.» mientras `config('arca.report_export_formats')` solo contenga `csv`. Habilitarlos más adelante será agregar un exportador y su valor en esa lista, sin tocar contrato ni clientes. La dependencia requiere el ADR 0017 (propuesto en este mismo cambio).
 - **Datos que el reporte NO expone.** El listado de boletos incluye folio, fecha y hora local, adultos, niños e importe. **Excluye `qr_code`** (token de validación de torniquete) y no incluye la identidad del cajero (mínimo privilegio; se puede agregar con otra spec).
 - **Listado del reporte.** El JSON pagina el listado de boletos (50 por página, `meta` estándar de Laravel); totales y desglose diario se calculan sobre **todo** el periodo, no sobre la página. La exportación recorre todo el periodo con `cursor()` y no carga el conjunto en memoria.
 - **Borrado lógico de noticias y eventos (CA-15, RN-09).** Depende de DBR-005. Cuando `deleted_at` exista, `Event` y el nuevo modelo `News` usan `SoftDeletes`; el trait excluye automáticamente los eventos eliminados de `ListEventsAction` y `GetEventAction` (catálogo público de `api-006`) sin cambiar esas Actions. **El trait solo se agrega a `Event` cuando DBR-005 está aplicada en `arca_pruebas`**, o `GET /events` fallaría por columna inexistente.
@@ -66,7 +66,7 @@ Hay cinco bloques independientes entre sí, que comparten únicamente el grupo d
 | Documentación | `apps/api/docs/administracion.md` (todavía no existe; se crea en la implementación) | Referencia vigente de endpoints y reglas |
 | Paquetes | `packages/api-client` (ver `dashboard-003`) | Tipos y cliente del contrato |
 | Datos | `docs/database/requests/DBR-005-news-events-soft-deletes.md` (nuevo, Borrador) | Cambio de esquema que ejecuta el responsable de BD |
-| ADR | `docs/adr/0015-report-export-excel-pdf.md` (nuevo, Propuesto) | Dependencias para Excel y PDF |
+| ADR | `docs/adr/0017-report-export-excel-pdf.md` (nuevo, Propuesto) | Dependencias para Excel y PDF |
 
 ## Contrato y datos
 
@@ -195,7 +195,7 @@ Convención de nombre: `test_caNN_administration_management_<descripción>()`, c
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
-| I. Stack mínimo y portable | Sí, con una dependencia pendiente | Todo lo implementable usa Laravel 12, Sanctum, Fortify, Spatie y MySQL 8.0.x ya aprobados (ADR 0001). SQL estándar, sin funciones propietarias, configuración solo por `.env`. **Excel y PDF** necesitan dependencias PHP nuevas: ADR 0015 (Propuesto) y no se instala nada hasta aprobarlo; hasta entonces solo CSV (RN-12). |
+| I. Stack mínimo y portable | Sí, con una dependencia pendiente | Todo lo implementable usa Laravel 12, Sanctum, Fortify, Spatie y MySQL 8.0.x ya aprobados (ADR 0001). SQL estándar, sin funciones propietarias, configuración solo por `.env`. **Excel y PDF** necesitan dependencias PHP nuevas: ADR 0017 (Propuesto) y no se instala nada hasta aprobarlo; hasta entonces solo CSV (RN-12). |
 | II. La spec manda | Sí | Spec `007` Aprobada; este plan, las tasks (siguiente paso) y el PR enlazan los tres archivos. Cada ruta y regla remite a su CA/RN. |
 | III. Lógica separada de la interfaz | Sí | Alcance, continuidad de `admin`, invalidación de sesiones, periodos y totales viven en Actions; los controladores solo delegan; el cliente no calcula (ver `dashboard-003`). |
 | IV. Un test por criterio | Sí | La tabla anterior cubre CA-01 a CA-27; `AdminCoverageTest` lo verifica automáticamente. |
@@ -225,9 +225,9 @@ Convención de nombre: `test_caNN_administration_management_<descripción>()`, c
 6. Noticias y eventos sin eliminar (CA-13, CA-14, CA-16 y parte de CA-15: activar/desactivar).
 7. **Bloqueado por DBR-005 `Lista para backend`:** `SoftDeletes` en `News`/`Event`, rutas `DELETE` y el resto de CA-15.
 8. Transversales (CA-25 a CA-27) y documentación `apps/api/docs/administracion.md`.
-9. Excel/PDF: **diferido** hasta aprobar el ADR 0015; se agrega como spec/tarea posterior sin cambiar el contrato.
+9. Excel/PDF: **diferido** hasta aprobar el ADR 0017; se agrega como spec/tarea posterior sin cambiar el contrato.
 
-**Dependencias:** `api-003` (implementada), `api-006` (el catálogo público de eventos se beneficia del trait), DBR-005, ADR 0015, `dashboard-003` como consumidor. `dashboard-003` puede desarrollarse en paralelo con el cliente simulado de `@arca/api-client` (su RN-08).
+**Dependencias:** `api-003` (implementada), `api-006` (el catálogo público de eventos se beneficia del trait), DBR-005, ADR 0017, `dashboard-003` como consumidor. `dashboard-003` puede desarrollarse en paralelo con el cliente simulado de `@arca/api-client` (su RN-08).
 
 **Aprobaciones requeridas:**
 
@@ -236,6 +236,7 @@ Convención de nombre: `test_caNN_administration_management_<descripción>()`, c
 | Responsable funcional | Spec (ya aprobada) | Jonathan, 2026-10-30 |
 | Equipo | Solución técnica y Constitution Check de este plan | Pendiente |
 | Responsable de BD | DBR-005 (contenido, índice y zona horaria de `purchased_at`) | Pendiente (Víctor Adrián) |
-| Equipo | ADR 0015 (solo para habilitar Excel/PDF) | Pendiente; no bloquea el resto |
+| Equipo | ADR 0017 (solo para habilitar Excel/PDF) | Pendiente; no bloquea el resto |
 
 Evidencias: `docs/03-roles-y-permisos.md`, `apps/api/specs/003-staff-authentication.md`, `apps/api/specs/006-public-catalog-read.md`, `apps/api/plan/003-staff-authentication.md`.
+

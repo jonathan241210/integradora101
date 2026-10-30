@@ -1,4 +1,4 @@
-# 0015 · Exportación del reporte a Excel y PDF
+# 0017 · Exportación del reporte a Excel y PDF
 
 - Estado: Propuesto
 - Fecha: 2026-10-30
