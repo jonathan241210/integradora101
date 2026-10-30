@@ -1,6 +1,6 @@
 # DBR-005 · news-events-soft-deletes
 
-- Estado: Borrador
+- Estado: Aprobada
 - Feature/spec origen: `apps/api/specs/007-administration-management.md`
 - Solicitante: Jonathan
 - Responsable de BD: Víctor Adrián
@@ -111,3 +111,5 @@ No aplica.
 | desarrollo/pruebas | pendiente | | |
 | staging | pendiente | | |
 | producción | pendiente | | |
+
+
