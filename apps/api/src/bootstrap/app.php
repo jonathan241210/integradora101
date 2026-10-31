@@ -17,6 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->statefulApi();
+        // La PWA usa tokens Bearer, que no son vulnerables a CSRF.
+        $middleware->validateCsrfTokens(except: ['api/v1/staff/*']);
         $middleware->alias([
             'administrator.two-factor' => EnsureAdministratorTwoFactor::class,
             'staff.user' => EnsureStaffUser::class,
