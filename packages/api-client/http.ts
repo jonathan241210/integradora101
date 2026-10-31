@@ -10,6 +10,22 @@ export type HttpClient = {
   setOnUnauthorized(handler?: () => void): void;
 };
 
+/**
+ * Cliente devuelto por `createHttpClient`: el contrato `HttpClient` original
+ * (sin cambios, para no afectar a `apps/pwa` ni `apps/mobile`) más los
+ * métodos que usa la administración.
+ */
+export type ExtendedHttpClient = HttpClient & {
+  patch<T>(path: string, body?: unknown): Promise<T>;
+  put<T>(path: string, body?: unknown): Promise<T>;
+  download(path: string): Promise<DownloadedFile>;
+};
+
+export type DownloadedFile = {
+  blob: Blob;
+  filename: string;
+};
+
 export type RequestOptions = {
   method?: string;
   headers?: HeadersInit;
@@ -93,11 +109,46 @@ function apiError(response: Response, body: unknown): ApiError {
   return error;
 }
 
+const fallbackFilename = "descarga";
+
+/**
+ * Obtiene el nombre de archivo de `Content-Disposition` y lo sanea:
+ * sin separadores de ruta, sin caracteres de control y con longitud acotada.
+ */
+export function filenameFromDisposition(header: string | null): string {
+  if (!header) return fallbackFilename;
+
+  const encoded = /filename\*\s*=\s*(?:UTF-8|utf-8)''([^;]+)/.exec(header);
+  const plain = /filename\s*=\s*(?:"([^"]*)"|([^;]+))/.exec(header);
+  let candidate = "";
+
+  if (encoded?.[1]) {
+    try {
+      candidate = decodeURIComponent(encoded[1].trim());
+    } catch {
+      candidate = encoded[1].trim();
+    }
+  } else if (plain) {
+    candidate = (plain[1] ?? plain[2] ?? "").trim();
+  }
+
+  const safe = candidate
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .split(/[\\/]/)
+    .pop()!
+    .replace(/^\.+/, "")
+    .trim()
+    .slice(0, 150);
+
+  return safe || fallbackFilename;
+}
+
 export function createHttpClient({
   baseUrl,
   fetchImpl = fetch,
   onUnauthorized,
-}: CreateHttpClientOptions): HttpClient {
+}: CreateHttpClientOptions): ExtendedHttpClient {
   let unauthorizedHandler = onUnauthorized;
 
   const refreshCsrfToken = async (): Promise<string> => {
@@ -169,11 +220,39 @@ export function createHttpClient({
     return responseData as T;
   };
 
+  const download = async (path: string): Promise<DownloadedFile> => {
+    const response = await fetchImpl(requestUrl(baseUrl, path), {
+      method: "GET",
+      credentials: "include",
+      headers: { Accept: "application/json, */*;q=0.8" },
+    });
+
+    if (!response.ok) {
+      const errorBody = await responseBody(response);
+      if (response.status === 401) unauthorizedHandler?.();
+      throw apiError(response, errorBody);
+    }
+
+    const blob = await response.blob();
+
+    return {
+      blob,
+      filename: filenameFromDisposition(
+        response.headers.get("Content-Disposition"),
+      ),
+    };
+  };
+
   return {
     request,
     get: <T>(path: string) => request<T>(path),
     post: <T>(path: string, body?: unknown) =>
       request<T>(path, { method: "POST", body }),
+    patch: <T>(path: string, body?: unknown) =>
+      request<T>(path, { method: "PATCH", body }),
+    put: <T>(path: string, body?: unknown) =>
+      request<T>(path, { method: "PUT", body }),
+    download,
     delete: <T>(path: string, body?: unknown) =>
       request<T>(path, { method: "DELETE", body }),
     setOnUnauthorized(handler) {

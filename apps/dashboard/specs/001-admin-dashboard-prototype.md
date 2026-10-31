@@ -13,6 +13,8 @@
 
 > **Vigencia (2026-10-17):** `dashboard-002-real-staff-login` reemplaza los flujos de login ficticio de CA-01, CA-10 y CA-13, y solo la parte de login con cuentas en memoria de CA-12. La creación/lista demostrativa de Usuarios de taquilla sigue vigente; ninguna cuenta ficticia puede iniciar sesión.
 
+> **Vigencia (2026-10-30):** `dashboard-003-administration-sections` sustituye las pantallas demostrativas de administración por secciones conectadas a la API (`api-007`). Quedan **sustituidos** CA-02 (panel e indicadores ficticios), CA-03 (Noticias y Eventos), CA-05 (Reporte de boletos), CA-09 (Modificación de recintos) y CA-12 (Usuarios de taquilla); sus pruebas se reemplazaron por las de `dashboard-003`. CA-15 sigue vigente solo para Venta e Historial de taquilla, que conservan el aviso general. Siguen vigentes CA-04, CA-06, CA-07, CA-08, CA-11 y CA-14; CA-01, CA-10 y CA-13 permanecen reemplazados por `dashboard-002`.
+
 ## Problema y contexto
 
 El dashboard cuenta con un prototipo navegable para administración y taquilla. La persona solicitante pide ampliarlo con funciones de demostración para modificar recintos, iniciar sesión como personal de taquilla, consultar el historial de boletos y crear usuarios de taquilla desde el perfil administrativo. También solicita documentar el código y que la interfaz sea clara y adecuada para cada perfil.

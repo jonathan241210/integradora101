@@ -47,7 +47,7 @@ La API centraliza autenticación, permisos y lógica; las SPAs usan Sanctum con 
 
 | Área | Tecnología | Versión / criterio |
 |---|---|---|
-| API | PHP, Laravel | PHP 8.2+; Laravel 12 |
+| API | PHP, Laravel | PHP 8.4+ (ADR 0018); Laravel 12 |
 | Autenticación | Sanctum, Fortify headless | cookie para SPA; tokens para mobile; Fortify ^1.30 |
 | Permisos y auditoría | Spatie Permission / Activitylog | ^6.24 / ^4.12 |
 | Base de datos | MySQL | 8.0.x (revisión mínima pendiente del inventario inicial); Aiven administrado (ADR 0013), portable a MySQL Server local; cambios solo mediante DBR y migraciones del responsable de BD ([gobierno de BD](docs/database/README.md)) |
@@ -134,4 +134,4 @@ Antes de cambiar código, se aprueba una spec; después se redactan el plan con 
 El equipo de seis integrantes usa las ramas indicadas `jonathan`, `ian`, `victor`, `Diego`, `Esteban` y `Felipe`; no se asignan responsabilidades por nombre en esta documentación. Las ramas de integración son `develop` y `main`; las ramas de cambio siguen `feat|fix/<app>-<NNN>-<slug>`. Commits Conventional Commits en inglés; PRs enlazan spec, plan y tasks.
 
 
-Para desarrollo móvil se requiere Node.js 22 y npm; instala las dependencias del monorepo con `npm ci` desde la raíz y sigue la [guía de ejecución móvil](apps/mobile/README.md) para iniciar Expo Go y correr verificaciones. Para la API se requiere PHP 8.2+, Composer y MySQL 8.0.x. Docker Compose local se incorporará más adelante. No instales dependencias ni guardes secretos en el repositorio sin una tarea aprobada. Consulta [convenciones](docs/06-convenciones.md) e [infraestructura](infra/README.md).
+Para desarrollo móvil se requiere Node.js 22 y npm; instala las dependencias del monorepo con `npm ci` desde la raíz y sigue la [guía de ejecución móvil](apps/mobile/README.md) para iniciar Expo Go y correr verificaciones. Para la API se requiere PHP 8.4+ (ADR 0018), Composer y MySQL 8.0.x. Docker Compose local se incorporará más adelante. No instales dependencias ni guardes secretos en el repositorio sin una tarea aprobada. Consulta [convenciones](docs/06-convenciones.md) e [infraestructura](infra/README.md).

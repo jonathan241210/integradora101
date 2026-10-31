@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { Badge, Card, Field, SelectField } from "@arca/ui";
-import { DemoBanner } from "@/components/DemoBanner";
 import { SectionHeading } from "@/components/SectionHeading";
 import { demoTicketHistory } from "@/data/demo-data";
 
@@ -24,7 +23,6 @@ export function TicketHistoryView() {
         title="Historial de boletos"
         description="Consulta movimientos ficticios para revisar la presentación del historial."
       />
-      <DemoBanner />
       <Card className="ticket-history-filters">
         <Field
           id="history-folio"

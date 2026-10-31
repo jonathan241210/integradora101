@@ -3,9 +3,9 @@
 Principios innegociables. Un PR que viole alguno no se mergea. Para cambiarlos se requiere el acuerdo del equipo y un ADR.
 
 ### I. Stack mínimo y portable
-Solo el stack declarado en `README.md` (Laravel 12/PHP 8.2+, React 19 + TS + Vite, React Native, MySQL 8.0.x). Nada propietario de la nube en el código: debe correr igual en el proveedor MySQL administrado (Aiven, ADR 0013) y en local.
+Solo el stack declarado en `README.md` (Laravel 12/PHP 8.4+, React 19 + TS + Vite, React Native, MySQL 8.0.x). Nada propietario de la nube en el código: debe correr igual en el proveedor MySQL administrado (Aiven, ADR 0013) y en local.
 **Verificable:** cada dependencia nueva enlaza un ADR aprobado; la conexión a la BD solo se configura por `.env`.
-Cambio registrado en ADR 0013.
+Cambio registrado en ADR 0013 y ADR 0018 (PHP mínimo 8.4).
 
 ### II. La spec manda
 Ningún código sin `specs/NNN-slug.md` *Aprobada* con su `plan/` y `tasks/` del mismo nombre. El código implementa la spec y nada más; si difieren, se actualizan en el mismo PR.

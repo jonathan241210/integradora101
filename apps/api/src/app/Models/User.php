@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -43,6 +44,23 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Cuentas cuyos roles están todos dentro de los indicados (sin roles indicados: ninguna).
+     *
+     * @param  list<string>  $roles
+     */
+    public function scopeManageableWith(Builder $query, array $roles): void
+    {
+        if ($roles === []) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->role($roles)
+            ->whereDoesntHave('roles', fn (Builder $q) => $q->whereNotIn('name', $roles));
     }
 
     public function department(): BelongsTo

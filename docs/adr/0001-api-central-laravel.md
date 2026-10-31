@@ -24,3 +24,5 @@ Los contratos y compatibilidad deben administrarse; el trabajo inicial crea paqu
 
 ## Validación y revisión
 Revisar límites y contratos por feature mediante SDD. Una nueva tecnología requiere ADR aprobado.
+
+Actualizado por ADR 0018: PHP 8.4+ (mínimo de la API; el texto original de Decisión conserva PHP 8.2+ como historia).

@@ -5,6 +5,8 @@
 - Responsable técnico: Jonathan (frontend)
 - Contrato que consume: `apps/api/specs/007-administration-management.md` y su plan `apps/api/plan/007-administration-management.md`
 - Estado del plan: Aprobado
+- Actualización de 2026-10-30: zona horaria del dispositivo (RN-11, CA-19). Implementada (T-31 y T-32, según reporta la sesión principal); la redacción de RN-11 y CA-19 la proveyó el documentador y Jonathan la confirmó el 2026-10-30.
+- Actualización de 2026-10-30 (exportación): la API habilita Excel y PDF (ADR 0017 aceptado). Se actualizan RN-10, CA-12 y las decisiones de exportación de esta app; no hay cambios de código ni de criterios.
 
 ## Diseño de solución
 
@@ -31,15 +33,16 @@ Los permisos solo cambian qué se muestra (RN-01). Los roles asignables, el alca
 - **Refresco tras escribir.** Cada operación exitosa recarga la lista actual y emite un aviso accesible (`role="status"`) en la propia sección; el aviso global de la shell queda para las demos.
 - **Navegación sin router (RN-06).** Se mantiene `DashboardSection` en el reducer de `dashboard-demo.ts`; solo cambia el identificador `ticket-users` por `users` y desaparece el estado ficticio de recintos y usuarios.
 - **Aviso de demostración (CA-02).** `DemoBanner` se muestra únicamente cuando la sección activa es `tickets` o `ticket-history`.
-- **Exportación (CA-12, RN-10).** Los tres botones están siempre visibles y habilitados; si la API responde 422 «Formato de exportación no disponible.» (Excel/PDF hasta el ADR 0017), se muestra ese mensaje en `role="alert"` y el reporte en pantalla se conserva.
+- **Exportación (CA-12, RN-10).** Los tres botones están siempre visibles y habilitados. La API habilita CSV, Excel y PDF (ADR 0017 aceptado el 2026-10-30) y responde 422 solo para un formato fuera de su lista («Formato de exportación no disponible.») o para PDF sobre el tope de boletos; si ocurre, se muestra ese mensaje de la API en `role="alert"` y el reporte en pantalla se conserva.
 - **Contraseñas (RN-07).** Los campos de contraseña viven en estado local del formulario; el ViewModel recibe el valor, lo envía y no lo guarda en ningún estado ni lo muestra.
+- **Zona horaria del dispositivo (RN-11, CA-19).** `createAdminApi` acepta un segundo argumento opcional `{ deviceTimeZone?: () => string | undefined }`. Por defecto lee `Intl.DateTimeFormat().resolvedOptions().timeZone`; los tests lo sustituyen por una función fija. `dashboard.summary()`, `reports.tickets(query)` y `reports.exportTickets(query, format)` añaden `timezone` a la URL. Si el llamador ya pasa `timezone` en `query`, prevalece; si no hay zona, el parámetro se omite. Los ViewModels, las vistas y `formatters.ts` no cambian: `purchased_at` llega como texto `Y-m-d H:i:s` ya en la zona de la API, y `formatDateTime` no lo desplaza. `last_login_at` sigue formateándose con `America/Mexico_City` en `formatters.ts`; eso queda fuera de este cambio. La API acepta la zona según `api-007` RN-14 (`UTC` o nombres con «/» del catálogo de PHP, incluidos alias) y, si no es aceptada, responde con su zona por defecto sin error [confirmado por Jonathan, 2026-10-30]. La interfaz no muestra la zona usada [confirmado por Jonathan, 2026-10-30].
 - **Qué NO se toca.** El buscador y las notificaciones de la barra superior siguen siendo controles de demostración (fuera del alcance de la spec); se anota como pendiente en Riesgos.
 
 ## Cambios por área
 
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|
-| `packages/api-client` | `http.ts` (agrega `patch`, `put`, `download`), `admin.ts` (nuevo: `createAdminApi`), `admin-types.ts` (nuevo), `index.ts` (exporta), `README.md` | Contrato tipado de `api-007`; sin lógica de negocio |
+| `packages/api-client` | `http.ts` (agrega `patch`, `put`, `download`), `admin.ts` (nuevo: `createAdminApi`; añade `timezone` en panel, reporte y exportación, RN-11), `admin-types.ts` (nuevo; `TicketReportQuery` admite `timezone?`), `index.ts` (exporta), `README.md` | Contrato tipado de `api-007`; sin lógica de negocio |
 | Servicios | `src/services/arca-api.ts` (exporta `adminApi`), `src/services/save-file.ts` (nuevo) | Instancia compartida del cliente y descarga de archivos |
 | ViewModels | `src/viewmodels/api-errors.ts`, `staff-accounts.ts` + `useStaffAccounts.ts`, `news-management.ts` + `useNewsManagement.ts`, `events-management.ts` + `useEventsManagement.ts`, `enclosures-management.ts` + `useEnclosuresManagement.ts`, `dashboard-summary.ts` + `useDashboardSummary.ts`, `ticket-report.ts` + `useTicketReport.ts` | Estado, reducers, llamadas y errores de cada sección |
 | ViewModels existentes | `navigation.ts` (id `users`, etiqueta «Usuarios»), `dashboard-demo.ts` (quita estado/acciones ficticios de recintos y usuarios; renombra sección), `useDashboardDemo.ts` | Alineación con CA-01 |
@@ -65,7 +68,8 @@ Los permisos solo cambian qué se muestra (RN-01). Los roles asignables, el alca
   - `dashboard`: `summary()`.
   - `reports`: `tickets(query)` y `exportTickets(query, format)`.
 - `admin-types.ts`: DTO en `snake_case` tal como los entrega la API (`StaffAccountDto`, `StaffOptionsDto`, `NewsDto`, `EventDto`, `EnclosureDto`, `DashboardSummaryDto`, `TicketReportDto`, `Paginated<T>`). Los importes llegan como **cadena** con dos decimales y se muestran con `Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" })`; nunca se suman ni se promedian en el cliente.
-- Compatibilidad: solo se agregan exports; `createAuthApi`, `createVisitorApi` y `createHttpClient` no cambian su firma, por lo que `apps/pwa` y `apps/mobile` no se ven afectados.
+- Zona horaria (RN-11): `createAdminApi(http, options?)` con `options.deviceTimeZone`; `dashboard.summary()` conserva su firma sin argumentos; `reports.tickets(query)` y `reports.exportTickets(query, format)` añaden `timezone` como parámetro de consulta cuando hay zona. La zona se obtiene solo en el paquete, nunca en la vista ni en el ViewModel.
+- Compatibilidad: solo se agregan exports y un argumento opcional en `createAdminApi`; `createAuthApi`, `createVisitorApi` y `createHttpClient` no cambian su firma, por lo que `apps/pwa` y `apps/mobile` no se ven afectados.
 
 ### ViewModels por sección
 
@@ -126,7 +130,8 @@ Convención: bloque `describe("CA-NN administration-sections", …)` como en `da
 | CA-15 | Un 401 en una sección nueva dispara el manejador global y vuelve al login con «Tu sesión expiró» | `administration-quality.test.tsx` (reutiliza `authSessionReducer`) |
 | CA-16 | Marcado de Views: `aria-labelledby` en diálogos, `role="alert"`/`status`, tablas con contenedor desplazable y etiquetas en controles; el comportamiento del teclado de `<dialog>` se verifica manualmente (ver Verificación) | `administration-quality.test.tsx` + revisión manual |
 | CA-17 | Revisión estática de `styles.css` y Views nuevas: sin hex de marca | `administration-quality.test.tsx` (patrón de `design-system.test.tsx`) |
-| CA-18 | Cobertura: busca `CA-01` a `CA-17 administration-sections` en los tests | `administration-coverage.test.tsx` (nuevo; patrón de `acceptance-coverage.test.tsx`) |
+| CA-18 | Cobertura: busca `CA-01` a `CA-19 administration-sections` en los tests | `administration-coverage.test.tsx` (nuevo; patrón de `acceptance-coverage.test.tsx`) |
+| CA-19 | `timezone` con la zona del navegador en `summary`, `tickets` y `exportTickets`; sin zona no se envía; un `timezone` explícito del llamador prevalece | `api-client-admin.test.tsx` (bloque `describe("CA-19 administration-sections")`) |
 
 Además se actualizan las pruebas de `dashboard-001` que verifican el comportamiento ficticio ya reemplazado (`enclosures`, `content-management`, `ticket-users`, `ticket-report`, `dashboard`, `acceptance-coverage`): se ajustan o se retiran con una nota en `specs/001-admin-dashboard-prototype.md` que marca los CA sustituidos por `dashboard-003`, en el mismo cambio (paso 7 del flujo SDD).
 
@@ -137,19 +142,30 @@ Además se actualizan las pruebas de `dashboard-001` que verifican el comportami
 | I. Stack mínimo y portable | Sí | React 19 + TS + Vite 7 + Tailwind 4 vigentes; **cero dependencias nuevas** (ni en `package.json` ni en `@arca/ui`). El cliente solo agrega métodos a `@arca/api-client`. |
 | II. La spec manda | Sí | Spec `003` Aprobada; este plan, las tasks y el PR enlazan los tres artefactos; cada sección remite a sus CA/RN. |
 | III. Lógica separada de la interfaz | Sí | Totales, periodos, alcance, roles asignables y validaciones vienen de la API; el cliente solo reenvía `previous_date`/`next_date`. Views sin imports de API (verificado por CA-14); llamadas solo desde hooks sobre `@arca/api-client`. |
-| IV. Un test por criterio | Sí | Tabla anterior CA-01 a CA-18; `administration-coverage.test.tsx` lo verifica. CA-16 combina prueba de marcado y revisión manual documentada, porque el entorno de Vitest es `node` sin navegador. |
+| IV. Un test por criterio | Sí | Tabla anterior CA-01 a CA-19; `administration-coverage.test.tsx` lo verifica. CA-16 combina prueba de marcado y revisión manual documentada, porque el entorno de Vitest es `node` sin navegador. |
 | V. Una sola fuente de verdad para los datos | Sí | Sin persistencia local: todo viene de la API; se eliminan los datos ficticios de las seis secciones. No toca esquema. |
 | VI. Código en inglés, personas en español | Sí | Archivos, hooks, tipos y claves de DTO en inglés; etiquetas, avisos y errores en español. El id de sección pasa de `ticket-users` a `users`. |
 
 ## Riesgos y decisiones
 
-- **ADR requerido:** ninguno para esta app. La exportación a Excel/PDF queda sujeta al ADR 0017 de la API; la interfaz ya está lista y recibe el error mientras no se habilite.
+- **ADR requerido:** ninguno para esta app. El ADR 0017 de la API (Excel y PDF) está aceptado desde el 2026-10-30; la interfaz no requiere cambios para los formatos habilitados y muestra el 422 de la API cuando corresponde (tope de PDF o formato fuera de la lista).
 - **Dependencia fuerte de `api-007`.** La interfaz no se puede validar de punta a punta hasta que existan los endpoints. Mitigación: desarrollar contra el cliente simulado y hacer una pasada manual contra `arca_pruebas` cuando la API lo permita. Un cambio de contrato en la API obliga a actualizar `admin-types.ts` y este plan en el mismo cambio.
 - **`previous_date`/`next_date` no están en la spec de la API.** Se agregan como detalle de contrato en `apps/api/plan/007` para que el cliente no calcule periodos (Constitución III); no cambia ningún CA.
 - **Alcance amplio entregado junto (RN-10).** Se ordena internamente por sección y se integra al final; si una sección se atrasa, el plan permite desactivar su entrada de navegación sin afectar las demás.
 - **Controles de demostración que permanecen:** buscador y campana de la barra superior. Fuera de alcance de esta spec; conviene una spec pequeña posterior.
 - **Pruebas de teclado y ancho.** No hay automatización de navegador en el repo; CA-16 se completa con una revisión manual documentada en el PR (tabla, diálogos y los anchos 360, 768 y 1366 px).
+- **Zona horaria y API.** Si la API no acepta `timezone` (`api-007` RN-14), responde con `America/Mexico_City`. No es un error de la interfaz. El recorrido de extremo a extremo (T-28) no debe darse por válido hasta ejecutarlo contra `arca_pruebas` con T-40 y T-41 de `api-007` verificadas.
 - **Alternativas descartadas:** (1) llamar todos los hooks desde `App.tsx`: carga datos que nadie abrió; (2) generar Excel/PDF en el navegador: viola Constitución III; (3) promover tabla y diálogo de confirmación a `@arca/ui` ya: ampliaría el alcance a otro paquete sin segunda app que lo use; (4) instalar una librería de tablas: requeriría ADR sin necesidad.
+
+## Divergencias reconciliadas
+
+| Divergencia | Origen | Decisión |
+|---|---|---|
+| Exportación Excel/PDF. La spec (RN-10 y CA-12, texto aprobado) decía que solo CSV estaba activo. El plan (Decisiones de diseño, Exportación) y la vista `src/views/TicketReportView.tsx` implementan los tres botones siempre visibles y habilitados; la API responde 422 «Formato de exportación no disponible.» para `xlsx` y `pdf` mientras el ADR 0017 esté Propuesto. | `specs/003-administration-sections.md`, RN-10 y CA-12 frente a este plan y la vista | Se adopta lo implementado. La spec se actualiza en RN-10 y CA-12 para describirlo. No se retira ningún criterio y la intención se conserva: Excel y PDF se habilitan cuando la API los entregue, sin cambios de interfaz. **Resuelta el 2026-10-30:** el ADR 0017 está aceptado y la API habilita `xlsx` y `pdf`; el 422 de la API queda solo para el tope de PDF o un formato fuera de la lista. |
+
+- **Confirmado por Jonathan (responsable funcional), 2026-10-30:** el texto reconciliado de RN-10 y CA-12 de `specs/003-administration-sections.md` es el vigente.
+- El campo `Estado:` de la spec no cambia y sigue como Aprobada.
+- No hay cambios de código. El cliente sigue sin calcular formatos ni permisos (RN-02).
 
 ## Orden y aprobación
 
@@ -163,6 +179,7 @@ Además se actualizan las pruebas de `dashboard-001` que verifican el comportami
 6. Noticias y Eventos (CA-08).
 7. Limpieza de datos ficticios y de pruebas de `dashboard-001` sustituidas; pruebas de calidad (CA-14 a CA-17) y cobertura (CA-18).
 8. Documentación local y nota de vigencia en la spec 001.
+9. Zona horaria del dispositivo (CA-19, RN-11): T-31 (implementación en `packages/api-client`) y T-32 (prueba), tras T-02. La comprobación de extremo a extremo se hace con `api-007` T-40 aplicada (T-28).
 
 **Dependencias:** `api-007` (contrato y endpoints), `dashboard-002` (sesión y manejo de 401), `@arca/ui` y `@arca/tokens` sin cambios, ADR 0002.
 
@@ -171,9 +188,9 @@ Además se actualizan las pruebas de `dashboard-001` que verifican el comportami
 | Rol | Aprueba | Estado |
 |---|---|---|
 | Responsable funcional | Spec (ya aprobada) | Jonathan, 2026-10-30 |
-| Equipo | Solución técnica y Constitution Check de este plan | Pendiente |
+| Equipo | Solución técnica y Constitution Check de este plan | Jonathan, 2026-10-30 |
+| Responsable funcional | Zona horaria del dispositivo (RN-11, CA-19) | Confirmado por Jonathan, 2026-10-30: zona con respaldo en `America/Mexico_City`, redacción de CA-19 y RN-11 (proveída por el documentador) y no mostrar la zona en la interfaz. Aprobó proceder con la implementación |
 
 **Verificación antes de cerrar:** `npm run types`, `npm test` y `npm run build` en `apps/dashboard`; pruebas de `packages/api-client` si existe runner (si no, se prueban desde `apps/dashboard`); `/verify`; revisión manual con teclado y a 360, 768 y 1366 px; y recorrido de punta a punta contra la API real en `arca_pruebas` con cuentas demo `presidencia@arca.local`, `direccion_zoo@arca.local` y `ejecutivo@arca.local`.
 
 Evidencias: `apps/dashboard/specs/002-real-staff-login.md`, `apps/dashboard/plan/002-real-staff-login.md`, `docs/03-roles-y-permisos.md`, `apps/dashboard/AGENTS.md`.
-

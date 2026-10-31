@@ -2,7 +2,7 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard`, `packages/api-client`, `packages/ui` (solo si falta algún componente compartido)
-- Estado: Aprobada
+- Estado: Implementada
 - Solicitante / responsable funcional: Jonathan
 - Aprobación funcional: Jonathan, 2026-10-30
 
@@ -72,7 +72,7 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 
 - **CA-10:** Dado el Panel principal, cuando carga, entonces muestra los totales del día y de los últimos 7 días (boletos, adultos, niños, ingresos) y la serie diaria que entrega la API, sin cálculos en el cliente, con estado vacío claro cuando no hay ventas.
 - **CA-11:** Dado el Reporte, cuando se abre, entonces ofrece un selector Semanal/Mensual (con rango personalizado como opción secundaria) y navegación al periodo anterior/siguiente, y muestra los totales, el desglose diario y el listado de boletos recibidos de la API.
-- **CA-12:** Dado un reporte mostrado, cuando se pulsa «Exportar CSV», «Exportar Excel» o «Exportar PDF», entonces el cliente solicita el archivo a la API para el periodo visible y lo descarga; si la API indica que el formato no está disponible o falla, muestra el error en español.
+- **CA-12:** Dado un reporte mostrado, cuando se pulsa «Exportar CSV», «Exportar Excel» o «Exportar PDF», entonces el cliente solicita el archivo a la API para el periodo visible y lo descarga. Los tres botones están siempre visibles y habilitados, salvo mientras una exportación está en curso. Si la API responde 422 (un formato fuera de su lista habilitada, «Formato de exportación no disponible.», o PDF sobre el tope de boletos de `api-007`) o la descarga falla, muestra el mensaje de la API en español en la propia sección y conserva el reporte en pantalla.
 - **CA-13:** Dado un `executive`, cuando entra, entonces ve el Panel y el Reporte reales en solo lectura, con exportación y sin acciones de edición.
 
 ### Calidad
@@ -81,7 +81,11 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 - **CA-15:** Dado cualquier 401 en estas secciones, cuando lo detecta el estado de sesión, entonces el dashboard vuelve al login con «Tu sesión expiró» (`dashboard-002` CA-08).
 - **CA-16:** Dadas las vistas nuevas, cuando se usan con teclado y a anchos de 360 a 1366 px, entonces conservan foco visible, diálogos con foco atrapado y cierre con Escape, tablas con desplazamiento propio o diseño apilado, y no hay desbordamiento horizontal de la página.
 - **CA-17:** Dada la interfaz, cuando se revisa su estilo, entonces usa tokens semánticos y no fija hex de marca.
-- **CA-18:** Dada la suite del dashboard, cuando se ejecutan los tests de Vitest con un cliente simulado de `@arca/api-client`, entonces existe al menos una prueba que nombra cada CA-01 a CA-17.
+- **CA-18:** Dada la suite del dashboard, cuando se ejecutan los tests de Vitest con un cliente simulado de `@arca/api-client`, entonces existe al menos una prueba que nombra cada CA-01 a CA-19.
+
+### Zona horaria
+
+- **CA-19:** Dado el Panel principal o el Reporte, cuando se piden el panel, el reporte o su exportación, entonces `@arca/api-client` envía en `timezone` la zona horaria del navegador (`Intl.DateTimeFormat().resolvedOptions().timeZone`) en las tres llamadas, y ni la vista ni el ViewModel calculan periodos, días ni fechas con esa zona. Si el navegador no informa la zona, la llamada se hace sin `timezone` y la API responde con su zona por defecto. Aclaración (decisión de Jonathan, 2026-10-30; `api-007` RN-14 y CA-28). Confirmado por Jonathan, 2026-10-30.
 
 ## Reglas de negocio
 
@@ -94,7 +98,8 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 - **RN-07:** La contraseña capturada para crear o restablecer una cuenta no se guarda en el cliente y se descarta tras enviarla.
 - **RN-08:** Esta feature depende de `api-007`; mientras no esté implementada, el desarrollo usa un cliente simulado en tests.
 - **RN-09:** El diseño visual no cambia: se conservan colores y tipografía vigentes (tokens semánticos). Las secciones, botones, diálogos, tablas y formularios nuevos reutilizan los componentes y patrones de las pantallas existentes y de `@arca/ui`.
-- **RN-10:** La feature se entrega completa en conjunto (Usuarios, Noticias, Eventos, Recintos, Panel y Reporte), no por etapas. La exportación a Excel y PDF se habilita en la interfaz cuando `api-007` la tenga disponible; mientras tanto solo CSV está activo.
+- **RN-10:** La feature se entrega completa en conjunto (Usuarios, Noticias, Eventos, Recintos, Panel y Reporte), no por etapas. Los formatos CSV, Excel y PDF se ofrecen siempre en la interfaz. La API (`api-007`, RN-12 y CA-23) tiene habilitados los tres desde la aceptación del ADR 0017 (2026-10-30); la API solo responde 422 para un formato fuera de su lista («Formato de exportación no disponible.») o para PDF sobre el tope de boletos, y la interfaz muestra ese error según CA-12.
+- **RN-11:** (Decisión y redacción confirmadas por Jonathan, 2026-10-30: zona del dispositivo con respaldo en `America/Mexico_City`.) La zona horaria con la que se calculan los periodos, los días y la exportación es la del dispositivo que consulta. La obtiene y la envía `@arca/api-client` (en el parámetro `timezone` del Panel, del Reporte y de su exportación), no las vistas ni los ViewModels. El cliente no calcula periodos, días ni totales con esa zona: los recibe de la API (RN-04; `api-007` RN-14).
 
 ## Datos, privacidad y auditoría
 
@@ -109,7 +114,7 @@ El dashboard muestra datos personales del personal (nombre, correo, área, rol) 
 
 ## Dependencias, riesgos y preguntas
 
-- **Dependencias/ADR:** `api-007` (esta feature no puede cerrarse sin ella), `dashboard-002`, ADR 0002; ADR de librerías Excel/PDF en el lado de la API.
+- **Dependencias/ADR:** `api-007` (esta feature no puede cerrarse sin ella; para la zona horaria, `api-007` RN-14 y CA-28), `dashboard-002`, ADR 0002; ADR 0017 (Excel y PDF, aceptado el 2026-10-30) en el lado de la API.
 - **Riesgos:**
   - Sin ventas reales el Panel y el Reporte se verán vacíos.
   - El volumen de componentes nuevos (tablas, diálogos, formularios) puede requerir ampliar `@arca/ui`; se resolverá en el plan sin nuevas dependencias.
@@ -118,8 +123,16 @@ El dashboard muestra datos personales del personal (nombre, correo, área, rol) 
   1. Columnas y filtros propuestos para la tabla de Usuarios: suficientes.
   2. Entrega: todo junto, no por etapas.
   3. Diseño: no cambia colores ni tipografía; las vistas nuevas siguen los patrones de las pantallas actuales. Se pueden agregar secciones, botones, ventanas (diálogos) y similares, siempre con los mismos patrones y componentes ya definidos (RN-09).
+- **Pregunta de zona horaria (2026-10-30): confirmada por Jonathan, 2026-10-30.**
+  4. ¿El Panel y el Reporte deben mostrar la zona horaria que la API usó (p. ej. «Hora de Ciudad de México»)? Respuesta: no. La interfaz no muestra la zona usada y esta feature no añade ese texto. Confirmado por Jonathan, 2026-10-30.
 
 ## Revisión
 
 - Aprobadores y fecha: Jonathan (responsable funcional), 2026-10-30.
 - Evidencia/enlaces: `apps/api/specs/007-administration-management.md`, `apps/dashboard/specs/002-real-staff-login.md`, `apps/dashboard/specs/001-admin-dashboard-prototype.md`, `docs/03-roles-y-permisos.md`.
+- Cambio de 2026-10-30 (decisión de Jonathan, responsable funcional): zona horaria del dispositivo, con respaldo en `America/Mexico_City`. Jonathan confirmó la decisión y aprobó proceder con la implementación. Se añaden RN-11 y CA-19; CA-18 se amplía a CA-01 a CA-19.
+- La redacción literal de CA-19 y RN-11 la proveyó el documentador y fue confirmada por Jonathan, 2026-10-30.
+- Confirmado por Jonathan, 2026-10-30: la interfaz no muestra la zona usada (pregunta 4).
+- Confirmado por Jonathan, 2026-10-30: redacción reconciliada de RN-10 y CA-12 (divergencia de `apps/dashboard/plan/003-administration-sections.md`); Excel y PDF se ofrecen en la interfaz y dependen de la API (ADR 0017).
+- Actualización de 2026-10-30 (aceptación del ADR 0017 por el equipo, solicitada por la sesión principal): la API ya habilita CSV, Excel y PDF. RN-10 y CA-12 se actualizan para que el 422 quede solo para formato fuera de la lista o PDF sobre el tope. Los criterios no cambian. Pendiente de confirmación funcional de Jonathan de esta redacción.
+- Estado cambiado a Implementada el 2026-10-30: CA verificados con pruebas, revisión de calidad y de seguridad, Constitution Check y pruebas manuales de Jonathan.

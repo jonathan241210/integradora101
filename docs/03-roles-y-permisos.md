@@ -41,7 +41,7 @@ Cada permiso usa `<resource>.<action>` en inglés, por ejemplo `tickets.create` 
 | `enclosures.manage` | Administrar recintos | ✓ | ✓ | — | — | — | — |
 | `public-content.view` | Consultar contenido público | ✓ | ✓ | ✓ | ✓ | ✓ | Público |
 
-`users.manage` permite administrar todas las cuentas; `operational-staff.manage` solo las de `cashier` y `veterinarian`. La gestión de cuentas desde el dashboard llega con la feature «Gestión de usuarios»; `api-003` solo siembra estos permisos.
+`users.manage` permite administrar todas las cuentas; `operational-staff.manage` solo las de `cashier` y `veterinarian`. La gestión de cuentas desde el dashboard la expone `api-007` (`/api/v1/admin/users`, con alcance por rol según `users.manage` y `operational-staff.manage`); `api-003` solo siembra estos permisos.
 
 La lista no sustituye Policies por registro ni restricciones de datos sensibles. El acceso de visitantes se limita a contenido marcado explícitamente como público; no se le asigna `public-content.view` como permiso de cuenta.
 

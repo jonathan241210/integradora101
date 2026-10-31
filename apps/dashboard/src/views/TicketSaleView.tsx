@@ -1,6 +1,5 @@
 import { useRef } from "react";
 import { Badge, Button, Card, Dialog } from "@arca/ui";
-import { DemoBanner } from "../components/DemoBanner";
 import { Icon } from "../components/Icon";
 import { SectionHeading } from "../components/SectionHeading";
 import type { SaleStep } from "../viewmodels/dashboard-demo";
@@ -31,7 +30,6 @@ export function TicketSaleView({
         title="Venta de boletos"
         description="Recorre el flujo visual de una venta ficticia sin realizar cobros."
       />
-      <DemoBanner />
       <div className="ticket-type-grid">
         <Card className="ticket-type-card">
           <div className="ticket-type-card__header">

@@ -24,7 +24,8 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0012 · Canal de distribución Android](0012-android-distribution-channel.md) — Propuesto
 - [0013 · Aiven como proveedor de MySQL administrado](0013-aiven-managed-mysql.md) — Aceptado
 - [0014 · Caché offline y detección de conectividad en la app móvil](0014-mobile-offline-cache-and-connectivity.md) — Aceptado
-- [0017 · Exportación del reporte a Excel y PDF](0017-report-export-excel-pdf.md) — Propuesto
+- [0017 · Exportación del reporte a Excel y PDF](0017-report-export-excel-pdf.md) — Aceptado
+- [0018 · PHP mínimo de la API en 8.4](0018-php-minimum-8-4.md) — Aceptado
 
 ## Plantilla
 
