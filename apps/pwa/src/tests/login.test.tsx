@@ -9,7 +9,7 @@ import {
 } from '@/viewmodels/pwaDemo';
 
 describe('CA-01 PWA responsive demo login', () => {
-  it('muestra campos etiquetados, credenciales ficticias y aviso de demostración', () => {
+  it('muestra campos etiquetados y acceso con cuenta del personal', () => {
     const markup = renderToStaticMarkup(
       <LoginView
         error=""
@@ -21,11 +21,8 @@ describe('CA-01 PWA responsive demo login', () => {
     expect(markup).toContain('Iniciar sesión');
     expect(markup).toContain('Correo electrónico');
     expect(markup).toContain('Contraseña');
-    expect(markup).toContain(demoCredentials.username);
-    expect(markup).toContain(demoCredentials.password);
-    expect(markup).toContain(
-      'este acceso no autentica ni protege información',
-    );
+    expect(markup).not.toContain(demoCredentials.password);
+    expect(markup).not.toContain('Modo demostración');
     expect(markup).toContain('type="password"');
   });
 });

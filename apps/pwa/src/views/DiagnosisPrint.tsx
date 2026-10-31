@@ -16,7 +16,15 @@ export function PrintFooter() {
   return <footer className="print-footer">{institution.address}</footer>;
 }
 
-export function PrintActions({ children }: { children?: ReactNode }) {
+export function PrintActions({
+  children,
+  formId,
+  saving = false,
+}: {
+  children?: ReactNode;
+  formId?: string;
+  saving?: boolean;
+}) {
   const { error, print } = usePrintDocument();
 
   return (
@@ -24,7 +32,12 @@ export function PrintActions({ children }: { children?: ReactNode }) {
       {error && <Alert role="alert">{error}</Alert>}
       <div className="form-actions no-print">
         {children}
-        <Button onClick={print} type="button">
+        {formId && (
+          <Button disabled={saving} form={formId} type="submit">
+            {saving ? 'Guardando…' : 'Guardar diagnóstico'}
+          </Button>
+        )}
+        <Button onClick={print} type="button" variant="secondary">
           Descargar PDF
         </Button>
       </div>

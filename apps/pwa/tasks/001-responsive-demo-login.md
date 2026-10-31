@@ -19,13 +19,13 @@
 - [x] **T-09** (CA-05): Añadir una prueba Vitest nombrada `CA-05` que verifique etiquetas, nombres accesibles, aviso de error, navegación por teclado y reglas de foco visible.
 - [x] **T-10** (CA-06): Añadir una prueba Vitest nombrada `CA-06` que compruebe que existen pruebas CA-01 a CA-05.
 
-- [ ] **T-11** (CA-08): Añadir el manifiesto web, nombre, display standalone, metadatos de tema y los iconos públicos requeridos; enlazarlo desde el HTML de entrada.
-- [ ] **T-12** (CA-07): Implementar ViewModel y control de instalación para escuchar el prompt nativo, registrar `appinstalled`, detectar modo standalone y mostrar instrucciones manuales cuando el prompt no esté disponible.
-- [ ] **T-13** (CA-07): Añadir pruebas Vitest nombradas `CA-07` para prompt disponible, guía manual, modo standalone, resultado de instalación y manejo accesible de error.
-- [ ] **T-14** (CA-08): Añadir pruebas Vitest nombradas `CA-08` que validen el manifiesto, los tamaños y las rutas de icono.
-- [ ] **T-15** (CA-06): Actualizar la prueba de cobertura para exigir suites CA-01 a CA-05 y CA-07 a CA-08.
+- [x] **T-11** (CA-08): Añadir el manifiesto web, nombre, display standalone, metadatos de tema y los iconos públicos requeridos; enlazarlo desde el HTML de entrada.
+- [x] **T-12** (CA-07): Implementar ViewModel y control de instalación para escuchar el prompt nativo, registrar `appinstalled`, detectar modo standalone y mostrar instrucciones manuales cuando el prompt no esté disponible.
+- [x] **T-13** (CA-07): Añadir pruebas Vitest nombradas `CA-07` para prompt disponible, guía manual, modo standalone, resultado de instalación y manejo accesible de error.
+- [x] **T-14** (CA-08): Añadir pruebas Vitest nombradas `CA-08` que validen el manifiesto, los tamaños y las rutas de icono.
+- [x] **T-15** (CA-06): Actualizar la prueba de cobertura para exigir suites CA-01 a CA-05 y CA-07 a CA-08.
 
 ## Calidad y entrega
 
-- [ ] **T-16** (CA-01, CA-02, CA-03, CA-04, CA-05, CA-06, CA-07, CA-08): Actualizar el README con ejecución, credenciales ficticias, flujo de navegación, instalación desde navegador, requisito HTTPS y límites de la demo.
-- [ ] **T-17** (CA-01, CA-02, CA-03, CA-04, CA-05, CA-06, CA-07, CA-08): Ejecutar pruebas, build, revisión de tipos y `/verify`; comprobar los cinco anchos acordados e inspeccionar la instalación disponible en el navegador de prueba.
+- [x] **T-16** (CA-01, CA-02, CA-03, CA-04, CA-05, CA-06, CA-07, CA-08): Actualizar el README con ejecución, credenciales ficticias, flujo de navegación, instalación desde navegador, requisito HTTPS y límites de la demo.
+- [x] **T-17** (CA-01, CA-02, CA-03, CA-04, CA-05, CA-06, CA-07, CA-08): Ejecutar pruebas, build, revisión de tipos y `/verify`; comprobar los cinco anchos acordados e inspeccionar la instalación disponible en el navegador de prueba.

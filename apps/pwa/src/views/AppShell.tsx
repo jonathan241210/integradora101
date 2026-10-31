@@ -75,7 +75,7 @@ export function AppShell({
             <span className="demo-user-avatar" aria-hidden="true">V</span>
             <span>
               <strong>Veterinario</strong>
-              <small>Cuenta de demostración</small>
+              <small>Sesión activa</small>
             </span>
           </span>
           <Button onClick={onLogout} variant="ghost">
@@ -92,14 +92,8 @@ export function AppShell({
           </div>
           <div className="topbar-actions">
             <InstallAppAction controller={installController} />
-            <span className="demo-pill">Modo demostración</span>
           </div>
         </header>
-
-        <div className="demo-banner" role="note">
-          Demostración: no autentica ni protege información. Los formularios no
-          guardan datos.
-        </div>
 
         <main className="view-content" key={activeSection}>
           <ActiveView onNavigate={onNavigate} />

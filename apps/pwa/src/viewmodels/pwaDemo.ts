@@ -45,6 +45,7 @@ export type PwaDemoState = {
 
 export type PwaDemoAction =
   | { type: 'login'; username: string; password: string }
+  | { type: 'authenticated' }
   | { type: 'navigate'; section: PwaSection }
   | { type: 'logout' };
 
@@ -78,6 +79,8 @@ export function pwaDemoReducer(
         loginError: '',
       };
     }
+    case 'authenticated':
+      return { isLoggedIn: true, activeSection: 'home', loginError: '' };
     case 'navigate':
       return state.isLoggedIn
         ? { ...state, activeSection: action.section }

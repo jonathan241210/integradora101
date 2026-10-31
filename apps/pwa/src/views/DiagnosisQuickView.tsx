@@ -1,4 +1,9 @@
 import { Card, Field, TextAreaField } from '@arca/ui';
+import type { FormEvent } from 'react';
+import { createEvaluation } from '@/services/apiClient';
+import { formToRecord, useSaveRequest } from '@/viewmodels/useApiData';
+import { AnimalPicker } from '@/views/AnimalPicker';
+import { SaveFeedback } from '@/views/SaveFeedback';
 import {
   demoVeterinarian,
   quickGroups,
@@ -10,6 +15,20 @@ import {
 } from '@/views/DiagnosisPrint';
 
 export function DiagnosisQuickView() {
+  const save = useSaveRequest();
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const { 'quick-animal': animalId, ...values } = formToRecord(form);
+
+    const saved = await save.run(
+      () => createEvaluation('quick', Number(animalId), values),
+      'Diagnóstico rápido guardado correctamente.',
+    );
+
+    if (saved) form.reset();
+  }
   return (
     <section className="page-section printable-document">
       <div className="page-intro no-print">
@@ -20,9 +39,10 @@ export function DiagnosisQuickView() {
 
       <Card className="form-card">
         <PrintHeader />
-        <form className="data-form" onSubmit={(event) => event.preventDefault()}>
+        <form className="data-form" id="quick-form" onSubmit={handleSubmit}>
           <h3>Formato de historia clínica</h3>
           <div className="form-grid">
+            <AnimalPicker label="Animal" name="quick-animal" />
             <Field label="Motivo de la valoración clínica" name="quick-reason" />
             <Field label="Fecha" name="quick-date" type="date" />
           </div>
@@ -80,7 +100,8 @@ export function DiagnosisQuickView() {
           </p>
         </form>
         <PrintFooter />
-        <PrintActions />
+        <SaveFeedback message={save.message} status={save.status} />
+        <PrintActions formId="quick-form" saving={save.saving} />
       </Card>
     </section>
   );

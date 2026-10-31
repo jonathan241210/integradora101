@@ -33,7 +33,7 @@ describe('CA-03 PWA responsive demo screens', () => {
 
     expect(markupBySection).toHaveLength(5);
     expect(markupBySection[0]).toContain('Resumen de hoy');
-    expect(markupBySection[1]).toContain('Listado ficticio');
+    expect(markupBySection[1]).toContain('Ejemplares registrados');
     expect(markupBySection[2]).toContain('Nuevo ejemplar');
     expect(markupBySection[3]).toContain('Elige el tipo de diagnóstico');
     expect(markupBySection[4]).toContain('Seguimiento');

@@ -804,7 +804,7 @@ select:focus-visible {
   }
 
   .app-main {
-    padding: 18px 18px calc(104px + env(safe-area-inset-bottom));
+    padding: 18px 18px calc(116px + env(safe-area-inset-bottom));
   }
 
   .topbar {
@@ -831,43 +831,62 @@ select:focus-visible {
     bottom: 0;
     left: 0;
     display: block;
-    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-    border-top: 1px solid var(--border);
-    background: color-mix(in srgb, var(--surface) 96%, transparent);
-    box-shadow: 0 -5px 20px rgb(18 39 60 / 8%);
-    backdrop-filter: blur(12px);
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    left: 10px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    box-shadow: 0 8px 28px rgb(18 39 60 / 18%);
+    backdrop-filter: blur(14px);
   }
 
   .navigation-mobile {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 2px;
+    gap: 4px;
   }
 
   .navigation-mobile .navigation-item {
     display: grid;
-    min-height: 56px;
+    min-height: 58px;
     justify-items: center;
     align-content: center;
-    gap: 2px;
-    padding: 4px 1px;
+    gap: 3px;
+    padding: 6px 2px;
+    border-radius: 16px;
     text-align: center;
+    transition: background 0.2s ease, color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .navigation-mobile .navigation-item:active {
+    transform: scale(0.96);
   }
 
   .navigation-mobile .navigation-symbol {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
     background: transparent;
-    font-size: 17px;
+    font-size: 19px;
+    transition: background 0.2s ease;
+  }
+
+  .navigation-mobile .navigation-item.is-active {
+    background: color-mix(in srgb, var(--primary) 12%, transparent);
+    color: var(--primary);
   }
 
   .navigation-mobile .navigation-item.is-active .navigation-symbol {
-    background: transparent;
-    color: var(--primary);
+    background: var(--primary);
+    color: #fff;
   }
 
   .navigation-mobile .navigation-label {
     width: 100%;
-    font-size: clamp(9px, 2.5vw, 11px);
+    font-size: clamp(10px, 2.8vw, 12px);
+    font-weight: 600;
   }
 
   .mobile-logout {
