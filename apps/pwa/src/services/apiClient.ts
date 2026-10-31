@@ -91,7 +91,7 @@ async function request<T>(path: string, init: { method?: string; body?: unknown 
 }
 
 export async function login(email: string, password: string): Promise<AuthUser> {
-  const result = await request<{ token: string; user: AuthUser }>('/auth/login', {
+  const result = await request<{ token: string; user: AuthUser }>('/staff/auth/login', {
     method: 'POST',
     body: { email, password, device_name: 'pwa' },
   });
@@ -100,12 +100,12 @@ export async function login(email: string, password: string): Promise<AuthUser> 
 }
 
 export async function fetchCurrentUser(): Promise<AuthUser> {
-  return (await request<{ user: AuthUser }>('/auth/me')).user;
+  return (await request<{ user: AuthUser }>('/staff/auth/session')).user;
 }
 
 export async function logout(): Promise<void> {
   try {
-    await request('/auth/logout', { method: 'POST' });
+    await request('/staff/auth/logout', { method: 'POST' });
   } catch {
     // El token local se descarta aunque el servidor no responda.
   }
@@ -114,7 +114,7 @@ export async function logout(): Promise<void> {
 
 export async function listAnimals(search = ''): Promise<AnimalSummary[]> {
   const query = search.trim() ? `?search=${encodeURIComponent(search.trim())}` : '';
-  return (await request<{ data: AnimalSummary[] }>(`/animals${query}`)).data;
+  return (await request<{ data: AnimalSummary[] }>(`/staff/animals${query}`)).data;
 }
 
 export type NewAnimal = {
@@ -128,7 +128,7 @@ export type NewAnimal = {
 };
 
 export async function createAnimal(animal: NewAnimal): Promise<AnimalSummary> {
-  return (await request<{ data: AnimalSummary }>('/animals', { method: 'POST', body: animal })).data;
+  return (await request<{ data: AnimalSummary }>('/staff/animals', { method: 'POST', body: animal })).data;
 }
 
 export async function createEvaluation(
@@ -136,7 +136,7 @@ export async function createEvaluation(
   animalId: number,
   data: Record<string, string>,
 ): Promise<void> {
-  await request('/clinical-evaluations', {
+  await request('/staff/clinical-evaluations', {
     method: 'POST',
     body: { kind, animal_id: animalId, data },
   });

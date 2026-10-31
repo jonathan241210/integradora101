@@ -3,9 +3,9 @@
 namespace Tests\Feature;
 
 use Illuminate\Support\Facades\DB;
-use Tests\TestCase;
+use Tests\FeatureTestCase;
 
-class DbConnectionTest extends TestCase
+class DbConnectionTest extends FeatureTestCase
 {
     /**
      * CA-01: .env.example contiene las claves requeridas y DB_PASSWORD vacío.

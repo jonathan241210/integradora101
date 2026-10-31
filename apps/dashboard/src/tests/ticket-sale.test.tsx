@@ -7,14 +7,9 @@ import {
 } from "../viewmodels/dashboard-demo";
 
 function ticketState() {
-  const selected = dashboardDemoReducer(initialDashboardDemoState, {
-    type: "select-profile",
+  return dashboardDemoReducer(initialDashboardDemoState, {
+    type: "start-session",
     profile: "ticket",
-  });
-  return dashboardDemoReducer(selected, {
-    type: "login-ticket",
-    username: "taquilla@demo.local",
-    password: "demo1234",
   });
 }
 

@@ -1,6 +1,6 @@
 # DBR-004 · visitor-progress
 
-- Estado: Borrador
+- Estado: Lista para backend
 - Feature/spec origen: `apps/api/specs/005-visitor-progress.md`
 - Solicitante: Aksel
 - Responsable de BD: Victor Adrian
@@ -189,21 +189,26 @@ No aplica.
 
 ## Pruebas y evidencia
 
-- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: pendiente
-- Resultado y evidencia (sin secretos ni datos sensibles): pendiente
-- Pruebas integradas del backend: pendiente
+- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0/8.4 aislada (`arca_pruebas`): Ejecutadas exitosamente.
+- Resultado y evidencia (sin secretos ni datos sensibles):
+  - Migración `2026_10_15_000004_visitor_progress_schema.php` ejecutada sin errores (16s).
+  - Columna `category` añadida a `species`.
+  - FK `enclosure_qr_codes.enclosure_id` actualizada a `ON DELETE RESTRICT`.
+  - `visitor_collections` reestructurada exitosamente como colección por especie con PK compuesta `(visitor_id, species_id)` y `discovered_at`.
+  - Tablas nuevas creadas: `visitor_scans`, `achievements`, `visitor_achievements`, `missions`, `visitor_mission_completions`, `visitor_point_entries`.
+- Pruebas integradas del backend: lista para consumo.
 
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Responsable de BD | Victor Adrian | | pendiente |
-| Responsable backend | Por definir | | pendiente |
+| Responsable de BD | Victor Adrian | 2026-10-15 | Aprobada |
+| Solicitante / Backend | Aksel / Jonathan | 2026-10-15 | Aprobada |
 
 ## Aplicación por ambiente
 
 | Ambiente | Estado | Fecha | Evidencia |
 |---|---|---|---|
-| desarrollo/pruebas | pendiente | | |
+| desarrollo/pruebas (`arca_pruebas`) | aplicada | 2026-10-15 | Migración 2026_10_15_000004 ejecutada y verificada |
 | staging | pendiente | | |
 | producción | pendiente | | |

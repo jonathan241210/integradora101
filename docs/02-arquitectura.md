@@ -18,7 +18,7 @@ ARCA-NB será un monorepo modular, cliente-servidor JSON. `apps/api` seguirá un
 - MySQL 8.0.x de `apps/api` es la fuente de verdad. Los borradores offline no son autoritativos.
 - Las dependencias apuntan hacia contratos y dominio, no hacia proveedores externos.
 - Menor privilegio, trazabilidad e idempotencia en operaciones financieras e integraciones.
-- Portabilidad por configuración: ninguna regla depende de servicios propietarios de GCP.
+- Portabilidad por configuración: ninguna regla depende de servicios propietarios del proveedor cloud (la BD administrada es Aiven, ADR 0013).
 
 ## Componentes principales
 
@@ -59,7 +59,7 @@ Se prohíben accesos directos de clientes a BD, reglas de negocio en UI, escritu
 
 Los clientes consumen JSON versionado bajo `/api/v1` mediante `@arca/api-client`. Las SPAs autenticadas usarán cookie Sanctum con CSRF; mobile usará tokens. Form Requests validan, Policies y permisos autorizan, Controllers delgados delegan en Actions y API Resources serializan. Cada operación sensible registra actor, acción, fecha y correlación sin secretos.
 
-El esquema cambia solo por migraciones Laravel que el responsable de BD crea, prueba y aplica tras una DBR aprobada ([gobierno de BD](database/README.md)); backend consume el cambio cuando la DBR está `Lista para backend`, y la aplicación se registra por ambiente (desarrollo/pruebas, staging y producción) sobre bases aisladas. Datos clínicos y financieros usan borrado lógico y auditoría. Las conexiones y secretos se inyectan por entorno. GCP previsto y MySQL Server local deben ejecutar el mismo diseño; almacenamiento queda detrás de Laravel Filesystem.
+El esquema cambia solo por migraciones Laravel que el responsable de BD crea, prueba y aplica tras una DBR aprobada ([gobierno de BD](database/README.md)); backend consume el cambio cuando la DBR está `Lista para backend`, y la aplicación se registra por ambiente (desarrollo/pruebas, staging y producción) sobre bases aisladas. Datos clínicos y financieros usan borrado lógico y auditoría. Las conexiones y secretos se inyectan por entorno. Aiven y MySQL Server local deben ejecutar el mismo diseño; `arca_pruebas` es la base de trabajo y de tests, y `arca_zoo` la de producción; almacenamiento queda detrás de Laravel Filesystem.
 
 La PWA puede mantener Draft Repository y Outbox locales, sujetos al [ADR 0003](adr/0003-mysql-y-pwa-offline.md) y a una spec de seguridad, conflicto, retención y reintentos. La API confirma cuándo un cambio es persistente.
 

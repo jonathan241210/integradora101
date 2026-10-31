@@ -17,4 +17,9 @@ class Animal extends Model
     {
         return $this->belongsTo(Species::class, 'species_id');
     }
+
+    public function enclosure(): BelongsTo
+    {
+        return $this->belongsTo(Enclosure::class);
+    }
 }

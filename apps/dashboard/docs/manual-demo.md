@@ -1,76 +1,71 @@
-# Guía de la demostración del dashboard
+# Manual de autenticación y demostración del dashboard
 
-## Iniciar la aplicación
+## Requisitos previos
 
-Desde la raíz del repositorio, ejecuta:
+- Las cuentas demo de `api-003` deben estar sembradas en `arca_pruebas` por la persona responsable de BD.
+- La API local debe tener `.env` configurado para `arca_pruebas`, `SANCTUM_STATEFUL_DOMAINS` con `localhost:5174` y `CORS_ALLOWED_ORIGINS` con `http://localhost:5174`.
+- La contraseña común de las cuentas demo se configura mediante `DEMO_STAFF_PASSWORD` fuera del repositorio. No se versiona y se comparte por un canal externo. Este manual no contiene contraseñas.
+
+## Iniciar localmente
+
+Terminal 1, API:
+
+```bash
+cd apps/api/src
+php artisan serve --port=8000
+```
+
+Terminal 2, dashboard:
 
 ```bash
 cd apps/dashboard
 npm run dev
 ```
 
-Abre la dirección local que indique Vite. No se requiere un servidor API ni una conexión a la base de datos.
+Abre la dirección que indique Vite, normalmente `http://localhost:5174`. El proxy envía `/api` y `/sanctum` a `http://localhost:8000`. Si la API usa otro destino local, configura `ARCA_API_PROXY_TARGET` en el proceso de Vite.
 
-## Elegir un perfil
+## Cuentas demo
 
-La pantalla inicial ofrece dos perfiles ficticios:
+Las seis cuentas comparten `DEMO_STAFF_PASSWORD`. No pegues ni guardes ese valor en el repo, documentación, capturas o tickets.
 
-- **Administración:** solicita un usuario y una contraseña antes de mostrar el panel de muestra. Puede recorrer Dashboard, Noticias, Eventos, Reporte de boletos, Modificación de recintos y Usuarios de taquilla.
-- **Taquilla:** solicita un usuario y una contraseña antes de mostrar Venta de boletos e Historial de boletos.
+| Cuenta | Perfil | Resultado |
+|---|---|---|
+| `presidencia@arca.local` | `admin` | Administración; 2FA obligatorio |
+| `admin@arca.local` | `admin` | Administración; 2FA obligatorio |
+| `direccion_zoo@arca.local` | `zoo-admin` | Administración según permisos; 2FA obligatorio |
+| `ejecutivo@arca.local` | `executive` | Panel y reporte de solo lectura |
+| `boletaje@arca.local` | `cashier` | Venta e historial de muestra |
+| `veterinario@arca.local` | `veterinarian` | Redirección a la PWA |
 
-Credenciales públicas de demostración:
+## Login y segundo factor
 
-- Administración:
-  - Usuario: `administrador@demo.local`
-  - Contraseña: `demo1234`
-- Taquilla:
-  - Usuario: `taquilla@demo.local`
-  - Contraseña: `demo1234`
+1. Escribe el correo institucional y la contraseña demo.
+2. `admin` y `zoo-admin` configuran su segundo factor en el primer acceso: instala una app autenticadora, escanea el QR y confirma con el código de seis dígitos.
+3. Guarda los códigos de recuperación cuando se muestran; el dashboard los descarta al seleccionar **Ya guardé mis códigos**.
+4. En los siguientes accesos, completa el reto con un código TOTP o uno de recuperación.
+5. «Salir» cierra la sesión de la API y devuelve al login.
 
-No son credenciales reales y no deben reutilizarse en ningún otro sistema.
+El mensaje de credenciales incorrectas es genérico. Los errores de límite de intentos incluyen el tiempo de espera. Si la sesión expira, vuelve al login con «Tu sesión expiró».
 
-## Recintos y usuarios ficticios
+## Navegación y límites de la demostración
 
-En el perfil de Administración:
+La API entrega `home` y permisos; el dashboard solo muestra las secciones asociadas:
 
-1. Abre **Modificación de recintos**.
-2. Cambia el nombre, la descripción o el estado de un recinto de muestra y selecciona **Guardar cambios de muestra**.
-3. Abre **Usuarios de taquilla** y captura un nombre, un usuario y una contraseña ficticios.
-4. Selecciona **Crear usuario de muestra**. La cuenta queda disponible en el perfil de Taquilla mientras esta página siga abierta.
-5. Sal del perfil administrativo, selecciona Taquilla e inicia sesión con la cuenta creada.
+- `administration`: Panel, Noticias, Eventos, Reporte, Recintos y Usuarios según permisos.
+- `executive`: Panel y Reporte.
+- `ticket`: Venta e Historial, con fixtures de muestra.
+- `pwa`: la sesión veterinaria se dirige a `pwa_url`. Si la URL no está configurada, se informa que la aplicación no está disponible y no se redirige.
 
-Los formularios muestran feedback local. Los recintos y usuarios no se guardan en el navegador ni en un servidor: al recargar la página regresan los datos iniciales. Cerrar sesión permite cambiar de perfil y no borra las cuentas creadas durante la carga actual.
+Noticias, eventos, reporte, recintos, usuarios, venta e historial continúan siendo demostrativos. La lista de Usuarios de taquilla no crea cuentas ni habilita otro login real. Los cambios locales desaparecen al recargar la página; no se guardan en `localStorage` ni `sessionStorage`.
 
-## Venta e historial
+## Verificación local
 
-Tras iniciar sesión en Taquilla, **Venta de boletos** recorre estados visuales de confirmación, procesamiento y resultado. No se cobra, calcula un importe operativo ni registra una venta. **Historial de boletos** presenta filas ficticias y filtros locales de muestra. El perfil administrativo conserva **Reporte de boletos**, separado del historial de taquilla.
-
-Todos los importes, estados, folios, fechas y cuentas son ficticios. Ninguna pantalla consulta o persiste datos del zoológico.
-
-## Verificación
-
-Desde `apps/dashboard`, ejecuta:
+Desde `apps/dashboard`:
 
 ```bash
 npm run types
-npm run build
 npm test
+npm run build
 ```
 
-La navegación también debe revisarse con teclado y a 360, 390, 768, 1024 y 1366 px de ancho, comprobando que no haya desbordamiento horizontal.
-
-## Organización del código
-
-- `src/App.tsx`: shell, navegación por perfil y composición de vistas.
-- `src/views/`: vistas de administración, taquilla, recintos, cuentas e historial.
-- `src/viewmodels/dashboard-demo.ts`: estado local y transiciones de demostración.
-- `src/viewmodels/useDashboardDemo.ts`: hook que expone las acciones del ViewModel.
-- `src/data/demo-data.ts`: indicadores, recintos, cuentas, ventas e historial ficticios.
-- `src/styles.css`: estilos responsive con tokens semánticos.
-- `src/tests/`: pruebas Vitest nombradas por criterio de aceptación.
-
-La selección de perfil y los logins de Administración y Taquilla solo controlan qué interfaz se presenta. No son autenticación, autorización ni protección de datos; todo el código y los fixtures están disponibles en el cliente.
-
-## Diseño institucional
-
-El dashboard toma los colores y tipografía de [`../../../docs/04-sistema-de-diseno.md`](../../../docs/04-sistema-de-diseno.md) por medio de tokens semánticos: borgoña para la navegación, vino para acciones, dorado/beige como acentos, blanco/negro según contraste, tamaño base de 16px y Lato 400. `index.html` conserva su función de entrada de Vite/React; la vista se compone en React y los mapeos centrales de estilo están en `src/styles.css`. La demo no lee ni modifica `settings_colores` ni llama a `GET /api/theme`.
+Los tests usan Vitest en entorno `node`, con renderizado estático y clientes HTTP falsos; no requieren jsdom ni testing-library.

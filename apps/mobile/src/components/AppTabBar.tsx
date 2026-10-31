@@ -40,6 +40,15 @@ const activeTabByRoute: Record<string, TabKey> = {
   'qr-result': 'scan',
   'qr-invalid': 'scan',
   'qr-already-discovered': 'scan',
+  'scan-result': 'scan',
+  settings: 'profile',
+  account: 'profile',
+  'account-settings': 'profile',
+  'change-password': 'profile',
+  'delete-account': 'profile',
+  privacy: 'profile',
+  help: 'profile',
+  about: 'profile',
 };
 
 export function AppTabBar({ state, navigation }: AppTabBarProps) {

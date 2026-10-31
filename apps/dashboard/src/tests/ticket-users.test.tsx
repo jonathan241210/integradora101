@@ -8,14 +8,9 @@ import {
 } from "../viewmodels/dashboard-demo";
 
 function administrativeState() {
-  const selected = dashboardDemoReducer(initialDashboardDemoState, {
-    type: "select-profile",
+  return dashboardDemoReducer(initialDashboardDemoState, {
+    type: "start-session",
     profile: "administration",
-  });
-  return dashboardDemoReducer(selected, {
-    type: "login-administration",
-    username: "administrador@demo.local",
-    password: "demo1234",
   });
 }
 
@@ -31,11 +26,11 @@ describe("CA-12 admin-dashboard-prototype", () => {
     expect(markup).toContain('for="ticket-user-name"');
     expect(markup).toContain('for="ticket-user-username"');
     expect(markup).toContain('type="password"');
-    expect(markup).toContain("antes de recargar");
+    expect(markup).toContain("mientras esta página siga abierta");
     expect(markup).not.toContain("demo1234");
   });
 
-  it("permite usar la cuenta creada tras cambiar de perfil en la misma carga", () => {
+  it("mantiene la nueva entrada de muestra en memoria sin habilitar un login ficticio", () => {
     const admin = administrativeState();
     const created = dashboardDemoReducer(admin, {
       type: "add-ticket-user",
@@ -44,20 +39,14 @@ describe("CA-12 admin-dashboard-prototype", () => {
       password: " clave-demo ",
     });
     const signedOut = dashboardDemoReducer(created, { type: "sign-out" });
-    const ticketSelected = dashboardDemoReducer(signedOut, {
-      type: "select-profile",
-      profile: "ticket",
-    });
-    const ticketLoggedIn = dashboardDemoReducer(ticketSelected, {
-      type: "login-ticket",
-      username: "usuario@demo.local",
-      password: " clave-demo ",
-    });
 
     expect(created.ticketUsers).toHaveLength(admin.ticketUsers.length + 1);
+    expect(created.ticketUsers.at(-1)).toEqual({
+      id: "usuario@demo.local",
+      name: "Usuario de muestra",
+      username: "usuario@demo.local",
+    });
     expect(signedOut.ticketUsers).toEqual(created.ticketUsers);
-    expect(ticketLoggedIn.activeProfile).toBe("ticket");
-    expect(ticketLoggedIn.activeTicketUser).toBe("Usuario de muestra");
     expect(initialDashboardDemoState.ticketUsers).toHaveLength(1);
   });
 
@@ -66,9 +55,9 @@ describe("CA-12 admin-dashboard-prototype", () => {
       new URL("../../docs/manual-demo.md", import.meta.url),
       "utf8",
     );
-    expect(guide).toContain("taquilla@demo.local");
-    expect(guide).toContain("demo1234");
-    expect(guide).toContain("No son credenciales reales");
+    expect(guide).toContain("api-003");
+    expect(guide).toContain("No se versiona");
     expect(guide).toContain("al recargar la página");
+    expect(guide).not.toContain("demo1234");
   });
 });

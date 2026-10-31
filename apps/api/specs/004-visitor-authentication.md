@@ -2,16 +2,16 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `mobile` (consumidor), `packages/api-client`
-- Estado: Borrador
+- Estado: Implementada (2026-10-21; aprobación funcional 2026-10-20)
 - Solicitante / responsable funcional: Aksel
 - Responsable de BD: Victor Adrian
-- Aprobación funcional: pendiente de aprobación
+- Aprobación funcional: Aksel, 2026-10-20
 
 ## Problema y contexto
 
 La app móvil necesita cuentas de visitante reales (ADR 0011): solo adultos (18+) crean la cuenta con correo y contraseña, verifican el correo con un código de 6 dígitos y mantienen sesión con tokens de acceso cortos (15 min) y refresh rotatorio (30 días) con detección de reuso. El niño juega con la cuenta del tutor, cuyo perfil visible muestra solo apodo y avatar de catálogo. El borrado de cuenta es físico, inmediato y confirmado con contraseña.
 
-Los cambios de esquema se solicitan en DBR-003 (`visitor-accounts`, depende de DBR-001). El código consumidor solo se implementa cuando las DBR estén en `Lista para backend`.
+Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de DBR-001). DBR-001 y DBR-003 ya están en `Lista para backend`. El contrato lo dejó documentado el equipo; los endpoints de esta spec los completó el equipo de la cuenta móvil. La aprobación funcional es del 2026-10-20. El plan técnico y el código siguieron el SDD después de esa aprobación. Ese trabajo no modifica el login de personal, `apps/web` ni `apps/dashboard`.
 
 ## Objetivos
 
@@ -27,6 +27,7 @@ Los cambios de esquema se solicitan en DBR-003 (`visitor-accounts`, depende de D
 - La interfaz móvil (spec `mobile-004`) y el progreso del visitante (spec `api-005`).
 - Tabla de líderes, premios y contenido social entre visitantes.
 - Gestión de visitantes desde el dashboard del personal.
+- Cambios en `apps/web`, `apps/dashboard`, la spec `api-003` y el módulo de personal `packages/api-client/auth.ts`. El cliente visitante, si se añade, es un módulo distinto.
 
 ## Actores y permisos
 
@@ -58,7 +59,7 @@ Los cambios de esquema se solicitan en DBR-003 (`visitor-accounts`, depende de D
 - **CA-12:** Dada una sesión válida, cuando se llama `GET /api/v1/visitor/me`, entonces devuelve el perfil (correo, nombre, apodo, avatar); `PATCH /api/v1/visitor/me` acepta `nickname, first_name, avatar_code` y valida que el avatar exista en el catálogo.
 - **CA-13:** Dada una sesión válida, cuando se llama `PUT /api/v1/visitor/me/password` con `current_password, password, password_confirmation`, entonces cambia la contraseña y revoca las demás sesiones del visitante.
 - **CA-14:** Dada una sesión válida, cuando se llama `DELETE /api/v1/visitor/me` con `password` correcta, entonces responde 204 y ejecuta el borrado físico en cascada (cuenta, tokens, códigos y progreso) revocando todo.
-- **CA-15:** Dado cualquier cliente, cuando consulta `GET /api/v1/visitor/legal/privacy-notice`, entonces la API devuelve `version` y el contenido vigente del aviso de privacidad (el texto lo provee el zoológico; ver preguntas pendientes).
+- **CA-15:** Dado cualquier cliente, cuando consulta `GET /api/v1/visitor/legal/privacy-notice`, entonces la API devuelve `version` y el contenido vigente del aviso de privacidad. El texto lo provee el zoológico y no bloquea esta spec.
 - **CA-16:** Dados los códigos de verificación y recuperación, cuando se generan, entonces son de 6 dígitos, se guardan como hash, vencen a los 15 minutos, permiten máximo 5 intentos y son de un solo uso.
 - **CA-17:** Dado el alta o cambio de contraseña, cuando se valida, entonces exige mínimo 8 caracteres, letras y números, y `uncompromised()` (omitible solo en entorno `local`); el hash es bcrypt.
 - **CA-18:** Dado el registro, cuando una IP supera 5 registros por hora, entonces responde 429 con mensaje en español.
@@ -69,14 +70,14 @@ Los cambios de esquema se solicitan en DBR-003 (`visitor-accounts`, depende de D
 ## Reglas de negocio
 
 - **RN-01:** Solo adultos (18+) crean cuenta y aceptan aviso y términos; el niño juega con la cuenta del tutor y su perfil visible muestra solo `nickname` y avatar.
-- **RN-02:** El avatar se elige de un catálogo de ilustraciones incluidas en la app (sin fotos); `avatar_code` se valida contra ese catálogo.
+- **RN-02:** El avatar se elige de un catálogo de ilustraciones incluidas en la app (sin fotos). `avatar_code` se valida contra los códigos aceptados: `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`. El arte final puede cambiar sin cambiar los códigos.
 - **RN-03:** Sesión = token de acceso de 15 min + refresh rotatorio de 30 días con detección de reuso; la rotación es lógica propia sobre Sanctum.
 - **RN-04:** Respuestas genéricas donde aplique: «Correo o contraseña incorrectos.» y 202 en resend/forgot, para no revelar la existencia de una cuenta.
-- **RN-05:** La implementación está bloqueada hasta que DBR-001 y DBR-003 estén en `Lista para backend`.
+- **RN-05:** DBR-001 y DBR-003 están en `Lista para backend` y esta spec está aprobada. El código de estos endpoints espera el plan técnico y las tasks de `api-004`. No se crean migraciones nuevas desde esta spec.
 - **RN-06:** Ningún secreto se versiona: SMTP y claves se configuran por `.env`; `.env.example` solo lleva claves sin valores.
 - **RN-07:** Rutas nombradas de Laravel bajo el prefijo `/api/v1/visitor`; sin Inertia ni Wayfinder.
 - **RN-08:** `visitors` no usa SoftDeletes: el borrado es físico e inmediato por derecho de supresión (LFPDPPP) y porque no son datos clínicos ni financieros.
-- **RN-09:** Los paquetes ya están aprobados: Sanctum en ADR 0001 y el modelo de sesión en ADR 0011; el correo usa SMTP nativo de Laravel, sin SDK nuevo.
+- **RN-09:** Sanctum está aprobado en ADR 0001. ADR 0011 fue aceptado el 2026-10-21 y autoriza `expo-secure-store` y AsyncStorage en la app móvil; esta spec no instala esas dependencias. El correo usa SMTP nativo de Laravel, sin SDK nuevo. El proveedor SMTP de producción se configura por `.env` y no bloquea esta spec; en desarrollo `MAIL_MAILER=log`.
 - **RN-10:** Los endpoints se implementan con Actions (`RegisterVisitorAction`, `VerifyVisitorEmailAction`, `IssueVisitorTokensAction`, `RotateRefreshTokenAction`, `RevokeVisitorSessionAction`, `SendVisitorCodeAction`, `ResetVisitorPasswordAction`, `DeleteVisitorAccountAction`) y controladores delgados.
 - **RN-11:** Identificadores, rutas y campos en inglés; mensajes al visitante en español (Constitución VI).
 - **RN-12:** Los tests PHPUnit corren contra `arca_pruebas`; nunca contra `arca_zoo`.
@@ -108,14 +109,13 @@ Los cambios de esquema se solicitan en DBR-003 (`visitor-accounts`, depende de D
 
 ## Dependencias, riesgos y preguntas
 
-- **Dependencias/ADR:** DBR-001 y DBR-003 (`Lista para backend`), ADR 0001 (Sanctum), ADR 0011 (identidad y sesión), ADR 0010 (MySQL 8.0.x). Si la base del paquete lo define `api-003`, `packages/api-client` se amplía con modo Bearer con refresh; se documenta aquí y en `mobile-004`.
-- **Riesgos:** el refresh rotatorio propio necesita pruebas de reuso y concurrencia; `uncompromised()` requiere red (HIBP), solo omitible en `local`; dependencia de un servicio SMTP en producción.
-- **Preguntas pendientes:**
-  - Texto del aviso de privacidad y de los términos (lo provee el zoológico o el área jurídica municipal).
-  - Proveedor SMTP concreto y validación del dominio remitente.
-  - Ilustraciones del catálogo de avatares (8 códigos propuestos: `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`).
+- **Dependencias/ADR:** DBR-001 y DBR-003 (`Lista para backend`), ADR 0001 (Sanctum), ADR 0011 (aceptado el 2026-10-21; las dependencias móviles se instalan en la app, no aquí), ADR 0010 (MySQL 8.0.x). `@arca/api-client` puede ganar un modo Bearer de visitante con refresh, documentado en el checklist HTTP de `mobile-004`, sin editar el módulo de personal.
+- **Riesgos:** el refresh rotatorio propio necesita pruebas de reuso y concurrencia; `uncompromised()` requiere red (HIBP), solo omitible en `local`; en producción hace falta SMTP configurado por `.env`.
+- **Decisiones cerradas (2026-10-20):** los ocho códigos de avatar de RN-02; `GET /api/v1/visitor/legal/privacy-notice` devuelve `version` y el contenido que redacte el zoológico; el proveedor SMTP no bloquea la spec; este equipo completa los endpoints del visitante y no toca la web ni el login de personal.
+- **Preguntas pendientes:** ninguna que bloquee la aprobación funcional.
 
 ## Revisión
 
-- Aprobadores y fecha: pendiente de aprobación.
+- Aprobadores y fecha: Aksel, 2026-10-20, en el mismo acto que `mobile-004` y su plan técnico. El plan y el checklist los aprobó Aksel el 2026-10-21. ADR 0011 fue aceptado por Aksel el 2026-10-21, en documento aparte.
+- Cierre: Implementada el 2026-10-21. CA-01 a CA-21 tienen una prueba que los nombra. Ese día `php artisan test` desde `apps/api/src` quedó en verde (51 pruebas, 694 aserciones), incluida la suite de personal. El PR de esta entrega enlaza spec, plan y tasks.
 - Evidencia/enlaces: `docs/adr/0011-visitor-identity-and-mobile-session.md`, `docs/database/requests/DBR-003-visitor-accounts.md`, `apps/mobile/specs/004-visitor-account.md`.

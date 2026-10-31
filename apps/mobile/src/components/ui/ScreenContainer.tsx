@@ -1,15 +1,17 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, StyleProp, ViewStyle } from 'react-native';
+import { View, StyleSheet, ScrollView, StyleProp, ViewStyle, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../theme';
+import { BusyOverlay } from './StateViews';
 
 interface ScreenContainerProps {
   children: React.ReactNode;
   scroll?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
+  busyMessage?: string | null;
 }
 
-export function ScreenContainer({ children, scroll = true, contentStyle }: ScreenContainerProps) {
+export function ScreenContainer({ children, scroll = true, contentStyle, busyMessage }: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
   const safeAreaStyle = {
     ...styles.safeArea,
@@ -19,21 +21,31 @@ export function ScreenContainer({ children, scroll = true, contentStyle }: Scree
     paddingRight: insets.right,
   };
 
+  const body = scroll ? (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[styles.scrollContent, contentStyle]}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+      >
+        {children}
+      </ScrollView>
+    </KeyboardAvoidingView>
+  ) : (
+    <View style={[styles.container, contentStyle]}>
+      {children}
+    </View>
+  );
+
   return (
     <View style={safeAreaStyle}>
-      {scroll ? (
-        <ScrollView 
-          style={styles.container} 
-          contentContainerStyle={[styles.scrollContent, contentStyle]} 
-          showsVerticalScrollIndicator={false}
-        >
-          {children}
-        </ScrollView>
-      ) : (
-        <View style={[styles.container, contentStyle]}>
-          {children}
-        </View>
-      )}
+      {body}
+      {busyMessage ? <BusyOverlay message={busyMessage} /> : null}
     </View>
   );
 }

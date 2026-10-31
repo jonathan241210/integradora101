@@ -17,6 +17,6 @@ Implementa endpoint solamente si `/sdd-implement` confirma spec Aprobada y tasks
 3. Añade ruta JSON Laravel con nombre en inglés; documenta método, autorización, request/response y errores en el plan o docs de API si corresponde.
 4. Valida con Form Request, delega toda regla/cálculo en una Action, transforma salida con API Resource y protege con Policy y permiso `<resource>.<action>`.
 5. Cambios de esquema solo por migración MySQL 8 estándar. Usa `BaseModel` y columnas de auditoría cuando aplique; SoftDeletes/Activitylog para datos clínicos o financieros.
-6. Mantén Sanctum para sesiones SPA/tokens mobile, configuración por `.env` y sin SDK GCP en dominio.
-7. Agrega tests Feature con `RefreshDatabase`: autorización permitida/denegada, validación y al menos una prueba nombrada por cada CA-xx.
+6. Mantén Sanctum para sesiones SPA/tokens mobile, configuración por `.env` y sin SDK de proveedores cloud en dominio.
+7. Agrega tests Feature con `DatabaseTransactions` sobre `arca_pruebas` (nunca `RefreshDatabase` ni `migrate:fresh`): autorización permitida/denegada, validación y al menos una prueba nombrada por cada CA-xx.
 8. No usar Inertia ni Wayfinder. Ejecuta `/verify` para API y reporta evidencia, fallos y archivos tocados.

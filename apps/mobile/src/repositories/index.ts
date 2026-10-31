@@ -1,5 +1,5 @@
-import { Achievement, Animal, User, Mission, Reward, LeaderboardEntry, ZooEvent, News, MapLocation, MapRoute, QrOutcome, QrSimulation } from '../models';
-import { MOCK_ANIMALS, MOCK_USER, MOCK_MISSIONS, MOCK_REWARDS, MOCK_LEADERBOARD, MOCK_EVENTS, MOCK_NEWS, MOCK_ACHIEVEMENTS, MOCK_MILESTONES, MOCK_MAP_LOCATIONS, MOCK_MAP_ROUTE, MOCK_QR_SIMULATIONS } from '../mocks/zoo';
+import { Achievement, Animal, User, Mission, ZooEvent, News, MapLocation, MapRoute, QrOutcome, QrSimulation } from '../models';
+import { MOCK_ANIMALS, MOCK_USER, MOCK_MISSIONS, MOCK_EVENTS, MOCK_NEWS, MOCK_ACHIEVEMENTS, MOCK_MILESTONES, MOCK_MAP_LOCATIONS, MOCK_MAP_ROUTE, MOCK_QR_SIMULATIONS } from '../mocks/zoo';
 
 export interface AnimalRepository {
   getAllAnimals(): Promise<Animal[]>;
@@ -10,14 +10,13 @@ export interface AnimalRepository {
 export interface UserRepository {
   getUser(): Promise<User>;
   getMissions(): Promise<Mission[]>;
-  getRewards(): Promise<Reward[]>;
-  getLeaderboard(): Promise<LeaderboardEntry[]>;
   getAchievements(): Promise<Achievement[]>;
   getMilestones(): Promise<{ id: string; title: string; date: string }[]>;
 }
 
 export interface ZooRepository {
   getEvents(): Promise<ZooEvent[]>;
+  getEventById(id: string): Promise<ZooEvent | null>;
   getNews(): Promise<News>;
 }
 
@@ -41,7 +40,6 @@ export class AnimalRepositoryImpl implements AnimalRepository {
   }
 
   async getFeaturedAnimals(): Promise<Animal[]> {
-    // For demo, return first 3 animals as featured
     return Promise.resolve(MOCK_ANIMALS.slice(0, 3));
   }
 }
@@ -53,14 +51,6 @@ export class UserRepositoryImpl implements UserRepository {
 
   async getMissions(): Promise<Mission[]> {
     return Promise.resolve(MOCK_MISSIONS);
-  }
-
-  async getRewards(): Promise<Reward[]> {
-    return Promise.resolve(MOCK_REWARDS);
-  }
-
-  async getLeaderboard(): Promise<LeaderboardEntry[]> {
-    return Promise.resolve(MOCK_LEADERBOARD);
   }
 
   async getAchievements(): Promise<Achievement[]> {
@@ -75,6 +65,11 @@ export class UserRepositoryImpl implements UserRepository {
 export class ZooRepositoryImpl implements ZooRepository {
   async getEvents(): Promise<ZooEvent[]> {
     return Promise.resolve(MOCK_EVENTS);
+  }
+
+  async getEventById(id: string): Promise<ZooEvent | null> {
+    const event = MOCK_EVENTS.find(e => e.id === id);
+    return Promise.resolve(event !== undefined ? event : null);
   }
 
   async getNews(): Promise<News> {
@@ -96,4 +91,36 @@ export class QrRepositoryImpl implements QrRepository {
   async simulateScan(outcome: QrOutcome): Promise<QrSimulation> {
     return MOCK_QR_SIMULATIONS[outcome];
   }
+}
+
+// Exportamos las implementaciones reales con API y caché
+export { ApiAnimalRepository } from './apiAnimalRepository';
+export { ApiZooRepository } from './apiZooRepository';
+export * from './mappers';
+export * from './storage';
+
+/**
+ * Factorías que resuelven si se usan mocks o la API real según variable de entorno.
+ */
+import { ApiAnimalRepository } from './apiAnimalRepository';
+import { ApiZooRepository } from './apiZooRepository';
+
+export function createAnimalRepository(): AnimalRepository {
+  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
+    return new AnimalRepositoryImpl();
+  }
+  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+    return new AnimalRepositoryImpl();
+  }
+  return new ApiAnimalRepository();
+}
+
+export function createZooRepository(): ZooRepository {
+  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
+    return new ZooRepositoryImpl();
+  }
+  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+    return new ZooRepositoryImpl();
+  }
+  return new ApiZooRepository();
 }

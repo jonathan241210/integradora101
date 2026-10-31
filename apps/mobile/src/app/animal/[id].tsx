@@ -3,11 +3,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AnimalDetailScreen } from '../../screens/AnimalDetailScreen';
 import { Animal } from '../../models';
 import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
+import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 
 export default function AnimalDetailRoute() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { getAnimalDetails } = useAnimalViewModel();
+  const { isOffline } = useNetworkStatus();
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,6 +33,7 @@ export default function AnimalDetailRoute() {
     <AnimalDetailScreen
       animal={animal}
       loading={loading}
+      isOffline={isOffline}
       onBackPress={() => router.back()}
       onNavigatePress={() => router.push(animal?.isDiscovered ? { pathname: '/map', params: { animalId: id } } : '/scan')}
     />

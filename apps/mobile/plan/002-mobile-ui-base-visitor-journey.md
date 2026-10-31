@@ -76,6 +76,7 @@ Dado que esta Spec es puramente de UI y utiliza mocks, no se definen endpoints d
 - **Rendimiento Visual:** Riesgo de solapamientos en Android. Mitigación: Uso obligatorio de `react-native-safe-area-context`.
 - **Activos de animales:** La referencia no incluye fotos; el UI usará placeholders de forma segura si no hay URL, sin depender de archivos de `arca-ui-reference`.
 - **Validación CA-06:** La inspección manual en Android con Expo Go fue confirmada por la persona solicitante el 2026-10-09; queda registrada en T-28.
+- **Atrás y teclado (enmienda 2026-10-23):** Las pestañas usan `backBehavior="none"`. El gesto atrás no deshace Home → Mapa → Colección. En una ruta secundaria vuelve a la pantalla que la abrió. Los formularios con scroll usan `KeyboardAvoidingView` y Android `softwareKeyboardLayoutMode: resize`. La comprobación en dispositivo queda en T-55; la automática cubre la historia de rutas y las props del contenedor.
 - **Paleta móvil desalineada:** `packages/tokens/index.ts` todavía exporta verde/amarillo aunque la guía de diseño y `tokens.css` definen los valores institucionales; la enmienda los alinea y añade comprobaciones del contrato.
 - **Contraste de acento:** El acento claro no debe utilizarse como texto sobre superficies blancas; se reemplazará ese uso por el primario y se verificará el contraste de las combinaciones expuestas.
 
@@ -93,3 +94,41 @@ Dado que esta Spec es puramente de UI y utiliza mocks, no se definen endpoints d
 **Aprobación funcional:** Solicitante / responsable funcional, 2026-10-09.
 **Revisión y aprobación técnica:** Solicitante, 2026-10-09.
 **Enmienda CA-07/RN-09:** Aprobada funcionalmente y técnicamente por la persona solicitante el 2026-10-11.
+
+## Enmienda 2026-10-15 · Acceso y ajustes visuales
+
+La persona solicitante confirmó cuatro pantallas de demostración y que las filas de Ajustes navegan. No se implementa la spec `004`.
+
+| Pantalla | Ruta | Comportamiento |
+|---|---|---|
+| Login | `/login` | Panel de marca, correo, contraseña, olvido, separador «o», invitado en texto y registro. Abrir la app sin sesión llega aquí. |
+| Registro | `/register` | Nombre de usuario, correo, contraseña y confirmación. Advierte que borrar la app no restaura esta demostración. Volver a Login. |
+| Olvido | `/forgot-password` | Correo y aviso genérico, alineado a `api-004` CA-10. |
+| Nueva contraseña | `/reset-password` | Código de 6 dígitos, nueva contraseña y confirmación. En la demostración cualquier código de 6 dígitos continúa. |
+| Ajustes | `/settings` | Ficha de ejemplo e interruptores visuales de notificaciones y ubicación. Pestaña Perfil activa. Sin modo oscuro, idioma ni sonidos. |
+| Mi cuenta | `/account` | Nombre y correo de ejemplo, con la misma advertencia. |
+| Privacidad | `/privacy` | Cuatro secciones: datos, finalidad, protección y derechos. Texto de demostración. |
+| Ayuda | `/help` | Cómo entrar, crear cuenta, recuperar contraseña y qué hacen los interruptores. |
+| Acerca de | `/about` | ARCA-NB 1.0.0 y Zoológico Municipal Nicolás Bravo, Tulancingo. |
+
+La compuerta vive en memoria (`signedOut` / `entered`). No usa almacenamiento seguro ni la API. Mayoría de edad, avatar, verificación real de correo y borrado de cuenta quedan en la spec `004`.
+
+## Mapeo de criterios a pruebas
+| Criterio | Prueba automatizada | App/ubicación |
+|---|---|---|
+| CA-11 | `test-ca-11` | `apps/mobile/__tests__/access.test.tsx` |
+| CA-12 | `test-ca-12` | `apps/mobile/__tests__/access.test.tsx` |
+| CA-13 | `test-ca-13` | `apps/mobile/__tests__/access.test.tsx` |
+| CA-14 | `test-ca-14` y `test-ca-03` | `apps/mobile/__tests__/access.test.tsx`, `navigation.test.tsx` |
+| CA-15 | `test-ca-15` | `apps/mobile/__tests__/access.test.tsx` |
+
+## Constitution Check de la enmienda
+
+| Principio | Cumple | Evidencia o excepción propuesta |
+|---|---|---|
+| I. Stack mínimo y portable | Conforme | Sin dependencias nuevas. `TextInput` y `Switch` pertenecen a React Native. |
+| II. La spec manda | Conforme | CA-11 a CA-15 acotan la demostración. La cuenta real sigue fuera, en spec `004`. |
+| III. Lógica separada de la interfaz | Conforme | Rutas y pantallas no importan repositorios ni mocks. La validación de formulario vive en el ViewModel. |
+| IV. Un test por criterio | Conforme | Cada CA nuevo tiene una prueba que lo nombra. |
+| V. Una sola fuente de verdad para los datos | Conforme | El estado visual vive en un repositorio en memoria y se pierde al recargar. No hay segunda base de datos. |
+| VI. Código en inglés, personas en español | Conforme | Rutas e identificadores en inglés. Textos de interfaz en español. |

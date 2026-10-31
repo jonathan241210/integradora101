@@ -8,7 +8,7 @@ Se prevé un `docker-compose` para servicios locales de desarrollo, incluido MyS
 
 ## Alojamiento previsto
 
-El primer destino es Google Cloud con MySQL 8.0.x administrado (por ejemplo, Cloud SQL). La API Laravel y los clientes podrán desplegarse en servicios acordados posteriormente. El almacenamiento de archivos que se agregue usará discos configurables de Laravel Filesystem, no llamadas a SDK desde dominio.
+La base de datos administrada es Aiven MySQL (ADR 0013), con TLS configurado por `DB_SSL_CA` en `.env`; `arca_pruebas` es la base de trabajo y PHPUnit, y `arca_zoo` es producción. Google Cloud dejó de ser el destino del sistema: el hosting de la API Laravel y de los clientes queda por definir. El almacenamiento de archivos que se agregue usará discos configurables de Laravel Filesystem, no llamadas a SDK desde dominio.
 
 ## Base de datos
 
@@ -16,7 +16,7 @@ La familia MySQL 8.0.x es obligatoria en todos los ambientes; la revisión míni
 
 ## Portabilidad
 
-- Usar capacidades compatibles con MySQL 8.0.x; no depender de extensiones exclusivas de Cloud SQL.
+- Usar capacidades compatibles con MySQL 8.0.x; no depender de extensiones exclusivas de Aiven ni de MySQL 8.4.
 - Configurar acceso, host, base, usuario y secreto mediante variables de entorno; no versionar credenciales.
 - Mantener datos persistentes en migraciones Laravel y planear exportación, respaldo y restauración verificables.
 - Para migrar a MySQL Server local, apuntar conexiones a la instancia local mediante `.env`, validar collation/versión y probar restauración; revisar por separado el driver de archivos.
@@ -26,4 +26,4 @@ La familia MySQL 8.0.x es obligatoria en todos los ambientes; la revisión míni
 
 Los secretos se administran con mecanismos de cada entorno (Secret Manager u opción local segura) y se inyectan al proceso; nunca se guardan en Git, imágenes ni logs. `.env.example` contiene solo nombres y valores de muestra no sensibles. Definir acceso mínimo, rotación, respaldos, restauración y auditoría antes de producción.
 
-Referencia de arquitectura: ADR 0006. Todo despliegue requiere SDD y checklist operativo aprobado.
+Referencia de arquitectura: ADR 0013 (sustituye a ADR 0006). Todo despliegue requiere SDD y checklist operativo aprobado.

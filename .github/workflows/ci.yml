@@ -1,0 +1,100 @@
+name: Verificaciones automatizadas
+run-name: Verificaciones de ${{ github.ref_name }}
+
+on:
+  push:
+    branches:
+      - main
+      - DevOps
+  pull_request:
+    branches:
+      - main
+      - DevOps
+
+permissions:
+  contents: read
+
+jobs:
+  api-unit:
+    name: Pruebas unitarias de la API
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar PHP 8.4 y Composer
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+
+      - name: Instalar dependencias de la API
+        run: composer install --working-dir=apps/api/src --prefer-dist --no-interaction --no-progress --no-scripts
+
+      - name: Ejecutar pruebas unitarias de la API
+        working-directory: apps/api/src
+        run: vendor/bin/phpunit --testsuite=Unit
+
+  mobile-tests:
+    name: Pruebas de la aplicación móvil
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Instalar dependencias del monorepo
+        run: npm ci
+
+      - name: Ejecutar pruebas de la aplicación móvil
+        run: npm run test --workspace=apps/mobile -- --runInBand
+        env:
+          CI: true
+
+  dashboard-build:
+    name: Build y artefacto del Dashboard
+    needs: [api-unit, mobile-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Instalar dependencias del monorepo
+        run: npm ci
+
+      - name: Compilar Dashboard
+        run: npm run build --workspace=@arca/dashboard
+
+      - name: Comprobar salida
+        run: test -f apps/dashboard/dist/index.html
+
+      - name: Crear ZIP de distribución
+        run: zip -r dashboard-dist.zip apps/dashboard/dist
+
+      - name: Comprobar ZIP
+        run: |
+          unzip -t dashboard-dist.zip
+          unzip -Z1 dashboard-dist.zip | grep -Fx 'apps/dashboard/dist/index.html'
+
+      - name: Subir artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard-build
+          path: dashboard-dist.zip
