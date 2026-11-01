@@ -1,6 +1,8 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import type { ApiError } from '@arca/api-client';
+import type { ProgressRepository, ProgressSnapshot } from '../../src/repositories/progressRepository';
+import { peekSharedProgress, readSharedProgress } from '../../src/repositories/sharedProgress';
 import { MemoryKeyValueStorage } from '../../src/repositories/storage';
 import { createScanQueue } from '../../src/services/scanQueue';
 import { GameScreen } from '../../src/screens/GameScreen';
@@ -23,6 +25,8 @@ function outcome(result: DiscoveryOutcome['result'], code: string): DiscoveryOut
     message: code,
     pointsAwarded: result === 'discovered' ? 100 : 0,
     newSpecies: result === 'discovered' ? ['Tigre'] : [],
+    unlockedSpecies: result === 'discovered' ? [{ id: '1', name: 'Tigre' }] : [],
+    alreadyKnownSpecies: [],
     progress,
   };
 }
@@ -112,6 +116,36 @@ describe('progreso de la cola de escaneos', () => {
     expect(waiting.kind).toBe('rate_limited');
     expect(waiting.message).toContain('Espera');
     expect(await limitedQueue.list()).toHaveLength(1);
+  });
+
+  it('CA-06 visitor-progress invalida la copia compartida tras un descubrimiento exitoso', async () => {
+    const snapshot: ProgressSnapshot = {
+      progress,
+      collection: [],
+      achievements: [],
+      missions: [],
+    };
+    const repository: ProgressRepository = {
+      async load() {
+        return snapshot;
+      },
+      async discover(input) {
+        return outcome('discovered', input.code);
+      },
+    };
+    await readSharedProgress(repository);
+    expect(peekSharedProgress(repository)).not.toBeNull();
+
+    const onRecorded = jest.fn(async () => undefined);
+    const queue = createScanQueue(new MemoryKeyValueStorage(), repository.discover.bind(repository), onRecorded);
+    await queue.submit('ARCA-LEON');
+
+    expect(onRecorded).toHaveBeenCalledTimes(1);
+    expect(peekSharedProgress(repository)).not.toBeNull();
+
+    const invalid = createScanQueue(new MemoryKeyValueStorage(), async () => outcome('invalid_code', 'ARCA-NO'), onRecorded);
+    await invalid.submit('ARCA-NO');
+    expect(onRecorded).toHaveBeenCalledTimes(1);
   });
 });
 

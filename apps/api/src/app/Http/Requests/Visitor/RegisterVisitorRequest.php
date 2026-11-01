@@ -10,7 +10,7 @@ class RegisterVisitorRequest extends VisitorFormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'email', 'max:255', Rule::unique('visitors', 'email')],
+            'email' => ['required', 'email', 'max:255'],
             'password' => ['required', 'string', 'confirmed', app('visitor.password')],
             'password_confirmation' => ['required', 'string'],
             'first_name' => ['required', 'string', 'max:255'],
@@ -28,7 +28,6 @@ class RegisterVisitorRequest extends VisitorFormRequest
     public function messages(): array
     {
         return [
-            'email.unique' => 'Ese correo ya está registrado.',
             'email.required' => 'Escribe tu correo.',
             'email.email' => 'Escribe un correo válido.',
             'password.required' => 'La contraseña debe tener al menos 8 caracteres, con letras y números.',

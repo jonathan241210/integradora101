@@ -3,12 +3,16 @@ import { useRouter } from 'expo-router';
 import { HomeScreen } from '../../screens/HomeScreen';
 import { useHomeViewModel } from '../../viewmodels/useHomeViewModel';
 import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
+import { useVisitorProfile } from '../../viewmodels/useVisitorProfile';
+import { useVisitorProgress } from '../../viewmodels/useVisitorProgress';
 import { Animal, News, ZooEvent } from '../../models';
 
 export default function HomeRoute() {
   const router = useRouter();
   const { loadHomeData } = useHomeViewModel();
   const { isOffline } = useNetworkStatus();
+  const { profile } = useVisitorProfile();
+  const progress = useVisitorProgress();
   const [featuredAnimals, setFeaturedAnimals] = useState<Animal[]>([]);
   const [events, setEvents] = useState<ZooEvent[]>([]);
   const [news, setNews] = useState<News>({ title: '', body: '' });
@@ -50,6 +54,9 @@ export default function HomeRoute() {
       onAnimalPress={(id) => router.push({ pathname: '/animal/[id]', params: { id } })}
       onEventPress={(id) => router.push({ pathname: '/event-detail', params: { id } })}
       onOpenMissionsPress={() => router.push('/game')}
+      visitorName={profile?.nickname}
+      discoveredCount={progress.snapshot?.progress.discoveredSpecies}
+      totalAnimals={progress.snapshot?.progress.totalSpecies}
     />
   );
 }

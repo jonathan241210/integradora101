@@ -2,13 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { AnimalDetailScreen } from '../../screens/AnimalDetailScreen';
 import { Animal } from '../../models';
+import { peekScanResult, scanResultParams } from '../../navigation/presentScanResult';
+import { accountSession } from '../../session/accountSession';
 import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
+import { mergeDiscoveredSpecies, useVisitorProgress } from '../../viewmodels/useVisitorProgress';
 import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 
 export default function AnimalDetailRoute() {
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, from } = useLocalSearchParams<{ id: string; from?: string }>();
   const { getAnimalDetails } = useAnimalViewModel();
+  const progress = useVisitorProgress();
   const { isOffline } = useNetworkStatus();
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,13 +33,27 @@ export default function AnimalDetailRoute() {
     };
   }, [getAnimalDetails, id]);
 
+  const waitingForDiscovery = accountSession.getStatus() === 'authenticated'
+    && progress.loading
+    && progress.snapshot === null;
+  const shown = animal ? mergeDiscoveredSpecies([animal], progress.snapshot)[0] : null;
+
   return (
     <AnimalDetailScreen
-      animal={animal}
-      loading={loading}
+      animal={shown}
+      loading={loading || waitingForDiscovery}
       isOffline={isOffline}
-      onBackPress={() => router.back()}
-      onNavigatePress={() => router.push(animal?.isDiscovered ? { pathname: '/map', params: { animalId: id } } : '/scan')}
+      onBackPress={() => {
+        if (from === 'scan-result') {
+          const saved = peekScanResult();
+          if (saved) {
+            router.navigate({ pathname: '/scan-result', params: scanResultParams(saved) });
+            return;
+          }
+        }
+        router.back();
+      }}
+      onNavigatePress={() => router.push(shown?.isDiscovered ? { pathname: '/map', params: { animalId: id } } : '/scan')}
     />
   );
 }

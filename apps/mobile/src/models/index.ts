@@ -114,10 +114,3 @@ export interface InfoSection {
   title: string;
   body: string;
 }
-
-export type QrOutcome = 'valid' | 'invalid' | 'already-discovered';
-
-export interface QrSimulation {
-  outcome: QrOutcome;
-  animalId?: string;
-}

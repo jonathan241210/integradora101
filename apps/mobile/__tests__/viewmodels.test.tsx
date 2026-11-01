@@ -1,11 +1,10 @@
 import React, { useEffect } from 'react';
 import { Text } from 'react-native';
 import { render, waitFor } from '@testing-library/react-native';
-import { AnimalRepository, AnimalRepositoryImpl, MapRepositoryImpl, QrRepositoryImpl, UserRepository, UserRepositoryImpl, ZooRepositoryImpl } from '../src/repositories';
+import { AnimalRepository, AnimalRepositoryImpl, MapRepositoryImpl, UserRepository, UserRepositoryImpl, ZooRepositoryImpl } from '../src/repositories';
 import { useAnimalViewModel } from '../src/viewmodels/useAnimalViewModel';
 import { useHomeViewModel } from '../src/viewmodels/useHomeViewModel';
 import { useMapViewModel } from '../src/viewmodels/useMapViewModel';
-import { useQrViewModel } from '../src/viewmodels/useQrViewModel';
 import { useUserViewModel } from '../src/viewmodels/useUserViewModel';
 import { MOCK_ANIMALS } from '../src/mocks/zoo';
 
@@ -63,14 +62,6 @@ describe('ViewModels y Repositories', () => {
 
     const view = await render(<Probe />);
     await waitFor(() => expect(view.getByText('10:8')).toBeTruthy());
-  });
-
-  it.each([
-    ['valid', { outcome: 'valid', animalId: 'elephant' }],
-    ['invalid', { outcome: 'invalid' }],
-    ['already-discovered', { outcome: 'already-discovered', animalId: 'juan' }],
-  ] as const)('test-ca-05: el repositorio simula resultado %s', async (outcome, expected) => {
-    await expect(new QrRepositoryImpl().simulateScan(outcome)).resolves.toEqual(expected);
   });
 
   it('test-ca-08: Home ViewModel reporta el fallo del repositorio al consumidor', async () => {

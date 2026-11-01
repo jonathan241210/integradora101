@@ -15,7 +15,7 @@ export function AccountScreen({ displayName, email, warning, onBackPress }: Acco
     <ScreenContainer>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver a ajustes" />
-        <AppText variant="heading">Mi cuenta</AppText>
+        <AppText variant="title">Mi cuenta</AppText>
         <Card style={styles.card}>
           <View style={styles.avatar}>
             <Icon name="person" size={28} color={colors.primary} />

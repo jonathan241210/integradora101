@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, Modal } from 'react-native';
+import { AppText } from './AppText';
 import { colors, spacing, radius } from '../../theme/tokens';
 
 export interface LoadingViewProps {
@@ -8,9 +9,11 @@ export interface LoadingViewProps {
 
 export function BusyOverlay({ message }: { message: string }) {
   return (
-    <View style={styles.overlay} pointerEvents="auto">
-      <LoadingView message={message} />
-    </View>
+    <Modal visible transparent statusBarTranslucent animationType="fade" onRequestClose={() => undefined}>
+      <View style={styles.overlay} pointerEvents="auto" accessibilityViewIsModal>
+        <LoadingView message={message} />
+      </View>
+    </Modal>
   );
 }
 
@@ -19,6 +22,17 @@ export function LoadingView({ message = 'Cargando información del zoológico...
     <View style={styles.centerContainer} accessibilityRole="progressbar" accessibilityLabel={message}>
       <ActivityIndicator size="large" color={colors.primary} />
       <Text style={styles.loadingText}>{message}</Text>
+    </View>
+  );
+}
+
+export function TitledLoading({ title, message }: { title: string; message: string }) {
+  return (
+    <View style={styles.titledPage}>
+      <AppText variant="title">{title}</AppText>
+      <View style={styles.titledFill}>
+        <LoadingView message={message} />
+      </View>
     </View>
   );
 }
@@ -73,11 +87,19 @@ export function ErrorView({
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFill,
+    flex: 1,
     backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 2,
+  },
+  titledPage: {
+    flex: 1,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
+  },
+  titledFill: {
+    flex: 1,
+    justifyContent: 'center',
   },
   centerContainer: {
     padding: spacing.xl,

@@ -3,7 +3,6 @@ import { AppState } from 'react-native';
 import { useRouter } from 'expo-router';
 import { goBackWithinTabs } from '../../navigation/tabBack';
 import { GameScreen } from '../../screens/GameScreen';
-import { LoadingView, ScreenContainer } from '../../components/ui';
 import { scanQueue, type QueuedScan } from '../../services/scanQueue';
 import { useUserViewModel } from '../../viewmodels/useUserViewModel';
 import { useVisitorProgress } from '../../viewmodels/useVisitorProgress';
@@ -28,14 +27,6 @@ export default function GameRoute() {
     return () => subscription.remove();
   }, [reload]);
 
-  if (progress.loading && !progress.snapshot) {
-    return (
-      <ScreenContainer>
-        <LoadingView message="Cargando misiones…" />
-      </ScreenContainer>
-    );
-  }
-
   const missionSource = progress.snapshot?.missions ?? missions;
   const pendingMissions = missionSource.filter((mission) => mission.progress < mission.total);
 
@@ -43,6 +34,7 @@ export default function GameRoute() {
     <GameScreen
       missions={pendingMissions.length > 0 ? pendingMissions : missionSource}
       achievements={progress.snapshot?.achievements ?? achievements}
+      loading={progress.loading && !progress.snapshot}
       pendingScans={pending}
       onBackPress={() => goBackWithinTabs(router)}
       onMissionPress={(id) => router.push({ pathname: '/mission-detail', params: { id } })}

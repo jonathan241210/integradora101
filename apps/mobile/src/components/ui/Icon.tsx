@@ -48,6 +48,7 @@ const symbols: Record<string, SymbolViewProps['name']> = {
   'help-outline': { android: 'help_outline', ios: 'questionmark.circle' },
   logout: { android: 'logout', ios: 'rectangle.portrait.and.arrow.right' },
   notifications: { android: 'notifications', ios: 'bell' },
+  refresh: { android: 'refresh', ios: 'arrow.clockwise' },
 };
 
 export function Icon({ name, size = 24, color = colors.text }: IconProps) {

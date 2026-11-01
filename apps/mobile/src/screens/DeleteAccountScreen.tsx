@@ -17,7 +17,7 @@ export function DeleteAccountScreen({ password, error, onPasswordChange, onSubmi
     <ScreenContainer busyMessage={busy ? 'Borrando cuenta…' : null}>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver a la cuenta" />
-        <AppText variant="heading">Borrar cuenta</AppText>
+        <AppText variant="title">Borrar cuenta</AppText>
         <View style={styles.warning} accessibilityRole="alert">
           <AppText variant="small">El borrado es definitivo e inmediato. Se eliminan la cuenta y los datos de esta visita de prueba.</AppText>
         </View>

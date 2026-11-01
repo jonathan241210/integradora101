@@ -27,6 +27,8 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0017 · Exportación del reporte a Excel y PDF](0017-report-export-excel-pdf.md) — Aceptado
 - [0018 · PHP mínimo de la API en 8.4](0018-php-minimum-8-4.md) — Aceptado
 - [0015 · Renderizado del mapa SVG en la app móvil](0015-mobile-svg-map-rendering.md) — Aceptado
+- [0016 · Ubicación GPS con expo-location (mapa V2)](0016-expo-location-gps-blue-dot.md) — Aceptado
+- [0019 · Escaneo QR con expo-camera (mobile-006)](0019-expo-camera-qr-scan.md) — Aceptado
 
 ## Plantilla
 

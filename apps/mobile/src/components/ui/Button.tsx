@@ -14,7 +14,7 @@ export function Button({ label, onPress, variant = 'primary', style, disabled = 
   const getVariantStyle = () => {
     switch (variant) {
       case 'danger': return { backgroundColor: theme.colors.danger, color: theme.colors.textOnPrimary };
-      case 'outline': return { backgroundColor: 'transparent', borderWidth: 1, borderColor: theme.colors.primary, color: theme.colors.primary };
+      case 'outline': return { backgroundColor: 'transparent', borderWidth: 1, borderColor: theme.colors.secondary, color: theme.colors.secondary };
       case 'soft': return { backgroundColor: theme.colors.primarySoft, color: theme.colors.primary };
       default: return { backgroundColor: theme.colors.primary, color: theme.colors.textOnPrimary };
     }

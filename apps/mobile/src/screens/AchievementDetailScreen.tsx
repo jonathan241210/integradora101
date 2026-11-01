@@ -18,7 +18,7 @@ export function AchievementDetailScreen({
   onBackPress,
 }: AchievementDetailScreenProps) {
   if (loading) {
-    return <ScreenContainer><View style={styles.message}><AppText variant="body">Cargando logro…</AppText></View></ScreenContainer>;
+    return <ScreenContainer scroll={false}><View style={styles.message}><AppText variant="body">Cargando logro…</AppText></View></ScreenContainer>;
   }
   if (error || !achievement) {
     return (
@@ -51,8 +51,11 @@ export function AchievementDetailScreen({
             {achievement.unlocked ? 'Cómo lo desbloqueaste' : 'Cómo desbloquearlo'}
           </AppText>
           <AppText variant="body" color="textMuted">
-            {achievement.unlocked ? achievement.action : achievement.requirement}
+            {achievement.action || achievement.requirement}
           </AppText>
+          {!achievement.unlocked && achievement.requirement !== (achievement.action || achievement.requirement) ? (
+            <AppText variant="body" color="textMuted">{achievement.requirement}</AppText>
+          ) : null}
           {achievement.unlocked && achievement.earnedAt && (
             <>
               <AppText variant="subheading" bold style={styles.sectionTitle}>Fecha de obtención</AppText>
@@ -71,7 +74,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', padding: spacing.lg, gap: spacing.md },
   backButton: { alignSelf: 'stretch', alignItems: 'flex-start' },
   message: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: spacing.md, padding: spacing.lg },
-  iconBadge: { width: 104, height: 104, borderRadius: 52, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  iconBadge: { width: 104, height: 104, borderRadius: 52, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   lockedBadge: { backgroundColor: colors.border },
   details: { width: '100%', gap: spacing.sm },
   sectionTitle: { marginTop: spacing.sm },
