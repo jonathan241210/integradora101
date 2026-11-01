@@ -4,7 +4,7 @@ Sistema del Zoológico Municipal Nicolás Bravo (Tulancingo). Monorepo con Spec-
 **Lee `CONSTITUTION.md`: prevalece sobre cualquier otra instrucción.**
 
 ## Mapa
-- `apps/api` — API Laravel 12 (PHP 8.2+, Sanctum, Fortify, Spatie); única dueña de BD y lógica.
+- `apps/api` — API Laravel 12 (PHP 8.4+, Sanctum, Fortify, Spatie); única dueña de BD y lógica.
 - `apps/dashboard` — React SPA: taquilla, arqueo, métricas directivas y administración.
 - `apps/pwa` — React PWA veterinaria; expedientes y borradores offline.
 - `apps/web` — React SPA del portal institucional público.

@@ -1,92 +1,265 @@
 import { useState, type FormEvent } from "react";
-import { Alert, Badge, Button, Card, Field, SelectField, TextAreaField } from "@arca/ui";
-import { demoEvents } from "../data/demo-data";
-import { Icon } from "../components/Icon";
-import { SectionHeading } from "../components/SectionHeading";
+import {
+  Alert,
+  Badge,
+  Button,
+  Card,
+  Dialog,
+  Field,
+  SelectField,
+  TextAreaField,
+} from "@arca/ui";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
+import { DialogFormFooter } from "@/components/FormActions";
+import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { NoticeBar } from "@/components/NoticeBar";
+import { SectionHeading } from "@/components/SectionHeading";
+import type { EventDto } from "@/viewmodels/admin-types";
+import {
+  emptyEventForm,
+  eventFormFromDto,
+  getEventConfirmation,
+  type EventFormValues,
+  type EventsViewModel,
+} from "@/viewmodels/events-management";
+import { formatDate, formatTime } from "@/viewmodels/formatters";
 
-export function EventsView({
-  onNotice,
+function EventForm({
+  item,
+  errors,
+  error,
+  busy,
+  onSubmit,
+  onCancel,
 }: {
-  onNotice: (message: string) => void;
+  item: EventDto | null;
+  errors: Record<string, string[]>;
+  error: string;
+  busy: boolean;
+  onSubmit: (values: EventFormValues) => void;
+  onCancel: () => void;
 }) {
-  const [notice, setNotice] = useState("");
-  const submitDemo = (event: FormEvent<HTMLFormElement>) => {
+  const creating = item === null;
+  const [values, setValues] = useState<EventFormValues>(
+    item ? eventFormFromDto(item) : emptyEventForm(),
+  );
+  const set = <K extends keyof EventFormValues>(field: K, value: EventFormValues[K]) =>
+    setValues((current) => ({ ...current, [field]: value }));
+  const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const message = "Demostración: no se registró ningún evento.";
-    setNotice(message);
-    onNotice(message);
+    onSubmit(values);
   };
+  const props = (name: string) => ({
+    id: `event-${name}`,
+    ...fieldErrorProps(`event-${name}`, errors, name),
+  });
+
+  return (
+    <form className="dialog-form" onSubmit={submit}>
+      <Field
+        {...props("name")}
+        label="Nombre del evento"
+        required
+        maxLength={200}
+        value={values.name}
+        onChange={(event) => set("name", event.target.value)}
+      />
+      <FieldErrors id="event-name" errors={errors} name="name" />
+      <TextAreaField
+        {...props("description")}
+        label="Descripción"
+        rows={4}
+        value={values.description}
+        onChange={(event) => set("description", event.target.value)}
+      />
+      <FieldErrors id="event-description" errors={errors} name="description" />
+      <Field
+        {...props("location")}
+        label="Ubicación"
+        maxLength={255}
+        value={values.location}
+        onChange={(event) => set("location", event.target.value)}
+      />
+      <FieldErrors id="event-location" errors={errors} name="location" />
+      <Field
+        {...props("start_date")}
+        label="Fecha de inicio"
+        type="date"
+        required
+        value={values.start_date}
+        onChange={(event) => set("start_date", event.target.value)}
+      />
+      <FieldErrors id="event-start_date" errors={errors} name="start_date" />
+      <Field
+        {...props("end_date")}
+        label="Fecha de finalización"
+        type="date"
+        value={values.end_date}
+        onChange={(event) => set("end_date", event.target.value)}
+      />
+      <FieldErrors id="event-end_date" errors={errors} name="end_date" />
+      <Field
+        {...props("start_time")}
+        label="Hora de inicio"
+        type="time"
+        value={values.start_time}
+        onChange={(event) => set("start_time", event.target.value)}
+      />
+      <FieldErrors id="event-start_time" errors={errors} name="start_time" />
+      <Field
+        {...props("end_time")}
+        label="Hora de finalización"
+        type="time"
+        value={values.end_time}
+        onChange={(event) => set("end_time", event.target.value)}
+      />
+      <FieldErrors id="event-end_time" errors={errors} name="end_time" />
+      {creating && (
+        <SelectField
+          {...props("is_active")}
+          label="Estado"
+          value={values.is_active ? "active" : "inactive"}
+          onChange={(event) => set("is_active", event.target.value === "active")}
+        >
+          <option value="active">Activo</option>
+          <option value="inactive">Inactivo</option>
+        </SelectField>
+      )}
+      <DialogFormFooter
+        error={error}
+        busy={busy}
+        submitLabel={creating ? "Crear evento" : "Guardar cambios"}
+        onCancel={onCancel}
+      />
+    </form>
+  );
+}
+
+function schedule(item: EventDto): string {
+  const dates = item.end_date && item.end_date !== item.start_date
+    ? `${formatDate(item.start_date)} – ${formatDate(item.end_date)}`
+    : formatDate(item.start_date);
+  const start = formatTime(item.start_time);
+  const end = formatTime(item.end_time);
+  const hours = start && end ? `${start} – ${end}` : start || end;
+
+  return hours ? `${dates} · ${hours}` : dates;
+}
+
+export function EventsView({ state, actions }: EventsViewModel) {
+  const { dialog } = state;
+  const formDialog =
+    dialog?.kind === "create" || dialog?.kind === "edit" ? dialog : null;
+  const sectionError = dialog === null ? state.actionError : "";
 
   return (
     <>
       <SectionHeading
         eyebrow="Administración"
         title="Eventos"
-        description="Programa y administra los eventos del zoológico."
+        description="Crea, edita y retira los eventos del zoológico."
       />
-      <Card className="form-card">
-        <div className="card-heading">
-          <div>
-            <h2>Registrar evento</h2>
-            <p>Define los datos generales, horario y cupo del evento.</p>
+      <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} />
+      {sectionError && (
+        <Alert className="inline-alert" role="alert" aria-live="assertive">
+          {sectionError}
+        </Alert>
+      )}
+      <div className="list-toolbar">
+        <Button onClick={() => actions.openDialog({ kind: "create" })}>
+          Crear evento
+        </Button>
+      </div>
+      <ListStatusMessage
+        status={state.status}
+        error={state.error}
+        loadingText="Cargando eventos…"
+        emptyText="Aún no hay eventos registrados."
+        onRetry={actions.reload}
+      />
+      {state.status === "ready" && (
+        <section className="content-list" aria-labelledby="events-list-heading">
+          <div className="list-heading">
+            <div>
+              <h2 id="events-list-heading">Eventos</h2>
+              <p>{state.items.length} en total, activos e inactivos</p>
+            </div>
           </div>
-        </div>
-        <form className="form-grid form-grid--events" onSubmit={submitDemo}>
-          <Field id="event-name" label="Nombre del evento" placeholder="Noche de safari nocturno" />
-          <Field id="event-location" label="Ubicación" placeholder="Sendero principal · Zona norte" />
-          <SelectField id="event-status" label="Estado" defaultValue="scheduled">
-            <option value="scheduled">Programado</option>
-            <option value="ongoing">En curso</option>
-            <option value="finished">Finalizado</option>
-          </SelectField>
-          <TextAreaField id="event-description" label="Descripción" placeholder="Describe la actividad..." />
-          <label className="upload-box" htmlFor="event-image">
-            <input id="event-image" type="file" accept="image/png,image/jpeg" />
-            <span className="upload-box__icon upload-box__icon--green" aria-hidden="true"><Icon name="plus" /></span>
-            <strong>Arrastra una imagen del evento</strong>
-            <span>JPG o PNG · máximo 2 MB · demostración</span>
-          </label>
-          <Field id="event-start-date" label="Fecha de inicio" type="date" defaultValue="2026-03-20" />
-          <Field id="event-end-date" label="Fecha de finalización" type="date" defaultValue="2026-03-20" />
-          <Field id="event-start-time" label="Hora de inicio" type="time" defaultValue="19:00" />
-          <Field id="event-end-time" label="Hora de finalización" type="time" defaultValue="22:00" />
-          <Field id="event-cost" label="Costo de muestra" placeholder="$180.00 MXN (demo)" />
-          <Field id="event-capacity" label="Cupo de muestra" placeholder="80 personas (demo)" />
-          <div className="form-actions">
-            <Button type="submit">Registrar evento</Button>
-          </div>
-        </form>
-        {notice && <Alert className="inline-feedback">{notice}</Alert>}
-      </Card>
-
-      <section className="content-list" aria-labelledby="events-list-heading">
-        <div className="list-heading">
-          <div>
-            <h2 id="events-list-heading">Próximos eventos</h2>
-            <p>7 eventos registrados · 4 programados este mes (demo)</p>
-          </div>
-        </div>
-        <div className="event-card-grid">
-          {demoEvents.map((event) => (
-            <Card className="event-card" key={event.title}>
-              <div className={`event-card__cover event-card__cover--${event.color}`} aria-hidden="true" />
-              <div className="event-card__body">
-                <Badge tone={event.tone}>{event.status}</Badge>
-                <h3>{event.title}</h3>
-                <ul className="event-details">
-                  <li><Icon name="calendar" />{event.date}</li>
-                  <li><Icon name="ticket" />{event.time}</li>
-                  <li><Icon name="dashboard" />{event.place}</li>
-                </ul>
-                <div className="content-card__actions">
-                  <Button variant="secondary" onClick={() => onNotice("Demostración: el evento no se modificó.")}>Editar</Button>
-                  <Button variant="danger" onClick={() => onNotice("Demostración: el evento no se eliminó.")}>Eliminar</Button>
+          <div className="event-card-grid">
+            {state.items.map((item) => (
+              <Card className="content-card" key={item.id}>
+                <div className="content-card__body">
+                  <div className="content-card__meta">
+                    <Badge tone={item.is_active ? "success" : "neutral"}>
+                      {item.is_active ? "Activo" : "Inactivo"}
+                    </Badge>
+                  </div>
+                  <h3>{item.name}</h3>
+                  <p>{schedule(item)}</p>
+                  {item.location && <p>{item.location}</p>}
+                  <div className="content-card__actions">
+                    <Button
+                      variant="secondary"
+                      aria-label={`Editar el evento ${item.name}`}
+                      onClick={() => actions.openDialog({ kind: "edit", item })}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      aria-label={`${item.is_active ? "Desactivar" : "Activar"} el evento ${item.name}`}
+                      onClick={() => actions.openDialog({ kind: "status", item })}
+                    >
+                      {item.is_active ? "Desactivar" : "Activar"}
+                    </Button>
+                    <Button
+                      variant="danger"
+                      aria-label={`Eliminar el evento ${item.name}`}
+                      onClick={() => actions.openDialog({ kind: "delete", item })}
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </section>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <Dialog
+        open={formDialog !== null}
+        title={
+          formDialog?.kind === "edit"
+            ? "Editar evento"
+            : formDialog?.kind === "create"
+              ? "Crear evento"
+              : "Formulario de evento"
+        }
+        onClose={actions.closeDialog}
+        className="form-dialog"
+      >
+        {formDialog && (
+          <EventForm
+            key={formDialog.kind === "edit" ? `edit-${formDialog.item.id}` : "create"}
+            item={formDialog.kind === "edit" ? formDialog.item : null}
+            errors={state.fieldErrors}
+            error={state.actionError}
+            busy={state.saving}
+            onSubmit={actions.save}
+            onCancel={actions.closeDialog}
+          />
+        )}
+      </Dialog>
+      <ConfirmDialog
+        copy={getEventConfirmation(dialog)}
+        idleTitle="Confirmar acción sobre el evento"
+        busy={state.saving}
+        error={state.actionError}
+        onConfirm={actions.confirm}
+        onCancel={actions.closeDialog}
+      />
     </>
   );
 }

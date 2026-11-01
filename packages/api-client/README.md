@@ -20,6 +20,12 @@ Los errores HTTP se representan como `ApiError`, con estado, mensaje, código, e
 
 El paquete no guarda credenciales, perfiles ni códigos de recuperación. Cada cliente decide cómo presentar los estados; la sesión de personal permanece en la cookie HttpOnly administrada por la API.
 
+## Administración (`api-007`)
+
+`createHttpClient` devuelve un `ExtendedHttpClient`: el `HttpClient` de siempre (firma sin cambios, para no afectar a la PWA ni a mobile) más `patch`, `put` y `download(path)`. `patch` y `put` comparten con `post` el manejo de `XSRF-TOKEN`, el reintento tras 419 y el aviso de 401. `download` hace un `GET` con cookies y devuelve `{ blob, filename }`; si la respuesta no es 2xx lanza `ApiError` con el JSON de error, y el nombre sale de `Content-Disposition` saneado (sin separadores de ruta ni caracteres de control; respaldo `descarga`). No hay funciones de lógica de negocio.
+
+`createAdminApi(http)` entrega el contrato tipado de `/api/v1/admin`: `users` (`list`, `options`, `create`, `get`, `update`, `setStatus`, `remove`, `resetPassword`, `resetTwoFactor`), `news` y `events` (`list`, `create`, `update`, `setStatus`, `remove`), `enclosures` (`list`, `create`, `rename`), `dashboard.summary()` y `reports` (`tickets`, `exportTickets`). Los DTO viven en `admin-types.ts`, en `snake_case` como los entrega la API; los importes son cadenas con dos decimales y no se suman en el cliente. `createAdminApi(http, { deviceTimeZone })` envía en `timezone` la zona del dispositivo (`Intl.DateTimeFormat().resolvedOptions().timeZone` por defecto, inyectable en pruebas) en `dashboard.summary()`, `reports.tickets()` y `reports.exportTickets()`; la exportación usa la misma zona que el reporte. Si el navegador no la informa el parámetro se omite, y un `timezone` explícito en la consulta prevalece. El cliente no calcula periodos ni totales con esa zona. Los listados se normalizan a `{ data, meta }` y el reporte a `{ period, totals, daily, tickets, meta }`, tolerando que la API envuelva la respuesta en `data`.
+
 ## Sesión de visitante
 
 `createVisitorApi` es un módulo aparte. No usa `createAuthApi` ni las cookies y el CSRF de `createHttpClient`.
