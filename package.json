@@ -5,6 +5,10 @@
     "apps/*",
     "packages/*"
   ],
+  "overrides": {
+    "react-native-worklets": "0.10.1",
+    "react-native-reanimated": "4.5.1"
+  },
   "dependencies": {
     "@expo/ui": "~57.0.22",
     "expo-glass-effect": "~57.0.4",

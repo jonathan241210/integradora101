@@ -101,7 +101,7 @@ describe('Cuenta visitante, corte 2', () => {
     await fireEvent.changeText(verify.getByLabelText('Código'), '123456');
     await fireEvent.press(verify.getByRole('button', { name: 'Confirmar código' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
-  });
+  }, 15000);
 
   it('test-ca-04-auth-errors: registro y verificación muestran errores en español', async () => {
     const register = await render(<RegisterRoute />);

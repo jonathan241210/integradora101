@@ -8,6 +8,7 @@ interface SearchScreenProps {
   query: string;
   activeFilter: 'all' | NonNullable<Animal['category']>;
   selectForTour?: boolean;
+  selectionHint?: string;
   backLabel?: string;
   isOffline?: boolean;
   onQueryChange: (query: string) => void;
@@ -21,6 +22,7 @@ export function SearchScreen({
   query,
   activeFilter,
   selectForTour = false,
+  selectionHint,
   backLabel = 'Volver a inicio',
   isOffline = false,
   onQueryChange,
@@ -44,7 +46,7 @@ export function SearchScreen({
         <AppText variant="title" style={styles.title}>Explorar Animales</AppText>
         {selectForTour && (
           <AppText variant="small" color="textMuted">
-            Selecciona un animal para definir el destino del recorrido 3D.
+            {selectionHint ?? 'Selecciona un animal para definir el destino del recorrido 3D.'}
           </AppText>
         )}
         
