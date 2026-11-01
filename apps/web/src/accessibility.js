@@ -245,4 +245,40 @@
   }, { passive: true });
 
   render();
+
+  /* Zoom de la página: se guarda aparte para no alterar las preferencias de lectura */
+  const zoomOut = document.getElementById('cognitiveZoomOut');
+  const zoomIn = document.getElementById('cognitiveZoomIn');
+  const zoomValue = document.getElementById('cognitiveZoomValue');
+  if (zoomOut && zoomIn && zoomValue) {
+    const zoomKey = 'arca-text-zoom-v1';
+    const zoomSteps = [90, 100, 115, 130, 150, 175, 200];
+    const shell = document.querySelector('.page-shell');
+    let zoom = 100;
+    try {
+      const saved = Number(window.localStorage.getItem(zoomKey));
+      if (zoomSteps.includes(saved)) zoom = saved;
+    } catch {
+      // Sin almacenamiento, el zoom solo vive en memoria.
+    }
+
+    function applyZoom(persist = true) {
+      if (shell) shell.style.zoom = zoom === 100 ? '' : String(zoom / 100);
+      zoomValue.textContent = `${zoom}%`;
+      zoomOut.disabled = zoom === zoomSteps[0];
+      zoomIn.disabled = zoom === zoomSteps[zoomSteps.length - 1];
+      if (!persist) return;
+      try {
+        if (zoom === 100) window.localStorage.removeItem(zoomKey);
+        else window.localStorage.setItem(zoomKey, String(zoom));
+      } catch {
+        // Sin almacenamiento, el zoom solo vive en memoria.
+      }
+    }
+
+    zoomOut.addEventListener('click', () => { zoom = zoomSteps[zoomSteps.indexOf(zoom) - 1]; applyZoom(); });
+    zoomIn.addEventListener('click', () => { zoom = zoomSteps[zoomSteps.indexOf(zoom) + 1]; applyZoom(); });
+    resetButton.addEventListener('click', () => { zoom = 100; applyZoom(); });
+    applyZoom(false);
+  }
 })();

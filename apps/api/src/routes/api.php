@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\AnimalController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ClinicalEvaluationController;
 use App\Http\Controllers\Auth\MeController;
 use App\Http\Controllers\Catalog\EventController;
 use App\Http\Controllers\Catalog\SpeciesController;
@@ -62,5 +65,20 @@ Route::prefix('visitor')->name('visitor.')->group(function () {
             ->name('achievements.index');
         Route::get('missions', [VisitorProgressController::class, 'missions'])
             ->name('missions.index');
+    });
+});
+
+Route::prefix('staff')->name('staff.')->group(function () {
+    Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('auth/session', [AuthController::class, 'me'])->name('auth.session');
+        Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+
+        Route::get('animals', [AnimalController::class, 'index'])->name('animals.index');
+        Route::post('animals', [AnimalController::class, 'store'])->name('animals.store');
+
+        Route::post('clinical-evaluations', [ClinicalEvaluationController::class, 'store'])
+            ->name('clinical-evaluations.store');
     });
 });
