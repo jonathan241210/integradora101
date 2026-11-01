@@ -327,7 +327,7 @@ describe("CA-06 real-staff-login", () => {
         "events",
         "reports",
         "enclosures",
-        "ticket-users",
+        "users",
       ]);
       expect(getPresentationProfile(admin.home)).toBe("administration");
     }
@@ -436,23 +436,25 @@ describe("CA-09 real-staff-login", () => {
 });
 
 describe("CA-10 real-staff-login", () => {
-  it("mantiene Usuarios de taquilla como muestra sin guardar credenciales de login", () => {
+  it("no conserva cuentas ficticias de Usuarios ni habilita un login de muestra (sustituido por dashboard-003)", () => {
     const demoData = readFileSync(new URL("../data/demo-data.ts", import.meta.url), "utf8");
     const demoReducer = readFileSync(
       new URL("../viewmodels/dashboard-demo.ts", import.meta.url),
       "utf8",
     );
     const userView = readFileSync(
-      new URL("../views/TicketUsersView.tsx", import.meta.url),
+      new URL("../views/UsersView.tsx", import.meta.url),
       "utf8",
     );
 
     expect(demoData).not.toContain("demoAdministrationCredentials");
+    expect(demoData).not.toContain("demoTicketUsers");
     expect(demoData).not.toContain("password: \"demo1234\"");
     expect(demoReducer).not.toContain("login-administration");
     expect(demoReducer).not.toContain("login-ticket");
-    expect(userView).toContain("Usuarios de taquilla");
-    expect(userView).toContain("no habilita el inicio de sesión");
+    expect(demoReducer).not.toContain("add-ticket-user");
+    expect(userView).not.toContain("demo1234");
+    expect(userView).not.toContain("@demo.local");
   });
 });
 

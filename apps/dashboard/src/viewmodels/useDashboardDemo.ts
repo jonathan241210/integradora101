@@ -28,14 +28,6 @@ export function useDashboardDemo() {
     toggleMenu: () => dispatch({ type: "toggle-menu" }),
     showNotice: (message: string) =>
       dispatch({ type: "show-notice", message }),
-    updateEnclosure: (
-      id: string,
-      name: string,
-      description: string,
-      status: "Abierto" | "Cerrado",
-    ) => dispatch({ type: "update-enclosure", id, name, description, status }),
-    addTicketUser: (name: string, username: string, password: string) =>
-      dispatch({ type: "add-ticket-user", name, username, password }),
     openSale: () => dispatch({ type: "open-sale" }),
     cancelSale: () => dispatch({ type: "cancel-sale" }),
     beginSale: () => dispatch({ type: "begin-sale" }),

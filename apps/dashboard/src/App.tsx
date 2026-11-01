@@ -2,15 +2,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Button, Card } from "@arca/ui";
 import { DemoBanner } from "@/components/DemoBanner";
 import { Icon } from "@/components/Icon";
-import { EnclosuresView } from "@/views/EnclosuresView";
-import { EventsView } from "@/views/EventsView";
+import { DashboardSection } from "@/sections/DashboardSection";
+import { EnclosuresSection } from "@/sections/EnclosuresSection";
+import { EventsSection } from "@/sections/EventsSection";
+import { NewsSection } from "@/sections/NewsSection";
+import { TicketReportSection } from "@/sections/TicketReportSection";
+import { UsersSection } from "@/sections/UsersSection";
 import { LoginView } from "@/views/LoginView";
-import { NewsView } from "@/views/NewsView";
 import { PwaRedirectView } from "@/views/PwaRedirectView";
 import { TicketHistoryView } from "@/views/TicketHistoryView";
-import { TicketReportView } from "@/views/TicketReportView";
 import { TicketSaleView } from "@/views/TicketSaleView";
-import { TicketUsersView } from "@/views/TicketUsersView";
 import { TwoFactorChallengeView } from "@/views/TwoFactorChallengeView";
 import { TwoFactorSetupView } from "@/views/TwoFactorSetupView";
 import {
@@ -19,17 +20,16 @@ import {
 } from "@/viewmodels/navigation";
 import { useAuthSession } from "@/viewmodels/useAuthSession";
 import { useDashboardDemo } from "@/viewmodels/useDashboardDemo";
-import type { DashboardSection } from "@/viewmodels/dashboard-demo";
-import { DashboardView } from "./views/DashboardView";
+import type { DashboardSection as SectionId } from "@/viewmodels/dashboard-demo";
 
-const sectionTitles: Record<DashboardSection, string> = {
+const sectionTitles: Record<SectionId, string> = {
   dashboard: "Panel principal",
   news: "Noticias",
   events: "Eventos",
   tickets: "Venta de boletos",
   reports: "Reporte de boletos",
-  enclosures: "Modificación de recintos",
-  "ticket-users": "Usuarios de taquilla",
+  enclosures: "Recintos",
+  users: "Usuarios",
   "ticket-history": "Historial de boletos",
 };
 
@@ -146,7 +146,7 @@ function App() {
     ? demo.state.activeSection
     : navigation[0]?.id ?? null;
 
-  const navigate = (section: DashboardSection) => {
+  const navigate = (section: SectionId) => {
     if (!navigation.some((item) => item.id === section)) return;
     demo.navigate(section);
     window.requestAnimationFrame(() => {
@@ -296,7 +296,9 @@ function App() {
         </header>
 
         <main className="dashboard-content" ref={contentRef}>
-          <DemoBanner />
+          {(activeSection === "tickets" || activeSection === "ticket-history") && (
+            <DemoBanner />
+          )}
           {demo.state.notice && (
             <Alert className="global-feedback" role="status" aria-live="polite">
               {demo.state.notice}
@@ -316,14 +318,16 @@ function App() {
             </Alert>
           )}
           {activeSection === "dashboard" && (
-            <DashboardView
-              onNavigate={navigate}
-              canViewNews={permissions.has("news.manage")}
-              canViewEvents={permissions.has("events.manage")}
+            <DashboardSection
+              onOpenReport={
+                permissions.has("reports.view")
+                  ? () => navigate("reports")
+                  : undefined
+              }
             />
           )}
-          {activeSection === "news" && <NewsView onNotice={showNotice} />}
-          {activeSection === "events" && <EventsView onNotice={showNotice} />}
+          {activeSection === "news" && <NewsSection />}
+          {activeSection === "events" && <EventsSection />}
           {activeSection === "tickets" && (
             <TicketSaleView
               saleStep={demo.state.saleStep}
@@ -333,19 +337,9 @@ function App() {
               onReset={demo.resetSale}
             />
           )}
-          {activeSection === "reports" && <TicketReportView />}
-          {activeSection === "enclosures" && (
-            <EnclosuresView
-              enclosures={demo.state.enclosures}
-              onUpdate={demo.updateEnclosure}
-            />
-          )}
-          {activeSection === "ticket-users" && (
-            <TicketUsersView
-              users={demo.state.ticketUsers}
-              onAdd={demo.addTicketUser}
-            />
-          )}
+          {activeSection === "reports" && <TicketReportSection />}
+          {activeSection === "enclosures" && <EnclosuresSection />}
+          {activeSection === "users" && <UsersSection />}
           {activeSection === "ticket-history" && <TicketHistoryView />}
         </main>
       </div>

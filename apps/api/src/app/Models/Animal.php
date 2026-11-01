@@ -11,9 +11,11 @@ class Animal extends Model
 
     public $timestamps = false;
 
+    protected $guarded = [];
+
     public function species(): BelongsTo
     {
-        return $this->belongsTo(Species::class);
+        return $this->belongsTo(Species::class, 'species_id');
     }
 
     public function enclosure(): BelongsTo

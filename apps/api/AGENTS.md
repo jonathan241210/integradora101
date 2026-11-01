@@ -11,7 +11,7 @@ Lee `../../CONSTITUTION.md`, `../../AGENTS.md` y `../../docs/05-flujo-sdd.md` an
 Los tres artefactos usan el mismo `NNN-slug.md`; lee la spec aprobada y el plan antes de implementar.
 
 ## Reglas técnicas
-- API Laravel 12, PHP 8.2+; única dueña de datos, persistencia y reglas de negocio.
+- API Laravel 12, PHP 8.4+ (ADR 0018); única dueña de datos, persistencia y reglas de negocio.
 - Mantén controladores JSON delgados: Form Requests → Actions → API Resources.
 - Declara rutas en inglés con `->name()`; no uses Inertia ni Wayfinder.
 - Autoriza en servidor con Policies y permisos Spatie `<resource>.<action>`.

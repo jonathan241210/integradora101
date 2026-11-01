@@ -29,11 +29,11 @@ const administrationNavigation: {
     permission: "reports.view",
   },
   {
-    item: { id: "enclosures", label: "Modificación de recintos", icon: "building" },
+    item: { id: "enclosures", label: "Recintos", icon: "building" },
     permission: "enclosures.manage",
   },
   {
-    item: { id: "ticket-users", label: "Usuarios de taquilla", icon: "users" },
+    item: { id: "users", label: "Usuarios", icon: "users" },
     permission: ["users.manage", "operational-staff.manage"],
   },
 ];
