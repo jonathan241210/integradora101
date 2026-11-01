@@ -1,5 +1,6 @@
 <?php
 
+
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EnclosureController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
@@ -10,6 +11,9 @@ use App\Http\Controllers\Admin\StaffAccountStatusController;
 use App\Http\Controllers\Admin\StaffAccountTwoFactorController;
 use App\Http\Controllers\Admin\TicketReportController;
 use App\Http\Controllers\Admin\TicketReportExportController;
+use App\Http\Controllers\Api\AnimalController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ClinicalEvaluationController;
 use App\Http\Controllers\Auth\MeController;
 use App\Http\Controllers\Catalog\EventController;
 use App\Http\Controllers\Catalog\SpeciesController;

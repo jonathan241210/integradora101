@@ -11,6 +11,8 @@ class Species extends Model
 
     public $timestamps = false;
 
+    protected $guarded = [];
+
     public function animals(): HasMany
     {
         return $this->hasMany(Animal::class)->orderBy('id');

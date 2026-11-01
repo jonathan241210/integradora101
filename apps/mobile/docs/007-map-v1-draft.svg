@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1400" width="1000" height="1400" role="img" aria-labelledby="map-title map-desc">
+  <title id="map-title">Plano esquemático del Zoológico Municipal Nicolás Bravo</title>
+  <desc id="map-desc">Mapa 2D de bajo detalle con acceso, plaza central, felinos, aves, acuario, reptiles, herbívoros y servicios.</desc>
+
+  <g id="background">
+    <rect width="1000" height="1400" fill="#F4F1E8"/>
+    <rect x="24" y="24" width="952" height="1352" rx="48" fill="none" stroke="#D8D2C4" stroke-width="4"/>
+  </g>
+
+  <g id="water">
+    <path id="water-pond" d="M 120 600 C 190 570 270 590 300 630 C 320 670 260 710 180 700 C 120 690 90 640 120 600 Z" fill="#CFE3E8" stroke="#A9C9D0" stroke-width="3"/>
+  </g>
+
+  <g id="paths">
+    <g id="paths-underlay" fill="none" stroke="#D8D2C4" stroke-width="42" stroke-linecap="round" stroke-linejoin="round">
+      <path id="path-entrance" d="M 500 1180 L 500 860"/>
+      <path id="path-felines" d="M 420 700 L 300 470"/>
+      <path id="path-birds" d="M 580 700 L 700 470"/>
+      <path id="path-aquatic" d="M 380 760 L 400 760"/>
+      <path id="path-reptiles" d="M 620 760 L 600 760"/>
+      <path id="path-herbivores" d="M 420 820 L 300 920"/>
+      <path id="path-services" d="M 580 820 L 700 920"/>
+    </g>
+    <g id="paths-surface" fill="none" stroke="#FFFFFF" stroke-width="32" stroke-linecap="round" stroke-linejoin="round">
+      <path id="path-entrance-surface" d="M 500 1180 L 500 860"/>
+      <path id="path-felines-surface" d="M 420 700 L 300 470"/>
+      <path id="path-birds-surface" d="M 580 700 L 700 470"/>
+      <path id="path-aquatic-surface" d="M 380 760 L 400 760"/>
+      <path id="path-reptiles-surface" d="M 620 760 L 600 760"/>
+      <path id="path-herbivores-surface" d="M 420 820 L 300 920"/>
+      <path id="path-services-surface" d="M 580 820 L 700 920"/>
+    </g>
+  </g>
+
+  <g id="zones">
+    <rect id="zone-felines" x="70" y="140" width="330" height="330" rx="44" fill="#E6D8C6" stroke="#C9B79F" stroke-width="4"/>
+    <rect id="zone-birds" x="600" y="140" width="330" height="330" rx="44" fill="#DDE8D5" stroke="#B7C9AA" stroke-width="4"/>
+    <rect id="zone-aquatic" x="70" y="540" width="330" height="300" rx="44" fill="#D6E7EA" stroke="#A9C9D0" stroke-width="4"/>
+    <rect id="zone-reptiles" x="600" y="540" width="330" height="300" rx="44" fill="#E8DCCB" stroke="#C9B79F" stroke-width="4"/>
+    <rect id="zone-herbivores" x="70" y="920" width="330" height="280" rx="44" fill="#DDE8D5" stroke="#B7C9AA" stroke-width="4"/>
+    <rect id="zone-services" x="600" y="920" width="330" height="280" rx="44" fill="#E6E1D6" stroke="#C9C1B2" stroke-width="4"/>
+    <rect id="zone-entrance" x="350" y="1180" width="300" height="160" rx="40" fill="#F0D9C8" stroke="#D4B8A0" stroke-width="4"/>
+    <ellipse id="zone-plaza" cx="500" cy="760" rx="120" ry="100" fill="#F7E8C8" stroke="#D9C69A" stroke-width="4"/>
+  </g>
+
+  <g id="labels" font-family="Arial, Helvetica, sans-serif" font-weight="700" fill="#2E2A26" text-anchor="middle">
+    <text x="235" y="320" font-size="28" letter-spacing="1.5">FELINOS</text>
+    <text x="765" y="320" font-size="28" letter-spacing="1.5">AVES</text>
+    <text x="235" y="800" font-size="28" letter-spacing="1.5">ACUARIO</text>
+    <text x="765" y="700" font-size="28" letter-spacing="1.5">REPTILES</text>
+    <text x="235" y="1080" font-size="28" letter-spacing="1.5">HERBÍVOROS</text>
+    <text x="765" y="1080" font-size="28" letter-spacing="1.5">SERVICIOS</text>
+    <text x="500" y="1270" font-size="26" letter-spacing="1.5">ACCESO</text>
+    <text x="500" y="770" font-size="24" letter-spacing="1">PLAZA</text>
+  </g>
+
+  <g id="landmarks" fill="#B7C9AA">
+    <circle cx="105" cy="500" r="14"/>
+    <circle cx="130" cy="485" r="10"/>
+    <circle cx="900" cy="885" r="12"/>
+    <circle cx="875" cy="872" r="9"/>
+    <circle cx="105" cy="880" r="10"/>
+    <circle cx="890" cy="500" r="11"/>
+  </g>
+</svg>

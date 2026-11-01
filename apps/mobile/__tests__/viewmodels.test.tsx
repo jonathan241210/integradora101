@@ -26,7 +26,7 @@ describe('ViewModels y Repositories', () => {
       return <Text>Animal probe</Text>;
     };
 
-    render(<Probe />);
+    await render(<Probe />);
     await waitFor(() => expect(onLoaded).toHaveBeenCalled());
     expect(onLoaded).toHaveBeenCalledWith([
       [MOCK_ANIMALS[0]],
@@ -47,27 +47,22 @@ describe('ViewModels y Repositories', () => {
       return <Text>Home probe</Text>;
     };
 
-    render(<Probe />);
+    await render(<Probe />);
     await waitFor(() => expect(onLoaded).toHaveBeenCalled());
     expect(onLoaded.mock.calls[0][0][0]).toHaveLength(3);
     expect(onLoaded.mock.calls[0][0][1]).toHaveLength(2);
     expect(onLoaded.mock.calls[0][0][2].title).toBe('Nacimiento de Jirafa');
   });
 
-  it('test-ca-08: obtiene ubicaciones y ruta del zoológico', async () => {
-    const onLoaded = jest.fn();
+  it('test-ca-08: obtiene puntos y secciones del mapa del zoológico', async () => {
+    const mapRepository = new MapRepositoryImpl();
     const Probe = () => {
-      const { getMapData } = useMapViewModel(new MapRepositoryImpl());
-      useEffect(() => {
-        getMapData().then(onLoaded);
-      }, [getMapData]);
-      return <Text>Map probe</Text>;
+      const { places, sections, isLoading } = useMapViewModel(mapRepository);
+      return <Text>{isLoading ? 'cargando' : `${places.length}:${sections.length}`}</Text>;
     };
 
-    render(<Probe />);
-    await waitFor(() => expect(onLoaded).toHaveBeenCalled());
-    expect(onLoaded.mock.calls[0][0].locations).toHaveLength(2);
-    expect(onLoaded.mock.calls[0][0].activeRoute.destination).toBe('Hábitat del Tigre');
+    const view = await render(<Probe />);
+    await waitFor(() => expect(view.getByText('10:8')).toBeTruthy());
   });
 
   it.each([
@@ -93,7 +88,7 @@ describe('ViewModels y Repositories', () => {
       return <Text>Error probe</Text>;
     };
 
-    render(<Probe />);
+    await render(<Probe />);
     await waitFor(() => expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: 'falló' })));
   });
 
@@ -133,7 +128,7 @@ describe('ViewModels y Repositories', () => {
     await expect(userRepository.getMilestones()).resolves.toHaveLength(3);
     await expect(zooRepository.getEvents()).resolves.toHaveLength(2);
     await expect(zooRepository.getNews()).resolves.toMatchObject({ title: 'Nacimiento de Jirafa' });
-    await expect(mapRepository.getLocations()).resolves.toHaveLength(2);
-    await expect(mapRepository.getActiveRoute()).resolves.toMatchObject({ destination: 'Hábitat del Tigre' });
+    await expect(mapRepository.getPlaces()).resolves.toHaveLength(10);
+    await expect(mapRepository.getSections()).resolves.toHaveLength(8);
   });
 });

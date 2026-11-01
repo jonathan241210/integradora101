@@ -1,16 +1,17 @@
 import { useState, type FormEvent } from 'react';
 import { Alert, Button, Card, Field } from '@arca/ui';
-import { demoCredentials } from '@/viewmodels/pwaDemo';
 import type { PwaInstallController } from '@/viewmodels/usePwaInstall';
 import { InstallAppAction } from '@/views/InstallAppAction';
 
 type LoginViewProps = {
+  busy?: boolean;
   error: string;
   installController: PwaInstallController;
   onLogin: (username: string, password: string) => void;
 };
 
 export function LoginView({
+  busy = false,
   error,
   installController,
   onLogin,
@@ -39,9 +40,6 @@ export function LoginView({
           <p>Accede al espacio de trabajo de cuidado animal.</p>
         </div>
 
-        <Alert className="demo-notice" role="note">
-          Modo demostración: este acceso no autentica ni protege información.
-        </Alert>
         <InstallAppAction controller={installController} />
 
         <form className="login-form" onSubmit={handleSubmit}>
@@ -56,7 +54,7 @@ export function LoginView({
             label="Correo electrónico"
             name="username"
             onChange={(event) => setUsername(event.target.value)}
-            placeholder="veterinario@demo.local"
+            placeholder="nombre@correo.com"
             required
             type="email"
             value={username}
@@ -72,21 +70,10 @@ export function LoginView({
             type="password"
             value={password}
           />
-          <Button className="login-submit" type="submit">
-            Entrar a la demostración
+          <Button className="login-submit" disabled={busy} type="submit">
+            {busy ? 'Entrando…' : 'Iniciar sesión'}
           </Button>
         </form>
-
-        <div className="demo-credentials">
-          <p className="demo-credentials-title">Credenciales de demostración</p>
-          <p>
-            Usuario: <strong>{demoCredentials.username}</strong>
-          </p>
-          <p>
-            Contraseña: <strong>{demoCredentials.password}</strong>
-          </p>
-          <small>No uses estas credenciales para cuentas reales.</small>
-        </div>
       </Card>
     </main>
   );
