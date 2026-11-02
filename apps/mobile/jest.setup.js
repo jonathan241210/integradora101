@@ -10,6 +10,19 @@ jest.mock('expo-network', () => ({
   })),
 }));
 
+jest.mock('expo-location', () => ({
+  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  watchPositionAsync: jest.fn().mockResolvedValue({ remove: jest.fn() }),
+  Accuracy: {
+    Lowest: 1,
+    Low: 2,
+    Balanced: 3,
+    High: 4,
+    Highest: 5,
+    BestForNavigation: 6,
+  },
+}));
+
 jest.mock('./src/hooks/useScreenFocusEffect', () => {
   const React = require('react');
   return {

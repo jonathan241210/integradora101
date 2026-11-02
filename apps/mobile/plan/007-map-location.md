@@ -403,3 +403,60 @@ dismissArrival: () => void;
 - **Revisión técnica:** Aksel (pendiente — no bloquea inicio de tareas para Víctor como responsable de 007)
 - **Alcance V2 (este plan):** CA-08, CA-09, CA-10, CA-11 — punto azul, permiso GPS, posición inicial en entrada, transformación geoTransform. Sin línea al destino ni detección de llegada.
 - **Alcance V2.1 (plan futuro):** CA-12 — selección de recinto destino, línea SVG hacia el destino, detección de llegada (haversine), `ArrivalBanner`. Requiere su propia enmienda de plan y tasks cuando se inicie.
+
+
+---
+
+## Enmienda V2.1 — Ruta hacia el destino y Detección de Llegada (CA-12, CA-14)
+
+- Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V2.1, Aprobada 2026-11-01)
+- Estado del plan: **Aprobado** (Víctor Adrián, 2026-11-01)
+- Alcance: CA-12, CA-14 (Ruta punteada SVG, cálculo Haversine de proximidad ≤ 10 m y banner visual de llegada).
+
+### Diseño técnico detallado V2.1
+
+#### 1. Cálculo geodésico Haversine (`src/utils/haversine.ts`)
+```ts
+export function haversineMeters(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number;
+```
+Fórmula de semiverseno:
+$a = \sin^2(\Delta \varphi / 2) + \cos(\varphi_1) \cdot \cos(\varphi_2) \cdot \sin^2(\Delta \lambda / 2)$
+$c = 2 \cdot \text{atan2}(\sqrt{a}, \sqrt{1 - a})$
+$d = R \cdot c$ (con $R = 6,371,000\text{ m}$).
+
+#### 2. Constantes geográficas (`src/constants/zoo.ts`)
+- `ARRIVAL_RADIUS_METERS = 10`
+- `ROUTE_LINE_COLOR = '#1976D2'`
+- `ROUTE_LINE_DASH = '8, 6'`
+
+#### 3. Componente de ruta SVG (`src/components/map/DestinationRouteLine.tsx`)
+- Renderiza dentro de un `<Svg>` sobre el mapa una `<Line>` punteada:
+  - `x1 = userPosition.svgX`
+  - `y1 = userPosition.svgY`
+  - `x2 = destinationPlace.mapX * SVG_WIDTH`
+  - `y2 = destinationPlace.mapY * SVG_HEIGHT`
+  - `stroke={ROUTE_LINE_COLOR}`
+  - `strokeWidth={3}`
+  - `strokeDasharray={ROUTE_LINE_DASH}`
+- Si no hay destino o no hay `userPosition`, no renderiza nada (`null`).
+
+#### 4. Componente de aviso de llegada (`src/components/map/ArrivalBanner.tsx`)
+- Banner inferior accesible tipo Card con:
+  - Texto destacado: *"¡Llegaste a {place.name}!"*
+  - Icono o indicador visual accesible
+  - Botón *"Entendido"* para descartar y limpiar el aviso (`onDismiss`)
+
+#### 5. Ampliación del ViewModel (`src/viewmodels/useMapViewModel.ts`)
+- `destinationPlaceId: string | null`
+- `destinationPlace: MapPlace | null` (calculado de `places.find(...)`)
+- `arrivedAtPlace: MapPlace | null`
+- `setDestination: (id: string | null) => void`
+- `dismissArrival: () => void`
+- `checkArrival: (userLat: number, userLon: number) => void`
+  - Si `destinationPlace` tiene `gpsLat` y `gpsLon`, calcula `haversineMeters(userLat, userLon, dest.gpsLat, dest.gpsLon)`.
+  - Si distancia $\le 10\text{ m}$ y no fue descartado previamente para este destino, asigna `arrivedAtPlace = destinationPlace` y resetea `destinationPlaceId = null`.

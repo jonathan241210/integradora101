@@ -8,42 +8,34 @@ import {
 } from '../constants/zoo';
 
 export interface UserPosition {
+  /** Coordenada X en el viewBox SVG (0..1000). */
   svgX: number;
+  /** Coordenada Y en el viewBox SVG (0..1400). */
   svgY: number;
+  /** Latitud GPS real. */
   lat: number;
+  /** Longitud GPS real. */
   lon: number;
+  /** Precisión reportada por el dispositivo en metros. */
   accuracy: number;
+  /** True si la precisión es insuficiente (>20m) y se muestra la posición de entrada. */
   searching: boolean;
 }
 
-export interface LocationViewModel {
-  userPosition: UserPosition | null;
-  permissionGranted: boolean;
-  requestPermission: () => Promise<void>;
-}
-
-/**
- * ViewModel que gestiona el ciclo de vida del permiso GPS,
- * la suscripción a expo-location y la posición del usuario.
- *
- * Si el permiso es denegado → permissionGranted=false, userPosition=null.
- * Si accuracy >= GPS_ACCURACY_THRESHOLD_METERS → searching=true, posición en entrada.
- * Si accuracy < GPS_ACCURACY_THRESHOLD_METERS → searching=false, posición real.
- */
-export function useLocationViewModel(): LocationViewModel {
+export function useLocationViewModel() {
   const [userPosition, setUserPosition] = useState<UserPosition | null>(null);
   const [permissionGranted, setPermissionGranted] = useState(false);
   const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
 
   const handlePosition = useCallback(
-    (location: Location.LocationObject) => {
+    (location: { coords: { latitude: number; longitude: number; accuracy: number | null } }) => {
       const { latitude, longitude, accuracy } = location.coords;
-      const acc = accuracy ?? GPS_ACCURACY_THRESHOLD_METERS + 1;
-      const searching = acc >= GPS_ACCURACY_THRESHOLD_METERS;
+      const acc = accuracy ?? 999;
 
-      if (searching) {
+      if (acc > GPS_ACCURACY_THRESHOLD_METERS) {
         setUserPosition({
-          ...ZOO_ENTRANCE_SVG,
+          svgX: ZOO_ENTRANCE_SVG.svgX,
+          svgY: ZOO_ENTRANCE_SVG.svgY,
           lat: latitude,
           lon: longitude,
           accuracy: acc,
@@ -65,30 +57,38 @@ export function useLocationViewModel(): LocationViewModel {
   );
 
   const requestPermission = useCallback(async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    const granted = status === 'granted';
-    setPermissionGranted(granted);
+    try {
+      const response = await Location.requestForegroundPermissionsAsync();
+      const granted = response?.status === 'granted';
+      setPermissionGranted(granted);
 
-    if (granted) {
-      const sub = await Location.watchPositionAsync(
-        {
-          accuracy: Location.Accuracy.BestForNavigation,
-          distanceInterval: GPS_DISTANCE_INTERVAL_METERS,
-        },
-        handlePosition,
-      );
-      subscriptionRef.current = sub;
+      if (granted) {
+        const sub = await Location.watchPositionAsync(
+          {
+            accuracy: Location.Accuracy.BestForNavigation,
+            distanceInterval: GPS_DISTANCE_INTERVAL_METERS,
+          },
+          handlePosition,
+        );
+        subscriptionRef.current = sub;
+      }
+    } catch {
+      setPermissionGranted(false);
     }
   }, [handlePosition]);
 
   // Solicitar permiso al montar
   useEffect(() => {
     void requestPermission();
+
     return () => {
       subscriptionRef.current?.remove();
-      subscriptionRef.current = null;
     };
   }, [requestPermission]);
 
-  return { userPosition, permissionGranted, requestPermission };
+  return {
+    userPosition,
+    permissionGranted,
+    requestPermission,
+  };
 }

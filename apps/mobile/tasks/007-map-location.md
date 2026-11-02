@@ -209,3 +209,38 @@
 - **CA-12 (llegada) y la línea al destino** quedan fuera de este bloque. Se implementarán en una enmienda V2.1 con su propio plan y tasks cuando se decida.
 - **Coordenadas reales:** cuando el zoológico envíe foto/video, se actualizan únicamente `zoo.ts` y `MOCK_MAP_PLACES` — sin tocar ningún otro archivo de código.
 - El test de arquitectura (`architecture.test.ts`) debe seguir aprobado: sin colores hex fijos ni lógica en componentes.
+
+
+---
+
+## Enmienda V2.1 — Ruta hacia el destino y Detección de Llegada (CA-12, CA-14)
+
+- Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V2.1, Aprobada 2026-11-01)
+- Plan: `apps/mobile/plan/007-map-location.md` (Enmienda V2.1, Aprobado 2026-11-01)
+- Tareas: T-37 a T-48
+
+### Bloque 9 — Utilidad Haversine y Constantes V2.1
+
+- [x] **T-37** (CA-12): Crear `src/utils/haversine.ts` con la función pura `haversineMeters(lat1, lon1, lat2, lon2)` utilizando el radio terrestre $6,371,000\text{ m}$.
+- [x] **T-38** (CA-12): Actualizar `src/constants/zoo.ts` con constantes `ARRIVAL_RADIUS_METERS = 10`, `ROUTE_LINE_DASH = '8, 6'` y color `ROUTE_LINE_COLOR`.
+- [x] **T-39** (CA-12): Crear `__tests__/haversine.test.ts` con pruebas unitarias de distancias conocidas (ej. 0 m entre mismo punto, distancia calculada entre puntos de prueba, y verificación de umbral ≤ 10 m).
+
+### Bloque 10 — Componentes Visuales V2.1
+
+- [x] **T-40** (CA-14): Crear `src/components/map/DestinationRouteLine.tsx` para renderizar la línea discontinua en SVG conectando la posición del usuario con el destino seleccionado.
+- [x] **T-41** (CA-12): Crear `src/components/map/ArrivalBanner.tsx` con el aviso *"¡Llegaste a [Nombre del recinto]!"* y botón accesible para descartar.
+- [x] **T-42** (CA-12, CA-14): Exportar `DestinationRouteLine` y `ArrivalBanner` en `src/components/map/index.ts`.
+
+### Bloque 11 — Integración en ViewModel y Pantallas
+
+- [x] **T-43** (CA-12, CA-14): Actualizar `src/viewmodels/useMapViewModel.ts` para soportar `destinationPlaceId`, `destinationPlace`, `setDestination`, `arrivedAtPlace`, `dismissArrival` y evaluación de llegada con `haversineMeters`.
+- [x] **T-44** (CA-14): Actualizar `src/components/map/MapPlaceCard.tsx` añadiendo el botón de acción *"Fijar como destino"* / *"Cancelar destino"*.
+- [x] **T-45** (CA-12, CA-14): Integrar `DestinationRouteLine` y `ArrivalBanner` en `src/screens/MapScreen.tsx`.
+- [x] **T-46** (CA-12, CA-14): Conectar las props en la ruta `src/app/(tabs)/map.tsx`.
+
+### Bloque 12 — Verificación y Pruebas Automatizadas
+
+- [x] **T-47** (CA-12, CA-14): Crear pruebas en `__tests__/mapArrival.test.tsx` (o ampliar `__tests__/mapScreen.test.tsx`) cubriendo:
+  - CA-14: La línea punteada se muestra cuando hay destino y punto azul activo, y desaparece al limpiar el destino.
+  - CA-12: El banner de llegada aparece al situarse a ≤ 10 m del recinto destino y se descarta al presionar el botón.
+- [x] **T-48**: Ejecutar `npx tsc --noEmit` y suite de Jest en `apps/mobile`, verificando 0 errores y actualización del roadmap.

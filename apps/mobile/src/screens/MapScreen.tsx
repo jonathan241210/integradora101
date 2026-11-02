@@ -10,7 +10,14 @@ import {
   LoadingView,
   ScreenContainer,
 } from '../components/ui';
-import { MapMarker, MapPlaceCard, UserLocationMarker, ZooMapSvg } from '../components/map';
+import {
+  ArrivalBanner,
+  DestinationRouteLine,
+  MapMarker,
+  MapPlaceCard,
+  UserLocationMarker,
+  ZooMapSvg,
+} from '../components/map';
 import { MapFilter, MapPlace, MapSection } from '../models';
 import { colors, spacing } from '../theme/tokens';
 import type { UserPosition } from '../viewmodels/useLocationViewModel';
@@ -32,6 +39,14 @@ interface MapScreenProps {
   onSearchPress: () => void;
   /** Posición GPS del visitante (null si permiso denegado o no disponible). */
   userPosition?: UserPosition | null;
+  /** Recinto actualmente fijado como destino (CA-14). */
+  destinationPlace?: MapPlace | null;
+  /** Recinto al que el usuario acaba de llegar (CA-12). */
+  arrivedAtPlace?: MapPlace | null;
+  /** Callback para fijar o cancelar el recinto destino. */
+  onToggleDestination?: (id: string) => void;
+  /** Callback para cerrar el aviso de llegada. */
+  onDismissArrival?: () => void;
 }
 
 const filters: { key: MapFilter; label: string }[] = [
@@ -56,6 +71,10 @@ export function MapScreen({
   onRetry,
   onSearchPress,
   userPosition,
+  destinationPlace,
+  arrivedAtPlace,
+  onToggleDestination,
+  onDismissArrival,
 }: MapScreenProps) {
   const selectedSectionName =
     sections.find((section) => section.id === selectedPlace?.sectionId)?.name ?? 'Sin sección';
@@ -83,8 +102,18 @@ export function MapScreen({
       </View>
 
       <View style={styles.mapArea}>
+        {arrivedAtPlace && onDismissArrival && (
+          <ArrivalBanner place={arrivedAtPlace} onDismiss={onDismissArrival} />
+        )}
+
         <View style={styles.canvas}>
           <ZooMapSvg highlightedSectionId={focusedSectionId} />
+          {userPosition && destinationPlace && (
+            <DestinationRouteLine
+              userPosition={userPosition}
+              destinationPlace={destinationPlace}
+            />
+          )}
           {filteredPlaces.map((place) => (
             <MapMarker
               key={place.id}
@@ -139,7 +168,9 @@ export function MapScreen({
           <MapPlaceCard
             place={selectedPlace}
             sectionName={selectedSectionName}
+            isDestination={selectedPlace.id === destinationPlace?.id}
             onClose={onCloseDetail}
+            onToggleDestination={onToggleDestination}
           />
         )}
       </View>

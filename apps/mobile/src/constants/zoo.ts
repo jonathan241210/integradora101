@@ -49,3 +49,11 @@ export const LOCATION_DOT_COLOR = 'hsl(217, 89%, 61%)';
 export const LOCATION_DOT_BORDER = 'hsl(0, 0%, 100%)';
 export const LOCATION_PULSE_COLOR = 'hsla(217, 89%, 61%, 0.25)';
 export const LOCATION_DOT_SHADOW = 'hsl(0, 0%, 0%)';
+
+/**
+ * Estilo de la línea de ruta punteada hacia el destino (CA-14 / V2.1).
+ */
+export const ROUTE_LINE_COLOR = 'hsl(217, 89%, 61%)';
+export const ROUTE_LINE_DASH = '8, 6';
+export const ROUTE_LINE_WIDTH = 3;
+

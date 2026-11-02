@@ -201,6 +201,8 @@ La V1 entregó un mapa 2D consultable pero estático: el visitante no sabe dónd
 
 - **CA-13 (Modo degradado):** Dado que el permiso GPS fue denegado o `expo-location` no está disponible, cuando el visitante usa el mapa, entonces todas las funciones de V1 (CA-01 a CA-07) siguen funcionando sin errores visibles relacionados con GPS.
 
+- **CA-14 (Línea de ruta hacia el destino):** Dado que el visitante tiene un recinto destino seleccionado y el punto azul de ubicación está visible, cuando se muestra el mapa, entonces se traza una línea visual punteada sobre el SVG que conecta las coordenadas de la posición del usuario con las coordenadas SVG del recinto destino; si el usuario deselecciona el destino o se dispara la llegada (CA-12), la línea desaparece automáticamente.
+
 ### Reglas de negocio (V2)
 
 - **RN-11 (Solo primer plano):** El GPS solo se activa mientras la pantalla Mapa está en primer plano (`requestForegroundPermissionsAsync`). No se usa ubicación en segundo plano.
