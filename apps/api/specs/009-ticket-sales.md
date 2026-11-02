@@ -1,4 +1,4 @@
-# 009 · ticket-sales
+﻿# 009 · ticket-sales
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `dashboard` (consumidor, `dashboard-005`), `packages/api-client`; `api-007` (impacto en totales y reportes, ver «Impacto en api-007»; se aplica en el mismo cambio, sin editar 007 en este borrador); documentos `docs/03-roles-y-permisos.md` (matriz: permisos nuevos) y `docs/database/requests/DBR-006-ticket-sales.md`
@@ -139,7 +139,7 @@ Nota de matriz: por decisión de 2026-11-01, solo `cashier` vende. `docs/03-role
 - **RN-07:** El token QR es único por boleto, no predecible y generado en el servidor. Se guarda en `tickets.qr_code`. El SVG se genera por la API al emitir el boleto; no se almacena. El token identifica el boleto para el torniquete (fuera de alcance). Generar el SVG requiere una decisión de dependencia (pregunta 4).
 - **RN-08:** Un boleto pasa de `completed` a `cancelled` una sola vez y el cambio no se revierte. Solo puede cancelarlo el `cashier` que lo vendió, con `tickets.cancel`, el mismo día de la venta (RN-16) y con motivo no vacío. La cancelación nunca borra físicamente el boleto ni el registro del motivo.
 - **RN-09:** El historial es de solo lectura. No expone tokens ni SVG.
-- **RN-10:** Los avisos se muestran solo dentro del dashboard. No se envían por correo, SMS ni push.
+- **RN-10:** Los avisos se muestran dentro del dashboard. *Propuesta técnica para backend (2026-11-02):* Se propone a backend habilitar opcionalmente el envío por correo electrónico (mail en Laravel Notifications / Mailable encolado) para avisos de cambio de precios a los usuarios con correo registrado. No requiere cambios de BD pues users.email existe.
 - **RN-11:** El acuse lo registra la API. Un aviso acusado no vuelve a aparecer como pendiente. El acuse no borra el aviso y no bloquea ventas (CA-33).
 - **RN-12:** La autorización se aplica en el servidor con Policies y permisos Spatie `<resource>.<action>`. Ocultar opciones en la interfaz no protege los endpoints. Nuevos permisos: `ticket-prices.manage` (solo `admin`) y `tickets.cancel` (solo `cashier`, decisión de 2026-11-01); se agregan a `RolesAndPermissionsSeeder` solo al aprobar esta spec. `tickets.create` se asigna solo a `cashier`: hoy `RolesAndPermissionsSeeder` concede a `admin` todos los permisos (incluido `tickets.create`); el cambio de código para retirarlo se hace al aprobar esta spec, no antes.
 - **RN-13:** Tickets y precios son datos financieros: borrado lógico (SoftDeletes), `created_by`/`updated_by` y Activitylog (Constitución V).

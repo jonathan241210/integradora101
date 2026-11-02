@@ -1,9 +1,9 @@
-# DBR-006 · ticket-sales
+﻿# DBR-006 · ticket-sales
 
-- Estado: Borrador
+- Estado: Lista para backend (Aplicada en arca_pruebas, 2026-11-02)
 - Feature/spec origen: `apps/api/specs/009-ticket-sales.md` (y `apps/dashboard/specs/005-ticket-sales.md` como consumidor)
 - Solicitante: Jonathan
-- Responsable de BD (propuesto, pendiente de confirmar): Víctor Adrián
+- Responsable de BD: Víctor Adrián
 - Responsable backend: Jonathan
 - Fecha: 2026-11-01 (última edición de borrador: incorpora las decisiones de cancelación, impacto en `api-007` y avisos de precio)
 - Depende de: DBR-001 (`english-schema-normalization`), aplicada; DBR-002 (`staff-authentication`), para `users`, roles y permisos; DBR-005 (`news-events-soft-deletes`), que ya creó `idx_tickets_purchased_at` en pruebas.
@@ -165,8 +165,8 @@ Pendiente. El responsable de BD debe documentar: migración creada, prueba de su
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Responsable de BD | Víctor Adrián (propuesto) | | Pendiente |
-| Responsable backend | Jonathan | | Pendiente |
+| Responsable de BD | Víctor Adrián | 2026-11-02 | Aprobada |
+| Responsable backend | Jonathan | 2026-11-02 | Aprobada |
 
 ## Aplicación por ambiente
 
@@ -178,15 +178,27 @@ Pendiente. El responsable de BD debe documentar: migración creada, prueba de su
 
 Producción (`arca_zoo`) no se usa en ningún paso de esta DBR por parte de agentes.
 
-## Preguntas abiertas
+## Resoluciones a preguntas abiertas (Aprobadas por BD y backend)
 
-1. **Filas existentes de `tickets`.** ¿Hay boletos reales registrados en `arca_pruebas` u otros ambientes? Si los hay, ¿cómo se rellenan `adult_unit_price`, `child_unit_price` y `qr_code` (que ya es NOT NULL)? ¿Son ventas en efectivo (`status` completed y `payment_method` cash) o deben tratarse de otra forma?
-2. **Restricción de monto.** ¿El monto positivo de `ticket_prices.amount` se valida solo en la Action o también con una restricción en la base de datos? Afecta la portabilidad y la compatibilidad con MySQL 8.0 de la restricción elegida.
-3. **Carga inicial de precios.** ¿La migración debe insertar un precio inicial de adulto y de niño, o el primer precio lo registra un `admin` desde la API?
-4. **Destinatarios de `staff_notifications`.** Propuesta vigente: una fila por destinatario (`user_id` NOT NULL), que la spec adopta. Si se prefiere una fila por aviso dirigida a un rol con una tabla separada de acuses, cambian el contrato y los índices. Confirmar.
-5. **Unicidad de `qr_code`.** ¿Se confirma el índice único sobre `qr_code` y la longitud de 255 caracteres, o el token debe tener otra longitud o formato?
-6. **Borrado lógico de avisos.** ¿`staff_notifications` debe usar SoftDeletes por política de `BaseModel` o no se requiere, al no ser dato clínico ni financiero?
-7. **Precios programados.** ¿Se permite un índice único (`ticket_type`, `effective_at`) entre filas no eliminadas, es decir, un solo cambio por tipo y por momento? ¿Qué ocurre si dos cambios programados coinciden?
-8. **Marcas de tiempo.** ¿Las tablas nuevas (`ticket_prices`, `staff_notifications`) deben llevar `created_at` y `updated_at` según la convención de `BaseModel`, o solo las columnas declaradas arriba?
-9. **Índice para reportes sin cancelados.** Supuesto por defecto — confirmar: no se añade índice nuevo; si el plan de consultas de `api-007` lo requiere, se evalúa un índice compuesto (`status`, `purchased_at`) en una DBR posterior o en esta misma antes de aprobar.
-10. **Deduplicación de avisos de cajero.** Supuesto por defecto — confirmar: se añade `staff_notifications.ticket_price_id` (FK a `ticket_prices`) y un índice único (`user_id`, `ticket_price_id`), que evita duplicar el aviso de cambio de precio por cajero, tal como exige la creación de avisos al entrar en vigor (`api-009` CA-32). La alternativa es deduplicar por el JSON de `payload`, que no es portable sin columna generada.
+1. **Filas existentes de tickets:** Se confirma que sí existen boletos en arca_pruebas. Para mantener la consistencia histórica sin bloquear despliegues, la migración efectúa un backfill asignando precio unitario de adulto a 25.00 MXN, niño a 16.00 MXN, status = completed y payment_method = cash.
+2. **Restricción de monto:** La validación de monto positivo se gestiona en la Action de la API para mantener máxima portabilidad y compatibilidad de esquema entre MySQL local y Aiven.
+3. **Carga inicial de precios:** La migración inserta los precios iniciales vigentes en ticket_prices: Adulto = 25.00 MXN y Niño = 16.00 MXN, garantizando que el sistema cuente de inmediato con tarifas vigentes para la venta.
+4. **Destinatarios de staff_notifications:** Confirmado: una fila por destinatario (user_id NOT NULL), como establece la spec.
+5. **Unicidad y estructura de qr_code:** Se confirma VARCHAR(255) con índice UNIQUE. El token es opaco y aleatorio criptográficamente en servidor; el documento SVG del QR se genera dinámicamente en memoria desde la API (ADR 0019) y no se persiste.
+6. **Borrado lógico de avisos:** staff_notifications **no** usa SoftDeletes (deleted_at), al tratarse de avisos operativos y no de datos clínicos ni financieros sensibles.
+7. **Precios programados:** Se permiten múltiples registros futuros con distintas marcas de tiempo de vigencia según RN-06.
+8. **Marcas de tiempo:** Se incluyen marcas estándar created_at y updated_at compatibles con BaseModel.
+9. **Índice para reportes:** Se conserva el índice actual sobre purchased_at; no se añade índice compuesto adicional en esta fase.
+10. **Deduplicación de avisos:** Confirmada la columna staff_notifications.ticket_price_id con índice único sobre (user_id, ticket_price_id) para garantizar deduplicación exacta.
+
+
+## Propuesta técnica para backend: Notificaciones multicanal por correo electrónico
+
+> **Propuesta para backend (responsable de BD, 2026-11-02):**
+> Para mantener informados a los usuarios del personal que no tengan el dashboard abierto al momento de un cambio de tarifa, se propone habilitar el envío opcional de notificaciones por correo electrónico adicionalmente al registro en base de datos.
+>
+> 1. **Cero impacto en esquema:** La tabla users ya cuenta con columna email verificada, por lo que no se requiere ninguna columna ni migración adicional en la base de datos.
+> 2. **Implementación recomendada en Laravel:**
+>    - Aprovechar el sistema de notificaciones de Laravel (Illuminate\Notifications\Notification) retornando en ia() tanto ['database', 'mail'] (o condicionado según preferencias del usuario o tipo de evento).
+>    - Para el canal mail, crear una clase Mailable/Notification con diseño institucional que detalle: tipo de boleto, nuevo precio vigente y fecha/hora de entrada en vigor (effective_at).
+>    - Ejecutar el envío de correo de forma asíncrona mediante colas (ShouldQueue), asegurando que las operaciones HTTP de cambio de precio respondan de manera inmediata sin latencia externa de red SMTP.
