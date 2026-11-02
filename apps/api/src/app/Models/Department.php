@@ -7,12 +7,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Department extends Model
 {
-    protected $fillable = [
-        'code',
-        'name',
-        'description',
-        'is_active',
-    ];
+    protected $table = 'departments';
+
+    protected $guarded = [];
 
     protected function casts(): array
     {

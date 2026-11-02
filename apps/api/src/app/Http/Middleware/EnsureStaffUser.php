@@ -17,6 +17,12 @@ class EnsureStaffUser
             ], Response::HTTP_FORBIDDEN);
         }
 
+        if (! $request->user()->is_active) {
+            return response()->json([
+                'message' => 'Tu cuenta está desactivada.',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
         return $next($request);
     }
 }

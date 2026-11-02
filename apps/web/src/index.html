@@ -19,11 +19,13 @@
 <link rel="icon" href="assets/zoo-logo.jpeg" type="image/jpeg">
 
 <!-- Conexiones tempranas -->
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="preload" as="image" href="assets/TransformandoTulancingo-2024-300x261.png">
+<link rel="preload" as="image" href="assets/logo-120.webp" type="image/webp">
+<link rel="preload" as="image" href="assets/lion-hero-800.webp" type="image/webp" media="(max-width: 800px)" fetchpriority="high">
+<link rel="preload" as="image" href="assets/lion-hero.webp" type="image/webp" media="(min-width: 801px)" fetchpriority="high">
+<link rel="preload" as="font" type="font/woff2" href="assets/icons/bootstrap-icons.woff2" crossorigin>
 
 <!-- Bootstrap Icons -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="assets/icons/bootstrap-icons.css">
 
 <!-- CSS -->
 <link rel="stylesheet" href="styles.css">
@@ -74,7 +76,7 @@
 <header class="topbar">
 
     <a class="brand" href="#inicio" aria-label="Zoológico Nicolás Bravo, inicio">
-        <img class="brand-logo" src="assets/TransformandoTulancingo-2024-300x261.png" alt="" decoding="async">
+        <picture><source type="image/webp" srcset="assets/logo-120.webp"><img class="brand-logo" src="assets/TransformandoTulancingo-2024-300x261.png" alt="" width="48" height="42" decoding="async"></picture>
         <span>Zoológico <strong>Nicolás Bravo</strong></span>
     </a>
 
@@ -124,7 +126,7 @@
                 Una aventura para toda la familia
             </span>
 
-            <h1>La naturaleza está más cerca de lo que imaginas</h1>
+            <h1>Conectando con la fauna desde el Zoológico Nicolás Bravo</h1>
 
             <p>Explora nuevos hábitats, conoce a sus habitantes y descubre cómo podemos cuidar juntos la vida silvestre.</p>
 
@@ -292,7 +294,7 @@
 
             <!-- LEÓN -->
             <article class="animal-card" data-name="león" data-species="mamífero" data-habitat="sabana">
-                <img src="assets/lion.jpg" alt="León" loading="lazy" decoding="async">
+                <img src="assets/lion-800.webp" srcset="assets/lion-480.webp 480w, assets/lion-800.webp 800w" sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" alt="León" loading="lazy" decoding="async">
                 <div class="animal-card-body">
                     <span class="animal-label"><i class="bi bi-circle-fill" aria-hidden="true"></i> Mamífero · Felino</span>
                     <h3><i class="bi bi-heart" aria-hidden="true"></i> León</h3>
@@ -308,18 +310,20 @@
                             <dt>Tamaño</dt><dd>Los machos pueden superar los 2 metros de longitud corporal, sin contar la cola.</dd>
                             <dt>Peso</dt><dd>Los machos adultos pueden superar los 150 kg.</dd>
                             <dt>Reproducción</dt><dd>La gestación dura aproximadamente 110 días.</dd>
-                            <dt>Características</dt><dd>Los machos presentan una melena y ambos sexos tienen garras retráctiles y gran fuerza.</dd>
-                            <dt>Curiosidad</dt><dd>El rugido de un león puede escucharse a varios kilómetros.</dd>
-                            <dt>Conservación</dt><dd>La especie enfrenta amenazas relacionadas con la pérdida de hábitat y la reducción de sus presas.</dd>
-                        </dl>
-                        <p class="model-note"><i class="bi bi-box" aria-hidden="true"></i> Modelo 3D próximamente.</p>
+                            <dt>Características</dt><dd>                            Los machos presentan una melena y ambos sexos tienen garras retráctiles y gran fuerza.</dd>
+                                                        <dt>Curiosidad</dt><dd>El rugido de un león puede escucharse a varios kilómetros.</dd>
+                                                        <dt>Conservación</dt><dd>La especie enfrenta amenazas relacionadas con la pérdida de hábitat y la reducción de sus presas.</dd>
+                                                    </dl>
                     </details>
                 </div>
             </article>
 
             <!-- JIRAFA -->
-            <article class="animal-card" data-name="jirafa" data-species="mamífero" data-habitat="sabana">
-                <img src="assets/giraffe.jpg" alt="Jirafa" loading="lazy" decoding="async">
+            <article class="animal-card" data-name="jirafa" data-species="mamífero" data-habitat="sabana" data-model="assets/nyilonelycompany-nature-51.glb" data-model-alt="Modelo 3D interactivo de una jirafa">
+                <img src="assets/giraffe-800.webp" srcset="assets/giraffe-480.webp 480w, assets/giraffe-800.webp 800w" sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" alt="Jirafa" loading="lazy" decoding="async">
+                <button type="button" class="model-toggle" aria-pressed="false" aria-label="Ver modelo 3D de la jirafa" title="Ver modelo 3D">
+                    <img src="assets/icon-3d-56.webp" alt="" width="28" height="28">
+                </button>
                 <div class="animal-card-body">
                     <span class="animal-label"><i class="bi bi-circle-fill" aria-hidden="true"></i> Mamífero · Herbívoro</span>
                     <h3><i class="bi bi-tree" aria-hidden="true"></i> Jirafa</h3>
@@ -339,17 +343,13 @@
                             <dt>Curiosidad</dt><dd>Su lengua puede medir alrededor de 45 centímetros.</dd>
                             <dt>Conservación</dt><dd>Sus poblaciones están afectadas por la pérdida y fragmentación de hábitat.</dd>
                         </dl>
-                        <div class="giraffe-model-wrap">
-                            <model-viewer class="giraffe-model" src="assets/nyilonelycompany-nature-51.glb" alt="Modelo 3D interactivo de una jirafa" camera-controls auto-rotate auto-rotate-delay="800" rotation-per-second="18deg" shadow-intensity="1" exposure="1.1" loading="lazy" reveal="auto"></model-viewer>
-                            <p class="model-note"><i class="bi bi-hand-index-thumb" aria-hidden="true"></i> Arrastra para girar la jirafa y usa la rueda o pellizca para acercar.</p>
-                        </div>
                     </details>
                 </div>
             </article>
 
             <!-- GUACAMAYA -->
             <article class="animal-card" data-name="guacamaya" data-species="ave" data-habitat="aviario">
-                <img src="assets/macaw.jpg" alt="Guacamaya" loading="lazy" decoding="async">
+                <img src="assets/macaw-800.webp" srcset="assets/macaw-480.webp 480w, assets/macaw-800.webp 800w" sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" alt="Guacamaya" loading="lazy" decoding="async">
                 <div class="animal-card-body">
                     <span class="animal-label"><i class="bi bi-feather" aria-hidden="true"></i> Ave · Tropical</span>
                     <h3><i class="bi bi-feather" aria-hidden="true"></i> Guacamaya</h3>
@@ -369,14 +369,13 @@
                             <dt>Curiosidad</dt><dd>Algunas guacamayas pueden imitar sonidos y aprender diferentes vocalizaciones.</dd>
                             <dt>Conservación</dt><dd>Varias especies enfrentan amenazas por pérdida de hábitat y captura ilegal.</dd>
                         </dl>
-                        <p class="model-note"><i class="bi bi-box" aria-hidden="true"></i> Modelo 3D próximamente.</p>
                     </details>
                 </div>
             </article>
 
             <!-- TORTUGA -->
             <article class="animal-card" data-name="tortuga" data-species="reptil" data-habitat="reptilario">
-                <img src="assets/turtle.jpg" alt="Tortuga" loading="lazy" decoding="async">
+                <img src="assets/turtle-800.webp" srcset="assets/turtle-480.webp 480w, assets/turtle-800.webp 800w" sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" alt="Tortuga" loading="lazy" decoding="async">
                 <div class="animal-card-body">
                     <span class="animal-label"><i class="bi bi-bug" aria-hidden="true"></i> Reptil · Tortuga</span>
                     <h3><i class="bi bi-bug" aria-hidden="true"></i> Tortuga</h3>
@@ -439,6 +438,9 @@
 
                 <div class="map" role="group" aria-label="Ilustración aproximada de las zonas del zoológico">
 
+                                    <button type="button" class="model-toggle map-toggle" id="mapModelToggle" data-model="assets/Mapa.glb" aria-pressed="false" aria-label="Ver mapa en 3D" title="Ver mapa en 3D">
+                                        <img src="assets/icon-3d-56.webp" alt="" width="28" height="28">
+                                    </button>
                     <svg class="map-symbols" aria-hidden="true" focusable="false">
                         <symbol id="map-icon-felinos" viewBox="0 0 24 24"><path d="M12 21s-8-4.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.6-8 11-8 11Z" /></symbol>
                         <symbol id="map-icon-aviario" viewBox="0 0 24 24"><path d="M20 4C11 4 5 7 4 13c-.6 3.5 2.5 6.5 6 6 6-1 9-7 10-15ZM4 20l8-8m-4 4h5m-1-6v5" /></symbol>
@@ -664,7 +666,14 @@
             </div>
 
             <div class="location-map">
-                <iframe src="https://www.google.com/maps?q=Zool%C3%B3gico%20Nicol%C3%A1s%20Bravo%2C%20Tulancingo%20de%20Bravo%2C%20Hidalgo&output=embed" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación del Zoológico Nicolás Bravo"></iframe>
+                <iframe id="locationMapFrame" data-src="https://www.google.com/maps?q=Zool%C3%B3gico%20Nicol%C3%A1s%20Bravo%2C%20Tulancingo%20de%20Bravo%2C%20Hidalgo&output=embed" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Ubicación del Zoológico Nicolás Bravo"></iframe>
+                <noscript><iframe src="https://www.google.com/maps?q=Zool%C3%B3gico%20Nicol%C3%A1s%20Bravo%2C%20Tulancingo%20de%20Bravo%2C%20Hidalgo&output=embed" allowfullscreen title="Ubicación del Zoológico Nicolás Bravo"></iframe></noscript>
+                <script>
+                (function(){var f=document.getElementById('locationMapFrame');if(!f)return;var done=false;function go(){if(done)return;done=true;f.src=f.getAttribute('data-src');}
+                function later(){if('requestIdleCallback' in window){requestIdleCallback(function(){setTimeout(go,1500);});}else{setTimeout(go,3000);}}
+                if(document.readyState==='complete'){later();}else{window.addEventListener('load',later);}
+                ['pointerdown','keydown','touchstart'].forEach(function(e){window.addEventListener(e,go,{once:true,passive:true});});})();
+                </script>
             </div>
 
         </div>
@@ -1013,7 +1022,7 @@
     <div class="footer-info">
 
         <h3>
-            <img class="footer-logo" src="assets/TransformandoTulancingo-2024-300x261.png" alt="" loading="lazy" decoding="async">
+            <picture><source type="image/webp" srcset="assets/logo-120.webp"><img class="footer-logo" src="assets/TransformandoTulancingo-2024-300x261.png" alt="" width="58" height="52" loading="lazy" decoding="async"></picture>
             Zoológico Nicolás Bravo
         </h3>
 
@@ -1122,6 +1131,15 @@
             <label><input type="checkbox" data-cognitive-mode="calm"> <span>Interfaz calma</span></label>
         </fieldset>
 
+        <div class="cognitive-zoom" role="group" aria-labelledby="cognitiveZoomLabel">
+            <span class="cognitive-zoom-label" id="cognitiveZoomLabel">Tamaño de la página</span>
+            <div class="cognitive-zoom-controls">
+                <button type="button" id="cognitiveZoomOut" aria-label="Reducir tamaño de la página">A−</button>
+                <output id="cognitiveZoomValue" aria-live="polite">100%</output>
+                <button type="button" id="cognitiveZoomIn" aria-label="Aumentar tamaño de la página">A+</button>
+            </div>
+        </div>
+
         <button class="cognitive-reset" id="cognitiveReset" type="button">Restablecer preferencias</button>
 
     </div>
@@ -1135,12 +1153,61 @@
 (function () {
   'use strict';
 
-  /* 1. model-viewer: se descarga solo al abrir la ficha de la jirafa */
-  var giraffe = document.querySelector('[data-name="jirafa"] details');
-  if (giraffe) {
-    giraffe.addEventListener('toggle', function () {
-      if (giraffe.open) import('./assets/model-viewer.min.js').catch(function () {});
-    }, { once: true });
+  /* 1. Modelo 3D: botón sobre la foto; solo las tarjetas con data-model lo tienen */
+  var viewerLoaded = false;
+  document.querySelectorAll('.animal-card[data-model]').forEach(function (card) {
+    var btn = card.querySelector('.model-toggle');
+    var photo = card.querySelector(':scope > img');
+    if (!btn || !photo) return;
+    var viewer = null;
+    function fit() { if (viewer) viewer.style.height = photo.offsetHeight + 'px'; }
+    btn.addEventListener('click', function () {
+      var on = btn.getAttribute('aria-pressed') !== 'true';
+      btn.setAttribute('aria-pressed', String(on));
+      btn.title = on ? 'Ver foto' : 'Ver modelo 3D';
+      if (on && !viewerLoaded) {
+        viewerLoaded = true;
+        import('./assets/model-viewer.min.js').catch(function () {});
+      }
+      if (on && !viewer) {
+        viewer = document.createElement('model-viewer');
+        viewer.className = 'card-model';
+        viewer.setAttribute('src', card.dataset.model);
+        viewer.setAttribute('alt', card.dataset.modelAlt || 'Modelo 3D');
+        ['camera-controls', 'auto-rotate'].forEach(function (a) { viewer.setAttribute(a, ''); });
+        viewer.setAttribute('shadow-intensity', '1');
+        viewer.setAttribute('exposure', '1.1');
+        photo.after(viewer);
+        window.addEventListener('resize', fit);
+      }
+      if (viewer) { viewer.hidden = !on; fit(); }
+      photo.style.visibility = on ? 'hidden' : '';
+    });
+  });
+
+  /* 1b. Mapa 3D: coloca tu archivo en assets/zoo-map.glb */
+  var mapBtn = document.getElementById('mapModelToggle');
+  if (mapBtn) {
+    var mapBox = mapBtn.parentElement, mapViewer = null;
+    mapBtn.addEventListener('click', function () {
+      var on = mapBtn.getAttribute('aria-pressed') !== 'true';
+      mapBtn.setAttribute('aria-pressed', String(on));
+      mapBtn.title = on ? 'Ver mapa normal' : 'Ver mapa en 3D';
+      if (on && !viewerLoaded) {
+        viewerLoaded = true;
+        import('./assets/model-viewer.min.js').catch(function () {});
+      }
+      if (on && !mapViewer) {
+        mapViewer = document.createElement('model-viewer');
+        mapViewer.className = 'map-model';
+        mapViewer.setAttribute('src', mapBtn.dataset.model);
+        mapViewer.setAttribute('alt', 'Mapa 3D del zoológico');
+        ['camera-controls', 'touch-action'].forEach(function (a) { mapViewer.setAttribute(a, a === 'touch-action' ? 'pan-y' : ''); });
+        mapViewer.setAttribute('shadow-intensity', '1');
+        mapBtn.after(mapViewer);
+      }
+      if (mapViewer) mapViewer.hidden = !on;
+    });
   }
 
   /* 2. Navegación: marca la sección activa */

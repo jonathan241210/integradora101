@@ -2,17 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasRoles, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable, SoftDeletes, TwoFactorAuthenticatable;
+
+    protected $table = 'users';
 
     protected string $guard_name = 'web';
 
@@ -45,6 +49,23 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Cuentas cuyos roles están todos dentro de los indicados (sin roles indicados: ninguna).
+     *
+     * @param  list<string>  $roles
+     */
+    public function scopeManageableWith(Builder $query, array $roles): void
+    {
+        if ($roles === []) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->role($roles)
+            ->whereDoesntHave('roles', fn (Builder $q) => $q->whereNotIn('name', $roles));
+    }
+
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
@@ -59,3 +80,4 @@ class User extends Authenticatable
         ])));
     }
 }
+    

@@ -1,124 +1,87 @@
-import { Badge, Button, Card } from "@arca/ui";
-import { demoMetrics, demoNews, demoRevenue } from "../data/demo-data";
-import { Icon, type IconName } from "../components/Icon";
-import { SectionHeading } from "../components/SectionHeading";
-import type { DashboardSection } from "../viewmodels/dashboard-demo";
-
-const metricIcons: Record<string, IconName> = {
-  paw: "animals",
-  ticket: "ticket",
-  coins: "trend",
-};
+import { Button, Card } from "@arca/ui";
+import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { SalesTotals } from "@/components/SalesTotals";
+import { SectionHeading } from "@/components/SectionHeading";
+import {
+  toRevenueBars,
+  type DashboardSummaryViewModel,
+} from "@/viewmodels/dashboard-summary";
+import { formatCurrency, formatWeekday } from "@/viewmodels/formatters";
 
 export function DashboardView({
-  onNavigate,
-  canViewNews = true,
-  canViewEvents = true,
-}: {
-  onNavigate: (section: DashboardSection) => void;
-  canViewNews?: boolean;
-  canViewEvents?: boolean;
+  state,
+  actions,
+  onOpenReport,
+}: DashboardSummaryViewModel & {
+  /** Solo se entrega a quien puede ver el reporte. */
+  onOpenReport?: () => void;
 }) {
+  const { summary } = state;
+
   return (
     <>
       <SectionHeading
         title="Panel principal"
-        description="Resumen general del zoológico"
+        description="Resumen de la venta de boletos del zoológico"
       />
-      <div className="metric-grid">
-        {demoMetrics.map((metric) => (
-          <Card className="metric-card" key={metric.label}>
-            <div className="metric-card__top">
-              <span className="metric-icon">
-                <Icon name={metricIcons[metric.icon]} />
-              </span>
-              {metric.label === "Ingresos" && <Badge tone="warning">Muestra</Badge>}
-            </div>
-            <strong className="metric-value">{metric.value}</strong>
-            <span className="metric-label">{metric.label}</span>
-            <span className="metric-detail">{metric.detail}</span>
-          </Card>
-        ))}
-      </div>
-
-      <Card className="chart-card">
-        <div className="card-heading">
-          <div>
-            <h2>Ingresos de los últimos días</h2>
-            <p>Importes ficticios · últimos 7 días</p>
-          </div>
-          <Button variant="secondary" onClick={() => onNavigate("reports")}>
+      {onOpenReport && (
+        <div className="list-toolbar">
+          <Button variant="secondary" onClick={onOpenReport}>
             Ver reporte
           </Button>
         </div>
-        <div
-          className="bar-chart"
-          role="img"
-          aria-label="Gráfica demostrativa de importes por día; no corresponde a ventas reales"
-        >
-          {demoRevenue.map((item) => (
-            <div className="bar-chart__item" key={item.day}>
-              <span className="bar-chart__amount">{item.amount}</span>
+      )}
+      <ListStatusMessage
+        status={state.status === "empty" ? "ready" : state.status}
+        error={state.error}
+        loadingText="Cargando el resumen…"
+        emptyText=""
+        onRetry={actions.reload}
+      />
+      {state.status === "empty" && (
+        <p className="state-message">
+          Aún no hay ventas registradas en los últimos 7 días.
+        </p>
+      )}
+      {summary && (state.status === "ready" || state.status === "empty") && (
+        <>
+          <SalesTotals headingId="today-heading" heading="Hoy" totals={summary.today} />
+          <SalesTotals
+            headingId="week-heading"
+            heading="Últimos 7 días"
+            totals={summary.last_7_days}
+          />
+          {state.status === "ready" && (
+            <Card className="chart-card">
+              <div className="card-heading">
+                <div>
+                  <h2>Ingresos por día</h2>
+                  <p>Últimos 7 días</p>
+                </div>
+              </div>
               <div
-                className="bar-chart__bar"
-                style={{ height: `${item.height}%` }}
-                aria-hidden="true"
-              />
-              <span className="bar-chart__day">{item.day}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <div className="summary-grid">
-        {canViewNews && (
-          <Card className="summary-card">
-            <div className="summary-card__icon">
-              <Icon name="news" />
-            </div>
-            <div>
-              <h2>Noticias <span>18</span></h2>
-              <p>Publicadas y en borrador · datos de muestra</p>
-            </div>
-            <Button variant="secondary" onClick={() => onNavigate("news")}>
-              Ir al módulo
-            </Button>
-          </Card>
-        )}
-        {canViewEvents && (
-          <Card className="summary-card summary-card--green">
-            <div className="summary-card__icon">
-              <Icon name="calendar" />
-            </div>
-            <div>
-              <h2>Eventos <span>7</span></h2>
-              <p>Programación demostrativa del mes</p>
-            </div>
-            <Button variant="secondary" onClick={() => onNavigate("events")}>
-              Ir al módulo
-            </Button>
-          </Card>
-        )}
-      </div>
-
-      <Card className="recent-card">
-        <div className="card-heading">
-          <div>
-            <h2>Actividad reciente</h2>
-            <p>Contenido de ejemplo del panel</p>
-          </div>
-          <Badge tone="info">Demostración</Badge>
-        </div>
-        <ul className="recent-list">
-          {demoNews.slice(0, 2).map((item) => (
-            <li key={item.title}>
-              <span className="recent-list__dot" aria-hidden="true" />
-              <span>{item.title}</span>
-              <time>{item.date}</time>
-            </li>
-          ))}
-        </ul>
-      </Card>
+                className="bar-chart"
+                role="img"
+                aria-label={`Ingresos por día: ${summary.series
+                  .map((point) => `${formatWeekday(point.date)} ${formatCurrency(point.revenue)}`)
+                  .join(", ")}`}
+              >
+                {toRevenueBars(summary.series).map((bar) => (
+                  <div className="bar-chart__item" key={bar.date}>
+                    <span className="bar-chart__amount">{formatCurrency(bar.revenue)}</span>
+                    <div
+                      className="bar-chart__bar"
+                      style={{ height: `${bar.height}%` }}
+                      aria-hidden="true"
+                    />
+                    <span className="bar-chart__day">{formatWeekday(bar.date)}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </>
+      )}
     </>
   );
 }

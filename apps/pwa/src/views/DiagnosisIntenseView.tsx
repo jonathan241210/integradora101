@@ -1,5 +1,9 @@
 import { Button, Card, Field, TextAreaField } from '@arca/ui';
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
+import { createEvaluation } from '@/services/apiClient';
+import { formToRecord, useSaveRequest } from '@/viewmodels/useApiData';
+import { AnimalPicker } from '@/views/AnimalPicker';
+import { SaveFeedback } from '@/views/SaveFeedback';
 import {
   chemicalRestraintRows,
   intenseSystems,
@@ -23,6 +27,23 @@ const restraintColumns = [
 
 export function DiagnosisIntenseView() {
   const [step, setStep] = useState<1 | 2>(1);
+  const save = useSaveRequest();
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const { 'intense-animal': animalId, ...values } = formToRecord(form);
+
+    const saved = await save.run(
+      () => createEvaluation('intense', Number(animalId), values),
+      'Diagnóstico intenso guardado correctamente.',
+    );
+
+    if (saved) {
+      form.reset();
+      setStep(1);
+    }
+  }
 
   return (
     <section className="page-section printable-document">
@@ -34,10 +55,11 @@ export function DiagnosisIntenseView() {
 
       <Card className="form-card">
         <PrintHeader />
-        <form className="data-form" onSubmit={(event) => event.preventDefault()}>
+        <form className="data-form" id="intense-form" onSubmit={handleSubmit}>
           <div className={step === 1 ? 'diagnosis-step' : 'diagnosis-step screen-hidden'}>
             <h3>Historia clínica del ejemplar</h3>
             <div className="form-grid">
+              <AnimalPicker label="Animal" name="intense-animal" />
               <Field label="MVZ" name="intense-mvz" />
               <Field label="Fecha" name="intense-date" type="date" />
             </div>
@@ -133,7 +155,8 @@ export function DiagnosisIntenseView() {
           </div>
         </form>
         <PrintFooter />
-        <PrintActions>
+        <SaveFeedback message={save.message} status={save.status} />
+        <PrintActions formId="intense-form" saving={save.saving}>
           {step === 1 ? (
             <Button onClick={() => setStep(2)} type="button" variant="secondary">
               Siguiente: evaluación clínica
