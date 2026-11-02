@@ -7,6 +7,7 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - **Aceptado:** decisión acordada; implementar conforme a sus límites y SDD.
 - **Aceptado:** alternativa para revisión; no se considera aprobación.
 - **Abierto:** falta una decisión de alcance/tecnología.
+- **Propuesto:** decisión redactada y pendiente de aprobación del equipo; no autoriza dependencias ni implementación.
 
 ## Índice
 
@@ -27,6 +28,7 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0017 · Exportación del reporte a Excel y PDF](0017-report-export-excel-pdf.md) — Aceptado
 - [0018 · PHP mínimo de la API en 8.4](0018-php-minimum-8-4.md) — Aceptado
 - [0015 · Renderizado del mapa SVG en la app móvil](0015-mobile-svg-map-rendering.md) — Aceptado
+- [0019 · Generación del QR del boleto en SVG desde la API](0019-qr-svg-generation-api.md) — Propuesto
 
 ## Plantilla
 

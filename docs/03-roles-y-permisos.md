@@ -26,7 +26,9 @@ Cada permiso usa `<resource>.<action>` en inglés, por ejemplo `tickets.create` 
 | `dashboard.view` | Ver panel ejecutivo | ✓ | ✓ | ✓ | — | — | — |
 | `reports.view` | Ver reportes ejecutivos | ✓ | ✓ | ✓ | — | — | — |
 | `tickets.view` | Consultar boletos | ✓ | ✓ | — | ✓ | — | — |
-| `tickets.create` | Registrar venta de boletos | ✓ | — | — | ✓ | — | — |
+| `tickets.create` | Registrar venta de boletos | — | — | — | ✓ | — | — |
+| `tickets.cancel` | Cancelar boletos propios del mismo día, con motivo | — | — | — | ✓ | — | — |
+| `ticket-prices.manage` | Administrar precios de boletos (con 2FA) | ✓ | — | — | — | — | — |
 | `cash-closings.view` | Consultar cierres de caja | ✓ | ✓ | — | ✓ | — | — |
 | `cash-closings.create` | Crear cierre/arqueo de caja | ✓ | — | — | ✓ | — | — |
 | `medical-records.view` | Consultar expedientes clínicos | ✓ | — | — | — | ✓ | — |
@@ -40,6 +42,8 @@ Cada permiso usa `<resource>.<action>` en inglés, por ejemplo `tickets.create` 
 | `events.manage` | Administrar eventos | ✓ | ✓ | — | — | — | — |
 | `enclosures.manage` | Administrar recintos | ✓ | ✓ | — | — | — | — |
 | `public-content.view` | Consultar contenido público | ✓ | ✓ | ✓ | ✓ | ✓ | Público |
+
+Cambios propuestos por `apps/api/specs/009-ticket-sales.md` (Borrador, 2026-11-01): `tickets.create` pasa a ser solo de `cashier` (se retira de `admin`); se añaden `tickets.cancel` (solo `cashier`) y `ticket-prices.manage` (solo `admin`, con 2FA). `admin` y `zoo-admin` conservan `tickets.view` para consultar el historial en lectura. Estas filas entran en vigor al aprobar esa spec, cuando también cambia `RolesAndPermissionsSeeder` (hoy concede a `admin` todos los permisos).
 
 `users.manage` permite administrar todas las cuentas; `operational-staff.manage` solo las de `cashier` y `veterinarian`. La gestión de cuentas desde el dashboard la expone `api-007` (`/api/v1/admin/users`, con alcance por rol según `users.manage` y `operational-staff.manage`); `api-003` solo siembra estos permisos.
 

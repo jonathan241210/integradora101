@@ -18,6 +18,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'reports.view',
             'tickets.view',
             'tickets.create',
+            'tickets.cancel',
+            'ticket-prices.manage',
             'cash-closings.view',
             'cash-closings.create',
             'medical-records.view',
@@ -37,7 +39,8 @@ class RolesAndPermissionsSeeder extends Seeder
             ->mapWithKeys(fn (string $name) => [$name => Permission::findOrCreate($name, 'web')]);
 
         $roles = [
-            'admin' => $permissions,
+            // Only the box office sells and cancels tickets; admin manages prices.
+            'admin' => array_values(array_diff($permissions, ['tickets.create', 'tickets.cancel'])),
             'zoo-admin' => [
                 'operational-staff.manage',
                 'news.manage',
@@ -57,6 +60,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'cashier' => [
                 'tickets.view',
                 'tickets.create',
+                'tickets.cancel',
                 'cash-closings.view',
                 'cash-closings.create',
                 'public-content.view',

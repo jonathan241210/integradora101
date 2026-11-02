@@ -4,6 +4,8 @@ Referencia de `/api/v1/admin/*`, contrato de `api-007`. Spec: `apps/api/specs/00
 
 Este documento describe el código revisado. No certifica que las pruebas pasen: la suite (T-35) se verifica aparte. No contiene secretos ni credenciales.
 
+> Nota de vigencia (2026-11-01): `image_path` deja de ser solo de lectura. La subida, el reemplazo, el borrado del archivo y `image_url` se especifican en `apps/api/specs/008-event-news-images.md` (Borrador, pendiente de aprobación). Las secciones «Noticias y eventos» y «Recurso de noticia» describen el comportamiento vigente hasta que `api-008` se implemente.
+
 El parámetro `timezone` (RN-14, CA-28; decisión de Jonathan del 2026-10-30) está implementado (T-40) y probado (T-41).
 
 ## Acceso común

@@ -8,6 +8,8 @@
 - Actualización de 2026-10-30: zona horaria del dispositivo (RN-14, CA-28). Implementada (T-40 y T-41, según reporta la sesión principal); la redacción de RN-14 y CA-28 la proveyó el documentador y Jonathan la confirmó el 2026-10-30. Ver «Zona horaria» en Decisiones y la divergencia 7.
 - Actualización de 2026-10-30 (exportación): ADR 0017 (Excel y PDF) y ADR 0018 (PHP 8.4) aceptados por el equipo; Excel y PDF implementados (T-39, según reporta la sesión principal). Ver «Exportación» en Decisiones, el Constitution Check I y la divergencia 8.
 
+> **Nota de vigencia (2026-11-01):** la subida de imágenes de noticias y eventos, que aquí queda fuera (`image_path` no aceptado), la define `api-008` (`apps/api/plan/008-event-news-images.md`, Borrador). `api-008` añade campos a las mismas rutas y no cambia permisos, Actions de cuentas ni el contrato de esta feature. Los puntos «sin imagen» de `dashboard-003` quedan reemplazados por `dashboard-004`.
+
 ## Diseño de solución
 
 Se agrega un grupo de rutas privadas `/api/v1/admin/*` con tres capas de acceso, todas aplicadas en el servidor:
