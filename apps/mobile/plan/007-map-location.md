@@ -460,3 +460,29 @@ $d = R \cdot c$ (con $R = 6,371,000\text{ m}$).
 - `checkArrival: (userLat: number, userLon: number) => void`
   - Si `destinationPlace` tiene `gpsLat` y `gpsLon`, calcula `haversineMeters(userLat, userLon, dest.gpsLat, dest.gpsLon)`.
   - Si distancia $\le 10\text{ m}$ y no fue descartado previamente para este destino, asigna `arrivedAtPlace = destinationPlace` y resetea `destinationPlaceId = null`.
+
+
+---
+
+## Plan Técnico — Fase V3: Grafo de Senderos y Pathfinding (Evolución Futura)
+
+- **Spec:** `apps/mobile/specs/007-map-location.md` (Fase V3)
+- **Estado:** Planificado (esperando insumo de video/dron y SVG definitivo)
+
+### Arquitectura prevista para V3
+
+```mermaid
+flowchart LR
+    GPS[GPS del visitante] --> NearestNode[Proyectar a nodo de andador más cercano]
+    NearestNode --> Dijkstra[Algoritmo Dijkstra / A* en memoria]
+    Destination[Recinto Destino] --> DestNode[Nodo de acceso al recinto]
+    DestNode --> Dijkstra
+    Dijkstra --> Polyline[Polilínea SVG por andadores]
+    Dijkstra --> DistanceTime[Distancia y tiempo a pie]
+```
+
+### Componentes y módulos a crear en V3:
+1. `src/constants/zooPaths.ts`: Lista de nodos `(svgX, svgY)` y matriz de adyacencia de andadores peatonales reales.
+2. `src/utils/pathfinding.ts`: Algoritmo Dijkstra / A* que devuelve lista de puntos del camino mínimo.
+3. `src/components/map/PathRoutePolyline.tsx`: Renderizado SVG con `<Polyline>` o `<Path>` que sustituye la línea recta provisional de V2.1.
+4. `src/components/map/WalkEstimateBadge.tsx`: Chip flotante con metros restantes y minutos estimados a pie.

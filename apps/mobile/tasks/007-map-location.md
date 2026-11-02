@@ -244,3 +244,27 @@
   - CA-14: La línea punteada se muestra cuando hay destino y punto azul activo, y desaparece al limpiar el destino.
   - CA-12: El banner de llegada aparece al situarse a ≤ 10 m del recinto destino y se descarta al presionar el botón.
 - [x] **T-48**: Ejecutar `npx tsc --noEmit` y suite de Jest en `apps/mobile`, verificando 0 errores y actualización del roadmap.
+
+---
+
+## Fase V3 — Grafo de Senderos Peatonales y Tiempo a Pie (Planificada)
+
+- **Spec:** `apps/mobile/specs/007-map-location.md` (Fase V3)
+- **Plan:** `apps/mobile/plan/007-map-location.md` (Fase V3)
+- **Estado:** Pendiente de insumo audiovisual (fotos/video de dron del Zoológico Nicolás Bravo)
+- **Tareas planificadas:** T-49 a T-56
+
+### Bloque 13 — Cartografía Definitiva y Grafo de Andadores
+- [ ] **T-49** (V3): Recibir y procesar material de dron para actualizar el plano SVG vectorial de caminos y recintos con dimensiones reales.
+- [ ] **T-50** (V3): Modelar la red de andadores peatonales en `src/constants/zooPaths.ts` definiendo nodos `(svgX, svgY, gpsLat, gpsLon)` y lista de aristas/segmentos transitables.
+- [ ] **T-51** (V3): Implementar algoritmo Dijkstra o A* en `src/utils/pathfinding.ts` para calcular la secuencia óptima de nodos entre la posición del visitante y el recinto destino.
+
+### Bloque 14 — Renderizado de Senderos y Estimación de Tiempo
+- [ ] **T-52** (V3): Crear componente `src/components/map/PathRoutePolyline.tsx` para dibujar la polilínea continua/segmentada sobre los andadores reales en el mapa SVG.
+- [ ] **T-53** (V3): Crear componente `src/components/map/WalkEstimateBadge.tsx` que muestre metros restantes y minutos estimados a pie a $1.1\text{ m/s}$ (ej. *"A 120 m • ~2 min a pie"*).
+- [ ] **T-54** (V3): Integrar en `useMapViewModel` el cálculo reactivo de la ruta sobre el grafo cada vez que el punto azul cambie de posición o se seleccione un nuevo destino.
+
+### Bloque 15 — Pruebas Automatizadas y Validación
+- [ ] **T-55** (V3): Crear suite de pruebas unitarias `__tests__/pathfinding.test.ts` validando el camino más corto, nodos aislados y cálculo preciso de distancia/tiempo.
+- [ ] **T-56** (V3): Crear pruebas de integración en `__tests__/mapPathRoute.test.tsx` verificando renderizado de la polilínea, actualización en movimiento y persistencia del descarte de llegada.
+

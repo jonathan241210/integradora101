@@ -258,3 +258,27 @@ flowchart TD
 - **Evidencia/enlaces:**
   - `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado
   - `apps/mobile/docs/007-roadmap-mapa-gps-ar.md`
+
+
+---
+
+## Próxima Evolución — Fase V3: Navegación Guiada por Senderos (Pathfinding)
+
+- **Estado:** Propuesta formal planificada
+- **Responsable funcional:** Víctor Adrián
+- **Dependencia bloqueante:** Recepción de fotos/videos con dron del zoológico Nicolás Bravo y generación del SVG cartográfico definitivo.
+
+### Justificación de alcance
+En la V2.1 la línea hacia el recinto destino es una recta euclidiana directa (`DestinationRouteLine`). Esta solución es óptima para la fase esquemática porque evita invertir tiempo en trazar senderos matemáticos sobre un plano provisional que cambiará cuando se digitalice la topografía real con dron.
+
+### Objetivos funcionales V3 (cuando llegue el SVG real)
+1. **Grafo de andadores peatonales:**
+   - Modelar las intersecciones y curvas de los pasillos peatonales como un grafo ponderado de nodos y aristas (`src/utils/zooPaths.ts`).
+2. **Cálculo de ruta más corta (Pathfinding):**
+   - Algoritmo A* o Dijkstra ligero ejecutado en memoria en el cliente:
+     $$\text{Posición del visitante} \longrightarrow \text{Nodo de sendero más cercano} \longrightarrow \text{Recorrido por pasillos} \longrightarrow \text{Recinto destino}$$
+   - Renderizar una polilínea SVG curva/segmentada que siga los andadores físicos sin atravesar jaulas, lagos ni muros.
+3. **Métricas de caminata en tiempo real:**
+   - Distancia real a recorrer por los senderos (metros).
+   - Tiempo estimado a pie considerando velocidad promedio de paseo familiar ($1.1\text{ m/s}$ / $4\text{ km/h}$).
+   - Tarjeta informativa en pantalla: *"A 140 m • 2 min a pie"*.
