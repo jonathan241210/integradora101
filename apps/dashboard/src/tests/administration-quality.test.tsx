@@ -12,7 +12,7 @@ import {
   type AuthSessionState,
 } from "../viewmodels/auth-session";
 import {
-  confirmStaffDialog,
+  confirmStaffAction,
   initialStaffState,
   loadStaffAccounts,
   staffAccountsReducer,
@@ -44,12 +44,16 @@ const sectionStyles = styles.slice(styles.indexOf("dashboard-003"));
 const actions: StaffAccountsViewModel["actions"] = {
   changeQuery: vi.fn(),
   reload: vi.fn(),
-  openDialog: vi.fn(),
-  closeDialog: vi.fn(),
   dismissNotice: vi.fn(),
-  create: vi.fn(),
-  update: vi.fn(),
-  confirm: vi.fn(),
+  toggleForm: vi.fn(),
+  changeForm: vi.fn(),
+  changeDepartment: vi.fn(),
+  startEdit: vi.fn(),
+  cancelEdit: vi.fn(),
+  submit: vi.fn(),
+  openAction: vi.fn(),
+  closeAction: vi.fn(),
+  confirmAction: vi.fn(),
 };
 
 describe("CA-14 administration-sections", () => {
@@ -123,15 +127,13 @@ describe("CA-15 administration-sections", () => {
   it("las operaciones de escritura tampoco muestran mensajes propios ante un 401", async () => {
     const api = createAdminApiMock();
     api.users.remove.mockRejectedValueOnce(apiError(401, "Unauthenticated."));
-    const h = createHarness<typeof initialStaffState, StaffAction>(staffAccountsReducer, initialStaffState);
+    const h = createHarness<typeof initialStaffState, StaffAction>(staffAccountsReducer, {
+      ...initialStaffState,
+      items: [staffAccount()],
+      pendingAction: { type: "delete", id: 7 },
+    });
 
-    await confirmStaffDialog(
-      api,
-      h.dispatch,
-      { kind: "delete", account: staffAccount() },
-      "",
-      async () => undefined,
-    );
+    await confirmStaffAction(api, h.dispatch, h.state, "", async () => undefined);
 
     expect(h.state.actionError).toBe("");
     expect(h.state.saving).toBe(false);
@@ -149,23 +151,23 @@ describe("CA-16 administration-sections", () => {
   const render = (overrides: Partial<StaffState> = {}) =>
     renderToStaticMarkup(<UsersView state={{ ...state, ...overrides }} actions={actions} />);
 
-  it("etiqueta los diálogos con aria-labelledby y los controles con label", () => {
-    const form = render({ dialog: { kind: "create" } });
-    const confirmation = render({ dialog: { kind: "delete", account: staffAccount() } });
+  it("etiqueta el panel y las confirmaciones en línea y los controles con label", () => {
+    const form = render();
+    const confirmation = render({ pendingAction: { type: "delete", id: 7 } });
 
-    expect(form).toContain('aria-labelledby="dialog-title-crear-usuario"');
-    expect(form).toContain('id="dialog-title-crear-usuario"');
-    expect(confirmation).toContain('aria-labelledby="dialog-title-eliminar-cuenta"');
+    expect(form).toContain('aria-labelledby="staff-form-title"');
+    expect(form).toContain('id="staff-form-title"');
+    expect(confirmation).toContain('aria-label="Confirmar eliminar la cuenta de Ana López Pérez"');
     for (const id of ["staff-first_name", "staff-last_name", "staff-email", "staff-role", "users-search"]) {
       expect(form).toContain(`for="${id}"`);
     }
   });
 
-  it("usa role=alert y role=status, y no duplica identificadores de diálogo cerrados", () => {
+  it("usa role=alert y role=status, y no duplica identificadores", () => {
     const failed = render({ status: "error", error: "Falló la carga." });
     const notice = render({ notice: "Listo." });
     const closed = render();
-    const ids = [...closed.matchAll(/id="(dialog-title-[^"]*)"/g)].map((match) => match[1]);
+    const ids = [...closed.matchAll(/id="([^"]*)"/g)].map((match) => match[1]);
 
     expect(failed).toContain('role="alert"');
     expect(notice).toContain('role="status"');
@@ -226,5 +228,110 @@ describe("CA-17 administration-sections", () => {
     expect(sectionStyles).not.toMatch(/#[\da-f]{3,8}\b/i);
     expect(sectionStyles).toContain("var(--danger)");
     expect(sectionStyles).toContain("var(--border)");
+  });
+});
+
+const inlineStyles = styles.slice(styles.indexOf("dashboard-004 · inline-content-forms"));
+const inlineFiles = presentationFiles.filter(({ file }) =>
+  /(NewsView|EventsView|UsersView|FormPanel|FormField|InlineConfirm|InlinePasswordReset|InlineFormFooter|ImageUploadBox|ContentCardActions|ContentThumbnail|DataTable)\.tsx$/.test(file),
+);
+
+describe("CA-16 inline-content-forms", () => {
+  it("views, components y sections no usan fetch, axios, @arca/api-client, servicios ni URL", () => {
+    expect(inlineFiles.length).toBeGreaterThanOrEqual(10);
+
+    for (const { file, source } of presentationFiles) {
+      expect(source, file).not.toMatch(/\bfetch\s*\(/);
+      expect(source, file).not.toMatch(/\baxios\b/);
+      expect(source, file).not.toMatch(/^import\s+(?!type\b)[^;]*from\s+["']@arca\/api-client["']/m);
+      expect(source, file).not.toMatch(/from\s+["'](?:@|\.\.?)\/services\//);
+      expect(source, file).not.toMatch(/\bURL\.(?:create|revoke)ObjectURL\b/);
+      expect(source, file).not.toMatch(/\.reduce\(|\bpermissions\b/);
+    }
+  });
+
+  it("el envío, la vista previa y las acciones pasan por hooks ViewModel que usan adminApi y image-preview", () => {
+    for (const hook of ["useNewsManagement", "useEventsManagement"]) {
+      const source = readFileSync(`${srcDirectory}viewmodels/${hook}.ts`, "utf8");
+
+      expect(source, hook).toContain('from "@/services/arca-api"');
+      expect(source, hook).toContain('from "@/services/image-preview"');
+      expect(source, hook).toContain("adminApi");
+    }
+    const preview = readFileSync(`${srcDirectory}services/image-preview.ts`, "utf8");
+
+    expect(preview).toContain("URL.createObjectURL");
+    expect(preview).toContain("URL.revokeObjectURL");
+  });
+});
+
+describe("CA-17 inline-content-forms", () => {
+  it("package.json del dashboard no suma dependencias respecto de dashboard-003", () => {
+    const manifest = JSON.parse(readFileSync(`${srcDirectory}../package.json`, "utf8")) as {
+      dependencies: Record<string, string>;
+      devDependencies: Record<string, string>;
+    };
+
+    expect(Object.keys(manifest.dependencies).sort()).toEqual([
+      "@arca/api-client",
+      "@arca/tokens",
+      "@arca/ui",
+      "react",
+      "react-dom",
+    ]);
+    expect(Object.keys(manifest.devDependencies).sort()).toEqual([
+      "@tailwindcss/vite",
+      "@types/node",
+      "@types/react",
+      "@types/react-dom",
+      "tailwindcss",
+      "typescript",
+      "vite",
+      "vitest",
+    ]);
+  });
+});
+
+describe("CA-18 inline-content-forms", () => {
+  it("formularios, caja de imagen, tarjetas y tabla se apilan o desplazan sin desbordar la página", () => {
+    expect(inlineStyles.length).toBeGreaterThan(500);
+    expect(inlineStyles).toMatch(/@media \(max-width: 560px\)[\s\S]*\.form-field--wide[\s\S]*grid-column:\s*1 \/ -1/);
+    expect(inlineStyles).toMatch(/\.upload-box__preview\s*\{[^}]*max-width:\s*260px/s);
+    expect(inlineStyles).toMatch(/\.content-card__thumb\s*\{[^}]*width:\s*100%/s);
+    expect(inlineStyles).toMatch(/\.form-panel__header\s*\{[^}]*flex-wrap:\s*wrap/s);
+    expect(inlineStyles).toMatch(/\.inline-confirm__actions\s*\{[^}]*flex-wrap:\s*wrap/s);
+    expect(inlineStyles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.data-table__detail td/);
+    expect(styles).toMatch(/\.table-scroll\s*\{[^}]*overflow-x:\s*auto/s);
+    expect(styles).toMatch(/\.upload-box:focus-within\s*\{[^}]*outline/s);
+  });
+
+  it("la fila de detalle de la tabla ocupa todo el ancho bajo la fila", () => {
+    const markup = renderToStaticMarkup(
+      <DataTable
+        caption="Tabla"
+        columns={[{ key: "a", header: "A", render: (row: { a: string }) => row.a }, { key: "b", header: "B", render: () => "b" }]}
+        rows={[{ a: "x" }, { a: "y" }]}
+        rowKey={(row) => row.a}
+        rowDetail={(row) => (row.a === "x" ? <p>detalle</p> : null)}
+      />,
+    );
+
+    expect(markup).toContain('class="data-table__detail"');
+    expect(markup).toContain('colSpan="2"');
+    expect(markup.match(/data-table__detail/g)).toHaveLength(1);
+  });
+});
+
+describe("CA-19 inline-content-forms", () => {
+  it("el estilo nuevo usa tokens semánticos y no fija colores de marca en hexadecimal", () => {
+    expect(inlineStyles).not.toMatch(/#[\da-f]{3,8}\b/i);
+    expect(inlineStyles).not.toMatch(/\brgba?\(|\bhsla?\(/i);
+    expect(inlineStyles).toContain("var(--border)");
+    expect(inlineStyles).toContain("var(--primary)");
+    expect(inlineStyles).toContain("var(--surface-subtle)");
+
+    for (const { file, source } of inlineFiles) {
+      expect(source, file).not.toMatch(/#[\da-f]{3,8}\b/i);
+    }
   });
 });

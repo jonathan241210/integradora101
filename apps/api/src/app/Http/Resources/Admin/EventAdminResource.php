@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Admin;
 
+use App\Actions\Admin\Content\ResolveContentImageUrlAction;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +15,7 @@ class EventAdminResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'image_path' => $this->image_path,
+            'image_url' => app(ResolveContentImageUrlAction::class)->execute($this->image_path),
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
             'start_time' => $this->start_time,

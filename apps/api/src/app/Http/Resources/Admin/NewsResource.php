@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Admin;
 
+use App\Actions\Admin\Content\ResolveContentImageUrlAction;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,6 +16,7 @@ class NewsResource extends JsonResource
             'description' => $this->description,
             'content' => $this->content,
             'image_path' => $this->image_path,
+            'image_url' => app(ResolveContentImageUrlAction::class)->execute($this->image_path),
             'published_date' => $this->published_date?->toDateString(),
             'start_date' => $this->start_date?->toDateString(),
             'end_date' => $this->end_date?->toDateString(),

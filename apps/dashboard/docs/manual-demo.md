@@ -60,8 +60,8 @@ La API entrega `home` y permisos; el dashboard solo muestra las secciones asocia
 
 Las secciones de administración usan datos reales de `arca_pruebas` mediante `api-007` y no muestran el aviso de demostración:
 
-- **Usuarios:** tabla paginada con búsqueda y filtros por rol, área y estado; alta, edición, activar/desactivar, eliminar, restablecer contraseña y restablecer 2FA, siempre con confirmación. `zoo-admin` solo ve y gestiona cuentas de taquilla y veterinaria.
-- **Noticias y Eventos:** listado de activos e inactivos, alta, edición, activar/desactivar y eliminar con confirmación. No hay subida de imágenes.
+- **Usuarios:** tabla paginada con búsqueda y filtros por rol, área y estado; formulario fijo (minimizable) de alta y edición; activar/desactivar, eliminar, restablecer contraseña y restablecer 2FA con confirmación en línea en la propia fila, sin ventanas emergentes. `zoo-admin` solo ve y gestiona cuentas de taquilla y veterinaria.
+- **Noticias y Eventos:** listado de activos e inactivos, formulario fijo (minimizable) de alta y edición con caja de imagen (selector o arrastrar y soltar; JPG, PNG o WebP de hasta 5 MB; vista previa, «Quitar imagen» y miniatura en las tarjetas); activar/desactivar y eliminar con confirmación en línea en la tarjeta.
 - **Recintos:** lista con número de animales, alta y renombrado; no se eliminan.
 - **Panel principal:** totales de hoy y de los últimos 7 días y serie diaria de ingresos. Sin ventas se muestra un estado vacío.
 - **Reporte de boletos:** periodo semanal o mensual (rango personalizado como opción secundaria), navegación al periodo anterior/siguiente, totales, desglose diario, listado paginado y exportación.

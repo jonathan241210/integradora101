@@ -1,8 +1,8 @@
 # Plan técnico · 008 · event-news-images
 
 - Spec: `apps/api/specs/008-event-news-images.md`
-- Estado de spec: Borrador (pendiente de aprobación). Este plan no debe ejecutarse hasta que la spec esté Aprobada.
-- Estado del plan: Borrador (pendiente de aprobación técnica y del Constitution Check).
+- Estado de spec: Aprobada (2026-11-02). Este plan no se ejecuta hasta su propia aprobación técnica.
+- Estado del plan: Aprobado (2026-11-02, Jonathan, al ordenar implementar el backend).
 - Responsable técnico: por identificar (backend).
 - Consumidores: `dashboard-004`, mediante `@arca/api-client`; `api-006` (campo `image_url` aditivo en el catálogo público, P7).
 - Origen: plan de trabajo aprobado por el usuario el 2026-11-01 (fuera del repositorio). Las decisiones P1 a P8 se aplican tal como las comunicó la sesión principal el mismo día. La eliminación es lógica (`api-007` y DBR-005) y añade el borrado del archivo de imagen (P2). Cambios de ruta y de nombres frente a ese plan están en «Divergencias y correcciones».
@@ -155,7 +155,7 @@ Convención: `test_caNN_event_news_images_<descripción>()` en PHPUnit, bajo `ap
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí (propuesto) | Sin dependencias nuevas: `Storage` y validación de Laravel 12 sobre PHP 8.4. Configuración solo por `.env`. Sin servicios propietarios; el almacenamiento externo queda fuera y requeriría ADR. |
-| II. La spec manda | Pendiente | `api-008` está en Borrador. Este plan, las tasks y el PR deben enlazar los tres artefactos una vez aprobada la spec. No se escribe código antes. |
+| II. La spec manda | Sí (cumplido) | `api-008` está Aprobada (2026-11-02) y este plan Aprobado; el PR enlaza spec, plan y tasks. |
 | III. Lógica separada de la interfaz | Sí (propuesto) | Validación en Form Requests; archivos, borrados y transacción en Actions; controladores delgados; `dashboard-004` solo envía el archivo y presenta `image_url`. |
 | IV. Un test por criterio | Sí (propuesto) | La tabla de pruebas cubre CA-01 a CA-12; `ContentImageCoverageTest` lo verifica (CA-13). |
 | V. Una sola fuente de verdad para los datos | Sí (propuesto) | La subida no cambia esquema (RN-10). La base sigue siendo la única fuente de la ruta; el archivo es un recurso del disco referenciado por la base. La eliminación es lógica con SoftDeletes (`api-007`, DBR-005), conforme al verificable de la Constitución V. Sin excepción ni ADR. |
@@ -181,6 +181,8 @@ Ninguna excepción se propone. No se requiere ADR de dependencia ni de excepció
 2. **Nombres de Actions.** El plan aprobado propone una sola Action (`Admin/StoreContentImageAction`). Este plan separa la escritura (`StoreContentImageAction`) del borrado (`DeleteContentImageAction`) porque el borrado debe aplicar la comprobación de ruta gestionada (CA-08) y se usa desde las cuatro Actions de contenido.
 3. **Momento del borrado.** El plan aprobado dice «antes/después del soft delete». Este plan fija el borrado del archivo después del commit, para no perder la imagen si la transacción falla.
 4. **Endpoints de imagen.** El plan aprobado admitía una ruta dedicada `…/image`. Por la decisión P1 no se crea; se usa `POST` + `_method=PATCH` en las rutas existentes.
+5. **Actions adicionales.** Se añadieron `ResolveContentImageUrlAction` (decide si una ruta es gestionada y construye `image_url`; la expresión de ruta gestionada usa el modificador `D` para rechazar saltos de línea finales) y `ResolveContentImageChangeAction` (decide la ruta final y la acción `set`, `replaced` o `removed` para el log). No estaban en el plan aprobado; evitan duplicar la regla de ruta gestionada (CA-08) y la lógica de cambio en las cuatro Actions de contenido.
+6. **Mensajes de validación.** Los mensajes fijos de `mimes` y `max` de archivo («JPG, PNG o WebP», «5 MB») viven en `messages()` de `SaveNewsRequest` y `SaveEventRequest`, no en `lang/es/validation.php` global.
 
 ## Preguntas pendientes
 
@@ -188,7 +190,7 @@ Sobre la subida: ninguna. P1 a P8 quedan decididas en la spec («Decisiones toma
 
 Sobre la eliminación: ninguna pregunta abierta. DBR-007 queda descartada y el borrado sigue siendo lógico. Pendiente de decisión no bloqueante: limpieza de archivos huérfanos si falla el borrado del archivo tras el commit (spec, «Riesgos»).
 
-La aprobación de la spec y de este plan sigue pendiente.
+La spec y este plan están aprobados (2026-11-02).
 
 ## Orden y aprobación
 
@@ -211,8 +213,8 @@ La aprobación de la spec y de este plan sigue pendiente.
 
 | Rol | Aprueba | Estado |
 |---|---|---|
-| Responsable funcional | Spec (decisiones P1 a P8 registradas) | Pendiente |
-| Equipo | Solución técnica y Constitution Check de este plan | Pendiente |
+| Responsable funcional | Spec (decisiones P1 a P8 registradas) | Aprobado: Jonathan, 2026-11-02 (al ordenar implementar) |
+| Equipo | Solución técnica y Constitution Check de este plan | Aprobado: Jonathan, 2026-11-02 (al ordenar implementar) |
 | Responsable de BD | Subida y eliminación: no requerido (sin DBR). Confirmar que DBR-005 está aplicada en el ambiente de despliegue | Pendiente |
 
 Evidencias: `apps/api/specs/007-administration-management.md`, `apps/api/plan/007-administration-management.md`, `apps/api/docs/administracion.md`, `docs/database/requests/DBR-005-news-events-soft-deletes.md`, `docs/database/requests/DBR-007-news-events-hard-delete.md` (descartada, solo historial).

@@ -4,7 +4,7 @@
 - Plan: `apps/dashboard/plan/003-administration-sections.md` (Aprobado, Jonathan, 2026-10-30)
 - Estado del checklist: Aprobado
 
-> Nota de vigencia (2026-11-01): T-09, T-13, T-18 y T-19 describen diálogos en Usuarios, Noticias y Eventos, y «sin campo de imagen» en estas dos últimas. Esa parte queda reemplazada por `dashboard-004` (`apps/dashboard/tasks/004-inline-content-forms.md`, pendiente de aprobación) y por `api-008` para la subida. Las casillas `[x]` son historial y no se modifican.
+> Nota de vigencia (2026-11-01): T-09, T-13, T-18 y T-19 describen diálogos en Usuarios, Noticias y Eventos, y «sin campo de imagen» en estas dos últimas. Esa parte queda reemplazada por `dashboard-004` (`apps/dashboard/tasks/004-inline-content-forms.md`) y por `api-008` para la subida. Las casillas `[x]` son historial y no se modifican.
 
 Rutas relativas a `apps/dashboard` salvo que se indique `packages/…`. Cada prueba nombra su criterio con el bloque `describe("CA-NN administration-sections", …)`. Se desarrolla contra un `AdminApi` simulado (RN-08); no se instalan dependencias ni se toca `package.json`.
 
