@@ -21,6 +21,7 @@ class BuildTicketReportAction
         $summary = $this->summarize->execute($period);
 
         $tickets = Ticket::query()
+            ->completed()
             ->select(['id', 'adult_quantity', 'child_quantity', 'total_amount', 'purchased_at'])
             ->where('purchased_at', '>=', $period->startUtc())
             ->where('purchased_at', '<', $period->endUtc())

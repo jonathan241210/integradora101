@@ -8,6 +8,8 @@
 
 > **Nota de vigencia (2026-11-01):** en Noticias y Eventos, el «sin campo de subida de imagen» (CA-08 y «Fuera de alcance») y en Usuarios, el uso de diálogos para alta, edición, eliminación, activar/desactivar, restablecer contraseña y restablecer 2FA (CA-06, CA-08 y RN-09 en esas secciones) quedan reemplazados por `dashboard-004` (formulario fijo, caja de imagen, paneles colapsables y confirmación en línea) y `api-008` (subida de imágenes). Recintos, Venta e Historial y el resto de criterios no cambian. El texto original se conserva como historial.
 
+> **Nota de vigencia (2026-11-02):** en CA-02, Venta e Historial de taquilla dejan de ser demostrativos por `dashboard-005` (`apps/dashboard/specs/005-ticket-sales.md`), que reemplaza para esas dos vistas el aviso de demostración de CA-02 y `dashboard-001` CA-04, CA-11 y CA-15. El texto de CA-02 y la mención a Venta e Historial en el resto de la spec se conservan como historial. El estado de esta spec (Implementada) y sus demás criterios no cambian.
+
 ## Problema y contexto
 
 Tras el login real (`dashboard-002`), las secciones de administración (Panel principal, Noticias, Eventos, Reporte de boletos, Recintos y Usuarios de taquilla) siguen con datos ficticios del prototipo `dashboard-001`. La API expone sus contrapartes reales en `api-007`. Esta feature conecta esas secciones a la API para el administrador general (`admin`, Presidencia) y el administrador del zoológico (`zoo-admin`, Dirección), y el Panel y el Reporte también para `executive`, en solo lectura.

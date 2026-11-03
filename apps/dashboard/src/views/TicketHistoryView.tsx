@@ -1,95 +1,177 @@
-import { useMemo, useState } from "react";
-import { Badge, Card, Field, SelectField } from "@arca/ui";
+import { useState, type FormEvent } from "react";
+import { Badge, Button, Card, Field, SelectField } from "@arca/ui";
+import { CancelTicketDialog } from "@/components/CancelTicketDialog";
+import { DataTable, type DataTableColumn } from "@/components/DataTable";
+import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { NoticeBar } from "@/components/NoticeBar";
+import { PaginationBar } from "@/components/PaginationBar";
 import { SectionHeading } from "@/components/SectionHeading";
-import { demoTicketHistory } from "@/data/demo-data";
+import { formatCount, formatCurrency } from "@/viewmodels/formatters";
+import {
+  formatTicketDateTime,
+  type TicketHistoryViewModel,
+  type TicketStatusFilter,
+} from "@/viewmodels/ticket-history";
+import type { TicketHistoryRowDto } from "@/viewmodels/ticket-types";
 
-export function TicketHistoryView() {
-  const [folio, setFolio] = useState("");
-  const [status, setStatus] = useState("all");
-  const sales = useMemo(
-    () =>
-      demoTicketHistory.filter((sale) => {
-        const matchesFolio = sale.id.toLocaleLowerCase().includes(folio.trim().toLocaleLowerCase());
-        const matchesStatus = status === "all" || sale.status === status;
-        return matchesFolio && matchesStatus;
-      }),
-    [folio, status],
-  );
+export function TicketHistoryView({ state, actions }: TicketHistoryViewModel) {
+  const { query } = state;
+  const [folio, setFolio] = useState(query.folio ?? "");
+  const [status, setStatus] = useState<TicketStatusFilter>(query.status ?? "");
+  const [from, setFrom] = useState(query.from ?? "");
+  const [to, setTo] = useState(query.to ?? "");
+
+  const apply = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    actions.applyFilters({ folio, status, from, to });
+  };
+  const clear = () => {
+    setFolio("");
+    setStatus("");
+    setFrom("");
+    setTo("");
+    actions.applyFilters({ folio: "", status: "", from: "", to: "" });
+  };
+
+  const columns: DataTableColumn<TicketHistoryRowDto>[] = [
+    { key: "folio", header: "Folio", render: (row) => row.folio },
+    {
+      key: "purchased",
+      header: "Fecha y hora",
+      render: (row) => formatTicketDateTime(row.purchased_at),
+    },
+    { key: "adults", header: "Adultos", render: (row) => formatCount(row.adult_quantity) },
+    { key: "children", header: "Niños", render: (row) => formatCount(row.child_quantity) },
+    { key: "total", header: "Total", render: (row) => formatCurrency(row.total_amount) },
+    {
+      key: "status",
+      header: "Estado",
+      render: (row) => (
+        <Badge tone={row.status === "completed" ? "success" : "danger"}>
+          {row.status === "completed" ? "Completado" : "Cancelado"}
+        </Badge>
+      ),
+    },
+    {
+      key: "reason",
+      header: "Motivo",
+      render: (row) => (row.status === "cancelled" ? row.cancellation_reason ?? "—" : "—"),
+    },
+    { key: "cashier", header: "Cajero", render: (row) => row.cashier_name ?? "—" },
+    {
+      key: "actions",
+      header: "Acciones",
+      render: (row) =>
+        row.cancellable ? (
+          <div className="row-actions">
+            <Button
+              variant="danger"
+              aria-label={`Cancelar boleto ${row.folio}`}
+              onClick={() => actions.openCancel(row)}
+            >
+              Cancelar
+            </Button>
+          </div>
+        ) : (
+          "—"
+        ),
+    },
+  ];
 
   return (
     <>
       <SectionHeading
         eyebrow="Taquilla / Historial"
         title="Historial de boletos"
-        description="Consulta movimientos ficticios para revisar la presentación del historial."
+        description="Consulta los boletos vendidos, filtra por folio, estado o fechas y cancela los del día cuando corresponda."
       />
-      <Card className="ticket-history-filters">
-        <Field
-          id="history-folio"
-          label="Buscar folio de muestra"
-          placeholder="Ejemplo: MUESTRA-001"
-          value={folio}
-          onChange={(event) => setFolio(event.target.value)}
-        />
-        <SelectField
-          id="history-status"
-          label="Estado"
-          value={status}
-          onChange={(event) => setStatus(event.target.value)}
-        >
-          <option value="all">Todos los estados</option>
-          <option value="Completada">Completada</option>
-          <option value="Cancelada">Cancelada</option>
-        </SelectField>
-        <p>Los filtros solo recorren datos estáticos de esta demostración.</p>
+
+      <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} />
+
+      <Card className="filter-card">
+        <form className="filter-form ticket-history-filters" onSubmit={apply}>
+          <Field
+            id="history-folio"
+            label="Folio"
+            inputMode="numeric"
+            autoComplete="off"
+            value={folio}
+            onChange={(event) => setFolio(event.target.value)}
+          />
+          <SelectField
+            id="history-status"
+            label="Estado"
+            value={status}
+            onChange={(event) => setStatus(event.target.value as TicketStatusFilter)}
+          >
+            <option value="">Todos los estados</option>
+            <option value="completed">Completado</option>
+            <option value="cancelled">Cancelado</option>
+          </SelectField>
+          <Field
+            id="history-from"
+            label="Fecha desde"
+            type="date"
+            value={from}
+            onChange={(event) => setFrom(event.target.value)}
+          />
+          <Field
+            id="history-to"
+            label="Fecha hasta"
+            type="date"
+            value={to}
+            onChange={(event) => setTo(event.target.value)}
+          />
+          <div className="filter-actions">
+            <Button type="submit">Aplicar filtros</Button>
+            <Button type="button" variant="secondary" onClick={clear}>
+              Limpiar
+            </Button>
+          </div>
+        </form>
       </Card>
+
       <Card className="table-card">
         <div className="card-heading">
           <div>
-            <h2>Movimientos de muestra</h2>
-            <p>Sin transacciones reales · no se guarda información</p>
+            <h2>Boletos</h2>
+            <p>
+              {state.meta ? `${formatCount(state.meta.total)} boletos` : "Consulta de la API"}
+            </p>
           </div>
-          <Badge tone="warning">Datos ficticios</Badge>
         </div>
-        <div className="table-scroll">
-          <table>
-            <caption className="visually-hidden">
-              Historial de boletos ficticio para el perfil de taquilla
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col">Folio de muestra</th>
-                <th scope="col">Fecha</th>
-                <th scope="col">Hora</th>
-                <th scope="col">Boletos</th>
-                <th scope="col">Importe ficticio</th>
-                <th scope="col">Estado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sales.map((sale) => (
-                <tr key={sale.id}>
-                  <td>{sale.id}</td>
-                  <td>{sale.date}</td>
-                  <td>{sale.time}</td>
-                  <td>{sale.tickets}</td>
-                  <td>{sale.amount}</td>
-                  <td>
-                    <Badge tone={sale.status === "Completada" ? "success" : "danger"}>
-                      {sale.status}
-                    </Badge>
-                  </td>
-                </tr>
-              ))}
-              {sales.length === 0 && (
-                <tr>
-                  <td colSpan={6}>No hay filas ficticias que coincidan con el filtro.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <ListStatusMessage
+          status={state.status}
+          error={state.error}
+          loadingText="Cargando el historial…"
+          emptyText="No hay boletos que coincidan con los filtros."
+          onRetry={actions.reload}
+        />
+        {state.status === "ready" && (
+          <DataTable
+            caption="Historial de boletos"
+            columns={columns}
+            rows={state.rows}
+            rowKey={(row) => row.folio}
+          />
+        )}
+        {state.meta && state.status !== "error" && (
+          <PaginationBar
+            page={state.meta.current_page}
+            lastPage={state.meta.last_page}
+            total={state.meta.total}
+            busy={state.status === "loading"}
+            onPageChange={actions.goToPage}
+          />
+        )}
       </Card>
+
+      <CancelTicketDialog
+        cancel={state.cancel}
+        onReasonChange={actions.changeReason}
+        onConfirm={actions.confirmCancel}
+        onClose={actions.closeCancel}
+      />
     </>
   );
 }

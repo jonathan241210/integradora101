@@ -1,10 +1,10 @@
 # 0019 · Generación del QR del boleto en SVG desde la API
 
-- Estado: Propuesto
-- Fecha: 2026-11-01
+- Estado: Aceptado
+- Fecha: 2026-11-01 (propuesto); aceptado el 2026-11-02 por Jonathan
 - Spec relacionada: `apps/api/specs/009-ticket-sales.md` (CA-09, RN-07, pregunta 4). Dependencia a considerar en `docs/database/requests/DBR-006-ticket-sales.md`; este ADR no cambia el esquema.
 
-> Estado **Propuesto**: este documento no aprueba ninguna dependencia ni autoriza implementar CA-09 de `api-009`. La decisión la toma el equipo (Constitución I), junto con la revisión de DBR-006 por el responsable de BD y backend.
+> Estado **Aceptado** (2026-11-02, Jonathan): se aprueba la dependencia `bacon/bacon-qr-code` (ver «Decisión aceptada») y queda desbloqueada la implementación de CA-09 de `api-009`. Cambia `composer.json` y `composer.lock` de `apps/api`; esa tarea es de backend.
 
 ## Contexto
 
@@ -18,7 +18,11 @@ Tres restricciones condicionan la decisión:
 
 El token es aleatorio y único por boleto (RN-07, DBR-006); su formato no depende de la librería elegida.
 
-## Decisión (propuesta)
+## Decisión aceptada
+
+**Librería: `bacon/bacon-qr-code`, versión `^3.1` (verificada: v3.1.1, publicada el 2026-04-05, licencia BSD-2-Clause).** Verificación en Packagist el 2026-11-02: requiere `php ^8.1` (compatible con PHP 8.4 del proyecto), `ext-iconv` y `dasprid/enum`; no depende de Laravel, por lo que no hay conflicto con Laravel 12. Su backend SVG no requiere `gd` ni binarios externos. Se descarta `endroid/qr-code` porque es un envoltorio que a su vez depende de `bacon/bacon-qr-code`: añadiría una capa y más dependencias sin beneficio. Queda pendiente, al instalarla, ejecutar `composer audit` y comprobar que `ext-iconv` esté habilitada en cada ambiente.
+
+### Decisión (texto original de la propuesta)
 
 1. La API genera el QR en formato SVG con **una sola librería PHP**, que se elige entre las candidatas de la sección siguiente. La generación vive en una Action (Constitución III), no en el controlador.
 2. El SVG se devuelve en la respuesta de la venta (`201`) y **no se persiste**. Solo se guarda `tickets.qr_code`, como indica DBR-006.
@@ -64,7 +68,7 @@ Criterio para elegir (en este orden): compatibilidad verificada con PHP 8.4 y La
 
 ## Validación y revisión
 
-- Estado actual: **Propuesto**. No hay aprobación del equipo. No se ha instalado ninguna librería ni se ha verificado ninguna versión en este documento.
-- Aprobación pendiente: equipo (Constitución I), con revisión de backend (Jonathan) y del responsable de BD (Víctor Adrián, propuesto) junto con DBR-006.
+- Estado actual: **Aceptado** (2026-11-02, Jonathan). La librería y versión quedan fijadas en «Decisión aceptada». Aún no se ha instalado: `composer require` y `composer audit` los ejecuta backend dentro de las tasks de `api-009`.
+- Responsable de BD: este ADR no cambia el esquema; su revisión junto con DBR-006 no bloquea.
 - Al aprobar: fijar la librería y su versión, registrarlas en este ADR, cambiar el estado a Aceptado, y abrir la tarea de instalación y de pruebas de CA-09 en `apps/api/tasks/` cuando `api-009` pase a Aprobada.
 - Si el equipo rechaza ambas candidatas, `api-009` CA-09 queda bloqueado y debe reabrirse la pregunta 4 de la spec.

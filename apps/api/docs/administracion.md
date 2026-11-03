@@ -6,6 +6,8 @@ Este documento describe el código revisado. No certifica que las pruebas pasen:
 
 > Nota de vigencia (2026-11-01): `image_path` deja de ser solo de lectura. La subida, el reemplazo, el borrado del archivo y `image_url` se especifican en `apps/api/specs/008-event-news-images.md` (Borrador, pendiente de aprobación). Las secciones «Noticias y eventos» y «Recurso de noticia» describen el comportamiento vigente hasta que `api-008` se implemente.
 
+> Nota de vigencia (2026-11-02, `api-009`): el panel (`/dashboard`), el reporte (`/reports/tickets`, totales, desglose diario y listado) y las exportaciones CSV, Excel y PDF excluyen los boletos con `status` `cancelled` (CA-34 de `api-009`, RN-18). El filtro `completed` vive en `SummarizeTicketSalesAction`, `BuildTicketReportAction` y `ExportTicketReportAction` (scope `Ticket::completed()`). Al desplegar, las cifras históricas pueden bajar si ya existen boletos cancelados; despliega junto con `dashboard-003`. `Ticket` ya no es de solo lectura: lo escriben las Actions de `api-009` (ver `apps/api/docs/tickets.md`).
+
 El parámetro `timezone` (RN-14, CA-28; decisión de Jonathan del 2026-10-30) está implementado (T-40) y probado (T-41).
 
 ## Acceso común

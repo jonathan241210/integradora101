@@ -34,7 +34,7 @@ Las seis cuentas comparten `DEMO_STAFF_PASSWORD`. No pegues ni guardes ese valor
 | `admin@arca.local` | `admin` | Administración; 2FA obligatorio |
 | `direccion_zoo@arca.local` | `zoo-admin` | Administración según permisos; 2FA obligatorio |
 | `ejecutivo@arca.local` | `executive` | Panel y reporte de solo lectura |
-| `boletaje@arca.local` | `cashier` | Venta e historial de muestra |
+| `boletaje@arca.local` | `cashier` | Venta e historial reales (`api-009`) |
 | `veterinario@arca.local` | `veterinarian` | Redirección a la PWA |
 
 ## Login y segundo factor
@@ -53,7 +53,7 @@ La API entrega `home` y permisos; el dashboard solo muestra las secciones asocia
 
 - `administration`: Panel principal, Noticias, Eventos, Reporte de boletos, Recintos y Usuarios según permisos.
 - `executive`: Panel y Reporte reales en solo lectura, con exportación.
-- `ticket`: Venta e Historial, con fixtures de muestra.
+- `ticket`: Venta e Historial reales (el cajero ve solo sus boletos).
 - `pwa`: la sesión veterinaria se dirige a `pwa_url`. Si la URL no está configurada, se informa que la aplicación no está disponible y no se redirige.
 
 ### Secciones conectadas a la API
@@ -68,9 +68,13 @@ Las secciones de administración usan datos reales de `arca_pruebas` mediante `a
 
 **Exportación:** los botones «Exportar CSV», «Exportar Excel» y «Exportar PDF» siempre están visibles y la API genera los tres formatos. El PDF tiene un tope de boletos por periodo: si se supera, la API responde con un aviso y el reporte en pantalla se conserva.
 
-### Secciones que siguen siendo demostrativas
+### Taquilla y precios (`api-009`)
 
-Venta de boletos e Historial de boletos (perfil de taquilla) conservan el aviso de demostración y datos de muestra; sus cambios desaparecen al recargar y no se guardan en `localStorage` ni `sessionStorage`. El buscador y las notificaciones de la barra superior también son de demostración.
+- **Venta (`cashier`):** cantidades de adultos y niños, precios unitarios vigentes de la API, confirmación, boleto con folio y QR e «Imprimir boleto». «Configurar impresión» guarda la preferencia solo en el equipo.
+- **Historial:** `cashier` ve sus boletos y puede cancelar los marcados como cancelables indicando el motivo; `admin` y `zoo-admin` lo ven en solo lectura.
+- **Precios (`admin`):** precio vigente y próximo cambio, cambio inmediato o programado con confirmación; sin segundo factor confirmado la API responde 403 y se muestra un aviso.
+
+Ninguna de estas secciones muestra aviso de demostración. Siguen siendo de demostración el buscador y el botón de notificaciones de la barra superior; el centro de notificaciones y los avisos de precio están diferidos.
 
 ## Verificación local
 

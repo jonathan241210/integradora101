@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 
 class LogAdminActivityAction
 {
-    private const FORBIDDEN_KEYS = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'qr_code', 'content'];
+    private const FORBIDDEN_KEYS = ['password', 'remember_token', 'two_factor_secret', 'two_factor_recovery_codes', 'qr_code', 'qr_svg', 'content'];
 
     public function execute(string $event, string $description, ?Model $subject = null, array $properties = []): void
     {

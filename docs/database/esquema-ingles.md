@@ -254,9 +254,59 @@ In-person admission ticket sales at the box office.
 | Column | Type | Description | Key / Constraint |
 |---|---|---|---|
 | `id` | INT AUTO_INCREMENT | Printed serial folio number | PRIMARY KEY |
-| `adult_quantity` | INT | Quantity of adult admissions | NOT NULL, DEFAULT 0 |
-| `child_quantity` | INT | Quantity of child admissions | NOT NULL, DEFAULT 0 |
-| `total_amount` | DECIMAL(10,2) | Total paid amount in MXN | NOT NULL |
-| `purchased_at` | DATETIME | Exact transaction purchase timestamp | NOT NULL |
-| `qr_code` | VARCHAR(255) | QR turnstile validation token string | NOT NULL |
-| `cashier_id` | INT | Cashier staff member who sold the ticket | FOREIGN KEY → `users(id)` |
+| `adult_quantity` | INT | Quantity of adult admissions | NULL |
+| `child_quantity` | INT | Quantity of child admissions | NULL |
+| `total_amount` | DECIMAL(8,2) | Total paid amount in MXN (maximum 999,999.99) | NULL |
+| `purchased_at` | TIMESTAMP | Exact transaction purchase timestamp (UTC) | NULL, DEFAULT CURRENT_TIMESTAMP |
+| `qr_code` | VARCHAR(255) | QR turnstile validation token string | UNIQUE (`tickets_qr_code_unique`), NULL |
+| `cashier_id` | INT | Cashier staff member who sold the ticket | FOREIGN KEY → `users(id)`; INDEX (`cashier_id`, `purchased_at`) |
+| `status` | VARCHAR(20) | Ticket status: `completed` or `cancelled` | NOT NULL, DEFAULT `completed` |
+| `payment_method` | VARCHAR(20) | Payment method; only `cash` in this phase | NOT NULL, DEFAULT `cash` |
+| `adult_unit_price` | DECIMAL(10,2) | Adult unit price applied to this sale (copy, not reference) | NULL |
+| `child_unit_price` | DECIMAL(10,2) | Child unit price applied to this sale (copy, not reference) | NULL |
+| `cancelled_at` | DATETIME | Cancellation timestamp (UTC) | NULL |
+| `cancelled_by` | INT | User who cancelled the ticket (the selling cashier) | FOREIGN KEY → `users(id)`, NULL |
+| `cancellation_reason` | VARCHAR(255) | Free-text cancellation reason | NULL |
+| `updated_by` | INT | Last user who modified the ticket | FOREIGN KEY → `users(id)`, NULL |
+| `deleted_at` | TIMESTAMP | Logical deletion (SoftDeletes); not used for cancellation | NULL |
+
+Notas de la tabla `tickets`:
+
+- Columnas verificadas en `arca_pruebas` el 2026-11-02 (ver DBR-006, «Pruebas y evidencia»). Las columnas nuevas vienen de DBR-006 (migración `2026_11_02_000006_ticket_sales_schema`).
+- Índices: `tickets_qr_code_unique` (UNIQUE sobre `qr_code`), `idx_tickets_cashier_purchased` (`cashier_id`, `purchased_at`) e `idx_tickets_purchased_at` (`purchased_at`).
+- Diferencias con la DBR-006 original (planeadas como NOT NULL, a decidir por BD): `qr_code`, `adult_unit_price` y `child_unit_price` son NULL en la base real.
+
+---
+
+## 17. Table: `ticket_prices` (Ticket Price Schedule)
+Unit prices per ticket type with effective date. The current price is resolved by the API (not by the database). Created by DBR-006.
+
+| Column | Type | Description | Key / Constraint |
+|---|---|---|---|
+| `id` | BIGINT UNSIGNED AUTO_INCREMENT | Price row identifier | PRIMARY KEY |
+| `ticket_type` | VARCHAR(20) | Ticket type: `adult` or `child` | NOT NULL; INDEX (`ticket_type`, `effective_at`) |
+| `amount` | DECIMAL(10,2) | Unit price in MXN (positive amount validated by the API) | NOT NULL |
+| `effective_at` | DATETIME | Moment the price takes effect (UTC) | NOT NULL; INDEX (`ticket_type`, `effective_at`) |
+| `created_by` | INT | Admin user who registered the change | FOREIGN KEY → `users(id)`, NOT NULL |
+| `updated_by` | INT | Last user who modified the row | FOREIGN KEY → `users(id)`, NULL |
+| `deleted_at` | TIMESTAMP | Logical deletion (SoftDeletes) | NULL |
+| `created_at` | TIMESTAMP | Creation timestamp | NULL |
+| `updated_at` | TIMESTAMP | Last update timestamp | NULL |
+
+---
+
+## 18. Table: `staff_notifications` (Staff Notices)
+Notices addressed to one staff user, one row per recipient. Created by DBR-006 and **not used in this iteration** (price-change notices are deferred). No SoftDeletes.
+
+| Column | Type | Description | Key / Constraint |
+|---|---|---|---|
+| `id` | BIGINT UNSIGNED AUTO_INCREMENT | Notice identifier | PRIMARY KEY |
+| `user_id` | INT | Staff recipient of the notice | FOREIGN KEY → `users(id)`, NOT NULL; UNIQUE with `ticket_price_id`; INDEX (`user_id`, `acknowledged_at`) and (`user_id`, `read_at`) |
+| `type` | VARCHAR(40) | Notice type (only `price-change` in this phase) | NOT NULL |
+| `payload` | JSON | Notice data (ticket type, new amount, `effective_at`) | NOT NULL |
+| `ticket_price_id` | BIGINT UNSIGNED | Originating `ticket_prices` row; base of deduplication | FOREIGN KEY → `ticket_prices(id)`, NULL; UNIQUE (`user_id`, `ticket_price_id`) |
+| `created_by` | INT | User who originated the notice | FOREIGN KEY → `users(id)`, NULL |
+| `read_at` | DATETIME | Moment the recipient marked it as read | NULL |
+| `acknowledged_at` | DATETIME | Moment the cashier acknowledged it | NULL |
+| `created_at` | TIMESTAMP | Creation timestamp | NULL |
+| `updated_at` | TIMESTAMP | Last update timestamp | NULL |

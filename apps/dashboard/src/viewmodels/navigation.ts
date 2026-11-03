@@ -1,6 +1,8 @@
 import type { StaffProfile } from "@arca/api-client";
-import type { DashboardSection, DemoProfile } from "./dashboard-demo";
+import type { DashboardSection } from "./dashboard-shell";
 import type { IconName } from "@/components/Icon";
+
+export type PresentationProfile = "administration" | "executive" | "ticket";
 
 export type DashboardNavigationItem = {
   id: DashboardSection;
@@ -8,10 +10,18 @@ export type DashboardNavigationItem = {
   icon: IconName;
 };
 
-const administrationNavigation: {
+type NavigationCandidate = {
   item: DashboardNavigationItem;
   permission: string | string[];
-}[] = [
+};
+
+/**
+ * Mapa permiso → sección (dashboard-005 CA-01, RN-01). Es solo presentación:
+ * la API aplica la autorización. «Venta» exige `tickets.create`, que solo
+ * tiene `cashier`; «Historial» exige `tickets.view` y «Precios»
+ * `ticket-prices.manage`.
+ */
+const navigationCandidates: NavigationCandidate[] = [
   {
     item: { id: "dashboard", label: "Panel principal", icon: "dashboard" },
     permission: "dashboard.view",
@@ -36,37 +46,21 @@ const administrationNavigation: {
     item: { id: "users", label: "Usuarios", icon: "users" },
     permission: ["users.manage", "operational-staff.manage"],
   },
-];
-
-const executiveNavigation: {
-  item: DashboardNavigationItem;
-  permission: string;
-}[] = [
   {
-    item: { id: "dashboard", label: "Panel principal", icon: "dashboard" },
-    permission: "dashboard.view",
-  },
-  {
-    item: { id: "reports", label: "Reporte de boletos", icon: "trend" },
-    permission: "reports.view",
-  },
-];
-
-const ticketNavigation: {
-  item: DashboardNavigationItem;
-  permission: string;
-}[] = [
-  {
-    item: { id: "tickets", label: "Venta de boletos", icon: "ticket" },
+    item: { id: "tickets", label: "Venta", icon: "ticket" },
     permission: "tickets.create",
   },
   {
-    item: { id: "ticket-history", label: "Historial de boletos", icon: "trend" },
+    item: { id: "ticket-history", label: "Historial", icon: "trend" },
     permission: "tickets.view",
+  },
+  {
+    item: { id: "ticket-prices", label: "Precios", icon: "ticket" },
+    permission: "ticket-prices.manage",
   },
 ];
 
-export function getPresentationProfile(home: StaffProfile["home"]): DemoProfile | null {
+export function getPresentationProfile(home: StaffProfile["home"]): PresentationProfile | null {
   switch (home) {
     case "administration":
       return "administration";
@@ -83,16 +77,14 @@ export function getNavigationForProfile(
   profile: StaffProfile,
 ): DashboardNavigationItem[] {
   const permissions = new Set(profile.permissions);
-  const candidates =
-    profile.home === "administration"
-      ? administrationNavigation
-      : profile.home === "executive"
-        ? executiveNavigation
-        : profile.home === "ticket"
-          ? ticketNavigation
-          : [];
+  const hasPortal =
+    profile.home === "administration" ||
+    profile.home === "executive" ||
+    profile.home === "ticket";
 
-  return candidates
+  if (!hasPortal) return [];
+
+  return navigationCandidates
     .filter(({ permission }) =>
       Array.isArray(permission)
         ? permission.some((item) => permissions.has(item))
