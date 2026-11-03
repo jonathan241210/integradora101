@@ -29,23 +29,37 @@ Implementada y probada al 100% en commits `42a2707` y subsiguientes:
 
 ---
 
-## 3. Fase V3 — Navegación Guiada por Senderos y Tiempo a Pie (Planificada)
+## 3. Líneas de Evolución y Frentes de Trabajo del Mapa 2D
 
+Para la evolución continua del Mapa 2D se han consolidado cuatro frentes estratégicos:
+
+### Frente 1: Conexión con Datos Reales y Backend (DBR-008 & API)
+- **Objetivo:** Superar el fixture local en memoria (`src/mocks/zoo.ts`) y centralizar las coordenadas en la base de datos MySQL 8.0 (`enclosures`).
+- **Acciones:**
+  - Solicitud [DBR-008](file:///c:/Users/vic22/OneDrive/Escritorio/ARCA-NB/docs/database/requests/DBR-008-enclosure-gps-coordinates.md) para añadir `gps_lat`, `gps_lon`, `map_x`, `map_y` en `enclosures`.
+  - Migración Laravel en `apps/api` y exposición de endpoint `GET /api/v1/map/enclosures`.
+  - Integración en `apps/mobile` mediante `HttpMapRepository` con persistencia/caché offline en `AsyncStorage`.
+
+### Frente 2: Controles Interactivos de Mapa (Zoom, Pan y Centrado)
+- **Objetivo:** Permitir una exploración táctil completa en dispositivos móviles.
+- **Acciones:**
+  - Incorporar gestos de escala y desplazamiento (Pinch-to-zoom / Pan) sobre el lienzo SVG sin degradar el rendimiento vectorial.
+  - Botón de acción flotante "Centrar en mi ubicación" que reubica el visor en el punto azul del visitante.
+
+### Frente 3: Fase V3 — Navegación Guiada por Senderos y Tiempo a Pie (Planificada)
 - **Condición previa:** Recepción de fotos/videos con dron del Zoológico Nicolás Bravo y digitalización del plano SVG definitivo con caminos reales.
 - **Justificación:** Se evitó trazar senderos milimétricos en la V2.1 sobre el SVG provisional para no duplicar trabajo cuando llegue la cartografía aérea definitiva.
+- **Arquitectura de V3:**
+  1. **Grafo de andadores peatonales (`src/constants/zooPaths.ts`):** Nodos en cada bifurcación, curva y acceso a recinto con aristas ponderadas en metros.
+  2. **Pathfinding en memoria (`src/utils/pathfinding.ts`):** Algoritmo Dijkstra / A* que conecta la posición del visitante con el acceso del recinto por pasillos peatonales sin cruzar jaulas o agua.
+  3. **Polilínea de sendero (`PathRoutePolyline`):** Reemplazo de la línea recta de V2.1 por polilínea continua sobre los andadores.
+  4. **Métricas de caminata:** Distancia real y tiempo a pie ($1.1\text{ m/s}$ / $4\text{ km/h}$) tipo *"A 140 m • 2 min a pie"*.
 
-### Arquitectura de V3:
-1. **Grafo de andadores peatonales (`src/constants/zooPaths.ts`):**
-   - Nodos en cada bifurcación, curva y acceso a recinto.
-   - Aristas ponderadas con distancias físicas reales.
-2. **Pathfinding en memoria (`src/utils/pathfinding.ts`):**
-   - Algoritmo Dijkstra / A* que conecta la posición del visitante con el acceso del recinto a través de los pasillos peatonales, sin atravesar muros ni lagos.
-3. **Polilínea de sendero (`PathRoutePolyline`):**
-   - Sustituye la línea recta de V2.1 por una polilínea continua que dobla exactamente en las esquinas de los caminos.
-4. **Métricas de caminata:**
-   - Suma de longitudes de los andadores (metros reales).
-   - Tiempo estimado considerando ritmo de paseo familiar ($1.1\text{ m/s}$ / $4\text{ km/h}$).
-   - Indicador en tarjeta: *"A 140 m • 2 min a pie"*.
+### Frente 4: Calibración Geográfica Fina y Coordenadas Reales
+- **Objetivo:** Garantizar la precisión métrica del punto azul sobre el plano del zoológico.
+- **Acciones:**
+  - Ajuste de precisión en `src/utils/geoTransform.ts` (posible transformación proyectiva/afín completa con rotación si el plano no coincide con el norte magnético).
+  - Medición en campo de las 4 esquinas del zoológico y de los accesos principales.
 
 ---
 

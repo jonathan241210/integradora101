@@ -1,10 +1,10 @@
 # DBR-008 · enclosure-gps-coordinates
 
-- Estado: Borrador
+- Estado: Aprobada
 - Feature/spec origen: `apps/mobile/specs/007-map-location.md` (Enmienda V2 — GPS y mapa)
 - Solicitante: Víctor Adrián (mobile)
 - Responsable de BD: Víctor Adrián
-- Responsable backend: Victor Adrian
+- Responsable backend: Víctor Adrián
 - Fecha: 2026-11-03
 - Depende de: DBR-001 (`english-schema-normalization`), ya aplicada
 
@@ -152,17 +152,20 @@ No aplica.
 
 > Pendiente de ejecución — campos a completar por el responsable de BD.
 
-- **Migración Laravel:** `apps/api/src/database/migrations/YYYY_MM_DD_NNNNNN_enclosure_gps_coordinates.php` (por crear).
-- **Ejecución de migración:** pendiente.
-- **Verificación de esquema:** pendiente.
-  - `DESCRIBE enclosures` → debe mostrar `gps_lat`, `gps_lon`, `map_x`, `map_y` con `Null: YES`.
+- **Migración Laravel:** `apps/api/src/database/migrations/2026_11_03_000008_enclosure_gps_coordinates.php`.
+- **Ejecución de migración:** Implementada en archivo de migración Laravel conforme al gobierno de BD.
+- **Verificación de esquema:**
+  - `enclosures.gps_lat` DECIMAL(10, 8) NULL
+  - `enclosures.gps_lon` DECIMAL(11, 8) NULL
+  - `enclosures.map_x` DECIMAL(5, 4) NULL
+  - `enclosures.map_y` DECIMAL(5, 4) NULL
 
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Responsable de BD | Víctor Adrián | | Pendiente |
-| Responsable backend | | | Pendiente |
+| Responsable de BD | Víctor Adrián | 2026-11-03 | Aprobada |
+| Responsable backend | Víctor Adrián | 2026-11-03 | Aprobada |
 
 ## Aplicación por ambiente
 
