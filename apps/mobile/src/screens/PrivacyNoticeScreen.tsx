@@ -14,7 +14,7 @@ export function PrivacyNoticeScreen({ version, content, onBackPress }: PrivacyNo
     <ScreenContainer>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver al registro" />
-        <AppText variant="heading">Aviso de privacidad</AppText>
+        <AppText variant="title">Aviso de privacidad</AppText>
         <AppText variant="small" color="textMuted">Versión {version}</AppText>
         <AppText variant="body">{content}</AppText>
       </View>

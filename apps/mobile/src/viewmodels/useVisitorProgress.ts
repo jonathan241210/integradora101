@@ -9,6 +9,7 @@ import {
   peekSharedProgress,
   readSharedProgress,
   sharedProgressGeneration,
+  subscribeSharedProgress,
 } from '../repositories/sharedProgress';
 import { Animal } from '../models';
 import { accountSession } from '../session/accountSession';
@@ -74,10 +75,22 @@ export function useVisitorProgress(repository: ProgressRepository | null = progr
 
   useEffect(() => {
     void loadShared(false);
-    return accountSession.subscribe(() => {
+    const unsubscribeSession = accountSession.subscribe(() => {
       void loadShared(false);
     });
-  }, [loadShared]);
+    const unsubscribeProgress = subscribeSharedProgress(() => {
+      if (!repository) return;
+      const next = peekSharedProgress(repository);
+      if (!next) return;
+      setSnapshot(next);
+      setLoading(false);
+      setError(null);
+    });
+    return () => {
+      unsubscribeSession();
+      unsubscribeProgress();
+    };
+  }, [loadShared, repository]);
 
   return { snapshot, loading, error, refresh };
 }

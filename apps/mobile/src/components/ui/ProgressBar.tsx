@@ -7,9 +7,10 @@ interface ProgressBarProps {
   value: number;
   label: string;
   labelColor?: 'text' | 'textMuted' | 'textOnPrimary' | 'primary' | 'accent' | 'danger';
+  fill?: 'gold' | 'wine';
 }
 
-export function ProgressBar({ value, label, labelColor = 'text' }: ProgressBarProps) {
+export function ProgressBar({ value, label, labelColor = 'text', fill = 'gold' }: ProgressBarProps) {
   const progress = Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0;
 
   return (
@@ -20,7 +21,7 @@ export function ProgressBar({ value, label, labelColor = 'text' }: ProgressBarPr
       testID="progress-bar"
     >
       <View style={styles.track}>
-        <View style={[styles.fill, { width: `${progress * 100}%` }]} />
+        <View style={fill === 'wine' ? [styles.fill, styles.fillWine, { width: `${progress * 100}%` }] : [styles.fill, { width: `${progress * 100}%` }]} />
       </View>
       <AppText variant="caption" color={labelColor}>{label}</AppText>
     </View>
@@ -37,6 +38,7 @@ const styles = StyleSheet.create({
   fill: {
     height: '100%',
     borderRadius: radius.pill,
-    backgroundColor: colors.accent,
+    backgroundColor: colors.secondary,
   },
+  fillWine: { backgroundColor: colors.primary },
 });

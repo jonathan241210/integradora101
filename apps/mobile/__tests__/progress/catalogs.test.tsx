@@ -12,6 +12,7 @@ const achievement: VisitorCatalogItemDto = {
   points: 200,
   rule_type: 'category_species_count',
   rule_target: 3,
+  rule_param: 'bird',
   progress: 1,
   state: 'pending',
   earned_at: null,
@@ -36,6 +37,7 @@ describe('test-ca-03-progress-achievements-missions', () => {
     const mapped = mapAchievement(achievement);
     const mappedMission = mapMission(mission);
     expect(mapped.requirement).toBe('1 de 3');
+    expect(mapped.action).toBe('Descubre tres especies de aves.');
     expect(mapped.unlocked).toBe(false);
     expect(mappedMission.progress).toBe(1);
     expect(mappedMission.total).toBe(5);

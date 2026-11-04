@@ -37,11 +37,16 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
         ]
       }
       keyboardShouldPersistTaps="handled"
+      onScroll={[Function]}
+      scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
       style={
-        {
-          "flex": 1,
-        }
+        [
+          {
+            "flex": 1,
+          },
+          null,
+        ]
       }
     >
       <View>
@@ -97,7 +102,9 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
             [
               {
                 "backgroundColor": "#f3f5f8",
+                "borderColor": "#dec9a3",
                 "borderRadius": 8,
+                "borderWidth": 1,
                 "elevation": 1,
                 "marginVertical": 4,
                 "padding": 16,
@@ -159,7 +166,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
           style={
             {
               "backgroundColor": "#87293a",
-              "borderColor": "#87293a",
+              "borderColor": "#b79159",
               "borderRadius": 9999,
               "borderWidth": 1,
               "justifyContent": "center",
@@ -268,7 +275,7 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
               style={
                 [
                   {
-                    "backgroundColor": "#dec9a3",
+                    "backgroundColor": "#b79159",
                     "borderRadius": 9999,
                     "height": "100%",
                   },

@@ -24,6 +24,7 @@ describe('teclado en formularios', () => {
       'utf8',
     );
     expect(source).toContain("behavior={Platform.OS === 'ios' ? 'padding' : undefined}");
+    expect(source).toContain('keyboardDidShow');
     expect(source).toContain('<KeyboardAvoidingView');
   });
 

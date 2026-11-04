@@ -132,3 +132,7 @@ La compuerta vive en memoria (`signedOut` / `entered`). No usa almacenamiento se
 | IV. Un test por criterio | Conforme | Cada CA nuevo tiene una prueba que lo nombra. |
 | V. Una sola fuente de verdad para los datos | Conforme | El estado visual vive en un repositorio en memoria y se pierde al recargar. No hay segunda base de datos. |
 | VI. Código en inglés, personas en español | Conforme | Rutas e identificadores en inglés. Textos de interfaz en español. |
+
+## Enmienda 2026-11-01 · Pestañas, mapa y títulos
+
+El círculo de la pestaña activa se desliza hacia la elegida; en Escanear es dorado y un poco mayor. En la ficha de un animal descubierto, el mapa se abre con un icono de ubicación arriba a la derecha. En el mapa y en el recorrido, «Buscar animales» es un enlace de texto. El título de cada pantalla usa el mismo tamaño que «Mi Colección». Mientras carga, ese título permanece en su sitio y el indicador queda centrado debajo. Enmienda de Aksel, 2026-11-01.

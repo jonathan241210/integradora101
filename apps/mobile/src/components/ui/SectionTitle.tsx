@@ -12,7 +12,7 @@ interface SectionTitleProps {
 export function SectionTitle({ icon, text }: SectionTitleProps) {
   return (
     <View style={styles.container}>
-      <Icon name={icon} size={16} color={colors.primary} />
+      <Icon name={icon} size={16} color={colors.secondary} />
       <AppText variant="subheading" bold>{text}</AppText>
     </View>
   );

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
-import { FlatList, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Achievement } from '../models';
-import { AppText, BackButton, Card, Chip, Icon, ScreenContainer } from '../components/ui';
+import { AppText, BackButton, Card, Chip, Icon, LoadingView, ScreenContainer } from '../components/ui';
 import { colors, spacing } from '../theme/tokens';
 
 type AchievementFilter = 'unlocked' | 'locked';
@@ -25,6 +25,7 @@ const sortOptions: { key: AchievementSort; label: string; earnedOnly?: boolean }
 export function AchievementsScreen({ achievements, loading = false, source, onAchievementPress, onBackPress }: AchievementsScreenProps) {
   const [filter, setFilter] = useState<AchievementFilter>('unlocked');
   const [sort, setSort] = useState<AchievementSort>('newest');
+  const [sortOpen, setSortOpen] = useState(false);
   const [filterTouched, setFilterTouched] = useState(false);
   const hasUnlocked = achievements.some((achievement) => achievement.unlocked);
   const activeFilter: AchievementFilter = filterTouched ? filter : (hasUnlocked ? 'unlocked' : 'locked');
@@ -53,35 +54,44 @@ export function AchievementsScreen({ achievements, loading = false, source, onAc
           accessibilityLabel={source === 'profile' ? 'Volver al perfil' : 'Volver a Aventura en el Zoo'}
         />
         <AppText variant="title">Todos los logros</AppText>
+        {loading ? (
+          <View style={styles.loadingFill}>
+            <LoadingView message="Cargando logros…" />
+          </View>
+        ) : (
+        <>
         <View style={styles.filterRow}>
           <Chip label="Obtenidos" selected={activeFilter === 'unlocked'} onPress={() => selectFilter('unlocked')} />
           <Chip label="Por obtener" selected={activeFilter === 'locked'} onPress={() => selectFilter('locked')} />
         </View>
-        <AppText variant="small" color="textMuted">Ordenar por</AppText>
-        <View style={styles.sortRow}>
-          {sortOptions
-            .filter((option) => !option.earnedOnly || activeFilter === 'unlocked')
-            .map((option) => (
-              <Chip
-                key={option.key}
-                label={option.label}
-                selected={sort === option.key}
-                onPress={() => setSort(option.key)}
-              />
-            ))}
-        </View>
-        {loading && <AppText variant="body" color="textMuted">Cargando logros…</AppText>}
+        <Pressable accessibilityRole="button" accessibilityLabel="Ordenar" onPress={() => setSortOpen((open) => !open)} style={styles.sortToggle}>
+          <AppText variant="body" bold style={styles.sortToggleText}>Ordenar</AppText>
+        </Pressable>
+        {sortOpen ? (
+          <View style={styles.sortRow}>
+            {sortOptions
+              .filter((option) => !option.earnedOnly || activeFilter === 'unlocked')
+              .map((option) => (
+                <Chip
+                  key={option.key}
+                  label={option.label}
+                  selected={sort === option.key}
+                  onPress={() => setSort(option.key)}
+                />
+              ))}
+          </View>
+        ) : null}
         <FlatList
           testID="achievements-list"
           data={filteredAchievements}
           keyExtractor={(achievement) => achievement.id}
           contentContainerStyle={styles.list}
           ItemSeparatorComponent={() => <View style={styles.separator} />}
-          ListEmptyComponent={!loading ? (
+          ListEmptyComponent={(
             <AppText variant="body" color="textMuted" center>
               No hay logros en esta categoría todavía.
             </AppText>
-          ) : null}
+          )}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => onAchievementPress(item.id)}
@@ -102,6 +112,8 @@ export function AchievementsScreen({ achievements, loading = false, source, onAc
             </TouchableOpacity>
           )}
         />
+        </>
+        )}
       </View>
     </ScreenContainer>
   );
@@ -109,12 +121,15 @@ export function AchievementsScreen({ achievements, loading = false, source, onAc
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: spacing.lg, gap: spacing.md },
+  loadingFill: { flex: 1, justifyContent: 'center' },
   filterRow: { flexDirection: 'row', gap: spacing.sm },
+  sortToggle: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
+  sortToggleText: { color: colors.primary },
   sortRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   list: { paddingVertical: spacing.sm },
   separator: { height: spacing.sm },
   achievementCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  iconBadge: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  iconBadge: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   lockedBadge: { backgroundColor: colors.border },
   achievementInfo: { flex: 1, gap: spacing.xs },
 });

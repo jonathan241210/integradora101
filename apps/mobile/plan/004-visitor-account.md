@@ -67,7 +67,7 @@ Grupo **`(tabs)`** existente (002), accesible solo con sesión:
 
 ### Avatar y RN-02
 
-Catálogo fijo en código (`src/constants/avatarCatalog.ts`) con los 8 códigos aceptados; assets PNG/SVG en `src/assets/avatars/` (placeholders hasta el arte final del zoológico). El registro y `PATCH me` envían `avatar_code` validado en cliente contra el catálogo antes de llamar API.
+Catálogo fijo en código (`src/constants/avatarCatalog.ts`) con los 8 códigos aceptados; assets PNG/SVG en `src/assets/avatars/` (placeholders hasta el arte final del zoológico). El registro y `PATCH me` envían `avatar_code` validado en cliente contra el catálogo antes de llamar API. En editar cuenta el catálogo no se lista en la pantalla: un círculo con el avatar actual y la leyenda «Editar imagen» abre una ventana con `AvatarPicker`. Guardar perfil es el único botón grande; cambiar contraseña y borrar cuenta son filas. En el registro, la barra de progreso queda en dorado y las flechas laterales en vino. En la verificación, «Confirmar código» es un botón compacto y reenviar es un círculo vino. Enmienda de Aksel, 2026-11-01.
 
 ### Integración `@arca/api-client`
 

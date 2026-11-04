@@ -61,7 +61,7 @@ El prefijo `api/v1` ya lo pone `bootstrap/app.php`. Las rutas nuevas se agrupan 
 
 Campos en inglés. Mensajes `message` en español.
 
-Registro: `email`, `password`, `password_confirmation`, `first_name`, `nickname`, `avatar_code`, `is_adult`, `privacy_notice_version`. Respuesta 201 `{ "message": "Te enviamos un código de 6 dígitos para verificar tu correo." }` y ningún token. `is_adult` debe ser `true`. `privacy_notice_version` debe ser la versión vigente. `avatar_code` debe ser uno de `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`. Correo duplicado: 422 «Ese correo ya está registrado.» El registro sí puede decir que el correo existe; la respuesta genérica de RN-04 aplica a login, reenvío y olvido.
+Registro: `email`, `password`, `password_confirmation`, `first_name`, `nickname`, `avatar_code`, `is_adult`, `privacy_notice_version`. Respuesta 201 `{ "message": "Te enviamos un código de 6 dígitos para verificar tu correo." }` y ningún token. `is_adult` debe ser `true`. `privacy_notice_version` debe ser la versión vigente. `avatar_code` debe ser uno de `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`. Correo duplicado: la misma respuesta 201 que un alta nueva, sin crear otra cuenta. La respuesta genérica de RN-04 aplica a registro, login, reenvío y olvido. Enmienda de Aksel, 2026-11-01.
 
 Verificación: `email`, `code`. Éxito 200 con el par y el visitante. Código inválido, vencido, consumido o con 5 intentos: 422 «El código no es válido.» sin sesión.
 

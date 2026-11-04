@@ -58,7 +58,7 @@ export const HELP_SECTIONS: InfoSection[] = [
   {
     id: 'settings',
     title: 'Ajustes',
-    body: 'Notificaciones y ubicación solo cambian de estado en pantalla. La aplicación permanece en modo claro.',
+    body: 'La cámara pide el permiso del teléfono. La ubicación solo cambia de estado en pantalla. La aplicación permanece en modo claro.',
   },
 ];
 

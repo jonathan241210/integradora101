@@ -44,6 +44,7 @@ export type VisitorCatalogItemDto = {
   points: number;
   rule_type: string;
   rule_target: number;
+  rule_param?: string | null;
   progress: number;
   state: "pending" | "unlocked" | "completed";
   earned_at: string | null;

@@ -19,6 +19,8 @@ export function HighlightNewsCard({ news }: HighlightNewsCardProps) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.accent,
     borderRadius: radius.md,
     padding: spacing.md,
     marginBottom: spacing.lg,

@@ -9,6 +9,9 @@ interface SettingsScreenProps {
   accountEmail: string;
   preferences: VisitorPreferences;
   onToggle: (key: VisitorPreferenceKey, value: boolean) => void;
+  cameraGranted: boolean;
+  cameraReady: boolean;
+  onCameraToggle: (enabled: boolean) => void;
   onAccountPress: () => void;
   onPrivacyPress: () => void;
   onHelpPress: () => void;
@@ -20,7 +23,6 @@ interface SettingsScreenProps {
 }
 
 const preferenceRows: { key: VisitorPreferenceKey; label: string; icon: string; hint: string }[] = [
-  { key: 'notifications', label: 'Notificaciones', icon: 'notifications', hint: 'Solo cambia el estado en pantalla' },
   { key: 'location', label: 'Ubicación', icon: 'location-outline', hint: 'No solicita la ubicación del teléfono' },
 ];
 
@@ -29,6 +31,9 @@ export function SettingsScreen({
   accountEmail,
   preferences,
   onToggle,
+  cameraGranted,
+  cameraReady,
+  onCameraToggle,
   onAccountPress,
   onPrivacyPress,
   onHelpPress,
@@ -49,7 +54,7 @@ export function SettingsScreen({
     <ScreenContainer busyMessage={busy ? 'Cerrando sesión…' : null}>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver al perfil" />
-        <AppText variant="heading">Ajustes</AppText>
+        <AppText variant="title">Ajustes</AppText>
         <Pressable
           onPress={onAccountPress}
           disabled={accountBusy}
@@ -71,6 +76,24 @@ export function SettingsScreen({
 
         <AppText variant="overline" color="textMuted">Preferencias</AppText>
         <Card style={styles.group}>
+          <View style={styles.preference}>
+            <View style={styles.row}>
+              <Icon name="camera" size={20} color={colors.primary} />
+              <AppText variant="body" style={styles.rowLabel}>Cámara</AppText>
+              <Switch
+                accessibilityLabel="Cámara"
+                accessibilityHint="Activa el permiso de cámara. Para desactivarlo, el teléfono abre Ajustes."
+                value={cameraGranted}
+                disabled={!cameraReady}
+                onValueChange={(value) => { void onCameraToggle(value); }}
+                trackColor={{ false: colors.border, true: colors.secondary }}
+                thumbColor={colors.surface}
+              />
+            </View>
+            <AppText variant="caption" color="textMuted">
+              Al activarla se pide el permiso del teléfono. Para quitarla, confirma el cambio en Ajustes del sistema.
+            </AppText>
+          </View>
           {preferenceRows.map((row) => (
             <View key={row.key} style={styles.row}>
               <Icon name={row.icon} size={20} color={colors.primary} />
@@ -80,7 +103,7 @@ export function SettingsScreen({
                 accessibilityHint={row.hint}
                 value={preferences[row.key]}
                 onValueChange={(value) => onToggle(row.key, value)}
-                trackColor={{ false: colors.border, true: colors.primary }}
+                trackColor={{ false: colors.border, true: colors.secondary }}
                 thumbColor={colors.surface}
               />
             </View>
@@ -128,6 +151,7 @@ const styles = StyleSheet.create({
   },
   accountText: { flex: 1, gap: 2 },
   group: { backgroundColor: colors.surface, gap: spacing.sm },
+  preference: { gap: spacing.xs },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, minHeight: 48 },
   rowLabel: { flex: 1 },
 });

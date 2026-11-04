@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { AppTabBar } from '../src/components/AppTabBar';
 import HomeRoute from '../src/app/(tabs)/index';
 import QrScannerRoute from '../src/app/(tabs)/scan';
@@ -74,9 +74,7 @@ describe('Navegación visitante', () => {
     ['achievements', 'Home'],
     ['achievement-detail', 'Home'],
     ['tour-3d', 'Mapa'],
-    ['qr-result', 'Escanear'],
-    ['qr-invalid', 'Escanear'],
-    ['qr-already-discovered', 'Escanear'],
+    ['scan-result', 'Escanear'],
     ['settings', 'Perfil'],
     ['account', 'Perfil'],
     ['privacy', 'Perfil'],
@@ -279,18 +277,33 @@ describe('Navegación visitante', () => {
     expect(mockReplace).toHaveBeenCalledWith('/profile');
   });
 
-  it('test-ca-05: los tres controles del escáner abren sus estados de resultado', async () => {
+  it('test-ca-05: el escáner envía un código manual y abre scan-result', async () => {
+    const submitScan = jest.spyOn(require('../src/services/scanQueue'), 'submitScan').mockResolvedValue({
+      kind: 'discovered',
+      title: 'Nuevo descubrimiento',
+      message: 'Descubriste nuevas especies.',
+      pointsAwarded: 100,
+      newSpecies: ['Tigre'],
+    });
+
+    await accountSession.login('maria@correo.com', 'secreta');
     const view = await render(<QrScannerRoute />);
 
-    await fireEvent.press(view.getByText('Simular QR válido'));
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/qr-result?animalId=elephant'));
+    const camera = view.getByTestId('camera-view');
+    await act(async () => {
+      camera.props.onBarcodeScanned?.({ data: 'ARCA-TEST123' });
+    });
 
-    mockPush.mockClear();
-    await fireEvent.press(view.getByText('Simular QR inválido'));
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/qr-invalid'));
+    await waitFor(() => expect(submitScan).toHaveBeenCalledWith('ARCA-TEST123'));
+    await waitFor(() =>
+      expect(mockPush).toHaveBeenCalledWith(
+        expect.objectContaining({
+          pathname: '/scan-result',
+          params: expect.objectContaining({ kind: 'discovered' }),
+        }),
+      ),
+    );
 
-    mockPush.mockClear();
-    await fireEvent.press(view.getByText('Simular ya descubierto'));
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/qr-already-discovered?animalId=juan'));
+    submitScan.mockRestore();
   });
 });
