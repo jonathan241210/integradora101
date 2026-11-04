@@ -1,4 +1,4 @@
-﻿# Registro de decisiones de arquitectura
+# Registro de decisiones de arquitectura
 
 Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisión y consecuencias de cambios tecnológicos o estructurales. Se numeran con cuatro dígitos y no se borran: una decisión reemplazada se marca como Superseded e indica el ADR que la sustituye. Las propuestas no autorizan dependencias ni implementación.
 
@@ -29,11 +29,8 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0018 · PHP mínimo de la API en 8.4](0018-php-minimum-8-4.md) — Aceptado
 - [0015 · Renderizado del mapa SVG en la app móvil](0015-mobile-svg-map-rendering.md) — Aceptado
 - [0019 · Generación del QR del boleto en SVG desde la API](0019-qr-svg-generation-api.md) — Aceptado
-<<<<<<< HEAD
-=======
 - [0020 · Notificaciones por correo electrónico de cambios de precio](0020-price-change-email-notifications.md) — Propuesto — diferido (2026-11-02)
 - [0021 · Excepciones a la Constitución en la feature de ventas de boletos](0021-ticket-sales-constitution-exceptions.md) — Aceptado (2026-11-02)
->>>>>>> 2260aac3c96f058a747e6391782c0fb4c78c7a48
 
 ## Plantilla
 
@@ -54,5 +51,3 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 ```
 
 Un ADR Aceptado se aprueba explícitamente por el equipo antes de sumar la dependencia o cambiar el límite arquitectónico. Relaciona el ADR con la spec/plan y la revisión que lo aprueban.
-
-
