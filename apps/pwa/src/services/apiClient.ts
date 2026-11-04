@@ -12,6 +12,61 @@ export type AnimalSummary = {
 
 export type EvaluationKind = 'intense' | 'quick' | 'review';
 
+export type AnimalEvaluation = {
+  id: number;
+  evaluation_type: string;
+  evaluation_date: string;
+  veterinarian: string | null;
+  temperature_c: number | null;
+  heart_rate: number | null;
+  respiratory_rate: number | null;
+  capillary_refill_time: number | null;
+  weight_kg: number | null;
+  body_condition_score: number | null;
+  attitude: string | null;
+  assessment_reason: string | null;
+  presumptive_diagnosis: string | null;
+  definitive_diagnosis: string | null;
+  recommendations: string | null;
+  is_fit_for_wild_release: boolean | number | null;
+  findings: { id: number; organ_system: string; status: string; description: string | null }[];
+  restraints: {
+    id: number;
+    mobilization_type: string | null;
+    physical_method: string | null;
+    drug: string | null;
+    dose_mg_per_kg: number | null;
+    dose_ml: number | null;
+    administered_time: string | null;
+    notes: string | null;
+  }[];
+  lab_samples: { id: number; sample_type: string; result_notes: string | null }[];
+};
+
+export type AnimalProfile = {
+  id: number;
+  tag_number: string | null;
+  name: string;
+  sex: string | null;
+  age: string | null;
+  origin: string | null;
+  longevity: string | null;
+  reproduction: string | null;
+  diet: string | null;
+  characteristics: string | null;
+  entry_date: string | null;
+  stay_status: string | null;
+  enclosure: string | null;
+  species: {
+    common_name: string;
+    scientific_name: string | null;
+    category: string | null;
+    conservation_status: string | null;
+    habitat: string | null;
+  } | null;
+  evaluations: AnimalEvaluation[];
+};
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -115,6 +170,10 @@ export async function logout(): Promise<void> {
 export async function listAnimals(search = ''): Promise<AnimalSummary[]> {
   const query = search.trim() ? `?search=${encodeURIComponent(search.trim())}` : '';
   return (await request<{ data: AnimalSummary[] }>(`/staff/animals${query}`)).data;
+}
+
+export async function getAnimal(id: number): Promise<AnimalProfile> {
+  return (await request<{ data: AnimalProfile }>(`/staff/animals/${id}`)).data;
 }
 
 export type NewAnimal = {

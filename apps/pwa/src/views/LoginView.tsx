@@ -1,19 +1,16 @@
 import { useState, type FormEvent } from 'react';
 import { Alert, Button, Card, Field } from '@arca/ui';
-import type { PwaInstallController } from '@/viewmodels/usePwaInstall';
-import { InstallAppAction } from '@/views/InstallAppAction';
+import { Spinner } from '@/views/Spinner';
 
 type LoginViewProps = {
   busy?: boolean;
   error: string;
-  installController: PwaInstallController;
   onLogin: (username: string, password: string) => void;
 };
 
 export function LoginView({
   busy = false,
   error,
-  installController,
   onLogin,
 }: LoginViewProps) {
   const [username, setUsername] = useState('');
@@ -40,7 +37,6 @@ export function LoginView({
           <p>Accede al espacio de trabajo de cuidado animal.</p>
         </div>
 
-        <InstallAppAction controller={installController} />
 
         <form className="login-form" onSubmit={handleSubmit}>
           {error && (
@@ -71,7 +67,7 @@ export function LoginView({
             value={password}
           />
           <Button className="login-submit" disabled={busy} type="submit">
-            {busy ? 'Entrando…' : 'Iniciar sesión'}
+            {busy ? <Spinner label="Cargando…" /> : 'Iniciar sesión'}
           </Button>
         </form>
       </Card>

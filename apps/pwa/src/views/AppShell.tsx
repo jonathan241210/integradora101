@@ -1,7 +1,5 @@
 import { Button } from '@arca/ui';
-import type { ComponentType } from 'react';
-import type { PwaInstallController } from '@/viewmodels/usePwaInstall';
-import { InstallAppAction } from '@/views/InstallAppAction';
+import { useState, type ComponentType } from 'react';
 import {
   getSectionLabel,
   isNavigationActive,
@@ -9,6 +7,7 @@ import {
   type PwaSection,
 } from '@/viewmodels/pwaDemo';
 import { AnimalFormView } from '@/views/AnimalFormView';
+import { AnimalProfileView } from '@/views/AnimalProfileView';
 import { AnimalsView } from '@/views/AnimalsView';
 import { DiagnosisChooserView } from '@/views/DiagnosisChooserView';
 import { DiagnosisIntenseView } from '@/views/DiagnosisIntenseView';
@@ -18,18 +17,22 @@ import { ReviewFormView } from '@/views/ReviewFormView';
 
 type AppShellProps = {
   activeSection: PwaSection;
-  installController: PwaInstallController;
   onNavigate: (section: PwaSection) => void;
   onLogout: () => void;
 };
 
 type ActiveViewProps = {
+  animalId: number | null;
   onNavigate: (section: PwaSection) => void;
+  onOpenAnimal: (animalId: number) => void;
 };
 
 const sectionViews: Record<PwaSection, ComponentType<ActiveViewProps>> = {
   home: HomeView,
   animals: AnimalsView,
+  'animal-profile': ({ animalId, onNavigate }) => (
+    <AnimalProfileView animalId={animalId} onBack={() => onNavigate('animals')} />
+  ),
   'animal-form': AnimalFormView,
   'diagnosis-form': DiagnosisChooserView,
   'diagnosis-intense': DiagnosisIntenseView,
@@ -39,12 +42,12 @@ const sectionViews: Record<PwaSection, ComponentType<ActiveViewProps>> = {
 
 export function AppShell({
   activeSection,
-  installController,
   onNavigate,
   onLogout,
 }: AppShellProps) {
   const ActiveView = sectionViews[activeSection];
   const currentLabel = getSectionLabel(activeSection);
+  const [animalId, setAnimalId] = useState<number | null>(null);
 
   return (
     <div className="app-shell">
@@ -91,12 +94,18 @@ export function AppShell({
             <h1>{currentLabel}</h1>
           </div>
           <div className="topbar-actions">
-            <InstallAppAction controller={installController} />
           </div>
         </header>
 
         <main className="view-content" key={activeSection}>
-          <ActiveView onNavigate={onNavigate} />
+          <ActiveView
+            animalId={animalId}
+            onNavigate={onNavigate}
+            onOpenAnimal={(id) => {
+              setAnimalId(id);
+              onNavigate('animal-profile');
+            }}
+          />
         </main>
 
         <div className="mobile-logout">

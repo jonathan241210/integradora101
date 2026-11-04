@@ -4,6 +4,7 @@ import { createEvaluation } from '@/services/apiClient';
 import { formToRecord, useSaveRequest } from '@/viewmodels/useApiData';
 import { AnimalPicker } from '@/views/AnimalPicker';
 import { SaveFeedback } from '@/views/SaveFeedback';
+import { Spinner } from '@/views/Spinner';
 
 export function ReviewFormView() {
   const save = useSaveRequest();
@@ -63,7 +64,7 @@ export function ReviewFormView() {
           <div className="form-actions">
             <Button type="reset" variant="secondary">Limpiar</Button>
             <Button disabled={save.saving} type="submit">
-              {save.saving ? 'Guardando…' : 'Guardar revisión'}
+              {save.saving ? <Spinner label="Cargando…" /> : 'Guardar revisión'}
             </Button>
           </div>
         </form>

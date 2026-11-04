@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { createAnimal } from '@/services/apiClient';
 import { formToRecord, useSaveRequest } from '@/viewmodels/useApiData';
 import { SaveFeedback } from '@/views/SaveFeedback';
+import { Spinner } from '@/views/Spinner';
 
 export function AnimalFormView() {
   const save = useSaveRequest();
@@ -70,7 +71,7 @@ export function AnimalFormView() {
           <div className="form-actions">
             <Button type="reset" variant="secondary">Limpiar</Button>
             <Button disabled={save.saving} type="submit" variant="primary">
-              {save.saving ? 'Guardando…' : 'Registrar animal'}
+              {save.saving ? <Spinner label="Cargando…" /> : 'Registrar animal'}
             </Button>
           </div>
         </form>

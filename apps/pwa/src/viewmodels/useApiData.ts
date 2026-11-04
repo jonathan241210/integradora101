@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { listAnimals, type AnimalSummary } from '@/services/apiClient';
+import {
+  getAnimal,
+  listAnimals,
+  type AnimalProfile,
+  type AnimalSummary,
+} from '@/services/apiClient';
 
 export function formToRecord(form: HTMLFormElement): Record<string, string> {
   const record: Record<string, string> = {};
@@ -36,6 +41,40 @@ export function useSaveRequest() {
   }, []);
 
   return { status, message, run, reset, saving: status === 'saving' };
+}
+
+export function useAnimal(id: number | null) {
+  const [animal, setAnimal] = useState<AnimalProfile | null>(null);
+  const [loading, setLoading] = useState(id !== null);
+  const [error, setError] = useState('');
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    if (id === null) return;
+    let cancelled = false;
+    setLoading(true);
+    getAnimal(id)
+      .then((result) => {
+        if (cancelled) return;
+        setAnimal(result);
+        setError('');
+      })
+      .catch((reason: unknown) => {
+        if (cancelled) return;
+        setError(reason instanceof Error ? reason.message : 'No se pudo cargar el perfil.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, version]);
+
+  const reload = useCallback(() => setVersion((current) => current + 1), []);
+
+  return { animal, loading, error, reload };
 }
 
 export function useAnimals(search = '') {

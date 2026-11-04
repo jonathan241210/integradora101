@@ -1,13 +1,10 @@
-import { Card, Field, TextAreaField } from '@arca/ui';
+import { Card, Field, SelectField, TextAreaField } from '@arca/ui';
 import type { FormEvent } from 'react';
 import { createEvaluation } from '@/services/apiClient';
 import { formToRecord, useSaveRequest } from '@/viewmodels/useApiData';
 import { AnimalPicker } from '@/views/AnimalPicker';
 import { SaveFeedback } from '@/views/SaveFeedback';
-import {
-  demoVeterinarian,
-  quickGroups,
-} from '@/viewmodels/diagnosisForms';
+import { quickGroups, sexOptions } from '@/viewmodels/diagnosisForms';
 import {
   PrintActions,
   PrintFooter,
@@ -49,15 +46,20 @@ export function DiagnosisQuickView() {
           <h4>Información del ejemplar</h4>
           <div className="form-grid">
             <Field label="Especie" name="quick-species" />
-            <Field label="Edad" name="quick-age" />
-            <Field label="Sexo" name="quick-sex" />
-            <Field label="Peso" name="quick-weight" />
+            <Field label="Edad (años)" min={0} name="quick-age" step="any" type="number" />
+            <SelectField defaultValue="" label="Sexo" name="quick-sex">
+              <option value="">Seleccionar</option>
+              {sexOptions.map((option) => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </SelectField>
+            <Field label="Peso (kg)" min={0} name="quick-weight" step="any" type="number" />
           </div>
           <h4>Examen físico general</h4>
           <div className="form-grid vitals-grid">
-            <Field label="Frecuencia cardiaca" name="quick-heart-rate" />
-            <Field label="Frecuencia respiratoria" name="quick-respiratory-rate" />
-            <Field label="Temperatura" name="quick-temperature" />
+            <Field label="Frecuencia cardiaca (lat/min)" min={0} name="quick-heart-rate" step="1" type="number" />
+            <Field label="Frecuencia respiratoria (resp/min)" min={0} name="quick-respiratory-rate" step="1" type="number" />
+            <Field label="Temperatura (°C)" min={0} name="quick-temperature" step="0.1" type="number" />
           </div>
           <div className="form-grid">
             {quickGroups.map((group) => (
@@ -95,8 +97,7 @@ export function DiagnosisQuickView() {
             </fieldset>
           </div>
           <p className="print-signature">
-            {demoVeterinarian.name} · {demoVeterinarian.license} · Firma:
-            ______________________
+            Nombre y firma del veterinario: ______________________
           </p>
         </form>
         <PrintFooter />

@@ -31,6 +31,19 @@ Route::get('/auth/me', MeController::class)
     ->middleware(['auth:sanctum', 'staff.user'])
     ->name('auth.me');
 
+Route::prefix('staff')->name('staff.')->group(function () {
+    Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
+
+    Route::middleware(['auth:sanctum', 'staff.user'])->group(function () {
+        Route::get('auth/session', [AuthController::class, 'me'])->name('auth.session');
+        Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+        Route::get('animals', [AnimalController::class, 'index'])->name('animals.index');
+        Route::post('animals', [AnimalController::class, 'store'])->name('animals.store');
+        Route::get('animals/{animal}', [AnimalController::class, 'show'])->whereNumber('animal')->name('animals.show');
+        Route::post('clinical-evaluations', [ClinicalEvaluationController::class, 'store'])->name('clinical-evaluations.store');
+    });
+});
+
 Route::get('/species', [SpeciesController::class, 'index'])->name('species.index');
 Route::get('/species/{species}', [SpeciesController::class, 'show'])->name('species.show');
 

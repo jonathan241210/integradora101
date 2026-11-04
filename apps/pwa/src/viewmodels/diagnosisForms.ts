@@ -8,11 +8,6 @@ export const institution = {
     'Calle Pleasenton S/N, Colonia Lindavista, Tulancingo de Bravo Hidalgo. C.P. 43680',
 } as const;
 
-export const demoVeterinarian = {
-  name: 'MVZ Francisco Javier Rojas Juárez',
-  license: 'Cédula profesional 10008392',
-} as const;
-
 export const intenseSystems = [
   { name: 'general-condition', label: 'Condición física general' },
   { name: 'skin', label: 'Piel y faneras' },
@@ -29,11 +24,17 @@ export const intenseSystems = [
 ] as const;
 
 export const intenseVitals = [
-  { name: 'temp', label: 'Temp.' },
-  { name: 'fr', label: 'FR' },
-  { name: 'fc', label: 'FC' },
-  { name: 'tlc', label: 'TLC' },
-  { name: 'cc', label: 'C.C.' },
+  { name: 'temp', label: 'Temp. (°C)', step: '0.1', min: 0 },
+  { name: 'fr', label: 'FR (resp/min)', step: '1', min: 0 },
+  { name: 'fc', label: 'FC (lat/min)', step: '1', min: 0 },
+  { name: 'tlc', label: 'TLC (seg)', step: '0.1', min: 0 },
+  { name: 'cc', label: 'C.C. (1-5)', step: '1', min: 1, max: 5 },
+] as const;
+
+export const sexOptions = [
+  { value: 'hembra', label: 'Hembra' },
+  { value: 'macho', label: 'Macho' },
+  { value: 'unknown', label: 'No identificado' },
 ] as const;
 
 export const sampleTypes = [

@@ -113,17 +113,23 @@ class ClinicalEvaluationController extends Controller
         }
 
         $physical = [];
+        $physicalDetail = [];
         foreach ($d as $key => $value) {
             if (str_starts_with($key, 'intense-physical-') && $value !== '' && $value !== null) {
-                $physical[] = substr($key, strlen('intense-physical-')).': '.$value;
+                $method = substr($key, strlen('intense-physical-'));
+                $physicalDetail[] = $method.': '.$value;
+
+                if (! in_array(mb_strtolower(trim((string) $value)), ['no', 'false', '0'], true)) {
+                    $physical[] = $method;
+                }
             }
         }
         $mobilizationPhysical = $this->text($d, 'intense-mobilization-physical');
-        if ($physical || $mobilizationPhysical) {
+        if ($physicalDetail || $mobilizationPhysical) {
             $evaluation->restraints()->create([
                 'mobilization_type' => 'physical',
-                'physical_method' => $physical ? mb_substr(implode('; ', $physical), 0, 100) : null,
-                'notes' => $mobilizationPhysical,
+                'physical_method' => $physical ? mb_substr(implode(', ', $physical), 0, 50) : null,
+                'notes' => implode("\n", array_filter([$mobilizationPhysical, implode('; ', $physicalDetail)])) ?: null,
             ]);
         }
 

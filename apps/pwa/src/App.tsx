@@ -1,7 +1,7 @@
 import { useEffect, useReducer, useState } from 'react';
 import { AppShell } from '@/views/AppShell';
 import { LoginView } from '@/views/LoginView';
-import { usePwaInstall } from '@/viewmodels/usePwaInstall';
+import { LoadingScreen } from '@/views/Spinner';
 import {
   fetchCurrentUser,
   getToken,
@@ -19,7 +19,6 @@ function App() {
     pwaDemoReducer,
     initialPwaDemoState,
   );
-  const installController = usePwaInstall();
   const [loginError, setLoginError] = useState('');
   const [busy, setBusy] = useState(false);
   const [restoring, setRestoring] = useState(() => getToken() !== null);
@@ -61,7 +60,7 @@ function App() {
   }
 
   if (restoring) {
-    return null;
+    return <LoadingScreen label="Cargando…" />;
   }
 
   if (!state.isLoggedIn) {
@@ -69,7 +68,6 @@ function App() {
       <LoginView
         busy={busy}
         error={loginError || state.loginError}
-        installController={installController}
         onLogin={handleLogin}
       />
     );
@@ -78,7 +76,6 @@ function App() {
   return (
     <AppShell
       activeSection={state.activeSection}
-      installController={installController}
       onLogout={handleLogout}
       onNavigate={(section) => dispatch({ type: 'navigate', section })}
     />
