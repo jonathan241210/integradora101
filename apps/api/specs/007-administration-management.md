@@ -2,10 +2,12 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `dashboard` (consumidor, `dashboard-003`), `packages/api-client`
-- Estado: Implementada
+- Estado: En progreso (reabierta el 2026-11-01 por Jonathan; ver «Revisión»)
 - Solicitante / responsable funcional: Jonathan
 - Responsable de BD: Víctor Adrián (DBR-005)
 - Aprobación funcional: Jonathan, 2026-10-30
+
+> **Nota de vigencia (2026-11-01):** la exclusión «Subida o edición de imágenes» de «Fuera de alcance» queda reemplazada por `api-008` (`apps/api/specs/008-event-news-images.md`, en Borrador), que define la subida de imágenes de noticias y eventos y su `image_url`. Los puntos «sin imagen» de `dashboard-003` quedan reemplazados por `dashboard-004`. Esta nota no modifica ningún CA ni RN de esta spec; esta spec no tiene RN sobre diálogos (RN-09 trata de SoftDeletes).
 
 ## Problema y contexto
 
@@ -158,4 +160,5 @@ Los permisos ya existen en `RolesAndPermissionsSeeder` (`users.manage`, `operati
 - Decisiones de zona horaria confirmadas por Jonathan, 2026-10-30 (propuestas técnicas originales de Claude): aceptación de alias de zona (RN-14, CA-28), listado sin desfase y no mostrar la zona en la interfaz.
 - Estado cambiado a Implementada el 2026-10-30: CA verificados con pruebas, revisión de calidad y de seguridad, Constitution Check y pruebas manuales de Jonathan.
 - Cambio relacionado en `apps/dashboard/specs/003-administration-sections.md` (RN-11, CA-19).
+- **Historial de estado:** Implementada (2026-10-30) → En progreso (2026-11-01). Reabierta el 2026-11-01 por Jonathan para excluir boletos cancelados de reportes y totales (ver api-009 RN-18/CA-34). Referencia: `apps/api/specs/009-ticket-sales.md` (renumerada desde 008 el 2026-11-01 para no chocar con `apps/api/specs/008-event-news-images.md`). Esta nota registra solo la reapertura y su motivo; no cambia CA ni RN de esta spec, que se ajustarán con la feature de ventas.
 - Reconciliación de exportación (2026-10-30, a petición de la sesión principal): ADR 0017 (Excel y PDF) y ADR 0018 (PHP 8.4) aceptados por el equipo el 2026-10-30. RN-12, CA-23, Flujos 5 y Dependencias/ADR describen los tres formatos disponibles; el 422 queda solo para formato fuera de la lista o PDF sobre el tope de 2000 boletos. Se retiran las menciones a «ADR pendiente» y «solo CSV». Los criterios no cambian de alcance. Pendiente de confirmación funcional de Jonathan del texto de CA-23 y RN-12.

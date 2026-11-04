@@ -46,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands();
         $this->forceHttps();
         $this->registerVisitorLimiters();
+        $this->registerTicketLimiters();
 
         Event::listen(Login::class, RecordAuthenticationEvent::class);
         Event::listen(Failed::class, RecordAuthenticationEvent::class);
@@ -86,6 +87,26 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('visitor-forgot', function (Request $request) use ($response) {
             return Limit::perHour(3)->by(Str::lower((string) $request->input('email')))->response($response);
         });
+    }
+
+    /** Límites por usuario autenticado de api-009 (CA-43, CA-44, RN-30). */
+    private function registerTicketLimiters(): void
+    {
+        $response = function (Request $request, array $headers) {
+            $seconds = max(1, (int) ($headers['Retry-After'] ?? 1));
+
+            return response()->json(['message' => __('auth.throttle', ['seconds' => $seconds])], 429, $headers);
+        };
+        $key = fn (Request $request): string => (string) ($request->user()?->getAuthIdentifier() ?? $request->ip());
+
+        // El middleware `throttle` corre antes que `permission:` (orden de prioridad de Laravel): quien no tiene
+        // el permiso recibirá 403 y no debe consumir cuota (RN-30), por eso no se le aplica límite aquí.
+        RateLimiter::for('ticket-sales', fn (Request $request) => $request->user()?->can('tickets.create')
+            ? Limit::perMinute(60)->by($key($request))->response($response)
+            : Limit::none());
+        RateLimiter::for('ticket-cancel', fn (Request $request) => $request->user()?->can('tickets.cancel')
+            ? Limit::perMinute(20)->by($key($request))->response($response)
+            : Limit::none());
     }
 
     private function visitorThrottleResponse(): Closure

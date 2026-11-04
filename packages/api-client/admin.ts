@@ -97,6 +97,44 @@ function reportParams(query: TicketReportQuery, timezone: string | undefined) {
   };
 }
 
+type ContentImageInput = {
+  image?: File | null;
+  remove_image?: boolean;
+};
+
+function hasImageFile(input: ContentImageInput): input is { image: File } {
+  return typeof Blob !== "undefined" && input.image instanceof Blob;
+}
+
+/**
+ * Cuerpo `multipart/form-data` de noticias y eventos con imagen (`api-008`).
+ * `null` se envía como cadena vacía (Laravel la normaliza a `null`) y los
+ * booleanos como `1`/`0`. Con archivo, `remove_image` se omite: gana el archivo.
+ */
+function contentFormData(
+  input: ContentImageInput & Record<string, unknown>,
+  method?: "PATCH",
+): FormData {
+  const form = new FormData();
+
+  for (const [key, value] of Object.entries(input)) {
+    if (key === "image" || key === "remove_image" || value === undefined) continue;
+    form.append(key, typeof value === "boolean" ? (value ? "1" : "0") : value === null ? "" : String(value));
+  }
+
+  form.append("image", input.image as File);
+  if (method) form.append("_method", method);
+
+  return form;
+}
+
+/** JSON sin el campo `image` (nulo o ausente); conserva `remove_image`. */
+function contentJson<Input extends ContentImageInput>(input: Input) {
+  const { image: _image, ...rest } = input;
+
+  return rest;
+}
+
 export type CreateAdminApiOptions = {
   /** Zona horaria del dispositivo; por defecto la del navegador. */
   deviceTimeZone?: () => string | undefined;
@@ -116,7 +154,7 @@ export function createAdminApi(
 ) {
   const zone = () => (options.deviceTimeZone ?? browserTimeZone)() || undefined;
 
-  const content = <Dto, Input>(resource: string) => {
+  const content = <Dto, Input extends ContentImageInput>(resource: string) => {
     const path = `${base}/${resource}`;
 
     return {
@@ -124,11 +162,25 @@ export function createAdminApi(
         return unwrapList(await http.get<Enveloped<Dto[]>>(path));
       },
       async create(input: Input): Promise<Dto> {
-        return unwrap(await http.post<Enveloped<Dto>>(path, input));
+        const body = hasImageFile(input)
+          ? contentFormData(input as Input & Record<string, unknown>)
+          : contentJson(input);
+
+        return unwrap(await http.post<Enveloped<Dto>>(path, body));
       },
       async update(id: number, input: Input): Promise<Dto> {
+        // PHP no entrega multipart en PATCH: con archivo, POST + `_method=PATCH`.
+        if (hasImageFile(input)) {
+          return unwrap(
+            await http.post<Enveloped<Dto>>(
+              `${path}/${id}`,
+              contentFormData(input as Input & Record<string, unknown>, "PATCH"),
+            ),
+          );
+        }
+
         return unwrap(
-          await http.patch<Enveloped<Dto>>(`${path}/${id}`, input),
+          await http.patch<Enveloped<Dto>>(`${path}/${id}`, contentJson(input)),
         );
       },
       async setStatus(id: number, isActive: boolean): Promise<void> {

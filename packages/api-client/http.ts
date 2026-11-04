@@ -56,6 +56,10 @@ function cookieValue(name: string): string | null {
   }
 }
 
+function isFormData(value: unknown): value is FormData {
+  return typeof FormData !== "undefined" && value instanceof FormData;
+}
+
 function requestUrl(baseUrl: string, path: string): string {
   return `${baseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
 }
@@ -186,7 +190,9 @@ export function createHttpClient({
     headers.set("Accept", "application/json");
 
     const hasBody = options.body !== undefined;
-    if (hasBody) headers.set("Content-Type", "application/json");
+    // Con FormData el navegador fija `multipart/form-data` y su `boundary`.
+    const multipart = hasBody && isFormData(options.body);
+    if (hasBody && !multipart) headers.set("Content-Type", "application/json");
 
     const unsafeMethod = !["GET", "HEAD", "OPTIONS"].includes(method);
     if (unsafeMethod) {
@@ -195,7 +201,11 @@ export function createHttpClient({
     }
 
     const url = requestUrl(baseUrl, path);
-    const body = hasBody ? JSON.stringify(options.body) : undefined;
+    const body = !hasBody
+      ? undefined
+      : multipart
+        ? (options.body as FormData)
+        : JSON.stringify(options.body);
     const sendRequest = () => fetchImpl(url, {
       method,
       credentials: "include",

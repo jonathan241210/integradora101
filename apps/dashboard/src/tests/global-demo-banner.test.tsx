@@ -1,15 +1,17 @@
+import { existsSync, readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import App from "../App";
-import { initialDashboardDemoState } from "../viewmodels/dashboard-demo";
+import { initialDashboardShellState } from "../viewmodels/dashboard-shell";
 
-const { useAuthSession, useDashboardDemo } = vi.hoisted(() => ({
+const { useAuthSession, useDashboardShell } = vi.hoisted(() => ({
   useAuthSession: vi.fn(),
-  useDashboardDemo: vi.fn(),
+  useDashboardShell: vi.fn(),
 }));
 
 vi.mock("../viewmodels/useAuthSession", () => ({ useAuthSession }));
-vi.mock("../viewmodels/useDashboardDemo", () => ({ useDashboardDemo }));
+vi.mock("../viewmodels/useDashboardShell", () => ({ useDashboardShell }));
 
 const bannerText = "Prototipo de demostración.";
 
@@ -21,15 +23,12 @@ const adminPermissions = [
   "enclosures.manage",
   "users.manage",
   "operational-staff.manage",
-  "tickets.create",
   "tickets.view",
+  "ticket-prices.manage",
 ];
+const cashierPermissions = ["tickets.create", "tickets.view"];
 
-function render(
-  home: "administration" | "ticket",
-  activeProfile: "administration" | "ticket",
-  activeSection: string,
-) {
+function render(home: "administration" | "ticket", activeSection: string) {
   useAuthSession.mockReturnValue({
     state: {
       status: "authenticated",
@@ -42,7 +41,7 @@ function render(
         email: "personal@test.arca.invalid",
         department: null,
         roles: [home === "ticket" ? "cashier" : "admin"],
-        permissions: adminPermissions,
+        permissions: home === "ticket" ? cashierPermissions : adminPermissions,
         home,
         pwa_url: null,
         two_factor_setup_required: false,
@@ -59,17 +58,13 @@ function render(
     acknowledgeCodes: vi.fn(),
     logout: vi.fn(),
   });
-  useDashboardDemo.mockReturnValue({
-    state: { ...initialDashboardDemoState, activeProfile, activeSection },
-    startSession: vi.fn(),
-    signOut: vi.fn(),
+  useDashboardShell.mockReturnValue({
+    state: { ...initialDashboardShellState, activeSection },
+    reset: vi.fn(),
     navigate: vi.fn(),
     toggleMenu: vi.fn(),
+    closeMenu: vi.fn(),
     showNotice: vi.fn(),
-    openSale: vi.fn(),
-    cancelSale: vi.fn(),
-    beginSale: vi.fn(),
-    resetSale: vi.fn(),
   });
 
   return renderToStaticMarkup(<App />);
@@ -84,33 +79,50 @@ const connectedSections = [
   "users",
 ] as const;
 
+describe("CA-02 ticket-sales", () => {
+  it.each(["tickets", "ticket-history"] as const)(
+    "la vista %s del cajero no muestra aviso de demostración ni datos ficticios",
+    (section) => {
+      const markup = render("ticket", section);
+
+      expect(markup).not.toContain(bannerText);
+      expect(markup).not.toContain("demo-banner");
+      expect(markup).not.toMatch(/MUESTRA-\d+|ficticio|de muestra|Datos ficticios/i);
+    },
+  );
+
+  it("Historial y Precios del administrador tampoco muestran el aviso", () => {
+    for (const section of ["ticket-history", "ticket-prices"]) {
+      const markup = render("administration", section);
+
+      expect(markup).not.toContain(bannerText);
+      expect(markup).not.toMatch(/MUESTRA-\d+|Datos ficticios/i);
+    }
+  });
+
+  it("App ya no usa DemoBanner ni el estado de demostración de venta", () => {
+    const source = readFileSync(fileURLToPath(new URL("../App.tsx", import.meta.url)), "utf8");
+
+    expect(source).not.toMatch(/DemoBanner|useDashboardDemo|dashboard-demo|demo-data/);
+    expect(existsSync(fileURLToPath(new URL("../components/DemoBanner.tsx", import.meta.url)))).toBe(false);
+    expect(existsSync(fileURLToPath(new URL("../data/demo-data.ts", import.meta.url)))).toBe(false);
+  });
+});
+
 describe("CA-02 administration-sections", () => {
   it.each(connectedSections)(
     "no muestra el aviso de demostración en la sección conectada %s",
     (section) => {
-      const markup = render("administration", "administration", section);
+      const markup = render("administration", section);
 
       expect(markup).not.toContain(bannerText);
     },
   );
 
   it.each(["tickets", "ticket-history"] as const)(
-    "conserva una sola advertencia de demostración en %s",
+    "Venta e Historial ya no conservan el aviso de demostración (reemplazado por dashboard-005) en %s",
     (section) => {
-      const markup = render("ticket", "ticket", section);
-
-      expect(markup.match(/Prototipo de demostración\./g) ?? []).toHaveLength(1);
-    },
-  );
-});
-
-describe("CA-15 admin-dashboard-prototype", () => {
-  it.each(["tickets", "ticket-history"] as const)(
-    "la shell sigue mostrando una sola advertencia general en la sección de demostración %s",
-    (section) => {
-      const markup = render("ticket", "ticket", section);
-
-      expect(markup.match(/Prototipo de demostración\./g) ?? []).toHaveLength(1);
+      expect(render("ticket", section)).not.toContain(bannerText);
     },
   );
 });

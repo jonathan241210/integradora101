@@ -1,4 +1,4 @@
-# Gobierno de base de datos
+﻿# Gobierno de base de datos
 
 Esta sección regula cualquier cambio al esquema u objetos almacenados de la base principal de ARCA-NB. La base autoritativa es **MySQL 8.0.x** administrada por `apps/api`. La revisión mínima exacta queda **pendiente del inventario inicial** de la instancia existente y se registrará aquí al conocerse.
 
@@ -62,5 +62,6 @@ Conectar la API y probar conectividad **no requiere DBR** mientras no altere el 
 
 - [Solicitudes DBR](requests/README.md)
 - [Plantilla de solicitud](templates/change-request.md)
+- [Plan de migración de instancia Aiven](plan-migracion-instancia-aiven.md)
 - [ADR 0010 · MySQL 8.0 y gobierno de cambios](../adr/0010-mysql-8-0-database-change-governance.md)
 - [ADR 0013 · Aiven como proveedor de MySQL administrado](../adr/0013-aiven-managed-mysql.md)

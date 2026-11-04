@@ -10,6 +10,9 @@ return [
     'exists' => 'El valor seleccionado en :attribute no es válido.',
     'in' => 'El valor seleccionado en :attribute no es válido.',
     'integer' => 'El campo :attribute debe ser un número entero.',
+    'file' => 'El campo :attribute debe ser un archivo.',
+    'image' => 'El campo :attribute debe ser una imagen JPG, PNG o WebP.',
+    'uploaded' => 'No se pudo subir el campo :attribute. Verifica que no pese más de 5 MB.',
     'max' => [
         'numeric' => 'El campo :attribute no debe ser mayor que :max.',
         'string' => 'El campo :attribute no debe tener más de :max caracteres.',
@@ -19,6 +22,8 @@ return [
         'string' => 'El campo :attribute debe tener al menos :min caracteres.',
     ],
     'required' => 'El campo :attribute es obligatorio.',
+    'ticket_quantity_max' => 'No puedes vender más de 100 boletos de cada tipo en una misma venta.',
+    'ticket_effective_at_horizon' => 'La fecha de entrada en vigor no puede ser mayor a un año a partir de hoy.',
     'string' => 'El campo :attribute debe ser texto.',
     'unique' => 'El valor de :attribute ya está en uso.',
     'password' => [
@@ -55,5 +60,7 @@ return [
         'from' => 'fecha inicial',
         'to' => 'fecha final',
         'format' => 'formato',
+        'image' => 'imagen',
+        'remove_image' => 'quitar imagen',
     ],
 ];

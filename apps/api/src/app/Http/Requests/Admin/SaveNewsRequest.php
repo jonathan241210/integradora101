@@ -18,6 +18,16 @@ class SaveNewsRequest extends AdminFormRequest
                 $this->filled('start_date') ? ['after_or_equal:start_date'] : [],
             ),
             'is_active' => ['nullable', 'boolean'],
+            'image' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'remove_image' => ['nullable', 'boolean'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'image.mimes' => 'La imagen debe ser un archivo JPG, PNG o WebP.',
+            'image.max' => 'La imagen no debe pesar más de 5 MB.',
         ];
     }
 }

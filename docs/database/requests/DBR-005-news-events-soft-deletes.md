@@ -1,6 +1,6 @@
 # DBR-005 · news-events-soft-deletes
 
-- Estado: Lista para backend
+- Estado: Aplicada (`arca_pruebas`, 2026-10-30)
 - Feature/spec origen: `apps/api/specs/007-administration-management.md`
 - Solicitante: Jonathan
 - Responsable de BD: Víctor Adrián

@@ -27,7 +27,7 @@ class EventController extends Controller
 
     public function store(SaveEventRequest $request, SaveEventAction $action): JsonResponse
     {
-        return (new EventAdminResource($action->execute($request->user(), null, $request->validated())))
+        return (new EventAdminResource($action->execute($request->user(), null, $request->validated(), $request->file('image'), $request->boolean('remove_image'))))
             ->response()
             ->setStatusCode(201);
     }
@@ -36,7 +36,7 @@ class EventController extends Controller
     {
         $model = $find->execute(Event::class, $event, self::NOT_FOUND);
 
-        return new EventAdminResource($action->execute($request->user(), $model, $request->validated()));
+        return new EventAdminResource($action->execute($request->user(), $model, $request->validated(), $request->file('image'), $request->boolean('remove_image')));
     }
 
     public function status(SetStatusRequest $request, string $event, FindAdminResourceAction $find, SetEventStatusAction $action): EventAdminResource
