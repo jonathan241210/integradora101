@@ -4,14 +4,14 @@
 - Plan: `apps/mobile/plan/007-map-location.md`
 - ADR: `docs/adr/0015-mobile-svg-map-rendering.md`
 - Brief del SVG: `apps/mobile/docs/007-svg-brief.md`
-- Estado: Implementación y validación visual completadas; listo para commit local
- 
- ## Prerrequisitos
- 
- - [x] Aprobar el plan `apps/mobile/plan/007-map-location.md`.
- - [x] Aceptar el ADR 0015 `docs/adr/0015-mobile-svg-map-rendering.md`.
- - [ ] Confirmar la revisión técnica de Aksel.
- - [x] Confirmar el SVG esquemático V1 y sus IDs de sección (borrador `apps/mobile/docs/007-map-v1-draft.svg` validado en pantalla).
+- Estado: V1, V2 y V2.1 completadas; Enmienda V2.2 lista para implementar
+
+## Prerrequisitos
+
+- [x] Aprobar el plan `apps/mobile/plan/007-map-location.md`.
+- [x] Aceptar el ADR 0015 `docs/adr/0015-mobile-svg-map-rendering.md`.
+- [ ] Confirmar la revisión técnica de Aksel.
+- [x] Confirmar el SVG esquemático V1 y sus IDs de sección (borrador `apps/mobile/docs/007-map-v1-draft.svg` validado en pantalla).
 
 ## Implementación
 
@@ -210,7 +210,6 @@
 - **Coordenadas reales:** cuando el zoológico envíe foto/video, se actualizan únicamente `zoo.ts` y `MOCK_MAP_PLACES` — sin tocar ningún otro archivo de código.
 - El test de arquitectura (`architecture.test.ts`) debe seguir aprobado: sin colores hex fijos ni lógica en componentes.
 
-
 ---
 
 ## Enmienda V2.1 — Ruta hacia el destino y Detección de Llegada (CA-12, CA-14)
@@ -268,3 +267,23 @@
 - [ ] **T-55** (V3): Crear suite de pruebas unitarias `__tests__/pathfinding.test.ts` validando el camino más corto, nodos aislados y cálculo preciso de distancia/tiempo.
 - [ ] **T-56** (V3): Crear pruebas de integración en `__tests__/mapPathRoute.test.tsx` verificando renderizado de la polilínea, actualización en movimiento y persistencia del descarte de llegada.
 
+---
+
+## Enmienda V2.2 — Controles Interactivos del Mapa: Zoom, Desplazamiento y Centrado (CA-15 a CA-17)
+
+- **Spec:** `apps/mobile/specs/007-map-location.md` (Enmienda V2.2, Aprobada 2026-11-04)
+- **Plan:** `apps/mobile/plan/007-map-location.md` (Enmienda V2.2, Aprobado 2026-11-04)
+- **Tareas:** T-57 a T-63
+
+### Bloque 16 — Utilidades de Cámara/Viewport y Constantes
+- [x] **T-57** (CA-15, CA-16, CA-17): Añadir constantes `MIN_ZOOM_SCALE = 1.0`, `MAX_ZOOM_SCALE = 2.5`, `ZOOM_STEP = 0.5` y `CENTER_LOCATION_ZOOM = 2.0` en `src/constants/zoo.ts`.
+- [x] **T-58** (CA-15, CA-16, CA-17): Crear `src/utils/mapViewport.ts` con funciones puras `clampZoom`, `clampPan` y `computeCenterPanForSvgPoint`.
+
+### Bloque 17 — Componente de Controles e Integración en Pantalla
+- [x] **T-59** (CA-15, CA-17, RN-16): Crear `src/components/map/MapViewportControls.tsx` con botones accesibles en español (*"Acercar mapa"*, *"Alejar mapa"*, *"Restablecer vista del mapa"* y *"Centrar en mi ubicación"*) usando exclusivamente tokens semánticos y exportarlo en `src/components/map/index.ts`.
+- [x] **T-60** (CA-15, CA-16, CA-17, RN-17): Integrar el contenedor transformable (`testID="map-viewport-content"`), `PanResponder` y `<MapViewportControls>` en `src/screens/MapScreen.tsx`.
+
+### Bloque 18 — Pruebas Automatizadas y Verificación
+- [x] **T-61** (CA-15, CA-16, CA-17): Crear `__tests__/mapViewport.test.tsx` cubriendo explícitamente `CA-15` (zoom in/out/reset), `CA-16` (clamping de desplazamiento) y `CA-17` (centrar en ubicación activa y ocultamiento sin GPS).
+- [x] **T-62**: Ejecutar `npx tsc --noEmit` y suite de Jest en `apps/mobile`, verificando 0 errores (incluyendo `architecture.test.ts`).
+- [x] **T-63**: Actualizar documentación en `apps/mobile/docs/003-008-roadmap-y-asignacion.md` y `apps/mobile/docs/007-roadmap-mapa-gps-ar.md`.

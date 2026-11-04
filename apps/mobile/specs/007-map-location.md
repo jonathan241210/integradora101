@@ -259,6 +259,41 @@ flowchart TD
   - `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado
   - `apps/mobile/docs/007-roadmap-mapa-gps-ar.md`
 
+---
+
+## Enmienda V2.2 — Controles Interactivos del Mapa (Zoom, Desplazamiento y Centrado)
+
+- Estado: **Aprobada** (2026-11-04)
+- Solicitante / responsable funcional: Víctor Adrián
+- Fecha: 2026-11-03
+- Sin nuevas dependencias externas (usa primitivas de React Native + controles accesibles para cumplir `CA-07`).
+
+### Problema y contexto (V2.2)
+
+En las versiones V1 a V2.1 el lienzo del mapa se muestra fijo al 100 % dentro de su contenedor. En pantallas pequeñas o zonas con varios puntos cercanos, el visitante necesita acercar el plano (zoom in), desplazarse por las áreas acercadas (pan) y regresar rápidamente a la vista general o centrar el mapa sobre su ubicación GPS (punto azul) o sobre un recinto enfocado.
+
+### Objetivos (V2.2)
+
+- Permitir acercar (`+`) y alejar (`-`) el mapa 2D dentro de límites controlados (`1.0x` a `2.5x`, en pasos de `0.5x`) manteniendo alineados el SVG, los marcadores, el punto azul y la línea de ruta.
+- Permitir desplazar el lienzo cuando el nivel de zoom sea mayor a `1.0x` (tanto mediante arrastre táctil con `PanResponder` como al centrar un punto/ubicación).
+- Incluir un botón accesible de **"Restablecer vista"** para volver a escala `1.0x` centrada `(0, 0)`.
+- Incluir un botón accesible de **"Centrar en mi ubicación"** cuando el punto azul (`userPosition`) esté activo, que centre el visor sobre la posición del visitante.
+
+### Historias de usuario (V2.2)
+
+- **HU-10 (Zoom y desplazamiento):** Como visitante, quiero acercar, alejar y desplazar el plano del zoológico para explorar con mayor claridad las zonas con varios puntos de interés.
+- **HU-11 (Centrar en mi ubicación):** Como visitante con GPS activo, quiero un botón para centrar el mapa en mi punto azul para encontrarme rápidamente después de explorar otras áreas del plano.
+
+### Criterios de aceptación (V2.2)
+
+- **CA-15 (Controles de zoom accesibles):** Dado el mapa visible, cuando el visitante presiona el botón "Acercar mapa" (`+`) o "Alejar mapa" (`-`), entonces la escala del lienzo (`zoomScale`) aumenta o disminuye dentro del rango `[1.0, 2.5]` manteniendo sincronizados el SVG, los marcadores, el punto azul y la línea de destino; y al presionar "Restablecer vista", el mapa vuelve a escala `1.0` y desplazamiento `(0, 0)`.
+- **CA-16 (Desplazamiento acotado del lienzo):** Dado que el mapa tiene un nivel de zoom mayor a `1.0`, cuando el visitante desplaza el lienzo o se enfoca un punto/ubicación, entonces el desplazamiento (`panX`, `panY`) se limita a los bordes del mapa (`clampPan`) para que el plano nunca salga del área visible; en `1.0x` el desplazamiento se mantiene en `(0, 0)`.
+- **CA-17 (Centrar en mi ubicación):** Dado que el visitante tiene ubicación activa (`userPosition` no nulo), cuando presiona el botón "Centrar en mi ubicación", entonces el mapa se centra sobre las coordenadas del punto azul (aplicando zoom si estaba en `1.0x`); si no hay ubicación activa (`userPosition === null`), el botón no se muestra o permanece deshabilitado de forma accesible sin romper el mapa.
+
+### Reglas de negocio (V2.2)
+
+- **RN-16 (Accesibilidad y sin gestos obligatorios):** Conforme a `CA-07`, toda acción de zoom, restablecimiento y centrado debe poder ejecutarse mediante botones accesibles con etiquetas en español (`accessibilityLabel`), sin depender exclusivamente de gestos multitáctiles.
+- **RN-17 (Sin dependencias nuevas):** Se implementa con APIs nativas de React Native (`View`, transformaciones de escala/traslación y `PanResponder`), sin instalar paquetes adicionales.
 
 ---
 

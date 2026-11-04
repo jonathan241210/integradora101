@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import { PanResponder, StyleSheet, View } from 'react-native';
 import {
   AppText,
   Button,
@@ -15,11 +15,22 @@ import {
   DestinationRouteLine,
   MapMarker,
   MapPlaceCard,
+  MapViewportControls,
   UserLocationMarker,
   ZooMapSvg,
 } from '../components/map';
+import {
+  CENTER_LOCATION_ZOOM,
+  MIN_ZOOM_SCALE,
+  ZOOM_STEP,
+} from '../constants/zoo';
 import { MapFilter, MapPlace, MapSection } from '../models';
 import { colors, spacing } from '../theme/tokens';
+import {
+  clampPan,
+  clampZoom,
+  computeCenterPanForSvgPoint,
+} from '../utils/mapViewport';
 import type { UserPosition } from '../viewmodels/useLocationViewModel';
 
 interface MapScreenProps {
@@ -76,6 +87,100 @@ export function MapScreen({
   onToggleDestination,
   onDismissArrival,
 }: MapScreenProps) {
+  const [zoomScale, setZoomScale] = useState<number>(MIN_ZOOM_SCALE);
+  const [panOffset, setPanOffset] = useState<{ panX: number; panY: number }>({
+    panX: 0,
+    panY: 0,
+  });
+
+  const zoomScaleRef = useRef<number>(MIN_ZOOM_SCALE);
+  const panOffsetRef = useRef<{ panX: number; panY: number }>({ panX: 0, panY: 0 });
+  const dragOriginRef = useRef<{ panX: number; panY: number }>({ panX: 0, panY: 0 });
+
+  const applyViewport = useCallback(
+    (nextScale: number, nextPan: { panX: number; panY: number }) => {
+      zoomScaleRef.current = nextScale;
+      panOffsetRef.current = nextPan;
+      setZoomScale(nextScale);
+      setPanOffset(nextPan);
+    },
+    [],
+  );
+
+  const handleZoomIn = useCallback(() => {
+    const nextScale = clampZoom(zoomScaleRef.current + ZOOM_STEP);
+    const nextPan = clampPan(
+      panOffsetRef.current.panX,
+      panOffsetRef.current.panY,
+      nextScale,
+    );
+    applyViewport(nextScale, nextPan);
+  }, [applyViewport]);
+
+  const handleZoomOut = useCallback(() => {
+    const nextScale = clampZoom(zoomScaleRef.current - ZOOM_STEP);
+    const nextPan = clampPan(
+      panOffsetRef.current.panX,
+      panOffsetRef.current.panY,
+      nextScale,
+    );
+    applyViewport(nextScale, nextPan);
+  }, [applyViewport]);
+
+  const handleResetView = useCallback(() => {
+    applyViewport(MIN_ZOOM_SCALE, { panX: 0, panY: 0 });
+  }, [applyViewport]);
+
+  const handleCenterLocation = useCallback(() => {
+    if (!userPosition) {
+      return;
+    }
+    const currentScale = zoomScaleRef.current;
+    const targetScale =
+      currentScale > MIN_ZOOM_SCALE ? currentScale : CENTER_LOCATION_ZOOM;
+    const nextScale = clampZoom(targetScale);
+    const nextPan = computeCenterPanForSvgPoint(
+      userPosition.svgX,
+      userPosition.svgY,
+      nextScale,
+    );
+    applyViewport(nextScale, nextPan);
+  }, [userPosition, applyViewport]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => zoomScaleRef.current > MIN_ZOOM_SCALE,
+      onMoveShouldSetPanResponder: (_, gestureState) =>
+        zoomScaleRef.current > MIN_ZOOM_SCALE &&
+        (Math.abs(gestureState.dx) > 4 || Math.abs(gestureState.dy) > 4),
+      onMoveShouldSetPanResponderCapture: (_, gestureState) =>
+        zoomScaleRef.current > MIN_ZOOM_SCALE &&
+        (Math.abs(gestureState.dx) > 6 || Math.abs(gestureState.dy) > 6),
+      onPanResponderGrant: () => {
+        dragOriginRef.current = { ...panOffsetRef.current };
+      },
+      onPanResponderMove: (_, gestureState) => {
+        const currentScale = zoomScaleRef.current;
+        if (currentScale <= MIN_ZOOM_SCALE) {
+          return;
+        }
+        const nextPan = clampPan(
+          dragOriginRef.current.panX + gestureState.dx / currentScale,
+          dragOriginRef.current.panY + gestureState.dy / currentScale,
+          currentScale,
+        );
+        if (
+          nextPan.panX !== panOffsetRef.current.panX ||
+          nextPan.panY !== panOffsetRef.current.panY
+        ) {
+          panOffsetRef.current = nextPan;
+          setPanOffset(nextPan);
+        }
+      },
+      onPanResponderTerminationRequest: () => false,
+    }),
+  ).current;
+
   const selectedSectionName =
     sections.find((section) => section.id === selectedPlace?.sectionId)?.name ?? 'Sin sección';
   const hasNoPlaces = !isLoading && !error && filteredPlaces.length === 0;
@@ -107,28 +212,53 @@ export function MapScreen({
         )}
 
         <View style={styles.canvas}>
-          <ZooMapSvg highlightedSectionId={focusedSectionId} />
-          {userPosition && destinationPlace && (
-            <DestinationRouteLine
-              userPosition={userPosition}
-              destinationPlace={destinationPlace}
-            />
-          )}
-          {filteredPlaces.map((place) => (
-            <MapMarker
-              key={place.id}
-              place={place}
-              selected={place.id === focusedPlaceId}
-              onPress={onSelectPlace}
-            />
-          ))}
-          {userPosition && (
-            <UserLocationMarker
-              svgX={userPosition.svgX}
-              svgY={userPosition.svgY}
-              searching={userPosition.searching}
-            />
-          )}
+          <View style={styles.viewportContent} {...panResponder.panHandlers}>
+            <View
+              testID="map-viewport-content"
+              style={[
+                styles.viewportContent,
+                {
+                  transform: [
+                    { scale: zoomScale },
+                    { translateX: panOffset.panX },
+                    { translateY: panOffset.panY },
+                  ],
+                },
+              ]}
+            >
+              <ZooMapSvg highlightedSectionId={focusedSectionId} />
+              {userPosition && destinationPlace && (
+                <DestinationRouteLine
+                  userPosition={userPosition}
+                  destinationPlace={destinationPlace}
+                />
+              )}
+              {filteredPlaces.map((place) => (
+                <MapMarker
+                  key={place.id}
+                  place={place}
+                  selected={place.id === focusedPlaceId}
+                  onPress={onSelectPlace}
+                />
+              ))}
+              {userPosition && (
+                <UserLocationMarker
+                  svgX={userPosition.svgX}
+                  svgY={userPosition.svgY}
+                  searching={userPosition.searching}
+                />
+              )}
+            </View>
+          </View>
+
+          <MapViewportControls
+            zoomScale={zoomScale}
+            canCenterLocation={Boolean(userPosition)}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onResetView={handleResetView}
+            onCenterLocation={handleCenterLocation}
+          />
         </View>
 
         {isLoading && (
@@ -201,6 +331,10 @@ const styles = StyleSheet.create({
     aspectRatio: 1000 / 1400,
     backgroundColor: colors.background,
     overflow: 'hidden',
+  },
+  viewportContent: {
+    width: '100%',
+    height: '100%',
   },
   stateCard: {
     position: 'absolute',
