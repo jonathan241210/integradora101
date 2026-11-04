@@ -14,7 +14,7 @@ interface MissionDetailScreenProps {
 export function MissionDetailScreen({ mission, loading = false, error, onBackPress }: MissionDetailScreenProps) {
   if (loading) {
     return (
-      <ScreenContainer>
+      <ScreenContainer scroll={false}>
         <View style={styles.message}>
           <AppText variant="body">Cargando información de la misión…</AppText>
         </View>

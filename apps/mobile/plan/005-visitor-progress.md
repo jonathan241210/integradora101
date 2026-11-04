@@ -1,7 +1,7 @@
 # Plan técnico · 005 · visitor-progress
 
 - Spec: `apps/mobile/specs/005-visitor-progress.md`
-- Estado de spec: Aprobada (Aksel, 2026-10-22)
+- Estado de spec: Implementada (2026-11-01; aprobación funcional Aksel, 2026-10-22)
 - Estado del plan: Aprobado (Aksel, 2026-10-22)
 - Responsable técnico: Aksel
 - Depende de `apps/api/plan/005-visitor-progress.md` (Aprobado, Aksel, 2026-10-22)
@@ -13,6 +13,8 @@ La app presenta el progreso que devuelve la API y guarda solo la cola de escaneo
 Perfil sustituye puntos, nivel y rango de demostración cuando hay sesión. La colección lista especies con `discovered`. Logros y misiones muestran el estado del servidor. Se retiran líderes y recompensas.
 
 Enmienda 2026-10-23: `readSharedProgress` guarda una copia por repositorio. Las pantallas esperan la lectura en curso y no repiten la petición si ya hay datos. La copia se tira al cerrar sesión y al entrar en otra. `bootstrap()` regresa de inmediato si el estado ya es `authenticated`. Guardar el perfil avisa a la sesión, pero no dispara otra lectura de progreso. Ajustes sigue pidiendo el perfil una vez para mostrar nombre y correo.
+
+Enmienda 2026-11-01: el resultado del escaneo es un recuadro de color (vino, dorado o crema) con icono, puntos y nombres grandes. En el perfil, las cifras se leen en el tamaño del título y el siguiente umbral es una barra chica de los puntos actuales contra ese umbral. La colección usa pastillas de estado y foto más alta. La aventura muestra la barra de la misión en vino. El inicio, con sesión, saluda con el apodo y los animales que faltan.
 
 ## Cambios por área
 

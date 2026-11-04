@@ -41,8 +41,10 @@ class RegisterTest extends VisitorFeatureTestCase
         $this->assertTrue(Hash::check($code, $stored->code_hash));
 
         $this->postJson('/api/v1/visitor/auth/register', $this->visitorPayload($email))
-            ->assertUnprocessable()
-            ->assertJsonPath('message', 'Ese correo ya está registrado.');
+            ->assertCreated()
+            ->assertJsonPath('message', 'Te enviamos un código de 6 dígitos para verificar tu correo.');
+        $this->assertSame(1, Visitor::query()->where('email', $email)->count());
+        Mail::assertSentCount(1);
     }
 
     /** CA-18 */

@@ -72,7 +72,7 @@ Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de
 - **RN-01:** Solo adultos (18+) crean cuenta y aceptan aviso y términos; el niño juega con la cuenta del tutor y su perfil visible muestra solo `nickname` y avatar.
 - **RN-02:** El avatar se elige de un catálogo de ilustraciones incluidas en la app (sin fotos). `avatar_code` se valida contra los códigos aceptados: `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`. El arte final puede cambiar sin cambiar los códigos.
 - **RN-03:** Sesión = token de acceso de 15 min + refresh rotatorio de 30 días con detección de reuso; la rotación es lógica propia sobre Sanctum.
-- **RN-04:** Respuestas genéricas donde aplique: «Correo o contraseña incorrectos.» y 202 en resend/forgot, para no revelar la existencia de una cuenta.
+- **RN-04:** Respuestas genéricas donde aplique: «Correo o contraseña incorrectos.» y 202 en resend/forgot, para no revelar la existencia de una cuenta. Un registro con correo ya usado responde igual que uno nuevo (201 y el mismo mensaje) y no crea otra cuenta ni otro código. Enmienda de Aksel, 2026-11-01.
 - **RN-05:** DBR-001 y DBR-003 están en `Lista para backend` y esta spec está aprobada. El código de estos endpoints espera el plan técnico y las tasks de `api-004`. No se crean migraciones nuevas desde esta spec.
 - **RN-06:** Ningún secreto se versiona: SMTP y claves se configuran por `.env`; `.env.example` solo lleva claves sin valores.
 - **RN-07:** Rutas nombradas de Laravel bajo el prefijo `/api/v1/visitor`; sin Inertia ni Wayfinder.

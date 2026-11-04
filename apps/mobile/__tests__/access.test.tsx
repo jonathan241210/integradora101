@@ -81,16 +81,17 @@ describe('Acceso visual del visitante', () => {
 
   it('test-ca-12: el registro pide nombre, apodo y contraseña antes de crear la cuenta', async () => {
     const register = await render(<RegisterRoute />);
-    await fireEvent.press(register.getByRole('button', { name: 'Crear cuenta' }));
-    expect(register.getByText('Completa nombre, apodo, correo, contraseña y confirmación.')).toBeTruthy();
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
+    expect(register.getByText('Completa nombre, apodo y correo.')).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalled();
 
     await fireEvent.changeText(register.getByLabelText('Nombre'), 'María');
     await fireEvent.changeText(register.getByLabelText('Apodo'), 'Mari');
     await fireEvent.changeText(register.getByLabelText('Correo electrónico'), 'nueva@correo.com');
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
     await fireEvent.changeText(register.getByLabelText('Contraseña'), 'secreta');
     await fireEvent.changeText(register.getByLabelText('Confirmar contraseña'), 'otra');
-    await fireEvent.press(register.getByRole('button', { name: 'Crear cuenta' }));
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
     expect(register.getByText('La confirmación no coincide con la contraseña.')).toBeTruthy();
   });
 
@@ -128,7 +129,8 @@ describe('Acceso visual del visitante', () => {
     expect(settings.getByText('Ana')).toBeTruthy();
     expect(settings.getByText('correo@ejemplo.com')).toBeTruthy();
 
-    expect(settings.getByLabelText('Notificaciones')).toBeTruthy();
+    expect(settings.getByLabelText('Cámara')).toBeTruthy();
+    expect(settings.queryByLabelText('Notificaciones')).toBeNull();
     expect(settings.getByLabelText('Ubicación')).toBeTruthy();
     expect(settings.queryByLabelText('Modo oscuro')).toBeNull();
     expect(visitorAccessRepository.getPreferences().notifications).toBe(true);

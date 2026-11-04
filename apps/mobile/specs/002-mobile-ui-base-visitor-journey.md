@@ -22,7 +22,7 @@ Tras establecer la base técnica en la Spec 001, se requiere implementar la capa
 - Renderizado de modelos 3D reales.
 - Conectividad con endpoints reales de la API (se usarán Repositorios con mocks).
 - Persistencia de datos local o remota (Favoritos, Perfil).
-- Estados complejos de carga, error o vacío no definidos en el diseño.
+- Estados de carga distintos de este: el título de la pantalla permanece visible y el indicador queda centrado debajo.
 
 ## Actores y permisos
 | Actor/rol | Necesidad | Permisos requeridos |
@@ -35,7 +35,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
 ## Criterios de aceptación
 - **CA-01 (Arquitectura MVVM):** Dado cualquier flujo de pantalla, cuando se analice el código, entonces se debe cumplir estrictamente la jerarquía: `Routes` $\rightarrow$ `ViewModels` $\rightarrow$ `Repositories` $\rightarrow$ `Models`. No debe existir importación de mocks o repositorios directamente en `src/screens/` ni en `app/`.
     - *Prueba:* `test-ca-01`: Análisis estático mediante script de grep/lint para detectar imports prohibidos en las capas de vista y rutas.
-- **CA-02 (Navegación por Tabs):** Dado el arranque de la app, cuando se interactúe con la TabBar, entonces se debe navegar correctamente entre las 5 pestañas principales: Home, Mapa, Escanear, Colección y Perfil. El gesto o botón atrás del sistema no recorre las pestañas principales ya visitadas: en la raíz de una de esas cinco pestañas no deshace el cambio de pestaña. Desde una ruta secundaria, atrás vuelve a la pantalla que la abrió (Ajustes vuelve a Perfil). Enmienda de Aksel, 2026-10-23.
+- **CA-02 (Navegación por Tabs):** Dado el arranque de la app, cuando se interactúe con la TabBar, entonces se debe navegar correctamente entre las 5 pestañas principales: Home, Mapa, Escanear, Colección y Perfil. El círculo de la pestaña activa se desliza hacia la pestaña elegida. En Escanear ese círculo es dorado y un poco mayor. En la ficha de un animal descubierto, el mapa se abre con un icono de ubicación arriba a la derecha. El gesto o botón atrás del sistema no recorre las pestañas principales ya visitadas: en la raíz de una de esas cinco pestañas no deshace el cambio de pestaña. Desde una ruta secundaria, atrás vuelve a la pantalla que la abrió (Ajustes vuelve a Perfil). En el mapa y en el recorrido, «Buscar animales» es un enlace de texto. Enmienda de Aksel, 2026-11-01.
     - *Prueba:* `test-ca-02`: Test de integración con `@testing-library/react-native` verificando el cambio de pantalla al presionar tabs.
 - **CA-03 (Rutas Secundarias):** Dado que el usuario navega a rutas como Search, Game, Tour 3D, detalles de eventos/misiones o Resultados QR, entonces la TabBar debe permanecer visible y resaltar la pestaña principal asociada (ej. Game $\rightarrow$ Home, Tour 3D $\rightarrow$ Mapa).
     - *Prueba:* `test-ca-03`: Test de renderizado de `AppTabBar` verificando el estado `active` basado en la ruta actual.
@@ -47,7 +47,8 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     1. Ausencia de solapamientos con el Status Bar y Navigation Bar (uso de `SafeAreas`).
     2. Correcto renderizado de carruseles horizontales sin cortes abruptos.
     3. Coincidencia de jerarquía visual con la referencia (Header $\rightarrow$ Body $\rightarrow$ Footer).
-    4. El teclado no tapa los campos de contraseña. El contenedor de pantalla desplaza el formulario y Android redimensiona la ventana (`softwareKeyboardLayoutMode: resize`). Enmienda de Aksel, 2026-10-23.
+    4. El teclado no tapa los campos de contraseña. El contenedor con scroll desplaza el formulario. En iOS usa el ajuste del sistema. En Android reserva la altura del teclado y sube el campo activo, además de `softwareKeyboardLayoutMode: resize`.
+    5. El título de cada pantalla usa el mismo tamaño que «Mi Colección». Mientras carga, ese título se queda en su sitio y el indicador queda centrado debajo. Enmienda de Aksel, 2026-11-01.
     - *Prueba:* `test-ca-06-manual`: Validación manual en emulador/dispositivo Android.
     - *Prueba:* `test-ca-06-auto`: Snapshot tests de los componentes base de la UI para asegurar consistencia estructural.
 - **CA-07 (Integración de Tokens):** Dado cualquier componente visual, cuando se verifique su estilo, entonces debe utilizar valores provenientes de `@arca/tokens` a través de un adaptador de tema.
@@ -69,7 +70,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     - *Prueba:* `test-ca-12`: campos, advertencia, confirmación distinta y regreso a Login.
 - **CA-13 (Recuperación visual):** Dado el olvido de contraseña, cuando se envía un correo, entonces la app muestra un aviso genérico que no revela si la cuenta existe y continúa a una pantalla con código de 6 dígitos, nueva contraseña y confirmación. Al completarla, vuelve a Login. En la demostración el correo no se envía y cualquier código de 6 dígitos permite continuar.
     - *Prueba:* `test-ca-13`: aviso genérico, código incompleto y regreso a Login.
-- **CA-14 (Ajustes):** Dado Perfil, cuando se abre Ajustes desde el botón circular junto al título «Perfil», entonces se ve la ficha de ejemplo, los interruptores de notificaciones y ubicación, y las filas Privacidad, Ayuda y soporte y Acerca de ARCA-NB. La pestaña Perfil permanece activa. Los interruptores solo cambian en pantalla. Cada fila abre su pantalla. No hay modo oscuro, selector de idioma ni interruptor de sonidos. La app permanece en modo claro. Enmienda de Aksel, 2026-10-23.
+- **CA-14 (Ajustes):** Dado Perfil, cuando se abre Ajustes desde el botón circular junto al título «Perfil», entonces se ve la ficha de la cuenta, el interruptor de cámara, el de ubicación y las filas Privacidad, Ayuda y soporte y Acerca de ARCA-NB. La pestaña Perfil permanece activa. La cámara pide el permiso del teléfono o abre los ajustes del sistema; la ubicación solo cambia en pantalla. Cada fila abre su pantalla. No hay notificaciones, modo oscuro, selector de idioma ni interruptor de sonidos. La app permanece en modo claro. Enmienda de Aksel, 2026-11-01.
     - *Prueba:* `test-ca-14`: acceso desde Perfil, interruptores, filas y pestaña activa.
 - **CA-15 (Aviso de privacidad de demostración):** Dada Privacidad, cuando se muestra el aviso, entonces explica qué datos recopila la demostración, para qué se utilizarían, cómo se protegerían y cómo ejercer derechos. El texto se identifica como explicación de demostración; el aviso oficial lo publicará el zoológico.
     - *Prueba:* `test-ca-15`: presencia de las cuatro secciones del aviso. La prueba comparte el caso de filas de `test-ca-14`.
@@ -94,7 +95,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
 - **RN-09 (Paleta institucional):** Los tokens móviles de marca derivan exclusivamente de los valores iniciales documentados en `docs/04-sistema-de-diseno.md`. El token semántico `danger` usa el valor compartido `#c34242`; los tintes mock específicos de especie se conservan solo como placeholders ilustrativos, no como colores de marca. No se consulta ni modifica `settings_colores`.
 - **RN-10 (Acceso solo visual):** Login, registro, recuperación, ajustes y cierre de sesión no crean sesión, no envían correo y no guardan credenciales ni preferencias. La cuenta real, la verificación de mayoría de edad, el avatar y el aviso oficial siguen en la spec `004`, todavía en borrador.
 - **RN-11 (Recuperación prevista):** La recuperación visual sigue el flujo ya descrito para la API: correo con respuesta genérica, código de 6 dígitos y nueva contraseña con confirmación. Esta versión no entrega el código.
-- **RN-12 (Preferencias de pantalla):** Los interruptores no activan notificaciones del sistema, no cambian el tema y no solicitan ubicación. La app permanece en modo claro.
+- **RN-12 (Preferencias de pantalla):** El interruptor de cámara solicita el permiso del teléfono; si el sistema ya no vuelve a preguntar, o si se quiere desactivar, abre los ajustes del sistema. La app no puede revocar el permiso por sí sola. El interruptor de ubicación no solicita la ubicación ni cambia el tema. La app permanece en modo claro. Enmienda de Aksel, 2026-11-01.
 - **RN-13 (Aviso de demostración):** El texto de Privacidad explica el tratamiento de esta versión y el previsto al conectar la cuenta. No sustituye el aviso que debe proveer el zoológico.
 
 ## Datos, privacidad y auditoría

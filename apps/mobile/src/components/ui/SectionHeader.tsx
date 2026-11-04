@@ -37,10 +37,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radius.sm,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.secondary,
   },
   actionText: {
-    color: colors.textOnPrimary,
+    color: colors.textOnSecondary,
     fontSize: 14,
     fontWeight: '500' as const,
   },

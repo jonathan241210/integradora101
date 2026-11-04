@@ -8,6 +8,23 @@ type SharedRead = {
 
 let shared: SharedRead | null = null;
 let generation = 0;
+const listeners = new Set<() => void>();
+
+function emit(): void {
+  listeners.forEach((listener) => listener());
+}
+
+export function subscribeSharedProgress(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export function publishSharedProgress(repository: ProgressRepository, snapshot: ProgressSnapshot): void {
+  shared = { repository, snapshot, flight: null };
+  emit();
+}
 
 export function sharedProgressGeneration(): number {
   return generation;
@@ -21,6 +38,7 @@ export function peekSharedProgress(repository: ProgressRepository): ProgressSnap
 export function clearSharedProgress(): void {
   generation += 1;
   shared = null;
+  emit();
 }
 
 export function readSharedProgress(repository: ProgressRepository, force = false): Promise<ProgressSnapshot> {
@@ -34,6 +52,7 @@ export function readSharedProgress(repository: ProgressRepository, force = false
     (snapshot) => {
       if (shared?.flight === flight) {
         shared = { repository, snapshot, flight: null };
+        emit();
       }
       return snapshot;
     },

@@ -4,6 +4,24 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
 
+jest.mock('expo-location', () => ({
+  Accuracy: { BestForNavigation: 6 },
+  requestForegroundPermissionsAsync: jest.fn(async () => ({ status: 'granted', granted: true, canAskAgain: true })),
+  watchPositionAsync: jest.fn(async () => ({ remove: jest.fn() })),
+}));
+
+jest.mock('expo-camera', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return {
+    CameraView: (props) => React.createElement(View, { testID: 'camera-view', ...props }),
+    useCameraPermissions: jest.fn(() => [
+      { granted: true, canAskAgain: true, status: 'granted' },
+      jest.fn(async () => ({ granted: true, canAskAgain: true, status: 'granted' })),
+    ]),
+  };
+});
+
 jest.mock('expo-network', () => ({
   useNetworkState: jest.fn(() => ({
     type: 'WIFI',

@@ -1,3 +1,5 @@
+import { forgetScanResult } from './presentScanResult';
+
 type TabRouter = {
   back: () => void;
   navigate: (href: string) => void;
@@ -21,6 +23,7 @@ export function notePathname(pathname: string): void {
   const path = normalizeTabPath(pathname);
   if (isVisitorTabRoot(path)) {
     history = [path];
+    forgetScanResult();
     return;
   }
   if (history[history.length - 1] === path) return;

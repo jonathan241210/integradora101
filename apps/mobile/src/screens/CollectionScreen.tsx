@@ -71,13 +71,14 @@ export function CollectionScreen({ animals, progress, isOffline = false, onAnima
                   source={item.imageUrl?.trim() ? { uri: item.imageUrl.trim() } : null}
                   tint={item.placeholderTint}
                   style={styles.imagePlaceholder}
+                  blurRadius={item.isDiscovered ? 0 : 12}
                 />
                 <AppText variant="small" bold center style={styles.animalName}>{item.commonName}</AppText>
-                <AppText variant="caption" center>
-                  {item.isDiscovered
-                    ? `✓ Descubierto${item.discoveredAt ? ` · ${item.discoveredAt}` : ''}`
-                    : '🔒 Bloqueado'}
-                </AppText>
+                <View style={[styles.statusPill, item.isDiscovered ? styles.statusOn : styles.statusOff]}>
+                  <AppText variant="caption" bold center style={item.isDiscovered ? styles.statusOnText : styles.statusOffText}>
+                    {item.isDiscovered ? 'Descubierto' : 'Por descubrir'}
+                  </AppText>
+                </View>
               </Card>
             </TouchableOpacity>
           );
@@ -96,5 +97,10 @@ const styles = StyleSheet.create({
   animalCardSlot: { width: '48%' },
   animalCard: { width: '100%', padding: spacing.sm, alignItems: 'center', gap: spacing.xs },
   animalName: { width: '100%', minHeight: 36 },
-  imagePlaceholder: { width: 80, height: 80, borderRadius: radius.md, marginBottom: spacing.sm }
+  imagePlaceholder: { width: '100%', height: 128, borderRadius: radius.md, marginBottom: spacing.sm },
+  statusPill: { borderRadius: radius.pill, paddingHorizontal: spacing.sm, paddingVertical: 4 },
+  statusOn: { backgroundColor: colors.accent },
+  statusOff: { backgroundColor: colors.border },
+  statusOnText: { color: colors.secondary },
+  statusOffText: { color: colors.textMuted },
 });

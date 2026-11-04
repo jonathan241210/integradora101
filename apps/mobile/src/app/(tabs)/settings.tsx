@@ -3,12 +3,14 @@ import { useRouter } from 'expo-router';
 import { SettingsScreen } from '../../screens/SettingsScreen';
 import { goBackWithinTabs } from '../../navigation/tabBack';
 import { useVisitorPreferencesViewModel } from '../../viewmodels/useAccessViewModels';
+import { useCameraPermissionSetting } from '../../viewmodels/useCameraPermissionSetting';
 import { useAccountSession } from '../../viewmodels/useAccountSession';
 import { useVisitorProfile } from '../../viewmodels/useVisitorProfile';
 
 export default function SettingsRoute() {
   const router = useRouter();
   const { preferences, setPreference } = useVisitorPreferencesViewModel();
+  const camera = useCameraPermissionSetting();
   const { logout } = useAccountSession();
   const { profile, loading } = useVisitorProfile();
   const [busy, setBusy] = useState(false);
@@ -21,6 +23,9 @@ export default function SettingsRoute() {
       accountBusy={loading && !profile}
       preferences={preferences}
       onToggle={setPreference}
+      cameraGranted={camera.granted}
+      cameraReady={camera.ready}
+      onCameraToggle={(enabled) => { void camera.onToggle(enabled); }}
       onAccountPress={() => router.push('/account-settings')}
       onPrivacyPress={() => router.push('/privacy')}
       onHelpPress={() => router.push('/help')}

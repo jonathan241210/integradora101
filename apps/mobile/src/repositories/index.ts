@@ -1,5 +1,5 @@
-import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection, QrOutcome, QrSimulation } from '../models';
-import { MOCK_ANIMALS, MOCK_USER, MOCK_MISSIONS, MOCK_EVENTS, MOCK_NEWS, MOCK_ACHIEVEMENTS, MOCK_MILESTONES, MOCK_MAP_SECTIONS, MOCK_MAP_PLACES, MOCK_QR_SIMULATIONS } from '../mocks/zoo';
+import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection } from '../models';
+import { MOCK_ANIMALS, MOCK_USER, MOCK_MISSIONS, MOCK_EVENTS, MOCK_NEWS, MOCK_ACHIEVEMENTS, MOCK_MILESTONES, MOCK_MAP_SECTIONS, MOCK_MAP_PLACES } from '../mocks/zoo';
 
 export interface AnimalRepository {
   getAllAnimals(): Promise<Animal[]>;
@@ -23,10 +23,6 @@ export interface ZooRepository {
 export interface MapRepository {
   getPlaces(): Promise<MapPlace[]>;
   getSections(): Promise<MapSection[]>;
-}
-
-export interface QrRepository {
-  simulateScan(outcome: QrOutcome): Promise<QrSimulation>;
 }
 
 export class AnimalRepositoryImpl implements AnimalRepository {
@@ -84,12 +80,6 @@ export class MapRepositoryImpl implements MapRepository {
 
   async getSections(): Promise<MapSection[]> {
     return MOCK_MAP_SECTIONS;
-  }
-}
-
-export class QrRepositoryImpl implements QrRepository {
-  async simulateScan(outcome: QrOutcome): Promise<QrSimulation> {
-    return MOCK_QR_SIMULATIONS[outcome];
   }
 }
 
