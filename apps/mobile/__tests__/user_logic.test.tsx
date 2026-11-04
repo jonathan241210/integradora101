@@ -5,7 +5,7 @@ import { useUserViewModel } from '../src/viewmodels/useUserViewModel';
 import { UserRepositoryImpl } from '../src/repositories/userRepository';
 
 const TestUserComponent = ({ repo }: { repo: UserRepositoryImpl }) => {
-  const { user, missions, leaderboard, loading, refresh } = useUserViewModel(repo);
+  const { user, missions, loading, refresh } = useUserViewModel(repo);
 
   return (
     <>
@@ -13,8 +13,6 @@ const TestUserComponent = ({ repo }: { repo: UserRepositoryImpl }) => {
       <Text testID="user-name">{user?.name || 'no-user'}</Text>
       <Text testID="user-points">{user?.points || 0}</Text>
       <Text testID="missions-count">{missions.length}</Text>
-      <Text testID="leader-top">{leaderboard[0]?.name || 'no-leader'}</Text>
-      <Text testID="leader-current">{leaderboard.find(l => l.isCurrentUser)?.name || 'no-current'}</Text>
       <TouchableOpacity testID="refresh-button" onPress={refresh}>
         <Text>Refresh</Text>
       </TouchableOpacity>
@@ -35,21 +33,15 @@ describe('User Domain Logic (T-20 / CA-08)', () => {
     expect(parseInt(screen.getByTestId('missions-count').props.children)).toBeGreaterThan(0);
   });
 
-  it('should return correct leaderboard data and handle refresh', async () => {
+  it('should refresh missions without a leaderboard', async () => {
     await render(<TestUserComponent repo={repo} />);
-    
+
     await waitFor(() => expect(screen.getByTestId('loading-status').props.children).toBe('idle'));
+    expect(parseInt(screen.getByTestId('missions-count').props.children)).toBeGreaterThan(0);
 
-    // Initial check
-    expect(screen.getByTestId('leader-top').props.children).toBe('Carlos Ruiz');
-    expect(screen.getByTestId('leader-current').props.children).toBe('María García');
-
-    // Test Refresh
     fireEvent.press(screen.getByTestId('refresh-button'));
-    
-    await waitFor(() => expect(screen.getByTestId('loading-status').props.children).toBe('idle'));
 
-    expect(screen.getByTestId('leader-top').props.children).toBe('Carlos Ruiz');
-    expect(screen.getByTestId('leader-current').props.children).toBe('María García');
+    await waitFor(() => expect(screen.getByTestId('loading-status').props.children).toBe('idle'));
+    expect(screen.getByTestId('user-name').props.children).toBe('María García');
   });
 });

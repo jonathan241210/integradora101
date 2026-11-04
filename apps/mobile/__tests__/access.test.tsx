@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Pressable, Text, TextInput } from 'react-native';
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import LoginRoute from '../src/app/(auth)/login';
 import RegisterRoute from '../src/app/(auth)/register';
 import ForgotPasswordRoute from '../src/app/(auth)/forgot-password';
@@ -45,8 +45,8 @@ describe('Acceso visual del visitante', () => {
     return accountSession.resetForTests();
   });
 
-  it('test-ca-11: el arranque sin sesión va a la bienvenida y, al entrar, regresa al inicio', () => {
-    expect(nextGateRoute('guest', false)).toBe('/welcome');
+  it('test-ca-11: el arranque sin sesión va al login y, al entrar, regresa al inicio', () => {
+    expect(nextGateRoute('guest', false)).toBe('/login');
     expect(nextGateRoute('guest', true)).toBeNull();
     expect(nextGateRoute('authenticated', true)).toBe('/');
     expect(nextGateRoute('authenticated', false)).toBeNull();
@@ -57,6 +57,7 @@ describe('Acceso visual del visitante', () => {
     const login = await render(<LoginRoute />);
     expect(login.queryByText('Login')).toBeNull();
     expect(login.queryByText('Entrar como invitado')).toBeNull();
+    expect(login.getByLabelText('Contraseña').props.placeholder).toBe('Escribe tu contraseña');
     await fireEvent.press(login.getByRole('button', { name: 'Iniciar sesión' }));
     expect(login.getByText('Escribe tu correo y tu contraseña.')).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalled();
@@ -120,19 +121,21 @@ describe('Acceso visual del visitante', () => {
 
   it('test-ca-14: Ajustes cambia interruptores en pantalla y abre las filas; cerrar sesión vuelve a Login', async () => {
     visitorAccessRepository.enter();
+    await accountSession.login('correo@ejemplo.com', 'secreta');
     const settings = await render(<SettingsRoute />);
-    expect(settings.getByText('María García')).toBeTruthy();
-    expect(settings.getByText('maria.garcia@correo.com')).toBeTruthy();
+    expect(settings.queryByText('María García')).toBeNull();
+    expect(settings.queryByText('maria.garcia@correo.com')).toBeNull();
+    expect(settings.getByText('Ana')).toBeTruthy();
+    expect(settings.getByText('correo@ejemplo.com')).toBeTruthy();
 
-    expect(settings.getByLabelText('Modo oscuro').props.value).toBe(false);
-    await fireEvent(settings.getByLabelText('Modo oscuro'), 'valueChange', true);
-    expect(settings.getByLabelText('Modo oscuro').props.value).toBe(true);
-    expect(visitorAccessRepository.getPreferences().darkMode).toBe(true);
+    expect(settings.getByLabelText('Notificaciones')).toBeTruthy();
+    expect(settings.getByLabelText('Ubicación')).toBeTruthy();
+    expect(settings.queryByLabelText('Modo oscuro')).toBeNull();
     expect(visitorAccessRepository.getPreferences().notifications).toBe(true);
     expect(settings.queryByText('Sonidos y efectos')).toBeNull();
     expect(settings.queryByText('Idioma')).toBeNull();
 
-    await fireEvent.press(settings.getByLabelText('Cuenta de María García'));
+    await fireEvent.press(settings.getByLabelText('Cuenta de Ana'));
     expect(mockPush).toHaveBeenCalledWith('/account-settings');
     await fireEvent.press(settings.getByLabelText('Privacidad'));
     expect(mockPush).toHaveBeenCalledWith('/privacy');
@@ -142,7 +145,39 @@ describe('Acceso visual del visitante', () => {
     expect(mockPush).toHaveBeenCalledWith('/about');
 
     await fireEvent.press(settings.getByRole('button', { name: 'Cerrar sesión' }));
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/welcome'));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/login'));
+  });
+
+  it('test-ca-11-logout-ignores-a-second-tap: un segundo toque no repite el cierre de sesión', async () => {
+    let release: () => void = () => undefined;
+    const logoutSpy = jest.spyOn(accountSession, 'logout').mockImplementation(
+      () => new Promise((resolve) => { release = resolve; }),
+    );
+    const settings = await render(<SettingsRoute />);
+    try {
+      const button = settings.getByRole('button', { name: 'Cerrar sesión' });
+      await act(async () => {
+        let fiber = (button as { unstable_fiber?: { memoizedProps: { onPress?: () => void } | null; return: unknown; type: unknown } | null }).unstable_fiber;
+        let handler = typeof button.props.onPress === 'function' ? button.props.onPress : undefined;
+        while (!handler && fiber) {
+          if (typeof fiber.memoizedProps?.onPress === 'function') handler = fiber.memoizedProps.onPress;
+          const parent = fiber.return as typeof fiber;
+          if (!parent || typeof parent.type === 'string') break;
+          fiber = parent;
+        }
+        if (!handler) throw new Error('No hay onPress');
+        handler();
+        handler();
+        await Promise.resolve();
+      });
+      expect(logoutSpy).toHaveBeenCalledTimes(1);
+      expect(settings.getByLabelText('Cerrando sesión…')).toBeTruthy();
+      await act(async () => { release(); });
+      await waitFor(() => expect(mockReplace).toHaveBeenCalledTimes(1));
+      expect(mockReplace).toHaveBeenCalledWith('/login');
+    } finally {
+      logoutSpy.mockRestore();
+    }
   });
 
   it('test-ca-14 y test-ca-15: Perfil abre Ajustes y las filas muestran cuenta, aviso, ayuda y acerca de', async () => {

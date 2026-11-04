@@ -1,4 +1,4 @@
-import { Achievement, Animal, User, Mission, Reward, LeaderboardEntry, ZooEvent, News, MapLocation, MapRoute, QrOutcome } from '../models';
+import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection, QrOutcome } from '../models';
 
 export const MOCK_ANIMALS: Animal[] = [
   {
@@ -85,21 +85,8 @@ export const MOCK_USER: User = {
 };
 
 export const MOCK_MISSIONS: Mission[] = [
-  { id: 'm1', title: 'Safari Matutino', objective: 'Descubre cinco animales de la sabana durante tu visita.', progress: 3, total: 5, reward: 'Insignia de Oro' },
-  { id: 'm2', title: 'Observador de Aves', objective: 'Encuentra y descubre un ave en el zoológico.', progress: 0, total: 1, reward: 'Certificado de Experto' },
-];
-
-export const MOCK_REWARDS: Reward[] = [
-  { id: 'r1', name: 'Sombrero Gris', icon: 'hat-icon' },
-  { id: 'r2', name: 'Novato', icon: 'newbie-icon' },
-  { id: 'r3', name: 'Explorador', icon: 'explorer-icon' },
-  { id: 'r4', name: 'Maestro', icon: 'master-icon' },
-];
-
-export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
-  { id: 'l1', name: 'Carlos Ruiz', points: 3100, rank: 1, isCurrentUser: false },
-  { id: 'l2', name: 'María García', points: 2450, rank: 2, isCurrentUser: true },
-  { id: 'l3', name: 'Ana López', points: 2100, rank: 3, isCurrentUser: false },
+  { id: 'm1', title: 'Safari Matutino', objective: 'Descubre cinco animales de la sabana durante tu visita.', progress: 3, total: 5, reward: '100 puntos' },
+  { id: 'm2', title: 'Observador de Aves', objective: 'Encuentra y descubre un ave en el zoológico.', progress: 0, total: 1, reward: '50 puntos' },
 ];
 
 export const MOCK_ACHIEVEMENTS: Achievement[] = [
@@ -174,18 +161,139 @@ export const MOCK_MILESTONES = [
   { id: 'milestone-3', title: 'Completaste tu primera misión', date: 'Este mes' },
 ];
 
-export const MOCK_MAP_LOCATIONS: MapLocation[] = [
-  { id: 'tiger-habitat', label: 'Hábitat Tigre', kind: 'animal', left: 56, top: 31 },
-  { id: 'restrooms', label: 'Baños', kind: 'service', left: 18, top: 56 },
+export const MOCK_MAP_SECTIONS: MapSection[] = [
+  { id: 'zone-entrance', name: 'Acceso', svgZoneId: 'zone-entrance' },
+  { id: 'zone-plaza', name: 'Plaza', svgZoneId: 'zone-plaza' },
+  { id: 'zone-felines', name: 'Felinos', svgZoneId: 'zone-felines' },
+  { id: 'zone-birds', name: 'Aves', svgZoneId: 'zone-birds' },
+  { id: 'zone-aquatic', name: 'Acuario', svgZoneId: 'zone-aquatic' },
+  { id: 'zone-reptiles', name: 'Reptiles', svgZoneId: 'zone-reptiles' },
+  { id: 'zone-herbivores', name: 'Herbívoros', svgZoneId: 'zone-herbivores' },
+  { id: 'zone-services', name: 'Servicios', svgZoneId: 'zone-services' },
 ];
 
-export const MOCK_MAP_ROUTE: MapRoute = {
-  destination: 'Hábitat del Tigre',
-  duration: '8 min',
-  distance: '450 m',
-  direction: 'Noroeste',
-  steps: ['Sigue el sendero principal', 'Gira a la izquierda en el lago'],
-};
+export const MOCK_MAP_PLACES: MapPlace[] = [
+  {
+    id: 'juan',
+    name: 'Hábitat del Tigre',
+    kind: 'animal',
+    sectionId: 'zone-felines',
+    description: 'Recinto de Juan, el tigre de Bengala.',
+    mapX: 0.23,
+    mapY: 0.25,
+    visible: true,
+    gpsLat: 20.0838, // TODO: reemplazar con medición real
+    gpsLon: -98.7236, // TODO: reemplazar con medición real
+  },
+  {
+    id: 'simba',
+    name: 'Zona del León',
+    kind: 'animal',
+    sectionId: 'zone-felines',
+    description: 'Espacio de Simba y su grupo familiar.',
+    mapX: 0.31,
+    mapY: 0.36,
+    visible: true,
+    gpsLat: 20.0832, // TODO: reemplazar con medición real
+    gpsLon: -98.7231, // TODO: reemplazar con medición real
+  },
+  {
+    id: 'penguin',
+    name: 'Cala de Pingüinos',
+    kind: 'animal',
+    sectionId: 'zone-aquatic',
+    description: 'Área acuática de los pingüinos emperador.',
+    mapX: 0.23,
+    mapY: 0.55,
+    visible: true,
+    gpsLat: 20.0823, // TODO: reemplazar con medición real
+    gpsLon: -98.7236, // TODO: reemplazar con medición real
+  },
+  {
+    id: 'monkey',
+    name: 'Bosque de Monos',
+    kind: 'animal',
+    sectionId: 'zone-herbivores',
+    description: 'Zona arbolada de los monos araña.',
+    mapX: 0.31,
+    mapY: 0.83,
+    visible: true,
+    gpsLat: 20.0809, // TODO: reemplazar con medición real
+    gpsLon: -98.7231, // TODO: reemplazar con medición real
+  },
+  {
+    id: 'elephant',
+    name: 'Zona de Elefantes',
+    kind: 'animal',
+    sectionId: 'zone-herbivores',
+    description: 'Amplio espacio para los elefantes asiáticos.',
+    mapX: 0.23,
+    mapY: 0.76,
+    visible: true,
+    gpsLat: 20.0812, // TODO: reemplazar con medición real
+    gpsLon: -98.7236, // TODO: reemplazar con medición real
+  },
+  {
+    id: 'bird-aviary',
+    name: 'Aviario',
+    kind: 'animal',
+    sectionId: 'zone-birds',
+    description: 'Aves del zoológico en un recorrido cubierto.',
+    mapX: 0.77,
+    mapY: 0.25,
+    visible: true,
+    gpsLat: 20.0838, // TODO: reemplazar con medición real
+    gpsLon: -98.7204, // TODO: reemplazar con medición real
+  },
+  {
+    id: 'reptile-house',
+    name: 'Herpetario',
+    kind: 'animal',
+    sectionId: 'zone-reptiles',
+    description: 'Reptiles y anfibios en un espacio climatizado.',
+    mapX: 0.77,
+    mapY: 0.55,
+    visible: true,
+    gpsLat: 20.0823, // TODO: reemplazar con medición real
+    gpsLon: -98.7204, // TODO: reemplazar con medición real
+  },
+  {
+    id: 'restrooms',
+    name: 'Baños',
+    kind: 'service',
+    sectionId: 'zone-services',
+    description: 'Servicios sanitarios para visitantes.',
+    mapX: 0.77,
+    mapY: 0.76,
+    visible: true,
+    gpsLat: 20.0812, // TODO: reemplazar con medición real
+    gpsLon: -98.7204, // TODO: reemplazar con medición real
+  },
+  {
+    id: 'food-court',
+    name: 'Comida',
+    kind: 'service',
+    sectionId: 'zone-services',
+    description: 'Puesto de alimentos y bebidas.',
+    mapX: 0.70,
+    mapY: 0.83,
+    visible: true,
+    gpsLat: 20.0809, // TODO: reemplazar con medición real
+    gpsLon: -98.7208, // TODO: reemplazar con medición real
+  },
+  {
+    id: 'main-entrance',
+    name: 'Entrada principal',
+    kind: 'entrance',
+    sectionId: 'zone-entrance',
+    description: 'Acceso y salida del zoológico.',
+    mapX: 0.50,
+    mapY: 0.90,
+    visible: true,
+    gpsLat: 20.0800, // TODO: reemplazar con medición real
+    gpsLon: -98.7220, // TODO: reemplazar con medición real
+  },
+];
 
 export const MOCK_QR_SIMULATIONS: Record<QrOutcome, { outcome: QrOutcome; animalId?: string }> = {
   valid: { outcome: 'valid', animalId: 'elephant' },

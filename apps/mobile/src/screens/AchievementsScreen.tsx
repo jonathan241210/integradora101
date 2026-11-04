@@ -25,8 +25,11 @@ const sortOptions: { key: AchievementSort; label: string; earnedOnly?: boolean }
 export function AchievementsScreen({ achievements, loading = false, source, onAchievementPress, onBackPress }: AchievementsScreenProps) {
   const [filter, setFilter] = useState<AchievementFilter>('unlocked');
   const [sort, setSort] = useState<AchievementSort>('newest');
+  const [filterTouched, setFilterTouched] = useState(false);
+  const hasUnlocked = achievements.some((achievement) => achievement.unlocked);
+  const activeFilter: AchievementFilter = filterTouched ? filter : (hasUnlocked ? 'unlocked' : 'locked');
   const filteredAchievements = useMemo(() => {
-    const filtered = achievements.filter((achievement) => achievement.unlocked === (filter === 'unlocked'));
+    const filtered = achievements.filter((achievement) => achievement.unlocked === (activeFilter === 'unlocked'));
     return [...filtered].sort((a, b) => {
       if (sort === 'name-asc') return a.title.localeCompare(b.title, 'es');
       if (sort === 'name-desc') return b.title.localeCompare(a.title, 'es');
@@ -34,9 +37,10 @@ export function AchievementsScreen({ achievements, loading = false, source, onAc
       const bDate = b.earnedAt ? new Date(b.earnedAt).getTime() : 0;
       return sort === 'newest' ? bDate - aDate : aDate - bDate;
     });
-  }, [achievements, filter, sort]);
+  }, [achievements, activeFilter, sort]);
 
   const selectFilter = (nextFilter: AchievementFilter) => {
+    setFilterTouched(true);
     setFilter(nextFilter);
     setSort(nextFilter === 'unlocked' ? 'newest' : 'name-asc');
   };
@@ -50,13 +54,13 @@ export function AchievementsScreen({ achievements, loading = false, source, onAc
         />
         <AppText variant="title">Todos los logros</AppText>
         <View style={styles.filterRow}>
-          <Chip label="Obtenidos" selected={filter === 'unlocked'} onPress={() => selectFilter('unlocked')} />
-          <Chip label="Por obtener" selected={filter === 'locked'} onPress={() => selectFilter('locked')} />
+          <Chip label="Obtenidos" selected={activeFilter === 'unlocked'} onPress={() => selectFilter('unlocked')} />
+          <Chip label="Por obtener" selected={activeFilter === 'locked'} onPress={() => selectFilter('locked')} />
         </View>
         <AppText variant="small" color="textMuted">Ordenar por</AppText>
         <View style={styles.sortRow}>
           {sortOptions
-            .filter((option) => !option.earnedOnly || filter === 'unlocked')
+            .filter((option) => !option.earnedOnly || activeFilter === 'unlocked')
             .map((option) => (
               <Chip
                 key={option.key}

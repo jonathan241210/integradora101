@@ -1,14 +1,31 @@
 import React from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
-import { ScreenContainer, SectionHeader, HeroBanner, BrandHeader, AnimalHighlightCard, EventCard, HighlightNewsCard, GamePromoCard } from '../components/ui';
-import { colors, spacing } from '../theme/tokens';
+import {
+  ScreenContainer,
+  SectionHeader,
+  HeroBanner,
+  BrandHeader,
+  AnimalHighlightCard,
+  EventCard,
+  HighlightNewsCard,
+  GamePromoCard,
+  OfflineBanner,
+  LoadingView,
+  EmptyView,
+  ErrorView,
+} from '../components/ui';
+import { spacing } from '../theme/tokens';
 import { Animal, ZooEvent, News } from '../models';
 
-interface HomeScreenProps {
+export interface HomeScreenProps {
   appName: string;
   featuredAnimals: Animal[];
   events: ZooEvent[];
   news: News;
+  loading?: boolean;
+  error?: string | null;
+  isOffline?: boolean;
+  onRetry?: () => void;
   onNotificationsPress?: () => void;
   onSeeAllAnimalsPress?: () => void;
   onAnimalPress?: (id: string) => void;
@@ -16,90 +33,123 @@ interface HomeScreenProps {
   onOpenMissionsPress?: () => void;
 }
 
-export function HomeScreen({ 
-  appName, featuredAnimals, events, news, 
-  onNotificationsPress, onSeeAllAnimalsPress, onAnimalPress, onEventPress, onOpenMissionsPress
+export function HomeScreen({
+  appName,
+  featuredAnimals,
+  events,
+  news,
+  loading = false,
+  error = null,
+  isOffline = false,
+  onRetry,
+  onNotificationsPress,
+  onSeeAllAnimalsPress,
+  onAnimalPress,
+  onEventPress,
+  onOpenMissionsPress,
 }: HomeScreenProps) {
-  // Asegurar que los datos sean siempre arrays válidos y filtrar elementos inválidos
+  if (loading) {
+    return (
+      <ScreenContainer>
+        <BrandHeader appName={appName} onBellPress={onNotificationsPress} />
+        <LoadingView message="Cargando el zoológico..." />
+      </ScreenContainer>
+    );
+  }
+
+  if (error && (!featuredAnimals || featuredAnimals.length === 0)) {
+    return (
+      <ScreenContainer>
+        <BrandHeader appName={appName} onBellPress={onNotificationsPress} />
+        <ErrorView
+          title="No pudimos conectar con el zoológico"
+          message={error}
+          onRetry={onRetry}
+          retryLabel="Intentar de nuevo"
+        />
+      </ScreenContainer>
+    );
+  }
+
   const safeFeaturedAnimals = Array.isArray(featuredAnimals) ? featuredAnimals : [];
   const safeEvents = Array.isArray(events) ? events : [];
-  
-  // Filtrar cualquier elemento undefined, null o vacío
+
   const filteredFeaturedAnimals = safeFeaturedAnimals.filter(
     (animal): animal is Animal => animal !== undefined && animal !== null
   );
   const filteredEvents = safeEvents.filter(
     (event): event is ZooEvent => event !== undefined && event !== null
   );
-  
-  // Si por alguna razón no hay datos válidos, usar arrays vacíos para evitar errores
-  const displayAnimals = filteredFeaturedAnimals.length > 0 ? filteredFeaturedAnimals : [];
-  const displayEvents = filteredEvents.length > 0 ? filteredEvents : [];
-  
+
+  const displayAnimals = filteredFeaturedAnimals;
+  const displayEvents = filteredEvents;
+  const isEmpty = displayAnimals.length === 0 && displayEvents.length === 0;
+
   return (
     <ScreenContainer>
+      {isOffline && <OfflineBanner />}
+
       <View style={styles.headerSection}>
         <BrandHeader appName={appName} onBellPress={onNotificationsPress} />
-        <HeroBanner 
-          overline="¡Hola, explorador!" 
-          title="Bienvenido al Zoológico" 
-          subtitle="¿Qué hábitat descubriremos juntos hoy?" 
+        <HeroBanner
+          overline="¡Hola, explorador!"
+          title="Bienvenido al Zoológico"
+          subtitle="¿Qué hábitat descubriremos juntos hoy?"
         />
-        <SectionHeader 
-          title="Animales Destacados" 
-          actionLabel="Ver todo" 
-          onActionPress={onSeeAllAnimalsPress} 
+        <SectionHeader
+          title="Animales Destacados"
+          actionLabel="Ver todo"
+          onActionPress={onSeeAllAnimalsPress}
         />
       </View>
 
-      <FlatList
-        horizontal
-        data={displayAnimals}
-        keyExtractor={(item, index) => {
-          // Usar el id del item si está disponible, de lo contrario usar un key estable basado en el índice
-          // Esto evita las claves aleatorias que pueden causar problemas en la reconciliación de React
-          if (item && item.id) {
-            return item.id;
-          }
-          // Usar un prefijo + índice para asegurar unicidad y estabilidad
-          return `item-${index}`;
-        }}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.carousel}
-        renderItem={({ item }) => {
-          // Como ya filtramos los elementos inválidos, este debería ser siempre válido
-          // Pero añadimos una verificación adicional por seguridad
-          if (!item) {
-            return null; // React Native maneja mejor los nulls en renderItem que los elementos no filtrados
-          }
-          return (
-            <AnimalHighlightCard 
-              animal={item} 
-              onPress={() => {
-                // Doble verificación para evitar llamadas a funciones con datos inválidos
-                if (onAnimalPress && item && item.id) {
-                  onAnimalPress(item.id);
-                }
-              }} 
-            />
-          );
-        }}
-      />
+      {isEmpty ? (
+        <EmptyView
+          title="No hay animales o eventos por ahora"
+          message="Vuelve a consultar más tarde para conocer las novedades del parque."
+        />
+      ) : (
+        <>
+          <FlatList
+            horizontal
+            data={displayAnimals}
+            keyExtractor={(item, index) => (item?.id ? item.id : `item-${index}`)}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.carousel}
+            renderItem={({ item }) => {
+              if (!item) return null;
+              return (
+                <AnimalHighlightCard
+                  animal={item}
+                  onPress={() => {
+                    if (onAnimalPress && item?.id) {
+                      onAnimalPress(item.id);
+                    }
+                  }}
+                />
+              );
+            }}
+          />
 
-      <View style={styles.newsSection}>
-        <HighlightNewsCard news={news} />
-        <GamePromoCard onPress={() => onOpenMissionsPress?.()} />
-        <SectionHeader title="Próximos Eventos" />
-        <View style={styles.eventsList}>
-          {displayEvents.map((event) => {
-            // Filtrado adicional por seguridad
-            if (!event) {
-              return null;
-            }
-            return <EventCard key={event.id} event={event} onPress={() => onEventPress?.(event.id)} />;
-          })}
-        </View>
-      </View>
+          <View style={styles.newsSection}>
+            {news?.title ? <HighlightNewsCard news={news} /> : null}
+            <GamePromoCard onPress={() => onOpenMissionsPress?.()} />
+            <SectionHeader title="Próximos Eventos" />
+            <View style={styles.eventsList}>
+              {displayEvents.map((event) => {
+                if (!event) return null;
+                return (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    onPress={() => onEventPress?.(event.id)}
+                  />
+                );
+              })}
+            </View>
+          </View>
+        </>
+      )}
     </ScreenContainer>
   );
 }

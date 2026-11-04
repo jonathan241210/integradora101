@@ -1,31 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { MapRoute } from '../../models';
 import { Tour3DScreen } from '../../screens/Tour3DScreen';
-import { useMapViewModel } from '../../viewmodels/useMapViewModel';
+
+const DEFAULT_TOUR_DESTINATION = 'Hábitat del Tigre';
 
 export default function Tour3DRoute() {
   const router = useRouter();
   const { destination: selectedDestination } = useLocalSearchParams<{ destination?: string }>();
-  const { getMapData } = useMapViewModel();
   const routeDestination = Array.isArray(selectedDestination) ? selectedDestination[0] : selectedDestination;
-  const [destination, setDestination] = useState(routeDestination ?? 'Recorrido del zoológico');
+  const [destination, setDestination] = useState(routeDestination ?? DEFAULT_TOUR_DESTINATION);
 
   useEffect(() => {
-    let isActive = true;
     if (routeDestination) {
       setDestination(routeDestination);
-      return () => { isActive = false; };
     }
-    getMapData()
-      .then(({ activeRoute }: { activeRoute: MapRoute }) => {
-        if (isActive) setDestination(activeRoute.destination);
-      })
-      .catch((error: unknown) => console.error('Error loading tour data:', error));
-    return () => {
-      isActive = false;
-    };
-  }, [getMapData, routeDestination]);
+  }, [routeDestination]);
 
   return (
     <Tour3DScreen

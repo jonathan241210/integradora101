@@ -1,4 +1,5 @@
 import { useRouter } from 'expo-router';
+import { goBackWithinTabs } from '../../navigation/tabBack';
 import { AccountScreen } from '../../screens/AccountScreen';
 import { useVisitorContentViewModel } from '../../viewmodels/useAccessViewModels';
 
@@ -11,7 +12,7 @@ export default function AccountRoute() {
       displayName={account.displayName}
       email={account.email}
       warning={accountDeletionWarning}
-      onBackPress={() => router.back()}
+      onBackPress={() => goBackWithinTabs(router)}
     />
   );
 }

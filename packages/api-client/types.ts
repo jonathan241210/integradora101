@@ -29,6 +29,7 @@ export type ApiErrorPayload = {
   code?: string;
   errors?: Record<string, string[]>;
   retryAfterSeconds?: number;
+  data?: unknown;
 };
 
 export type TwoFactorChallenge = { code: string } | { recovery_code: string };

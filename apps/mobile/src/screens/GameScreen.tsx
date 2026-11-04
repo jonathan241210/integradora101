@@ -2,19 +2,20 @@ import React from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { ScreenContainer, AppText, BackButton, HeroBanner, SectionHeader, Card, Icon } from '../components/ui';
 import { colors, radius, spacing } from '../theme/tokens';
-import { Achievement, Mission, LeaderboardEntry } from '../models';
+import { Achievement, Mission } from '../models';
 
 interface GameScreenProps {
   missions: Mission[];
   achievements: Achievement[];
-  leaderboard: LeaderboardEntry[];
+  pendingScans?: { clientScanId: string; code: string }[];
   onBackPress: () => void;
   onMissionPress: (id: string) => void;
   onAchievementPress: (id: string) => void;
   onSeeAchievementsPress?: () => void;
+  onRetryPress?: () => void;
 }
 
-export function GameScreen({ missions, achievements, leaderboard, onBackPress, onMissionPress, onAchievementPress, onSeeAchievementsPress }: GameScreenProps) {
+export function GameScreen({ missions, achievements, pendingScans = [], onBackPress, onMissionPress, onAchievementPress, onSeeAchievementsPress, onRetryPress }: GameScreenProps) {
   return (
     <ScreenContainer>
       <View style={styles.header}>
@@ -22,11 +23,25 @@ export function GameScreen({ missions, achievements, leaderboard, onBackPress, o
         <HeroBanner 
           overline="Minijuego en vivo" 
           title="Aventura en el Zoo" 
-          subtitle="Completa misiones, acumula puntos y compite en la tabla de exploradores." 
+          subtitle="Completa misiones y acumula puntos de exploración." 
         />
       </View>
 
       <View style={styles.content}>
+        {pendingScans.length > 0 ? (
+          <View style={styles.missionList}>
+            <AppText variant="heading">Escaneos pendientes</AppText>
+            {pendingScans.map((scan) => (
+              <Card key={scan.clientScanId} style={styles.missionCard}>
+                <AppText variant="body">Pendiente</AppText>
+                <AppText variant="small">{scan.code}</AppText>
+              </Card>
+            ))}
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Reintentar" onPress={onRetryPress}>
+              <AppText variant="body" color="primary">Reintentar</AppText>
+            </TouchableOpacity>
+          </View>
+        ) : null}
         <AppText variant="heading">Misiones Activas</AppText>
         <View style={styles.missionList}>
           {missions.map(m => (
@@ -66,16 +81,6 @@ export function GameScreen({ missions, achievements, leaderboard, onBackPress, o
             </TouchableOpacity>
           ))}
         </ScrollView>
-
-        <AppText variant="heading" style={{ marginTop: spacing.lg }}>Líderes de la Semana</AppText>
-        <View style={styles.leaderboard}>
-          {leaderboard.map((e, i) => (
-            <View key={e.id} style={[styles.leaderRow, e.isCurrentUser && styles.currentUserRow]}>
-              <AppText variant="body">{i + 1}. {e.name}</AppText>
-              <AppText variant="body" bold>{e.points} pts</AppText>
-            </View>
-          ))}
-        </View>
       </View>
     </ScreenContainer>
   );
@@ -90,7 +95,4 @@ const styles = StyleSheet.create({
   achievementButton: { width: 88, alignItems: 'center', gap: spacing.xs },
   rewardBadge: { width: 72, height: 72, borderRadius: radius.pill, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', padding: spacing.sm },
   achievementName: { width: '100%', minHeight: 32 },
-  leaderboard: { gap: spacing.sm },
-  leaderRow: { flexDirection: 'row', justifyContent: 'space-between', padding: spacing.sm, borderBottomWidth: 1, borderColor: colors.border },
-  currentUserRow: { backgroundColor: colors.primarySoft },
 });

@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
-import { AnimalRepository, AnimalRepositoryImpl } from '../repositories';
+import { AnimalRepository, createAnimalRepository } from '../repositories';
 import { Animal } from '../models';
 
-const defaultRepository = new AnimalRepositoryImpl();
+const defaultRepository = createAnimalRepository();
 
 export function useAnimalViewModel(repository: AnimalRepository = defaultRepository) {
   const getAnimals = useCallback(async (query?: string, category?: Animal['category'] | 'all') => {
@@ -16,8 +16,7 @@ export function useAnimalViewModel(repository: AnimalRepository = defaultReposit
       );
       const matchesCategory = !category || category === 'all' || animal.category === category;
       return matchesQuery && matchesCategory;
-    }
-    );
+    });
   }, [repository]);
 
   const getAnimalDetails = useCallback(async (id: string) => {

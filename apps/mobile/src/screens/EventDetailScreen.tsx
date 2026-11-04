@@ -1,6 +1,6 @@
 import React from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
-import { AppText, BackButton, Card, ImageOrPlaceholder, ScreenContainer } from '../components/ui';
+import { AppText, BackButton, Card, ImageOrPlaceholder, OfflineBanner, ScreenContainer } from '../components/ui';
 import { ZooEvent } from '../models';
 import { colors, spacing } from '../theme/tokens';
 
@@ -8,10 +8,11 @@ interface EventDetailScreenProps {
   event: ZooEvent | null;
   loading?: boolean;
   error?: string | null;
+  isOffline?: boolean;
   onBackPress: () => void;
 }
 
-export function EventDetailScreen({ event, loading = false, error, onBackPress }: EventDetailScreenProps) {
+export function EventDetailScreen({ event, loading = false, error, isOffline = false, onBackPress }: EventDetailScreenProps) {
   if (loading) {
     return (
       <ScreenContainer>
@@ -48,6 +49,7 @@ export function EventDetailScreen({ event, loading = false, error, onBackPress }
 
   return (
     <ScreenContainer>
+      {isOffline && <OfflineBanner />}
       <View style={styles.content}>
         <BackButton onPress={onBackPress} />
         <AppText variant="title">{event.title}</AppText>

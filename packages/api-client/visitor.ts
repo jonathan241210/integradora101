@@ -19,6 +19,55 @@ export type VisitorMessage = {
   message: string;
 };
 
+export type VisitorProgressDto = {
+  points: number;
+  level: number;
+  rank: string;
+  next_threshold: number | null;
+  discovered_species: number;
+  total_species: number;
+};
+
+export type VisitorSpeciesDto = {
+  id: number;
+  common_name: string;
+  category: string | null;
+  discovered: boolean;
+  discovered_at: string | null;
+};
+
+export type VisitorCatalogItemDto = {
+  code: string;
+  title: string;
+  description: string;
+  icon: string;
+  points: number;
+  rule_type: string;
+  rule_target: number;
+  progress: number;
+  state: "pending" | "unlocked" | "completed";
+  earned_at: string | null;
+  objective?: string;
+};
+
+export type VisitorDiscoveryInput = {
+  code: string;
+  scanned_at: string;
+  client_scan_id: string;
+};
+
+export type VisitorDiscoveryDto = {
+  result: "discovered" | "already_discovered" | "invalid_code" | "inactive_code" | "expired_scan";
+  new_species: { id: number; common_name: string }[];
+  already_known_species: { id: number; common_name: string }[];
+  points_awarded: number;
+  unlocked_achievements: { code: string; title: string }[];
+  completed_missions: { code: string; title: string }[];
+  progress: VisitorProgressDto;
+  message?: string;
+  code?: string;
+};
+
 export type VisitorRegisterInput = {
   email: string;
   password: string;
@@ -47,7 +96,12 @@ type RequestOptions = {
 };
 
 function requestUrl(baseUrl: string, path: string): string {
-  return `${baseUrl.replace(/\/+$/, "")}/${path.replace(/^\/+/, "")}`;
+  const base = baseUrl.replace(/\/+$/, "");
+  let relative = path.replace(/^\/+/, "");
+  if (base.endsWith("/api/v1") && (relative === "api/v1" || relative.startsWith("api/v1/"))) {
+    relative = relative.slice("api/v1".length).replace(/^\/+/, "");
+  }
+  return relative ? `${base}/${relative}` : base;
 }
 
 function visitorError(
@@ -73,6 +127,7 @@ function visitorError(
   error.name = "ApiError";
   error.status = status;
   if (typeof payload.code === "string") error.code = payload.code;
+  if ("data" in payload) error.data = payload.data;
   if (
     typeof payload.errors === "object" &&
     payload.errors !== null &&
@@ -244,6 +299,29 @@ export function createVisitorApi({
       }),
     deleteAccount: (password: string) =>
       request<void>("/api/v1/visitor/me", { method: "DELETE", body: { password } }),
+    progress: () => request<VisitorProgressDto>("/api/v1/visitor/progress"),
+    collection: () => request<VisitorSpeciesDto[]>("/api/v1/visitor/collection"),
+    achievements: () => request<VisitorCatalogItemDto[]>("/api/v1/visitor/achievements"),
+    missions: () => request<VisitorCatalogItemDto[]>("/api/v1/visitor/missions"),
+    discoveries: async (input: VisitorDiscoveryInput) => {
+      try {
+        return await request<VisitorDiscoveryDto>("/api/v1/visitor/discoveries", {
+          method: "POST",
+          body: input,
+        });
+      } catch (error) {
+        const rejected = error as ApiError;
+        if (
+          rejected.status === 422 &&
+          typeof rejected.data === "object" &&
+          rejected.data !== null &&
+          "result" in rejected.data
+        ) {
+          return rejected.data as VisitorDiscoveryDto;
+        }
+        throw error;
+      }
+    },
   };
 }
 

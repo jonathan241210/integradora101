@@ -1,5 +1,5 @@
 import { View, FlatList, ScrollView, StyleSheet } from 'react-native';
-import { ScreenContainer, AppText, SearchBar, Chip, AnimalListItem, BackButton } from '../components/ui';
+import { ScreenContainer, AppText, SearchBar, Chip, AnimalListItem, BackButton, OfflineBanner } from '../components/ui';
 import { colors, spacing } from '../theme/tokens';
 import { Animal } from '../models';
 
@@ -8,7 +8,9 @@ interface SearchScreenProps {
   query: string;
   activeFilter: 'all' | NonNullable<Animal['category']>;
   selectForTour?: boolean;
+  selectionHint?: string;
   backLabel?: string;
+  isOffline?: boolean;
   onQueryChange: (query: string) => void;
   onFilterChange: (filter: SearchScreenProps['activeFilter']) => void;
   onAnimalPress: (id: string) => void;
@@ -20,7 +22,9 @@ export function SearchScreen({
   query,
   activeFilter,
   selectForTour = false,
+  selectionHint,
   backLabel = 'Volver a inicio',
+  isOffline = false,
   onQueryChange,
   onFilterChange,
   onAnimalPress,
@@ -36,12 +40,13 @@ export function SearchScreen({
 
   return (
     <ScreenContainer scroll={false}>
+      {isOffline && <OfflineBanner />}
       <View style={styles.container}>
         <BackButton onPress={onBackPress} accessibilityLabel={backLabel} />
         <AppText variant="title" style={styles.title}>Explorar Animales</AppText>
         {selectForTour && (
           <AppText variant="small" color="textMuted">
-            Selecciona un animal para definir el destino del recorrido 3D.
+            {selectionHint ?? 'Selecciona un animal para definir el destino del recorrido 3D.'}
           </AppText>
         )}
         

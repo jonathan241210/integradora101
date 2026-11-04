@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { VerifyEmailScreen } from '../../screens/VerifyEmailScreen';
 import { accountSession } from '../../session/accountSession';
@@ -11,21 +11,37 @@ export default function VerifyEmailRoute() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [resendWaitSeconds, setResendWaitSeconds] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  const inFlight = useRef(false);
 
-  const confirm = async () => {
+  const run = async (action: () => Promise<void>) => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setBusy(true);
+    try {
+      await action();
+    } finally {
+      inFlight.current = false;
+      setBusy(false);
+    }
+  };
+
+  const confirm = () => {
     if (!/^\d{6}$/.test(code.trim())) {
       setError('Escribe el código de 6 dígitos.');
       return;
     }
-    const result = await accountSession.verifyEmail(email, code);
-    if (!result.ok) {
-      setError(result.message);
-      return;
-    }
-    router.replace('/');
+    return run(async () => {
+      const result = await accountSession.verifyEmail(email, code);
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+      router.replace('/');
+    });
   };
 
-  const resend = async () => {
+  const resend = () => run(async () => {
     const result = await accountSession.resendVerification(email);
     if (!result.ok) {
       setError(result.message);
@@ -35,7 +51,7 @@ export default function VerifyEmailRoute() {
     setError(null);
     setNotice(result.message);
     setResendWaitSeconds(null);
-  };
+  });
 
   return (
     <VerifyEmailScreen
@@ -47,6 +63,7 @@ export default function VerifyEmailRoute() {
       onCodeChange={setCode}
       onSubmit={() => confirm()}
       onResend={() => resend()}
+      busy={busy}
     />
   );
 }

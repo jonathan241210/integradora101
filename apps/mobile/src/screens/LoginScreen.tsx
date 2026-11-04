@@ -8,6 +8,7 @@ interface LoginScreenProps {
   email: string;
   password: string;
   error: string | null;
+  busy?: boolean;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onSubmit: () => void;
@@ -19,6 +20,7 @@ export function LoginScreen({
   email,
   password,
   error,
+  busy = false,
   onEmailChange,
   onPasswordChange,
   onSubmit,
@@ -28,7 +30,7 @@ export function LoginScreen({
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   return (
-    <ScreenContainer>
+    <ScreenContainer busyMessage={busy ? 'Iniciando sesión…' : null}>
       <View style={styles.page}>
         <View style={styles.brand}>
           <View style={styles.pawWrap}>
@@ -51,7 +53,7 @@ export function LoginScreen({
           label="Contraseña"
           value={password}
           onChangeText={onPasswordChange}
-          placeholder="••••••••"
+          placeholder="Escribe tu contraseña"
           secureTextEntry={!passwordVisible}
           leadingIcon="lock"
           trailing={<PasswordVisibilityToggle visible={passwordVisible} onPress={() => setPasswordVisible((current) => !current)} />}
@@ -60,7 +62,7 @@ export function LoginScreen({
           <AppText variant="small" color="primary">¿Olvidaste tu contraseña?</AppText>
         </Pressable>
         {error ? <AppText variant="small" color="danger" accessibilityLiveRegion="polite">{error}</AppText> : null}
-        <Button label="Iniciar sesión" onPress={onSubmit} />
+        <Button label="Iniciar sesión" onPress={onSubmit} disabled={busy} />
         <View style={styles.footer}>
           <AppText variant="small" color="textMuted">¿No tienes cuenta?</AppText>
           <Pressable onPress={onRegister} accessibilityRole="button" accessibilityLabel="Regístrate">

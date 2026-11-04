@@ -7,6 +7,7 @@ export interface Animal {
   category?: 'mammals' | 'birds' | 'reptiles' | 'aquatic';
   zone: string;
   isDiscovered: boolean;
+  discoveredAt?: string | null;
   placeholderTint: string;
   stats?: {
     avgWeight: string;
@@ -36,20 +37,6 @@ export interface Mission {
   progress: number;
   total: number;
   reward: string;
-}
-
-export interface Reward {
-  id: string;
-  name: string;
-  icon: string;
-}
-
-export interface LeaderboardEntry {
-  id: string;
-  name: string;
-  points: number;
-  rank: number;
-  isCurrentUser: boolean;
 }
 
 export interface ZooEvent {
@@ -85,27 +72,35 @@ export interface Milestone {
   date: string;
 }
 
-export interface MapLocation {
+export type MapPlaceKind = 'animal' | 'service' | 'entrance';
+
+export interface MapSection {
   id: string;
-  label: string;
-  kind: 'animal' | 'service';
-  left: number;
-  top: number;
+  name: string;
+  svgZoneId: string;
 }
 
-export interface MapRoute {
-  destination: string;
-  duration: string;
-  distance: string;
-  direction: string;
-  steps: string[];
+export interface MapPlace {
+  id: string;
+  name: string;
+  kind: MapPlaceKind;
+  sectionId: string;
+  description?: string;
+  mapX: number;
+  mapY: number;
+  visible: boolean;
+  /** Latitud GPS del POI (sintética hasta medición real). */
+  gpsLat?: number;
+  /** Longitud GPS del POI (sintética hasta medición real). */
+  gpsLon?: number;
 }
 
-export type VisitorPreferenceKey = 'notifications' | 'darkMode' | 'location';
+export type MapFilter = 'all' | 'animal' | 'service';
+
+export type VisitorPreferenceKey = 'notifications' | 'location';
 
 export interface VisitorPreferences {
   notifications: boolean;
-  darkMode: boolean;
   location: boolean;
 }
 

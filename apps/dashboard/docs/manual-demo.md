@@ -51,12 +51,26 @@ El mensaje de credenciales incorrectas es genérico. Los errores de límite de i
 
 La API entrega `home` y permisos; el dashboard solo muestra las secciones asociadas:
 
-- `administration`: Panel, Noticias, Eventos, Reporte, Recintos y Usuarios según permisos.
-- `executive`: Panel y Reporte.
+- `administration`: Panel principal, Noticias, Eventos, Reporte de boletos, Recintos y Usuarios según permisos.
+- `executive`: Panel y Reporte reales en solo lectura, con exportación.
 - `ticket`: Venta e Historial, con fixtures de muestra.
 - `pwa`: la sesión veterinaria se dirige a `pwa_url`. Si la URL no está configurada, se informa que la aplicación no está disponible y no se redirige.
 
-Noticias, eventos, reporte, recintos, usuarios, venta e historial continúan siendo demostrativos. La lista de Usuarios de taquilla no crea cuentas ni habilita otro login real. Los cambios locales desaparecen al recargar la página; no se guardan en `localStorage` ni `sessionStorage`.
+### Secciones conectadas a la API
+
+Las secciones de administración usan datos reales de `arca_pruebas` mediante `api-007` y no muestran el aviso de demostración:
+
+- **Usuarios:** tabla paginada con búsqueda y filtros por rol, área y estado; alta, edición, activar/desactivar, eliminar, restablecer contraseña y restablecer 2FA, siempre con confirmación. `zoo-admin` solo ve y gestiona cuentas de taquilla y veterinaria.
+- **Noticias y Eventos:** listado de activos e inactivos, alta, edición, activar/desactivar y eliminar con confirmación. No hay subida de imágenes.
+- **Recintos:** lista con número de animales, alta y renombrado; no se eliminan.
+- **Panel principal:** totales de hoy y de los últimos 7 días y serie diaria de ingresos. Sin ventas se muestra un estado vacío.
+- **Reporte de boletos:** periodo semanal o mensual (rango personalizado como opción secundaria), navegación al periodo anterior/siguiente, totales, desglose diario, listado paginado y exportación.
+
+**Exportación:** los botones «Exportar CSV», «Exportar Excel» y «Exportar PDF» siempre están visibles y la API genera los tres formatos. El PDF tiene un tope de boletos por periodo: si se supera, la API responde con un aviso y el reporte en pantalla se conserva.
+
+### Secciones que siguen siendo demostrativas
+
+Venta de boletos e Historial de boletos (perfil de taquilla) conservan el aviso de demostración y datos de muestra; sus cambios desaparecen al recargar y no se guardan en `localStorage` ni `sessionStorage`. El buscador y las notificaciones de la barra superior también son de demostración.
 
 ## Verificación local
 

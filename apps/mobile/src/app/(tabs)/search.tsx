@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SearchScreen } from '../../screens/SearchScreen';
 import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
+import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 import { Animal } from '../../models';
 
 type Category = 'all' | NonNullable<Animal['category']>;
@@ -14,6 +15,7 @@ export default function SearchRoute() {
     destination?: string;
   }>();
   const { getAnimals } = useAnimalViewModel();
+  const { isOffline } = useNetworkStatus();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<Category>('all');
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -36,6 +38,12 @@ export default function SearchRoute() {
       query={query}
       activeFilter={category}
       selectForTour={selectForTour === 'true'}
+      selectionHint={
+        returnTo === 'map'
+          ? 'Selecciona un animal para ubicarlo en el mapa.'
+          : undefined
+      }
+      isOffline={isOffline}
       backLabel={
         returnTo === 'tour-3d'
           ? 'Volver al recorrido 3D'
@@ -47,6 +55,10 @@ export default function SearchRoute() {
       onFilterChange={setCategory}
       onAnimalPress={(id) => {
         if (selectForTour === 'true') {
+          if (returnTo === 'map') {
+            router.replace({ pathname: '/map', params: { focus: id } });
+            return;
+          }
           const animal = animals.find((item) => item.id === id);
           if (animal) {
             router.replace({

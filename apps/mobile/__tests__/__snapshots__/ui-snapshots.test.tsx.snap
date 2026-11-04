@@ -13,278 +13,294 @@ exports[`Kit visual base (CA-06) test-ca-06-auto: conserva la estructura de los 
     }
   }
 >
-  <RCTScrollView
-    contentContainerStyle={
+  <View
+    onLayout={[Function]}
+    style={
       [
         {
-          "paddingBottom": 48,
+          "flex": 1,
         },
-        undefined,
+        {
+          "paddingBottom": 0,
+        },
       ]
     }
-    showsVerticalScrollIndicator={false}
-    style={
-      {
-        "flex": 1,
-      }
-    }
   >
-    <View>
-      <View
-        style={
+    <RCTScrollView
+      automaticallyAdjustKeyboardInsets={true}
+      contentContainerStyle={
+        [
           {
-            "backgroundColor": "#87293a",
-            "borderRadius": 12,
-            "padding": 24,
-          }
+            "paddingBottom": 48,
+          },
+          undefined,
+        ]
+      }
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      style={
+        {
+          "flex": 1,
         }
-      >
-        <Text
-          style={
-            {
-              "color": "#ffffff",
-              "fontSize": 12,
-              "fontWeight": "500",
-              "letterSpacing": 0.5,
-              "marginBottom": 4,
-              "textTransform": "uppercase",
-            }
-          }
-        >
-          Explorador
-        </Text>
-        <Text
-          style={
-            {
-              "color": "#ffffff",
-              "fontSize": 20,
-              "fontWeight": "700",
-              "marginBottom": 4,
-            }
-          }
-        >
-          Bienvenido
-        </Text>
-        <Text
-          style={
-            {
-              "color": "#ffffff",
-              "fontSize": 14,
-              "opacity": 0.9,
-            }
-          }
-        >
-          Explora el zoológico
-        </Text>
-      </View>
-      <View
-        style={
-          [
-            {
-              "backgroundColor": "#f3f5f8",
-              "borderRadius": 8,
-              "elevation": 1,
-              "marginVertical": 4,
-              "padding": 16,
-            },
-            undefined,
-          ]
-        }
-      >
-        <Text
-          style={
-            [
-              {
-                "fontSize": 14,
-                "fontWeight": "400",
-                "lineHeight": 20,
-              },
-              {
-                "color": "#000000",
-              },
-              undefined,
-              undefined,
-              undefined,
-            ]
-          }
-        >
-          Contenido
-        </Text>
-      </View>
-      <View
-        accessibilityLabel="Animales"
-        accessibilityRole="button"
-        accessibilityState={
-          {
-            "busy": undefined,
-            "checked": undefined,
-            "disabled": undefined,
-            "expanded": undefined,
-            "selected": true,
-          }
-        }
-        accessibilityValue={
-          {
-            "max": undefined,
-            "min": undefined,
-            "now": undefined,
-            "text": undefined,
-          }
-        }
-        accessible={true}
-        collapsable={false}
-        focusable={true}
-        onClick={[Function]}
-        onResponderGrant={[Function]}
-        onResponderMove={[Function]}
-        onResponderRelease={[Function]}
-        onResponderTerminate={[Function]}
-        onResponderTerminationRequest={[Function]}
-        onStartShouldSetResponder={[Function]}
-        style={
-          {
-            "backgroundColor": "#87293a",
-            "borderColor": "#87293a",
-            "borderRadius": 9999,
-            "borderWidth": 1,
-            "justifyContent": "center",
-            "minHeight": 44,
-            "opacity": 1,
-            "paddingHorizontal": 16,
-            "paddingVertical": 4,
-          }
-        }
-      >
-        <Text
-          style={
-            [
-              {
-                "color": "#ffffff",
-                "fontSize": 14,
-                "fontWeight": "500",
-              },
-            ]
-          }
-        >
-          Animales
-        </Text>
-      </View>
-      <View
-        accessibilityRole="button"
-        accessibilityState={
-          {
-            "busy": undefined,
-            "checked": undefined,
-            "disabled": undefined,
-            "expanded": undefined,
-            "selected": undefined,
-          }
-        }
-        accessibilityValue={
-          {
-            "max": undefined,
-            "min": undefined,
-            "now": undefined,
-            "text": undefined,
-          }
-        }
-        accessible={true}
-        collapsable={false}
-        focusable={true}
-        onClick={[Function]}
-        onResponderGrant={[Function]}
-        onResponderMove={[Function]}
-        onResponderRelease={[Function]}
-        onResponderTerminate={[Function]}
-        onResponderTerminationRequest={[Function]}
-        onStartShouldSetResponder={[Function]}
-        style={
-          {
-            "alignItems": "center",
-            "backgroundColor": "#87293a",
-            "borderRadius": 8,
-            "color": "#ffffff",
-            "justifyContent": "center",
-            "minHeight": 48,
-            "opacity": 1,
-            "padding": 16,
-          }
-        }
-      >
-        <Text
-          style={
-            [
-              {
-                "fontSize": 16,
-                "fontWeight": "600",
-              },
-              {
-                "color": "#ffffff",
-              },
-            ]
-          }
-        >
-          Continuar
-        </Text>
-      </View>
-      <View
-        accessibilityLabel="Progreso"
-        accessibilityRole="progressbar"
-        accessibilityValue={
-          {
-            "max": 100,
-            "min": 0,
-            "now": 50,
-          }
-        }
-        testID="progress-bar"
-      >
+      }
+    >
+      <View>
         <View
           style={
             {
-              "backgroundColor": "#f7f9fb",
-              "borderRadius": 9999,
-              "height": 4,
-              "overflow": "hidden",
+              "backgroundColor": "#87293a",
+              "borderRadius": 12,
+              "padding": 24,
             }
           }
         >
-          <View
+          <Text
             style={
-              [
-                {
-                  "backgroundColor": "#dec9a3",
-                  "borderRadius": 9999,
-                  "height": "100%",
-                },
-                {
-                  "width": "50%",
-                },
-              ]
+              {
+                "color": "#ffffff",
+                "fontSize": 12,
+                "fontWeight": "500",
+                "letterSpacing": 0.5,
+                "marginBottom": 4,
+                "textTransform": "uppercase",
+              }
             }
-          />
+          >
+            Explorador
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#ffffff",
+                "fontSize": 20,
+                "fontWeight": "700",
+                "marginBottom": 4,
+              }
+            }
+          >
+            Bienvenido
+          </Text>
+          <Text
+            style={
+              {
+                "color": "#ffffff",
+                "fontSize": 14,
+                "opacity": 0.9,
+              }
+            }
+          >
+            Explora el zoológico
+          </Text>
         </View>
-        <Text
+        <View
           style={
             [
               {
-                "fontSize": 11,
-                "fontWeight": "400",
-                "lineHeight": 16,
+                "backgroundColor": "#f3f5f8",
+                "borderRadius": 8,
+                "elevation": 1,
+                "marginVertical": 4,
+                "padding": 16,
               },
-              {
-                "color": "#000000",
-              },
-              undefined,
-              undefined,
               undefined,
             ]
           }
         >
-          Progreso
-        </Text>
+          <Text
+            style={
+              [
+                {
+                  "fontSize": 14,
+                  "fontWeight": "400",
+                  "lineHeight": 20,
+                },
+                {
+                  "color": "#000000",
+                },
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          >
+            Contenido
+          </Text>
+        </View>
+        <View
+          accessibilityLabel="Animales"
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": true,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "backgroundColor": "#87293a",
+              "borderColor": "#87293a",
+              "borderRadius": 9999,
+              "borderWidth": 1,
+              "justifyContent": "center",
+              "minHeight": 44,
+              "opacity": 1,
+              "paddingHorizontal": 16,
+              "paddingVertical": 4,
+            }
+          }
+        >
+          <Text
+            style={
+              [
+                {
+                  "color": "#ffffff",
+                  "fontSize": 14,
+                  "fontWeight": "500",
+                },
+              ]
+            }
+          >
+            Animales
+          </Text>
+        </View>
+        <View
+          accessibilityRole="button"
+          accessibilityState={
+            {
+              "busy": undefined,
+              "checked": undefined,
+              "disabled": undefined,
+              "expanded": undefined,
+              "selected": undefined,
+            }
+          }
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "alignItems": "center",
+              "backgroundColor": "#87293a",
+              "borderRadius": 8,
+              "color": "#ffffff",
+              "justifyContent": "center",
+              "minHeight": 48,
+              "opacity": 1,
+              "padding": 16,
+            }
+          }
+        >
+          <Text
+            style={
+              [
+                {
+                  "fontSize": 16,
+                  "fontWeight": "600",
+                },
+                {
+                  "color": "#ffffff",
+                },
+              ]
+            }
+          >
+            Continuar
+          </Text>
+        </View>
+        <View
+          accessibilityLabel="Progreso"
+          accessibilityRole="progressbar"
+          accessibilityValue={
+            {
+              "max": 100,
+              "min": 0,
+              "now": 50,
+            }
+          }
+          testID="progress-bar"
+        >
+          <View
+            style={
+              {
+                "backgroundColor": "#f7f9fb",
+                "borderRadius": 9999,
+                "height": 4,
+                "overflow": "hidden",
+              }
+            }
+          >
+            <View
+              style={
+                [
+                  {
+                    "backgroundColor": "#dec9a3",
+                    "borderRadius": 9999,
+                    "height": "100%",
+                  },
+                  {
+                    "width": "50%",
+                  },
+                ]
+              }
+            />
+          </View>
+          <Text
+            style={
+              [
+                {
+                  "fontSize": 11,
+                  "fontWeight": "400",
+                  "lineHeight": 16,
+                },
+                {
+                  "color": "#000000",
+                },
+                undefined,
+                undefined,
+                undefined,
+              ]
+            }
+          >
+            Progreso
+          </Text>
+        </View>
       </View>
-    </View>
-  </RCTScrollView>
+    </RCTScrollView>
+  </View>
 </View>
 `;
