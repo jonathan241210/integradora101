@@ -2,10 +2,10 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña: validación, Actions, almacenamiento y Resources); `packages/api-client` (tipos y envío con archivo); `dashboard` (consumidor, `dashboard-004`); `api-006` (catálogo público de eventos: campo `image_url` aditivo, decidido en P7).
-- Estado: Borrador
+- Estado: En progreso
 - Solicitante / responsable funcional: Jonathan
 - Responsable de BD: no aplica. Esta feature no requiere DBR (ver «Datos, privacidad y auditoría»).
-- Aprobación funcional: pendiente. Esta spec no está aprobada; no se escribe código hasta su aprobación (Constitución II).
+- Aprobación funcional: aprobada por Jonathan el 2026-11-02.
 - Relación con otras specs: complementa `api-007` (reemplaza su exclusión de subida de imágenes) y acompaña a `dashboard-004` (formularios en línea con imagen).
 - Nota de vigencia (2026-11-01): la eliminación de noticias y eventos sigue siendo **lógica** (`deleted_at`, DBR-005; `api-007` CA-15 y RN-09 vigentes). Esta spec no reemplaza esas reglas: solo añade el borrado del archivo de imagen al eliminar (CA-07, P2). La subida, el reemplazo y quitar la imagen tampoco requieren DBR adicional. DBR-007 (borrado físico) queda descartada (`docs/database/requests/DBR-007-news-events-hard-delete.md`).
 
@@ -136,7 +136,7 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
 - **Decisiones tomadas (2026-11-01, por la sesión principal con la decisión del usuario):**
   - **P1 (ruta de actualización con archivo):** `POST` multipart con `_method=PATCH` sobre las mismas rutas `admin.news.update` y `admin.events.update`. No se crean endpoints `…/image`. Las rutas de `api-007` no cambian de nombre.
   - **P2 (campo tras eliminar, decisión del usuario):** al eliminar se borra el archivo de imagen y `image_path` queda en `null`; el resto de la fila se conserva con `deleted_at` (borrado lógico, DBR-005). Es una decisión explícita, con el riesgo de «Imagen tras el borrado lógico» en «Riesgos».
-  - **P3 (valor externo):** `image_url` es `null` si `image_path` no es una ruta gestionada. El valor externo no se devuelve.
+  - **P3 (valor externo):** `image_url` es `null` si `image_path` no es una ruta gestionada. El valor externo no se devuelve en `image_url`; los Resources siguen devolviendo `image_path` tal cual (CA-11).
   - **P4 (archivo y `remove_image` a la vez):** gana el archivo nuevo; `remove_image` se ignora.
   - **P5 (ruta pública):** mismo dominio de la API mediante `storage:link`. No hay CDN ni dominio distinto por ahora.
   - **P6 (auditoría):** sí, evento propio `image-changed` en Activitylog (CA-12).
@@ -155,7 +155,7 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
 
 ## Revisión
 
-- Aprobadores y fecha: pendiente. Ninguna aprobación registrada.
+- Aprobadores y fecha: Jonathan (solicitante / responsable funcional), 2026-11-02.
 - Evidencia/enlaces: `apps/api/specs/007-administration-management.md`, `apps/api/plan/007-administration-management.md`, `apps/api/docs/administracion.md`, `apps/dashboard/specs/003-administration-sections.md`, `apps/dashboard/specs/004-inline-content-forms.md`, `docs/database/requests/DBR-005-news-events-soft-deletes.md`, `docs/database/requests/DBR-007-news-events-hard-delete.md` (descartada, solo historial).
 - Preguntas abiertas: ninguna sobre la eliminación (DBR-007 descartada). La decisión de limpieza de archivos huérfanos (ver «Riesgos») queda pendiente.
 - Origen: plan de trabajo aprobado por el usuario el 2026-11-01 (fuera del repositorio), decisiones de P1 a P8 comunicadas por la sesión principal el mismo día, y revisión del borrado el mismo día (decisión del usuario: borrado lógico).

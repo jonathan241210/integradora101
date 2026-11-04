@@ -1,8 +1,8 @@
 # Plan técnico · 004 · inline-content-forms
 
 - Spec: `apps/dashboard/specs/004-inline-content-forms.md`
-- Estado de spec: Borrador (pendiente de aprobación). Este plan no debe ejecutarse hasta que la spec esté Aprobada; la parte de imágenes también requiere `api-008` aprobada.
-- Estado del plan: Borrador (pendiente de aprobación técnica y del Constitution Check).
+- Estado de spec: Aprobada (2026-11-02), igual que `api-008`; hoy En progreso.
+- Estado del plan: Aprobado 2026-11-02 por el usuario al ordenar implementar.
 - Responsable técnico: por identificar (frontend).
 - Contrato que consume: `apps/api/specs/008-event-news-images.md` y su plan (noticias y eventos); `apps/api/specs/007-administration-management.md` (cuentas, sin cambios).
 - Origen: plan de trabajo aprobado por el usuario el 2026-11-01 (fuera del repositorio), con las decisiones D1 a D3 y el panel colapsable comunicados por la sesión principal el mismo día.
@@ -77,6 +77,16 @@ Sin cambios en `package.json`, en `@arca/ui` ni en `@arca/tokens` (CA-17, RN-06)
 
 Reglas comunes: 401 lo gestiona el manejador global (CA-15); 403, 404, 422 y red se muestran en la sección; el formulario conserva lo escrito ante un 422 (CA-07).
 
+## Divergencias de implementación (registradas al implementar)
+
+- **Motor compartido.** En lugar de duplicar el reducer en Noticias y Eventos, se añadieron `viewmodels/inline-list.ts` (estado común `editing`/`pendingAction`/`formExpanded`/`form`/`formError`/`fieldErrors`, usado también por Usuarios), `viewmodels/inline-content.ts` (motor de Noticias y Eventos con `ContentConfig`), `viewmodels/useContentViewModel.ts` (hook común) y `viewmodels/image-field.ts` (validación de ayuda y estado de la imagen). `news-management.ts`, `events-management.ts`, `staff-accounts.ts` y sus hooks conservan los nombres del plan. `managed-list.ts` queda solo para Recintos.
+- **Revisión de dashboard-004 (2026-11-02).** El estado común separa lo del formulario (`saving`, `formError`, `fieldErrors`) de lo de las acciones en línea (`actionBusy`, `actionError`, `actionFieldErrors`); `edit-started`, `action-opened` y `action-closed` no reinician un ocupado en curso y Escape se ignora con `busy`. El foco (CA-12) lo decide `components/inline-focus.ts` (disparador, aviso tras eliminar, primer campo al editar). El estado del campo de contraseña vive en `viewmodels/password-field.ts`, el mostrar/ocultar usa solo la etiqueta cambiante y la caja de imagen se divide en `ImageUploadBoxView` (sin estado) e `ImageUploadBox`. Sin jsdom, las pruebas cubren estas piezas puras y los manejadores.
+- **Componentes adicionales.** `FormField`, `InlineFormFooter`, `ContentCardActions`, `ContentThumbnail` e `ImageUploadBox` (caja de imagen con selector y arrastrar y soltar nativos), y `DataTable` acepta `rowDetail` para mostrar la confirmación en línea a ancho completo bajo la fila.
+- **`ConfirmDialog` se mantiene.** Lo siguen usando Venta y Precios (`dashboard-005`); solo se retiró de Noticias, Eventos y Usuarios (T-16).
+- **Contraseña inicial del alta de Usuarios.** Para cumplir CA-07 (conservar lo escrito ante un 422) se conserva en `form.password` del ViewModel hasta guardar con éxito, momento en que se descarta. La contraseña de restablecimiento nunca entra en el estado (CA-10).
+- **Errores.** `actionError` (acciones en línea y recarga) y `formError` (guardado del formulario) están separados; el 422 de `image` se muestra dentro de la caja de imagen.
+- **Pruebas.** CA-10 y CA-11 viven en `staff-accounts.test.tsx`; CA-16 a CA-19 en `administration-quality.test.tsx`; CA-20 en `administration-coverage.test.tsx`; CA-04 del cliente en `api-client-admin.test.tsx`. El dashboard no define script de lint (`package.json` solo tiene `dev`, `build`, `types` y `test`).
+
 ## Seguridad, offline y operación
 
 - Permisos: la vista oculta acciones según `me`, pero la API decide (RN-08).
@@ -122,12 +132,12 @@ Además: `api-client-admin.test.tsx` (bloque `describe("CA-04 inline-content-for
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
-| I. Stack mínimo y portable | Sí (propuesto) | React 19, TypeScript, Vite 7 y Tailwind 4 vigentes; sin dependencias nuevas (CA-17). Solo API nativa del navegador (`URL.createObjectURL`). |
-| II. La spec manda | Pendiente | `dashboard-004` está en Borrador y depende de `api-008` para la parte de imágenes. No se escribe código antes de aprobar ambas. |
-| III. Lógica separada de la interfaz | Sí (propuesto) | Views sin `fetch` ni cálculo (CA-16); la validación de ayuda vive en el ViewModel y es solo orientativa; la regla la aplica la API. |
-| IV. Un test por criterio | Sí (propuesto) | La tabla cubre CA-01 a CA-19; `administration-coverage` lo verifica (CA-20). |
-| V. Una sola fuente de verdad para los datos | Sí (propuesto) | La interfaz no guarda datos; el archivo y la contraseña viven en el estado de la sección o del campo y no se persisten. Sin cambio de esquema. |
-| VI. Código en inglés, personas en español | Sí (propuesto) | Archivos, hooks, props y tipos en inglés; etiquetas, avisos y errores en español. |
+| I. Stack mínimo y portable | Sí | React 19, TypeScript, Vite 7 y Tailwind 4 vigentes; sin dependencias nuevas (CA-17). Solo API nativa del navegador (`URL.createObjectURL`). |
+| II. La spec manda | Sí | `dashboard-004` Aprobada (2026-11-02) con este plan aprobado y sus tareas; `api-008` también aprobada. El código sigue la spec. |
+| III. Lógica separada de la interfaz | Sí | Views sin `fetch` ni cálculo (CA-16); la validación de ayuda vive en el ViewModel y es solo orientativa; la regla la aplica la API. |
+| IV. Un test por criterio | Sí | La tabla cubre CA-01 a CA-19; `administration-coverage` lo verifica (CA-20). |
+| V. Una sola fuente de verdad para los datos | Sí | La interfaz no guarda datos; el archivo y la contraseña viven en el estado de la sección o del campo y no se persisten. Sin cambio de esquema. |
+| VI. Código en inglés, personas en español | Sí | Archivos, hooks, props y tipos en inglés; etiquetas, avisos y errores en español. |
 
 Ninguna excepción se propone. No se requiere ADR.
 
@@ -162,8 +172,8 @@ Ninguna excepción se propone. No se requiere ADR.
 
 | Rol | Aprueba | Estado |
 |---|---|---|
-| Responsable funcional | Spec (D1 a D3 y panel colapsable registrados) | Pendiente |
-| Equipo | Solución técnica y Constitution Check de este plan | Pendiente |
-| Responsable técnico de `api-008` | Contrato de subida (decisiones P1 a P8 de `api-008`) | Pendiente |
+| Responsable funcional | Spec (D1 a D3 y panel colapsable registrados) | Registrada: aprobada por Jonathan el 2026-11-02 |
+| Equipo | Solución técnica y Constitution Check de este plan | Registrada: aprobado 2026-11-02 por el usuario al ordenar implementar |
+| Responsable técnico de `api-008` | Contrato de subida (decisiones P1 a P8 de `api-008`) | Registrada: `api-008` aprobada el 2026-11-02 |
 
 Evidencias: `apps/dashboard/specs/003-administration-sections.md`, `apps/dashboard/plan/003-administration-sections.md`, `apps/api/specs/008-event-news-images.md`, `apps/api/plan/008-event-news-images.md`, `apps/dashboard/AGENTS.md`.

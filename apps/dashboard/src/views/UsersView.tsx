@@ -1,201 +1,51 @@
 import { useState, type FormEvent } from "react";
-import { Alert, Badge, Button, Card, Dialog, Field, SelectField } from "@arca/ui";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Alert, Badge, Button, Card, Field, SelectField } from "@arca/ui";
 import { DataTable, type DataTableColumn } from "@/components/DataTable";
-import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
-import { DialogFormFooter } from "@/components/FormActions";
+import { fieldErrorProps } from "@/components/FieldErrors";
+import { FormField } from "@/components/FormField";
+import { FormPanel } from "@/components/FormPanel";
+import { triggerKey, useInlineFocus } from "@/components/inline-focus";
+import { InlineConfirm } from "@/components/InlineConfirm";
+import { InlineFormFooter } from "@/components/InlineFormFooter";
+import { InlinePasswordReset } from "@/components/InlinePasswordReset";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
 import { NoticeBar } from "@/components/NoticeBar";
+import { PasswordVisibilityToggle } from "@/components/PasswordVisibilityToggle";
 import { PaginationBar } from "@/components/PaginationBar";
 import { SectionHeading } from "@/components/SectionHeading";
-import type { StaffAccountDto, StaffOptionsDto } from "@/viewmodels/admin-types";
+import type { StaffAccountDto } from "@/viewmodels/admin-types";
+import type { PendingActionType } from "@/viewmodels/inline-list";
 import { formatDateTime } from "@/viewmodels/formatters";
 import {
-  emptyStaffForm,
   getStaffConfirmation,
   parseStatusFilter,
-  staffFormFromAccount,
-  suggestRole,
   type StaffAccountsViewModel,
   type StaffFormValues,
 } from "@/viewmodels/staff-accounts";
 
-type StaffFormProps = {
-  account: StaffAccountDto | null;
-  options: StaffOptionsDto | null;
-  errors: Record<string, string[]>;
-  error: string;
-  busy: boolean;
-  onSubmit: (values: StaffFormValues) => void;
-  onCancel: () => void;
-};
-
-function StaffForm({
-  account,
-  options,
-  errors,
-  error,
-  busy,
-  onSubmit,
-  onCancel,
-}: StaffFormProps) {
-  const editing = account !== null;
-  const [values, setValues] = useState<StaffFormValues>(
-    account ? staffFormFromAccount(account) : emptyStaffForm(),
-  );
+export function UsersView({ state, actions }: StaffAccountsViewModel) {
+  const { query, options, meta, items, status, form, editing, fieldErrors: errors, pendingAction } = state;
+  const [searchText, setSearchText] = useState(query.search);
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const editingNow = editing !== null;
+  const { registerTrigger, noticeRef } = useInlineFocus({
+    pendingAction,
+    notice: state.notice,
+    editing,
+    firstFieldId: "staff-first_name",
+  });
+  const trigger = (account: StaffAccountDto, type: PendingActionType) =>
+    registerTrigger(triggerKey({ type, id: account.id }));
   const set = (field: keyof StaffFormValues, value: string) =>
-    setValues((current) => ({ ...current, [field]: value }));
-
-  const changeDepartment = (departmentId: string) =>
-    setValues((current) => ({
-      ...current,
-      department_id: departmentId,
-      role: editing
-        ? current.role
-        : suggestRole(options, departmentId) || current.role,
-    }));
-
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    onSubmit(values);
-  };
-
+    actions.changeForm({ [field]: value });
   const field = (name: keyof StaffFormValues) => ({
     id: `staff-${name}`,
     ...fieldErrorProps(`staff-${name}`, errors, name),
   });
-
-  return (
-    <form className="dialog-form" onSubmit={submit}>
-      <Field
-        {...field("first_name")}
-        label="Nombre"
-        autoComplete="off"
-        required
-        value={values.first_name}
-        onChange={(event) => set("first_name", event.target.value)}
-      />
-      <FieldErrors id="staff-first_name" errors={errors} name="first_name" />
-      <Field
-        {...field("last_name")}
-        label="Apellido paterno"
-        autoComplete="off"
-        required
-        value={values.last_name}
-        onChange={(event) => set("last_name", event.target.value)}
-      />
-      <FieldErrors id="staff-last_name" errors={errors} name="last_name" />
-      <Field
-        {...field("second_last_name")}
-        label="Apellido materno"
-        autoComplete="off"
-        value={values.second_last_name}
-        onChange={(event) => set("second_last_name", event.target.value)}
-      />
-      <FieldErrors id="staff-second_last_name" errors={errors} name="second_last_name" />
-      <Field
-        {...field("email")}
-        label="Correo institucional"
-        type="email"
-        autoComplete="off"
-        required
-        readOnly={editing}
-        hint={editing ? "El correo no se puede modificar." : undefined}
-        value={values.email}
-        onChange={(event) => set("email", event.target.value)}
-      />
-      <FieldErrors id="staff-email" errors={errors} name="email" />
-      <SelectField
-        {...field("department_id")}
-        label="Área"
-        required
-        value={values.department_id}
-        onChange={(event) => changeDepartment(event.target.value)}
-      >
-        <option value="">Selecciona un área</option>
-        {options?.departments.map((department) => (
-          <option value={String(department.id)} key={department.id}>
-            {department.name}
-          </option>
-        ))}
-      </SelectField>
-      <FieldErrors id="staff-department_id" errors={errors} name="department_id" />
-      <SelectField
-        {...field("role")}
-        label="Rol"
-        required
-        value={values.role}
-        onChange={(event) => set("role", event.target.value)}
-      >
-        <option value="">Selecciona un rol</option>
-        {options?.roles.map((role) => (
-          <option value={role.name} key={role.name}>
-            {role.label}
-          </option>
-        ))}
-      </SelectField>
-      <FieldErrors id="staff-role" errors={errors} name="role" />
-      {!editing && (
-        <>
-          <Field
-            {...field("password")}
-            label="Contraseña inicial"
-            type={passwordVisible ? "text" : "password"}
-            autoComplete="new-password"
-            required
-            value={values.password}
-            onChange={(event) => set("password", event.target.value)}
-          />
-          <FieldErrors id="staff-password" errors={errors} name="password" />
-          <Button
-            className="password-visibility-toggle"
-            type="button"
-            variant="ghost"
-            aria-controls="staff-password"
-            aria-pressed={passwordVisible}
-            aria-label={passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
-            onClick={() => setPasswordVisible((visible) => !visible)}
-          >
-            {passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
-          </Button>
-        </>
-      )}
-      <DialogFormFooter
-        error={error}
-        busy={busy}
-        submitLabel={editing ? "Guardar cambios" : "Crear usuario"}
-        onCancel={onCancel}
-      />
-    </form>
-  );
-}
-
-export function UsersView({ state, actions }: StaffAccountsViewModel) {
-  const { query, options, meta, items, status, dialog } = state;
-  const [searchText, setSearchText] = useState(query.search);
-  const [password, setPassword] = useState("");
-  const [passwordVisible, setPasswordVisible] = useState(false);
-
-  const formDialog =
-    dialog?.kind === "create" || dialog?.kind === "edit" ? dialog : null;
-  const confirmation = getStaffConfirmation(dialog);
-  const sectionError = dialog === null ? state.actionError : "";
-
-  const resetPasswordField = () => {
-    setPassword("");
-    setPasswordVisible(false);
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    actions.submit();
   };
-  const cancelConfirmation = () => {
-    resetPasswordField();
-    actions.closeDialog();
-  };
-  const confirm = () => {
-    const sent = password;
-    resetPasswordField();
-    actions.confirm(sent);
-  };
-
   const search = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     actions.changeQuery({ search: searchText });
@@ -228,35 +78,39 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
           <Button
             variant="secondary"
             aria-label={`Editar cuenta de ${account.full_name}`}
-            onClick={() => actions.openDialog({ kind: "edit", account })}
+            onClick={() => actions.startEdit(account)}
           >
             Editar
           </Button>
           <Button
             variant="secondary"
             aria-label={`${account.is_active ? "Desactivar" : "Activar"} cuenta de ${account.full_name}`}
-            onClick={() => actions.openDialog({ kind: "status", account })}
+            ref={trigger(account, "status")}
+            onClick={() => actions.openAction({ type: "status", id: account.id })}
           >
             {account.is_active ? "Desactivar" : "Activar"}
           </Button>
           <Button
             variant="secondary"
             aria-label={`Restablecer contraseña de ${account.full_name}`}
-            onClick={() => actions.openDialog({ kind: "password", account })}
+            ref={trigger(account, "reset-password")}
+            onClick={() => actions.openAction({ type: "reset-password", id: account.id })}
           >
             Contraseña
           </Button>
           <Button
             variant="secondary"
             aria-label={`Restablecer 2FA de ${account.full_name}`}
-            onClick={() => actions.openDialog({ kind: "two-factor", account })}
+            ref={trigger(account, "reset-two-factor")}
+            onClick={() => actions.openAction({ type: "reset-two-factor", id: account.id })}
           >
             2FA
           </Button>
           <Button
             variant="danger"
             aria-label={`Eliminar cuenta de ${account.full_name}`}
-            onClick={() => actions.openDialog({ kind: "delete", account })}
+            ref={trigger(account, "delete")}
+            onClick={() => actions.openAction({ type: "delete", id: account.id })}
           >
             Eliminar
           </Button>
@@ -265,6 +119,33 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
     },
   ];
 
+  // Confirmación en línea bajo la fila a ancho completo (CA-08 a CA-12, CA-18).
+  const rowDetail = (account: StaffAccountDto) => {
+    if (pendingAction?.id !== account.id) return null;
+
+    const copy = getStaffConfirmation(pendingAction.type, account);
+
+    return pendingAction.type === "reset-password" ? (
+      <InlinePasswordReset
+        idPrefix={`staff-${account.id}`}
+        copy={copy}
+        busy={state.actionBusy}
+        error={state.actionError}
+        errors={state.actionFieldErrors}
+        onConfirm={actions.confirmAction}
+        onCancel={actions.closeAction}
+      />
+    ) : (
+      <InlineConfirm
+        copy={copy}
+        busy={state.actionBusy}
+        error={state.actionError}
+        onConfirm={() => actions.confirmAction("")}
+        onCancel={actions.closeAction}
+      />
+    );
+  };
+
   return (
     <>
       <SectionHeading
@@ -272,10 +153,10 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
         title="Usuarios"
         description="Gestiona las cuentas del personal del zoológico."
       />
-      <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} />
-      {sectionError && (
+      <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} focusRef={noticeRef} />
+      {state.actionError && pendingAction === null && (
         <Alert className="inline-alert" role="alert" aria-live="assertive">
-          {sectionError}
+          {state.actionError}
         </Alert>
       )}
       {state.optionsError && (
@@ -283,6 +164,116 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
           {state.optionsError}
         </Alert>
       )}
+
+      <FormPanel
+        id="staff-form"
+        title={editingNow ? `Editar usuario: ${editing.full_name}` : "Nuevo usuario"}
+        description="Nombre, correo institucional, área y rol de la cuenta."
+        expanded={state.formExpanded}
+        onToggle={actions.toggleForm}
+      >
+        <form className="form-grid form-grid--events inline-form" onSubmit={submit}>
+          <FormField id="staff-first_name" name="first_name" errors={errors}>
+            <Field
+              {...field("first_name")}
+              label="Nombre"
+              autoComplete="off"
+              required
+              value={form.first_name}
+              onChange={(event) => set("first_name", event.target.value)}
+            />
+          </FormField>
+          <FormField id="staff-last_name" name="last_name" errors={errors}>
+            <Field
+              {...field("last_name")}
+              label="Apellido paterno"
+              autoComplete="off"
+              required
+              value={form.last_name}
+              onChange={(event) => set("last_name", event.target.value)}
+            />
+          </FormField>
+          <FormField id="staff-second_last_name" name="second_last_name" errors={errors}>
+            <Field
+              {...field("second_last_name")}
+              label="Apellido materno"
+              autoComplete="off"
+              value={form.second_last_name}
+              onChange={(event) => set("second_last_name", event.target.value)}
+            />
+          </FormField>
+          <FormField id="staff-email" name="email" errors={errors}>
+            <Field
+              {...field("email")}
+              label="Correo institucional"
+              type="email"
+              autoComplete="off"
+              required
+              readOnly={editingNow}
+              hint={editingNow ? "El correo no se puede modificar." : undefined}
+              value={form.email}
+              onChange={(event) => set("email", event.target.value)}
+            />
+          </FormField>
+          <FormField id="staff-department_id" name="department_id" errors={errors}>
+            <SelectField
+              {...field("department_id")}
+              label="Área"
+              required
+              value={form.department_id}
+              onChange={(event) => actions.changeDepartment(event.target.value)}
+            >
+              <option value="">Selecciona un área</option>
+              {options?.departments.map((department) => (
+                <option value={String(department.id)} key={department.id}>
+                  {department.name}
+                </option>
+              ))}
+            </SelectField>
+          </FormField>
+          <FormField id="staff-role" name="role" errors={errors}>
+            <SelectField
+              {...field("role")}
+              label="Rol"
+              required
+              value={form.role}
+              onChange={(event) => set("role", event.target.value)}
+            >
+              <option value="">Selecciona un rol</option>
+              {options?.roles.map((role) => (
+                <option value={role.name} key={role.name}>
+                  {role.label}
+                </option>
+              ))}
+            </SelectField>
+          </FormField>
+          {!editingNow && (
+            <FormField id="staff-password" name="password" errors={errors} span="half">
+              <Field
+                {...field("password")}
+                label="Contraseña inicial"
+                type={passwordVisible ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                value={form.password}
+                onChange={(event) => set("password", event.target.value)}
+              />
+              <PasswordVisibilityToggle
+                controls="staff-password"
+                visible={passwordVisible}
+                onToggle={() => setPasswordVisible((visible) => !visible)}
+              />
+            </FormField>
+          )}
+          <InlineFormFooter
+            error={state.formError}
+            busy={state.saving}
+            editing={editingNow}
+            submitLabel={editingNow ? "Guardar cambios" : "Crear usuario"}
+            onCancelEdit={actions.cancelEdit}
+          />
+        </form>
+      </FormPanel>
 
       <Card className="filter-card">
         <form
@@ -339,9 +330,6 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
           </SelectField>
           <div className="filter-actions">
             <Button type="submit">Buscar</Button>
-            <Button type="button" onClick={() => actions.openDialog({ kind: "create" })}>
-              Crear usuario
-            </Button>
           </div>
         </form>
       </Card>
@@ -366,6 +354,7 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
             columns={columns}
             rows={items}
             rowKey={(account) => account.id}
+            rowDetail={rowDetail}
           />
         )}
         {meta && status !== "error" && (
@@ -378,72 +367,6 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
           />
         )}
       </Card>
-
-      <Dialog
-        open={formDialog !== null}
-        title={
-          formDialog?.kind === "edit"
-            ? "Editar usuario"
-            : formDialog?.kind === "create"
-              ? "Crear usuario"
-              : "Formulario de usuario"
-        }
-        onClose={actions.closeDialog}
-        className="form-dialog"
-      >
-        {formDialog && (
-          <StaffForm
-            key={formDialog.kind === "edit" ? `edit-${formDialog.account.id}` : "create"}
-            account={formDialog.kind === "edit" ? formDialog.account : null}
-            options={options}
-            errors={state.fieldErrors}
-            error={state.actionError}
-            busy={state.saving}
-            onCancel={actions.closeDialog}
-            onSubmit={(values) =>
-              formDialog.kind === "edit"
-                ? actions.update(formDialog.account, values)
-                : actions.create(values)
-            }
-          />
-        )}
-      </Dialog>
-
-      <ConfirmDialog
-        copy={confirmation}
-        idleTitle="Confirmar acción sobre la cuenta"
-        busy={state.saving}
-        error={state.actionError}
-        onConfirm={confirm}
-        onCancel={cancelConfirmation}
-      >
-        {dialog?.kind === "password" && (
-          <>
-            <Field
-              id="staff-new-password"
-              label="Nueva contraseña"
-              type={passwordVisible ? "text" : "password"}
-              autoComplete="new-password"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              {...fieldErrorProps("staff-new-password", state.fieldErrors, "password")}
-            />
-            <FieldErrors id="staff-new-password" errors={state.fieldErrors} name="password" />
-            <Button
-              className="password-visibility-toggle"
-              type="button"
-              variant="ghost"
-              aria-controls="staff-new-password"
-              aria-pressed={passwordVisible}
-              aria-label={passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
-              onClick={() => setPasswordVisible((visible) => !visible)}
-            >
-              {passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
-            </Button>
-          </>
-        )}
-      </ConfirmDialog>
     </>
   );
 }

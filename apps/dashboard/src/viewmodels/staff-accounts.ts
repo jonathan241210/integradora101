@@ -7,23 +7,17 @@ import type {
   StaffUpdateInput,
 } from "./admin-types";
 import { describeApiError } from "./api-errors";
-import type { ConfirmationCopy } from "./confirmation";
 import {
-  initialManagedListState,
-  managedListReducer,
-  reportLoadError,
-  runOperation,
-  type ManagedListAction,
-  type ManagedListState,
-} from "./managed-list";
-
-export type StaffDialog =
-  | { kind: "create" }
-  | { kind: "edit"; account: StaffAccountDto }
-  | { kind: "status"; account: StaffAccountDto }
-  | { kind: "delete"; account: StaffAccountDto }
-  | { kind: "password"; account: StaffAccountDto }
-  | { kind: "two-factor"; account: StaffAccountDto };
+  initialInlineListState,
+  inlineListReducer,
+  reportInlineLoadError,
+  runInlineOperation,
+  type InlineConfirmCopy,
+  type InlineListAction,
+  type InlineListState,
+  type PendingAction,
+  type PendingActionType,
+} from "./inline-list";
 
 export type StaffQuery = {
   search: string;
@@ -33,7 +27,7 @@ export type StaffQuery = {
   page: number;
 };
 
-export type StaffState = ManagedListState<StaffAccountDto, StaffDialog> & {
+export type StaffState = InlineListState<StaffAccountDto, StaffFormValues> & {
   query: StaffQuery;
   meta: PageMeta | null;
   options: StaffOptionsDto | null;
@@ -41,7 +35,7 @@ export type StaffState = ManagedListState<StaffAccountDto, StaffDialog> & {
 };
 
 export type StaffAction =
-  | ManagedListAction<StaffAccountDto, StaffDialog>
+  | InlineListAction<StaffAccountDto, StaffFormValues>
   | { type: "page-loaded"; items: StaffAccountDto[]; meta: PageMeta }
   | { type: "query-changed"; changes: Partial<StaffQuery> }
   | { type: "options-loaded"; options: StaffOptionsDto }
@@ -67,14 +61,6 @@ export const initialStaffQuery: StaffQuery = {
   page: 1,
 };
 
-export const initialStaffState: StaffState = {
-  ...initialManagedListState<StaffAccountDto, StaffDialog>(),
-  query: initialStaffQuery,
-  meta: null,
-  options: null,
-  optionsError: "",
-};
-
 export function staffAccountsReducer(
   state: StaffState,
   action: StaffAction,
@@ -83,7 +69,7 @@ export function staffAccountsReducer(
     case "page-loaded":
       return {
         ...state,
-        ...managedListReducer<StaffAccountDto, StaffDialog>(state, { type: "loaded", items: action.items }),
+        ...inlineListReducer<StaffAccountDto, StaffFormValues>(state, { type: "loaded", items: action.items }),
         meta: action.meta,
       };
     case "query-changed": {
@@ -105,7 +91,7 @@ export function staffAccountsReducer(
     case "options-failed":
       return { ...state, optionsError: action.message };
     default:
-      return { ...state, ...managedListReducer<StaffAccountDto, StaffDialog>(state, action) };
+      return { ...state, ...inlineListReducer<StaffAccountDto, StaffFormValues>(state, action) };
   }
 }
 
@@ -137,6 +123,14 @@ export function emptyStaffForm(): StaffFormValues {
     password: "",
   };
 }
+
+export const initialStaffState: StaffState = {
+  ...initialInlineListState<StaffAccountDto, StaffFormValues>(emptyStaffForm()),
+  query: initialStaffQuery,
+  meta: null,
+  options: null,
+  optionsError: "",
+};
 
 export function staffFormFromAccount(account: StaffAccountDto): StaffFormValues {
   return {
@@ -184,50 +178,47 @@ export function toStaffListQuery(query: StaffQuery) {
 }
 
 export function getStaffConfirmation(
-  dialog: StaffDialog | null,
-): ConfirmationCopy | null {
-  if (!dialog || dialog.kind === "create" || dialog.kind === "edit") return null;
+  type: PendingActionType,
+  account: StaffAccountDto,
+): InlineConfirmCopy {
+  const name = account.full_name;
 
-  const name = dialog.account.full_name;
-
-  switch (dialog.kind) {
+  switch (type) {
     case "status":
-      return dialog.account.is_active
+      return account.is_active
         ? {
-            title: "Desactivar cuenta",
+            label: `Confirmar desactivar la cuenta de ${name}`,
             message: `¿Desactivar la cuenta de ${name}? Se cerrarán sus sesiones y no podrá iniciar sesión hasta que se active de nuevo.`,
-            confirmLabel: "Desactivar cuenta",
+            confirmLabel: "Confirmar",
             danger: true,
           }
         : {
-            title: "Activar cuenta",
+            label: `Confirmar activar la cuenta de ${name}`,
             message: `¿Activar la cuenta de ${name}? Podrá iniciar sesión de nuevo.`,
-            confirmLabel: "Activar cuenta",
+            confirmLabel: "Confirmar",
             danger: false,
           };
     case "delete":
       return {
-        title: "Eliminar cuenta",
-        message: `¿Eliminar la cuenta de ${name}? Se cerrarán sus sesiones y dejará de aparecer en la lista.`,
-        confirmLabel: "Eliminar cuenta",
+        label: `Confirmar eliminar la cuenta de ${name}`,
+        message: `¿Eliminar la cuenta de ${name}? Es una baja lógica: se cerrarán sus sesiones y dejará de aparecer en la lista.`,
+        confirmLabel: "Confirmar",
         danger: true,
       };
-    case "password":
+    case "reset-password":
       return {
-        title: "Restablecer contraseña",
+        label: `Restablecer la contraseña de ${name}`,
         message: `Escribe la nueva contraseña de ${name}. Se cerrarán sus sesiones abiertas.`,
-        confirmLabel: "Restablecer contraseña",
+        confirmLabel: "Confirmar",
         danger: true,
       };
-    case "two-factor":
+    case "reset-two-factor":
       return {
-        title: "Restablecer verificación en dos pasos",
-        message: `¿Restablecer el 2FA de ${name}? Tendrá que configurarlo de nuevo en su próximo acceso y se cerrarán sus sesiones.`,
-        confirmLabel: "Restablecer 2FA",
+        label: `Confirmar restablecer el 2FA de ${name}`,
+        message: `¿Restablecer el 2FA de ${name}? Su segundo factor se borrará y tendrá que volver a configurarlo en su próximo acceso; se cerrarán sus sesiones.`,
+        confirmLabel: "Confirmar",
         danger: true,
       };
-    default:
-      return null;
   }
 }
 
@@ -256,7 +247,7 @@ export async function loadStaffAccounts(
 
     dispatch({ type: "page-loaded", items: page.data, meta: page.meta });
   } catch (error) {
-    if (isCurrent()) reportLoadError<StaffAccountDto, StaffDialog>(dispatch, error, silent);
+    if (isCurrent()) reportInlineLoadError<StaffAccountDto, StaffFormValues>(dispatch, error, silent);
   }
 }
 
@@ -277,82 +268,88 @@ export async function loadStaffOptions(
 
 type Reload = () => Promise<void>;
 
-export function createStaffAccount(
-  api: AdminApi,
-  dispatch: StaffDispatch,
-  input: StaffCreateInput,
-  reload: Reload,
-): Promise<boolean> {
-  return runOperation<StaffAccountDto, StaffDialog>(
-    dispatch,
-    () => api.users.create(input),
-    "La cuenta se creó correctamente.",
-    reload,
-  );
+/** Rol que propone el área al cambiarla en el alta; en edición se conserva. */
+export function staffDepartmentChanges(
+  state: StaffState,
+  departmentId: string,
+): Partial<StaffFormValues> {
+  return {
+    department_id: departmentId,
+    role: state.editing
+      ? state.form.role
+      : suggestRole(state.options, departmentId) || state.form.role,
+  };
 }
 
-export function updateStaffAccount(
+/** Alta o edición según `state.editing`. */
+export function saveStaffAccount(
   api: AdminApi,
   dispatch: StaffDispatch,
-  account: StaffAccountDto,
-  input: StaffUpdateInput,
+  state: StaffState,
   reload: Reload,
 ): Promise<boolean> {
-  return runOperation<StaffAccountDto, StaffDialog>(
+  // Doble envío: con una petición del formulario en curso no se lanza otra.
+  if (state.saving) return Promise.resolve(false);
+
+  const { editing, form } = state;
+
+  return runInlineOperation<StaffAccountDto, StaffFormValues>(
     dispatch,
-    () => api.users.update(account.id, input),
-    "Los cambios de la cuenta se guardaron.",
-    reload,
+    () =>
+      editing
+        ? api.users.update(editing.id, toStaffUpdateInput(form))
+        : api.users.create(toStaffCreateInput(form)),
+    {
+      notice: editing ? "Los cambios de la cuenta se guardaron." : "La cuenta se creó correctamente.",
+      scope: "form",
+      resetForm: emptyStaffForm(),
+      reload,
+    },
   );
 }
 
 /**
- * Ejecuta la acción confirmada del diálogo abierto. La contraseña solo viaja
- * como argumento hacia la API: no se guarda en ningún estado (RN-07).
+ * Ejecuta la acción en línea abierta. La contraseña nueva solo viaja como
+ * argumento hacia la API: no se guarda en ningún estado (RN-04).
  */
-export function confirmStaffDialog(
+export function confirmStaffAction(
   api: AdminApi,
   dispatch: StaffDispatch,
-  dialog: StaffDialog | null,
+  state: StaffState,
   password: string,
   reload: Reload,
 ): Promise<boolean> {
-  if (!dialog || dialog.kind === "create" || dialog.kind === "edit") {
-    return Promise.resolve(false);
-  }
+  const action = state.pendingAction;
+  const account = state.items.find((item) => item.id === action?.id);
 
-  const { account } = dialog;
+  if (!action || !account || state.actionBusy) return Promise.resolve(false);
 
-  switch (dialog.kind) {
+  const name = account.full_name;
+  const run = (operation: () => Promise<unknown>, notice: string) =>
+    runInlineOperation<StaffAccountDto, StaffFormValues>(dispatch, operation, {
+      notice,
+      scope: "action",
+      resetForm: state.editing?.id === account.id ? emptyStaffForm() : null,
+      reload,
+    });
+
+  switch (action.type) {
     case "status":
-      return runOperation<StaffAccountDto, StaffDialog>(
-        dispatch,
+      return run(
         () => api.users.setStatus(account.id, !account.is_active),
-        account.is_active
-          ? `La cuenta de ${account.full_name} se desactivó.`
-          : `La cuenta de ${account.full_name} se activó.`,
-        reload,
+        account.is_active ? `La cuenta de ${name} se desactivó.` : `La cuenta de ${name} se activó.`,
       );
     case "delete":
-      return runOperation<StaffAccountDto, StaffDialog>(
-        dispatch,
-        () => api.users.remove(account.id),
-        `La cuenta de ${account.full_name} se eliminó.`,
-        reload,
-      );
-    case "password":
-      return runOperation<StaffAccountDto, StaffDialog>(
-        dispatch,
+      return run(() => api.users.remove(account.id), `La cuenta de ${name} se eliminó.`);
+    case "reset-password":
+      return run(
         () => api.users.resetPassword(account.id, password),
-        `La contraseña de ${account.full_name} se restableció.`,
-        reload,
+        `La contraseña de ${name} se restableció.`,
       );
-    case "two-factor":
-      return runOperation<StaffAccountDto, StaffDialog>(
-        dispatch,
+    case "reset-two-factor":
+      return run(
         () => api.users.resetTwoFactor(account.id),
-        `La verificación en dos pasos de ${account.full_name} se restableció.`,
-        reload,
+        `La verificación en dos pasos de ${name} se restableció.`,
       );
     default:
       return Promise.resolve(false);
@@ -364,11 +361,15 @@ export type StaffAccountsViewModel = {
   actions: {
     changeQuery: (changes: Partial<StaffQuery>) => void;
     reload: () => void;
-    openDialog: (dialog: StaffDialog) => void;
-    closeDialog: () => void;
     dismissNotice: () => void;
-    create: (values: StaffFormValues) => void;
-    update: (account: StaffAccountDto, values: StaffFormValues) => void;
-    confirm: (password: string) => void;
+    toggleForm: () => void;
+    changeForm: (changes: Partial<StaffFormValues>) => void;
+    changeDepartment: (departmentId: string) => void;
+    startEdit: (account: StaffAccountDto) => void;
+    cancelEdit: () => void;
+    submit: () => void;
+    openAction: (action: PendingAction) => void;
+    closeAction: () => void;
+    confirmAction: (password: string) => void;
   };
 };

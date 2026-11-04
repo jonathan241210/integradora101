@@ -1,20 +1,24 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { createPasswordResetHandlers } from "../components/InlinePasswordReset";
 import { UsersView } from "../views/UsersView";
+import { emptyPasswordField } from "../viewmodels/password-field";
+import type { PendingActionType } from "../viewmodels/inline-list";
 import {
-  confirmStaffDialog,
-  createStaffAccount,
+  confirmStaffAction,
+  emptyStaffForm,
   getStaffConfirmation,
   initialStaffState,
   loadStaffAccounts,
   loadStaffOptions,
+  saveStaffAccount,
   staffAccountsReducer,
+  staffDepartmentChanges,
+  staffFormFromAccount,
   suggestRole,
   toStaffUpdateInput,
-  updateStaffAccount,
   type StaffAccountsViewModel,
   type StaffAction,
-  type StaffDialog,
   type StaffState,
 } from "../viewmodels/staff-accounts";
 import {
@@ -28,12 +32,16 @@ import {
 const actions: StaffAccountsViewModel["actions"] = {
   changeQuery: vi.fn(),
   reload: vi.fn(),
-  openDialog: vi.fn(),
-  closeDialog: vi.fn(),
   dismissNotice: vi.fn(),
-  create: vi.fn(),
-  update: vi.fn(),
-  confirm: vi.fn(),
+  toggleForm: vi.fn(),
+  changeForm: vi.fn(),
+  changeDepartment: vi.fn(),
+  startEdit: vi.fn(),
+  cancelEdit: vi.fn(),
+  submit: vi.fn(),
+  openAction: vi.fn(),
+  closeAction: vi.fn(),
+  confirmAction: vi.fn(),
 };
 
 function readyState(overrides: Partial<StaffState> = {}): StaffState {
@@ -152,6 +160,14 @@ describe("CA-04 administration-sections", () => {
     expect(suggestRole(staffOptions, "4")).toBe("");
     expect(suggestRole(staffOptions, "999")).toBe("");
     expect(suggestRole(null, "2")).toBe("");
+    // El ViewModel propone el rol en el alta y lo conserva al editar.
+    expect(staffDepartmentChanges(readyState(), "3")).toEqual({ department_id: "3", role: "veterinarian" });
+    expect(
+      staffDepartmentChanges(
+        readyState({ editing: staffAccount(), form: { ...emptyStaffForm(), role: "cashier" } }),
+        "3",
+      ),
+    ).toEqual({ department_id: "3", role: "cashier" });
   });
 
   it("solo ofrece los roles asignables que devuelve la API", async () => {
@@ -159,7 +175,7 @@ describe("CA-04 administration-sections", () => {
     const h = harness({ ...initialStaffState });
 
     await loadStaffOptions(api, h.dispatch);
-    const markup = render(readyState({ options: h.state.options, dialog: { kind: "create" } }));
+    const markup = render(readyState({ options: h.state.options }));
 
     expect(markup).toContain("Crear usuario");
     expect(markup).toContain(">Cajero</option>");
@@ -169,7 +185,7 @@ describe("CA-04 administration-sections", () => {
     expect(markup).not.toContain("zoo-admin");
   });
 
-  it("muestra los errores 422 junto a cada campo y conserva el diálogo abierto", async () => {
+  it("muestra los errores 422 junto a cada campo y conserva el formulario", async () => {
     const api = createAdminApiMock();
     api.users.create.mockRejectedValueOnce(
       apiError(422, "Los datos no son válidos.", {
@@ -177,37 +193,30 @@ describe("CA-04 administration-sections", () => {
         password: ["La contraseña es demasiado débil."],
       }),
     );
-    const h = harness(readyState({ dialog: { kind: "create" } }));
+    const typed = { ...emptyStaffForm(), first_name: "Luis", email: "ana@test.arca.invalid", password: "debil" };
+    const h = harness(readyState({ form: typed }));
 
-    const ok = await createStaffAccount(
-      api,
-      h.dispatch,
-      {
-        first_name: "Luis",
-        last_name: "Soto",
-        email: "ana@test.arca.invalid",
-        department_id: 2,
-        role: "cashier",
-        password: "debil",
-      },
-      async () => undefined,
-    );
+    const ok = await saveStaffAccount(api, h.dispatch, h.state, async () => undefined);
     const markup = render(h.state);
 
     expect(ok).toBe(false);
-    expect(h.state.dialog).toEqual({ kind: "create" });
+    expect(h.state.editing).toBeNull();
+    expect(h.state.form).toEqual(typed);
     expect(markup).toContain('id="staff-email-error"');
     expect(markup).toContain("El correo ya está registrado.");
     expect(markup).toContain('aria-describedby="staff-email-error"');
     expect(markup).toContain("La contraseña es demasiado débil.");
+    expect(markup).toContain('value="Luis"');
   });
 });
 
 describe("CA-05 administration-sections", () => {
   const account = staffAccount();
+  const editingState = () =>
+    readyState({ editing: account, form: staffFormFromAccount(account) });
 
   it("permite cambiar nombre, apellidos, área y rol, y muestra el correo sin poder editarlo", () => {
-    const markup = render(readyState({ dialog: { kind: "edit", account } }));
+    const markup = render(editingState());
 
     expect(markup).toContain("Editar usuario");
     expect(markup).toContain('for="staff-first_name"');
@@ -223,7 +232,7 @@ describe("CA-05 administration-sections", () => {
 
   it("envía la edición sin el correo", async () => {
     const api = createAdminApiMock();
-    const h = harness(readyState({ dialog: { kind: "edit", account } }));
+    const h = harness(editingState());
     const input = toStaffUpdateInput({
       first_name: " Ana ",
       last_name: "López",
@@ -237,7 +246,11 @@ describe("CA-05 administration-sections", () => {
     expect(input).not.toHaveProperty("email");
     expect(input).not.toHaveProperty("password");
 
-    await updateStaffAccount(api, h.dispatch, account, input, async () => undefined);
+    h.dispatch({
+      type: "form-changed",
+      changes: { first_name: " Ana ", second_last_name: "", department_id: "3", role: "veterinarian" },
+    });
+    await saveStaffAccount(api, h.dispatch, h.state, async () => undefined);
 
     expect(api.users.update).toHaveBeenCalledWith(7, {
       first_name: "Ana",
@@ -246,29 +259,29 @@ describe("CA-05 administration-sections", () => {
       department_id: 3,
       role: "veterinarian",
     });
-    expect(h.state.dialog).toBeNull();
+    expect(h.state.editing).toBeNull();
   });
 });
 
 describe("CA-06 administration-sections", () => {
   const account = staffAccount();
-  const dialogs: [StaffDialog, string][] = [
-    [{ kind: "status", account }, "Desactivar cuenta"],
-    [{ kind: "status", account: staffAccount({ is_active: false }) }, "Activar cuenta"],
-    [{ kind: "delete", account }, "Eliminar cuenta"],
-    [{ kind: "password", account }, "Restablecer contraseña"],
-    [{ kind: "two-factor", account }, "Restablecer verificación en dos pasos"],
+  const cases: [PendingActionType, boolean, string][] = [
+    ["status", true, "¿Desactivar la cuenta de Ana López Pérez?"],
+    ["status", false, "¿Activar la cuenta de Ana López Pérez?"],
+    ["delete", true, "¿Eliminar la cuenta de Ana López Pérez?"],
+    ["reset-password", true, "Escribe la nueva contraseña de Ana López Pérez."],
+    ["reset-two-factor", true, "¿Restablecer el 2FA de Ana López Pérez?"],
   ];
 
-  it.each(dialogs)("pide confirmación que nombra la cuenta y el efecto (%j)", (dialog, title) => {
-    const copy = getStaffConfirmation(dialog);
-    const markup = render(readyState({ dialog }));
+  it.each(cases)("pide confirmación en línea que nombra la cuenta y el efecto (%s, activa=%s)", (type, active, text) => {
+    const target = staffAccount({ is_active: active });
+    const copy = getStaffConfirmation(type, target);
+    const markup = render(readyState({ items: [target], pendingAction: { type, id: target.id } }));
 
-    expect(copy?.title).toBe(title);
-    expect(copy?.message).toContain("Ana López Pérez");
-    expect(markup).toContain(title);
-    expect(markup).toContain("Ana López Pérez");
-    expect(markup).toContain('aria-labelledby="dialog-title-');
+    expect(copy.message).toContain(text);
+    expect(markup).toContain(copy.label);
+    expect(markup).toContain('role="group"');
+    expect(markup).not.toContain("<dialog");
   });
 
   it("solo llama a la API al confirmar", async () => {
@@ -276,43 +289,19 @@ describe("CA-06 administration-sections", () => {
     const h = harness(readyState());
     const reload = vi.fn(async () => undefined);
 
-    h.dispatch({ type: "dialog-opened", dialog: { kind: "status", account } });
+    h.dispatch({ type: "action-opened", action: { type: "status", id: 7 } });
     expect(api.users.setStatus).not.toHaveBeenCalled();
 
-    await confirmStaffDialog(api, h.dispatch, h.state.dialog, "", reload);
+    await confirmStaffAction(api, h.dispatch, h.state, "", reload);
     expect(api.users.setStatus).toHaveBeenCalledWith(7, false);
 
-    h.dispatch({ type: "dialog-opened", dialog: { kind: "delete", account } });
-    await confirmStaffDialog(api, h.dispatch, h.state.dialog, "", reload);
+    h.dispatch({ type: "action-opened", action: { type: "delete", id: 7 } });
+    await confirmStaffAction(api, h.dispatch, h.state, "", reload);
     expect(api.users.remove).toHaveBeenCalledWith(7);
-
-    h.dispatch({ type: "dialog-opened", dialog: { kind: "two-factor", account } });
-    await confirmStaffDialog(api, h.dispatch, h.state.dialog, "", reload);
-    expect(api.users.resetTwoFactor).toHaveBeenCalledWith(7);
-  });
-
-  it("restablece la contraseña con mostrar/ocultar accesible y sin guardarla en el estado", async () => {
-    const api = createAdminApiMock();
-    const h = harness(readyState({ dialog: { kind: "password", account } }));
-    const markup = render(h.state);
-
-    expect(markup).toContain('type="password"');
-    expect(markup).toContain('for="staff-new-password"');
-    expect(markup).toContain('aria-controls="staff-new-password"');
-    expect(markup).toContain('aria-pressed="false"');
-    expect(markup).toContain('aria-label="Mostrar contraseña"');
-
-    await confirmStaffDialog(api, h.dispatch, h.state.dialog, "Nueva#Clave123", async () => undefined);
-
-    expect(api.users.resetPassword).toHaveBeenCalledWith(7, "Nueva#Clave123");
-    expect(JSON.stringify(h.state)).not.toContain("Nueva#Clave123");
-    expect(JSON.stringify(h.actions)).not.toContain("Nueva#Clave123");
   });
 });
 
 describe("CA-07 administration-sections", () => {
-  const account = staffAccount();
-
   it.each([
     [403, "No tienes permiso para realizar esta acción."],
     [404, "Usuario no encontrado."],
@@ -320,11 +309,11 @@ describe("CA-07 administration-sections", () => {
   ])("muestra el mensaje de la API en %i sin cambiar la lista", async (status, message) => {
     const api = createAdminApiMock();
     api.users.setStatus.mockRejectedValueOnce(apiError(status, message));
-    const h = harness(readyState({ dialog: { kind: "status", account } }));
+    const h = harness(readyState({ pendingAction: { type: "status", id: 7 } }));
     const reload = vi.fn(async () => undefined);
     const itemsBefore = h.state.items;
 
-    const ok = await confirmStaffDialog(api, h.dispatch, h.state.dialog, "", reload);
+    const ok = await confirmStaffAction(api, h.dispatch, h.state, "", reload);
     const markup = render(h.state);
 
     expect(ok).toBe(false);
@@ -335,19 +324,130 @@ describe("CA-07 administration-sections", () => {
     expect(markup).toContain(message);
   });
 
-  it("tras un éxito cierra el diálogo, recarga la lista y confirma con un aviso accesible", async () => {
+  it("tras un éxito cierra la confirmación, recarga la lista y confirma con un aviso accesible", async () => {
     const api = createAdminApiMock();
-    const h = harness(readyState({ dialog: { kind: "delete", account } }));
+    const h = harness(readyState({ pendingAction: { type: "delete", id: 7 } }));
     const reload = vi.fn(() => loadStaffAccounts(api, h.dispatch, h.state.query, true));
 
-    await confirmStaffDialog(api, h.dispatch, h.state.dialog, "", reload);
+    await confirmStaffAction(api, h.dispatch, h.state, "", reload);
     const markup = render(h.state);
 
     expect(reload).toHaveBeenCalledOnce();
     expect(api.users.list).toHaveBeenCalledOnce();
-    expect(h.state.dialog).toBeNull();
+    expect(h.state.pendingAction).toBeNull();
     expect(h.state.notice).toBe("La cuenta de Ana López Pérez se eliminó.");
     expect(markup).toContain('role="status"');
     expect(markup).toContain("La cuenta de Ana López Pérez se eliminó.");
+  });
+});
+
+describe("CA-10 inline-content-forms", () => {
+  it("restablecer contraseña muestra el campo en línea con mostrar/ocultar accesible y Confirmar/Cancelar", () => {
+    const markup = render(readyState({ pendingAction: { type: "reset-password", id: 7 } }));
+
+    expect(markup).toContain('type="password"');
+    expect(markup).toContain('for="staff-7-new-password"');
+    expect(markup).toContain('aria-controls="staff-7-new-password"');
+    // Una sola forma de anunciar el estado: la etiqueta cambia, sin aria-pressed.
+    expect(markup).not.toContain("aria-pressed");
+    expect(markup).toContain(">Mostrar contraseña<");
+    expect(markup).toContain(">Confirmar<");
+    expect(markup).toContain(">Cancelar<");
+    expect(markup).not.toContain("<dialog");
+  });
+
+  it("solo llama a la API al confirmar y la contraseña no queda en el estado ni en las acciones", async () => {
+    const api = createAdminApiMock();
+    const h = harness(readyState({ pendingAction: { type: "reset-password", id: 7 } }));
+
+    expect(api.users.resetPassword).not.toHaveBeenCalled();
+    await confirmStaffAction(api, h.dispatch, h.state, "Nueva#Clave123", async () => undefined);
+
+    expect(api.users.resetPassword).toHaveBeenCalledWith(7, "Nueva#Clave123");
+    expect(JSON.stringify(h.state)).not.toContain("Nueva#Clave123");
+    expect(JSON.stringify(h.actions)).not.toContain("Nueva#Clave123");
+    expect(h.state.pendingAction).toBeNull();
+  });
+});
+
+describe("CA-10 inline-content-forms · campo de contraseña en línea", () => {
+  const setup = (busy = false) => {
+    let field = emptyPasswordField;
+    const onConfirm = vi.fn();
+    const onCancel = vi.fn();
+    const handlers = () =>
+      createPasswordResetHandlers({
+        field,
+        setField: (next) => {
+          field = next;
+        },
+        busy,
+        onConfirm,
+        onCancel,
+      });
+
+    return { handlers, onConfirm, onCancel, get field() { return field; } };
+  };
+
+  it("el componente vacía la contraseña al confirmar y «Mostrar» vuelve a ocultarla", () => {
+    const t = setup();
+
+    t.handlers().change("Nueva#Clave123");
+    t.handlers().toggle();
+    expect(t.field).toEqual({ value: "Nueva#Clave123", visible: true });
+
+    t.handlers().submit();
+
+    expect(t.onConfirm).toHaveBeenCalledWith("Nueva#Clave123");
+    expect(t.field).toEqual({ value: "", visible: false });
+  });
+
+  it("no envía un valor vacío ni con una petición en curso", () => {
+    const empty = setup();
+    const busy = setup(true);
+
+    empty.handlers().submit();
+    busy.handlers().change("abc");
+    busy.handlers().submit();
+
+    expect(empty.onConfirm).not.toHaveBeenCalled();
+    expect(busy.onConfirm).not.toHaveBeenCalled();
+  });
+
+  it("Escape y Cancelar descartan lo escrito y cancelan, salvo con una petición en curso", () => {
+    const t = setup();
+    const stopPropagation = vi.fn();
+
+    t.handlers().change("secreto");
+    t.handlers().keyDown({ key: "Escape", stopPropagation });
+    expect(t.onCancel).toHaveBeenCalledOnce();
+    expect(t.field).toEqual({ value: "", visible: false });
+
+    t.handlers().change("otro");
+    t.handlers().cancel();
+    expect(t.onCancel).toHaveBeenCalledTimes(2);
+    expect(t.field.value).toBe("");
+
+    const busy = setup(true);
+
+    busy.handlers().keyDown({ key: "Escape", stopPropagation });
+    busy.handlers().cancel();
+    expect(busy.onCancel).not.toHaveBeenCalled();
+  });
+});
+
+describe("CA-11 inline-content-forms", () => {
+  it("restablecer 2FA abre la confirmación en línea con el nombre de la cuenta y el efecto", async () => {
+    const api = createAdminApiMock();
+    const h = harness(readyState({ pendingAction: { type: "reset-two-factor", id: 7 } }));
+    const markup = render(h.state);
+
+    expect(markup).toContain("Ana López Pérez");
+    expect(markup).toContain("Su segundo factor se borrará y tendrá que volver a configurarlo");
+    expect(api.users.resetTwoFactor).not.toHaveBeenCalled();
+
+    await confirmStaffAction(api, h.dispatch, h.state, "", async () => undefined);
+
+    expect(api.users.resetTwoFactor).toHaveBeenCalledWith(7);
   });
 });

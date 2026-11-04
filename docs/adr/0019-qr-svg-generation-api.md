@@ -1,9 +1,9 @@
 # 0019 · Generación del QR del boleto en SVG desde la API
 
 - Estado: Aceptado
-- Fecha: 2026-11-04 (Aprobación registrada por el responsable de BD y equipo)
-- Aprobado por: Víctor Adrián (Responsable de BD) y Jonathan (Backend / Solicitante)
-- Spec relacionada: `apps/api/specs/009-ticket-sales.md` (CA-09, RN-07, pregunta 4). Vinculado a `docs/database/requests/DBR-006-ticket-sales.md`.
+- Fecha: 2026-11-01 (propuesto); aceptado el 2026-11-02 por Jonathan; ratificado con visto bueno de BD por Víctor Adrián el 2026-11-04
+- Aprobado por: Jonathan (Backend / Autor spec `api-009`) y Víctor Adrián (Responsable de BD)
+- Spec relacionada: `apps/api/specs/009-ticket-sales.md` (CA-09, RN-07, pregunta 4). Vinculado a `docs/database/requests/DBR-006-ticket-sales.md`; este ADR no cambia el esquema.
 
 ---
 
@@ -19,7 +19,9 @@ Restricciones normativas aplicables:
 
 ---
 
-## Decisión
+## Decisión aceptada
+
+**Librería: `bacon/bacon-qr-code`, versión `^3.1` (verificada: v3.1.1, publicada el 2026-04-05, licencia BSD-2-Clause).**
 
 Se aprueba y adopta la **Opción B: `bacon/bacon-qr-code` en versión `v3.1.1`** para la generación del código QR en SVG dentro de la API.
 
@@ -28,7 +30,7 @@ Se aprueba y adopta la **Opción B: `bacon/bacon-qr-code` en versión `v3.1.1`**
 1. **Cero nuevas dependencias (Constitución I):** `bacon/bacon-qr-code` ya se encuentra presente en el proyecto en versión `v3.1.1` (bloqueada en `apps/api/src/composer.lock` a través de `laravel/fortify` para la autenticación 2FA). Su adopción no agrega paquetes adicionales al árbol de dependencias ni altera el `composer.json`.
 2. **Generación pura en memoria:** Mediante su backend `SvgImageBackEnd`, produce el código QR como un documento vectorial SVG (XML estructurado) directamente en memoria, sin requerir extensiones nativas pesadas de imagen (`ext-gd` ni `imagick`).
 3. **Compatibilidad total verificada:** Plenamente compatible con PHP 8.4, Laravel 12 y probado dentro del ecosistema Laravel.
-4. **Encapsulamiento en Action (Constitución III):** La generación se implementa dentro de una Action (`GenerateTicketQrSvgAction`) que recibe el token `tickets.qr_code` y retorna el string SVG; el controlador de venta permanece delgado.
+4. **Encapsulamiento en Action (Constitución III):** La generación se implementa dentro de una Action (`GenerateTicketQrSvgAction` / `RenderTicketQrSvgAction`) que recibe el token `tickets.qr_code` y retorna el string SVG; el controlador de venta permanece delgado.
 5. **No persistencia:** El SVG generado se devuelve exclusivamente en el payload HTTP `201` y se descarta de la memoria; la base de datos conserva únicamente el token único en la columna `tickets.qr_code`.
 
 ---
@@ -52,15 +54,15 @@ Se aprueba y adopta la **Opción B: `bacon/bacon-qr-code` en versión `v3.1.1`**
 - Máxima portabilidad y cumplimiento de los principios constitucionales I, III y V de ARCA-NB.
 
 ### Riesgos o costos
-- La API de `bacon/bacon-qr-code` requiere instanciar `RendererStyle`, `SvgImageBackEnd` y `Writer`. Esto se mitiga al 100% aislándolo en la Action `GenerateTicketQrSvgAction`.
+- La API de `bacon/bacon-qr-code` requiere instanciar `RendererStyle`, `SvgImageBackEnd` y `Writer`. Esto se mitiga al 100% aislándolo en la Action `RenderTicketQrSvgAction`.
 - El token QR viaja en texto legible dentro del SVG; esto es por diseño vectorial y se valida que solo el personal autorizado con `tickets.create` tenga acceso a la respuesta de emisión del boleto.
 
 ---
 
 ## Validación y revisión
 
-- **Estado:** `Aceptado`.
+- **Estado actual:** **Aceptado**.
 - **Aprobado por:**
+  - Jonathan (Backend / Autor spec `api-009`) — 2026-11-02
   - Víctor Adrián (Responsable de Base de Datos) — 2026-11-04
-  - Jonathan (Responsable Backend / Autor de la spec `api-009`) — 2026-11-04
-- **Siguiente paso:** Backend puede proceder a implementar la tarea `T-XX` de generación de QR en `apps/api/tasks/009-ticket-sales.md` y `GenerateTicketQrSvgAction` utilizando `BaconQrCode\Writer` y `BaconQrCode\Renderer\Image\SvgImageBackEnd`.
+- **Resolución técnica:** Implementación completada en `RenderTicketQrSvgAction` utilizando `BaconQrCode\Writer` y `BaconQrCode\Renderer\Image\SvgImageBackEnd`.

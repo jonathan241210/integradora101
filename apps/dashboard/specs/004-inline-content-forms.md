@@ -2,9 +2,9 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` (dueña de las vistas Noticias, Eventos y Usuarios); `packages/api-client` (envío con archivo para noticias y eventos, ver `api-008` T-10); `api-008` (contrato de subida de imágenes, dependencia fuerte para noticias y eventos); `api-007` (contrato de cuentas, sin cambios).
-- Estado: Borrador
+- Estado: En progreso
 - Solicitante / responsable funcional: Jonathan
-- Aprobación funcional: pendiente. Esta spec no está aprobada; no se escribe código hasta su aprobación (Constitución II). Depende de que `api-008` esté aprobada para la parte de imágenes.
+- Aprobación funcional: aprobada por Jonathan el 2026-11-02. `api-008` también aprobada; la parte de imágenes depende de su implementación.
 - Relación con otras specs: reemplaza parcialmente `dashboard-003` en Noticias, Eventos y Usuarios (formularios en modal, diálogos de confirmación, «sin campo de imagen»). Ver RN-09.
 
 ## Problema y contexto
@@ -142,6 +142,6 @@ La interfaz solo presenta lo que `me` permite. La autorización real la aplica l
 
 ## Revisión
 
-- Aprobadores y fecha: pendiente. Ninguna aprobación registrada.
+- Aprobadores y fecha: Jonathan (solicitante / responsable funcional), 2026-11-02.
 - Evidencia/enlaces: `apps/dashboard/specs/003-administration-sections.md`, `apps/dashboard/plan/003-administration-sections.md`, `apps/api/specs/008-event-news-images.md`, `apps/api/specs/007-administration-management.md`, `apps/dashboard/specs/002-real-staff-login.md`.
 - Origen: plan de trabajo aprobado por el usuario el 2026-11-01 (fuera del repositorio), y decisiones D1 a D3 y del panel colapsable comunicadas por la sesión principal el mismo día.

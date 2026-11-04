@@ -278,3 +278,79 @@ describe("CA-19 administration-sections · exportación con la zona del reporte"
     expect(zones).toEqual(["America/Mexico_City", "America/Tijuana"]);
   });
 });
+
+describe("CA-04 inline-content-forms", () => {
+  const photo = new File([new Uint8Array([1, 2, 3])], "foto.png", { type: "image/png" });
+  const news = {
+    title: "Nace una cría",
+    content: "Cuerpo",
+    category: "Conservación",
+    published_date: "2026-10-12",
+    description: null,
+    is_active: true,
+  };
+
+  it("create con archivo envía FormData por POST sin Content-Type JSON (api-008 T-10)", async () => {
+    const { http, calls } = clientWith(() => json(201, { data: { id: 1, image_url: "/storage/news/a.png" } }));
+    const api = createAdminApi(http);
+
+    const created = await api.news.create({ ...news, image: photo });
+    const body = calls[calls.length - 1].init?.body as FormData;
+    const headers = new Headers(calls[calls.length - 1].init?.headers);
+
+    expect(calls[calls.length - 1].url).toBe("/api/v1/admin/news");
+    expect(calls[calls.length - 1].init?.method).toBe("POST");
+    expect(body).toBeInstanceOf(FormData);
+    expect(headers.has("Content-Type")).toBe(false);
+    expect(headers.get("X-XSRF-TOKEN")).toBe("token+csrf");
+    expect(body.get("title")).toBe("Nace una cría");
+    expect(body.get("description")).toBe("");
+    expect(body.get("is_active")).toBe("1");
+    expect((body.get("image") as File).name).toBe("foto.png");
+    expect(created).toMatchObject({ image_url: "/storage/news/a.png" });
+  });
+
+  it("la edición con archivo usa POST con _method=PATCH y omite remove_image", async () => {
+    const { http, calls } = clientWith(() => json(200, { data: { id: 5 } }));
+    const api = createAdminApi(http);
+
+    await api.events.update(5, { name: "Taller", start_date: "2026-11-01", image: photo, remove_image: true });
+    const call = calls[calls.length - 1];
+    const body = call.init?.body as FormData;
+
+    expect(call.url).toBe("/api/v1/admin/events/5");
+    expect(call.init?.method).toBe("POST");
+    expect(body.get("_method")).toBe("PATCH");
+    expect(body.get("name")).toBe("Taller");
+    expect(body.has("image")).toBe(true);
+    expect(body.has("remove_image")).toBe(false);
+  });
+
+  it("sin archivo sigue en JSON: PATCH en la edición y remove_image viaja en el cuerpo", async () => {
+    const { http, calls } = clientWith(() => json(200, { data: { id: 5 } }));
+    const api = createAdminApi(http);
+
+    await api.news.update(5, { ...news, image: null, remove_image: true });
+    const update = calls[calls.length - 1];
+    await api.news.create({ ...news, image: null });
+    const create = calls[calls.length - 1];
+
+    expect(update.init?.method).toBe("PATCH");
+    expect(new Headers(update.init?.headers).get("Content-Type")).toBe("application/json");
+    expect(JSON.parse(String(update.init?.body))).toEqual({ ...news, remove_image: true });
+    expect(create.init?.method).toBe("POST");
+    expect(JSON.parse(String(create.init?.body))).not.toHaveProperty("image");
+  });
+
+  it("reintenta el envío multipart tras un 419 con el mismo FormData", async () => {
+    let attempts = 0;
+    const { http, calls } = clientWith(() => (attempts++ === 0 ? json(419, { message: "CSRF" }) : json(201, { data: { id: 1 } })));
+    const api = createAdminApi(http);
+
+    await api.news.create({ ...news, image: photo });
+    const posts = calls.filter((call) => call.url === "/api/v1/admin/news");
+
+    expect(posts).toHaveLength(2);
+    expect(posts[1].init?.body).toBeInstanceOf(FormData);
+  });
+});

@@ -26,6 +26,22 @@ El paquete no guarda credenciales, perfiles ni códigos de recuperación. Cada c
 
 `createAdminApi(http)` entrega el contrato tipado de `/api/v1/admin`: `users` (`list`, `options`, `create`, `get`, `update`, `setStatus`, `remove`, `resetPassword`, `resetTwoFactor`), `news` y `events` (`list`, `create`, `update`, `setStatus`, `remove`), `enclosures` (`list`, `create`, `rename`), `dashboard.summary()` y `reports` (`tickets`, `exportTickets`). Los DTO viven en `admin-types.ts`, en `snake_case` como los entrega la API; los importes son cadenas con dos decimales y no se suman en el cliente. `createAdminApi(http, { deviceTimeZone })` envía en `timezone` la zona del dispositivo (`Intl.DateTimeFormat().resolvedOptions().timeZone` por defecto, inyectable en pruebas) en `dashboard.summary()`, `reports.tickets()` y `reports.exportTickets()`; la exportación usa la misma zona que el reporte. Si el navegador no la informa el parámetro se omite, y un `timezone` explícito en la consulta prevalece. El cliente no calcula periodos ni totales con esa zona. Los listados se normalizan a `{ data, meta }` y el reporte a `{ period, totals, daily, tickets, meta }`, tolerando que la API envuelva la respuesta en `data`.
 
+### Imágenes de noticias y eventos (`api-008`)
+
+`NewsDto` y `EventDto` incluyen `image_url` (`string | null`). `NewsInput` y `EventInput` aceptan `image?: File | null` y `remove_image?: boolean`. `news` y `events` mantienen JSON cuando no hay archivo (el campo `image` nulo o ausente se omite y `remove_image` viaja en el JSON). Con archivo, `create` envía `multipart/form-data` por `POST` y `update` usa `POST /{id}` con `_method=PATCH` (PHP no entrega multipart en `PATCH`); `null` se envía como cadena vacía, los booleanos como `1`/`0` y, con archivo, `remove_image` se omite porque gana el archivo. `createHttpClient` acepta `FormData` como cuerpo: no fija `Content-Type` para que el navegador añada el `boundary`. `HttpClient` conserva su firma. La validación de tipo y tamaño la aplica la API.
+
+## Venta de boletos (`api-009`)
+
+`createTicketSalesApi(http, { deviceTimeZone })` entrega el contrato tipado de la venta, el historial y los precios de `/api/v1/admin`. Solo usa `http.get` y `http.post`; `http.ts`, `createAdminApi` y `createAuthApi` no cambian, así que la PWA y mobile no se ven afectados. Los DTO viven en `ticket-sales-types.ts`, en `snake_case`; los importes son cadenas y no se suman ni se multiplican en el cliente.
+
+- `sales.create({ adult_quantity, child_quantity })`: `POST /tickets`. Devuelve el boleto con `total_amount` y `qr_svg`. No envía zona horaria.
+- `history.list(query)`: `GET /tickets` con `folio`, `status`, `from`, `to`, `page`, `per_page` y `timezone`. Se normaliza a `{ data, meta }`.
+- `history.cancel(folio, { reason })`: `POST /tickets/{folio}/cancel`; no envía `timezone` (la API compara el día en la zona del zoológico). Devuelve la fila del historial.
+- `prices.current()`: `GET /ticket-prices/current` (`adult` y `child` con vigente y `next`).
+- `prices.schedule(input)`: `POST /ticket-prices` con `mode` `immediate` o `scheduled`; `effective_at` en ISO 8601 con desfase.
+
+`timezone` usa la zona del dispositivo (`Intl.DateTimeFormat().resolvedOptions().timeZone`, inyectable en pruebas) solo en el historial; un `timezone` explícito prevalece. El cliente no decide `cancellable`, precios ni permisos. Los 403 `two_factor_setup_required` llegan como `ApiError` con `code`.
+
 ## Sesión de visitante
 
 `createVisitorApi` es un módulo aparte. No usa `createAuthApi` ni las cookies y el CSRF de `createHttpClient`.

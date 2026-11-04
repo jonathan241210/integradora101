@@ -1,24 +1,23 @@
 import type { AdminApi, EventDto, EventInput } from "./admin-types";
-import type { ConfirmationCopy } from "./confirmation";
 import { formatTime } from "./formatters";
+import { emptyImage, type ImagePreview, type ImageValue } from "./image-field";
 import {
-  initialManagedListState,
-  loadManagedList,
-  managedListReducer,
-  runOperation,
-  type ManagedListAction,
-  type ManagedListState,
-} from "./managed-list";
+  confirmContentAction,
+  contentReducer,
+  initialContentState,
+  loadContent,
+  saveContent,
+  type ContentAction,
+  type ContentConfig,
+  type ContentState,
+  type ContentViewModel,
+} from "./inline-content";
+import type { InlineConfirmCopy, PendingActionType } from "./inline-list";
 
-export type EventDialog =
-  | { kind: "create" }
-  | { kind: "edit"; item: EventDto }
-  | { kind: "status"; item: EventDto }
-  | { kind: "delete"; item: EventDto };
-
-export type EventsState = ManagedListState<EventDto, EventDialog>;
-export type EventsAction = ManagedListAction<EventDto, EventDialog>;
+export type EventsState = ContentState<EventDto, EventFormValues>;
+export type EventsAction = ContentAction<EventDto, EventFormValues>;
 export type EventsDispatch = (action: EventsAction) => void;
+export type EventsViewModel = ContentViewModel<EventDto, EventFormValues>;
 
 export type EventFormValues = {
   name: string;
@@ -29,13 +28,8 @@ export type EventFormValues = {
   start_time: string;
   end_time: string;
   is_active: boolean;
+  image: ImageValue;
 };
-
-export const initialEventsState: EventsState = initialManagedListState<EventDto, EventDialog>();
-
-export function eventsReducer(state: EventsState, action: EventsAction): EventsState {
-  return managedListReducer(state, action);
-}
 
 export function emptyEventForm(): EventFormValues {
   return {
@@ -47,6 +41,7 @@ export function emptyEventForm(): EventFormValues {
     start_time: "",
     end_time: "",
     is_active: true,
+    image: emptyImage(),
   };
 }
 
@@ -60,10 +55,14 @@ export function eventFormFromDto(item: EventDto): EventFormValues {
     start_time: formatTime(item.start_time),
     end_time: formatTime(item.end_time),
     is_active: item.is_active,
+    image: emptyImage(),
   };
 }
 
-/** El estado solo se envía al crear; después cambia por su propio endpoint. */
+/**
+ * El estado solo se envía al crear; después cambia por su propio endpoint.
+ * `@arca/api-client` decide si va JSON o `multipart/form-data`.
+ */
 export function toEventInput(values: EventFormValues, creating: boolean): EventInput {
   const input: EventInput = {
     name: values.name.trim(),
@@ -76,120 +75,82 @@ export function toEventInput(values: EventFormValues, creating: boolean): EventI
   };
 
   if (creating) input.is_active = values.is_active;
+  if (values.image.file) input.image = values.image.file;
+  else if (!creating && values.image.removeImage) input.remove_image = true;
 
   return input;
 }
 
+export const eventsConfig: ContentConfig<EventDto, EventFormValues, EventInput> = {
+  resource: (api) => api.events,
+  emptyForm: emptyEventForm,
+  formFromItem: eventFormFromDto,
+  toInput: toEventInput,
+  notices: {
+    created: "El evento se creó correctamente.",
+    updated: "Los cambios del evento se guardaron.",
+    activated: "El evento se activó.",
+    deactivated: "El evento se desactivó.",
+    deleted: "El evento se eliminó.",
+  },
+};
+
+export const initialEventsState: EventsState = initialContentState<EventDto, EventFormValues>(
+  emptyEventForm(),
+);
+
+export const eventsReducer = contentReducer<EventDto, EventFormValues>;
+
+export function loadEvents(api: AdminApi, dispatch: EventsDispatch, silent = false): Promise<void> {
+  return loadContent(eventsConfig, api, dispatch, silent);
+}
+
+export function saveEvent(
+  api: AdminApi,
+  dispatch: EventsDispatch,
+  state: EventsState,
+  preview: ImagePreview,
+): Promise<boolean> {
+  return saveContent(eventsConfig, api, dispatch, state, preview);
+}
+
+export function confirmEventAction(
+  api: AdminApi,
+  dispatch: EventsDispatch,
+  state: EventsState,
+  preview: ImagePreview,
+): Promise<boolean> {
+  return confirmContentAction(eventsConfig, api, dispatch, state, preview);
+}
+
 export function getEventConfirmation(
-  dialog: EventDialog | null,
-): ConfirmationCopy | null {
-  if (dialog?.kind === "status") {
-    return dialog.item.is_active
+  type: PendingActionType,
+  item: EventDto,
+): InlineConfirmCopy | null {
+  if (type === "status") {
+    return item.is_active
       ? {
-          title: "Desactivar evento",
-          message: `¿Desactivar el evento «${dialog.item.name}»? Dejará de mostrarse en el portal público.`,
-          confirmLabel: "Desactivar evento",
+          label: `Confirmar desactivar el evento ${item.name}`,
+          message: `¿Desactivar el evento «${item.name}»? Dejará de mostrarse en el portal público.`,
+          confirmLabel: "Confirmar",
           danger: true,
         }
       : {
-          title: "Activar evento",
-          message: `¿Activar el evento «${dialog.item.name}»? Volverá a mostrarse en el portal público.`,
-          confirmLabel: "Activar evento",
+          label: `Confirmar activar el evento ${item.name}`,
+          message: `¿Activar el evento «${item.name}»? Volverá a mostrarse en el portal público.`,
+          confirmLabel: "Confirmar",
           danger: false,
         };
   }
 
-  if (dialog?.kind === "delete") {
+  if (type === "delete") {
     return {
-      title: "Eliminar evento",
-      message: `¿Eliminar el evento «${dialog.item.name}»? Dejará de aparecer en la lista y en el portal público.`,
-      confirmLabel: "Eliminar evento",
+      label: `Confirmar eliminar el evento ${item.name}`,
+      message: `¿Eliminar el evento «${item.name}»? Se eliminará, dejará de mostrarse en la lista y en el portal público${item.image_url ? ", y su imagen se borrará del servidor" : ""}.`,
+      confirmLabel: "Confirmar",
       danger: true,
     };
   }
 
   return null;
 }
-
-export function loadEvents(
-  api: AdminApi,
-  dispatch: EventsDispatch,
-  silent = false,
-): Promise<void> {
-  return loadManagedList(dispatch, () => api.events.list(), silent);
-}
-
-export function saveEvent(
-  api: AdminApi,
-  dispatch: EventsDispatch,
-  dialog: EventDialog | null,
-  values: EventFormValues,
-): Promise<boolean> {
-  const reload = () => loadEvents(api, dispatch, true);
-
-  if (dialog?.kind === "create") {
-    return runOperation(
-      dispatch,
-      () => api.events.create(toEventInput(values, true)),
-      "El evento se creó correctamente.",
-      reload,
-    );
-  }
-
-  if (dialog?.kind === "edit") {
-    const { item } = dialog;
-
-    return runOperation(
-      dispatch,
-      () => api.events.update(item.id, toEventInput(values, false)),
-      "Los cambios del evento se guardaron.",
-      reload,
-    );
-  }
-
-  return Promise.resolve(false);
-}
-
-export function confirmEventDialog(
-  api: AdminApi,
-  dispatch: EventsDispatch,
-  dialog: EventDialog | null,
-): Promise<boolean> {
-  const reload = () => loadEvents(api, dispatch, true);
-
-  if (dialog?.kind === "status") {
-    const { item } = dialog;
-
-    return runOperation(
-      dispatch,
-      () => api.events.setStatus(item.id, !item.is_active),
-      item.is_active ? "El evento se desactivó." : "El evento se activó.",
-      reload,
-    );
-  }
-
-  if (dialog?.kind === "delete") {
-    const { item } = dialog;
-
-    return runOperation(
-      dispatch,
-      () => api.events.remove(item.id),
-      "El evento se eliminó.",
-      reload,
-    );
-  }
-
-  return Promise.resolve(false);
-}
-
-export type EventsViewModel = {
-  state: EventsState;
-  actions: {
-    reload: () => void;
-    openDialog: (dialog: EventDialog) => void;
-    closeDialog: () => void;
-    dismissNotice: () => void;
-    save: (values: EventFormValues) => void;
-    confirm: () => void;
-  };
-};

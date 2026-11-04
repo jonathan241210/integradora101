@@ -29,3 +29,13 @@ describe("CA-18 administration-sections", () => {
     expect(fixtures).toContain("vi.fn");
   });
 });
+
+describe("CA-20 inline-content-forms", () => {
+  it("tiene una prueba nombrada por cada criterio CA-01 a CA-19 de dashboard-004 (CA-20)", () => {
+    for (let number = 1; number <= 19; number += 1) {
+      const criterion = `CA-${String(number).padStart(2, "0")} inline-content-forms`;
+
+      expect(testSource, criterion).toContain(`describe("${criterion}"`);
+    }
+  });
+});
