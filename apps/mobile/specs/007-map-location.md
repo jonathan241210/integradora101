@@ -317,3 +317,20 @@ En la V2.1 la línea hacia el recinto destino es una recta euclidiana directa (`
    - Distancia real a recorrer por los senderos (metros).
    - Tiempo estimado a pie considerando velocidad promedio de paseo familiar ($1.1\text{ m/s}$ / $4\text{ km/h}$).
    - Tarjeta informativa en pantalla: *"A 140 m • 2 min a pie"*.
+
+
+### Estado de aprobación (Enmienda V3)
+- **Estado:** **Aprobada** (2026-11-04) — Implementada sobre la red de andadores del SVG actual y desacoplada en `src/constants/zooPaths.ts` para recalibración directa con cartografía de dron.
+
+### Historias de usuario (V3)
+- **HU-12 (Ruta por senderos):** Como visitante con un destino activo, quiero que la línea de ruta siga los pasillos peatonales del zoológico para saber por qué camino debo avanzar sin cruzar zonas restringidas.
+- **HU-13 (Distancia y tiempo a pie):** Como visitante, quiero ver cuántos metros y minutos aproximados me faltan para llegar al recinto destino caminando por los senderos.
+
+### Criterios de aceptación (V3)
+- **CA-18 (Cálculo de camino mínimo sobre grafo peatonal):** Dado un punto de origen `(svgX, svgY)` y un punto de destino `(destSvgX, destSvgY)`, cuando se ejecuta `computeWalkRoute`, entonces el algoritmo Dijkstra devuelve una secuencia ordenada de puntos que pasa por los nodos de los andadores peatonales conectando origen y destino por la ruta más corta, manejando de forma segura nodos aislados o coordenadas idénticas sin lanzar excepciones.
+- **CA-19 (Estimación de distancia y tiempo a pie):** Dada una ruta calculada sobre el grafo de senderos, cuando `computeWalkRoute` retorna el resultado, entonces incluye `distanceMeters` (entero $\ge 1$) y `estimatedMinutes` (entero $\ge 1$, calculado a $1.1\text{ m/s}$), actualizándose conforme cambia la posición del visitante o el destino seleccionado.
+- **CA-20 (Polilínea en senderos e insignia de caminata en UI):** Dado que el visitante tiene ubicación activa (`userPosition`) y un recinto destino seleccionado (`destinationPlace`), cuando se muestra el mapa, entonces la ruta se dibuja como una polilínea SVG (`testID="destination-route-polyline"`) siguiendo los senderos y se muestra la insignia accesible (`testID="walk-estimate-badge"`) con el nombre del destino, la distancia en metros y el tiempo estimado en minutos; al cancelar el destino o llegar al recinto, ambos elementos desaparecen.
+
+### Reglas de negocio (V3)
+- **RN-18 (Velocidad peatonal estándar):** La velocidad promedio de caminata familiar se define como constante `WALKING_SPEED_MPS = 1.1` en `src/constants/zooPaths.ts`.
+- **RN-19 (Grafo desacoplado de la vista):** Los nodos y aristas del sendero residen en `src/constants/zooPaths.ts` y la lógica Dijkstra en `src/utils/pathfinding.ts`, sin cálculos de grafos dentro de componentes React.

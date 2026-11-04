@@ -515,25 +515,52 @@ Barra flotante de botones accesibles sobre la esquina del mapa (usando solo toke
 
 ---
 
-## Plan Técnico — Fase V3: Grafo de Senderos y Pathfinding (Evolución Futura)
+## Enmienda V3 — Grafo de Senderos Peatonales, Pathfinding y Estimación de Caminata (CA-18, CA-19, CA-20)
 
-- **Spec:** `apps/mobile/specs/007-map-location.md` (Fase V3)
-- **Estado:** Planificado (esperando insumo de video/dron y SVG definitivo)
+- **Spec:** `apps/mobile/specs/007-map-location.md` (Enmienda V3, Aprobada 2026-11-04)
+- **Estado del plan:** **Aprobado** (Víctor Adrián, 2026-11-04)
+- **Alcance:** CA-18, CA-19, CA-20 (Grafo de andadores peatonales, algoritmo Dijkstra en memoria, polilínea SVG por pasillos e insignia accesible de distancia/tiempo a pie).
 
-### Arquitectura prevista para V3
+### Arquitectura V3
 
 ```mermaid
 flowchart LR
     GPS[GPS del visitante] --> NearestNode[Proyectar a nodo de andador más cercano]
-    NearestNode --> Dijkstra[Algoritmo Dijkstra / A* en memoria]
+    NearestNode --> Dijkstra[Algoritmo Dijkstra en memoria]
     Destination[Recinto Destino] --> DestNode[Nodo de acceso al recinto]
     DestNode --> Dijkstra
     Dijkstra --> Polyline[Polilínea SVG por andadores]
-    Dijkstra --> DistanceTime[Distancia y tiempo a pie]
+    Dijkstra --> DistanceTime[WalkEstimateBadge: metros y minutos a pie]
 ```
 
-### Componentes y módulos a crear en V3:
-1. `src/constants/zooPaths.ts`: Lista de nodos `(svgX, svgY)` y matriz de adyacencia de andadores peatonales reales.
-2. `src/utils/pathfinding.ts`: Algoritmo Dijkstra / A* que devuelve lista de puntos del camino mínimo.
-3. `src/components/map/PathRoutePolyline.tsx`: Renderizado SVG con `<Polyline>` o `<Path>` que sustituye la línea recta provisional de V2.1.
-4. `src/components/map/WalkEstimateBadge.tsx`: Chip flotante con metros restantes y minutos estimados a pie.
+### Componentes y módulos de V3:
+1. `src/constants/zooPaths.ts`:
+   - Define `PathNode` (`id`, `svgX`, `svgY`) y `PathEdge` (`from`, `to`), modelando el pasillo de entrada, el anillo de la Plaza central y las bifurcaciones a Felinos, Aves, Acuario, Reptiles, Herbívoros y Servicios.
+   - Exporta `WALKING_SPEED_MPS = 1.1` y `SVG_UNIT_TO_METERS = 0.42`.
+2. `src/utils/pathfinding.ts`:
+   - `findNearestPathNode(svgX, svgY, nodes)`: proyecta cualquier coordenada al nodo peatonal más cercano.
+   - `findShortestPath(startNodeId, endNodeId, nodes, edges)`: algoritmo Dijkstra que devuelve la lista óptima de nodos y su longitud en unidades SVG.
+   - `computeWalkRoute(start, destination, nodes?, edges?)`: devuelve `{ points, svgPointsString, distanceMeters, estimatedMinutes }`.
+3. `src/components/map/DestinationRouteLine.tsx`:
+   - Traza la polilínea SVG (`<Polyline testID="destination-route-polyline">`) siguiendo los puntos devueltos por `computeWalkRoute` dentro del contenedor `<Svg testID="destination-route-line">`.
+4. `src/components/map/WalkEstimateBadge.tsx`:
+   - Insignia accesible (`testID="walk-estimate-badge"`) construida con tokens semánticos que muestra *"Ruta a {place.name}: ~{distanceMeters} m • {estimatedMinutes} min a pie"*.
+
+### Mapeo de criterios a pruebas (V3)
+
+| Criterio | Prueba automatizada | Ubicación |
+|---|---|---|
+| **CA-18** Camino mínimo en grafo peatonal | `test-ca-18`: `findShortestPath` y `computeWalkRoute` trazan ruta por nodos de pasillos y manejan nodos aislados | `__tests__/pathfinding.test.ts` |
+| **CA-19** Estimación de distancia y tiempo | `test-ca-19`: calcula metros ($\ge 1$) y minutos a pie a $1.1\text{ m/s}$ proporcionales a la ruta | `__tests__/pathfinding.test.ts` |
+| **CA-20** Polilínea e insignia en pantalla | `test-ca-20`: renderiza polilínea multi-segmento y `WalkEstimateBadge` al fijar destino, ocultándolos al cancelar | `__tests__/mapPathRoute.test.tsx` |
+
+### Constitution Check (V3)
+
+| Principio | Cumple | Evidencia |
+|---|---|---|
+| I. Stack mínimo y portable | ✅ | Cero dependencias nuevas; usa `<Polyline>` de `react-native-svg` (ADR 0015). |
+| II. La spec manda | ✅ | Spec, plan y tasks actualizados con CA-18 a CA-20. |
+| III. Lógica separada de UI | ✅ | Grafo en `src/constants/zooPaths.ts` y Dijkstra en `src/utils/pathfinding.ts`. |
+| IV. Un test por criterio | ✅ | Pruebas `test-ca-18`, `test-ca-19` y `test-ca-20`. |
+| V. Una sola fuente de verdad | ✅ | Nodos de sendero centralizados en `zooPaths.ts`. |
+| VI. Inglés código / español UI | ✅ | Código en inglés; textos de UI y etiquetas accesibles en español. |

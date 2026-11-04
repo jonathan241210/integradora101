@@ -246,26 +246,26 @@
 
 ---
 
-## Fase V3 — Grafo de Senderos Peatonales y Tiempo a Pie (Planificada)
+## Fase V3 — Grafo de Senderos Peatonales y Tiempo a Pie (CA-18 a CA-20)
 
-- **Spec:** `apps/mobile/specs/007-map-location.md` (Fase V3)
-- **Plan:** `apps/mobile/plan/007-map-location.md` (Fase V3)
-- **Estado:** Pendiente de insumo audiovisual (fotos/video de dron del Zoológico Nicolás Bravo)
-- **Tareas planificadas:** T-49 a T-56
+- **Spec:** `apps/mobile/specs/007-map-location.md` (Enmienda V3, Aprobada 2026-11-04)
+- **Plan:** `apps/mobile/plan/007-map-location.md` (Enmienda V3, Aprobado 2026-11-04)
+- **Estado:** Implementada sobre la red de andadores del SVG actual; lista para recalibrar coordenadas en `src/constants/zooPaths.ts` al incorporar la cartografía definitiva de dron.
+- **Tareas:** T-49 a T-56
 
-### Bloque 13 — Cartografía Definitiva y Grafo de Andadores
-- [ ] **T-49** (V3): Recibir y procesar material de dron para actualizar el plano SVG vectorial de caminos y recintos con dimensiones reales.
-- [ ] **T-50** (V3): Modelar la red de andadores peatonales en `src/constants/zooPaths.ts` definiendo nodos `(svgX, svgY, gpsLat, gpsLon)` y lista de aristas/segmentos transitables.
-- [ ] **T-51** (V3): Implementar algoritmo Dijkstra o A* en `src/utils/pathfinding.ts` para calcular la secuencia óptima de nodos entre la posición del visitante y el recinto destino.
+### Bloque 13 — Cartografía y Grafo de Andadores
+- [x] **T-49** (CA-18, RN-19): Alinear las coordenadas de los pasillos del plano SVG vectorial con los puntos de acceso de cada zona y recinto.
+- [x] **T-50** (CA-18, RN-18, RN-19): Modelar la red de andadores peatonales en `src/constants/zooPaths.ts` definiendo nodos (`ZOO_PATH_NODES`), aristas transitables (`ZOO_PATH_EDGES`), `WALKING_SPEED_MPS = 1.1` y `SVG_UNIT_TO_METERS`.
+- [x] **T-51** (CA-18, CA-19): Implementar el algoritmo Dijkstra en `src/utils/pathfinding.ts` (`findNearestPathNode`, `findShortestPath`, `computeWalkRoute`) para calcular la secuencia óptima de nodos, distancia en metros y tiempo a pie.
 
 ### Bloque 14 — Renderizado de Senderos y Estimación de Tiempo
-- [ ] **T-52** (V3): Crear componente `src/components/map/PathRoutePolyline.tsx` para dibujar la polilínea continua/segmentada sobre los andadores reales en el mapa SVG.
-- [ ] **T-53** (V3): Crear componente `src/components/map/WalkEstimateBadge.tsx` que muestre metros restantes y minutos estimados a pie a $1.1\text{ m/s}$ (ej. *"A 120 m • ~2 min a pie"*).
-- [ ] **T-54** (V3): Integrar en `useMapViewModel` el cálculo reactivo de la ruta sobre el grafo cada vez que el punto azul cambie de posición o se seleccione un nuevo destino.
+- [x] **T-52** (CA-20): Actualizar `src/components/map/DestinationRouteLine.tsx` para dibujar la polilínea discontinua (`<Polyline testID="destination-route-polyline">`) sobre los andadores del mapa SVG.
+- [x] **T-53** (CA-19, CA-20): Crear componente `src/components/map/WalkEstimateBadge.tsx` que muestre metros restantes y minutos estimados a pie a $1.1\text{ m/s}$ (ej. *"~140 m • 2 min a pie"*).
+- [x] **T-54** (CA-19, CA-20): Integrar el cálculo reactivo de `computeWalkRoute` y `<WalkEstimateBadge>` en `src/screens/MapScreen.tsx`.
 
 ### Bloque 15 — Pruebas Automatizadas y Validación
-- [ ] **T-55** (V3): Crear suite de pruebas unitarias `__tests__/pathfinding.test.ts` validando el camino más corto, nodos aislados y cálculo preciso de distancia/tiempo.
-- [ ] **T-56** (V3): Crear pruebas de integración en `__tests__/mapPathRoute.test.tsx` verificando renderizado de la polilínea, actualización en movimiento y persistencia del descarte de llegada.
+- [x] **T-55** (CA-18, CA-19): Crear suite de pruebas unitarias `__tests__/pathfinding.test.ts` validando el camino más corto (`test-ca-18`), nodos aislados y cálculo de distancia/tiempo (`test-ca-19`).
+- [x] **T-56** (CA-20): Crear pruebas de integración en `__tests__/mapPathRoute.test.tsx` verificando el renderizado de la polilínea multi-segmento y `WalkEstimateBadge` (`test-ca-20`).
 
 ---
 

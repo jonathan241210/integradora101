@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { PanResponder, StyleSheet, View } from 'react-native';
 import {
   AppText,
@@ -17,11 +17,14 @@ import {
   MapPlaceCard,
   MapViewportControls,
   UserLocationMarker,
+  WalkEstimateBadge,
   ZooMapSvg,
 } from '../components/map';
 import {
   CENTER_LOCATION_ZOOM,
   MIN_ZOOM_SCALE,
+  SVG_HEIGHT,
+  SVG_WIDTH,
   ZOOM_STEP,
 } from '../constants/zoo';
 import { MapFilter, MapPlace, MapSection } from '../models';
@@ -31,6 +34,7 @@ import {
   clampZoom,
   computeCenterPanForSvgPoint,
 } from '../utils/mapViewport';
+import { computeWalkRoute } from '../utils/pathfinding';
 import type { UserPosition } from '../viewmodels/useLocationViewModel';
 
 interface MapScreenProps {
@@ -181,6 +185,19 @@ export function MapScreen({
     }),
   ).current;
 
+  const walkRoute = useMemo(() => {
+    if (!userPosition || !destinationPlace) {
+      return null;
+    }
+    return computeWalkRoute(
+      { svgX: userPosition.svgX, svgY: userPosition.svgY },
+      {
+        svgX: destinationPlace.mapX * SVG_WIDTH,
+        svgY: destinationPlace.mapY * SVG_HEIGHT,
+      },
+    );
+  }, [userPosition, destinationPlace]);
+
   const selectedSectionName =
     sections.find((section) => section.id === selectedPlace?.sectionId)?.name ?? 'Sin sección';
   const hasNoPlaces = !isLoading && !error && filteredPlaces.length === 0;
@@ -259,6 +276,14 @@ export function MapScreen({
             onResetView={handleResetView}
             onCenterLocation={handleCenterLocation}
           />
+
+          {walkRoute && destinationPlace && (
+            <WalkEstimateBadge
+              destinationName={destinationPlace.name}
+              distanceMeters={walkRoute.distanceMeters}
+              estimatedMinutes={walkRoute.estimatedMinutes}
+            />
+          )}
         </View>
 
         {isLoading && (

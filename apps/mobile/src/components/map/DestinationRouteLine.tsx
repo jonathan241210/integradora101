@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
-import Svg, { Line } from 'react-native-svg';
+import Svg, { Polyline } from 'react-native-svg';
 import { MapPlace } from '../../models';
 import {
   SVG_WIDTH,
@@ -9,6 +9,7 @@ import {
   ROUTE_LINE_DASH,
   ROUTE_LINE_WIDTH,
 } from '../../constants/zoo';
+import { computeWalkRoute } from '../../utils/pathfinding';
 
 interface DestinationRouteLineProps {
   userPosition: { svgX: number; svgY: number } | null;
@@ -16,19 +17,29 @@ interface DestinationRouteLineProps {
 }
 
 /**
- * Capa SVG superpuesta que traza una línea discontinua entre la posición
- * actual del visitante y las coordenadas del recinto destino seleccionado (CA-14).
+ * Capa SVG superpuesta que traza una polilínea discontinua siguiendo la red
+ * de andadores peatonales entre la posición actual del visitante y el recinto
+ * destino seleccionado (CA-14, CA-18, CA-20).
  */
 export function DestinationRouteLine({
   userPosition,
   destinationPlace,
 }: DestinationRouteLineProps) {
-  if (!userPosition || !destinationPlace) {
+  const walkRoute = useMemo(() => {
+    if (!userPosition || !destinationPlace) {
+      return null;
+    }
+    const destSvgX = destinationPlace.mapX * SVG_WIDTH;
+    const destSvgY = destinationPlace.mapY * SVG_HEIGHT;
+    return computeWalkRoute(
+      { svgX: userPosition.svgX, svgY: userPosition.svgY },
+      { svgX: destSvgX, svgY: destSvgY },
+    );
+  }, [userPosition, destinationPlace]);
+
+  if (!walkRoute) {
     return null;
   }
-
-  const destSvgX = destinationPlace.mapX * SVG_WIDTH;
-  const destSvgY = destinationPlace.mapY * SVG_HEIGHT;
 
   return (
     <Svg
@@ -37,16 +48,17 @@ export function DestinationRouteLine({
       preserveAspectRatio="xMidYMid meet"
       pointerEvents="none"
       testID="destination-route-line"
+      accessibilityLabel={walkRoute.svgPointsString}
     >
-      <Line
-        x1={userPosition.svgX}
-        y1={userPosition.svgY}
-        x2={destSvgX}
-        y2={destSvgY}
+      <Polyline
+        testID="destination-route-polyline"
+        points={walkRoute.svgPointsString}
+        fill="none"
         stroke={ROUTE_LINE_COLOR}
         strokeWidth={ROUTE_LINE_WIDTH}
         strokeDasharray={ROUTE_LINE_DASH}
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </Svg>
   );

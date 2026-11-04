@@ -47,14 +47,12 @@ Para la evolución continua del Mapa 2D se han consolidado cuatro frentes estrat
   - Controles accesibles de escala (`+`, `−`, `1x`) y desplazamiento con `PanResponder` y `clampPan` sobre el lienzo SVG manteniendo marcadores, ruta y punto azul sincronizados.
   - Botón flotante *"Centrar en mi ubicación"* que reubica el visor en el punto azul del visitante.
 
-### Frente 3: Fase V3 — Navegación Guiada por Senderos y Tiempo a Pie (Planificada)
-- **Condición previa:** Recepción de fotos/videos con dron del Zoológico Nicolás Bravo y digitalización del plano SVG definitivo con caminos reales.
-- **Justificación:** Se evitó trazar senderos milimétricos en la V2.1 sobre el SVG provisional para no duplicar trabajo cuando llegue la cartografía aérea definitiva.
-- **Arquitectura de V3:**
-  1. **Grafo de andadores peatonales (`src/constants/zooPaths.ts`):** Nodos en cada bifurcación, curva y acceso a recinto con aristas ponderadas en metros.
-  2. **Pathfinding en memoria (`src/utils/pathfinding.ts`):** Algoritmo Dijkstra / A* que conecta la posición del visitante con el acceso del recinto por pasillos peatonales sin cruzar jaulas o agua.
-  3. **Polilínea de sendero (`PathRoutePolyline`):** Reemplazo de la línea recta de V2.1 por polilínea continua sobre los andadores.
-  4. **Métricas de caminata:** Distancia real y tiempo a pie ($1.1\text{ m/s}$ / $4\text{ km/h}$) tipo *"A 140 m • 2 min a pie"*.
+### Frente 3: Fase V3 — Navegación Guiada por Senderos y Tiempo a Pie — ✅ Completado (V3)
+- **Implementado:**
+  1. **Grafo de andadores peatonales (`src/constants/zooPaths.ts`):** Nodos en cada bifurcación, glorieta de la Plaza central y acceso a recinto con aristas ponderadas, listo para recalibrar coordenadas con el SVG definitivo de dron.
+  2. **Pathfinding en memoria (`src/utils/pathfinding.ts`):** Algoritmo Dijkstra (`findShortestPath`, `computeWalkRoute`) que conecta la posición del visitante con el recinto destino siguiendo los pasillos peatonales sin cruzar jaulas ni cuerpos de agua (`CA-18`).
+  3. **Polilínea de sendero (`DestinationRouteLine`):** Traza `<Polyline testID="destination-route-polyline">` sobre la red de andadores (`CA-20`).
+  4. **Métricas de caminata (`WalkEstimateBadge`):** Muestra distancia estimada en metros y tiempo a pie ($1.1\text{ m/s}$) tipo *"Ruta a [Recinto]: ~140 m • 2 min a pie"* (`CA-19`, `CA-20`).
 
 ### Frente 4: Calibración Geográfica Fina y Coordenadas Reales
 - **Objetivo:** Garantizar la precisión métrica del punto azul sobre el plano del zoológico.
