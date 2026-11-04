@@ -57,7 +57,7 @@ Sin sesión autenticada, la pestaña redirige al flujo de inicio de sesión (ADR
 
 - **RN-01:** Un intento de escaneo o envío manual genera un `client_scan_id` en la cola (`mobile-005`); la app no reutiliza IDs entre intentos distintos.
 - **RN-02:** El código enviado a la API debe ser el opaco del recinto; la app no interpreta puntos, especies ni logros.
-- **RN-03:** La dependencia de cámara es `expo-camera` (SDK 57), autorizada por ADR 0019; no se instala `react-native-vision-camera`.
+- **RN-03:** La dependencia de cámara es `expo-camera` (SDK 57), autorizada por ADR 0022; no se instala `react-native-vision-camera`.
 - **RN-04:** No se almacenan fotogramas ni imágenes de la cámara; solo el string del código en tránsito hacia la cola.
 - **RN-05:** Mensajes y etiquetas en español; identificadores en inglés (Constitución VI).
 - **RN-06:** Solo Android; `usesCleartextTraffic=false` se mantiene en builds de producción.
@@ -76,12 +76,12 @@ La cámara procesa el QR en el dispositivo; no se suben imágenes al servidor. E
 
 ## Dependencias, riesgos y preguntas
 
-- **Dependencias/ADR:** `mobile-004` (sesión), `mobile-005` (`submitScan`, cola, resultados), `api-005` (contrato `discoveries`), ADR 0004, **ADR 0019** (`expo-camera`).
+- **Dependencias/ADR:** `mobile-004` (sesión), `mobile-005` (`submitScan`, cola, resultados), `api-005` (contrato `discoveries`), ADR 0004, **ADR 0022** (`expo-camera`).
 - **Riesgos:** variación de cámara entre dispositivos; QR físicos deben existir y estar activos en BD.
 - **Preguntas cerradas (Aksel, 2026-11-01):** entrada manual **sí**; dependencia **`expo-camera`**; impresión/colocación QR fuera de alcance; no se crea spec API adicional.
 
 ## Revisión
 
 - Aprobadores y fecha: Aksel, 2026-11-01.
-- Cierre: Implementada el 2026-11-01. Suites `__tests__/qr/` y escaneo en navegación en verde; `expo-camera` instalado (ADR 0019). Sin cambios API (`api-005`).
-- Evidencia/enlaces: `apps/mobile/specs/005-visitor-progress.md`, `apps/api/specs/005-visitor-progress.md`, `docs/adr/0019-expo-camera-qr-scan.md`.
+- Cierre: Implementada el 2026-11-01. Suites `__tests__/qr/` y escaneo en navegación en verde; `expo-camera` instalado (ADR 0022). Sin cambios API (`api-005`).
+- Evidencia/enlaces: `apps/mobile/specs/005-visitor-progress.md`, `apps/api/specs/005-visitor-progress.md`, `docs/adr/0022-expo-camera-qr-scan.md`.

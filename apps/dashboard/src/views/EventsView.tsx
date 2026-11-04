@@ -1,140 +1,24 @@
-import { useState, type FormEvent } from "react";
-import {
-  Alert,
-  Badge,
-  Button,
-  Card,
-  Dialog,
-  Field,
-  SelectField,
-  TextAreaField,
-} from "@arca/ui";
-import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
-import { DialogFormFooter } from "@/components/FormActions";
+import type { FormEvent } from "react";
+import { Alert, Badge, Card, Field, SelectField, TextAreaField } from "@arca/ui";
+import { ContentCardActions } from "@/components/ContentCardActions";
+import { ContentThumbnail } from "@/components/ContentThumbnail";
+import { fieldErrorProps } from "@/components/FieldErrors";
+import { FormField } from "@/components/FormField";
+import { FormPanel } from "@/components/FormPanel";
+import { triggerKey, useInlineFocus } from "@/components/inline-focus";
+import { ImageUploadBox } from "@/components/ImageUploadBox";
+import { InlineFormFooter } from "@/components/InlineFormFooter";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
 import { NoticeBar } from "@/components/NoticeBar";
 import { SectionHeading } from "@/components/SectionHeading";
 import type { EventDto } from "@/viewmodels/admin-types";
 import {
-  emptyEventForm,
-  eventFormFromDto,
   getEventConfirmation,
   type EventFormValues,
   type EventsViewModel,
 } from "@/viewmodels/events-management";
 import { formatDate, formatTime } from "@/viewmodels/formatters";
-
-function EventForm({
-  item,
-  errors,
-  error,
-  busy,
-  onSubmit,
-  onCancel,
-}: {
-  item: EventDto | null;
-  errors: Record<string, string[]>;
-  error: string;
-  busy: boolean;
-  onSubmit: (values: EventFormValues) => void;
-  onCancel: () => void;
-}) {
-  const creating = item === null;
-  const [values, setValues] = useState<EventFormValues>(
-    item ? eventFormFromDto(item) : emptyEventForm(),
-  );
-  const set = <K extends keyof EventFormValues>(field: K, value: EventFormValues[K]) =>
-    setValues((current) => ({ ...current, [field]: value }));
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    onSubmit(values);
-  };
-  const props = (name: string) => ({
-    id: `event-${name}`,
-    ...fieldErrorProps(`event-${name}`, errors, name),
-  });
-
-  return (
-    <form className="dialog-form" onSubmit={submit}>
-      <Field
-        {...props("name")}
-        label="Nombre del evento"
-        required
-        maxLength={200}
-        value={values.name}
-        onChange={(event) => set("name", event.target.value)}
-      />
-      <FieldErrors id="event-name" errors={errors} name="name" />
-      <TextAreaField
-        {...props("description")}
-        label="Descripción"
-        rows={4}
-        value={values.description}
-        onChange={(event) => set("description", event.target.value)}
-      />
-      <FieldErrors id="event-description" errors={errors} name="description" />
-      <Field
-        {...props("location")}
-        label="Ubicación"
-        maxLength={255}
-        value={values.location}
-        onChange={(event) => set("location", event.target.value)}
-      />
-      <FieldErrors id="event-location" errors={errors} name="location" />
-      <Field
-        {...props("start_date")}
-        label="Fecha de inicio"
-        type="date"
-        required
-        value={values.start_date}
-        onChange={(event) => set("start_date", event.target.value)}
-      />
-      <FieldErrors id="event-start_date" errors={errors} name="start_date" />
-      <Field
-        {...props("end_date")}
-        label="Fecha de finalización"
-        type="date"
-        value={values.end_date}
-        onChange={(event) => set("end_date", event.target.value)}
-      />
-      <FieldErrors id="event-end_date" errors={errors} name="end_date" />
-      <Field
-        {...props("start_time")}
-        label="Hora de inicio"
-        type="time"
-        value={values.start_time}
-        onChange={(event) => set("start_time", event.target.value)}
-      />
-      <FieldErrors id="event-start_time" errors={errors} name="start_time" />
-      <Field
-        {...props("end_time")}
-        label="Hora de finalización"
-        type="time"
-        value={values.end_time}
-        onChange={(event) => set("end_time", event.target.value)}
-      />
-      <FieldErrors id="event-end_time" errors={errors} name="end_time" />
-      {creating && (
-        <SelectField
-          {...props("is_active")}
-          label="Estado"
-          value={values.is_active ? "active" : "inactive"}
-          onChange={(event) => set("is_active", event.target.value === "active")}
-        >
-          <option value="active">Activo</option>
-          <option value="inactive">Inactivo</option>
-        </SelectField>
-      )}
-      <DialogFormFooter
-        error={error}
-        busy={busy}
-        submitLabel={creating ? "Crear evento" : "Guardar cambios"}
-        onCancel={onCancel}
-      />
-    </form>
-  );
-}
+import { visibleImageUrl } from "@/viewmodels/inline-content";
 
 function schedule(item: EventDto): string {
   const dates = item.end_date && item.end_date !== item.start_date
@@ -148,10 +32,24 @@ function schedule(item: EventDto): string {
 }
 
 export function EventsView({ state, actions }: EventsViewModel) {
-  const { dialog } = state;
-  const formDialog =
-    dialog?.kind === "create" || dialog?.kind === "edit" ? dialog : null;
-  const sectionError = dialog === null ? state.actionError : "";
+  const { form, editing, fieldErrors: errors, pendingAction } = state;
+  const editingNow = editing !== null;
+  const { registerTrigger, noticeRef } = useInlineFocus({
+    pendingAction,
+    notice: state.notice,
+    editing,
+    firstFieldId: "event-name",
+  });
+  const set = <K extends keyof EventFormValues>(field: K, value: EventFormValues[K]) =>
+    actions.changeForm({ [field]: value } as Partial<EventFormValues>);
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    actions.submit();
+  };
+  const props = (name: string) => ({
+    id: `event-${name}`,
+    ...fieldErrorProps(`event-${name}`, errors, name),
+  });
 
   return (
     <>
@@ -160,17 +58,119 @@ export function EventsView({ state, actions }: EventsViewModel) {
         title="Eventos"
         description="Crea, edita y retira los eventos del zoológico."
       />
-      <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} />
-      {sectionError && (
+      <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} focusRef={noticeRef} />
+      {state.actionError && pendingAction === null && (
         <Alert className="inline-alert" role="alert" aria-live="assertive">
-          {sectionError}
+          {state.actionError}
         </Alert>
       )}
-      <div className="list-toolbar">
-        <Button onClick={() => actions.openDialog({ kind: "create" })}>
-          Crear evento
-        </Button>
-      </div>
+
+      <FormPanel
+        id="event-form"
+        title={editingNow ? `Editar evento: ${editing.name}` : "Nuevo evento"}
+        description="Nombre, fechas, horario, ubicación e imagen opcional."
+        expanded={state.formExpanded}
+        onToggle={actions.toggleForm}
+      >
+        <form className="form-grid form-grid--events inline-form" onSubmit={submit}>
+          <FormField id="event-name" name="name" errors={errors} span="half">
+            <Field
+              {...props("name")}
+              label="Nombre del evento"
+              required
+              maxLength={200}
+              value={form.name}
+              onChange={(event) => set("name", event.target.value)}
+            />
+          </FormField>
+          <FormField id="event-location" name="location" errors={errors} span="half">
+            <Field
+              {...props("location")}
+              label="Ubicación"
+              maxLength={255}
+              value={form.location}
+              onChange={(event) => set("location", event.target.value)}
+            />
+          </FormField>
+          <FormField id="event-description" name="description" errors={errors} span="wide">
+            <TextAreaField
+              {...props("description")}
+              label="Descripción"
+              rows={4}
+              value={form.description}
+              onChange={(event) => set("description", event.target.value)}
+            />
+          </FormField>
+          <FormField id="event-start_date" name="start_date" errors={errors}>
+            <Field
+              {...props("start_date")}
+              label="Fecha de inicio"
+              type="date"
+              required
+              value={form.start_date}
+              onChange={(event) => set("start_date", event.target.value)}
+            />
+          </FormField>
+          <FormField id="event-end_date" name="end_date" errors={errors}>
+            <Field
+              {...props("end_date")}
+              label="Fecha de finalización"
+              type="date"
+              value={form.end_date}
+              onChange={(event) => set("end_date", event.target.value)}
+            />
+          </FormField>
+          <FormField id="event-start_time" name="start_time" errors={errors}>
+            <Field
+              {...props("start_time")}
+              label="Hora de inicio"
+              type="time"
+              value={form.start_time}
+              onChange={(event) => set("start_time", event.target.value)}
+            />
+          </FormField>
+          <FormField id="event-end_time" name="end_time" errors={errors}>
+            <Field
+              {...props("end_time")}
+              label="Hora de finalización"
+              type="time"
+              value={form.end_time}
+              onChange={(event) => set("end_time", event.target.value)}
+            />
+          </FormField>
+          {!editingNow && (
+            <FormField id="event-is_active" name="is_active" errors={errors}>
+              <SelectField
+                {...props("is_active")}
+                label="Estado"
+                value={form.is_active ? "active" : "inactive"}
+                onChange={(event) => set("is_active", event.target.value === "active")}
+              >
+                <option value="active">Activo</option>
+                <option value="inactive">Inactivo</option>
+              </SelectField>
+            </FormField>
+          )}
+          <div className="form-field form-field--wide">
+            <ImageUploadBox
+              id="event-image"
+              previewUrl={visibleImageUrl(editing, form.image)}
+              previewAlt={form.name ? `Vista previa de la imagen de ${form.name}` : "Vista previa de la imagen"}
+              error={form.image.error || (errors.image ?? []).join(" ")}
+              onSelect={actions.chooseImage}
+              onRemove={actions.removeImage}
+            />
+          </div>
+          <InlineFormFooter
+            error={state.formError}
+            busy={state.saving}
+            editing={editingNow}
+            submitLabel={editingNow ? "Guardar cambios" : "Crear evento"}
+            onCancelEdit={actions.cancelEdit}
+          />
+        </form>
+      </FormPanel>
+
       <ListStatusMessage
         status={state.status}
         error={state.error}
@@ -187,79 +187,41 @@ export function EventsView({ state, actions }: EventsViewModel) {
             </div>
           </div>
           <div className="event-card-grid">
-            {state.items.map((item) => (
-              <Card className="content-card" key={item.id}>
-                <div className="content-card__body">
-                  <div className="content-card__meta">
-                    <Badge tone={item.is_active ? "success" : "neutral"}>
-                      {item.is_active ? "Activo" : "Inactivo"}
-                    </Badge>
+            {state.items.map((item) => {
+              const pending = pendingAction?.id === item.id ? pendingAction.type : null;
+
+              return (
+                <Card className="content-card" key={item.id}>
+                  <ContentThumbnail url={item.image_url} name={item.name} />
+                  <div className="content-card__body">
+                    <div className="content-card__meta">
+                      <Badge tone={item.is_active ? "success" : "neutral"}>
+                        {item.is_active ? "Activo" : "Inactivo"}
+                      </Badge>
+                    </div>
+                    <h3>{item.name}</h3>
+                    <p>{schedule(item)}</p>
+                    {item.location && <p>{item.location}</p>}
+                    <ContentCardActions
+                      subject={`el evento ${item.name}`}
+                      isActive={item.is_active}
+                      pending={pending}
+                      copy={pending ? getEventConfirmation(pending, item) : null}
+                      busy={state.actionBusy}
+                      error={pending ? state.actionError : ""}
+                      registerTrigger={(type) => registerTrigger(triggerKey({ type, id: item.id }))}
+                      onEdit={() => actions.startEdit(item)}
+                      onOpen={(type) => actions.openAction({ type, id: item.id })}
+                      onConfirm={actions.confirmAction}
+                      onCancel={actions.closeAction}
+                    />
                   </div>
-                  <h3>{item.name}</h3>
-                  <p>{schedule(item)}</p>
-                  {item.location && <p>{item.location}</p>}
-                  <div className="content-card__actions">
-                    <Button
-                      variant="secondary"
-                      aria-label={`Editar el evento ${item.name}`}
-                      onClick={() => actions.openDialog({ kind: "edit", item })}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      aria-label={`${item.is_active ? "Desactivar" : "Activar"} el evento ${item.name}`}
-                      onClick={() => actions.openDialog({ kind: "status", item })}
-                    >
-                      {item.is_active ? "Desactivar" : "Activar"}
-                    </Button>
-                    <Button
-                      variant="danger"
-                      aria-label={`Eliminar el evento ${item.name}`}
-                      onClick={() => actions.openDialog({ kind: "delete", item })}
-                    >
-                      Eliminar
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
           </div>
         </section>
       )}
-
-      <Dialog
-        open={formDialog !== null}
-        title={
-          formDialog?.kind === "edit"
-            ? "Editar evento"
-            : formDialog?.kind === "create"
-              ? "Crear evento"
-              : "Formulario de evento"
-        }
-        onClose={actions.closeDialog}
-        className="form-dialog"
-      >
-        {formDialog && (
-          <EventForm
-            key={formDialog.kind === "edit" ? `edit-${formDialog.item.id}` : "create"}
-            item={formDialog.kind === "edit" ? formDialog.item : null}
-            errors={state.fieldErrors}
-            error={state.actionError}
-            busy={state.saving}
-            onSubmit={actions.save}
-            onCancel={actions.closeDialog}
-          />
-        )}
-      </Dialog>
-      <ConfirmDialog
-        copy={getEventConfirmation(dialog)}
-        idleTitle="Confirmar acción sobre el evento"
-        busy={state.saving}
-        error={state.actionError}
-        onConfirm={actions.confirm}
-        onCancel={actions.closeDialog}
-      />
     </>
   );
 }

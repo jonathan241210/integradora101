@@ -9,8 +9,12 @@ use App\Http\Controllers\Admin\StaffAccountController;
 use App\Http\Controllers\Admin\StaffAccountPasswordController;
 use App\Http\Controllers\Admin\StaffAccountStatusController;
 use App\Http\Controllers\Admin\StaffAccountTwoFactorController;
+use App\Http\Controllers\Admin\TicketCancelController;
+use App\Http\Controllers\Admin\TicketController;
+use App\Http\Controllers\Admin\TicketPriceController;
 use App\Http\Controllers\Admin\TicketReportController;
 use App\Http\Controllers\Admin\TicketReportExportController;
+use App\Http\Controllers\Admin\TicketSaleController;
 use App\Http\Controllers\Api\AnimalController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClinicalEvaluationController;
@@ -120,6 +124,23 @@ Route::prefix('admin')
         Route::get('dashboard', DashboardController::class)
             ->middleware('permission:dashboard.view')
             ->name('dashboard.show');
+
+        Route::post('tickets', [TicketSaleController::class, 'store'])
+            ->middleware(['permission:tickets.create', 'throttle:ticket-sales'])
+            ->name('tickets.store');
+        Route::get('tickets', [TicketController::class, 'index'])
+            ->middleware('permission:tickets.view')
+            ->name('tickets.index');
+        Route::post('tickets/{ticket}/cancel', TicketCancelController::class)
+            ->middleware(['permission:tickets.cancel', 'throttle:ticket-cancel'])
+            ->name('tickets.cancel');
+
+        Route::get('ticket-prices/current', [TicketPriceController::class, 'current'])
+            ->middleware('permission:tickets.create|ticket-prices.manage')
+            ->name('ticket-prices.current');
+        Route::post('ticket-prices', [TicketPriceController::class, 'store'])
+            ->middleware('permission:ticket-prices.manage')
+            ->name('ticket-prices.store');
 
         Route::middleware('permission:reports.view')->group(function () {
             Route::get('reports/tickets', TicketReportController::class)->name('reports.tickets.show');

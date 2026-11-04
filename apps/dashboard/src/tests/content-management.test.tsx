@@ -2,8 +2,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { EventsView } from "../views/EventsView";
 import { NewsView } from "../views/NewsView";
+import { emptyImage, type ImagePreview } from "../viewmodels/image-field";
 import {
-  confirmEventDialog,
+  confirmEventAction,
   eventsReducer,
   getEventConfirmation,
   initialEventsState,
@@ -13,75 +14,79 @@ import {
   type EventsViewModel,
 } from "../viewmodels/events-management";
 import {
-  confirmNewsDialog,
+  confirmNewsAction,
+  emptyNewsForm,
   getNewsConfirmation,
   initialNewsState,
   loadNews,
+  newsFormFromDto,
   newsReducer,
   saveNews,
   toNewsInput,
-  emptyNewsForm,
   type NewsViewModel,
 } from "../viewmodels/news-management";
 import {
   apiError,
   createAdminApiMock,
   createHarness,
+  createPreviewMock,
   eventItem,
   newsItem,
 } from "./admin-fixtures";
 
+const previewStub: ImagePreview = createPreviewMock();
+
 const newsActions: NewsViewModel["actions"] = {
   reload: vi.fn(),
-  openDialog: vi.fn(),
-  closeDialog: vi.fn(),
   dismissNotice: vi.fn(),
-  save: vi.fn(),
-  confirm: vi.fn(),
+  toggleForm: vi.fn(),
+  changeForm: vi.fn(),
+  chooseImage: vi.fn(),
+  removeImage: vi.fn(),
+  startEdit: vi.fn(),
+  cancelEdit: vi.fn(),
+  submit: vi.fn(),
+  openAction: vi.fn(),
+  closeAction: vi.fn(),
+  confirmAction: vi.fn(),
 };
-const eventActions: EventsViewModel["actions"] = { ...newsActions } as unknown as EventsViewModel["actions"];
+const eventActions = { ...newsActions } as unknown as EventsViewModel["actions"];
 
 const readyNews = { ...initialNewsState, status: "ready" as const, items: [newsItem(), newsItem({ id: 12, title: "Borrador", is_active: false })] };
 const readyEvents = { ...initialEventsState, status: "ready" as const, items: [eventItem(), eventItem({ id: 22, name: "Taller", is_active: true })] };
 
 describe("CA-08 administration-sections", () => {
-  it("lista noticias activas e inactivas con su estado y acciones, sin campo de imagen", () => {
-    const list = renderToStaticMarkup(<NewsView state={readyNews} actions={newsActions} />);
-    const form = renderToStaticMarkup(
-      <NewsView state={{ ...readyNews, dialog: { kind: "create" } }} actions={newsActions} />,
-    );
+  it("lista noticias activas e inactivas con su estado y acciones, y el formulario fijo con imagen", () => {
+    const markup = renderToStaticMarkup(<NewsView state={readyNews} actions={newsActions} />);
 
-    expect(list).toContain("Nace una cría de jaguar");
-    expect(list).toContain("Borrador");
-    expect(list).toContain(">Activa</span>");
-    expect(list).toContain(">Inactiva</span>");
-    expect(list).toContain("Crear noticia");
-    expect(list).toContain("Editar");
-    expect(list).toContain("Eliminar");
-    expect(list).not.toContain("Prototipo de demostración");
-    expect(form).toContain('for="news-title"');
-    expect(form).not.toContain('type="file"');
-    expect(form).not.toContain("image_path");
-    expect(form).not.toContain("imagen");
+    expect(markup).toContain("Nace una cría de jaguar");
+    expect(markup).toContain("Borrador");
+    expect(markup).toContain(">Activa</span>");
+    expect(markup).toContain(">Inactiva</span>");
+    expect(markup).toContain("Crear noticia");
+    expect(markup).toContain("Editar");
+    expect(markup).toContain("Eliminar");
+    expect(markup).not.toContain("Prototipo de demostración");
+    expect(markup).toContain('for="news-title"');
+    // dashboard-004 reemplaza el «sin campo de imagen» de dashboard-003 (RN-09).
+    expect(markup).toContain('type="file"');
+    expect(markup).toContain("JPG, PNG o WebP · máximo 5 MB");
+    expect(markup).not.toContain("image_path");
   });
 
-  it("lista eventos activos e inactivos con horario y sin campo de imagen", () => {
-    const list = renderToStaticMarkup(<EventsView state={readyEvents} actions={eventActions} />);
-    const form = renderToStaticMarkup(
-      <EventsView state={{ ...readyEvents, dialog: { kind: "create" } }} actions={eventActions} />,
-    );
+  it("lista eventos activos e inactivos con horario y el formulario fijo con imagen", () => {
+    const markup = renderToStaticMarkup(<EventsView state={readyEvents} actions={eventActions} />);
 
-    expect(list).toContain("Noche de safari");
-    expect(list).toContain("19:00 – 22:00");
-    expect(list).toContain(">Inactivo</span>");
-    expect(list).toContain(">Activo</span>");
-    expect(form).toContain('for="event-name"');
-    expect(form).toContain('for="event-start_time"');
-    expect(form).not.toContain('type="file"');
-    expect(form).not.toContain("imagen");
+    expect(markup).toContain("Noche de safari");
+    expect(markup).toContain("19:00 – 22:00");
+    expect(markup).toContain(">Inactivo</span>");
+    expect(markup).toContain(">Activo</span>");
+    expect(markup).toContain('for="event-name"');
+    expect(markup).toContain('for="event-start_time"');
+    expect(markup).toContain('type="file"');
   });
 
-  it("crea, edita, cambia el estado y elimina noticias con confirmación", async () => {
+  it("crea, edita, cambia el estado y elimina noticias con confirmación en línea", async () => {
     const api = createAdminApiMock();
     const h = createHarness(newsReducer, readyNews);
     const item = newsItem();
@@ -93,8 +98,8 @@ describe("CA-08 administration-sections", () => {
       published_date: "2026-10-30",
     };
 
-    h.dispatch({ type: "dialog-opened", dialog: { kind: "create" } });
-    await saveNews(api, h.dispatch, h.state.dialog, values);
+    h.dispatch({ type: "form-changed", changes: values });
+    await saveNews(api, h.dispatch, h.state, previewStub);
     expect(api.news.create).toHaveBeenCalledWith({
       title: "Título",
       description: null,
@@ -107,25 +112,25 @@ describe("CA-08 administration-sections", () => {
     });
     expect(h.state.notice).toBe("La noticia se creó correctamente.");
 
-    h.dispatch({ type: "dialog-opened", dialog: { kind: "edit", item } });
-    await saveNews(api, h.dispatch, h.state.dialog, values);
+    h.dispatch({ type: "edit-started", item, form: { ...newsFormFromDto(item) } });
+    await saveNews(api, h.dispatch, h.state, previewStub);
     expect(api.news.update.mock.calls[0][0]).toBe(11);
     expect(api.news.update.mock.calls[0][1]).not.toHaveProperty("is_active");
 
-    h.dispatch({ type: "dialog-opened", dialog: { kind: "status", item } });
+    h.dispatch({ type: "action-opened", action: { type: "status", id: 11 } });
     expect(api.news.setStatus).not.toHaveBeenCalled();
-    expect(getNewsConfirmation(h.state.dialog)?.message).toContain("Nace una cría de jaguar");
-    await confirmNewsDialog(api, h.dispatch, h.state.dialog);
+    expect(getNewsConfirmation("status", item)?.message).toContain("Nace una cría de jaguar");
+    await confirmNewsAction(api, h.dispatch, h.state, previewStub);
     expect(api.news.setStatus).toHaveBeenCalledWith(11, false);
 
-    h.dispatch({ type: "dialog-opened", dialog: { kind: "delete", item } });
+    h.dispatch({ type: "action-opened", action: { type: "delete", id: 11 } });
     expect(api.news.remove).not.toHaveBeenCalled();
-    await confirmNewsDialog(api, h.dispatch, h.state.dialog);
+    await confirmNewsAction(api, h.dispatch, h.state, previewStub);
     expect(api.news.remove).toHaveBeenCalledWith(11);
     expect(api.news.list).toHaveBeenCalled();
   });
 
-  it("crea, edita, cambia el estado y elimina eventos con confirmación", async () => {
+  it("crea, edita, cambia el estado y elimina eventos con confirmación en línea", async () => {
     const api = createAdminApiMock();
     const h = createHarness(eventsReducer, readyEvents);
     const item = eventItem();
@@ -138,6 +143,7 @@ describe("CA-08 administration-sections", () => {
       start_time: "10:00",
       end_time: "",
       is_active: false,
+      image: emptyImage(),
     };
 
     expect(toEventInput(values, true)).toEqual({
@@ -152,22 +158,22 @@ describe("CA-08 administration-sections", () => {
     });
     expect(toEventInput(values, false)).not.toHaveProperty("is_active");
 
-    h.dispatch({ type: "dialog-opened", dialog: { kind: "create" } });
-    await saveEvent(api, h.dispatch, h.state.dialog, values);
+    h.dispatch({ type: "form-changed", changes: values });
+    await saveEvent(api, h.dispatch, h.state, previewStub);
     expect(api.events.create).toHaveBeenCalledOnce();
 
-    h.dispatch({ type: "dialog-opened", dialog: { kind: "edit", item } });
-    await saveEvent(api, h.dispatch, h.state.dialog, values);
+    h.dispatch({ type: "edit-started", item, form: values });
+    await saveEvent(api, h.dispatch, h.state, previewStub);
     expect(api.events.update.mock.calls[0][0]).toBe(21);
 
-    h.dispatch({ type: "dialog-opened", dialog: { kind: "status", item } });
-    expect(getEventConfirmation(h.state.dialog)?.title).toBe("Activar evento");
-    await confirmEventDialog(api, h.dispatch, h.state.dialog);
+    h.dispatch({ type: "action-opened", action: { type: "status", id: 21 } });
+    expect(getEventConfirmation("status", item)?.confirmLabel).toBe("Confirmar");
+    await confirmEventAction(api, h.dispatch, h.state, previewStub);
     expect(api.events.setStatus).toHaveBeenCalledWith(21, true);
 
-    h.dispatch({ type: "dialog-opened", dialog: { kind: "delete", item } });
+    h.dispatch({ type: "action-opened", action: { type: "delete", id: 21 } });
     expect(api.events.remove).not.toHaveBeenCalled();
-    await confirmEventDialog(api, h.dispatch, h.state.dialog);
+    await confirmEventAction(api, h.dispatch, h.state, previewStub);
     expect(api.events.remove).toHaveBeenCalledWith(21);
   });
 
@@ -179,18 +185,17 @@ describe("CA-08 administration-sections", () => {
     api.events.create.mockRejectedValueOnce(
       apiError(422, "Los datos no son válidos.", { end_date: ["La fecha final debe ser posterior."] }),
     );
-    const news = createHarness(newsReducer, { ...readyNews, dialog: { kind: "create" } as const });
-    const events = createHarness(eventsReducer, { ...readyEvents, dialog: { kind: "create" } as const });
+    const news = createHarness(newsReducer, readyNews);
+    const events = createHarness(eventsReducer, readyEvents);
 
-    await saveNews(api, news.dispatch, news.state.dialog, emptyNewsForm());
-    await saveEvent(api, events.dispatch, events.state.dialog, {
-      name: "x", description: "", location: "", start_date: "2026-11-02",
-      end_date: "2026-11-01", start_time: "", end_time: "", is_active: true,
-    });
+    events.dispatch({ type: "form-changed", changes: { name: "x", start_date: "2026-11-02", end_date: "2026-11-01" } });
+    await saveNews(api, news.dispatch, news.state, previewStub);
+    await saveEvent(api, events.dispatch, events.state, previewStub);
     const newsMarkup = renderToStaticMarkup(<NewsView state={news.state} actions={newsActions} />);
     const eventsMarkup = renderToStaticMarkup(<EventsView state={events.state} actions={eventActions} />);
 
-    expect(news.state.dialog).toEqual({ kind: "create" });
+    expect(news.state.editing).toBeNull();
+    expect(events.state.form.name).toBe("x");
     expect(newsMarkup).toContain('id="news-title-error"');
     expect(newsMarkup).toContain("El título es obligatorio.");
     expect(eventsMarkup).toContain('id="event-end_date-error"');

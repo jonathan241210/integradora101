@@ -39,7 +39,7 @@ Añadir una guía local en español bajo `apps/dashboard/docs/` que explique có
 | `apps/dashboard` | `src/tests/*.test.tsx` | Cubrir CA-01..CA-15 mediante tests Vitest nombrados; usar renderer server de React y pruebas puras del reducer/ViewModel. Conservar el patrón existente de Vitest, que descubre `*.test.tsx`; no añadir jsdom ni testing-library. |
 | `apps/dashboard/docs` | `manual-demo.md`, `arquitectura.md` | Documentar ejecución, perfiles, credenciales ficticias, recorridos, organización del código, pruebas y límites; describir la arquitectura SPA/MVVM conforme a la plantilla por app, sin presentar los mocks como capacidades operativas. |
 | `apps/dashboard` y `packages/tokens` | `README.md`, `docs/manual-demo.md`, `docs/arquitectura.md`, `packages/tokens/README.md` | Documentar los credenciales, colores y el uso de `index.html`; corregir la referencia anterior a los roles azules/verdes de la demo. |
-| `packages/ui`, `packages/tokens` | API y CSS actuales | Consumir controles compartidos y defaults semánticos existentes. No cambiar APIs ni CSS del paquete; la SPA mapea sus roles localmente a la paleta institucional. |
+| `packages/ui`, `packages/tokens` | API, CSS y configuración TSX local | Consumir controles compartidos y defaults semánticos existentes. `packages/ui/tsconfig.json` aísla la compilación TSX del `tsconfig.json` Expo de la raíz. No cambiar APIs ni CSS del paquete; la SPA mapea sus roles localmente a la paleta institucional. |
 | API/BD y raíz del repositorio | Ninguno | No crear rutas/endpoints, Actions, Requests, Resources, Policies, modelos, migraciones, workspace global ni dependencias nuevas. |
 
 ## Contrato y datos

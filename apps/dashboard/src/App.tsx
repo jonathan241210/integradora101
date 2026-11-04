@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, Button, Card } from "@arca/ui";
-import { DemoBanner } from "@/components/DemoBanner";
 import { Icon } from "@/components/Icon";
 import { DashboardSection } from "@/sections/DashboardSection";
 import { EnclosuresSection } from "@/sections/EnclosuresSection";
 import { EventsSection } from "@/sections/EventsSection";
 import { NewsSection } from "@/sections/NewsSection";
+import { TicketHistorySection } from "@/sections/TicketHistorySection";
+import { TicketPricesSection } from "@/sections/TicketPricesSection";
 import { TicketReportSection } from "@/sections/TicketReportSection";
+import { TicketSaleSection } from "@/sections/TicketSaleSection";
 import { UsersSection } from "@/sections/UsersSection";
 import { LoginView } from "@/views/LoginView";
 import { PwaRedirectView } from "@/views/PwaRedirectView";
-import { TicketHistoryView } from "@/views/TicketHistoryView";
-import { TicketSaleView } from "@/views/TicketSaleView";
 import { TwoFactorChallengeView } from "@/views/TwoFactorChallengeView";
 import { TwoFactorSetupView } from "@/views/TwoFactorSetupView";
 import {
@@ -19,14 +19,15 @@ import {
   getPresentationProfile,
 } from "@/viewmodels/navigation";
 import { useAuthSession } from "@/viewmodels/useAuthSession";
-import { useDashboardDemo } from "@/viewmodels/useDashboardDemo";
-import type { DashboardSection as SectionId } from "@/viewmodels/dashboard-demo";
+import { useDashboardShell } from "@/viewmodels/useDashboardShell";
+import type { DashboardSection as SectionId } from "@/viewmodels/dashboard-shell";
 
 const sectionTitles: Record<SectionId, string> = {
   dashboard: "Panel principal",
   news: "Noticias",
   events: "Eventos",
   tickets: "Venta de boletos",
+  "ticket-prices": "Precios de boletos",
   reports: "Reporte de boletos",
   enclosures: "Recintos",
   users: "Usuarios",
@@ -38,7 +39,7 @@ function App() {
     window.requestAnimationFrame(() => window.location.assign(url));
   }, []);
   const session = useAuthSession(redirectToPwa);
-  const demo = useDashboardDemo();
+  const shell = useDashboardShell();
   const [search, setSearch] = useState("");
   const sidebarRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -50,22 +51,16 @@ function App() {
   const navigation = profile ? getNavigationForProfile(profile) : [];
 
   useEffect(() => {
-    if (session.state.status === "authenticated" && presentationProfile) {
-      if (demo.state.activeProfile !== presentationProfile) {
-        demo.startSession(presentationProfile);
-      }
-    } else if (demo.state.activeProfile !== null) {
-      demo.signOut();
-    }
-  }, [session.state.status, presentationProfile, demo.state.activeProfile]);
+    if (session.state.status !== "authenticated") shell.reset();
+  }, [session.state.status]);
 
   useEffect(() => {
-    if (demo.state.mobileMenuOpen) {
+    if (shell.state.mobileMenuOpen) {
       sidebarRef.current
         ?.querySelector<HTMLButtonElement>(".sidebar-link")
         ?.focus();
     }
-  }, [demo.state.mobileMenuOpen]);
+  }, [shell.state.mobileMenuOpen]);
 
   useEffect(() => {
     if (session.state.status !== "authenticated") return;
@@ -75,7 +70,7 @@ function App() {
       heading?.setAttribute("tabindex", "-1");
       heading?.focus();
     });
-  }, [session.state.status, demo.state.activeSection]);
+  }, [session.state.status, shell.state.activeSection]);
 
   if (session.state.status === "checking") {
     return (
@@ -141,14 +136,14 @@ function App() {
   }
 
   const activeSection = navigation.some(
-    (item) => item.id === demo.state.activeSection,
+    (item) => item.id === shell.state.activeSection,
   )
-    ? demo.state.activeSection
+    ? shell.state.activeSection
     : navigation[0]?.id ?? null;
 
   const navigate = (section: SectionId) => {
     if (!navigation.some((item) => item.id === section)) return;
-    demo.navigate(section);
+    shell.navigate(section, navigation.map((item) => item.id));
     window.requestAnimationFrame(() => {
       const heading = contentRef.current?.querySelector("h1");
       heading?.setAttribute("tabindex", "-1");
@@ -156,10 +151,10 @@ function App() {
     });
   };
 
-  const showNotice = (message: string) => demo.showNotice(message);
+  const showNotice = (message: string) => shell.showNotice(message);
   const closeMobileMenu = () => {
-    if (!demo.state.mobileMenuOpen) return;
-    demo.toggleMenu();
+    if (!shell.state.mobileMenuOpen) return;
+    shell.toggleMenu();
     window.requestAnimationFrame(() => menuButtonRef.current?.focus());
   };
   const initials = profile.full_name
@@ -172,7 +167,7 @@ function App() {
 
   return (
     <div className="dashboard-app">
-      {demo.state.mobileMenuOpen && (
+      {shell.state.mobileMenuOpen && (
         <button
           className="mobile-nav-backdrop"
           type="button"
@@ -183,7 +178,7 @@ function App() {
       <aside
         ref={sidebarRef}
         id="dashboardNavigation"
-        className={`sidebar ${demo.state.mobileMenuOpen ? "sidebar--open" : ""}`}
+        className={`sidebar ${shell.state.mobileMenuOpen ? "sidebar--open" : ""}`}
         aria-label="Navegación del panel"
         onKeyDown={(event) => {
           if (event.key === "Escape") closeMobileMenu();
@@ -248,8 +243,8 @@ function App() {
               variant="secondary"
               aria-label="Abrir menú de navegación"
               aria-controls="dashboardNavigation"
-              aria-expanded={demo.state.mobileMenuOpen}
-              onClick={demo.toggleMenu}
+              aria-expanded={shell.state.mobileMenuOpen}
+              onClick={shell.toggleMenu}
             >
               <Icon name="menu" />
             </Button>
@@ -296,12 +291,9 @@ function App() {
         </header>
 
         <main className="dashboard-content" ref={contentRef}>
-          {(activeSection === "tickets" || activeSection === "ticket-history") && (
-            <DemoBanner />
-          )}
-          {demo.state.notice && (
+          {shell.state.notice && (
             <Alert className="global-feedback" role="status" aria-live="polite">
-              {demo.state.notice}
+              {shell.state.notice}
               <Button
                 className="feedback-close"
                 variant="ghost"
@@ -328,19 +320,12 @@ function App() {
           )}
           {activeSection === "news" && <NewsSection />}
           {activeSection === "events" && <EventsSection />}
-          {activeSection === "tickets" && (
-            <TicketSaleView
-              saleStep={demo.state.saleStep}
-              onOpen={demo.openSale}
-              onCancel={demo.cancelSale}
-              onConfirm={demo.beginSale}
-              onReset={demo.resetSale}
-            />
-          )}
+          {activeSection === "tickets" && <TicketSaleSection />}
           {activeSection === "reports" && <TicketReportSection />}
           {activeSection === "enclosures" && <EnclosuresSection />}
           {activeSection === "users" && <UsersSection />}
-          {activeSection === "ticket-history" && <TicketHistoryView />}
+          {activeSection === "ticket-history" && <TicketHistorySection />}
+          {activeSection === "ticket-prices" && <TicketPricesSection />}
         </main>
       </div>
     </div>

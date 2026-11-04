@@ -8,6 +8,8 @@
 - Actualización de 2026-10-30: zona horaria del dispositivo (RN-11, CA-19). Implementada (T-31 y T-32, según reporta la sesión principal); la redacción de RN-11 y CA-19 la proveyó el documentador y Jonathan la confirmó el 2026-10-30.
 - Actualización de 2026-10-30 (exportación): la API habilita Excel y PDF (ADR 0017 aceptado). Se actualizan RN-10, CA-12 y las decisiones de exportación de esta app; no hay cambios de código ni de criterios.
 
+> **Nota de vigencia (2026-11-01):** en Noticias y Eventos, el «sin campo de imagen» (Vistas y CA-08) quedan reemplazados por `dashboard-004` y `api-008`. En Noticias, Eventos y Usuarios, el uso de `Dialog`/`ConfirmDialog` (Vistas, CA-06 y CA-08) queda reemplazado por `dashboard-004` (formulario fijo, paneles colapsables y confirmación en línea). Recintos, Venta e Historial no cambian.
+
 ## Diseño de solución
 
 El dashboard deja de usar datos ficticios en seis secciones (Panel, Noticias, Eventos, Reporte, Recintos y Usuarios) y las conecta a `api-007` sin cambiar el aspecto visual (RN-09). Se conservan Venta e Historial de taquilla como demostración.
