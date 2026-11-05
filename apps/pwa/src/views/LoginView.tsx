@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import { Alert, Button, Card, Field } from '@arca/ui';
 import type { PwaInstallController } from '@/viewmodels/usePwaInstall';
 import { InstallAppAction } from '@/views/InstallAppAction';
@@ -16,12 +16,15 @@ export function LoginView({
   installController,
   onLogin,
 }: LoginViewProps) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onLogin(username, password);
+    const fields = new FormData(event.currentTarget);
+    const email = fields.get('username');
+    const password = fields.get('password');
+
+    if (typeof email === 'string' && typeof password === 'string') {
+      onLogin(email, password);
+    }
   }
 
   return (
@@ -53,22 +56,18 @@ export function LoginView({
             id="demo-username"
             label="Correo electrónico"
             name="username"
-            onChange={(event) => setUsername(event.target.value)}
             placeholder="nombre@correo.com"
             required
             type="email"
-            value={username}
           />
           <Field
             autoComplete="current-password"
             id="demo-password"
             label="Contraseña"
             name="password"
-            onChange={(event) => setPassword(event.target.value)}
             placeholder="Ingresa tu contraseña"
             required
             type="password"
-            value={password}
           />
           <Button className="login-submit" disabled={busy} type="submit">
             {busy ? 'Entrando…' : 'Iniciar sesión'}
