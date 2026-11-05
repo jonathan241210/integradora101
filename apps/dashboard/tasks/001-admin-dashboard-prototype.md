@@ -32,7 +32,7 @@
 - [x] **T-01** (CA-08; RN-06): crear `packages/tokens/package.json` y `packages/tokens/src/tokens.css` con tokens semánticos de respaldo basados en la documentación existente, sin valores de marca dentro de componentes y sin conexión a API.
 - [x] **T-02** (CA-08; RN-06): crear `packages/ui/package.json`, su punto de entrada `packages/ui/src/index.ts`, estilos y componentes accesibles mínimos Button, Field, Select, Card, Badge, Dialog y Alert basados solo en `@arca/tokens`.
 - [x] **T-03** (CA-08): crear el manifiesto/configuración mínima de `apps/dashboard` para React 19, TypeScript, Vite 7, Tailwind CSS 4 y Vitest; declarar referencias locales a `@arca/ui` y `@arca/tokens`, y scripts explícitos para dev, build, types y test. No crear workspace global ni añadir router.
-- [x] **T-04** (CA-08): preparar el punto de entrada, estilos globales y shell React en `apps/dashboard/src/`; importar tokens semánticos y componentes compartidos, y comprobar que el build compila los paquetes locales.
+- [x] **T-04** (CA-08): preparar el punto de entrada, estilos globales y shell React en `apps/dashboard/src/`; importar tokens semánticos y componentes compartidos, y comprobar que el build compila los paquetes locales. Cada paquete TSX compartido mantiene una configuración local para no heredar configuraciones incompatibles de otras apps del monorepo.
 - [x] **T-05** (CA-01, CA-02; RN-01, RN-02): implementar el login demostrativo y la pantalla Dashboard con fixtures ficticios y aviso persistente; separar vista y estado de presentación en componentes y hook/ViewModel.
 - [x] **T-06** (CA-03; RN-01, RN-03): implementar vistas de Noticias y Eventos con campos y tarjetas de muestra; botones con respuesta únicamente visual, sin guardar/publicar/eliminar datos.
 - [x] **T-07** (CA-04; RN-01, RN-04): implementar interfaz de Venta de boletos y estados demostrativos de confirmación, procesamiento y venta realizada; no agregar cálculo de totales/precios, campos de tarjeta ni persistencia.
@@ -42,7 +42,7 @@
 
 ## Pruebas automatizadas
 
-- [x] **T-11** (CA-08): añadir `CA-08 admin-dashboard-prototype` para validar exports y estilos semánticos de `@arca/ui`/`@arca/tokens`, manifiestos locales, scripts y compilación/type-check.
+- [x] **T-11** (CA-08): añadir `CA-08 admin-dashboard-prototype` para validar exports y estilos semánticos de `@arca/ui`/`@arca/tokens`, manifiestos locales, scripts, aislamiento de configuración TSX y compilación/type-check.
 - [x] **T-12** (CA-07): añadir `CA-07 admin-dashboard-prototype` que comprueba que existen pruebas explícitas CA-01..CA-06, no hay cliente de red/paquetes prohibidos y los flujos están cubiertos.
 - [x] **T-13** (CA-01; RN-02): añadir `CA-01 admin-dashboard-prototype` para verificar login y transición demostrativa, sin credenciales enviadas ni validación/autenticación real.
 - [x] **T-14** (CA-02; RN-01): añadir `CA-02 admin-dashboard-prototype` para verificar navegación, indicadores, fixtures y rótulo visible de demostración.
@@ -92,7 +92,7 @@
 
 ## Calidad y cierre
 
-- [ ] **T-37** (CA-06..CA-08): ejecutar pruebas responsive en 360, 390, 768, 1024 y 1366 px, `npm run types`, `npm run build`, `npm test`, `/verify` y `git diff --check`; registrar resultados. Verificaciones automatizadas completadas; queda pendiente la inspección visual y de teclado en navegador en esos cinco anchos.
+- [ ] **T-37** (CA-06..CA-08): ejecutar pruebas responsive en 360, 390, 768, 1024 y 1366 px, `npm run types`, `npm run build`, `npm test`, `/verify` y `git diff --check`; registrar resultados. Verificaciones automatizadas completadas; queda pendiente la inspección visual y de teclado en navegador en esos cinco anchos. Confirmar que el paquete `@arca/ui` compila con su `tsconfig.json` propio y no resuelve el `extends` Expo del archivo raíz.
 - [ ] **T-22**: actualizar estado de spec, plan y tasks a Implementada solo al cumplir todos los CA y verificaciones; enlazar `dashboard-001` en PR/commit conforme a las convenciones.
 
 ## Evidencia de verificación

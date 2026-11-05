@@ -29,10 +29,13 @@ describe("CA-08 admin-dashboard-prototype", () => {
     const dashboard = JSON.parse(readFileSync(`${repositoryRoot}/apps/dashboard/package.json`, "utf8"));
     const tokens = readFileSync(`${repositoryRoot}/packages/tokens/src/tokens.css`, "utf8");
     const ui = JSON.parse(readFileSync(`${repositoryRoot}/packages/ui/package.json`, "utf8"));
+    const uiTsconfig = JSON.parse(readFileSync(`${repositoryRoot}/packages/ui/tsconfig.json`, "utf8"));
     expect(dashboard.scripts.build).toBeTruthy();
     expect(dashboard.scripts.types).toBeTruthy();
     expect(dashboard.scripts.test).toBeTruthy();
     expect(ui.exports["./styles.css"]).toBe("./src/styles.css");
+    expect(uiTsconfig.extends).toBeUndefined();
+    expect(uiTsconfig.compilerOptions.jsx).toBe("react-jsx");
     expect(tokens).toMatch(/--sidebar:/);
     expect(tokens).toMatch(/--accent:/);
     expect(tokens).toMatch(/--surface-page:/);

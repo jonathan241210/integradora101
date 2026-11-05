@@ -1,3 +1,4 @@
+import type { Ref } from "react";
 import { Alert, Button } from "@arca/ui";
 import { Icon } from "./Icon";
 
@@ -5,13 +6,16 @@ import { Icon } from "./Icon";
 export function NoticeBar({
   message,
   onDismiss,
+  focusRef,
 }: {
   message: string;
   onDismiss: () => void;
+  /** Si se entrega, el aviso puede recibir el foco (p. ej. tras eliminar, CA-12). */
+  focusRef?: Ref<HTMLDivElement>;
 }) {
   if (!message) return null;
 
-  return (
+  const alert = (
     <Alert className="global-feedback" role="status" aria-live="polite">
       {message}
       <Button
@@ -23,5 +27,13 @@ export function NoticeBar({
         <Icon name="close" />
       </Button>
     </Alert>
+  );
+
+  return focusRef ? (
+    <div ref={focusRef} tabIndex={-1} className="notice-focus">
+      {alert}
+    </div>
+  ) : (
+    alert
   );
 }

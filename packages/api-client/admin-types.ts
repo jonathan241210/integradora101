@@ -86,6 +86,8 @@ export type NewsDto = {
   start_date: string | null;
   end_date: string | null;
   is_active: boolean;
+  /** URL pública de la imagen gestionada (`api-008`); `null` si no tiene. */
+  image_url: string | null;
 };
 
 export type NewsInput = {
@@ -97,6 +99,10 @@ export type NewsInput = {
   start_date?: string | null;
   end_date?: string | null;
   is_active?: boolean;
+  /** Archivo nuevo (JPG, PNG o WebP, máx. 5 MB): la petición pasa a `multipart/form-data`. */
+  image?: File | null;
+  /** Quita la imagen guardada; si hay `image`, gana el archivo. */
+  remove_image?: boolean;
 };
 
 export type EventDto = {
@@ -109,6 +115,8 @@ export type EventDto = {
   start_time: string | null;
   end_time: string | null;
   is_active: boolean;
+  /** URL pública de la imagen gestionada (`api-008`); `null` si no tiene. */
+  image_url: string | null;
 };
 
 export type EventInput = {
@@ -120,6 +128,10 @@ export type EventInput = {
   start_time?: string | null;
   end_time?: string | null;
   is_active?: boolean;
+  /** Archivo nuevo (JPG, PNG o WebP, máx. 5 MB): la petición pasa a `multipart/form-data`. */
+  image?: File | null;
+  /** Quita la imagen guardada; si hay `image`, gana el archivo. */
+  remove_image?: boolean;
 };
 
 export type EnclosureDto = {

@@ -40,6 +40,24 @@ export type {
   TicketReportQuery,
   TicketRowDto,
 } from "./admin-types";
+export { createTicketSalesApi } from "./ticket-sales";
+export type { CreateTicketSalesApiOptions, TicketSalesApi } from "./ticket-sales";
+export type {
+  TicketCancelInput,
+  TicketHistoryPage,
+  TicketHistoryQuery,
+  TicketHistoryRowDto,
+  TicketPriceChangeDto,
+  TicketPriceCurrentDto,
+  TicketPriceMode,
+  TicketPriceNextDto,
+  TicketPriceRowDto,
+  TicketPriceScheduleInput,
+  TicketPriceTypeDto,
+  TicketSaleDto,
+  TicketSaleInput,
+  TicketStatus,
+} from "./ticket-sales-types";
 export { createHttpClient, filenameFromDisposition } from "./http";
 export type {
   ApiError,

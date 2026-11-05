@@ -19,12 +19,16 @@ class SaveEventRequest extends AdminFormRequest
             'end_time' => ['nullable', 'regex:'.self::TIME],
             'location' => ['nullable', 'string', 'max:255'],
             'is_active' => ['nullable', 'boolean'],
+            'image' => ['nullable', 'file', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'remove_image' => ['nullable', 'boolean'],
         ];
     }
 
     public function messages(): array
     {
         return [
+            'image.mimes' => 'La imagen debe ser un archivo JPG, PNG o WebP.',
+            'image.max' => 'La imagen no debe pesar más de 5 MB.',
             'start_time.regex' => 'El campo hora de inicio no tiene un formato de hora válido (HH:MM).',
             'end_time.regex' => 'El campo hora de fin no tiene un formato de hora válido (HH:MM).',
         ];

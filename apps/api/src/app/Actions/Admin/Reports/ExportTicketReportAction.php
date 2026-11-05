@@ -31,6 +31,7 @@ class ExportTicketReportAction
         if ($format === 'pdf') {
             $maxRows = (int) config('arca.report_pdf_max_tickets');
             $count = Ticket::query()
+                ->completed()
                 ->where('purchased_at', '>=', $period->startUtc())
                 ->where('purchased_at', '<', $period->endUtc())
                 ->count();
@@ -64,6 +65,7 @@ class ExportTicketReportAction
 
         $rows = fn () => (function () use ($period) {
             $query = Ticket::query()
+                ->completed()
                 ->select(['id', 'adult_quantity', 'child_quantity', 'total_amount', 'purchased_at'])
                 ->where('purchased_at', '>=', $period->startUtc())
                 ->where('purchased_at', '<', $period->endUtc())

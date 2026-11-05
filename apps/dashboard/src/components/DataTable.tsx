@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
 export type DataTableColumn<Row> = {
   key: string;
@@ -15,11 +15,14 @@ export function DataTable<Row>({
   columns,
   rows,
   rowKey,
+  rowDetail,
 }: {
   caption: string;
   columns: DataTableColumn<Row>[];
   rows: Row[];
   rowKey: (row: Row) => string | number;
+  /** Contenido a ancho completo bajo la fila (p. ej. una confirmación en línea). */
+  rowDetail?: (row: Row) => ReactNode;
 }) {
   return (
     <div
@@ -40,15 +43,26 @@ export function DataTable<Row>({
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
-            <tr key={rowKey(row)}>
-              {columns.map((column) => (
-                <td data-label={column.header} key={column.key}>
-                  {column.render(row)}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {rows.map((row) => {
+            const detail = rowDetail?.(row);
+
+            return (
+              <Fragment key={rowKey(row)}>
+                <tr>
+                  {columns.map((column) => (
+                    <td data-label={column.header} key={column.key}>
+                      {column.render(row)}
+                    </td>
+                  ))}
+                </tr>
+                {detail && (
+                  <tr className="data-table__detail">
+                    <td colSpan={columns.length}>{detail}</td>
+                  </tr>
+                )}
+              </Fragment>
+            );
+          })}
         </tbody>
       </table>
     </div>

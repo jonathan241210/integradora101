@@ -6,6 +6,8 @@
 - Solicitante / responsable funcional: Jonathan
 - Aprobación funcional: Jonathan, 2026-10-15
 
+> **Vigencia (2026-11-02):** `dashboard-005-ticket-sales` (aprobada el 2026-11-02) conecta Venta e Historial de taquilla con la API, así que dejan de ser datos ficticios. RN-02 deja de aplicarse a esas dos pantallas; sigue vigente para las demás que no conecte otra spec.
+
 ## Problema y contexto
 
 El prototipo del dashboard (`dashboard-001`) usa un selector de perfil y credenciales ficticias en memoria. Con la autenticación real del personal definida en `api-003`, el dashboard debe reemplazar ese acceso simulado por un único formulario de correo institucional + contraseña que consuma la API, resuelva el reto/enrolamiento de 2FA de los administradores (`admin` y `zoo-admin`) y presente las secciones según el `home` y los permisos devueltos por `GET /api/v1/auth/me`. El `veterinarian` que entra por error al dashboard se redirige a la PWA; la PWA tendrá su propia pantalla de login en una spec futura de `apps/pwa`.

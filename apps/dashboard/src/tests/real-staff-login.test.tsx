@@ -437,9 +437,11 @@ describe("CA-09 real-staff-login", () => {
 
 describe("CA-10 real-staff-login", () => {
   it("no conserva cuentas ficticias de Usuarios ni habilita un login de muestra (sustituido por dashboard-003)", () => {
-    const demoData = readFileSync(new URL("../data/demo-data.ts", import.meta.url), "utf8");
+    // dashboard-005 retiró `data/demo-data.ts` y `dashboard-demo.ts`; la shell
+    // no conserva cuentas ni login de muestra.
+    const demoData = "";
     const demoReducer = readFileSync(
-      new URL("../viewmodels/dashboard-demo.ts", import.meta.url),
+      new URL("../viewmodels/dashboard-shell.ts", import.meta.url),
       "utf8",
     );
     const userView = readFileSync(

@@ -28,7 +28,7 @@ Los comandos previstos se declararán en los manifiestos cuando las apps se inic
 
 ## Arquitectura de código
 
-- Laravel: Actions para lógica de negocio; Form Requests, API Resources, Policies, permisos Spatie, rutas con `->name()`. Modelos de dominio extienden `BaseModel` si requieren auditoría `created_by`/`updated_by` y activity log; las migraciones crean las columnas necesarias. Usar SoftDeletes para información clínica y financiera y proteger comandos destructivos en producción.
+- Laravel: Actions para lógica de negocio; Form Requests, API Resources, Policies, permisos Spatie, rutas con `->name()`. Modelos de dominio extienden `BaseModel` si requieren auditoría `created_by`/`updated_by` y activity log; las migraciones crean las columnas necesarias. Usar SoftDeletes en los modelos de negocio (Constitución V; la información clínica y financiera además nunca se borra físicamente) y proteger comandos destructivos en producción.
 - Fortify se integra headless; Sanctum gestiona autenticación de clientes. No usar Inertia ni Wayfinder.
 - React SPA: alias `@/`, `@arca/ui`, hooks vía `@arca/api-client`, UI en español y componentes accesibles; React Router es propuesta del ADR 0002, no dependencia aprobada.
 - PWA: persistir solo borradores offline y sincronizarlos mediante el contrato de API aprobado.
