@@ -25,7 +25,9 @@ export default function LoginRoute() {
         return;
       }
       setServerError(result.message);
-      if (result.code === 'email_not_verified') router.push('/verify-email');
+      if (result.code === 'email_not_verified') {
+        router.push({ pathname: '/verify-email', params: { email: form.email.trim() } });
+      }
     } finally {
       inFlight.current = false;
       setBusy(false);

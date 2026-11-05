@@ -12,7 +12,7 @@ const OFFLINE_MESSAGE = 'Sin conexión';
 const VERIFIED_PASSWORD = 'secreta';
 const VALID_CODE = '123456';
 const PRIVACY_VERSION = '2026-10';
-const FORGOT_NOTICE = 'Si el correo está registrado, enviamos un código de 6 dígitos. En esta versión el código de prueba es 123456.';
+const FORGOT_NOTICE = 'Si el correo está registrado, enviamos un código de 6 dígitos.';
 
 interface StoredVisitor {
   email: string;

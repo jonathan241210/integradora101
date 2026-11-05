@@ -14,9 +14,22 @@ class LoginTest extends VisitorFeatureTestCase
             ->assertJsonPath('data.visitor.email', $verified['email']);
 
         $pending = $this->registerVisitor();
+        $initialCode = $this->latestVisitorCode();
         $this->loginVisitor($pending)
             ->assertForbidden()
             ->assertJsonPath('code', 'email_not_verified');
+        $loginSentCode = $this->latestVisitorCode();
+        $this->assertMatchesRegularExpression('/^\d{6}$/', $loginSentCode);
+        if ($initialCode !== $loginSentCode) {
+            $this->postJson('/api/v1/visitor/auth/email/verify', [
+                'email' => $pending,
+                'code' => $initialCode,
+            ])->assertUnprocessable();
+        }
+        $this->postJson('/api/v1/visitor/auth/email/verify', [
+            'email' => $pending,
+            'code' => $loginSentCode,
+        ])->assertOk();
 
         $this->loginVisitor($verified['email'], 'otra1234')
             ->assertUnprocessable()

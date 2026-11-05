@@ -12,6 +12,7 @@ class LoginVisitorAction
     public function __construct(
         private readonly IssueVisitorTokensAction $tokens,
         private readonly LogVisitorAccessAction $log,
+        private readonly SendVisitorCodeAction $codes,
     ) {}
 
     public function execute(string $email, string $password, string $deviceName, Request $request): VisitorAuthResult
@@ -23,6 +24,8 @@ class LoginVisitorAction
         }
 
         if ($visitor->email_verified_at === null) {
+            $this->codes->execute($visitor, 'email_verification');
+
             return VisitorAuthResult::message(403, 'Confirma tu correo antes de entrar.', 'email_not_verified');
         }
 

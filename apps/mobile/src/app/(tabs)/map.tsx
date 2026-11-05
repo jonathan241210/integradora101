@@ -16,6 +16,9 @@ export default function MapRoute() {
     focusedSectionId,
     focusedPlaceId,
     focusNotFound,
+    destinationPlaceId,
+    destinationPlace,
+    arrivedAtPlace,
     isLoading,
     error,
     retry,
@@ -23,6 +26,9 @@ export default function MapRoute() {
     selectPlace,
     clearSelection,
     focusPlace,
+    setDestination,
+    dismissArrival,
+    checkArrival,
   } = useMapViewModel();
 
   const { userPosition } = useLocationViewModel();
@@ -32,6 +38,16 @@ export default function MapRoute() {
       focusPlace(focus);
     }
   }, [focus, focusPlace]);
+
+  useEffect(() => {
+    if (userPosition && !userPosition.searching) {
+      checkArrival(userPosition.lat, userPosition.lon);
+    }
+  }, [userPosition, checkArrival]);
+
+  const handleToggleDestination = (id: string) => {
+    setDestination(destinationPlaceId === id ? null : id);
+  };
 
   return (
     <MapScreen
@@ -48,11 +64,17 @@ export default function MapRoute() {
       onSelectPlace={selectPlace}
       onCloseDetail={clearSelection}
       onRetry={retry}
-      onSearchPress={() => router.push({
-        pathname: '/search',
-        params: { selectForTour: 'true', returnTo: 'map' },
-      })}
+      onSearchPress={() =>
+        router.push({
+          pathname: '/search',
+          params: { selectForTour: 'true', returnTo: 'map' },
+        })
+      }
       userPosition={userPosition}
+      destinationPlace={destinationPlace}
+      arrivedAtPlace={arrivedAtPlace}
+      onToggleDestination={handleToggleDestination}
+      onDismissArrival={dismissArrival}
     />
   );
 }

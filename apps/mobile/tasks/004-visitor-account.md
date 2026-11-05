@@ -100,3 +100,4 @@ Cierre 2026-10-21: Jest de `apps/mobile` en verde (95 pruebas) y `npx tsc --noEm
 - [x] **T-54** (CA-08, escenario 7): Enmienda 2026-10-23. `test-ca-08-profile-single-load` y `test-ca-08-settings-sin-ficha-demo` en `__tests__/auth/profile-single-load.test.tsx`. Dos consumidores comparten un `GET`; el `PATCH` actualiza la interfaz sin otro `GET`. Con la API simulada, Ajustes muestra el perfil real y no «María García».
 - [x] **T-55** (CA-08): Enmienda UX 2026-11-01. En editar cuenta el avatar es un círculo con «Editar imagen» que abre el catálogo. Cambiar contraseña y borrar cuenta son filas. `test-ca-08-profile-patch` abre el selector antes de elegir el avatar.
 - [x] **T-56** (CA-02, CA-03): Enmienda UX 2026-11-01. En el registro la barra de progreso es dorada y las flechas laterales son vino. En la verificación, «Confirmar código» es compacto y reenviar es un círculo vino.
+
