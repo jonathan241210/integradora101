@@ -18,7 +18,7 @@ Los tres artefactos usan el mismo `NNN-slug.md`; lee la spec aprobada y el plan 
 - Sanctum gestiona cookies para SPAs y tokens para mobile; Fortify funciona headless.
 - Los modelos de dominio extienden `BaseModel` cuando requieren auditoría.
 - Agrega `created_by`/`updated_by` a la migración cuando el modelo lo requiera.
-- Usa SoftDeletes y Activitylog para datos clínicos y financieros; nunca los borres físicamente.
+- Sigue la Constitución V: los modelos de negocio usan SoftDeletes; los datos clínicos y financieros además llevan Activitylog y nunca se borran físicamente.
 - El esquema cambia solo mediante migraciones Laravel sobre MySQL 8.0.x; cada migración nace de una DBR aprobada (`docs/database/`) y la crea, prueba y aplica el responsable de BD. Nunca SQL manual, ni siquiera en la base de pruebas.
 - Backend implementa modelos, Actions y endpoints consumidores solo cuando la DBR está en `Lista para backend`; no modifica una migración aprobada: si el contrato diverge, devuelve la DBR a revisión.
 - Funciones y procedimientos almacenados son excepcionales: se justifican frente a una Action, se versionan en migraciones con `DB::statement()` y se prueban en MySQL 8.0; las reglas principales siguen en Actions. Vistas y triggers no están autorizados.

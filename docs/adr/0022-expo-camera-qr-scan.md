@@ -1,4 +1,4 @@
-# 0019 — Escaneo QR con expo-camera (mobile-006)
+# 0022 — Escaneo QR con expo-camera (mobile-006)
 
 - Estado: Aceptado
 - Fecha: 2026-11-01

@@ -4,7 +4,7 @@
 - Estado de spec: Implementada (2026-11-01; aprobación funcional Aksel, 2026-11-01)
 - Estado del plan: Aprobado e implementado (Aksel, 2026-11-01)
 - Responsable técnico: Aksel
-- ADR: `docs/adr/0019-expo-camera-qr-scan.md` (Aceptado, 2026-11-01)
+- ADR: `docs/adr/0022-expo-camera-qr-scan.md` (Aceptado, 2026-11-01)
 
 ## Diseño de solución
 
@@ -51,7 +51,7 @@ Sin almacenamiento de imagen. HTTPS en APK. QA con `php artisan arca:generate-qr
 
 | Principio | Cumple | Evidencia |
 |---|---|---|
-| I. Stack mínimo | Sí | `expo-camera` vía ADR 0019; sin API nueva |
+| I. Stack mínimo | Sí | `expo-camera` vía ADR 0022; sin API nueva |
 | II. La spec manda | Sí | Solo alcance 006 |
 | III. MVVM | Sí | Screen → useQrScanViewModel → submitScan |
 | IV. Un test por CA | Sí | Tabla anterior |

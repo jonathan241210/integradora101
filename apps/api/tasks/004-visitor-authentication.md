@@ -80,6 +80,7 @@ Cada prueba vive en `tests/Feature/Visitor/`, usa `DatabaseTransactions` sobre `
 
 - [x] **T-39**: Ejecutar `php artisan test` desde `apps/api/src`. La suite de personal existente debe seguir en verde.
 - [x] **T-40**: Documentar el contrato del visitante en `apps/api/docs/`, sin secretos ni credenciales. El PR enlaza spec, plan y tasks.
+- [x] **T-41** (CA-04, CA-16, CA-20): Enmienda 2026-11-05. Enviar automáticamente código de verificación en `LoginVisitorAction` cuando `email_verified_at === null` (`LoginTest.php`), mejorar la plantilla `resources/views/mail/visitor-access-code.blade.php` para distinguir verificación de correo y recuperación de contraseña en español (`VerificationCodeTest.php`) y documentar la configuración SMTP (Gmail) en `apps/api/docs/visitante-autenticacion.md`.
 
 Cada CA-01 a CA-21 tiene una tarea de prueba que lo nombra. Ninguna tarea sale de `apps/api`.
 

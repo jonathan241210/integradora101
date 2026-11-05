@@ -1,15 +1,15 @@
 import { useEffect, useReducer } from "react";
 import { adminApi } from "@/services/arca-api";
 import {
-  confirmStaffDialog,
-  createStaffAccount,
+  confirmStaffAction,
+  emptyStaffForm,
   initialStaffState,
   loadStaffAccounts,
   loadStaffOptions,
+  saveStaffAccount,
   staffAccountsReducer,
-  toStaffCreateInput,
-  toStaffUpdateInput,
-  updateStaffAccount,
+  staffDepartmentChanges,
+  staffFormFromAccount,
   type StaffAccountsViewModel,
 } from "./staff-accounts";
 
@@ -37,21 +37,19 @@ export function useStaffAccounts(): StaffAccountsViewModel {
     actions: {
       changeQuery: (changes) => dispatch({ type: "query-changed", changes }),
       reload: () => void loadStaffAccounts(adminApi, dispatch, state.query),
-      openDialog: (dialog) => dispatch({ type: "dialog-opened", dialog }),
-      closeDialog: () => dispatch({ type: "dialog-closed" }),
       dismissNotice: () => dispatch({ type: "notice-dismissed" }),
-      create: (values) =>
-        void createStaffAccount(adminApi, dispatch, toStaffCreateInput(values), reload),
-      update: (account, values) =>
-        void updateStaffAccount(
-          adminApi,
-          dispatch,
-          account,
-          toStaffUpdateInput(values),
-          reload,
-        ),
-      confirm: (password) =>
-        void confirmStaffDialog(adminApi, dispatch, state.dialog, password, reload),
+      toggleForm: () => dispatch({ type: "panel-toggled" }),
+      changeForm: (changes) => dispatch({ type: "form-changed", changes }),
+      changeDepartment: (departmentId) =>
+        dispatch({ type: "form-changed", changes: staffDepartmentChanges(state, departmentId) }),
+      startEdit: (account) =>
+        dispatch({ type: "edit-started", item: account, form: staffFormFromAccount(account) }),
+      cancelEdit: () => dispatch({ type: "edit-cancelled", form: emptyStaffForm() }),
+      submit: () => void saveStaffAccount(adminApi, dispatch, state, reload),
+      openAction: (action) => dispatch({ type: "action-opened", action }),
+      closeAction: () => dispatch({ type: "action-closed" }),
+      confirmAction: (password) =>
+        void confirmStaffAction(adminApi, dispatch, state, password, reload),
     },
   };
 }

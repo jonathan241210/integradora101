@@ -1,104 +1,79 @@
-# Evolución Técnica · Mapa Móvil: GPS, Rutas y Guía AR por Cámara
+# Evolución Técnica · Mapa Móvil: GPS, Rutas por Senderos y Guía AR
 
 - **Documento:** Referencia de evolución técnica para `mobile-007` y futuras fases
-- **Fecha:** 2026-10-25
+- **Fecha:** 2026-11-04
 - **Autor / Responsable:** Víctor Adrián
-- **Estado de V1:** Implementada y validada en dispositivo (Expo Go SDK 57)
+- **Estado actual:** V1, V2, V2.1 y V2.2 implementadas y probadas en Jest
 
 ---
 
-## 1. Estado de la V1 (Cerrada y Validada)
+## 1. Fase V1 — Mapa 2D Esquemático de Consulta (Completada)
 
-La primera versión funcional del mapa está completa:
 - **Plano 2D esquemático:** Renderizado mediante `ZooMapSvg` con primitivas de `react-native-svg` (ADR 0015).
 - **Puntos de interés (POI):** Marcadores desacoplados del SVG, posicionados mediante coordenadas normalizadas `mapX`/`mapY` (de 0.0 a 1.0) desde `MapRepository`.
-- **Filtros interactivos:** Selección rápida por "Todo", "Animales" y "Servicios" con gestión de estados vacíos y de error.
+- **Filtros interactivos:** Selección rápida por "Todo", "Animales" y "Servicios".
 - **Detalle de punto:** Tarjeta flotante con nombre, sección y descripción.
 - **Enfoque desde Búsqueda:** Redirección desde la búsqueda de animales hacia el mapa resaltando la zona y el marcador correspondiente.
 - **Modo offline:** 100% operativo sin conexión a internet ni dependencia de servicios externos.
 
 ---
 
-## 2. Fase V2 — GPS, Punto Azul y Navegación por Senderos (Estilo Google Maps)
+## 2. Fase V2, V2.1 y V2.2 — GPS, Punto Azul, Ruta, Llegada y Controles de Visor (Completada)
 
-El objetivo de la V2 es pasar de un mapa estático de consulta a un mapa con posicionamiento en vivo y cálculo de distancias reales.
-
-### 2.1 Obtención de ubicación real
-- **Dependencia requerida:** `expo-location` (requiere nuevo ADR antes de su instalación).
-- **Permisos:** Únicamente permiso de primer plano (`ACCESS_FINE_LOCATION` en Android / `whenInUse` en iOS). No se requiere ubicación en segundo plano.
-- **Manejo de estados:**
-  - Si el usuario rechaza el permiso, el mapa sigue funcionando en modo V1 (consulta manual) sin bloquear la app.
-  - Indicador de precisión si la señal GPS es débil.
-
-### 2.2 Calibración Geográfica (Geo-referenciación del SVG)
-El SVG tiene coordenadas relativas (`viewBox="0 0 1000 1400"`). Para que el punto azul del usuario se mueva sobre el dibujo conforme camina:
-1. Se toman las coordenadas GPS reales (latitud y longitud) de los cuatro vértices del polígono del Zoológico Municipal Nicolás Bravo.
-2. Se implementa una función de transformación matemática afín (bounding-box) en `src/utils/geoTransform.ts`:
-   $$\text{GPS}(\text{lat}, \text{lon}) \longrightarrow (mapX, mapY)$$
-3. El componente `UserLocationMarker` se renderiza sobre el SVG en la posición calculada.
-
-### 2.3 Orientación del usuario (Flecha de rumbo)
-- Usando el magnetómetro/brújula de `expo-sensors`, la flecha del punto azul rota en tiempo real según la dirección física hacia donde apunta la persona.
-
-### 2.4 Grafo de Senderos y Cálculo de Llegada
-- **Nodos de caminos:** Se definen ~15 a 25 nodos (intersecciones de senderos sobre los caminos grises ya dibujados en el SVG).
-- **Cálculo de ruta más corta:** Algoritmo A* o Dijkstra ligero que une:
-  $$\text{Posición actual del usuario} \longrightarrow \text{Nodo de sendero más cercano} \longrightarrow \dots \longrightarrow \text{Recinto destino}$$
-- **Tiempo y distancia:**
-  - Distancia total en metros sumando los segmentos de los caminos.
-  - Tiempo estimado a velocidad de caminata promedio ($1.1\text{ m/s}$ o $\approx 4\text{ km/h}$).
-  - Panel inferior flotante: *"A 140 metros • 2 min a pie"*.
+Implementada y probada al 100%:
+- **Ubicación GPS real:** `expo-location ~57.0.22` (ADR 0016) con permisos de primer plano (`ACCESS_FINE_LOCATION`).
+- **Punto Azul pulsante (`UserLocationMarker`):** Posición dinámica con fallback visual en la entrada principal si la señal GPS es débil (> 20 m).
+- **Modo degradado:** Si el permiso es denegado, el mapa funciona normalmente en modo consulta (V1) sin bloquear la experiencia.
+- **Línea de ruta directa (`DestinationRouteLine` / CA-14):** Trazado discontinuo sobre el plano entre el visitante y el recinto elegido como destino.
+- **Geocerca de llegada (`haversine.ts` / CA-12):** Al situarse a $\le 10\text{ m}$ del recinto destino, se despliega el `ArrivalBanner` (*"¡Llegaste a [Recinto]!"*), se limpia el destino y se evita repetición en la misma sesión si se descarta.
+- **Controles interactivos de Zoom, Pan y Centrado (`MapViewportControls` + `mapViewport.ts` / CA-15, CA-16, CA-17):** Acercar/alejar (`1.0x`–`2.5x`), restablecer vista (`1x`), desplazamiento acotado por bordes y botón *"Centrar en mi ubicación"*.
 
 ---
 
-## 3. Fase V3 — Guía 3D y Flechas Flotantes con la Cámara (Realidad Aumentada)
+## 3. Líneas de Evolución y Frentes de Trabajo del Mapa 2D
 
-Esta fase sustituye la idea de un "recorrido 3D estático tipo videojuego" por una **guía interactiva en el mundo real a través de la cámara** (similar a Live View de Google Maps).
+Para la evolución continua del Mapa 2D se han consolidado cuatro frentes estratégicos:
+
+### Frente 1: Conexión con Datos Reales y Backend (DBR-008 & API)
+- **Objetivo:** Superar el fixture local en memoria (`src/mocks/zoo.ts`) y centralizar las coordenadas en la base de datos MySQL 8.0 (`enclosures`).
+- **Acciones:**
+  - Solicitud [DBR-008](file:///c:/Users/vic22/OneDrive/Escritorio/ARCA-NB/docs/database/requests/DBR-008-enclosure-gps-coordinates.md) aprobada y migración Laravel `2026_11_03_000008_enclosure_gps_coordinates.php` creada.
+  - Exposición de endpoint `GET /api/v1/map/enclosures` en `apps/api`.
+  - Integración en `apps/mobile` mediante `HttpMapRepository` con persistencia/caché offline en `AsyncStorage`.
+
+### Frente 2: Controles Interactivos de Mapa (Zoom, Pan y Centrado) — ✅ Completado (V2.2)
+- **Objetivo:** Permitir una exploración táctil y accesible completa en dispositivos móviles.
+- **Implementado:**
+  - Controles accesibles de escala (`+`, `−`, `1x`) y desplazamiento con `PanResponder` y `clampPan` sobre el lienzo SVG manteniendo marcadores, ruta y punto azul sincronizados.
+  - Botón flotante *"Centrar en mi ubicación"* que reubica el visor en el punto azul del visitante.
+
+### Frente 3: Fase V3 — Navegación Guiada por Senderos y Tiempo a Pie — ✅ Completado (V3)
+- **Implementado:**
+  1. **Grafo de andadores peatonales (`src/constants/zooPaths.ts`):** Nodos en cada bifurcación, glorieta de la Plaza central y acceso a recinto con aristas ponderadas, listo para recalibrar coordenadas con el SVG definitivo de dron.
+  2. **Pathfinding en memoria (`src/utils/pathfinding.ts`):** Algoritmo Dijkstra (`findShortestPath`, `computeWalkRoute`) que conecta la posición del visitante con el recinto destino siguiendo los pasillos peatonales sin cruzar jaulas ni cuerpos de agua (`CA-18`).
+  3. **Polilínea de sendero (`DestinationRouteLine`):** Traza `<Polyline testID="destination-route-polyline">` sobre la red de andadores (`CA-20`).
+  4. **Métricas de caminata (`WalkEstimateBadge`):** Muestra distancia estimada en metros y tiempo a pie ($1.1\text{ m/s}$) tipo *"Ruta a [Recinto]: ~140 m • 2 min a pie"* (`CA-19`, `CA-20`).
+
+### Frente 4: Calibración Geográfica Fina y Coordenadas Reales
+- **Objetivo:** Garantizar la precisión métrica del punto azul sobre el plano del zoológico.
+- **Acciones:**
+  - Ajuste de precisión en `src/utils/geoTransform.ts` (posible transformación proyectiva/afín completa con rotación si el plano no coincide con el norte magnético).
+  - Medición en campo de las 4 esquinas del zoológico y de los accesos principales.
+
+---
+
+## 4. Fase V4 — Guía con Cámara y Realidad Aumentada (Futura)
+
+Sustituye la idea de un "recorrido 3D tipo videojuego" por una **guía interactiva en el mundo real a través de la cámara** (estilo Live View):
 
 ```mermaid
 flowchart TD
     Cam[Feed de Cámara en Vivo] --> Composite[Vista Compuesta AR]
-    GPS[Ubicación GPS Usuario] --> Bearing[Cálculo de Rumbo / Azimut]
-    Target[Siguiente Nodo de Sendero] --> Bearing
-    Sensors[Giroscopio y Brújula] --> ScreenOrientation[Orientación del Celular en el Espacio]
-    Bearing --> ArrowCalc[Posición y Ángulo de Flecha 3D]
-    ScreenOrientation --> ArrowCalc
-    ArrowCalc --> Arrow[Renderizado de Flecha Flotante en Pantalla]
-    Arrow --> Composite
+    Sensors[GPS + Brújula Digital] --> Math[Cálculo de Rumbo y Acimut]
+    Math --> Overlay[Flecha Flotante 3D sobre la Imagen]
+    Overlay --> Composite
+    Composite --> Pantalla[Visitante ve flechas flotando en el sendero real]
 ```
 
-### 3.1 Componentes de la Guía AR
-1. **Feed de video:**
-   - La pantalla muestra la vista en vivo de la cámara trasera mediante `expo-camera`.
-2. **Cálculo de rumbo (Bearing):**
-   - Dada la posición GPS del visitante y la posición del siguiente punto de giro en el sendero, se calcula el ángulo relativo:
-     $$\theta = \text{atan2}(\sin(\Delta \text{lon})\cos(\text{lat}_2), \cos(\text{lat}_1)\sin(\text{lat}_2) - \sin(\text{lat}_1)\cos(\text{lat}_2)\cos(\Delta \text{lon}))$$
-3. **Sensores de orientación (Compás + Giroscopio):**
-   - Permite determinar si el teléfono está apuntando hacia adelante, hacia el suelo, o hacia los lados.
-4. **Flechas en perspectiva:**
-   - **Al frente:** Si el usuario apunta hacia el camino correcto, la flecha aparece en perspectiva sobre el suelo marcando el avance.
-   - **Giro:** Si el usuario se desvía, la flecha se ancla al borde izquierdo o derecho de la pantalla indicando *"Gira 45° a tu derecha"*.
-   - **Llegada:** Al estar a menos de 5 metros del recinto, se despliega un pin flotante con el nombre del animal.
-
-### 3.2 Estrategia de Implementación Técnica
-- **Enfoque liviano (Recomendado):** No requiere instalar motores de videojuegos pesados como Unity o Unreal. Se logra mediante componentes React Native combinados con transformaciones 3D de estilos (`perspective`, `rotateX`, `rotateZ`) guiadas por los eventos de `expo-sensors`, o un canvas WebGL / Three.js ligero sobre la cámara.
-- **Sin necesidad de Street View:** Al ser un parque municipal sin cobertura de Google Street View, la Realidad Aumentada basada en sensores y GPS es la solución adecuada y autónoma.
-
----
-
-## 4. Hoja de Ruta de Pasos a Seguir
-
-```mermaid
-flowchart LR
-    S1["1. Cerrar V1 Actual (Commit local de 31 archivos)"]
-    --> S2["2. Redactar ADR expo-location y Spec V2"]
-    --> S3["3. Implementar calibración GPS a SVG y Punto Azul"]
-    --> S4["4. Trazar grafo de senderos y panel 'tiempo/distancia'"]
-    --> S5["5. Prototipar Guía AR con cámara y flechas flotantes"]
-```
-
-1. **Paso 1 (Inmediato):** Conservar y commitear localmente los 31 archivos de la V1 actual en la rama `victor`.
-2. **Paso 2:** Crear el ADR para `expo-location` y actualizar la spec para la V2 de navegación GPS.
-3. **Paso 3:** Realizar la calibración en terreno de las esquinas del zoológico Nicolás Bravo para que el punto azul sea preciso.
-4. **Paso 4:** Implementar el cálculo de rutas por los senderos existentes.
-5. **Paso 5:** Prototipar la vista de cámara con flechas flotantes en una spec dedicada.
+- **Mecánica:** Al levantar el teléfono, la pantalla muestra la cámara con flechas 3D flotando en el suelo señalando hacia el recinto destino.
+- **Privacidad y ligereza:** No graba video ni sube imágenes al servidor; todo el procesamiento se realiza en el dispositivo.

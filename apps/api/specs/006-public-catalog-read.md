@@ -3,6 +3,7 @@
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `mobile` (consumidor), `packages/api-client`
 - Estado: Aprobada
+- Nota de vigencia (2026-11-02): por `api-008` (P7), `GET /api/v1/events` añade `image_url` como campo aditivo (`null` si no hay imagen gestionada). No cambia ningún criterio de esta spec.
 - Solicitante / responsable funcional: Víctor Adrián
 - Aprobación funcional: Víctor Adrián (2026-10-22)
 

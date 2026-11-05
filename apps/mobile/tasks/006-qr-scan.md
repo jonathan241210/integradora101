@@ -6,7 +6,7 @@
 
 ## Dependencias y manifest
 
-- [x] **T-01** (RN-03, ADR 0019): Instalar `expo-camera` (~57) y configurar plugin + permiso `CAMERA` en `app.json`.
+- [x] **T-01** (RN-03, ADR 0022): Instalar `expo-camera` (~57) y configurar plugin + permiso `CAMERA` en `app.json`.
 - [x] **T-02** (CA-02): Crear `src/utils/normalizeQrCode.ts` con tests unitarios.
 
 ## Implementación

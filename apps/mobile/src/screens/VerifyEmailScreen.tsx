@@ -31,7 +31,7 @@ export function VerifyEmailScreen({
     <ScreenContainer busyMessage={busy ? 'Verificando correo…' : null}>
       <View style={styles.page}>
         <AppText variant="title">Verifica tu correo</AppText>
-        <AppText variant="body">Escribe el código de 6 dígitos para {email || 'tu correo'}. En esta versión de prueba el código es 123456.</AppText>
+        <AppText variant="body">Escribe el código de 6 dígitos que enviamos a {email || 'tu correo'}.</AppText>
         <TextField label="Código" value={code} onChangeText={onCodeChange} keyboardType="number-pad" maxLength={6} placeholder="000000" />
         {notice ? <AppText variant="small">{notice}</AppText> : null}
         {error ? <AppText variant="small" color="danger" accessibilityLiveRegion="polite">{error}</AppText> : null}

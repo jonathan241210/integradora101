@@ -93,3 +93,40 @@ describe("CA-13 administration-sections", () => {
     ]);
   });
 });
+
+describe("CA-01 ticket-sales", () => {
+  it("«Venta» solo con tickets.create, «Historial» con tickets.view y «Precios» con ticket-prices.manage", () => {
+    const cashier = profile({
+      roles: ["cashier"],
+      home: "ticket",
+      permissions: ["tickets.create", "tickets.view"],
+    });
+    const admin = profile({
+      permissions: ["dashboard.view", "tickets.view", "ticket-prices.manage"],
+    });
+    const zooAdmin = profile({
+      roles: ["zoo-admin"],
+      permissions: ["dashboard.view", "tickets.view"],
+    });
+
+    expect(labels(getNavigationForProfile(cashier))).toEqual(["Venta", "Historial"]);
+    expect(labels(getNavigationForProfile(admin))).toEqual(["Panel principal", "Historial", "Precios"]);
+    expect(labels(getNavigationForProfile(admin))).not.toContain("Venta");
+    expect(labels(getNavigationForProfile(zooAdmin))).toEqual(["Panel principal", "Historial"]);
+  });
+
+  it("no ofrece «Notificaciones» (diferido) ni secciones sin permiso", () => {
+    const executive = profile({
+      roles: ["executive"],
+      home: "executive",
+      permissions: ["dashboard.view", "reports.view"],
+    });
+    const all = profile({
+      permissions: ["tickets.view", "ticket-prices.manage", "tickets.create"],
+    });
+
+    expect(labels(getNavigationForProfile(executive))).toEqual(["Panel principal", "Reporte de boletos"]);
+    expect(labels(getNavigationForProfile(all))).not.toContain("Notificaciones");
+    expect(labels(getNavigationForProfile(profile({ permissions: [], home: null })))).toEqual([]);
+  });
+});

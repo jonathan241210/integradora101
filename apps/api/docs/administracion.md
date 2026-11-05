@@ -4,6 +4,10 @@ Referencia de `/api/v1/admin/*`, contrato de `api-007`. Spec: `apps/api/specs/00
 
 Este documento describe el código revisado. No certifica que las pruebas pasen: la suite (T-35) se verifica aparte. No contiene secretos ni credenciales.
 
+> Nota de vigencia (2026-11-01): `image_path` deja de ser solo de lectura. La subida, el reemplazo, el borrado del archivo y `image_url` se especifican en `apps/api/specs/008-event-news-images.md` (Aprobada, implementada en el backend). Ver la sección «Imágenes».
+
+> Nota de vigencia (2026-11-02, `api-009`): el panel (`/dashboard`), el reporte (`/reports/tickets`, totales, desglose diario y listado) y las exportaciones CSV, Excel y PDF excluyen los boletos con `status` `cancelled` (CA-34 de `api-009`, RN-18). El filtro `completed` vive en `SummarizeTicketSalesAction`, `BuildTicketReportAction` y `ExportTicketReportAction` (scope `Ticket::completed()`). Al desplegar, las cifras históricas pueden bajar si ya existen boletos cancelados; despliega junto con `dashboard-003`. `Ticket` ya no es de solo lectura: lo escriben las Actions de `api-009` (ver `apps/api/docs/tickets.md`).
+
 El parámetro `timezone` (RN-14, CA-28; decisión de Jonathan del 2026-10-30) está implementado (T-40) y probado (T-41).
 
 ## Acceso común
@@ -126,9 +130,9 @@ Campos de noticia: `title` (≤ 200, obligatorio), `description` (≤ 5000), `co
 
 Campos de evento: `name` (≤ 200, obligatorio), `description`, `start_date` (obligatorio), `end_date` (≥ `start_date`), `start_time` y `end_time` (`HH:MM` o `HH:MM:SS`), `location` (≤ 255). Si ambos horarios caen el mismo día, `end_time` debe ser posterior a `start_time`.
 
-`image_path` no se acepta ni se edita. Se devuelve tal como está guardado.
+`image_path` no se acepta como texto (se ignora); solo cambia mediante la subida `image` o `remove_image` (ver «Imágenes»). Se devuelve tal como está guardado, junto con `image_url`.
 
-Recurso de noticia: `id`, `title`, `description`, `content`, `image_path`, `published_date`, `start_date`, `end_date`, `category`, `is_active`, `author_id`. Recurso de evento: `id`, `name`, `description`, `image_path`, `start_date`, `end_date`, `start_time`, `end_time`, `location`, `is_active`, `author_id`.
+Recurso de noticia: `id`, `title`, `description`, `content`, `image_path`, `image_url`, `published_date`, `start_date`, `end_date`, `category`, `is_active`, `author_id`. Recurso de evento: `id`, `name`, `description`, `image_path`, `image_url`, `start_date`, `end_date`, `start_time`, `end_time`, `location`, `is_active`, `author_id`.
 
 Errores de recurso: 404 «Noticia no encontrada.» y 404 «Evento no encontrado.».
 
@@ -294,3 +298,19 @@ Las propiedades nunca incluyen `password`, `remember_token`, secretos ni recover
 7. **Driver de sesión:** confirmar que existe la prueba que exige `SESSION_DRIVER=database`.
 8. **Clave de `errors` de los 422 de autorrestricción (Resuelta):** `errors.user`, igual que el resto de reglas de continuidad.
 9. **Zona horaria del dispositivo (RN-14):** implementada (T-40 y T-41). Alias aceptados y listado sin desfase: Confirmado por Jonathan, 2026-10-30 (ver «Zona horaria»). Pendiente real: no hay prueba que cubra el alias `US/Pacific`; ver T-41 en `apps/api/tasks/007-administration-management.md`.
+
+## Imágenes (api-008)
+
+Spec: `apps/api/specs/008-event-news-images.md`. Plan: `apps/api/plan/008-event-news-images.md`.
+
+- Noticias y eventos aceptan el campo opcional `image` (JPG, PNG o WebP, máximo 5 MB = 5 120 KB). El servidor valida tipo y tamaño; los errores llegan como 422 en `errors.image`, con mensaje en español.
+- Los archivos se guardan en el disco `public` de Laravel, en `news/` o `events/`, con nombre `<uuid>.<ext>` generado por la API. `image_path` guarda la ruta relativa e `image_url` la URL pública (`null` si no hay imagen gestionada o si `image_path` es un valor externo).
+- Alta: `POST /api/v1/admin/news` o `/events`, JSON o `multipart/form-data`.
+- Edición con archivo: `POST /api/v1/admin/{news|events}/{id}` multipart con `_method=PATCH` (PHP no entrega multipart en PATCH). La edición sin archivo sigue funcionando por `PATCH` JSON.
+- `remove_image` verdadero (sin archivo nuevo) borra el archivo y deja `image_path`/`image_url` en `null`. Con archivo nuevo, gana el archivo y `remove_image` se ignora. Sin ambos, la imagen se conserva.
+- Al reemplazar, quitar o eliminar, el archivo anterior se borra del disco tras guardar el registro. Solo se borran rutas gestionadas (`news/` o `events/` con nombre `<uuid>.(jpg|png|webp)`); cualquier otro valor se ignora.
+- Eliminar sigue siendo borrado lógico: `deleted_at`, `image_path` en `null` y archivo borrado. Una restauración de la fila por base de datos no recupera la imagen.
+- `GET /api/v1/events` (catálogo público) incluye `image_url` como campo aditivo.
+- Auditoría (log `admin`): además de `created`/`updated`/`deleted`, el evento `image-changed` con `action` (`set`, `replaced`, `removed`) e `image_changed`; sin binario ni ruta absoluta.
+- Operación: ejecutar `php artisan storage:link` en cada ambiente; sin él las URLs no resuelven. Los límites `upload_max_filesize` y `post_max_size` de PHP/servidor web pueden rechazar archivos antes de llegar a Laravel.
+- Sin migraciones ni DBR: `image_path` y `deleted_at` ya existen.

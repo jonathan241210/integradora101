@@ -4,6 +4,8 @@
 - Plan: `apps/api/plan/007-administration-management.md` (Aprobado, Jonathan, 2026-10-30)
 - Estado del checklist: Aprobado
 
+> Nota de vigencia (2026-11-01): T-20 y T-21 dejan `image_path` sin aceptar y la spec excluye la subida. Esa exclusión queda reemplazada por `api-008` (`apps/api/tasks/008-event-news-images.md`, pendiente de aprobación). No se marcan ni desmarcan tareas de esta lista; las casillas `[x]` son historial.
+
 Todas las rutas indicadas son relativas a `apps/api/src` salvo que se diga otra cosa. Los tests usan `DatabaseTransactions` sobre `arca_pruebas`; ninguna tarea crea SQL, migraciones ni usa `RefreshDatabase`. Cada método de test se llama `test_caNN_administration_management_<descripción>`.
 
 ## Base de datos (responsable de BD)

@@ -12,8 +12,7 @@ const testSource = readdirSync(testsDirectory)
 
 const applicationSource = [
   "../App.tsx",
-  "../data/demo-data.ts",
-  "../viewmodels/dashboard-demo.ts",
+  "../viewmodels/dashboard-shell.ts",
   "../views/TwoFactorChallengeView.tsx",
   "../views/TwoFactorSetupView.tsx",
   "../views/PwaRedirectView.tsx",
@@ -32,15 +31,16 @@ const loginViewSource = readFileSync(
 describe("CA-07 admin-dashboard-prototype", () => {
   it("tiene pruebas nombradas para cada criterio vigente de dashboard-001", () => {
     // CA-02, CA-03, CA-05, CA-09 y CA-12 los sustituye dashboard-003
-    // (secciones de administración conectadas a la API).
-    const currentCriteria = [4, 6, 7, 8, 11, 14, 15];
+    // (secciones de administración conectadas a la API); CA-04, CA-11 y
+    // CA-15 los sustituye dashboard-005 (Venta e Historial reales, sin demo).
+    const currentCriteria = [6, 7, 8, 14];
 
     for (const number of currentCriteria) {
       const criterion = `CA-${String(number).padStart(2, "0")} admin-dashboard-prototype`;
       expect(testSource).toContain(criterion);
     }
 
-    for (const replacedCriterion of [1, 10, 13, 2, 3, 5, 9, 12]) {
+    for (const replacedCriterion of [1, 10, 13, 2, 3, 5, 9, 12, 4, 11, 15]) {
       expect(testSource).not.toContain(
         `CA-${String(replacedCriterion).padStart(2, "0")} admin-dashboard-prototype`,
       );

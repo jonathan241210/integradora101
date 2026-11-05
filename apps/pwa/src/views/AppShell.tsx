@@ -21,6 +21,8 @@ type AppShellProps = {
   installController: PwaInstallController;
   onNavigate: (section: PwaSection) => void;
   onLogout: () => void;
+  sessionError?: string;
+  signingOut?: boolean;
 };
 
 type ActiveViewProps = {
@@ -42,6 +44,8 @@ export function AppShell({
   installController,
   onNavigate,
   onLogout,
+  sessionError,
+  signingOut,
 }: AppShellProps) {
   const ActiveView = sectionViews[activeSection];
   const currentLabel = getSectionLabel(activeSection);
@@ -78,7 +82,7 @@ export function AppShell({
               <small>Sesión activa</small>
             </span>
           </span>
-          <Button onClick={onLogout} variant="ghost">
+          <Button disabled={signingOut} onClick={onLogout} variant="ghost">
             Cerrar sesión
           </Button>
         </div>
@@ -96,11 +100,12 @@ export function AppShell({
         </header>
 
         <main className="view-content" key={activeSection}>
+          {sessionError && <p role="alert">{sessionError}</p>}
           <ActiveView onNavigate={onNavigate} />
         </main>
 
         <div className="mobile-logout">
-          <Button onClick={onLogout} variant="ghost">
+          <Button disabled={signingOut} onClick={onLogout} variant="ghost">
             Cerrar sesión
           </Button>
         </div>

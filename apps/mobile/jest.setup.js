@@ -1,3 +1,5 @@
+require('./test-support/locationMocks');
+
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
@@ -26,6 +28,19 @@ jest.mock('expo-network', () => ({
     isConnected: true,
     isInternetReachable: true,
   })),
+}));
+
+jest.mock('expo-location', () => ({
+  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  watchPositionAsync: jest.fn().mockResolvedValue({ remove: jest.fn() }),
+  Accuracy: {
+    Lowest: 1,
+    Low: 2,
+    Balanced: 3,
+    High: 4,
+    Highest: 5,
+    BestForNavigation: 6,
+  },
 }));
 
 jest.mock('./src/hooks/useScreenFocusEffect', () => {

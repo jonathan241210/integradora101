@@ -1,23 +1,22 @@
 import type { AdminApi, NewsDto, NewsInput } from "./admin-types";
-import type { ConfirmationCopy } from "./confirmation";
+import { emptyImage, type ImagePreview, type ImageValue } from "./image-field";
 import {
-  initialManagedListState,
-  loadManagedList,
-  managedListReducer,
-  runOperation,
-  type ManagedListAction,
-  type ManagedListState,
-} from "./managed-list";
+  confirmContentAction,
+  contentReducer,
+  initialContentState,
+  loadContent,
+  saveContent,
+  type ContentAction,
+  type ContentConfig,
+  type ContentState,
+  type ContentViewModel,
+} from "./inline-content";
+import type { InlineConfirmCopy, PendingActionType } from "./inline-list";
 
-export type NewsDialog =
-  | { kind: "create" }
-  | { kind: "edit"; item: NewsDto }
-  | { kind: "status"; item: NewsDto }
-  | { kind: "delete"; item: NewsDto };
-
-export type NewsState = ManagedListState<NewsDto, NewsDialog>;
-export type NewsAction = ManagedListAction<NewsDto, NewsDialog>;
+export type NewsState = ContentState<NewsDto, NewsFormValues>;
+export type NewsAction = ContentAction<NewsDto, NewsFormValues>;
 export type NewsDispatch = (action: NewsAction) => void;
+export type NewsViewModel = ContentViewModel<NewsDto, NewsFormValues>;
 
 export type NewsFormValues = {
   title: string;
@@ -28,13 +27,8 @@ export type NewsFormValues = {
   start_date: string;
   end_date: string;
   is_active: boolean;
+  image: ImageValue;
 };
-
-export const initialNewsState: NewsState = initialManagedListState<NewsDto, NewsDialog>();
-
-export function newsReducer(state: NewsState, action: NewsAction): NewsState {
-  return managedListReducer(state, action);
-}
 
 export function emptyNewsForm(): NewsFormValues {
   return {
@@ -46,6 +40,7 @@ export function emptyNewsForm(): NewsFormValues {
     start_date: "",
     end_date: "",
     is_active: true,
+    image: emptyImage(),
   };
 }
 
@@ -59,10 +54,14 @@ export function newsFormFromDto(item: NewsDto): NewsFormValues {
     start_date: item.start_date?.slice(0, 10) ?? "",
     end_date: item.end_date?.slice(0, 10) ?? "",
     is_active: item.is_active,
+    image: emptyImage(),
   };
 }
 
-/** El estado solo se envía al crear; después cambia por su propio endpoint. */
+/**
+ * El estado solo se envía al crear; después cambia por su propio endpoint.
+ * `@arca/api-client` decide si va JSON o `multipart/form-data`.
+ */
 export function toNewsInput(values: NewsFormValues, creating: boolean): NewsInput {
   const input: NewsInput = {
     title: values.title.trim(),
@@ -75,120 +74,80 @@ export function toNewsInput(values: NewsFormValues, creating: boolean): NewsInpu
   };
 
   if (creating) input.is_active = values.is_active;
+  if (values.image.file) input.image = values.image.file;
+  else if (!creating && values.image.removeImage) input.remove_image = true;
 
   return input;
 }
 
+export const newsConfig: ContentConfig<NewsDto, NewsFormValues, NewsInput> = {
+  resource: (api) => api.news,
+  emptyForm: emptyNewsForm,
+  formFromItem: newsFormFromDto,
+  toInput: toNewsInput,
+  notices: {
+    created: "La noticia se creó correctamente.",
+    updated: "Los cambios de la noticia se guardaron.",
+    activated: "La noticia se activó.",
+    deactivated: "La noticia se desactivó.",
+    deleted: "La noticia se eliminó.",
+  },
+};
+
+export const initialNewsState: NewsState = initialContentState<NewsDto, NewsFormValues>(emptyNewsForm());
+
+export const newsReducer = contentReducer<NewsDto, NewsFormValues>;
+
+export function loadNews(api: AdminApi, dispatch: NewsDispatch, silent = false): Promise<void> {
+  return loadContent(newsConfig, api, dispatch, silent);
+}
+
+export function saveNews(
+  api: AdminApi,
+  dispatch: NewsDispatch,
+  state: NewsState,
+  preview: ImagePreview,
+): Promise<boolean> {
+  return saveContent(newsConfig, api, dispatch, state, preview);
+}
+
+export function confirmNewsAction(
+  api: AdminApi,
+  dispatch: NewsDispatch,
+  state: NewsState,
+  preview: ImagePreview,
+): Promise<boolean> {
+  return confirmContentAction(newsConfig, api, dispatch, state, preview);
+}
+
 export function getNewsConfirmation(
-  dialog: NewsDialog | null,
-): ConfirmationCopy | null {
-  if (dialog?.kind === "status") {
-    return dialog.item.is_active
+  type: PendingActionType,
+  item: NewsDto,
+): InlineConfirmCopy | null {
+  if (type === "status") {
+    return item.is_active
       ? {
-          title: "Desactivar noticia",
-          message: `¿Desactivar la noticia «${dialog.item.title}»? Dejará de mostrarse en el portal público.`,
-          confirmLabel: "Desactivar noticia",
+          label: `Confirmar desactivar la noticia ${item.title}`,
+          message: `¿Desactivar la noticia «${item.title}»? Dejará de mostrarse en el portal público.`,
+          confirmLabel: "Confirmar",
           danger: true,
         }
       : {
-          title: "Activar noticia",
-          message: `¿Activar la noticia «${dialog.item.title}»? Volverá a mostrarse en el portal público.`,
-          confirmLabel: "Activar noticia",
+          label: `Confirmar activar la noticia ${item.title}`,
+          message: `¿Activar la noticia «${item.title}»? Volverá a mostrarse en el portal público.`,
+          confirmLabel: "Confirmar",
           danger: false,
         };
   }
 
-  if (dialog?.kind === "delete") {
+  if (type === "delete") {
     return {
-      title: "Eliminar noticia",
-      message: `¿Eliminar la noticia «${dialog.item.title}»? Dejará de aparecer en la lista y en el portal público.`,
-      confirmLabel: "Eliminar noticia",
+      label: `Confirmar eliminar la noticia ${item.title}`,
+      message: `¿Eliminar la noticia «${item.title}»? Se eliminará, dejará de mostrarse en la lista y en el portal público${item.image_url ? ", y su imagen se borrará del servidor" : ""}.`,
+      confirmLabel: "Confirmar",
       danger: true,
     };
   }
 
   return null;
 }
-
-export function loadNews(
-  api: AdminApi,
-  dispatch: NewsDispatch,
-  silent = false,
-): Promise<void> {
-  return loadManagedList(dispatch, () => api.news.list(), silent);
-}
-
-export function saveNews(
-  api: AdminApi,
-  dispatch: NewsDispatch,
-  dialog: NewsDialog | null,
-  values: NewsFormValues,
-): Promise<boolean> {
-  const reload = () => loadNews(api, dispatch, true);
-
-  if (dialog?.kind === "create") {
-    return runOperation(
-      dispatch,
-      () => api.news.create(toNewsInput(values, true)),
-      "La noticia se creó correctamente.",
-      reload,
-    );
-  }
-
-  if (dialog?.kind === "edit") {
-    const { item } = dialog;
-
-    return runOperation(
-      dispatch,
-      () => api.news.update(item.id, toNewsInput(values, false)),
-      "Los cambios de la noticia se guardaron.",
-      reload,
-    );
-  }
-
-  return Promise.resolve(false);
-}
-
-export function confirmNewsDialog(
-  api: AdminApi,
-  dispatch: NewsDispatch,
-  dialog: NewsDialog | null,
-): Promise<boolean> {
-  const reload = () => loadNews(api, dispatch, true);
-
-  if (dialog?.kind === "status") {
-    const { item } = dialog;
-
-    return runOperation(
-      dispatch,
-      () => api.news.setStatus(item.id, !item.is_active),
-      item.is_active ? "La noticia se desactivó." : "La noticia se activó.",
-      reload,
-    );
-  }
-
-  if (dialog?.kind === "delete") {
-    const { item } = dialog;
-
-    return runOperation(
-      dispatch,
-      () => api.news.remove(item.id),
-      "La noticia se eliminó.",
-      reload,
-    );
-  }
-
-  return Promise.resolve(false);
-}
-
-export type NewsViewModel = {
-  state: NewsState;
-  actions: {
-    reload: () => void;
-    openDialog: (dialog: NewsDialog) => void;
-    closeDialog: () => void;
-    dismissNotice: () => void;
-    save: (values: NewsFormValues) => void;
-    confirm: () => void;
-  };
-};

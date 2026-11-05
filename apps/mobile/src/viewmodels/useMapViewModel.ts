@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MapFilter, MapPlace, MapSection } from '../models';
 import { MapRepository, MapRepositoryImpl } from '../repositories';
+import { haversineMeters } from '../utils/haversine';
+import { ARRIVAL_RADIUS_METERS } from '../constants/zoo';
 
 const defaultRepository = new MapRepositoryImpl();
 
@@ -10,6 +12,9 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
   const [filter, setFilter] = useState<MapFilter>('all');
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [focusedPlaceId, setFocusedPlaceId] = useState<string | null>(null);
+  const [destinationPlaceId, setDestinationPlaceId] = useState<string | null>(null);
+  const [arrivedAtPlace, setArrivedAtPlace] = useState<MapPlace | null>(null);
+  const [dismissedArrivalPlaceId, setDismissedArrivalPlaceId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,6 +54,11 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
     [filteredPlaces, selectedPlaceId],
   );
 
+  const destinationPlace = useMemo(
+    () => places.find((place) => place.id === destinationPlaceId) ?? null,
+    [destinationPlaceId, places],
+  );
+
   const focusedSectionId = useMemo(() => {
     const focusedPlace = places.find((place) => place.id === focusedPlaceId);
     return focusedPlace?.sectionId ?? null;
@@ -72,6 +82,45 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
     setSelectedPlaceId(id);
   }, []);
 
+  const setDestination = useCallback((id: string | null) => {
+    setDestinationPlaceId(id);
+    if (id) {
+      setDismissedArrivalPlaceId(null);
+    }
+  }, []);
+
+  const dismissArrival = useCallback(() => {
+    if (arrivedAtPlace) {
+      setDismissedArrivalPlaceId(arrivedAtPlace.id);
+    }
+    setArrivedAtPlace(null);
+  }, [arrivedAtPlace]);
+
+  const checkArrival = useCallback(
+    (userLat: number, userLon: number) => {
+      if (!destinationPlace || destinationPlace.gpsLat === undefined || destinationPlace.gpsLon === undefined) {
+        return;
+      }
+
+      if (dismissedArrivalPlaceId === destinationPlace.id) {
+        return;
+      }
+
+      const distance = haversineMeters(
+        userLat,
+        userLon,
+        destinationPlace.gpsLat,
+        destinationPlace.gpsLon,
+      );
+
+      if (distance <= ARRIVAL_RADIUS_METERS) {
+        setArrivedAtPlace(destinationPlace);
+        setDestinationPlaceId(null);
+      }
+    },
+    [destinationPlace, dismissedArrivalPlaceId],
+  );
+
   return {
     places,
     sections,
@@ -81,6 +130,9 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
     focusedPlaceId,
     focusedSectionId,
     focusNotFound,
+    destinationPlaceId,
+    destinationPlace,
+    arrivedAtPlace,
     isLoading,
     error,
     load,
@@ -89,5 +141,8 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
     selectPlace,
     clearSelection,
     focusPlace,
+    setDestination,
+    dismissArrival,
+    checkArrival,
   };
 }

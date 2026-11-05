@@ -27,7 +27,7 @@ class NewsController extends Controller
 
     public function store(SaveNewsRequest $request, SaveNewsAction $action): JsonResponse
     {
-        return (new NewsResource($action->execute($request->user(), null, $request->validated())))
+        return (new NewsResource($action->execute($request->user(), null, $request->validated(), $request->file('image'), $request->boolean('remove_image'))))
             ->response()
             ->setStatusCode(201);
     }
@@ -36,7 +36,7 @@ class NewsController extends Controller
     {
         $model = $find->execute(News::class, $news, self::NOT_FOUND);
 
-        return new NewsResource($action->execute($request->user(), $model, $request->validated()));
+        return new NewsResource($action->execute($request->user(), $model, $request->validated(), $request->file('image'), $request->boolean('remove_image')));
     }
 
     public function status(SetStatusRequest $request, string $news, FindAdminResourceAction $find, SetNewsStatusAction $action): NewsResource

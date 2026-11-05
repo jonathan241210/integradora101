@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import type { ApiError } from "@arca/api-client";
+import type { ImagePreview } from "../viewmodels/image-field";
 import type {
   AdminApi,
   DashboardSummaryDto,
@@ -66,6 +67,7 @@ export function newsItem(overrides: Partial<NewsDto> = {}): NewsDto {
     start_date: null,
     end_date: null,
     is_active: true,
+    image_url: null,
     ...overrides,
   };
 }
@@ -81,6 +83,7 @@ export function eventItem(overrides: Partial<EventDto> = {}): EventDto {
     start_time: "19:00:00",
     end_time: "22:00:00",
     is_active: false,
+    image_url: null,
     ...overrides,
   };
 }
@@ -197,4 +200,23 @@ export function createHarness<State, Action>(
       return state;
     },
   };
+}
+
+/** Servicio de vista previa simulado (`URL.createObjectURL` no existe en Node). */
+export function createPreviewMock() {
+  let counter = 0;
+
+  return {
+    create: vi.fn((_file: File) => `blob:preview-${(counter += 1)}`),
+    revoke: vi.fn((_url: string) => undefined),
+  } satisfies ImagePreview;
+}
+
+/** Archivo de prueba con tipo y tamaño controlados. */
+export function imageFile(name = "foto.png", type = "image/png", size = 1024): File {
+  const file = new File([new Uint8Array(Math.min(size, 16))], name, { type });
+
+  Object.defineProperty(file, "size", { value: size });
+
+  return file;
 }

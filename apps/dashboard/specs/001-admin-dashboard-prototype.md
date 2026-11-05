@@ -15,6 +15,8 @@
 
 > **Vigencia (2026-10-30):** `dashboard-003-administration-sections` sustituye las pantallas demostrativas de administración por secciones conectadas a la API (`api-007`). Quedan **sustituidos** CA-02 (panel e indicadores ficticios), CA-03 (Noticias y Eventos), CA-05 (Reporte de boletos), CA-09 (Modificación de recintos) y CA-12 (Usuarios de taquilla); sus pruebas se reemplazaron por las de `dashboard-003`. CA-15 sigue vigente solo para Venta e Historial de taquilla, que conservan el aviso general. Siguen vigentes CA-04, CA-06, CA-07, CA-08, CA-11 y CA-14; CA-01, CA-10 y CA-13 permanecen reemplazados por `dashboard-002`.
 
+> **Vigencia (2026-11-02):** `dashboard-005-ticket-sales` (aprobada el 2026-11-02) reemplaza CA-04 (Venta de boletos) y CA-11 (Historial de boletos) de esta spec. Venta e Historial dejan de ser demostrativos: no muestran datos ficticios ni el aviso de demostración (`dashboard-005` CA-02). El plan de `dashboard-005` retira el componente `DemoBanner`, por lo que CA-15 y RN-14 dejan de tener efecto. Los demás criterios conservan el estado indicado arriba.
+
 ## Problema y contexto
 
 El dashboard cuenta con un prototipo navegable para administración y taquilla. La persona solicitante pide ampliarlo con funciones de demostración para modificar recintos, iniciar sesión como personal de taquilla, consultar el historial de boletos y crear usuarios de taquilla desde el perfil administrativo. También solicita documentar el código y que la interfaz sea clara y adecuada para cada perfil.

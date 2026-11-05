@@ -1,127 +1,194 @@
-import { useRef } from "react";
-import { Badge, Button, Card, Dialog } from "@arca/ui";
-import { Icon } from "../components/Icon";
-import { SectionHeading } from "../components/SectionHeading";
-import type { SaleStep } from "../viewmodels/dashboard-demo";
+import { useState } from "react";
+import { Alert, Badge, Button, Card, Field } from "@arca/ui";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
+import { Icon } from "@/components/Icon";
+import { PrintSettingsDialog } from "@/components/PrintSettingsDialog";
+import { SectionHeading } from "@/components/SectionHeading";
+import { TicketReceipt } from "@/components/TicketReceipt";
+import { formatCurrency } from "@/viewmodels/formatters";
+import type { TicketPrintSettingsViewModel } from "@/viewmodels/useTicketPrintSettings";
+import {
+  canRegisterSale,
+  isSaleBusy,
+  saleConfirmationCopy,
+  type TicketSaleViewModel,
+} from "@/viewmodels/ticket-sale";
+import type { TicketPriceTypeDto } from "@/viewmodels/ticket-types";
+
+function PriceCard({
+  title,
+  price,
+  loading,
+}: {
+  title: string;
+  price: TicketPriceTypeDto | undefined;
+  loading: boolean;
+}) {
+  return (
+    <div className="ticket-price-card">
+      <h2>{title}</h2>
+      {price?.amount ? (
+        <strong className="ticket-price">{formatCurrency(price.amount)}</strong>
+      ) : (
+        <strong className="ticket-price ticket-price--missing">
+          {loading ? "Cargando…" : "Sin precio"}
+        </strong>
+      )}
+      <p>
+        {price?.amount
+          ? "Precio unitario vigente"
+          : price?.message ?? "Precio unitario"}
+      </p>
+    </div>
+  );
+}
 
 export function TicketSaleView({
-  saleStep,
-  onOpen,
-  onCancel,
-  onConfirm,
-  onReset,
-}: {
-  saleStep: SaleStep;
-  onOpen: () => void;
-  onCancel: () => void;
-  onConfirm: () => void;
-  onReset: () => void;
-}) {
-  const returnFocusRef = useRef<HTMLButtonElement>(null);
-  const closeSale = () => {
-    onCancel();
-    window.requestAnimationFrame(() => returnFocusRef.current?.focus());
-  };
+  state,
+  actions,
+  printSettings,
+}: TicketSaleViewModel & { printSettings: TicketPrintSettingsViewModel }) {
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const busy = isSaleBusy(state);
+  const sold = state.step === "done" && state.ticket;
+  const copy = saleConfirmationCopy(state);
+  const loadingPrices = state.prices.status === "loading";
 
   return (
     <>
       <SectionHeading
         eyebrow="Taquilla / Venta"
         title="Venta de boletos"
-        description="Recorre el flujo visual de una venta ficticia sin realizar cobros."
+        description="Registra una venta en efectivo e imprime el boleto con folio y código QR."
       />
-      <div className="ticket-type-grid">
-        <Card className="ticket-type-card">
-          <div className="ticket-type-card__header">
-            <h2>Adulto</h2>
-            <Badge tone="info">Ejemplo</Badge>
-          </div>
-          <strong className="ticket-price">$25.00</strong>
-          <p>Precio ficticio · no es una tarifa vigente</p>
-          <div className="ticket-quantity">
-            <span>Cantidad de muestra</span>
-            <strong>2</strong>
-          </div>
-        </Card>
-        <Card className="ticket-type-card">
-          <div className="ticket-type-card__header">
-            <h2>Niño</h2>
-            <Badge tone="info">Ejemplo</Badge>
-          </div>
-          <strong className="ticket-price">$16.20</strong>
-          <p>Precio ficticio · no es una tarifa vigente</p>
-          <div className="ticket-quantity">
-            <span>Cantidad de muestra</span>
-            <strong>3</strong>
-          </div>
-        </Card>
-      </div>
-      <Card className="ticket-total-card">
-        <div>
-          <span>Total recibido (dato ficticio)</span>
-          <strong>$98.60</strong>
-          <small>Importe fijo de muestra · no se calcula a partir de las cantidades</small>
-        </div>
-        <Badge tone="warning">Sin cobro real</Badge>
-      </Card>
-      <div className="ticket-actions">
-        <Button ref={returnFocusRef} onClick={onOpen}>
-          <Icon name="ticket" />
-          Realizar venta de demostración
+
+      <div className="ticket-sale-toolbar">
+        <Button variant="secondary" onClick={() => setSettingsOpen(true)}>
+          Configurar impresión
         </Button>
       </div>
 
-      <Dialog
-        open={saleStep !== "idle"}
-        title={
-          saleStep === "confirmation"
-            ? "Confirmar venta de demostración"
-            : saleStep === "processing"
-              ? "Procesando demostración"
-              : "Venta de demostración realizada"
-        }
-        onClose={closeSale}
-        className="sale-dialog"
+      {sold ? (
+        <Card className="ticket-sale-result">
+          <div className="card-heading">
+            <div>
+              <h2>Venta registrada</h2>
+              <p>Folio {state.ticket?.folio} · pago en efectivo</p>
+            </div>
+            <Badge tone="success">Registrada</Badge>
+          </div>
+          {state.ticket && (
+            <TicketReceipt ticket={state.ticket} settings={printSettings.settings} />
+          )}
+          <div className="ticket-actions">
+            <Button variant="secondary" onClick={actions.newSale}>
+              Nueva venta
+            </Button>
+            <Button onClick={actions.print}>
+              <Icon name="ticket" />
+              Imprimir boleto
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <form
+          className="ticket-sale-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            actions.requestConfirmation();
+          }}
+        >
+          <Card className="ticket-type-card ticket-sale-card">
+            <PriceCard
+              title="Adulto"
+              price={state.prices.current?.adult}
+              loading={loadingPrices}
+            />
+            <Field
+              id="sale-adults"
+              label="Adultos"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              step={1}
+              disabled={busy}
+              value={state.adults}
+              onChange={(event) => actions.changeQuantity("adults", event.target.value)}
+              {...fieldErrorProps("sale-adults", state.fieldErrors, "adult_quantity")}
+            />
+            <FieldErrors id="sale-adults" errors={state.fieldErrors} name="adult_quantity" />
+          </Card>
+          <Card className="ticket-type-card ticket-sale-card">
+            <PriceCard
+              title="Niño"
+              price={state.prices.current?.child}
+              loading={loadingPrices}
+            />
+            <Field
+              id="sale-children"
+              label="Niños"
+              type="number"
+              inputMode="numeric"
+              min={0}
+              step={1}
+              disabled={busy}
+              value={state.children}
+              onChange={(event) => actions.changeQuantity("children", event.target.value)}
+              {...fieldErrorProps("sale-children", state.fieldErrors, "child_quantity")}
+            />
+            <FieldErrors id="sale-children" errors={state.fieldErrors} name="child_quantity" />
+          </Card>
+
+          {state.prices.status === "error" && (
+            <Alert className="inline-alert" role="alert" aria-live="assertive">
+              {state.prices.error}{" "}
+              <Button variant="secondary" onClick={actions.reloadPrices}>
+                Reintentar precios
+              </Button>
+            </Alert>
+          )}
+          {state.error && (
+            <Alert className="inline-alert" role="alert" aria-live="assertive">
+              {state.error}
+            </Alert>
+          )}
+          <div className="ticket-actions">
+            <Button type="submit" disabled={busy || !canRegisterSale(state)}>
+              <Icon name="ticket" />
+              Registrar venta
+            </Button>
+          </div>
+        </form>
+      )}
+
+      <ConfirmDialog
+        copy={copy}
+        idleTitle="Confirmar venta"
+        busy={busy}
+        error=""
+        onConfirm={actions.confirm}
+        onCancel={actions.cancelConfirmation}
       >
-        {saleStep === "confirmation" && (
-          <>
-            <p className="dialog-copy">
-              Esta acción solo muestra el flujo visual. No se recibirá dinero ni
-              se guardará ninguna venta.
-            </p>
-            <div className="dialog-sample-total">
-              <span>Importe ficticio</span>
-              <strong>$98.60</strong>
-            </div>
-            <div className="dialog-actions">
-              <Button variant="secondary" onClick={onCancel}>Cancelar</Button>
-              <Button onClick={onConfirm}>Continuar demostración</Button>
-            </div>
-          </>
-        )}
-        {saleStep === "processing" && (
-          <div className="processing-state" role="status" aria-live="polite">
-            <span className="processing-spinner" aria-hidden="true" />
-            <p>Simulando el procesamiento. No hay conexión con un proveedor de pago.</p>
+        <dl className="sale-summary">
+          <div>
+            <dt>Adultos</dt>
+            <dd>{state.adults}</dd>
           </div>
-        )}
-        {saleStep === "complete" && (
-          <div className="sale-success">
-            <span className="sale-success__icon"><Icon name="check" /></span>
-            <h3>Venta de muestra finalizada</h3>
-            <p>No se creó una transacción ni se cobró un pago.</p>
-            <dl>
-              <div><dt>Adultos</dt><dd>2</dd></div>
-              <div><dt>Niños</dt><dd>3</dd></div>
-              <div><dt>Importe de muestra</dt><dd>$98.60</dd></div>
-            </dl>
-            <Button className="sale-success__button" onClick={() => {
-              onReset();
-              window.requestAnimationFrame(() => returnFocusRef.current?.focus());
-            }}>Aceptar</Button>
+          <div>
+            <dt>Niños</dt>
+            <dd>{state.children}</dd>
           </div>
-        )}
-      </Dialog>
+        </dl>
+      </ConfirmDialog>
+
+      <PrintSettingsDialog
+        open={settingsOpen}
+        settings={printSettings.settings}
+        onChange={printSettings.change}
+        onReset={printSettings.reset}
+        onClose={() => setSettingsOpen(false)}
+      />
     </>
   );
 }
