@@ -150,6 +150,7 @@ describe('Exploration Core Views', () => {
       'mission-starter',
     ]);
 
+    await fireEvent.press(view.getByText('Ordenar'));
     await fireEvent.press(view.getByText('Por obtener'));
     expect(view.getByText('Observador de aves')).toBeTruthy();
     expect(view.queryByText('Primer descubrimiento')).toBeNull();

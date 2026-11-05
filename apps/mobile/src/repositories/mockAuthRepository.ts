@@ -120,7 +120,7 @@ export function createMockAuthRepository(): AuthRepository & {
       if (!input.privacyNoticeVersion) return { ok: false, status: 422, message: 'Acepta el aviso de privacidad.' };
       if (!isAvatarCode(input.avatarCode)) return { ok: false, status: 422, message: 'Elige un avatar del catálogo.' };
       const email = input.email.trim().toLowerCase();
-      if (visitors.has(email)) return { ok: false, status: 422, message: 'Ese correo ya está registrado.' };
+      if (visitors.has(email)) return accepted(201, 'Te enviamos un código de 6 dígitos para verificar tu correo.');
       visitors.set(email, {
         email,
         firstName: input.firstName.trim(),

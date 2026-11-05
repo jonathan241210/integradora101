@@ -1,4 +1,4 @@
-import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection, QrOutcome } from '../models';
+import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection } from '../models';
 
 export const MOCK_ANIMALS: Animal[] = [
   {
@@ -294,12 +294,6 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     gpsLon: -98.7220, // TODO: reemplazar con medición real
   },
 ];
-
-export const MOCK_QR_SIMULATIONS: Record<QrOutcome, { outcome: QrOutcome; animalId?: string }> = {
-  valid: { outcome: 'valid', animalId: 'elephant' },
-  invalid: { outcome: 'invalid' },
-  'already-discovered': { outcome: 'already-discovered', animalId: 'juan' },
-};
 
 export const MOCK_EVENTS: ZooEvent[] = [
   {

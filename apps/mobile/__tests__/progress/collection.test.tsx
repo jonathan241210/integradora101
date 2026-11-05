@@ -38,8 +38,17 @@ describe('test-ca-02-progress-collection', () => {
         onAnimalPress={() => undefined}
       />,
     );
-    expect(view.getByText('✓ Descubierto · 2026-10-22T12:00:00.000Z')).toBeTruthy();
-    expect(view.getByText('🔒 Bloqueado')).toBeTruthy();
+    expect(view.getByText('Descubierto')).toBeTruthy();
+    expect(view.getByText('Por descubrir')).toBeTruthy();
     expect(view.getByLabelText('Vista previa de Guacamaya, por descubrir')).toBeTruthy();
+  });
+
+  it('CA-02 visitor-progress empareja por id de especie aunque el nombre difiera', () => {
+    const matched = applySpeciesDiscovery(
+      [{ ...animals[0], id: '4', commonName: 'Leon' }],
+      [{ id: 4, commonName: 'León africano', category: 'mammal', discovered: true, discoveredAt: '2026-11-01' }],
+    );
+    expect(matched[0].isDiscovered).toBe(true);
+    expect(matched[0].discoveredAt).toBe('2026-11-01');
   });
 });

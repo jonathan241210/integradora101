@@ -22,7 +22,7 @@ export function ChangePasswordScreen(props: ChangePasswordScreenProps) {
     <ScreenContainer busyMessage={props.busy ? 'Guardando contraseña…' : null}>
       <View style={styles.page}>
         <BackButton onPress={props.onBackPress} accessibilityLabel="Volver a la cuenta" />
-        <AppText variant="heading">Cambiar contraseña</AppText>
+        <AppText variant="title">Cambiar contraseña</AppText>
         <TextField label="Contraseña actual" value={props.currentPassword} onChangeText={props.onCurrentPasswordChange} secureTextEntry />
         <TextField label="Nueva contraseña" value={props.password} onChangeText={props.onPasswordChange} secureTextEntry />
         <TextField label="Confirmar contraseña" value={props.confirmation} onChangeText={props.onConfirmationChange} secureTextEntry />

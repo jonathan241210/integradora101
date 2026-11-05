@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { AppText, LoadingView, ScreenContainer } from '../../components/ui';
+import { AppText, ScreenContainer, TitledLoading } from '../../components/ui';
 import { CollectionScreen } from '../../screens/CollectionScreen';
 import { Animal } from '../../models';
 import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
@@ -38,8 +38,8 @@ export default function CollectionRoute() {
 
   if (progress.loading && !progress.snapshot) {
     return (
-      <ScreenContainer>
-        <LoadingView message="Cargando colección…" />
+      <ScreenContainer scroll={false}>
+        <TitledLoading title="Mi Colección" message="Cargando colección…" />
       </ScreenContainer>
     );
   }

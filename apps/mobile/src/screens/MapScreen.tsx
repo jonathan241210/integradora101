@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { PanResponder, StyleSheet, View } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import {
   AppText,
-  Button,
   Card,
   Chip,
   EmptyView,
@@ -207,7 +208,9 @@ export function MapScreen({
     <ScreenContainer scroll={false}>
       <View style={styles.header}>
         <AppText variant="title">Mapa del zoológico</AppText>
-        <Button label="Buscar animales" variant="soft" onPress={onSearchPress} />
+        <Pressable accessibilityRole="button" accessibilityLabel="Buscar animales" onPress={onSearchPress} style={styles.searchLink}>
+          <AppText variant="body" bold style={styles.searchLinkText}>Buscar animales</AppText>
+        </Pressable>
         <View style={styles.filters}>
           {filters.map((item) => (
             <Chip
@@ -336,9 +339,11 @@ export function MapScreen({
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
+    paddingTop: spacing.lg,
     gap: spacing.sm,
   },
+  searchLink: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
+  searchLinkText: { color: colors.secondary },
   filters: {
     flexDirection: 'row',
     gap: spacing.xs,

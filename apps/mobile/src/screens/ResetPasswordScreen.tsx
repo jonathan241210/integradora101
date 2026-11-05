@@ -34,7 +34,7 @@ export function ResetPasswordScreen({
     <ScreenContainer busyMessage={busy ? 'Restableciendo contraseña…' : null}>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver a solicitar el código" />
-        <AppText variant="heading">Nueva contraseña</AppText>
+        <AppText variant="title">Nueva contraseña</AppText>
         <AppText variant="body" color="textMuted">
           {email ? `Código para ${email}. Revisa tu correo y escribe los 6 dígitos.` : 'Escribe el código de 6 dígitos enviado a tu correo.'}
         </AppText>

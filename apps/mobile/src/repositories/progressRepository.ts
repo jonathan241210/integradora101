@@ -38,6 +38,8 @@ export type DiscoveryOutcome = {
   message: string;
   pointsAwarded: number;
   newSpecies: string[];
+  unlockedSpecies: { id: string; name: string }[];
+  alreadyKnownSpecies: { id: string; name: string }[];
   progress: VisitorProgress;
 };
 
@@ -75,16 +77,57 @@ export function mapSpecies(dto: VisitorSpeciesDto): SpeciesDiscovery {
   };
 }
 
+const COUNT_WORDS = ['', 'una', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez'];
+
+function countWord(amount: number): string {
+  return COUNT_WORDS[amount] ?? String(amount);
+}
+
+function categoryPhrase(ruleParam: string | null | undefined): string {
+  if (ruleParam === 'bird') return 'de aves';
+  if (ruleParam === 'mammal') return 'de mamíferos';
+  if (ruleParam === 'reptile') return 'de reptiles';
+  if (ruleParam === 'amphibian') return 'de anfibios';
+  if (ruleParam === 'fish') return 'de peces';
+  return ruleParam ? `de ${ruleParam}` : '';
+}
+
+export function achievementHowTo(dto: Pick<VisitorCatalogItemDto, 'rule_type' | 'rule_target' | 'rule_param'>, unlocked: boolean): string {
+  const amount = dto.rule_target;
+  const counted = countWord(amount);
+
+  if (dto.rule_type === 'species_count') {
+    if (amount === 1) return unlocked ? 'Descubriste tu primera especie.' : 'Descubre cualquier animal.';
+    return unlocked ? `Descubriste ${counted} especies.` : `Descubre ${counted} animales.`;
+  }
+  if (dto.rule_type === 'enclosure_count') {
+    if (amount === 1) return unlocked ? 'Exploraste un hábitat.' : 'Explora un hábitat.';
+    return unlocked ? `Exploraste ${counted} hábitats diferentes.` : `Explora ${counted} hábitats diferentes.`;
+  }
+  if (dto.rule_type === 'missions_completed') {
+    if (amount === 1) return unlocked ? 'Completaste una misión.' : 'Completa una misión.';
+    return unlocked ? `Completaste ${counted} misiones.` : `Completa ${counted} misiones.`;
+  }
+  if (dto.rule_type === 'category_species_count') {
+    const kind = categoryPhrase(dto.rule_param);
+    const species = amount === 1 ? 'una especie' : `${counted} especies`;
+    const sentence = unlocked ? `Descubriste ${species} ${kind}.` : `Descubre ${species} ${kind}.`;
+    return sentence.replace(/\s+\./, '.').replace(/\s{2,}/g, ' ');
+  }
+  return unlocked ? 'Completaste el reto de este logro.' : 'Completa el reto de este logro.';
+}
+
 export function mapAchievement(dto: VisitorCatalogItemDto): Achievement {
+  const unlocked = dto.state !== 'pending';
   return {
     id: dto.code,
     title: dto.title,
     description: dto.description,
     icon: dto.icon,
     points: dto.points,
-    action: '',
+    action: achievementHowTo(dto, unlocked),
     requirement: `${dto.progress} de ${dto.rule_target}`,
-    unlocked: dto.state !== 'pending',
+    unlocked,
     earnedAt: dto.earned_at ?? undefined,
   };
 }
@@ -100,9 +143,14 @@ export function mapMission(dto: VisitorCatalogItemDto): Mission {
   };
 }
 
+function sameSpeciesName(left: string, right: string): boolean {
+  return left.trim().toLocaleLowerCase() === right.trim().toLocaleLowerCase();
+}
+
 export function applySpeciesDiscovery(animals: Animal[], collection: SpeciesDiscovery[]): Animal[] {
   return animals.map((animal) => {
-    const species = collection.find((item) => item.commonName === animal.commonName);
+    const species = collection.find((item) => String(item.id) === animal.id)
+      ?? collection.find((item) => sameSpeciesName(item.commonName, animal.commonName));
     if (!species) return { ...animal, isDiscovered: false, discoveredAt: null };
     return { ...animal, isDiscovered: species.discovered, discoveredAt: species.discoveredAt };
   });
@@ -114,6 +162,8 @@ function outcomeFrom(dto: VisitorDiscoveryDto): DiscoveryOutcome {
     message: dto.message ?? RESULT_MESSAGES[dto.result],
     pointsAwarded: dto.points_awarded,
     newSpecies: dto.new_species.map((species) => species.common_name),
+    unlockedSpecies: dto.new_species.map((species) => ({ id: String(species.id), name: species.common_name })),
+    alreadyKnownSpecies: dto.already_known_species.map((species) => ({ id: String(species.id), name: species.common_name })),
     progress: mapProgress(dto.progress),
   };
 }

@@ -28,7 +28,7 @@ export function ForgotPasswordScreen({
     <ScreenContainer busyMessage={busy ? 'Enviando código…' : null}>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel="Volver al inicio de sesión" />
-        <AppText variant="heading">¿Olvidaste tu contraseña?</AppText>
+        <AppText variant="title">¿Olvidaste tu contraseña?</AppText>
         <AppText variant="body" color="textMuted">
           Escribe tu correo. El aviso no indica si la cuenta existe. Después podrás escribir el código y una contraseña nueva.
         </AppText>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
-import { ScreenContainer, AppText, Card, Button, Icon } from '../components/ui';
+import { ScreenContainer, AppText, Card, Icon, ProgressBar } from '../components/ui';
 import { colors, spacing, radius } from '../theme/tokens';
 import { Achievement, Milestone, User } from '../models';
 
@@ -21,7 +21,7 @@ export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, a
     <ScreenContainer>
       <View style={styles.container}>
         <View style={styles.header}>
-          <AppText variant="heading">Perfil</AppText>
+          <AppText variant="title">Perfil</AppText>
           <Pressable
             onPress={onSettingsPress}
             accessibilityRole="button"
@@ -33,14 +33,20 @@ export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, a
         </View>
         <Card style={styles.profileCard}>
           <View style={styles.avatarPlaceholder} accessibilityLabel={avatarLabel ? `Avatar ${avatarLabel}` : 'Avatar'}>
-            {avatarLabel ? <AppText variant="caption" center>{avatarLabel}</AppText> : null}
+            {avatarLabel ? <AppText variant="small" center bold>{avatarLabel}</AppText> : null}
           </View>
-          <AppText variant="title" center>{displayName ?? user.name}</AppText>
-          <AppText variant="small" center color="primary">{user.rank}</AppText>
-          {nextThreshold != null ? (
-            <AppText variant="caption" center>Siguiente umbral: {nextThreshold} puntos</AppText>
+          <AppText variant="title" center color="textOnPrimary">{displayName ?? user.name}</AppText>
+          <AppText variant="small" center bold color="textOnPrimary">{user.rank}</AppText>
+          {nextThreshold != null && nextThreshold > 0 ? (
+            <View style={styles.threshold}>
+              <ProgressBar
+                value={user.points / nextThreshold}
+                label={`Siguiente umbral: ${nextThreshold} puntos`}
+                labelColor="textOnPrimary"
+              />
+            </View>
           ) : null}
-          
+
           <View style={styles.statsRow}>
             <StatItem label="Descubiertos" value={`${user.discoveredCount}/${user.totalAnimals}`} />
             <StatItem label="Puntos" value={user.points.toString()} />
@@ -49,8 +55,10 @@ export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, a
         </Card>
 
         <View style={styles.achievementHeader}>
-          <AppText variant="heading">Logros Recientes</AppText>
-          <Button label="Ver todos" variant="outline" onPress={onSeeAllAchievementsPress} />
+          <AppText variant="title">Logros Recientes</AppText>
+          <Pressable accessibilityRole="button" accessibilityLabel="Ver todos" onPress={onSeeAllAchievementsPress} style={styles.seeAll}>
+            <AppText variant="body" bold style={styles.seeAllText}>Ver todos</AppText>
+          </Pressable>
         </View>
         <View style={styles.achievementsList}>
           {achievements.filter((achievement) => achievement.unlocked).length === 0 ? (
@@ -72,7 +80,7 @@ export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, a
           ))}
         </View>
 
-        <AppText variant="heading" style={{ marginTop: spacing.lg }}>Historial de Hitos</AppText>
+        <AppText variant="title" style={{ marginTop: spacing.lg }}>Historial de Hitos</AppText>
         <View style={styles.milestoneList}>
           {milestones.map((milestone) => (
             <View key={milestone.id} style={styles.milestoneItem}>
@@ -92,8 +100,8 @@ export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, a
 function StatItem({ label, value }: { label: string, value: string }) {
   return (
     <View style={styles.statItem}>
-      <AppText variant="caption" color="textMuted" center>{label}</AppText>
-      <AppText variant="subheading" bold center>{value}</AppText>
+      <AppText variant="caption" color="textOnPrimary" center>{label}</AppText>
+      <AppText variant="title" bold center color="textOnPrimary">{value}</AppText>
     </View>
   );
 }
@@ -111,16 +119,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  profileCard: { padding: spacing.lg, alignItems: 'center', gap: spacing.md },
+  profileCard: {
+    padding: spacing.lg,
+    alignItems: 'center',
+    gap: spacing.md,
+    backgroundColor: colors.primary,
+    borderColor: colors.secondary,
+  },
   avatarPlaceholder: {
-    width: 80,
-    height: 80,
-    borderRadius: radius.pill,
-    backgroundColor: colors.border,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: colors.accent,
+    borderWidth: 3,
+    borderColor: colors.secondary,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.xs,
+    padding: spacing.sm,
   },
+  threshold: { width: '100%' },
+  seeAll: { minHeight: 44, justifyContent: 'center' },
+  seeAllText: { color: colors.secondary },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, marginTop: spacing.md, width: '100%' },
   statItem: { flex: 1, alignItems: 'center', gap: spacing.xs },
   achievementsList: { gap: spacing.sm, marginTop: spacing.sm },
@@ -129,6 +148,6 @@ const styles = StyleSheet.create({
   achievementName: { flex: 1 },
   milestoneList: { gap: spacing.md, marginTop: spacing.sm },
   milestoneItem: { flexDirection: 'row', gap: spacing.sm },
-  dot: { width: 10, height: 10, borderRadius: radius.pill, backgroundColor: colors.primary, marginTop: 4 },
+  dot: { width: 10, height: 10, borderRadius: radius.pill, backgroundColor: colors.secondary, marginTop: 4 },
   milestoneContent: { gap: 2 },
 });

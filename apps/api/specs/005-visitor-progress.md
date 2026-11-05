@@ -2,7 +2,7 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `mobile` (consumidor), `packages/api-client`
-- Estado: En progreso
+- Estado: Implementada (2026-11-01; aprobación funcional 2026-10-22)
 - Solicitante / responsable funcional: Aksel
 - Responsable de BD: Victor Adrian
 - Aprobación funcional: Aksel, 2026-10-22
@@ -49,9 +49,9 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 - **CA-03:** Dado un visitante, cuando supera 30 escaneos por minuto, entonces la API responde 429 con mensaje en español.
 - **CA-04:** Dado un código QR válido y activo, cuando se procesa el descubrimiento, entonces la API registra en la colección las especies de los animales con `can_receive_visits=1` de ese recinto y otorga puntos por cada especie nueva (cantidad configurable, 100 por defecto) en `visitor_point_entries`.
 - **CA-05:** Dada una respuesta de `discoveries`, cuando el cliente la consume, entonces tiene la forma `{ result, new_species[], already_known_species[], points_awarded, unlocked_achievements[], completed_missions[], progress }` con `201` para `discovered`, `200` para `already_discovered` y `422` para `invalid_code`, `expired_scan` o `inactive_code`.
-- **CA-06:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/progress`, entonces recibe puntos totales (suma del libro mayor), nivel, rango, siguiente umbral y especies descubiertas / total disponibles (especies con al menos un animal en exhibición en un recinto con QR activo).
+- **CA-06:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/progress`, entonces recibe puntos totales (suma del libro mayor), nivel, rango, siguiente umbral y especies descubiertas / total disponibles (especies con al menos un animal en exhibición, aunque su recinto aún no tenga QR).
 - **CA-07:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/collection`, entonces recibe las especies con `discovered` y `discovered_at`.
-- **CA-08:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/achievements` y `GET /api/v1/visitor/missions`, entonces recibe los catálogos con estado (desbloqueado/completado o pendiente) y progreso calculado por el servidor.
+- **CA-08:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/achievements` y `GET /api/v1/visitor/missions`, entonces recibe los catálogos con estado (desbloqueado/completado o pendiente), progreso calculado por el servidor y `rule_param` cuando la regla depende de una categoría. Enmienda de Aksel, 2026-11-01.
 - **CA-09:** Dado un evento de progreso, cuando `EvaluateVisitorProgressAction` evalúa reglas, entonces soporta `species_count`, `category_species_count` (con `rule_param` = categoría), `enclosure_count` y `missions_completed`; los logros y las misiones otorgan sus puntos y el libro mayor (UNIQUE por `visitor_id, source_type, source_id`) garantiza que no se dupliquen; todo ocurre dentro de una transacción.
 - **CA-10:** Dada la configuración de niveles en `config/visitor_progress.php`, cuando se calcula el nivel, entonces aplica los umbrales: 1 Explorador novato (0), 2 Explorador (500), 3 Explorador avanzado (1500), 4 Explorador experto (3000), 5 Guardián de la fauna (6000).
 - **CA-11:** Dados los seeders, cuando se ejecutan `AchievementSeeder` y `MissionSeeder`, entonces cargan los catálogos de forma idempotente por `code`, basados en los mocks actuales de la app; las recompensas tipo «Certificado» se convierten en puntos o logros porque no hay premios.
@@ -65,7 +65,7 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 - **RN-03:** Puntos, nivel y rango los deriva el servidor; el cliente solo los muestra.
 - **RN-04:** `visitor_scans` es la fuente de idempotencia (`client_scan_id` único por visitante) y de auditoría/antiabuso (`scanned_at` vs `received_at`, `result`).
 - **RN-05:** Misiones y logros son contenido estático cargado por seeders idempotentes por `code`, no por migración; no hay actualizaciones dinámicas ni premios.
-- **RN-06:** La implementación está bloqueada hasta que DBR-001, DBR-003 y DBR-004 estén en `Lista para backend`; depende además de `api-004` (tokens `visitor`) y del catálogo de especies.
+- **RN-06:** DBR-001, DBR-003 y DBR-004 están en `Lista para backend`; la implementación depende de `api-004` (tokens `visitor`) y del catálogo de especies en la base de pruebas.
 - **RN-07:** Rutas nombradas bajo `/api/v1/visitor`; identificadores en inglés y mensajes en español.
 - **RN-08:** Ningún secreto se versiona; los ajustes de puntos y umbrales viven en `config/visitor_progress.php`.
 - **RN-09:** Los tests PHPUnit corren contra `arca_pruebas`.
@@ -102,4 +102,5 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 ## Revisión
 
 - Aprobadores y fecha: Aksel, 2026-10-22.
+- Cierre: Implementada el 2026-11-01 tras merge a `DevOps`. Checklist T-01 a T-11 completado. `php artisan test --filter=ProgressTest` sobre `arca_pruebas`: 13 pruebas (CA-01 a CA-13), 98 aserciones en verde. Consumidor `mobile-005` implementado en el mismo ciclo de entrega.
 - Evidencia/enlaces: `docs/adr/0011-visitor-identity-and-mobile-session.md`, `docs/database/requests/DBR-004-visitor-progress.md`, `apps/api/specs/004-visitor-authentication.md`, `apps/mobile/specs/005-visitor-progress.md`.

@@ -1,28 +1,36 @@
+import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { QrScannerScreen } from '../../screens/QrScannerScreen';
-import { useQrViewModel } from '../../viewmodels/useQrViewModel';
+import { useAccountSession } from '../../viewmodels/useAccountSession';
+import { useQrScanViewModel } from '../../viewmodels/useQrScanViewModel';
 
 export default function QrScannerRoute() {
   const router = useRouter();
-  const { simulateScan } = useQrViewModel();
-  const runSimulation = (outcome: 'valid' | 'invalid' | 'already-discovered') => {
-    simulateScan(outcome)
-      .then((result) => {
-        if (result.outcome === 'valid') {
-          router.push(`/qr-result?animalId=${result.animalId}`);
-        } else if (result.outcome === 'already-discovered') {
-          router.push(`/qr-already-discovered?animalId=${result.animalId}`);
-        } else {
-          router.push('/qr-invalid');
-        }
-      })
-      .catch((error: unknown) => console.error('Error simulating QR scan:', error));
-  };
+  const { status } = useAccountSession();
+  const vm = useQrScanViewModel(router);
+
+  useEffect(() => {
+    if (status === 'guest') {
+      router.replace('/login');
+    }
+  }, [router, status]);
+
+  if (status !== 'authenticated') {
+    return null;
+  }
+
   return (
     <QrScannerScreen
-      onValidPress={() => runSimulation('valid')}
-      onInvalidPress={() => runSimulation('invalid')}
-      onAlreadyDiscoveredPress={() => runSimulation('already-discovered')}
+      cameraGranted={vm.cameraGranted}
+      needsPermissionPrompt={vm.needsPermissionPrompt}
+      cameraDenied={vm.cameraDenied}
+      busy={vm.busy}
+      validationError={vm.validationError}
+      manualCode={vm.manualCode}
+      onManualCodeChange={vm.setManualCode}
+      onRequestPermission={vm.onRequestPermission}
+      onBarcodeScanned={vm.onBarcodeScanned}
+      onManualSubmit={vm.onManualSubmit}
     />
   );
 }

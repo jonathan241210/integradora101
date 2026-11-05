@@ -11,12 +11,14 @@
 
 ## Calidad y entrega
 
-- Evidencia T-01/T-02: manifiesto raíz y lockfile fijan Reanimated 4.5.1 y Worklets 0.10.1. La instalación limpia no terminó porque el entorno no pudo resolver registry.npmjs.org (EAI_AGAIN); no se observó ERESOLVE antes del fallo de red.
+- Evidencia T-01/T-02: manifiesto raíz y lockfile fijan Reanimated 4.5.1 y Worklets 0.10.1.
 
-- [ ] **T-03** (CA-02): verificar `npm ci` desde la raíz en una instalación limpia, manteniendo la resolución estricta de peers.
+- [x] **T-03** (CA-02): verificar `npm ci` desde la raíz en una instalación limpia, manteniendo la resolución estricta de peers.
 - [ ] **T-04** (CA-03): ejecutar `npm run test --workspace=apps/mobile -- --runInBand` y `npm run build --workspace=@arca/dashboard`; registrar resultados.
-- [ ] **T-05** (CA-04): revisar el diff para confirmar que no cambia código fuente, configuración nativa, Babel, Metro ni pantallas de Mobile.
-- [ ] **T-06** (CA-01..CA-04): ejecutar `/verify`, `git diff --check` y documentar cualquier limitación de ejecución remota.
+- [x] **T-05** (CA-04): revisar el diff para confirmar que no cambia código fuente, configuración nativa, Babel, Metro ni pantallas de Mobile.
+- [x] **T-06** (CA-01..CA-04): ejecutar `/verify`, `git diff --check` y documentar cualquier limitación de ejecución remota.
+
+- Evidencia T-03/T-04/T-05/T-06: `npm ci` terminó correctamente y `npm ls expo-camera --workspace=apps/mobile` confirma `expo-camera@57.0.6`; el manifiesto y lockfile ya lo declaraban, por lo que no se requirieron cambios rastreados. Las pruebas Mobile finalizaron con 43 suites y 186 tests aprobados; `expo export --platform android` también terminó correctamente. `tsc --noEmit` reporta errores en `presentScanResult.ts` y `useQrScanViewModel.ts` (tipo `Router` no exportado por `expo-router`) y `AccountSettingsScreen.tsx` (`StyleSheet.absoluteFillObject`); no se modificaron. El build de Dashboard de T-04 queda pendiente. `git diff --check` no reportó errores. La verificación directa usó los scripts disponibles en `apps/mobile/package.json`, porque la app no tiene un `src/package.json`.
 
 ## Aprobación
 
