@@ -52,7 +52,7 @@ para la PWA.
    ```
 
 3. Abre `http://localhost:5173/` e inicia sesión con una cuenta de la tabla `users`
-   (se crea con `php artisan arca:create-staff`).
+   (se crea con `php artisan arca:create-staff-simple`).
 
 Si al iniciar sesión aparece "No se pudo conectar", casi siempre es que la API
 (terminal 1) no está corriendo o `VITE_API_URL` apunta a otra dirección.
@@ -97,7 +97,7 @@ Desde un teléfono usa la IP de tu PC en lugar de `localhost`. Para levantar la 
 
 ```bash
 cd apps/api/src
-php artisan arca:create-staff correo@ejemplo.com Nombre Apellido   # departamento: --department=veterinary
+php artisan arca:create-staff-simple correo@ejemplo.com Nombre Apellido   # departamento: --department=veterinary
 php artisan serve --host=0.0.0.0
 ```
 
