@@ -13,7 +13,7 @@
 
 El entorno de base de datos compartido para desarrollo y pruebas del proyecto (`arca_pruebas`) se encuentra actualmente alojado en una instancia de prueba gratuita de **Aiven Cloud MySQL** (`mysql-230c9986-arcannb.a.aivencloud.com:15280`, ADR 0013).
 
-Debido a que el periodo de prueba gratuito está próximo a concluir, la instancia será discontinuada por el proveedor. 
+Debido a que el periodo de prueba gratuito está próximo a concluir, la instancia será discontinuada por el proveedor.
 
 ### Objetivo
 Realizar una migración planificada, segura y con cero pérdida de información hacia una **nueva instancia/servicio de Aiven**, garantizando:
@@ -207,9 +207,9 @@ El responsable de BD verificará los siguientes puntos de control:
 1. **Conteo comparativo de filas:**
    Ejecutar la siguiente consulta tanto en la instancia antigua como en la nueva para confirmar que coincidan exactamente:
    ```sql
-   SELECT table_name, table_rows 
-   FROM information_schema.tables 
-   WHERE table_schema = 'arca_pruebas' 
+   SELECT table_name, table_rows
+   FROM information_schema.tables
+   WHERE table_schema = 'arca_pruebas'
    ORDER BY table_name;
    ```
 
