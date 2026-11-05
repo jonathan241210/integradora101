@@ -25,7 +25,7 @@ ADR 0011 fue aceptado el 2026-10-21, después de aprobar este plan. El backend n
 | API / HTTP | `app/Http/Controllers/Visitor/*`, `app/Http/Requests/Visitor/*`, `app/Http/Resources/VisitorProfileResource.php`, `VisitorTokenResource.php`, `PrivacyNoticeResource.php` | Contrato JSON |
 | API / acceso | `app/Http/Middleware/EnsureVisitorToken.php`, `EnsureStaffUser.php`; alias en `bootstrap/app.php` | CA-08. `EnsureStaffUser` se agrega solo a `auth.me` |
 | API / config | `config/sanctum.php` (`expiration` = 15), `config/visitor.php`, `lang/es/visitor.php`, `AppServiceProvider` | Vigencia, aviso, límites, HTTPS fuera de local/testing y regla de contraseña del visitante |
-| API / correo | `app/Mail/VisitorAccessCodeMail.php` | Código de verificación o de recuperación. Sin SDK |
+| API / correo | `app/Mail/VisitorAccessCodeMail.php`, `resources/views/mail/visitor-access-code.blade.php` | Código de verificación o de recuperación con plantilla HTML en español que distingue propósito, vigencia (15 min) y uso único. Sin SDK |
 | API / rutas | `routes/api.php` | Rutas nombradas bajo el prefijo ya existente `api/v1` |
 | API / pruebas | `tests/Feature/Visitor/*` | Un test por CA-01 a CA-21, con `DatabaseTransactions` sobre `arca_pruebas` |
 | API / docs | `apps/api/docs/` nota breve del contrato visitante | Referencia local, sin secretos |
@@ -67,7 +67,7 @@ Verificación: `email`, `code`. Éxito 200 con el par y el visitante. Código in
 
 Reenvío y olvido: solo `email`. Siempre 202 `{ "message": "Si el correo está registrado, enviamos un código de 6 dígitos." }`, haya o no cuenta. Reenvío: 1 por minuto y 5 por hora por correo. Olvido: 3 por hora por correo.
 
-Login: `email`, `password`, `device_name`. Éxito 200 con el par. Correo sin verificar: 403 `{ "message": "Confirma tu correo antes de entrar.", "code": "email_not_verified" }`. Credenciales incorrectas, incluido un correo inexistente: 422 «Correo o contraseña incorrectos.» Más de 5 intentos por minuto por correo e IP: 429 «Espera N segundos e inténtalo de nuevo.» Más de 5 registros por hora por IP: el mismo 429.
+Login: `email`, `password`, `device_name`. Éxito 200 con el par. Correo sin verificar: envía código `email_verification` de 6 dígitos por correo y responde 403 `{ "message": "Confirma tu correo antes de entrar.", "code": "email_not_verified" }`. Credenciales incorrectas, incluido un correo inexistente: 422 «Correo o contraseña incorrectos.» Más de 5 intentos por minuto por correo e IP: 429 «Espera N segundos e inténtalo de nuevo.» Más de 5 registros por hora por IP: el mismo 429.
 
 Refresh: `refresh_token`. Éxito 200 con un par nuevo. El refresh anterior queda con `replaced_by_id`. Si el refresh ya estaba revocado o reemplazado y no es la petición perdedora de una carrera, 401 «La sesión ya no es válida. Vuelve a entrar.» y se revoca toda la familia.
 

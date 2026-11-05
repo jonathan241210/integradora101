@@ -36,7 +36,7 @@ export function ResetPasswordScreen({
         <BackButton onPress={onBackPress} accessibilityLabel="Volver a solicitar el código" />
         <AppText variant="heading">Nueva contraseña</AppText>
         <AppText variant="body" color="textMuted">
-          {email ? `Código para ${email}.` : 'Escribe el código que llegaría a tu correo.'} En esta versión de prueba el código es 123456.
+          {email ? `Código para ${email}. Revisa tu correo y escribe los 6 dígitos.` : 'Escribe el código de 6 dígitos enviado a tu correo.'}
         </AppText>
         <TextField label="Código" value={code} onChangeText={onCodeChange} keyboardType="number-pad" maxLength={6} placeholder="000000" />
         <TextField label="Nueva contraseña" value={password} onChangeText={onPasswordChange} secureTextEntry />

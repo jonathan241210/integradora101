@@ -103,8 +103,8 @@ export function createHttpAuthRepository({ baseUrl, storage, fetchImpl }: HttpAu
       }
     },
     async getPrivacyNotice(): Promise<PrivacyNotice> {
-      const notice = await api.privacyNotice();
-      return { version: notice.version, content: notice.content };
+      try { const notice = await api.privacyNotice(); return { version: notice.version, content: notice.content }; } catch { return { version: '2026-10', content: 'Sin conexión. Intenta abrir el aviso de nuevo.' }; }
+
     },
     async register(input: RegisterInput): Promise<AccountResult> {
       try {

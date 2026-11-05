@@ -152,11 +152,11 @@ Mobile **no** define migraciones ni SQL. Consume el contrato de **`apps/api/spec
 |---|---|---|
 | CA-01 | `test-ca-01-auth-login-redirect` | Guest → login; sin tabs. Enmienda UX 2026-10-23. |
 | CA-02 | `test-ca-02-register-form` | Campos, checkboxes, avatar picker, enlace aviso |
-| CA-03 | `test-ca-03-verify-email-flow` | Tras mock 201 register → verify UI; resend cooldown |
-| CA-04 | `test-ca-04-auth-errors` | 422 mensajes; 403 → verify; 429 espera |
+| CA-03 | `test-ca-03-verify-email-flow` | Tras mock 201 register → verify UI (sin leyenda `123456`); resend cooldown. Enmienda 2026-11-04. |
+| CA-04 | `test-ca-04-auth-errors` | 422 mensajes; 403 → verify con `params.email`; 429 espera. Enmienda 2026-11-05. |
 | CA-05 | `test-ca-05-login-stores-tokens`, `test-ca-05-login-ignores-a-second-tap` | Mock Secure Store; navegación a tabs una sola vez. El indicador tapa la pantalla mientras la petición sigue. Enmienda 2026-10-23. |
 | CA-06 | `test-ca-06-refresh-single-flight` | Cliente simulado: N requests + 401 → 1 refresh → retry |
-| CA-07 | `test-ca-07-password-recovery-flow` | Forgot 202 → reset → login |
+| CA-07 | `test-ca-07-password-recovery-flow` | Forgot 202 → reset (sin leyenda `123456`) → login. Enmienda 2026-11-04. |
 | CA-08 | `test-ca-08-profile-patch`, `test-ca-08-profile-unchanged`, `test-ca-08-profile-focus-reset`, `test-ca-08-profile-ignores-a-second-tap`, `test-ca-08-profile-single-load`, `test-ca-08-settings-sin-ficha-demo` | PATCH mock; sin cambios sin PATCH; blur limpia avisos. Una sola lectura de perfil para varias pantallas; el PATCH actualiza la copia sin otro GET. Ajustes no muestra la ficha de demostración. Enmienda UX 2026-10-23. |
 | CA-09 | `test-ca-09-change-password`, `test-ca-09-password-focus-reset`, `test-ca-09-password-ignores-a-second-tap` | PUT password mock; blur limpia campos y avisos. Enmienda UX 2026-10-23. |
 | CA-10 | `test-ca-10-delete-account`, `test-ca-10-delete-ignores-a-second-tap` | DELETE + clear storage + login una sola vez. Enmienda UX 2026-10-23. |
