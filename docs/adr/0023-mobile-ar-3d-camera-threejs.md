@@ -1,4 +1,4 @@
-# 0022 · Recorrido Guiado 3D y Realidad Aumentada Offline con Cámara, Three.js y Sensores
+# 0023 · Recorrido Guiado 3D y Realidad Aumentada Offline con Cámara, Three.js y Sensores
 
 - Estado: Propuesto (listo para aceptación en `mobile-009`)
 - Fecha: 2026-11-05

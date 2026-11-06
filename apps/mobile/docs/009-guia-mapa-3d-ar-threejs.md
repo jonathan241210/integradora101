@@ -1,7 +1,7 @@
 # Guía de Arquitectura y Diseño · Recorrido 3D con Cámara, Bifurcaciones y Modo Offline (`mobile-009`)
 
-- **Spec:** [009-ar-3d-map-guide.md](file:///c:/Users/vic22/OneDrive/Escritorio/ARCA-NB/apps/mobile/specs/009-ar-3d-map-guide.md)
-- **ADR:** [0022-mobile-ar-3d-camera-threejs.md](file:///c:/Users/vic22/OneDrive/Escritorio/ARCA-NB/docs/adr/0022-mobile-ar-3d-camera-threejs.md)
+- **Spec:** [009-ar-3d-map-guide.md](../specs/009-ar-3d-map-guide.md)
+- **ADR:** [0023-mobile-ar-3d-camera-threejs.md](../../../docs/adr/0023-mobile-ar-3d-camera-threejs.md)
 - **Responsable:** Víctor Adrián
 - **Fecha:** 2026-11-05
 
