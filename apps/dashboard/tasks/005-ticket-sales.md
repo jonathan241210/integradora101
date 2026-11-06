@@ -157,7 +157,7 @@ Convención: `describe("CA-NN ticket-sales", …)` con el criterio en el nombre 
   - Depende de las tareas de API indicadas y de T-38.
 - [x] **T-41** (CA-02, RN-09) `[docs]`: `apps/dashboard/docs/arquitectura.md` (según `docs/templates/arquitectura-app.md`): estructura View, Section y ViewModel, shell sin demo, configuración de impresión por `localStorage` (excepción de RN-12). `apps/dashboard/docs/manual-demo.md`: Venta e Historial dejan de ser demostrativos; secciones conectadas frente a demostrativas. Sin datos ficticios en el manual.
   - Depende de T-22.
-- [ ] **T-42** (control) `[verificación]`: correr `/constitution-check` del PR, enlazar spec, plan y tasks, y citar `dashboard-005` en los commits. Marcar casillas solo con evidencia de T-38, T-39 y T-40. Pasar la spec a `Implementada` solo cuando los CA vigentes estén verificados. Los CA diferidos no se cuentan.
+- [x] **T-42** (control) `[verificación]`: correr `/constitution-check` del PR, enlazar spec, plan y tasks, y citar `dashboard-005` en los commits. Marcar casillas solo con evidencia de T-38, T-39 y T-40. Pasar la spec a `Implementada` solo cuando los CA vigentes estén verificados. Los CA diferidos no se cuentan. *Evidencia (2026-11-03): `/constitution-check` sin violaciones (2026-11-02); `npm test` (235 pruebas), `types` y `build` correctos; commit `38d307d` cita `api-009` y `dashboard-005`; spec, plan y tasks enlazados en el commit.*
 
 ## Orden recomendado de ejecución
 
