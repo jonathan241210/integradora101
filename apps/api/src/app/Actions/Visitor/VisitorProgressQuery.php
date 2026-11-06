@@ -102,9 +102,7 @@ class VisitorProgressQuery
             ->whereIn('id', function ($query): void {
                 $query->select('animals.species_id')
                     ->from('animals')
-                    ->join('enclosure_qr_codes', 'enclosure_qr_codes.enclosure_id', '=', 'animals.enclosure_id')
-                    ->where('animals.can_receive_visits', 1)
-                    ->where('enclosure_qr_codes.is_active', 1);
+                    ->where('animals.can_receive_visits', 1);
             })
             ->count();
     }
@@ -130,6 +128,7 @@ class VisitorProgressQuery
                 'points' => (int) $row->points,
                 'rule_type' => $row->rule_type,
                 'rule_target' => (int) $row->rule_target,
+                'rule_param' => $row->rule_param,
                 'progress' => min($current, (int) $row->rule_target),
                 'state' => $hit === null ? 'pending' : ($mission ? 'completed' : 'unlocked'),
                 'earned_at' => $hit === null ? null : Carbon::parse($hit->{$when})->toIso8601String(),

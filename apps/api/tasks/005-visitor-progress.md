@@ -1,6 +1,6 @@
 # Tareas · 005 · visitor-progress
 
-- Spec: `apps/api/specs/005-visitor-progress.md` (Aprobada, Aksel, 2026-10-22)
+- Spec: `apps/api/specs/005-visitor-progress.md` (Implementada, 2026-11-01; aprobación funcional Aksel, 2026-10-22)
 - Plan: `apps/api/plan/005-visitor-progress.md` (Aprobado, Aksel, 2026-10-22)
 - Estado del checklist: Aprobado por Aksel, 2026-10-22
 

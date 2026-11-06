@@ -31,84 +31,15 @@ Luego abre en el navegador:
 http://localhost:5173/
 ```
 
-## Cómo ejecutar todo (paso a paso)
+## Acceso institucional en desarrollo
 
-Se necesitan **dos terminales abiertas al mismo tiempo**: una para la API y otra
-para la PWA.
+1. Levanta la API desde `apps/api/src` con `php artisan serve --host=127.0.0.1 --port=8000`.
+2. Incluye `localhost:5173` y `127.0.0.1:5173` en `SANCTUM_STATEFUL_DOMAINS` del `.env` local de la API. Usa `arca_pruebas` para las pruebas.
+3. Abre ZooHealth en `http://127.0.0.1:5173/` e inicia sesión con la cuenta veterinaria activa, por ejemplo `veterinario@arca.local` con la contraseña demo vigente.
 
-1. **API** (PHP 8.4+), terminal 1:
+Vite reenvía `/api` y `/sanctum` a Laravel. Si la API escucha en otro puerto, inicia Vite con `ARCA_API_PROXY_TARGET=http://127.0.0.1:9000`. Si cambia el origen de ZooHealth, registra su host y puerto en Sanctum. Fuera de desarrollo, el servidor anfitrión debe reenviar esas rutas bajo el mismo origen de la PWA.
 
-   ```bash
-   cd apps/api/src
-   php artisan serve --host=0.0.0.0 --port=8000
-   ```
-
-2. **PWA**, terminal 2:
-
-   ```bash
-   cd apps/pwa
-   npm install          # solo la primera vez
-   npm run dev -- --host 0.0.0.0 --port 5173
-   ```
-
-3. Abre `http://localhost:5173/` e inicia sesión con una cuenta de la tabla `users`
-   (se crea con `php artisan arca:create-staff-simple`).
-
-Si al iniciar sesión aparece "No se pudo conectar", casi siempre es que la API
-(terminal 1) no está corriendo o `VITE_API_URL` apunta a otra dirección.
-
-### Usar otro puerto
-
-Sí se puede. Los dos puertos son independientes:
-
-| Servicio | Puerto por defecto | Cómo cambiarlo |
-|----------|--------------------|----------------|
-| PWA | 5173 | `npm run dev -- --port 3000` |
-| API | 8000 | `php artisan serve --port=9000` |
-
-- **Cambiar el puerto de la PWA** no requiere nada más: la API acepta peticiones de
-  cualquier origen (CORS abierto), así que basta abrir `http://localhost:3000/`.
-- **Cambiar el puerto de la API** exige decirle a la PWA dónde está. Crea o edita
-  `apps/pwa/.env`:
-
-  ```text
-  VITE_API_URL=http://localhost:9000/api/v1
-  ```
-
-  y **reinicia** `npm run dev` (Vite solo lee `.env` al arrancar).
-- Si el puerto está ocupado, `php artisan serve` falla; Vite en cambio elige el
-  siguiente libre (5174…) salvo que uses `--strictPort`.
-- Desde el teléfono (misma red Wi-Fi) usa la IP de tu PC en ambos lados, por
-  ejemplo `http://192.168.1.50:5173/` y `VITE_API_URL=http://192.168.1.50:9000/api/v1`.
-  Puede ser necesario permitir esos puertos en el firewall de Windows.
-
-## Conexión con la API
-
-La PWA guarda animales, diagnósticos (intenso y rápido) y revisiones en la API
-Laravel (`apps/api/src`). Define la URL en `apps/pwa/.env` (por defecto
-`http://localhost:8000/api/v1`):
-
-```text
-VITE_API_URL=http://localhost:8000/api/v1
-```
-
-Desde un teléfono usa la IP de tu PC en lugar de `localhost`. Para levantar la API
-(requiere PHP 8.4):
-
-```bash
-cd apps/api/src
-php artisan arca:create-staff-simple correo@ejemplo.com Nombre Apellido   # departamento: --department=veterinary
-php artisan serve --host=0.0.0.0
-```
-
-Inicia sesión con el correo y la contraseña de esa cuenta del tabla `users`. El
-token se guarda en `sessionStorage` y se descarta al cerrar la pestaña o la sesión.
-Los diagnósticos y revisiones se asocian a un animal ya registrado; el panel de
-Inicio todavía muestra datos de muestra.
-
-En el panel se puede navegar entre Inicio, Animales, Registrar animal, Registrar
-diagnóstico y Registrar revisión. En computadora la navegación aparece en el
-menú lateral; en teléfono está en la barra inferior.
+ZooHealth usa la cookie de sesión de Sanctum. Puedes recargar la pestaña mientras la sesión esté vigente y cerrarla desde el menú. Las pantallas clínicas están disponibles para revisión visual. El listado y el guardado dependen de rutas clínicas que todavía no están disponibles en la API actual.
 
 ## Instalar en un teléfono
 

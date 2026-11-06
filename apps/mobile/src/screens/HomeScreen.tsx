@@ -17,6 +17,30 @@ import {
 import { spacing } from '../theme/tokens';
 import { Animal, ZooEvent, News } from '../models';
 
+function homeGreeting(visitorName?: string | null, discovered?: number | null, total?: number | null) {
+  if (!visitorName) {
+    return {
+      overline: '¡Hola, explorador!',
+      title: 'Bienvenido al Zoológico',
+      subtitle: '¿Qué hábitat descubriremos juntos hoy?',
+    };
+  }
+  const hasCounts = typeof discovered === 'number' && typeof total === 'number' && total > 0;
+  const remaining = hasCounts ? Math.max(0, (total as number) - (discovered as number)) : null;
+  if (remaining === 0) {
+    return {
+      overline: `¡Hola, ${visitorName}!`,
+      title: '¡Completaste el zoológico!',
+      subtitle: 'Ya están todos en tu colección.',
+    };
+  }
+  return {
+    overline: `¡Hola, ${visitorName}!`,
+    title: remaining === null ? 'Bienvenido al Zoológico' : `Te faltan ${remaining} ${remaining === 1 ? 'animal' : 'animales'}`,
+    subtitle: 'Escanea un código y sigue descubriendo.',
+  };
+}
+
 export interface HomeScreenProps {
   appName: string;
   featuredAnimals: Animal[];
@@ -31,6 +55,9 @@ export interface HomeScreenProps {
   onAnimalPress?: (id: string) => void;
   onEventPress?: (id: string) => void;
   onOpenMissionsPress?: () => void;
+  visitorName?: string | null;
+  discoveredCount?: number | null;
+  totalAnimals?: number | null;
 }
 
 export function HomeScreen({
@@ -47,26 +74,40 @@ export function HomeScreen({
   onAnimalPress,
   onEventPress,
   onOpenMissionsPress,
+  visitorName,
+  discoveredCount,
+  totalAnimals,
 }: HomeScreenProps) {
+  const header = (
+    <View style={styles.headerSection}>
+      <BrandHeader appName={appName} onBellPress={onNotificationsPress} />
+      <HeroBanner {...homeGreeting(visitorName, discoveredCount, totalAnimals)} />
+    </View>
+  );
+
   if (loading) {
     return (
-      <ScreenContainer>
-        <BrandHeader appName={appName} onBellPress={onNotificationsPress} />
-        <LoadingView message="Cargando el zoológico..." />
+      <ScreenContainer scroll={false}>
+        {header}
+        <View style={styles.loadingFill}>
+          <LoadingView message="Cargando el zoológico..." />
+        </View>
       </ScreenContainer>
     );
   }
 
   if (error && (!featuredAnimals || featuredAnimals.length === 0)) {
     return (
-      <ScreenContainer>
-        <BrandHeader appName={appName} onBellPress={onNotificationsPress} />
-        <ErrorView
-          title="No pudimos conectar con el zoológico"
-          message={error}
-          onRetry={onRetry}
-          retryLabel="Intentar de nuevo"
-        />
+      <ScreenContainer scroll={false}>
+        {header}
+        <View style={styles.loadingFill}>
+          <ErrorView
+            title="No pudimos conectar con el zoológico"
+            message={error}
+            onRetry={onRetry}
+            retryLabel="Intentar de nuevo"
+          />
+        </View>
       </ScreenContainer>
     );
   }
@@ -89,13 +130,8 @@ export function HomeScreen({
     <ScreenContainer>
       {isOffline && <OfflineBanner />}
 
-      <View style={styles.headerSection}>
-        <BrandHeader appName={appName} onBellPress={onNotificationsPress} />
-        <HeroBanner
-          overline="¡Hola, explorador!"
-          title="Bienvenido al Zoológico"
-          subtitle="¿Qué hábitat descubriremos juntos hoy?"
-        />
+      {header}
+      <View style={styles.sectionHeader}>
         <SectionHeader
           title="Animales Destacados"
           actionLabel="Ver todo"
@@ -155,7 +191,9 @@ export function HomeScreen({
 }
 
 const styles = StyleSheet.create({
-  headerSection: { paddingHorizontal: spacing.lg, gap: spacing.lg },
+  headerSection: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, gap: spacing.lg },
+  sectionHeader: { paddingHorizontal: spacing.lg },
+  loadingFill: { flex: 1, justifyContent: 'center' },
   carousel: { paddingHorizontal: spacing.lg, gap: spacing.md, marginVertical: spacing.lg },
   newsSection: { paddingHorizontal: spacing.lg, gap: spacing.lg },
   eventsList: { gap: spacing.md },

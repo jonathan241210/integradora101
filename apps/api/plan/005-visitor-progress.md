@@ -1,7 +1,7 @@
 # Plan técnico · 005 · visitor-progress
 
 - Spec: `apps/api/specs/005-visitor-progress.md`
-- Estado de spec: Aprobada (Aksel, 2026-10-22)
+- Estado de spec: Implementada (2026-11-01; aprobación funcional Aksel, 2026-10-22)
 - Estado del plan: Aprobado (Aksel, 2026-10-22)
 - Responsable técnico: Aksel
 - Responsable de BD: Victor Adrian. DBR-004 está en `Lista para backend`. La migración `2026_10_15_000004_visitor_progress_schema.php` ya existe. Este plan no crea ni edita migraciones.

@@ -2,18 +2,18 @@
 
 ## 1. Control
 
-- **Estado:** Vigente. Cubre el prototipo de la spec **002**, la integración de lectura API y caché de la spec **003** y la cuenta visitante de la spec **004** (Implementada, 2026-10-21).
-- **Capacidades descritas:** rutas, interfaz, mocks, catálogo/eventos con caché SWR y conectividad, pruebas y cuenta visitante: actual. Cámara, GPS, mapa y 3D: futuros.
-- **Specs de referencia:** [002 · mobile-ui-base-visitor-journey](../specs/002-mobile-ui-base-visitor-journey.md), [003 · api-read-integration](../specs/003-api-read-integration.md) y [004 · visitor-account](../specs/004-visitor-account.md).
+- **Estado:** Vigente. Cubre el prototipo de la spec **002**, la integración de lectura API y caché de la spec **003**, la cuenta visitante de la spec **004** (Implementada, 2026-10-21), el progreso visitante de la spec **005** (Implementada, 2026-11-01) y el escaneo QR de la spec **006** (Implementada, 2026-11-01).
+- **Capacidades descritas:** rutas, interfaz, mocks, catálogo/eventos con caché SWR y conectividad, cuenta visitante, progreso/colección/logros/misiones con cola de escaneos y lectura QR con cámara (`expo-camera`) o entrada manual: actuales. Mapa y 3D: según spec **007** y futuras.
+- **Specs de referencia:** [002](../specs/002-mobile-ui-base-visitor-journey.md), [003](../specs/003-api-read-integration.md), [004](../specs/004-visitor-account.md), [005](../specs/005-visitor-progress.md) y [006](../specs/006-qr-scan.md).
 - **Decisiones tecnológicas:** [ADR 0004 · Mobile React Native](../../../docs/adr/0004-mobile-react-native.md), [ADR 0011 · Visitor identity and mobile session](../../../docs/adr/0011-visitor-identity-and-mobile-session.md) y [ADR 0014 · Mobile offline cache and connectivity](../../../docs/adr/0014-mobile-offline-cache-and-connectivity.md).
 
 ## 2. Propósito, alcance y exclusiones
 
 La aplicación presenta al visitante una experiencia móvil de exploración del zoológico y permite validar sus flujos y diseño.
 
-- **Actual:** cinco pestañas, búsqueda y detalle de animales, colección, perfil, eventos, misiones, logros, resultados QR simulados, consumo real/mock de catálogo y eventos con caché SWR, y la cuenta visitante (bienvenida, registro, verificación, sesión, recuperación, edición, cambio de contraseña y borrado). Con `EXPO_PUBLIC_API_URL` el catálogo y la cuenta hablan con la API; sin ella, y en Jest, siguen los mocks.
-- **Fuera del alcance actual:** cámara/lectura QR real, GPS, mapa interactivo, renderizado 3D y sincronización de progreso/colecciones.
-- **Futuro:** capacidades de dispositivo o persistencia de progreso se implementan con alcance aprobado en una spec correspondiente (005 a 008). Roadmap y responsables de specs 003–008: [003-008-roadmap-y-asignacion.md](./003-008-roadmap-y-asignacion.md).
+- **Actual:** cinco pestañas, búsqueda y detalle de animales, colección, perfil, eventos, misiones, logros, pantallas de resultado de escaneo, cola offline de códigos QR, consumo real/mock de catálogo y eventos con caché SWR, cuenta visitante (registro, sesión, perfil, etc.) y progreso (`api-005`) con lectura compartida entre pantallas. Con `EXPO_PUBLIC_API_URL` el catálogo, la cuenta y el progreso hablan con la API; sin ella, y en Jest, siguen los mocks de repositorio.
+- **Fuera del alcance actual:** renderizado 3D real y distribución en tienda (spec **008**). Evoluciones del mapa (**007**) pendientes de revisión visual.
+- **Futuro:** spec **008** y mejoras de mapa. Roadmap: [003-008-roadmap-y-asignacion.md](./003-008-roadmap-y-asignacion.md).
 
 ## 3. Actores
 

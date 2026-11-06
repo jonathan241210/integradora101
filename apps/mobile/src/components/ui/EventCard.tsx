@@ -29,6 +29,8 @@ export function EventCard({ event, onPress }: EventCardProps) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.accent,
     borderRadius: radius.md,
     padding: spacing.md,
     marginVertical: spacing.xs,

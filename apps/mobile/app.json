@@ -12,7 +12,8 @@
       "softwareKeyboardLayoutMode": "resize",
       "permissions": [
         "ACCESS_FINE_LOCATION",
-        "ACCESS_COARSE_LOCATION"
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA"
       ]
     },
     "plugins": [
@@ -22,6 +23,12 @@
         "expo-location",
         {
           "locationWhenInUsePermission": "El mapa del zoológico necesita tu ubicación para mostrarte dónde estás dentro del parque."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "La app necesita la cámara para leer los códigos QR de los recintos del zoológico."
         }
       ]
     ]

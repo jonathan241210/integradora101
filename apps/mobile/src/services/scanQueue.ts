@@ -1,4 +1,5 @@
 import type { ApiError } from '@arca/api-client';
+import { publishSharedProgress } from '../repositories/sharedProgress';
 import { MemoryKeyValueStorage, defaultStorage, type KeyValueStorage } from '../repositories/storage';
 import {
   isOfflineError,
@@ -23,6 +24,8 @@ export type ScanPresentation = {
   message: string;
   pointsAwarded?: number;
   newSpecies?: string[];
+  unlockedSpecies?: { id: string; name: string }[];
+  alreadyKnownSpecies?: { id: string; name: string }[];
 };
 
 const TITLES: Record<ScanPresentation['kind'], string> = {
@@ -37,11 +40,11 @@ const TITLES: Record<ScanPresentation['kind'], string> = {
 
 type Sender = ProgressRepository['discover'];
 
-function presentation(kind: ScanPresentation['kind'], message: string, extra?: Pick<ScanPresentation, 'pointsAwarded' | 'newSpecies'>): ScanPresentation {
+function presentation(kind: ScanPresentation['kind'], message: string, extra?: Pick<ScanPresentation, 'pointsAwarded' | 'newSpecies' | 'unlockedSpecies' | 'alreadyKnownSpecies'>): ScanPresentation {
   return { kind, title: TITLES[kind], message, ...extra };
 }
 
-export function createScanQueue(storage: KeyValueStorage, discover?: Sender) {
+export function createScanQueue(storage: KeyValueStorage, discover?: Sender, onRecorded?: () => Promise<void>) {
   const send = discover;
 
   async function read(): Promise<QueuedScan[]> {
@@ -71,9 +74,12 @@ export function createScanQueue(storage: KeyValueStorage, discover?: Sender) {
       });
       const current = await read();
       await write(current.filter((queued) => queued.clientScanId !== item.clientScanId));
+      if (onRecorded && outcome.result === 'discovered') await onRecorded();
       return presentation(outcome.result, outcome.message, {
         pointsAwarded: outcome.pointsAwarded,
         newSpecies: outcome.newSpecies,
+        unlockedSpecies: outcome.unlockedSpecies,
+        alreadyKnownSpecies: outcome.alreadyKnownSpecies,
       });
     } catch (error) {
       if (isOfflineError(error)) {
@@ -136,9 +142,15 @@ function createClientScanId(): string {
 
 const memoryQueue = new MemoryKeyValueStorage();
 
+async function reloadSharedProgress(): Promise<void> {
+  if (!progressRepository) return;
+  publishSharedProgress(progressRepository, await progressRepository.load());
+}
+
 export const scanQueue = createScanQueue(
   process.env.JEST_WORKER_ID === undefined ? defaultStorage : memoryQueue,
   progressRepository ? progressRepository.discover.bind(progressRepository) : undefined,
+  reloadSharedProgress,
 );
 
 export async function submitScan(code: string): Promise<ScanPresentation> {
