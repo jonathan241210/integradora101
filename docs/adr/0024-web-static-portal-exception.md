@@ -1,6 +1,6 @@
-# 0024 · Excepción de arquitectura para el portal público: HTML y JavaScript estático en `apps/web`
+﻿# 0024 · Excepción de arquitectura para el portal público: HTML y JavaScript estático en `apps/web`
 
-- Estado: Propuesto (borrador, 2026-11-07; pendiente de aprobación del equipo; no autoriza implementación hasta su aprobación)
+- Estado: Aceptado (2026-11-07; aprobado por el equipo de desarrollo; autoriza la implementación de web-009)
 - Fecha: 2026-11-07
 - Spec relacionada: `apps/web/specs/009-dynamic-news-events.md` (plan `apps/web/plan/009-dynamic-news-events.md`, tasks `apps/web/tasks/009-dynamic-news-events.md`). Consumidor de `apps/api/specs/011-public-news-read.md`.
 
@@ -56,7 +56,7 @@ Para las páginas de contenido público de `apps/web` que define `web-009` (port
 
 ## Validación y revisión
 
-- Aprobación del equipo: pendiente. Este ADR está en Propuesto y no autoriza la implementación de `web-009` hasta su aprobación (P-01 de `web-009`).
+- Aprobación del equipo: **Aprobado el 2026-11-07 por el equipo de desarrollo (Víctor Adrián y Jonathan)**. Queda formalmente autorizada la implementación de web-009 conforme a los límites de este ADR.
 - Revisión obligatoria: al especificar el pago con tarjeta o al cambiar el alcance del portal.
 - Constitución: no cambia. Esta es una excepción por app, registrada según `AGENTS.md` raíz.
 - Enlaces: `apps/web/specs/009-dynamic-news-events.md` (RN-05, RN-06, RN-08), `apps/web/plan/009-dynamic-news-events.md` (Constitution Check, excepciones), `apps/web/tasks/009-dynamic-news-events.md` (P-01), `apps/web/specs/001-relocate-static-portal.md`, `apps/web/specs/008-cognitive-accessibility-assistant.md`, `docs/adr/0009-pagos-electronicos-futuros.md`.
