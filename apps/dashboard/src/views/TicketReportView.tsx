@@ -202,7 +202,10 @@ export function TicketReportView({ state, actions }: TicketReportViewModel) {
             <div className="card-heading">
               <div>
                 <h2>Boletos del periodo</h2>
-                <p>{formatCount(report.meta.total)} boletos</p>
+                <p>
+                  {formatCount(report.totals.tickets)} boletos ·{" "}
+                  {formatCount(report.meta.total)} registros
+                </p>
               </div>
             </div>
             {report.tickets.length === 0 ? (

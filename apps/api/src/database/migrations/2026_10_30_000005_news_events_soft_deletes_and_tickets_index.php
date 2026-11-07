@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Agregar columna deleted_at a news
-        if (Schema::hasTable('news') && !Schema::hasColumn('news', 'deleted_at')) {
+        if (Schema::hasTable('news') && ! Schema::hasColumn('news', 'deleted_at')) {
             Schema::table('news', function (Blueprint $table) {
                 $table->softDeletes()->nullable();
             });
         }
 
         // 2. Agregar columna deleted_at a events
-        if (Schema::hasTable('events') && !Schema::hasColumn('events', 'deleted_at')) {
+        if (Schema::hasTable('events') && ! Schema::hasColumn('events', 'deleted_at')) {
             Schema::table('events', function (Blueprint $table) {
                 $table->softDeletes()->nullable();
             });

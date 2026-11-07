@@ -9,4 +9,6 @@ return [
     'report_timezone' => 'America/Mexico_City',
     'report_max_days' => 366,
     'report_page_size' => 50,
+    // Máximo de boletos (adultos + niños) por venta (api-009 CA-42, RN-29). Cambiarlo requiere desplegar.
+    'ticket_sale_max_tickets' => 50,
 ];

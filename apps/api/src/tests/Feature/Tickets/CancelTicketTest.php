@@ -25,7 +25,7 @@ class CancelTicketTest extends TicketFeatureTestCase
         $this->assertNotNull($ticket->cancelled_at);
         $this->assertSame('Error de captura', $ticket->cancellation_reason);
         $this->assertNull($ticket->deleted_at);
-        $this->assertSame('41.00', $ticket->total_amount);
+        $this->assertSame('25.00', $ticket->total_amount); // boleto individual de adulto
     }
 
     public function test_ca12_ticket_sales_rejects_cancelling_twice_without_changing_data(): void

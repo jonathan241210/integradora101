@@ -28,11 +28,11 @@ Los permisos efectivos se aplican en la API. La navegación del dashboard solo p
 | `TwoFactorSetupView` | Mostrar QR, confirmar TOTP y presentar códigos de recuperación una sola vez |
 | `PwaRedirectView` | Informar y redirigir a veterinaria cuando `pwa_url` está configurada |
 | `useAuthSession` | ViewModel de sesión: comprobación inicial, login, reto, enrolamiento, expiración y logout |
-| `navigation` | Traducir `home` y permisos a las secciones que se pueden presentar (Usuarios con `users.manage` u `operational-staff.manage`) |
+| `navigation` | Traducir `home` y permisos a las secciones que se pueden presentar (Usuarios solo con `users.manage` desde el 2026-11-05) |
 | `useDashboardShell` / `dashboard-shell` | Sección activa, menú móvil y aviso; navega solo a secciones de la lista de `navigation` (sin datos de demostración) |
 | `TicketSaleSection`, `TicketHistorySection`, `TicketPricesSection` y sus Views | Venta (solo `cashier`), Historial (cancelación solo si la API marca `cancellable`; lectura para `admin` y `zoo-admin`) y Precios (`ticket-prices.manage`) |
-| `useTicketSale`, `useTicketHistory`, `useTicketPrices`, `useTicketPrintSettings` | ViewModels sobre `ticketSalesApi` (`createTicketSalesApi`); la configuración de impresión se lee y escribe en `localStorage` con `try/catch` |
-| `TicketReceipt`, `PrintSettingsDialog`, `CancelTicketDialog` | Boleto imprimible (folio y QR siempre; QR como `<img>` con data URI), configuración de impresión y cancelación con motivo |
+| `useTicketSale`, `useTicketHistory`, `useTicketPrices`, `useTicketPrintSettings` | ViewModels sobre `ticketSalesApi` (`createTicketSalesApi`); la configuración de impresión se lee y escribe en `localStorage` con `try/catch`. `useTicketSale` pide `sales.quote` al abrir la confirmación y guarda `quote.status` (`loading`, `ready`, `error`); solo confirma con `ready`, sin reintento automático, e ignora respuestas tardías con un identificador de solicitud |
+| `TicketReceipt`, `PrintSettingsDialog`, `CancelTicketDialog` | Un boleto imprimible por unidad vendida (tipo, precio, folio y QR siempre; QR como `<img>` con data URI). En pantalla solo se listan folio, tipo y precio; los boletos fluyen en la impresión con `break-inside: avoid`. También configuración de impresión y cancelación con motivo |
 | `UsersSection`, `NewsSection`, `EventsSection`, `EnclosuresSection`, `DashboardSection`, `TicketReportSection` | Contenedores delgados: llaman a su hook ViewModel solo cuando la sección se abre y pasan el resultado a la View |
 | `UsersView`, `NewsView`, `EventsView`, `EnclosuresView`, `DashboardView`, `TicketReportView` | Presentación por props, sin lógica ni llamadas a la API |
 | `useStaffAccounts`, `useNewsManagement`, `useEventsManagement`, `useEnclosuresManagement`, `useDashboardSummary`, `useTicketReport` | ViewModels (uno por sección) sobre `adminApi` de `@arca/api-client` |

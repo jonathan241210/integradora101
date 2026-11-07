@@ -11,7 +11,7 @@ Quedan **diferidos** (decisión 2026-11-02) y no existen en la API: avisos de ca
 Aprobados por Jonathan sobre la spec 009 (que sigue Aprobada):
 
 - **Cancelación sin `timezone`.** La zona del día de cancelación es siempre la del zoológico, `config('arca.report_timezone')` (America/Mexico_City). La API ignora cualquier `timezone` del cuerpo de `POST .../cancel`, y ese campo sale del contrato. `cancellable` del historial usa la misma zona.
-- **Tope de 100 por tipo.** `adult_quantity` y `child_quantity` admiten como máximo 100 cada uno. Más de 100 responde 422.
+- **Tope de 50 boletos en total.** `adult_quantity` + `child_quantity` admiten como máximo 50 (revisión de 2026-11-06, que sustituye el tope de 100 por tipo). Valor en `config/arca.php`, clave `ticket_sale_max_tickets`; cambiarlo requiere desplegar. Más de 50 responde 422. La opción de editarlo sin desplegar está en la spec 010 (`apps/api/specs/010-configurable-system-settings.md`, Borrador, sin aprobar).
 - **Cantidades estrictas.** Booleanos, cantidades con fracción y cadenas no numéricas responden 422.
 - **Límites de frecuencia (429).** Por usuario autenticado: 60 ventas por minuto en `POST /tickets` y 20 cancelaciones por minuto en `POST /tickets/{ticket}/cancel`.
 - **Límite de `effective_at`.** Un cambio programado no puede tener `effective_at` más de un año adelante (422).
@@ -29,6 +29,7 @@ Errores de validación: `422 { "message": "<primer error>", "errors": { "campo":
 | Método y ruta | Nombre | Permiso | Límite | Quién |
 |---|---|---|---|---|
 | `POST /api/v1/admin/tickets` | `admin.tickets.store` | `tickets.create` | 60 por minuto por usuario | `cashier` (único que vende) |
+| `POST /api/v1/admin/tickets/quote` | `admin.tickets.quote` | `tickets.create` | 120 por minuto por usuario | `cashier` |
 | `GET /api/v1/admin/tickets` | `admin.tickets.index` | `tickets.view` | — | `cashier` (solo suyos), `admin` y `zoo-admin` (todos, lectura) |
 | `POST /api/v1/admin/tickets/{ticket}/cancel` | `admin.tickets.cancel` | `tickets.cancel` | 20 por minuto por usuario | `cashier` (solo su boleto, mismo día) |
 | `GET /api/v1/admin/ticket-prices/current` | `admin.ticket-prices.current` | `tickets.create` o `ticket-prices.manage` | — | `cashier`, `admin` |
@@ -38,32 +39,67 @@ Errores de validación: `422 { "message": "<primer error>", "errors": { "campo":
 
 Cuerpo: `adult_quantity`, `child_quantity`.
 
-- Enteros JSON reales entre 0 y 100 cada uno (revisión de 2026-11-02); al menos uno > 0. Se valida antes de calcular el total, así que un valor enorme responde 422 y nunca 500.
-- Más de 100 en un tipo → 422 «No puedes vender más de 100 boletos de cada tipo en una misma venta.» (texto en `lang/es/validation.php`).
+- Enteros JSON reales, cada uno entre 0 y 50, con suma no mayor que 50 (revisión de 2026-11-06); al menos uno > 0. Se valida antes de calcular el total, así que un valor enorme responde 422 y nunca 500.
+- Más de 50 boletos en total → 422 «No puedes vender más de 50 boletos en una misma venta.» (texto propuesto por el redactor; pendiente de confirmar el texto, no el tope).
 - Booleanos, cantidades con fracción (p. ej. `1.5`), el número `2.0` y cualquier cadena, incluidas las numéricas (`"2"`), → 422 por campo (implementado según la propuesta por defecto de R1: `integer:strict`; pendiente de confirmación en la spec).
 - Un total por encima de 999,999.99 → 422 «El total de la venta excede el importe máximo permitido.» (tope de `DECIMAL(8,2)`).
 - El cliente nunca envía montos; el total y los precios los fija la API.
 
-201 `data`:
+201 `data` (forma aprobada por Jonathan el 2026-11-06; pregunta R-B1 de `api-009`):
+
+Una venta crea **un boleto por unidad vendida**: 1 adulto y 3 niños son 4 boletos, cada uno con su folio y su QR, cancelables por separado. Los boletos salen primero los adultos y después los niños, con folios ascendentes.
 
 ```json
 {
-  "folio": 123,
+  "adult_quantity": 1, "child_quantity": 3,
+  "total_amount": "73.00",
   "purchased_at": "2026-11-02T18:30:15Z",
-  "adult_quantity": 2, "child_quantity": 1,
-  "adult_unit_price": "25.00", "child_unit_price": "16.00",
-  "total_amount": "66.00",
-  "status": "completed", "payment_method": "cash",
   "cashier_name": "Nombre Apellido",
-  "qr_svg": "<?xml ...?><svg ...>...</svg>"
+  "tickets": [
+    { "folio": 101, "ticket_type": "adult", "unit_price": "25.00", "adult_quantity": 1, "child_quantity": 0, "total_amount": "25.00", "purchased_at": "2026-11-02T18:30:15Z", "cashier_name": "Nombre Apellido", "qr_svg": "<?xml ...?><svg ...>...</svg>" },
+    { "folio": 102, "ticket_type": "child", "unit_price": "16.00", "adult_quantity": 0, "child_quantity": 1, "total_amount": "16.00", "purchased_at": "2026-11-02T18:30:15Z", "cashier_name": "Nombre Apellido", "qr_svg": "<?xml ...?><svg ...>...</svg>" }
+  ]
 }
 ```
 
-- `folio` es `tickets.id`. `qr_svg` se genera en cada venta con `bacon/bacon-qr-code` a partir de `qr_code` y no se guarda. El token `qr_code` no se devuelve.
+- `total_amount` de la compra coincide con `POST /tickets/quote` para las mismas cantidades (CA-46). Cada boleto lleva su precio unitario; no hay campo de agrupación de la compra.
+- `folio` es `tickets.id` de cada boleto. `qr_svg` se genera en cada venta con `bacon/bacon-qr-code` a partir del `qr_code` de cada boleto y no se guarda. El token `qr_code` no se devuelve.
+- La venta más grande admitida son 50 boletos con QR en una transacción y una respuesta (RN-37). El tamaño y la duración se miden en la prueba CA-54, sin umbral fijo.
 - 422 sin precio vigente: «No hay un precio vigente configurado para este tipo de boleto.».
 - 422 si el total supera 999,999.99 (tope de la Action `RegisterTicketSaleAction`). Ver «Tipo de dato de `total_amount`».
 - 429 si se superan 60 ventas por minuto por usuario (CA-43).
-- La operación es transaccional: boleto, SVG y auditoría (`ticket-sold`) se confirman juntos o no queda nada.
+- La operación es transaccional: todos los boletos de la venta, sus SVG y sus eventos `ticket-sold` se confirman juntos o no queda nada (CA-52).
+- Cancelación por boleto (CA-51): cancelar un boleto no cambia los demás de la compra. Solo lo cancela el cajero que lo vendió y el mismo día (limitación aceptada, RN-38).
+- Filas anteriores a la revisión (varias cantidades en una sola fila) no se separan ni se migran: se listan y se cancelan completas (RN-36).
+- No hay ruta de validación de QR en la entrada. Cualquier validación futura debe revisar `status` (solo `completed` es válido).
+
+### Cotización: `POST /tickets/quote`
+
+Calcula los importes antes de registrar la venta, con la misma `QuoteTicketSaleAction` que usa `POST /tickets` (CA-46, RN-34). El cuerpo y su validación son los de la venta:
+
+```json
+{ "adult_quantity": 2, "child_quantity": 1 }
+```
+
+Respuesta 200, con importes como cadena de dos decimales:
+
+```json
+{
+  "data": {
+    "adult_unit_price": "25.00",
+    "child_unit_price": "16.00",
+    "adult_subtotal": "50.00",
+    "child_subtotal": "16.00",
+    "total_amount": "66.00"
+  }
+}
+```
+
+- No crea boleto, no emite token QR, no escribe auditoría y no cambia precios (CA-49).
+- 401 sin sesión y 403 sin `tickets.create`, incluidos `admin` y `zoo-admin` (CA-47).
+- 422 con los mismos mensajes que la venta: cantidades, tope de 50 boletos en total (revisión de 2026-11-06), sin precio vigente e importe máximo (CA-48).
+- 429 si se superan 120 cotizaciones por minuto por usuario; no consume el límite de ventas (RN-33).
+- La cotización es informativa: si el precio cambia antes de confirmar, la venta cobra el vigente al registrarse y el boleto muestra ese importe real (RN-32).
 
 ### Historial: `GET /tickets`
 

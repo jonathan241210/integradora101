@@ -17,32 +17,32 @@ return new class extends Migration
                 // Hacer nickname obligatorio
                 $table->string('nickname', 100)->nullable(false)->change();
 
-                if (!Schema::hasColumn('visitors', 'email_verified_at')) {
+                if (! Schema::hasColumn('visitors', 'email_verified_at')) {
                     $table->timestamp('email_verified_at')->nullable()->after('email');
                 }
-                if (!Schema::hasColumn('visitors', 'avatar_code')) {
+                if (! Schema::hasColumn('visitors', 'avatar_code')) {
                     $table->string('avatar_code', 50)->after('second_last_name');
                 }
-                if (!Schema::hasColumn('visitors', 'adult_confirmed_at')) {
+                if (! Schema::hasColumn('visitors', 'adult_confirmed_at')) {
                     $table->timestamp('adult_confirmed_at')->after('avatar_code');
                 }
-                if (!Schema::hasColumn('visitors', 'privacy_notice_version')) {
+                if (! Schema::hasColumn('visitors', 'privacy_notice_version')) {
                     $table->string('privacy_notice_version', 20)->after('adult_confirmed_at');
                 }
-                if (!Schema::hasColumn('visitors', 'privacy_accepted_at')) {
+                if (! Schema::hasColumn('visitors', 'privacy_accepted_at')) {
                     $table->timestamp('privacy_accepted_at')->after('privacy_notice_version');
                 }
-                if (!Schema::hasColumn('visitors', 'last_login_at')) {
+                if (! Schema::hasColumn('visitors', 'last_login_at')) {
                     $table->timestamp('last_login_at')->nullable()->after('password');
                 }
-                if (!Schema::hasColumn('visitors', 'created_at')) {
+                if (! Schema::hasColumn('visitors', 'created_at')) {
                     $table->timestamps();
                 }
             });
         }
 
         // 2. Crear tabla `personal_access_tokens` (Sanctum estándar para móviles)
-        if (!Schema::hasTable('personal_access_tokens')) {
+        if (! Schema::hasTable('personal_access_tokens')) {
             Schema::create('personal_access_tokens', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('tokenable_type');
@@ -59,7 +59,7 @@ return new class extends Migration
         }
 
         // 3. Crear tabla `visitor_refresh_tokens` (Refresh tokens rotatorios para la app móvil)
-        if (!Schema::hasTable('visitor_refresh_tokens')) {
+        if (! Schema::hasTable('visitor_refresh_tokens')) {
             Schema::create('visitor_refresh_tokens', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->integer('visitor_id');
@@ -80,7 +80,7 @@ return new class extends Migration
         }
 
         // 4. Crear tabla `visitor_verification_codes` (Códigos OTP de 6 dígitos)
-        if (!Schema::hasTable('visitor_verification_codes')) {
+        if (! Schema::hasTable('visitor_verification_codes')) {
             Schema::create('visitor_verification_codes', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->integer('visitor_id');

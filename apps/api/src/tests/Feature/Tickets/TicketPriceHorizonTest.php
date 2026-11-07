@@ -8,7 +8,7 @@ class TicketPriceHorizonTest extends TicketFeatureTestCase
 {
     private const MESSAGE = 'La fecha de entrada en vigor no puede ser mayor a un año a partir de hoy.';
 
-    public function test_ca45_ticket_prices_effective_at_maximo_un_anio(): void
+    public function test_ca45_ticket_prices_effective_at_at_most_one_year(): void
     {
         $admin = $this->createAccount('admin');
         $this->setPrices($admin);

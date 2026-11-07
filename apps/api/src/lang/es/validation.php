@@ -22,7 +22,7 @@ return [
         'string' => 'El campo :attribute debe tener al menos :min caracteres.',
     ],
     'required' => 'El campo :attribute es obligatorio.',
-    'ticket_quantity_max' => 'No puedes vender más de 100 boletos de cada tipo en una misma venta.',
+    'ticket_quantity_max' => 'No puedes vender más de :max boletos en una misma venta.',
     'ticket_effective_at_horizon' => 'La fecha de entrada en vigor no puede ser mayor a un año a partir de hoy.',
     'string' => 'El campo :attribute debe ser texto.',
     'unique' => 'El valor de :attribute ya está en uso.',

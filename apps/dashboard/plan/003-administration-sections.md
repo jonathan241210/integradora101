@@ -1,10 +1,10 @@
 # Plan técnico · 003 · administration-sections
 
 - Spec: `apps/dashboard/specs/003-administration-sections.md`
-- Estado de spec: Aprobada (Jonathan, 2026-10-30)
+- Estado de spec: Aprobada (revisión aprobada por Jonathan el 2026-11-05; estado previo: Aprobada, Jonathan, 2026-10-30)
 - Responsable técnico: Jonathan (frontend)
 - Contrato que consume: `apps/api/specs/007-administration-management.md` y su plan `apps/api/plan/007-administration-management.md`
-- Estado del plan: Aprobado
+- Estado del plan: Aprobado; revisión de 2026-11-05 aprobada (solo cambia la navegación de Usuarios, CA-01, y las tareas T-33 a T-38 de `tasks/003-administration-sections.md`).
 - Actualización de 2026-10-30: zona horaria del dispositivo (RN-11, CA-19). Implementada (T-31 y T-32, según reporta la sesión principal); la redacción de RN-11 y CA-19 la proveyó el documentador y Jonathan la confirmó el 2026-10-30.
 - Actualización de 2026-10-30 (exportación): la API habilita Excel y PDF (ADR 0017 aceptado). Se actualizan RN-10, CA-12 y las decisiones de exportación de esta app; no hay cambios de código ni de criterios.
 
@@ -115,7 +115,7 @@ Convención: bloque `describe("CA-NN administration-sections", …)` como en `da
 
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
-| CA-01 | Navegación por permisos (`users.manage` y `operational-staff.manage` muestran «Usuarios»; ya no existe «Usuarios de taquilla») | `administration-navigation.test.tsx` (nuevo; absorbe `getNavigationForProfile`) |
+| CA-01 | Navegación por permisos (solo `users.manage` muestra «Usuarios»; `zoo-admin` y un perfil solo con `operational-staff.manage` no la ven desde la revisión de 2026-11-05; ya no existe «Usuarios de taquilla») | `administration-navigation.test.tsx` (nuevo; absorbe `getNavigationForProfile`) |
 | CA-02 | `App` no renderiza `DemoBanner` en las seis secciones conectadas y sí en Venta e Historial | `global-demo-banner.test.tsx` (se actualiza) |
 | CA-03 | Tabla con columnas, filtros y paginación; estados cargando, vacío y error con `role="alert"` | `staff-accounts.test.tsx` (reemplaza `ticket-users.test.tsx`) |
 | CA-04 | Alta: rol sugerido por área, solo roles asignables, errores 422 por campo | `staff-accounts.test.tsx` |

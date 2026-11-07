@@ -69,9 +69,12 @@ No hay tareas de BD. Esta feature no cambia el esquema ni requiere DBR (`api-008
 
 ## Calidad y entrega
 
-- [ ] **T-37** (CA-12, CA-18): Revisión manual documentada en el PR: navegación con teclado en formularios, paneles colapsables, confirmaciones y campo de contraseña (foco visible, Escape); ausencia de desbordamiento horizontal a 360, 768 y 1366 px en Noticias, Eventos y Usuarios.
-- [ ] **T-38** (CA-01 a CA-15): Recorrido de extremo a extremo contra la API real en `arca_pruebas` con `presidencia@arca.local` o `direccion_zoo@arca.local`. Usuarios puede verificarse con la API de `api-007`; Noticias y Eventos (subir, reemplazar, quitar y eliminar; comprobar que el archivo desaparece de `storage/app/public/{news,events}`) **dependen de `api-008` implementada**. Registrar evidencia sin contraseñas ni secretos.
-- [ ] **T-39**: Desde `apps/dashboard` ejecutar `npm run types`, `npm test` y `npm run build`; correr `/verify` y registrar resultados en el PR. Sin ejecutar nada en `arca_zoo`.
+- [x] **T-37** (CA-12, CA-18): Revisión manual documentada en el PR: navegación con teclado en formularios, paneles colapsables, confirmaciones y campo de contraseña (foco visible, Escape); ausencia de desbordamiento horizontal a 360, 768 y 1366 px en Noticias, Eventos y Usuarios.
+  - Evidencia: Jonathan informó el 2026-11-06 que probó todo y está correcto.
+- [x] **T-38** (CA-01 a CA-15): Recorrido de extremo a extremo contra la API real en `arca_pruebas` con `presidencia@arca.local` o `direccion_zoo@arca.local`. Usuarios puede verificarse con la API de `api-007`; Noticias y Eventos (subir, reemplazar, quitar y eliminar; comprobar que el archivo desaparece de `storage/app/public/{news,events}`) **dependen de `api-008` implementada**. Registrar evidencia sin contraseñas ni secretos.
+  - Evidencia: Jonathan informó el 2026-11-06 que probó todo y está correcto.
+- [x] **T-39**: Desde `apps/dashboard` ejecutar `npm run types`, `npm test` y `npm run build`; correr `/verify` y registrar resultados en el PR. Sin ejecutar nada en `arca_zoo`.
+  - Evidencia (2026-11-06, `/verify`): `npm run types` exit 0; `npm test` exit 0, 24 archivos y 290 pruebas en verde; `npm run build` exit 0. `format:check` y `lint` no existen como scripts en el dashboard, así que no se ejecutaron. Falta registrar la salida en el PR.
 - [x] **T-40**: Actualizar `apps/dashboard/docs/arquitectura.md` (formularios en línea, paneles colapsables, `image-preview`, `InlineConfirm`, `InlinePasswordReset`) y `apps/dashboard/docs/manual-demo.md` (Noticias, Eventos y Usuarios ya no usan diálogos ni son demostrativos).
 - [x] **T-41**: Actualizar las notas de vigencia de `apps/dashboard/specs/003-administration-sections.md`, `plan/003-administration-sections.md` y `tasks/003-administration-sections.md` para que digan que Usuarios también cambia de interacción (D3). Sin cambiar criterios ni estados.
 - [ ] **T-42**: Completar el Constitution Check del PR, enlazar spec, plan y tasks de `dashboard-004` y de `api-008`, citar `dashboard-004` en los commits y pasar la spec a Implementada solo cuando CA-01 a CA-20 estén verificados con evidencia y exista aprobación funcional.
