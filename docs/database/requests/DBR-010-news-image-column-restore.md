@@ -1,6 +1,6 @@
 # DBR-010 · news-image-column-restore
 
-- Estado: Borrador (sin aprobar; no existe migración ni SQL ejecutable)
+- Estado: Aprobada (Lista para backend, 2026-11-07)
 - Feature/spec origen: `apps/api/specs/008-event-news-images.md`, `apps/api/specs/011-public-news-read.md` y `apps/web/specs/009-dynamic-news-events.md` (consumidores); causa: restauración de `arca_pruebas` en la nueva instancia de Aiven (`docs/database/plan-migracion-instancia-aiven.md`)
 - Solicitante: Jonathan (responsable funcional y backend)
 - Responsable de BD: Víctor Adrián
@@ -91,8 +91,8 @@ Tabla vacía o muy pequeña; bloqueo despreciable. Reversión en `down()`: renom
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Responsable de BD | | | |
-| Responsable backend | | | |
+| Responsable de BD | Víctor Adrián | 2026-11-07 | Aprobada |
+| Responsable backend | Jonathan | 2026-11-07 | Aprobada (solicitante) |
 
 ## Aplicación por ambiente
 
