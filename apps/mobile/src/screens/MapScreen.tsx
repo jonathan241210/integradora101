@@ -1,7 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { PanResponder, StyleSheet, View } from 'react-native';
-import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { PanResponder, Pressable, StyleSheet, View } from 'react-native';
 import {
   AppText,
   Card,
@@ -13,6 +11,7 @@ import {
 } from '../components/ui';
 import {
   ArrivalBanner,
+  ArTourOverlay,
   DestinationRouteLine,
   MapMarker,
   MapPlaceCard,
@@ -29,13 +28,14 @@ import {
   ZOOM_STEP,
 } from '../constants/zoo';
 import { MapFilter, MapPlace, MapSection } from '../models';
-import { colors, spacing } from '../theme/tokens';
+import { colors, radius, spacing } from '../theme/tokens';
 import {
   clampPan,
   clampZoom,
   computeCenterPanForSvgPoint,
 } from '../utils/mapViewport';
 import { computeWalkRoute } from '../utils/pathfinding';
+import { useArTourViewModel } from '../viewmodels/useArTourViewModel';
 import type { UserPosition } from '../viewmodels/useLocationViewModel';
 
 interface MapScreenProps {
@@ -199,6 +199,13 @@ export function MapScreen({
     );
   }, [userPosition, destinationPlace]);
 
+  const arTour = useArTourViewModel({
+    places: filteredPlaces,
+    userPosition,
+    activeDestinationPlace: destinationPlace,
+    onSelectDestination: onToggleDestination,
+  });
+
   const selectedSectionName =
     sections.find((section) => section.id === selectedPlace?.sectionId)?.name ?? 'Sin sección';
   const hasNoPlaces = !isLoading && !error && filteredPlaces.length === 0;
@@ -208,8 +215,15 @@ export function MapScreen({
     <ScreenContainer scroll={false}>
       <View style={styles.header}>
         <AppText variant="title">Mapa del zoológico</AppText>
-        <Pressable accessibilityRole="button" accessibilityLabel="Buscar animales" onPress={onSearchPress} style={styles.searchLink}>
-          <AppText variant="body" bold style={styles.searchLinkText}>Buscar animales</AppText>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Buscar animales"
+          onPress={onSearchPress}
+          style={styles.searchLink}
+        >
+          <AppText variant="body" bold style={styles.searchLinkText}>
+            Buscar animales
+          </AppText>
         </Pressable>
         <View style={styles.filters}>
           {filters.map((item) => (
@@ -287,6 +301,20 @@ export function MapScreen({
               estimatedMinutes={walkRoute.estimatedMinutes}
             />
           )}
+
+          {!arTour.isTourOpen && (
+            <Pressable
+              testID="start-ar-tour-button"
+              accessibilityRole="button"
+              accessibilityLabel="Iniciar Recorrido 3D"
+              onPress={arTour.startTour}
+              style={styles.tourStartButton}
+            >
+              <AppText variant="caption" bold color="textOnPrimary">
+                Iniciar Recorrido 3D
+              </AppText>
+            </Pressable>
+          )}
         </View>
 
         {isLoading && (
@@ -332,6 +360,27 @@ export function MapScreen({
           />
         )}
       </View>
+
+      {arTour.isTourOpen && (
+        <ArTourOverlay
+          visualMode={arTour.visualMode}
+          currentStopIndex={arTour.currentStopIndex}
+          totalStops={arTour.tourStops.length}
+          currentStop={arTour.currentStop}
+          walkRoute={arTour.walkRoute}
+          guidance={arTour.guidance}
+          forkBranches={arTour.forkBranches}
+          onClose={arTour.closeTour}
+          onToggleVisualMode={arTour.toggleVisualMode}
+          onNextStop={arTour.nextStop}
+          onPrevStop={arTour.prevStop}
+          onSelectForkStop={arTour.selectForkStop}
+          onRotateLeft={arTour.rotateLeft}
+          onRotateRight={arTour.rotateRight}
+          onAlignFront={arTour.alignFront}
+          onStepAnimation={arTour.stepAnimation}
+        />
+      )}
     </ScreenContainer>
   );
 }
@@ -342,8 +391,14 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
     gap: spacing.sm,
   },
-  searchLink: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
-  searchLinkText: { color: colors.secondary },
+  searchLink: {
+    alignSelf: 'flex-start',
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  searchLinkText: {
+    color: colors.secondary,
+  },
   filters: {
     flexDirection: 'row',
     gap: spacing.xs,
@@ -365,6 +420,21 @@ const styles = StyleSheet.create({
   viewportContent: {
     width: '100%',
     height: '100%',
+  },
+  tourStartButton: {
+    position: 'absolute',
+    left: spacing.sm,
+    bottom: spacing.sm,
+    minHeight: 44,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
+    borderWidth: 1,
+    borderColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
   },
   stateCard: {
     position: 'absolute',
