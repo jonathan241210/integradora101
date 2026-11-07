@@ -55,35 +55,35 @@ INSERT INTO animals (
     'Carnívoro estricto: carne de res, pollo y enriquecimiento alimentario.',
     'Pelaje dorado con rosetas distintivas, gran agilidad y fuerza en mandíbula.',
     'https://images.unsplash.com/photo-1575550959106-5a7defe28b56?auto=format&fit=crop&w=800&q=80',
-    '2023-01-15', '10:00:00', 1, 1, 1, 'active'
+    '2023-01-15', '10:00:00', 1, 1, 1, 'Permanente'
 ),
 (
     2, 1, 'Simba', 'M', '7 años', 'Intercambio zoológico registrado', '10-14 años', 'Vivíparo',
     'Carnívoro: raciones balanceadas de res con suplementos minerales.',
     'Melenudo imponente, temperamento sereno y vigilante de su manada.',
     'https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=800&q=80',
-    '2022-05-20', '09:30:00', 1, 2, 1, 'active'
+    '2022-05-20', '09:30:00', 1, 2, 1, 'Permanente'
 ),
 (
     3, 1, 'Kukul', 'F', '3 años', 'Donación de santuario certificado', '50-60 años', 'Ovíparo',
     'Frugívora y granívora: semillas de girasol, nueces, frutas frescas de temporada.',
     'Plumaje verde brillante con tonos rojos en la frente y plumas remeras azules.',
     'https://images.unsplash.com/photo-1552728089-57bdde30beb3?auto=format&fit=crop&w=800&q=80',
-    '2023-08-10', '11:15:00', 2, 3, 1, 'active'
+    '2023-08-10', '11:15:00', 2, 3, 1, 'Permanente'
 ),
 (
     4, 1, 'Tlaloc', 'M', '12 años', 'Decomiso ambiental', '60-70 años', 'Ovíparo',
     'Carnívoro: pescado fresco, pollo y roedores enteros.',
     'Hocico ancho y aplanado, escamas dorsales prominentes y ojos adaptados a inmersión.',
     'https://images.unsplash.com/photo-1522069169874-c58ec4b76be5?auto=format&fit=crop&w=800&q=80',
-    '2021-11-04', '14:00:00', 3, 4, 1, 'active'
+    '2021-11-04', '14:00:00', 3, 4, 1, 'Permanente'
 ),
 (
     5, 1, 'Maya', 'F', '2 años', 'Nacida bajo cuidado humano', '10-12 años', 'Vivíparo',
     'Piscívora: truchas, mojarras y crustáceos de agua dulce.',
     'Cuerpo hidrodinámico alargado, cola gruesa y pelaje denso impermeable.',
     'https://images.unsplash.com/photo-1589656966895-2f33e7653819?auto=format&fit=crop&w=800&q=80',
-    '2024-02-18', '08:45:00', 3, 5, 1, 'active'
+    '2024-02-18', '08:45:00', 3, 5, 1, 'Permanente'
 );
 
 -- 5. Eventos y actividades del zoológico (events)

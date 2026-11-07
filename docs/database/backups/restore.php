@@ -103,17 +103,29 @@ if ($content === false) {
 // Normalizar saltos de línea para Windows / Linux
 $content = str_replace("\r\n", "\n", $content);
 
-// Ejecutar por bloques de sentencias
-$queries = explode(";\n", $content);
+// Filtrar líneas de comentarios puros (-- o #)
+$lines = explode("\n", $content);
+$cleanLines = [];
+foreach ($lines as $line) {
+    $trimmed = trim($line);
+    if ($trimmed === '' || str_starts_with($trimmed, '--') || str_starts_with($trimmed, '/*') || str_starts_with($trimmed, '#')) {
+        continue;
+    }
+    $cleanLines[] = $line;
+}
+$cleanSql = implode("\n", $cleanLines);
+
+// Dividir por punto y coma al final de línea
+$statements = preg_split('/;\s*$/m', $cleanSql);
 $executed = 0;
 
-foreach ($queries as $query) {
-    $query = trim($query);
-    if ($query === '' || str_starts_with($query, '--')) {
+foreach ($statements as $stmt) {
+    $stmt = trim($stmt);
+    if ($stmt === '') {
         continue;
     }
     try {
-        $pdo->exec($query);
+        $pdo->exec($stmt);
         $executed++;
     } catch (PDOException $e) {
         // Ignorar posibles duplicados de seeders iniciales
