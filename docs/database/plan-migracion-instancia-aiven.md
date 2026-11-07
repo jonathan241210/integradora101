@@ -3,43 +3,44 @@
 - **Documento:** Plan de migración y continuidad de base de datos
 - **Responsable de BD:** Víctor Adrián
 - **Responsable backend / Equipo:** Jonathan, Diego, Ian
-- **Fecha de elaboración:** 2026-11-02
-- **Rama origen:** `Jona` (incluye esquema normalizado hasta DBR-006)
-- **Estado:** Propuesto (Pendiente de ejecución al aproximarse el fin del periodo de prueba de Aiven)
+- **Fecha de elaboración inicial:** 2026-11-02
+- **Última actualización:** 2026-11-07 (Actualizado con DBR-008 y ventana de ejecución por vencimiento de prueba de Aiven)
+- **Rama origen:** `victor` (incluye esquema canónico normalizado hasta DBR-006 y DBR-008)
+- **Estado:** Activo / En ejecución inmediata (vencimiento de instancia gratuita de Aiven: 2026-11-07)
 
 ---
 
 ## 1. Contexto y objetivo
 
-El entorno de base de datos compartido para desarrollo y pruebas del proyecto (`arca_pruebas`) se encuentra actualmente alojado en una instancia de prueba gratuita de **Aiven Cloud MySQL** (`mysql-230c9986-arcannb.a.aivencloud.com:15280`, ADR 0013).
+El entorno de base de datos compartido para desarrollo y pruebas del proyecto (`arca_pruebas`) se encuentra alojado en una instancia de prueba gratuita de **Aiven Cloud MySQL** (`mysql-230c9986-arcannb.a.aivencloud.com:15280`, ADR 0013).
 
-Debido a que el periodo de prueba gratuito está próximo a concluir, la instancia será discontinuada por el proveedor.
+Hoy **2026-11-07** concluye el periodo de prueba gratuito de dicha instancia, por lo que el servicio será suspendido o eliminado por el proveedor en las próximas horas.
 
 ### Objetivo
 Realizar una migración planificada, segura y con cero pérdida de información hacia una **nueva instancia/servicio de Aiven**, garantizando:
-1. Respaldo íntegro de todos los datos de prueba existentes (cuentas de staff, configuraciones, animales, recintos, boletos y datos transaccionales).
-2. Despliegue de la estructura de base de datos canónica actualizada (hasta DBR-006).
-3. Restauración consistente de datos sin conflictos de integridad referencial.
-4. Transición transparente de variables de entorno (`.env`) para todos los desarrolladores del equipo.
-
-> **IMPORTANTE:** Este documento es un **plan preventivo**. No debe ejecutarse ninguna acción destructiva ni de conmutación hasta que el responsable de base de datos dé la instrucción formal de inicio de ventana de migración.
+1. **Respaldo inmediato de datos (Paso crítico):** Extraer el dump de datos de `arca_pruebas` antes del corte de red del servicio actual.
+2. **Despliegue del esquema canónico completo:** Reconstruir la estructura ejecutando la cadena oficial de migraciones Laravel (DBR-001 a DBR-008).
+3. **Restauración consistente de datos:** Importar registros de prueba evitando conflictos de claves foráneas.
+4. **Continuidad operativa:** Actualizar las credenciales en `.env` sin romper las suites de pruebas automatizadas.
 
 ---
 
 ## 2. Inventario de lo que se migra
 
-### 2.1 Esquema oficial de base de datos
-El esquema no se reconstruye mediante SQL manual, sino ejecutando la cadena oficial de migraciones Laravel aprobadas en `apps/api/src/database/migrations/`:
-1. `2026_10_14_000001_rename_tables_and_columns_to_english.php` (DBR-001)
-2. `2026_10_14_000002_staff_authentication_schema.php` (DBR-002: Spatie roles, sessions, activity_log)
-3. `2026_10_15_000003_visitor_accounts_schema.php` (DBR-003: visitantes, tokens, códigos)
-4. `2026_10_15_000004_visitor_progress_schema.php` (DBR-004: scans, logros, misiones)
-5. `2026_10_30_000005_news_events_soft_deletes_and_tickets_index.php` (DBR-005: SoftDeletes e índice)
-6. `2026_11_02_000006_ticket_sales_schema.php` (DBR-006: precios, taquilla, avisos)
+### 2.1 Cadena oficial de migraciones Laravel
+El esquema se construye ejecutando en orden las migraciones versionadas en `apps/api/src/database/migrations/`:
+
+1. `2026_10_14_000001_rename_tables_and_columns_to_english.php` (DBR-001: normalización al inglés de las 16 tablas originales)
+2. `2026_10_14_000002_staff_authentication_schema.php` (DBR-002: columnas de autenticación en `users`/`departments`, Spatie roles/permisos, sessions, activity_log)
+3. `2026_10_15_000003_visitor_accounts_schema.php` (DBR-003: cuentas de visitante, tokens y códigos de verificación)
+4. `2026_10_15_000004_visitor_progress_schema.php` (DBR-004: colección de especies, scans, catálogo de logros y misiones, libro mayor de puntos)
+5. `2026_10_30_000005_news_events_soft_deletes_and_tickets_index.php` (DBR-005: SoftDeletes en noticias/eventos e índice `purchased_at` en boletos)
+6. `2026_11_02_000006_ticket_sales_schema.php` (DBR-006: tabla `ticket_prices`, columnas de venta/cancelación en `tickets`, tabla `staff_notifications`)
+7. `2026_11_03_000008_enclosure_gps_coordinates.php` (DBR-008: columnas `gps_lat`, `gps_lon`, `map_x`, `map_y` en `enclosures` para el mapa móvil `mobile-007`)
 
 ### 2.2 Datos de prueba esenciales a preservar
 - **Personal institucional y autenticación:** `users`, `departments`, `roles`, `permissions`, `model_has_roles`, `model_has_permissions`, `role_has_permissions` (incluyendo las credenciales documentadas en `apps/api/docs/credenciales-desarrollo.md`).
-- **Catálogo zoológico:** `species`, `enclosures`, `enclosure_qr_codes`, `animals`, `animal_departures`.
+- **Catálogo zoológico y geolocalización:** `species`, `enclosures` (con sus coordenadas GPS y normalizadas SVG), `enclosure_qr_codes`, `animals`, `animal_departures`.
 - **Área clínica:** `clinical_evaluations`, `clinical_evaluation_findings`, `animal_restraints`, `lab_samples`.
 - **Contenido institucional:** `news`, `events`.
 - **Taquilla y financiero:** `tickets`, `ticket_prices`, `staff_notifications`.
@@ -52,56 +53,31 @@ El esquema no se reconstruye mediante SQL manual, sino ejecutando la cadena ofic
 Se adopta la estrategia **Estructura limpia por migraciones + Inyección de datos (Data Dump)**:
 
 ```text
-[Instancia Actual Aiven]
+[Instancia Actual Aiven (Próxima a vencer)]
        │
-       ▼ (1. Respaldo lógico con mysqldump solo datos)
-[Archivo arca_pruebas_data_backup.sql]
+       ▼ (1. Respaldo urgente con mysqldump solo datos + dump full)
+[Archivos locales .sql en máquina del responsable de BD]
        │
 [Nueva Instancia Aiven]
        │
        ▼ (2. Ejecutar php artisan migrate con nuevo .env)
-[Esquema canónico 100% verificado]
+[Esquema canónico 100% verificado: DBR-001 a DBR-008]
        │
-       ▼ (3. Restaurar arca_pruebas_data_backup.sql con FOREIGN_KEY_CHECKS=0)
-[Base arca_pruebas completamente operativa]
+       ▼ (3. Restaurar arca_pruebas_data_only.sql con FOREIGN_KEY_CHECKS=0)
+[Base arca_pruebas completamente restaurada]
        │
-       ▼ (4. Verificación con php artisan test y conteo de filas)
+       ▼ (4. Verificación con php artisan test, conteo y login de prueba)
 ```
-
-**Ventajas de esta estrategia:**
-- Asegura que la tabla `migrations` de Laravel quede perfectamente sincronizada en la nueva base.
-- Previene inconsistencias de índices o tipos de datos entre versiones del motor.
-- Garantiza total trazabilidad con el flujo SDD del proyecto.
 
 ---
 
 ## 4. Fases de ejecución paso a paso
 
-### Fase 1: Aprovisionamiento de la nueva instancia en Aiven
+### ⚠️ PASO 1 (URGENTE): Respaldo de la base actual antes del corte
 
-1. **Creación del servicio:**
-   - Crear un nuevo servicio **MySQL** en Aiven Cloud.
-   - Seleccionar región conveniente (ej. `google-southamerica-west1` o `aws-us-east-1` según disponibilidad en plan).
-   - Configurar versión compatible (MySQL 8.0.x / 8.4.x).
-2. **Creación de base de datos:**
-   - En la consola de Aiven, crear una base de datos con el nombre exacto: `arca_pruebas`.
-3. **Descarga del certificado CA SSL:**
-   - Descargar el archivo `ca.pem` de la nueva instancia.
-   - Guardarlo en el directorio local de certificados (ej. en `apps/api/` fuera del repositorio git o en la ruta que determine el `.env` local).
-4. **Parámetros de conexión requeridos:**
-   - Host (ej. `mysql-new-instance.aivencloud.com`)
-   - Puerto (ej. `15280`)
-   - Usuario (ej. `avnadmin`)
-   - Contraseña
+> **Ejecutar de inmediato** desde la terminal con acceso a la red de Aiven para asegurar los datos:
 
----
-
-### Fase 2: Respaldo (Backup) de la instancia actual
-
-> Ejecutar desde la máquina del responsable de BD con acceso de red a Aiven.
-
-#### 1. Dump completo de seguridad (Estructura + Datos)
-Como salvaguarda absoluta en caso de requerir una recuperación de emergencia:
+#### A. Dump completo de seguridad (Estructura + Datos)
 ```bash
 mysqldump \
   --host=mysql-230c9986-arcannb.a.aivencloud.com \
@@ -117,8 +93,8 @@ mysqldump \
   arca_pruebas > backup_arca_pruebas_full_seguridad.sql
 ```
 
-#### 2. Dump exclusivo de datos (Sin DDL/CREATE TABLE)
-Este archivo se usará para la importación directa sobre las tablas creadas por Laravel:
+#### B. Dump exclusivo de datos (Sin CREATE TABLE)
+Este archivo se utilizará para importar los datos limpios sobre las tablas creadas por las migraciones Laravel:
 ```bash
 mysqldump \
   --host=mysql-230c9986-arcannb.a.aivencloud.com \
@@ -137,9 +113,22 @@ mysqldump \
 
 ---
 
-### Fase 3: Conexión y migración de la nueva instancia
+### PASO 2: Aprovisionamiento de la nueva instancia en Aiven
 
-1. **Configurar temporalmente `.env` en `apps/api/src/.env`:**
+1. **Crear el nuevo servicio MySQL** en la consola de Aiven (cuenta nueva o con nuevo crédito).
+2. **Crear la base de datos** con el nombre exacto: `arca_pruebas`.
+3. **Descargar el nuevo certificado CA SSL** (`ca.pem`) y guardarlo en el equipo local.
+4. Anotar las nuevas credenciales:
+   - Host
+   - Puerto
+   - Usuario (`avnadmin`)
+   - Contraseña
+
+---
+
+### PASO 3: Conexión y migración de la nueva estructura
+
+1. **Configurar el archivo `.env` en `apps/api/src/.env` con la nueva instancia:**
    ```env
    DB_CONNECTION=mysql
    DB_HOST=NUEVO_HOST_AIVEN.aivencloud.com
@@ -147,7 +136,7 @@ mysqldump \
    DB_DATABASE=arca_pruebas
    DB_USERNAME=avnadmin
    DB_PASSWORD=NUEVA_CONTRASENA_AIVEN
-   DB_SSL_CA="RUTA_NUEVO_CERTIFICADO/ca.pem"
+   DB_SSL_CA="RUTA_DEL_NUEVO_CERTIFICADO/ca.pem"
    ```
 
 2. **Verificar conectividad básica:**
@@ -156,29 +145,29 @@ mysqldump \
    php artisan db:show
    ```
 
-3. **Ejecutar la suite completa de migraciones:**
+3. **Ejecutar las migraciones en la nueva base (DBR-001 a DBR-008):**
    ```powershell
    php artisan migrate
    ```
 
-4. **Verificar que todas las migraciones figuren en estado `Ran`:**
+4. **Verificar que todas las 7 migraciones figuren en estado `Ran`:**
    ```powershell
    php artisan migrate:status
    ```
 
 ---
 
-### Fase 4: Restauración de los datos respaldados
+### PASO 4: Restauración de los datos respaldados
 
-Dado que la migración `2026_11_02_000006_ticket_sales_schema` siembra dos registros base en `ticket_prices`, y que las claves foráneas pueden validar dependencias cíclicas, la importación se ejecuta con desactivación previa de chequeo de llaves foráneas.
+Dado que la migración de tickets (DBR-006) siembra automáticamente precios iniciales y las tablas tienen claves foráneas activas, la importación se ejecuta con desactivación de verificación de llaves foráneas:
 
-#### Preparación del script de importación:
-En la cabecera y pie del archivo `arca_pruebas_data_only.sql`, verificar que incluya (o anteponer/posponer):
+#### Envolver el script de datos (`arca_pruebas_data_only.sql`):
+Asegurar que la importación contenga al inicio y al final:
 ```sql
 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO';
 
--- CONTENIDO DEL DUMP (arca_pruebas_data_only.sql)
+-- CONTENIDO DEL ARCHIVO arca_pruebas_data_only.sql
 
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET SQL_MODE=@OLD_SQL_MODE;
@@ -191,81 +180,73 @@ mysql \
   --port=NUEVO_PUERTO_AIVEN \
   --user=avnadmin \
   --password \
-  --ssl-ca="RUTA_NUEVO_CERTIFICADO/ca.pem" \
+  --ssl-ca="RUTA_DEL_NUEVO_CERTIFICADO/ca.pem" \
   --default-character-set=utf8mb4 \
   arca_pruebas < arca_pruebas_data_only.sql
 ```
 
-*(Nota: si existen duplicados por registros sembrados en la migración como `ticket_prices` con id 1 y 2, se recomienda usar `INSERT IGNORE` o limpiar esas dos filas antes de importar).*
+*(Si `ticket_prices` tiene conflicto por los IDs 1 y 2 creados en el migrate, se pueden limpiar antes de importar o usar `INSERT IGNORE`).*
 
 ---
 
-### Fase 5: Validación e integridad de datos
+### PASO 5: Validación e integridad de datos
 
-El responsable de BD verificará los siguientes puntos de control:
+El responsable de BD ejecutará los siguientes controles:
 
 1. **Conteo comparativo de filas:**
-   Ejecutar la siguiente consulta tanto en la instancia antigua como en la nueva para confirmar que coincidan exactamente:
    ```sql
-   SELECT table_name, table_rows
-   FROM information_schema.tables
-   WHERE table_schema = 'arca_pruebas'
+   SELECT table_name, table_rows 
+   FROM information_schema.tables 
+   WHERE table_schema = 'arca_pruebas' 
    ORDER BY table_name;
    ```
 
-2. **Verificación de cuentas de personal y login:**
-   - Probar que el usuario admin principal y cajero puedan autenticarse vía API:
+2. **Verificación de coordenadas GPS en `enclosures` (DBR-008):**
+   ```powershell
+   php artisan tinker --execute="dump(DB::table('enclosures')->select('id', 'name', 'gps_lat', 'gps_lon', 'map_x', 'map_y')->get());"
+   ```
+
+3. **Verificación de usuarios de prueba (login):**
    ```powershell
    php artisan tinker --execute="dump(App\Models\User::pluck('email'));"
    ```
 
-3. **Verificación de precios vigentes y tickets:**
+4. **Verificación de tickets y precios vigentes:**
    ```powershell
    php artisan tinker --execute="dump(DB::table('ticket_prices')->get()); dump(DB::table('tickets')->count());"
    ```
 
-4. **Ejecución de la suite de pruebas de regresión:**
+5. **Ejecución de la suite de pruebas automatizadas:**
    ```powershell
    php artisan test
    ```
-   Todos los tests de integración con base de datos (`DbConnectionTest`, pruebas de autenticación, administración, etc.) deben concluir en verde.
+   Todas las pruebas deben concluir en verde.
 
 ---
 
-### Fase 6: Cutover y comunicación al equipo
+### PASO 6: Cutover y comunicación al equipo
 
-Una vez validada la nueva base de datos:
-
-1. **Actualizar el inventario de BD:**
-   - Registrar los nuevos datos del host en `apps/api/docs/inventario-bd-inicial.md` (sin contraseñas).
-2. **Notificar al equipo (Jonathan, Ian, Diego):**
-   - Distribuir de forma segura por el canal privado del equipo los nuevos valores de:
-     - `DB_HOST`
-     - `DB_PORT`
-     - `DB_PASSWORD`
-     - Nuevo archivo `ca.pem`
-   - Recordarles que **nunca deben commitear `.env` ni los certificados**.
+Una vez validada la nueva base:
+1. **Actualizar el inventario de BD:** Registrar el nuevo host en `apps/api/docs/inventario-bd-inicial.md` (sin contraseñas).
+2. **Notificar a Jonathan, Ian y Diego:** Compartir de forma segura por el canal privado los nuevos parámetros:
+   - `DB_HOST`
+   - `DB_PORT`
+   - `DB_PASSWORD`
+   - Nuevo archivo `ca.pem`
+3. Recordar al equipo que **nunca deben commitear `.env` ni certificados SSL**.
 
 ---
 
-### 7. Plan de reversión (Rollback)
+## 5. Checklist de ejecución (Día de corte: 2026-11-07)
 
-Si durante la ventana de migración ocurre cualquier anomalía insalvable:
-1. No se elimina ni se apaga la instancia actual de Aiven mientras conserve días de gracia.
-2. Cada desarrollador mantiene su `.env` apuntando a la instancia original.
-3. Se depura el problema en la nueva instancia y se reprograma la ventana de conmutación.
-
----
-
-### 8. Checklist rápido para el día de ejecución
-
-- [ ] Nueva instancia creada en Aiven y base `arca_pruebas` provisionada.
-- [ ] Nuevo certificado `ca.pem` descargado y almacenado localmente.
-- [ ] `mysqldump` full de seguridad generado y verificado.
-- [ ] `mysqldump` de solo datos generado.
-- [ ] Migraciones Laravel aplicadas con éxito en la nueva instancia (`php artisan migrate`).
-- [ ] Datos importados con `FOREIGN_KEY_CHECKS=0`.
-- [ ] Conteo de tablas y registros validado contra la base original.
-- [ ] Suite de pruebas (`php artisan test`) ejecutada con 100% de éxito.
-- [ ] Actualización de credenciales distribuida al equipo de desarrollo.
-- [ ] Documento de inventario actualizado.
+- [ ] **Dump de seguridad urgente realizado** (`backup_arca_pruebas_full_seguridad.sql`).
+- [ ] **Dump de solo datos realizado** (`arca_pruebas_data_only.sql`).
+- [ ] Nuevo servicio MySQL y base `arca_pruebas` creados en Aiven.
+- [ ] Nuevo certificado `ca.pem` descargado localmente.
+- [ ] Variables de `.env` actualizadas con la nueva conexión.
+- [ ] `php artisan db:show` confirma conexión exitosa.
+- [ ] `php artisan migrate` ejecutado con éxito (DBR-001 a DBR-008 en estado `Ran`).
+- [ ] Datos de prueba restaurados con `FOREIGN_KEY_CHECKS=0`.
+- [ ] Verificación de tablas (`enclosures` con GPS, `tickets`, `users`).
+- [ ] Suite de pruebas (`php artisan test`) ejecutada al 100% en verde.
+- [ ] Nuevas credenciales distribuidas al equipo de desarrollo por canal privado.

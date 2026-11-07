@@ -30,27 +30,29 @@ return new class extends Migration
                 $table->index(['ticket_type', 'effective_at'], 'idx_ticket_prices_type_effective');
             });
 
-            // Carga inicial aprobada en DBR-006: Adulto $25.00, Niño $16.00
-            $defaultAdminId = DB::table('users')->orderBy('id')->value('id') ?? 1;
-            $now = now();
-            DB::table('ticket_prices')->insert([
-                [
-                    'ticket_type' => 'adult',
-                    'amount' => 25.00,
-                    'effective_at' => $now,
-                    'created_by' => $defaultAdminId,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ],
-                [
-                    'ticket_type' => 'child',
-                    'amount' => 16.00,
-                    'effective_at' => $now,
-                    'created_by' => $defaultAdminId,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ],
-            ]);
+            // Carga inicial aprobada en DBR-006: Adulto $25.00, Niño $16.00 (si ya existen usuarios)
+            $defaultAdminId = DB::table('users')->orderBy('id')->value('id');
+            if ($defaultAdminId !== null) {
+                $now = now();
+                DB::table('ticket_prices')->insert([
+                    [
+                        'ticket_type' => 'adult',
+                        'amount' => 25.00,
+                        'effective_at' => $now,
+                        'created_by' => $defaultAdminId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                    [
+                        'ticket_type' => 'child',
+                        'amount' => 16.00,
+                        'effective_at' => $now,
+                        'created_by' => $defaultAdminId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                ]);
+            }
         }
 
         // 2. Crear tabla staff_notifications (sin SoftDeletes según resolución de DBR-006)

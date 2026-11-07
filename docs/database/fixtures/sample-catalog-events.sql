@@ -13,10 +13,10 @@ DELETE FROM species WHERE id IN (1, 2, 3, 4, 5);
 DELETE FROM enclosures WHERE id IN (1, 2, 3);
 
 -- 2. Recintos (enclosures)
-INSERT INTO enclosures (id, name) VALUES
-(1, 'Zona de Felinos y Sabana'),
-(2, 'Aviario Tropical'),
-(3, 'Herpetario y Humedales');
+INSERT INTO enclosures (id, name, gps_lat, gps_lon, map_x, map_y) VALUES
+(1, 'Zona de Felinos y Sabana', 20.0818500, -98.3635200, 250, 180),
+(2, 'Aviario Tropical', 20.0821000, -98.3638000, 380, 220),
+(3, 'Herpetario y Humedales', 20.0816000, -98.3632000, 180, 310);
 
 -- 3. Especies (species)
 INSERT INTO species (
