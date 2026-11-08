@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `nickname` VARCHAR(50) NOT NULL,
   `correo_electronico` VARCHAR(150) NOT NULL,
   `nombre` VARCHAR(100) NOT NULL,
-  `primer_apellido` VARCHAR(100) NOT NULL,
+  `primer_apellido` VARCHAR(100) NULL,
   `segundo_apellido` VARCHAR(100) NULL,
   `contrasena_hash` VARCHAR(255) NOT NULL,
   `estado_actividad` TINYINT(1) NOT NULL DEFAULT 1,

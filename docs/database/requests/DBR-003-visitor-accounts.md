@@ -23,6 +23,7 @@ Tras DBR-001 (pendiente de aplicación): `visitors` existe con columnas mínimas
 | Columna | Cambio | Tipo / restricciones |
 |---|---|---|
 | `nickname` | modificar | pasa a NOT NULL (la tabla está vacía; sin datos que migrar) |
+| `last_name`, `second_last_name` | modificar | pasan a `VARCHAR(100) NULL` (el alta móvil solo pide `first_name` y `nickname`) |
 | `email_verified_at` | agregar | timestamp NULL |
 | `avatar_code` | agregar | varchar(50) NOT NULL (código del catálogo de avatares de la app) |
 | `adult_confirmed_at` | agregar | timestamp NOT NULL (confirmación de mayoría de edad, 18+) |
