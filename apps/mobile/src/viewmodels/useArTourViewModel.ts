@@ -1,10 +1,13 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Vibration } from 'react-native';
 import {
   SVG_HEIGHT,
   SVG_WIDTH,
   ZOO_ENTRANCE_SVG,
 } from '../constants/zoo';
+import { SVG_UNIT_TO_METERS } from '../constants/zooPaths';
 import { MapPlace } from '../models';
+import { haversineMeters } from '../utils/haversine';
 import {
   ArGuidanceResult,
   computeArGuidance,
@@ -30,6 +33,8 @@ interface UseArTourViewModelParams {
 }
 
 const MANUAL_ROTATION_STEP_DEGREES = 25;
+const PROXIMITY_THRESHOLD_METERS = 20;
+const ARRIVAL_THRESHOLD_METERS = 8;
 
 export function useArTourViewModel({
   places,
@@ -43,6 +48,8 @@ export function useArTourViewModel({
   const [visitedStopIds, setVisitedStopIds] = useState<string[]>([]);
   const [manualHeading, setManualHeading] = useState(0);
   const [animationPhase, setAnimationPhase] = useState(0);
+  const [dismissedStopId, setDismissedStopId] = useState<string | null>(null);
+  const hasVibratedRef = useRef<string | null>(null);
 
   const deviceHeading =
     typeof userPosition?.heading === 'number' ? userPosition.heading : null;
@@ -109,6 +116,71 @@ export function useArTourViewModel({
     );
   }, [originSvg, currentStop, places, effectiveHeading]);
 
+  // Distancia mínima por GPS, euclidiana en mapa o por sendero al recinto activo
+  const proximityDistanceMeters = useMemo(() => {
+    if (!currentStop) {
+      return null;
+    }
+    let gpsMeters = 999999;
+    if (
+      userPosition &&
+      currentStop.gpsLat !== undefined &&
+      currentStop.gpsLon !== undefined
+    ) {
+      gpsMeters = haversineMeters(
+        userPosition.lat,
+        userPosition.lon,
+        currentStop.gpsLat,
+        currentStop.gpsLon,
+      );
+    }
+    const directMeters =
+      Math.hypot(
+        originSvg.svgX - currentStop.mapX * SVG_WIDTH,
+        originSvg.svgY - currentStop.mapY * SVG_HEIGHT,
+      ) * SVG_UNIT_TO_METERS;
+    const routeMeters = walkRoute?.distanceMeters ?? directMeters;
+    return Math.min(gpsMeters, directMeters, routeMeters);
+  }, [currentStop, originSvg, walkRoute, userPosition]);
+
+  // Detección de llegada al recinto (<= 8 metros)
+  const isArrived = useMemo(() => {
+    if (!currentStop || proximityDistanceMeters == null) {
+      return false;
+    }
+    return proximityDistanceMeters <= ARRIVAL_THRESHOLD_METERS;
+  }, [currentStop, proximityDistanceMeters]);
+
+  // Alerta háptica/vibración de llegada al recinto en la vista AR
+  useEffect(() => {
+    if (isArrived && currentStop && hasVibratedRef.current !== currentStop.id) {
+      hasVibratedRef.current = currentStop.id;
+      try {
+        Vibration.vibrate([0, 200, 100, 200]);
+      } catch {
+        // En plataformas sin motor háptico continúa silenciosamente
+      }
+    }
+  }, [isArrived, currentStop]);
+
+  // Mostrar tarjeta interactiva con datos del animal cuando el usuario se acerca o llega al recinto
+  const showProximityCard = useMemo(() => {
+    if (!currentStop || proximityDistanceMeters == null) {
+      return false;
+    }
+    const isNear = proximityDistanceMeters <= PROXIMITY_THRESHOLD_METERS;
+    return (
+      (isNear || isArrived) &&
+      dismissedStopId !== currentStop.id
+    );
+  }, [currentStop, proximityDistanceMeters, isArrived, dismissedStopId]);
+
+  const dismissProximityCard = useCallback(() => {
+    if (currentStop) {
+      setDismissedStopId(currentStop.id);
+    }
+  }, [currentStop]);
+
   const alignToStop = useCallback(
     (stop: MapPlace | null) => {
       if (!stop) {
@@ -143,6 +215,8 @@ export function useArTourViewModel({
       }
     }
     setCurrentStopIndex(initialIdx);
+    setDismissedStopId(null);
+    hasVibratedRef.current = null;
     const firstStop = tourStops[initialIdx] ?? null;
     alignToStop(firstStop);
     if (firstStop && onSelectDestination && activeDestinationPlace?.id !== firstStop.id) {
@@ -166,6 +240,8 @@ export function useArTourViewModel({
     }
     const nextIdx = (safeStopIndex + 1) % tourStops.length;
     setCurrentStopIndex(nextIdx);
+    setDismissedStopId(null);
+    hasVibratedRef.current = null;
     const nextPlace = tourStops[nextIdx] ?? null;
     alignToStop(nextPlace);
     if (nextPlace && onSelectDestination && activeDestinationPlace?.id !== nextPlace.id) {
@@ -186,6 +262,8 @@ export function useArTourViewModel({
     }
     const prevIdx = (safeStopIndex - 1 + tourStops.length) % tourStops.length;
     setCurrentStopIndex(prevIdx);
+    setDismissedStopId(null);
+    hasVibratedRef.current = null;
     const prevPlace = tourStops[prevIdx] ?? null;
     alignToStop(prevPlace);
     if (prevPlace && onSelectDestination && activeDestinationPlace?.id !== prevPlace.id) {
@@ -206,6 +284,8 @@ export function useArTourViewModel({
         return;
       }
       setCurrentStopIndex(foundIdx);
+      setDismissedStopId(null);
+      hasVibratedRef.current = null;
       const chosenPlace = tourStops[foundIdx] ?? null;
       alignToStop(chosenPlace);
       if (chosenPlace && onSelectDestination && activeDestinationPlace?.id !== chosenPlace.id) {
@@ -250,6 +330,10 @@ export function useArTourViewModel({
     walkRoute,
     guidance,
     forkBranches,
+    proximityDistanceMeters,
+    isArrived,
+    showProximityCard,
+    dismissProximityCard,
     startTour,
     closeTour,
     nextStop,

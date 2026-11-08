@@ -166,18 +166,20 @@ export function MapScreen({
     [applyPan, panOffset],
   );
 
+  const activeTargetPlace = destinationPlace ?? selectedPlace;
+
   const walkRoute = useMemo(() => {
-    if (!userPosition || !destinationPlace) {
+    if (!userPosition || !activeTargetPlace) {
       return null;
     }
     return computeWalkRoute(
       { svgX: userPosition.svgX, svgY: userPosition.svgY },
       {
-        svgX: destinationPlace.mapX * SVG_WIDTH,
-        svgY: destinationPlace.mapY * SVG_HEIGHT,
+        svgX: activeTargetPlace.mapX * SVG_WIDTH,
+        svgY: activeTargetPlace.mapY * SVG_HEIGHT,
       },
     );
-  }, [userPosition, destinationPlace]);
+  }, [userPosition, activeTargetPlace]);
 
   const arTour = useArTourViewModel({
     places: filteredPlaces,
@@ -216,9 +218,18 @@ export function MapScreen({
               />
             ))}
           </View>
-          <AppText variant="small" color="textMuted">
-            Toca un punto del mapa para ver su información.
-          </AppText>
+          <View style={styles.infoRow}>
+            <AppText variant="small" color="textMuted">
+              Toca un punto del mapa para ver su información.
+            </AppText>
+            {userPosition && (
+              <View style={styles.gpsBadge}>
+                <AppText variant="caption" style={styles.gpsText}>
+                  {`📍 GPS: ${userPosition.lat.toFixed(6)}, ${userPosition.lon.toFixed(6)}`}
+                </AppText>
+              </View>
+            )}
+          </View>
         </View>
       )}
 
@@ -243,10 +254,10 @@ export function MapScreen({
               ]}
             >
               <ZooMapSvg highlightedSectionId={focusedSectionId} />
-              {userPosition && destinationPlace && (
+              {userPosition && activeTargetPlace && (
                 <DestinationRouteLine
                   userPosition={userPosition}
-                  destinationPlace={destinationPlace}
+                  destinationPlace={activeTargetPlace}
                 />
               )}
               {filteredPlaces.map((place) => (
@@ -355,6 +366,10 @@ export function MapScreen({
           walkRoute={arTour.walkRoute}
           guidance={arTour.guidance}
           forkBranches={arTour.forkBranches}
+          showProximityCard={arTour.showProximityCard}
+          proximityDistanceMeters={arTour.proximityDistanceMeters}
+          isArrived={arTour.isArrived}
+          onDismissProximityCard={arTour.dismissProximityCard}
           onClose={arTour.closeTour}
           onToggleVisualMode={arTour.toggleVisualMode}
           onNextStop={arTour.nextStop}
@@ -387,6 +402,23 @@ const styles = StyleSheet.create({
   filters: {
     flexDirection: 'row',
     gap: spacing.sm,
+  },
+  infoRow: {
+    gap: 4,
+  },
+  gpsBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(33, 150, 243, 0.3)',
+  },
+  gpsText: {
+    color: colors.primary,
+    fontWeight: '600',
+    fontSize: 11,
   },
   mapArea: {
     flex: 1,

@@ -1,7 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import Svg, { Ellipse, G, Line, Path } from 'react-native-svg';
+import Svg, {
+  Circle,
+  Ellipse,
+  G,
+  Line,
+  Path,
+  Polyline,
+  Rect,
+  Text as SvgText,
+} from 'react-native-svg';
 import {
   ROUTE_LINE_COLOR,
   SVG_HEIGHT,
@@ -11,11 +20,15 @@ import { colors } from '../../theme/tokens';
 import { ArGuidanceResult } from '../../utils/arMath';
 import { TourForkBranch } from '../../utils/tourPlanner';
 import { ArVisualMode } from '../../viewmodels/useArTourViewModel';
+import { MapPlace } from '../../models';
+import { getAnimalCardData } from '../../utils/enclosureAnimals';
 
 interface ThreeTourSceneProps {
   visualMode: ArVisualMode;
   guidance: ArGuidanceResult | null;
   forkBranches: TourForkBranch[];
+  currentStop?: MapPlace | null;
+  isArrived?: boolean;
   onStepAnimation?: () => void;
 }
 
@@ -23,6 +36,8 @@ export function ThreeTourScene({
   visualMode,
   guidance,
   forkBranches,
+  currentStop,
+  isArrived = false,
   onStepAnimation,
 }: ThreeTourSceneProps) {
   const [permission, requestPermission] = useCameraPermissions();
@@ -50,6 +65,32 @@ export function ThreeTourScene({
   const segments = guidance?.projectedSegments ?? [];
   const chevrons = guidance?.projectedChevrons ?? [];
   const showLiveCamera = visualMode === 'camera-ar' && isCameraGranted;
+
+  const animalData = currentStop ? getAnimalCardData(currentStop) : null;
+
+  // Punto objetivo del recinto en la escena AR
+  const beaconPoint = useMemo(() => {
+    if (segments.length > 0) {
+      const lastSeg = segments[segments.length - 1];
+      return { x: lastSeg.x2, y: lastSeg.y2 };
+    }
+    return { x: 500, y: 380 };
+  }, [segments]);
+
+  // Cadena de coordenadas para la línea de conexión directa hacia el recinto
+  const routePointsString = useMemo(() => {
+    if (segments.length === 0) {
+      return `500,1380 ${beaconPoint.x},${beaconPoint.y}`;
+    }
+    const pts = ['500,1380'];
+    segments.forEach((seg) => {
+      pts.push(`${seg.x1},${seg.y1}`);
+      pts.push(`${seg.x2},${seg.y2}`);
+    });
+    return pts.join(' ');
+  }, [segments, beaconPoint]);
+
+  const beaconColor = isArrived ? '#2E7D32' : ROUTE_LINE_COLOR;
 
   return (
     <View
@@ -87,7 +128,7 @@ export function ThreeTourScene({
         pointerEvents="none"
         style={styles.fillLayer}
       >
-        {/* Nodo accesible para bifurcaciones (mantiene compatibilidad de tests sin sobrecargar la pantalla) */}
+        {/* Nodo accesible para bifurcaciones */}
         <G testID="three-fork-branches">
           {forkBranches.map((branch) => (
             <G
@@ -97,7 +138,30 @@ export function ThreeTourScene({
           ))}
         </G>
 
-        {/* Una sola línea central del sendero guía sobre el suelo */}
+        {/* 1. Línea continua y visible de unión entre el usuario y el punto del recinto en AR */}
+        <G testID="ar-destination-route-line">
+          {/* Halo de resplandor para visibilidad con luz exterior */}
+          <Polyline
+            points={routePointsString}
+            fill="none"
+            stroke="rgba(33, 150, 243, 0.35)"
+            strokeWidth={20}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          {/* Línea principal vibrante discontinua hacia el recinto */}
+          <Polyline
+            points={routePointsString}
+            fill="none"
+            stroke={beaconColor}
+            strokeWidth={7}
+            strokeDasharray="14, 8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </G>
+
+        {/* 2. Segmentos del sendero guía sobre el suelo */}
         <G testID="three-path-segments">
           {segments.map((seg) => (
             <G key={seg.id}>
@@ -106,7 +170,7 @@ export function ThreeTourScene({
                 y1={seg.y1}
                 x2={seg.x2}
                 y2={seg.y2}
-                stroke={ROUTE_LINE_COLOR}
+                stroke={beaconColor}
                 strokeWidth={Math.max(4, Math.round(seg.strokeWidth * 0.4))}
                 strokeOpacity={0.6}
                 strokeLinecap="round"
@@ -115,7 +179,7 @@ export function ThreeTourScene({
           ))}
         </G>
 
-        {/* Una sola línea de flechas (chevrons) planas en fila india sobre el suelo */}
+        {/* 3. Corriente de flechas (chevrons) planas sobre el suelo */}
         <G testID="three-chevron-stream">
           {chevrons.map((chevron) => {
             const halfW = Math.round(62 * chevron.scale);
@@ -128,7 +192,6 @@ export function ThreeTourScene({
 
             return (
               <G key={chevron.id}>
-                {/* Sombra de contacto suave en el pavimento/césped */}
                 <Ellipse
                   cx={cx}
                   cy={cy + 4}
@@ -136,16 +199,96 @@ export function ThreeTourScene({
                   ry={Math.max(4, Math.round(tipH * 0.75))}
                   fill="rgba(0, 0, 0, 0.22)"
                 />
-                {/* Flecha reflectante plana sobre el suelo */}
                 <Path
                   d={chevronPath}
-                  fill={colors.primary}
+                  fill={isArrived ? '#2E7D32' : colors.primary}
                   stroke={colors.surface}
                   strokeWidth="3"
                 />
               </G>
             );
           })}
+        </G>
+
+        {/* 4. Punto flotante / Baliza indicadora del recinto en modo AR */}
+        <G testID="ar-destination-enclosure-beacon">
+          {/* Anillo exterior pulsante sobre el suelo */}
+          <Circle
+            testID="ar-beacon-outer-pulse"
+            cx={beaconPoint.x}
+            cy={beaconPoint.y}
+            r={32}
+            fill={isArrived ? 'rgba(46, 125, 50, 0.28)' : 'rgba(33, 150, 243, 0.28)'}
+            stroke={beaconColor}
+            strokeWidth={3}
+          />
+          {/* Punto central del recinto */}
+          <Circle
+            testID="ar-beacon-center-dot"
+            cx={beaconPoint.x}
+            cy={beaconPoint.y}
+            r={14}
+            fill={beaconColor}
+            stroke="#FFFFFF"
+            strokeWidth={3}
+          />
+          <Circle
+            cx={beaconPoint.x}
+            cy={beaconPoint.y}
+            r={5}
+            fill="#FFFFFF"
+          />
+
+          {/* Vástago o poste vertical hacia el cartel flotante del recinto */}
+          <Line
+            x1={beaconPoint.x}
+            y1={beaconPoint.y}
+            x2={beaconPoint.x}
+            y2={beaconPoint.y - 48}
+            stroke={beaconColor}
+            strokeWidth={3}
+            strokeDasharray="4, 4"
+          />
+
+          {/* Pin flotante con icono */}
+          <Circle
+            cx={beaconPoint.x}
+            cy={beaconPoint.y - 48}
+            r={20}
+            fill="#FFFFFF"
+            stroke={beaconColor}
+            strokeWidth={3}
+          />
+          <SvgText
+            x={beaconPoint.x}
+            y={beaconPoint.y - 41}
+            textAnchor="middle"
+            fontSize="18"
+          >
+            {isArrived ? '🎯' : (animalData?.iconEmoji ?? '📍')}
+          </SvgText>
+
+          {/* Etiqueta flotante con el nombre del recinto */}
+          <Rect
+            x={beaconPoint.x - 90}
+            y={beaconPoint.y - 92}
+            width={180}
+            height={32}
+            rx={16}
+            fill="rgba(15, 23, 42, 0.90)"
+            stroke={beaconColor}
+            strokeWidth={2}
+          />
+          <SvgText
+            x={beaconPoint.x}
+            y={beaconPoint.y - 71}
+            textAnchor="middle"
+            fill="#FFFFFF"
+            fontSize="12"
+            fontWeight="bold"
+          >
+            {isArrived ? '🎉 ¡HAS LLEGADO!' : (currentStop?.name ?? 'Recinto')}
+          </SvgText>
         </G>
       </Svg>
     </View>

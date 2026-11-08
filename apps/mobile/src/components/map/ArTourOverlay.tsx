@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '../ui';
 import { MapPlace } from '../../models';
@@ -7,6 +7,8 @@ import { ArGuidanceResult } from '../../utils/arMath';
 import { WalkRouteResult } from '../../utils/pathfinding';
 import { TourForkBranch } from '../../utils/tourPlanner';
 import { ArVisualMode } from '../../viewmodels/useArTourViewModel';
+import { ArAnimalProximityCard } from './ArAnimalProximityCard';
+import { EnclosureDetailModal } from './EnclosureDetailModal';
 import { ThreeTourScene } from './ThreeTourScene';
 
 interface ArTourOverlayProps {
@@ -17,6 +19,10 @@ interface ArTourOverlayProps {
   walkRoute: WalkRouteResult | null;
   guidance: ArGuidanceResult | null;
   forkBranches: TourForkBranch[];
+  showProximityCard?: boolean;
+  proximityDistanceMeters?: number | null;
+  isArrived?: boolean;
+  onDismissProximityCard?: () => void;
   onClose: () => void;
   onToggleVisualMode: () => void;
   onNextStop: () => void;
@@ -36,6 +42,10 @@ export function ArTourOverlay({
   walkRoute,
   guidance,
   forkBranches,
+  showProximityCard = false,
+  proximityDistanceMeters,
+  isArrived = false,
+  onDismissProximityCard,
   onClose,
   onToggleVisualMode,
   onNextStop,
@@ -46,6 +56,8 @@ export function ArTourOverlay({
   onAlignFront,
   onStepAnimation,
 }: ArTourOverlayProps) {
+  const [isEnclosureModalOpen, setIsEnclosureModalOpen] = useState(false);
+
   const modeLabel =
     visualMode === 'camera-ar' ? 'Modo Escena 3D' : 'Modo Cámara AR';
 
@@ -56,6 +68,8 @@ export function ArTourOverlay({
         visualMode={visualMode}
         guidance={guidance}
         forkBranches={forkBranches}
+        currentStop={currentStop}
+        isArrived={isArrived}
         onStepAnimation={onStepAnimation}
       />
 
@@ -95,26 +109,63 @@ export function ArTourOverlay({
 
         {/* Tarjeta de guía flotante estilo Live View */}
         {currentStop && (
-          <View testID="ar-guidance-card" style={styles.guidanceCard}>
+          <View
+            testID="ar-guidance-card"
+            style={[styles.guidanceCard, isArrived && styles.guidanceCardArrived]}
+          >
             <View style={styles.guidanceHeader}>
-              <View style={styles.destinationBadge}>
-                <AppText variant="caption" bold color="primary">
-                  {currentStop.name}
+              <View
+                style={[
+                  styles.destinationBadge,
+                  isArrived && styles.destinationBadgeArrived,
+                ]}
+              >
+                <AppText
+                  variant="caption"
+                  bold
+                  color={isArrived ? 'textOnPrimary' : 'primary'}
+                >
+                  {isArrived ? '🎯 ¡LLEGADA AL RECINTO!' : currentStop.name}
                 </AppText>
               </View>
-              {walkRoute && (
+              {isArrived ? (
+                <AppText variant="caption" bold color="primary">
+                  ¡Estás aquí!
+                </AppText>
+              ) : walkRoute ? (
                 <AppText variant="caption" color="textMuted">
                   {`~${walkRoute.distanceMeters} m • ${walkRoute.estimatedMinutes} min`}
                 </AppText>
-              )}
+              ) : null}
             </View>
 
             <AppText variant="body" bold color="text" style={styles.instructionText}>
-              {guidance?.instruction ?? 'Sigue por el sendero principal'}
+              {isArrived
+                ? `¡Has llegado a ${currentStop.name}!`
+                : (guidance?.instruction ?? 'Sigue por el sendero principal')}
             </AppText>
           </View>
         )}
+
+        {/* Tarjeta interactiva flotante con datos del animal por proximidad o llegada */}
+        {showProximityCard && currentStop && (
+          <ArAnimalProximityCard
+            place={currentStop}
+            distanceMeters={proximityDistanceMeters ?? walkRoute?.distanceMeters ?? (isArrived ? 0 : 10)}
+            isArrived={isArrived}
+            onDismiss={onDismissProximityCard ?? (() => {})}
+            onNextStop={onNextStop}
+            onOpenEnclosureSheet={() => setIsEnclosureModalOpen(true)}
+          />
+        )}
       </View>
+
+      {/* Modal deslizante / Bottom Sheet con la ficha técnica completa del recinto (Boceto del usuario) */}
+      <EnclosureDetailModal
+        visible={isEnclosureModalOpen}
+        place={currentStop}
+        onClose={() => setIsEnclosureModalOpen(false)}
+      />
 
       {/* Área inferior minimalista y flotante */}
       <View style={styles.bottomContainer}>
@@ -293,6 +344,10 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     marginTop: spacing.xs,
   },
+  guidanceCardArrived: {
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
   guidanceHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -304,6 +359,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
     paddingVertical: 2,
     borderRadius: radius.sm,
+  },
+  destinationBadgeArrived: {
+    backgroundColor: colors.primary,
   },
   instructionText: {
     fontSize: 16,

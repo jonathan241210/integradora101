@@ -2,7 +2,7 @@
 
 
 use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\EnclosureController;
+use App\Http\Controllers\Admin\EnclosureController as AdminEnclosureController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\StaffAccountController;
@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\AnimalController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClinicalEvaluationController;
 use App\Http\Controllers\Auth\MeController;
+use App\Http\Controllers\Catalog\EnclosureController;
 use App\Http\Controllers\Catalog\EventController;
 use App\Http\Controllers\Catalog\SpeciesController;
 use App\Http\Controllers\Visitor\PrivacyNoticeController;
@@ -33,6 +34,9 @@ Route::get('/auth/me', MeController::class)
 
 Route::get('/species', [SpeciesController::class, 'index'])->name('species.index');
 Route::get('/species/{species}', [SpeciesController::class, 'show'])->name('species.show');
+
+Route::get('/enclosures', [EnclosureController::class, 'index'])->name('enclosures.index');
+Route::get('/enclosures/{enclosure}', [EnclosureController::class, 'show'])->name('enclosures.show');
 
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
@@ -116,9 +120,9 @@ Route::prefix('admin')
         });
 
         Route::middleware('permission:enclosures.manage')->group(function () {
-            Route::get('enclosures', [EnclosureController::class, 'index'])->name('enclosures.index');
-            Route::post('enclosures', [EnclosureController::class, 'store'])->name('enclosures.store');
-            Route::patch('enclosures/{enclosure}', [EnclosureController::class, 'update'])->name('enclosures.update');
+            Route::get('enclosures', [AdminEnclosureController::class, 'index'])->name('enclosures.index');
+            Route::post('enclosures', [AdminEnclosureController::class, 'store'])->name('enclosures.store');
+            Route::patch('enclosures/{enclosure}', [AdminEnclosureController::class, 'update'])->name('enclosures.update');
         });
 
         Route::get('dashboard', DashboardController::class)
