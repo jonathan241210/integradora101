@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\TicketReportExportController;
 use App\Http\Controllers\Admin\TicketSaleController;
 use App\Http\Controllers\Auth\MeController;
 use App\Http\Controllers\Catalog\EventController;
+use App\Http\Controllers\Catalog\NewsController as PublicNewsController;
 use App\Http\Controllers\Catalog\SpeciesController;
 use App\Http\Controllers\Visitor\PrivacyNoticeController;
 use App\Http\Controllers\Visitor\VisitorAuthenticationController;
@@ -33,6 +34,9 @@ Route::get('/species/{species}', [SpeciesController::class, 'show'])->name('spec
 
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+
+Route::get('/news', [PublicNewsController::class, 'index'])->name('news.index');
+Route::get('/news/{news}', [PublicNewsController::class, 'show'])->name('news.show');
 Route::prefix('visitor')->name('visitor.')->group(function () {
     Route::get('legal/privacy-notice', PrivacyNoticeController::class)
         ->name('legal.privacy-notice');

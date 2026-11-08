@@ -45,6 +45,15 @@ El límite de 5 MB también está en la validación de la API, en la pantalla y 
 
 **Pendiente antes de producción:** no hay un procedimiento aprobado para aplicar el seeder en `arca_zoo` (`apps/api/specs/009-ticket-sales.md`, pregunta R6). Lo ejecuta solo el responsable de BD, nunca un agente. Sin ese procedimiento, los cambios de permisos no pueden llegar a producción.
 
+## Portal público: noticias y eventos (api-011, web-009)
+
+- [ ] `CORS_ALLOWED_ORIGINS` incluye el origen exacto (esquema, host y puerto) desde el que se sirve el portal en cada ambiente. En desarrollo: `http://localhost:8080`. Sin esta línea el portal no muestra noticias ni eventos.
+- [ ] La base URL de la API está en `<meta name="arca-api-base">` de `index.html`, `noticias.html` y `eventos.html`, o el servidor reenvía `/api/v1` a la API en el mismo origen.
+- [ ] DBR-005 está aplicada en el ambiente (`deleted_at` en `news` y `events`).
+- [ ] Se cumple el checklist de «Imágenes de noticias y eventos» (`APP_URL`, `storage:link`, disco persistente).
+- [ ] El portal local no usa el puerto 8000, que es el de la API.
+- [ ] **Evidencia:** `curl -i -H "Origin: <origen del portal>" <API>/api/v1/news?limit=3` responde 200 con `Access-Control-Allow-Origin` igual a ese origen.
+
 ## Secretos y operación
 
 Los secretos se administran con mecanismos de cada entorno (Secret Manager u opción local segura) y se inyectan al proceso; nunca se guardan en Git, imágenes ni logs. `.env.example` contiene solo nombres y valores de muestra no sensibles. Definir acceso mínimo, rotación, respaldos, restauración y auditoría antes de producción.
