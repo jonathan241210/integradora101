@@ -9,6 +9,7 @@ import {
   ArGuidanceResult,
   computeArGuidance,
   computeBearingDegrees,
+  computeRelativeAngleDegrees,
   smoothHeadingDegrees,
 } from '../utils/arMath';
 import { computeWalkRoute, SvgPoint, WalkRouteResult } from '../utils/pathfinding';
@@ -40,8 +41,19 @@ export function useArTourViewModel({
   const [visualMode, setVisualMode] = useState<ArVisualMode>('camera-ar');
   const [currentStopIndex, setCurrentStopIndex] = useState(0);
   const [visitedStopIds, setVisitedStopIds] = useState<string[]>([]);
-  const [headingDegrees, setHeadingDegrees] = useState(0);
+  const [manualHeading, setManualHeading] = useState(0);
   const [animationPhase, setAnimationPhase] = useState(0);
+
+  const deviceHeading =
+    typeof userPosition?.heading === 'number' ? userPosition.heading : null;
+
+  // Si el giroscopio/brújula del dispositivo está disponible, guía con la orientación física en tiempo real
+  const effectiveHeading = useMemo(() => {
+    if (deviceHeading != null) {
+      return (deviceHeading + manualHeading + 360) % 360;
+    }
+    return (manualHeading + 360) % 360;
+  }, [deviceHeading, manualHeading]);
 
   const originSvg: SvgPoint = useMemo(
     () =>
@@ -80,10 +92,10 @@ export function useArTourViewModel({
     return computeArGuidance(
       originSvg,
       walkRoute.points,
-      headingDegrees,
+      effectiveHeading,
       animationPhase,
     );
-  }, [originSvg, walkRoute, headingDegrees, animationPhase]);
+  }, [originSvg, walkRoute, effectiveHeading, animationPhase]);
 
   const forkBranches: TourForkBranch[] = useMemo(() => {
     if (!currentStop) {
@@ -93,9 +105,9 @@ export function useArTourViewModel({
       originSvg,
       currentStop,
       places,
-      headingDegrees,
+      effectiveHeading,
     );
-  }, [originSvg, currentStop, places, headingDegrees]);
+  }, [originSvg, currentStop, places, effectiveHeading]);
 
   const alignToStop = useCallback(
     (stop: MapPlace | null) => {
@@ -108,9 +120,16 @@ export function useArTourViewModel({
       });
       const nextPt = route.points[1] ?? route.points[0] ?? originSvg;
       const targetBearing = computeBearingDegrees(originSvg, nextPt);
-      setHeadingDegrees(targetBearing);
+
+      if (deviceHeading != null) {
+        // Compensación relativa al rumbo actual del giroscopio
+        const offset = computeRelativeAngleDegrees(targetBearing, deviceHeading);
+        setManualHeading(offset);
+      } else {
+        setManualHeading(targetBearing);
+      }
     },
-    [originSvg],
+    [originSvg, deviceHeading],
   );
 
   const startTour = useCallback(() => {
@@ -197,13 +216,13 @@ export function useArTourViewModel({
   );
 
   const rotateLeft = useCallback(() => {
-    setHeadingDegrees((prev) =>
+    setManualHeading((prev) =>
       smoothHeadingDegrees(prev, prev - MANUAL_ROTATION_STEP_DEGREES, 1),
     );
   }, []);
 
   const rotateRight = useCallback(() => {
-    setHeadingDegrees((prev) =>
+    setManualHeading((prev) =>
       smoothHeadingDegrees(prev, prev + MANUAL_ROTATION_STEP_DEGREES, 1),
     );
   }, []);
@@ -223,7 +242,7 @@ export function useArTourViewModel({
   return {
     isTourOpen,
     visualMode,
-    headingDegrees,
+    headingDegrees: effectiveHeading,
     tourStops,
     currentStopIndex: safeStopIndex,
     currentStop,

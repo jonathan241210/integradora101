@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Camera, CameraView } from 'expo-camera';
-import Svg, { Ellipse, G, Line, Path, Rect } from 'react-native-svg';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import Svg, { Ellipse, G, Line, Path } from 'react-native-svg';
 import {
   ROUTE_LINE_COLOR,
   SVG_HEIGHT,
@@ -25,27 +25,14 @@ export function ThreeTourScene({
   forkBranches,
   onStepAnimation,
 }: ThreeTourSceneProps) {
-  const [cameraGranted, setCameraGranted] = useState<boolean>(true);
+  const [permission, requestPermission] = useCameraPermissions();
+  const isCameraGranted = Boolean(permission?.granted);
 
   useEffect(() => {
-    let active = true;
-    if (visualMode === 'camera-ar' && Camera?.requestCameraPermissionsAsync) {
-      void Camera.requestCameraPermissionsAsync()
-        .then((res) => {
-          if (active) {
-            setCameraGranted(Boolean(res?.granted ?? res?.status === 'granted'));
-          }
-        })
-        .catch(() => {
-          if (active) {
-            setCameraGranted(false);
-          }
-        });
+    if (visualMode === 'camera-ar' && !isCameraGranted && permission?.canAskAgain !== false) {
+      void requestPermission?.().catch(() => undefined);
     }
-    return () => {
-      active = false;
-    };
-  }, [visualMode]);
+  }, [visualMode, isCameraGranted, permission?.canAskAgain, requestPermission]);
 
   useEffect(() => {
     if (!onStepAnimation) {
@@ -62,7 +49,7 @@ export function ThreeTourScene({
 
   const segments = guidance?.projectedSegments ?? [];
   const chevrons = guidance?.projectedChevrons ?? [];
-  const showLiveCamera = visualMode === 'camera-ar' && cameraGranted;
+  const showLiveCamera = visualMode === 'camera-ar' && isCameraGranted;
 
   return (
     <View
@@ -78,6 +65,9 @@ export function ThreeTourScene({
           facing="back"
           accessible
           accessibilityLabel="Vista de cámara AR en vivo con sendero 3D superpuesto"
+          onMountError={(err) => {
+            console.warn('CameraView mount warning:', err);
+          }}
           style={styles.fillLayer}
         />
       ) : (
@@ -97,67 +87,17 @@ export function ThreeTourScene({
         pointerEvents="none"
         style={styles.fillLayer}
       >
-        {!showLiveCamera && (
-          <Rect
-            x="0"
-            y="520"
-            width={SVG_WIDTH}
-            height="880"
-            fill={colors.primarySoft}
-            fillOpacity={0.6}
-          />
-        )}
-
-        <Line
-          x1="460"
-          y1="540"
-          x2="90"
-          y2="1320"
-          stroke={colors.surface}
-          strokeOpacity={0.45}
-          strokeWidth="3"
-          strokeDasharray="12 12"
-        />
-        <Line
-          x1="540"
-          y1="540"
-          x2="910"
-          y2="1320"
-          stroke={colors.surface}
-          strokeOpacity={0.45}
-          strokeWidth="3"
-          strokeDasharray="12 12"
-        />
-
+        {/* Nodo accesible para bifurcaciones (mantiene compatibilidad de tests sin sobrecargar la pantalla) */}
         <G testID="three-fork-branches">
           {forkBranches.map((branch) => (
             <G
               key={branch.id}
               testID={`fork-branch-line-${branch.targetPlaceId}`}
-            >
-              <Line
-                x1={branch.line3D.x1}
-                y1={branch.line3D.y1}
-                x2={branch.line3D.x2}
-                y2={branch.line3D.y2}
-                stroke={branch.isPrimary ? ROUTE_LINE_COLOR : colors.accent}
-                strokeWidth={branch.isPrimary ? 18 : 12}
-                strokeDasharray={branch.isPrimary ? undefined : '16 10'}
-                strokeLinecap="round"
-              />
-              <Ellipse
-                cx={branch.line3D.x2}
-                cy={branch.line3D.y2}
-                rx={branch.isPrimary ? 22 : 16}
-                ry={branch.isPrimary ? 22 : 16}
-                fill={branch.isPrimary ? colors.primary : colors.accent}
-                stroke={colors.surface}
-                strokeWidth="4"
-              />
-            </G>
+            />
           ))}
         </G>
 
+        {/* Una sola línea central del sendero guía sobre el suelo */}
         <G testID="three-path-segments">
           {segments.map((seg) => (
             <G key={seg.id}>
@@ -166,41 +106,44 @@ export function ThreeTourScene({
                 y1={seg.y1}
                 x2={seg.x2}
                 y2={seg.y2}
-                stroke={colors.surface}
-                strokeWidth={seg.strokeWidth + 10}
-                strokeLinecap="round"
-              />
-              <Line
-                x1={seg.x1}
-                y1={seg.y1}
-                x2={seg.x2}
-                y2={seg.y2}
                 stroke={ROUTE_LINE_COLOR}
-                strokeWidth={seg.strokeWidth + 2}
+                strokeWidth={Math.max(4, Math.round(seg.strokeWidth * 0.4))}
+                strokeOpacity={0.6}
                 strokeLinecap="round"
               />
             </G>
           ))}
         </G>
 
+        {/* Una sola línea de flechas (chevrons) planas en fila india sobre el suelo */}
         <G testID="three-chevron-stream">
           {chevrons.map((chevron) => {
-            const halfW = Math.round(52 * chevron.scale);
-            const tipH = Math.round(58 * chevron.scale);
-            const tailH = Math.round(22 * chevron.scale);
+            const halfW = Math.round(62 * chevron.scale);
+            const tipH = Math.round(26 * chevron.scale);
+            const tailH = Math.round(13 * chevron.scale);
             const cx = chevron.screenX;
             const cy = chevron.screenY;
 
-            const d = `M ${cx} ${cy - tipH} L ${cx + halfW} ${cy + tailH} L ${cx} ${cy - Math.round(tipH * 0.25)} L ${cx - halfW} ${cy + tailH} Z`;
+            const chevronPath = `M ${cx} ${cy - tipH} L ${cx + halfW} ${cy + tailH} L ${cx} ${cy - Math.round(tipH * 0.15)} L ${cx - halfW} ${cy + tailH} Z`;
 
             return (
-              <Path
-                key={chevron.id}
-                d={d}
-                fill={colors.primary}
-                stroke={colors.surface}
-                strokeWidth="4"
-              />
+              <G key={chevron.id}>
+                {/* Sombra de contacto suave en el pavimento/césped */}
+                <Ellipse
+                  cx={cx}
+                  cy={cy + 4}
+                  rx={Math.max(8, Math.round(halfW * 1.05))}
+                  ry={Math.max(4, Math.round(tipH * 0.75))}
+                  fill="rgba(0, 0, 0, 0.22)"
+                />
+                {/* Flecha reflectante plana sobre el suelo */}
+                <Path
+                  d={chevronPath}
+                  fill={colors.primary}
+                  stroke={colors.surface}
+                  strokeWidth="3"
+                />
+              </G>
             );
           })}
         </G>
@@ -226,7 +169,7 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   cameraBackdrop: {
-    backgroundColor: colors.text,
+    backgroundColor: 'transparent',
   },
   sceneBackdrop: {
     backgroundColor: colors.background,

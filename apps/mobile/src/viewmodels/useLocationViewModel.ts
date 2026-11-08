@@ -20,12 +20,17 @@ export interface UserPosition {
   accuracy: number;
   /** True si la precisión es insuficiente (>20m) y se muestra la posición de entrada. */
   searching: boolean;
+  /** Orientación / brújula / giroscopio del dispositivo en grados (0..359). */
+  heading?: number | null;
 }
 
 export function useLocationViewModel() {
   const [userPosition, setUserPosition] = useState<UserPosition | null>(null);
+  const [heading, setHeading] = useState<number | null>(null);
   const [permissionGranted, setPermissionGranted] = useState(false);
   const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
+  const headingSubRef = useRef<Location.LocationSubscription | null>(null);
+  const headingRef = useRef<number | null>(null);
 
   const handlePosition = useCallback(
     (location: { coords: { latitude: number; longitude: number; accuracy: number | null } }) => {
@@ -40,6 +45,7 @@ export function useLocationViewModel() {
           lon: longitude,
           accuracy: acc,
           searching: true,
+          heading: headingRef.current,
         });
       } else {
         const { svgX, svgY } = geoTransform(latitude, longitude);
@@ -50,16 +56,39 @@ export function useLocationViewModel() {
           lon: longitude,
           accuracy: acc,
           searching: false,
+          heading: headingRef.current,
         });
       }
     },
     [],
   );
 
+  const handleHeading = useCallback((headingData: { trueHeading?: number; magHeading?: number }) => {
+    const rawDeg =
+      typeof headingData.trueHeading === 'number' && headingData.trueHeading >= 0
+        ? headingData.trueHeading
+        : headingData.magHeading;
+
+    if (typeof rawDeg !== 'number' || Number.isNaN(rawDeg)) {
+      return;
+    }
+
+    const normalized = Math.round(((rawDeg % 360) + 360) % 360);
+    headingRef.current = normalized;
+
+    // Solo emitir nuevo estado si el valor cambia para evitar re-renderizados innecesarios
+    setHeading((prev) => (prev === normalized ? prev : normalized));
+    setUserPosition((prev) => {
+      if (!prev) return null;
+      if (prev.heading === normalized) return prev;
+      return { ...prev, heading: normalized };
+    });
+  }, []);
+
   const requestPermission = useCallback(async () => {
     try {
       const response = await Location.requestForegroundPermissionsAsync();
-      const granted = response?.status === 'granted';
+      const granted = Boolean(response?.status === 'granted' || (response as { granted?: boolean })?.granted);
       setPermissionGranted(granted);
 
       if (granted) {
@@ -71,11 +100,20 @@ export function useLocationViewModel() {
           handlePosition,
         );
         subscriptionRef.current = sub;
+
+        if (typeof Location.watchHeadingAsync === 'function') {
+          try {
+            const headSub = await Location.watchHeadingAsync(handleHeading, () => undefined);
+            headingSubRef.current = headSub;
+          } catch {
+            // Giroscopio o brújula no disponible en este dispositivo
+          }
+        }
       }
     } catch {
       setPermissionGranted(false);
     }
-  }, [handlePosition]);
+  }, [handlePosition, handleHeading]);
 
   // Solicitar permiso al montar
   useEffect(() => {
@@ -83,11 +121,13 @@ export function useLocationViewModel() {
 
     return () => {
       subscriptionRef.current?.remove();
+      headingSubRef.current?.remove();
     };
   }, [requestPermission]);
 
   return {
     userPosition,
+    heading,
     permissionGranted,
     requestPermission,
   };

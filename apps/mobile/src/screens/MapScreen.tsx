@@ -1,5 +1,14 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { PanResponder, Pressable, StyleSheet, View } from 'react-native';
+import { PanResponder, StyleSheet, View, Pressable } from 'react-native';
+import { ArrivalBanner } from '../components/map/ArrivalBanner';
+import { DestinationRouteLine } from '../components/map/DestinationRouteLine';
+import { MapMarker } from '../components/map/MapMarker';
+import { MapPlaceCard } from '../components/map/MapPlaceCard';
+import { MapViewportControls } from '../components/map/MapViewportControls';
+import { WalkEstimateBadge } from '../components/map/WalkEstimateBadge';
+import { ZooMapSvg } from '../components/map/ZooMapSvg';
+import { ArTourOverlay } from '../components/map/ArTourOverlay';
+import { UserLocationMarker } from '../components/map/UserLocationMarker';
 import {
   AppText,
   Card,
@@ -10,18 +19,7 @@ import {
   ScreenContainer,
 } from '../components/ui';
 import {
-  ArrivalBanner,
-  ArTourOverlay,
-  DestinationRouteLine,
-  MapMarker,
-  MapPlaceCard,
-  MapViewportControls,
-  UserLocationMarker,
-  WalkEstimateBadge,
-  ZooMapSvg,
-} from '../components/map';
-import {
-  CENTER_LOCATION_ZOOM,
+  MAX_ZOOM_SCALE,
   MIN_ZOOM_SCALE,
   SVG_HEIGHT,
   SVG_WIDTH,
@@ -99,92 +97,74 @@ export function MapScreen({
   });
 
   const zoomScaleRef = useRef<number>(MIN_ZOOM_SCALE);
-  const panOffsetRef = useRef<{ panX: number; panY: number }>({ panX: 0, panY: 0 });
-  const dragOriginRef = useRef<{ panX: number; panY: number }>({ panX: 0, panY: 0 });
+  zoomScaleRef.current = zoomScale;
 
-  const applyViewport = useCallback(
-    (nextScale: number, nextPan: { panX: number; panY: number }) => {
-      zoomScaleRef.current = nextScale;
-      panOffsetRef.current = nextPan;
-      setZoomScale(nextScale);
-      setPanOffset(nextPan);
-    },
-    [],
-  );
+  const panOffsetRef = useRef<{ panX: number; panY: number }>({
+    panX: 0,
+    panY: 0,
+  });
+  panOffsetRef.current = panOffset;
+
+  const applyPan = useCallback((nextPanX: number, nextPanY: number) => {
+    const clamped = clampPan(nextPanX, nextPanY, zoomScaleRef.current);
+    setPanOffset(clamped);
+  }, []);
+
+  const applyZoom = useCallback((nextZoom: number) => {
+    const clampedZoom = clampZoom(nextZoom);
+    zoomScaleRef.current = clampedZoom;
+    setZoomScale(clampedZoom);
+
+    const clampedPan = clampPan(
+      panOffsetRef.current.panX,
+      panOffsetRef.current.panY,
+      clampedZoom,
+    );
+    setPanOffset(clampedPan);
+  }, []);
 
   const handleZoomIn = useCallback(() => {
-    const nextScale = clampZoom(zoomScaleRef.current + ZOOM_STEP);
-    const nextPan = clampPan(
-      panOffsetRef.current.panX,
-      panOffsetRef.current.panY,
-      nextScale,
-    );
-    applyViewport(nextScale, nextPan);
-  }, [applyViewport]);
+    applyZoom(zoomScaleRef.current + ZOOM_STEP);
+  }, [applyZoom]);
 
   const handleZoomOut = useCallback(() => {
-    const nextScale = clampZoom(zoomScaleRef.current - ZOOM_STEP);
-    const nextPan = clampPan(
-      panOffsetRef.current.panX,
-      panOffsetRef.current.panY,
-      nextScale,
-    );
-    applyViewport(nextScale, nextPan);
-  }, [applyViewport]);
+    applyZoom(zoomScaleRef.current - ZOOM_STEP);
+  }, [applyZoom]);
 
   const handleResetView = useCallback(() => {
-    applyViewport(MIN_ZOOM_SCALE, { panX: 0, panY: 0 });
-  }, [applyViewport]);
+    setZoomScale(MIN_ZOOM_SCALE);
+    setPanOffset({ panX: 0, panY: 0 });
+  }, []);
 
   const handleCenterLocation = useCallback(() => {
     if (!userPosition) {
       return;
     }
-    const currentScale = zoomScaleRef.current;
-    const targetScale =
-      currentScale > MIN_ZOOM_SCALE ? currentScale : CENTER_LOCATION_ZOOM;
-    const nextScale = clampZoom(targetScale);
-    const nextPan = computeCenterPanForSvgPoint(
+    const centerPan = computeCenterPanForSvgPoint(
       userPosition.svgX,
       userPosition.svgY,
-      nextScale,
+      zoomScaleRef.current,
     );
-    applyViewport(nextScale, nextPan);
-  }, [userPosition, applyViewport]);
+    setPanOffset(centerPan);
+  }, [userPosition]);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => zoomScaleRef.current > MIN_ZOOM_SCALE,
-      onMoveShouldSetPanResponder: (_, gestureState) =>
-        zoomScaleRef.current > MIN_ZOOM_SCALE &&
-        (Math.abs(gestureState.dx) > 4 || Math.abs(gestureState.dy) > 4),
-      onMoveShouldSetPanResponderCapture: (_, gestureState) =>
-        zoomScaleRef.current > MIN_ZOOM_SCALE &&
-        (Math.abs(gestureState.dx) > 6 || Math.abs(gestureState.dy) > 6),
-      onPanResponderGrant: () => {
-        dragOriginRef.current = { ...panOffsetRef.current };
-      },
-      onPanResponderMove: (_, gestureState) => {
-        const currentScale = zoomScaleRef.current;
-        if (currentScale <= MIN_ZOOM_SCALE) {
-          return;
-        }
-        const nextPan = clampPan(
-          dragOriginRef.current.panX + gestureState.dx / currentScale,
-          dragOriginRef.current.panY + gestureState.dy / currentScale,
-          currentScale,
-        );
-        if (
-          nextPan.panX !== panOffsetRef.current.panX ||
-          nextPan.panY !== panOffsetRef.current.panY
-        ) {
-          panOffsetRef.current = nextPan;
-          setPanOffset(nextPan);
-        }
-      },
-      onPanResponderTerminationRequest: () => false,
-    }),
-  ).current;
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: (_, gestureState) =>
+          Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2,
+        onPanResponderGrant: () => {
+          panOffsetRef.current = panOffset;
+        },
+        onPanResponderMove: (_, gestureState) => {
+          const nextPanX = panOffsetRef.current.panX + gestureState.dx;
+          const nextPanY = panOffsetRef.current.panY + gestureState.dy;
+          applyPan(nextPanX, nextPanY);
+        },
+      }),
+    [applyPan, panOffset],
+  );
 
   const walkRoute = useMemo(() => {
     if (!userPosition || !destinationPlace) {
@@ -213,35 +193,37 @@ export function MapScreen({
 
   return (
     <ScreenContainer scroll={false}>
-      <View style={styles.header}>
-        <AppText variant="title">Mapa del zoológico</AppText>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Buscar animales"
-          onPress={onSearchPress}
-          style={styles.searchLink}
-        >
-          <AppText variant="body" bold style={styles.searchLinkText}>
-            Buscar animales
+      {!arTour.isTourOpen && (
+        <View style={styles.header}>
+          <AppText variant="title">Mapa del zoológico</AppText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Buscar animales"
+            onPress={onSearchPress}
+            style={styles.searchLink}
+          >
+            <AppText variant="body" bold style={styles.searchLinkText}>
+              Buscar animales
+            </AppText>
+          </Pressable>
+          <View style={styles.filters}>
+            {filters.map((item) => (
+              <Chip
+                key={item.key}
+                label={item.label}
+                selected={filter === item.key}
+                onPress={() => onFilterChange(item.key)}
+              />
+            ))}
+          </View>
+          <AppText variant="small" color="textMuted">
+            Toca un punto del mapa para ver su información.
           </AppText>
-        </Pressable>
-        <View style={styles.filters}>
-          {filters.map((item) => (
-            <Chip
-              key={item.key}
-              label={item.label}
-              selected={filter === item.key}
-              onPress={() => onFilterChange(item.key)}
-            />
-          ))}
         </View>
-        <AppText variant="small" color="textMuted">
-          Toca un punto del mapa para ver su información.
-        </AppText>
-      </View>
+      )}
 
-      <View style={styles.mapArea}>
-        {arrivedAtPlace && onDismissArrival && (
+      <View style={[styles.mapArea, arTour.isTourOpen && styles.mapAreaFullBleed]}>
+        {arrivedAtPlace && onDismissArrival && !arTour.isTourOpen && (
           <ArrivalBanner place={arrivedAtPlace} onDismiss={onDismissArrival} />
         )}
 
@@ -280,21 +262,24 @@ export function MapScreen({
                   svgX={userPosition.svgX}
                   svgY={userPosition.svgY}
                   searching={userPosition.searching}
+                  heading={userPosition.heading}
                 />
               )}
             </View>
           </View>
 
-          <MapViewportControls
-            zoomScale={zoomScale}
-            canCenterLocation={Boolean(userPosition)}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onResetView={handleResetView}
-            onCenterLocation={handleCenterLocation}
-          />
+          {!arTour.isTourOpen && (
+            <MapViewportControls
+              zoomScale={zoomScale}
+              canCenterLocation={Boolean(userPosition)}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onResetView={handleResetView}
+              onCenterLocation={handleCenterLocation}
+            />
+          )}
 
-          {walkRoute && destinationPlace && (
+          {!arTour.isTourOpen && walkRoute && destinationPlace && (
             <WalkEstimateBadge
               destinationName={destinationPlace.name}
               distanceMeters={walkRoute.distanceMeters}
@@ -317,13 +302,13 @@ export function MapScreen({
           )}
         </View>
 
-        {isLoading && (
+        {!arTour.isTourOpen && isLoading && (
           <Card style={styles.stateCard}>
             <LoadingView message="Cargando mapa del zoológico..." />
           </Card>
         )}
 
-        {error && (
+        {!arTour.isTourOpen && error && (
           <Card style={styles.stateCard}>
             <ErrorView
               title="No se pudo cargar el mapa"
@@ -333,7 +318,7 @@ export function MapScreen({
           </Card>
         )}
 
-        {hasNoPlaces && (
+        {!arTour.isTourOpen && hasNoPlaces && (
           <Card style={styles.stateCard}>
             <EmptyView
               title="No hay puntos para este filtro"
@@ -342,7 +327,7 @@ export function MapScreen({
           </Card>
         )}
 
-        {showFocusNotice && (
+        {!arTour.isTourOpen && showFocusNotice && (
           <Card style={styles.noticeCard}>
             <AppText variant="small" color="textMuted">
               No encontramos ese destino en el mapa.
@@ -350,7 +335,7 @@ export function MapScreen({
           </Card>
         )}
 
-        {selectedPlace && (
+        {!arTour.isTourOpen && selectedPlace && (
           <MapPlaceCard
             place={selectedPlace}
             sectionName={selectedSectionName}
@@ -401,21 +386,24 @@ const styles = StyleSheet.create({
   },
   filters: {
     flexDirection: 'row',
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
   mapArea: {
     flex: 1,
-    minHeight: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: 'relative',
     padding: spacing.md,
   },
+  mapAreaFullBleed: {
+    padding: 0,
+  },
   canvas: {
-    width: '100%',
-    maxWidth: 620,
-    aspectRatio: 1000 / 1400,
-    backgroundColor: colors.background,
+    flex: 1,
+    borderRadius: radius.md,
     overflow: 'hidden',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    position: 'relative',
   },
   viewportContent: {
     width: '100%',
@@ -423,29 +411,29 @@ const styles = StyleSheet.create({
   },
   tourStartButton: {
     position: 'absolute',
-    left: spacing.sm,
-    bottom: spacing.sm,
-    minHeight: 44,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.pill,
+    bottom: spacing.md,
+    left: spacing.md,
     backgroundColor: colors.primary,
-    borderWidth: 1,
-    borderColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    elevation: 3,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
   },
   stateCard: {
     position: 'absolute',
-    left: spacing.lg,
-    right: spacing.lg,
-    top: spacing.lg,
+    left: spacing.md,
+    right: spacing.md,
+    bottom: spacing.md,
   },
   noticeCard: {
     position: 'absolute',
-    left: spacing.lg,
-    right: spacing.lg,
-    top: spacing.lg,
+    left: spacing.md,
+    right: spacing.md,
+    bottom: spacing.md,
+    padding: spacing.sm,
   },
 });
