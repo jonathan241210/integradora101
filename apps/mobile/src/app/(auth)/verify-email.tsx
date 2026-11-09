@@ -13,7 +13,6 @@ export default function VerifyEmailRoute() {
   const [resendWaitSeconds, setResendWaitSeconds] = useState<number | null>(null);
   const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [busy, setBusy] = useState(false);
-  const showTestCode = (process.env.EXPO_PUBLIC_API_URL?.trim() ?? '') === '';
   const inFlight = useRef(false);
 
   const run = async (action: () => Promise<void>) => {
@@ -73,7 +72,6 @@ export default function VerifyEmailRoute() {
       onResend={() => resend()}
       onGoToLogin={() => router.replace('/login')}
       alreadyRegistered={alreadyRegistered}
-      showTestCode={showTestCode}
       busy={busy}
     />
   );

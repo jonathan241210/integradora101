@@ -11,6 +11,7 @@ import PrivacyRoute from '../src/app/(tabs)/privacy';
 import HelpRoute from '../src/app/(tabs)/help';
 import AboutRoute from '../src/app/(tabs)/about';
 import ProfileRoute from '../src/app/(tabs)/profile';
+import { authRepository } from '../src/repositories/mockAuthRepository';
 import { visitorAccessRepository } from '../src/repositories/visitorAccessRepository';
 import { accountSession } from '../src/session/accountSession';
 import { tokenStorage } from '../src/services/tokenStorage';
@@ -115,7 +116,7 @@ describe('Acceso visual del visitante', () => {
     await fireEvent.press(reset.getByRole('button', { name: 'Restablecer contraseña' }));
     expect(reset.getByText('Escribe el código de 6 dígitos.')).toBeTruthy();
 
-    await fireEvent.changeText(reset.getByLabelText('Código'), '123456');
+    await fireEvent.changeText(reset.getByLabelText('Código'), authRepository.issuedCode('correo@ejemplo.com', 'recovery') ?? '');
     await fireEvent.press(reset.getByRole('button', { name: 'Restablecer contraseña' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/login'));
   });

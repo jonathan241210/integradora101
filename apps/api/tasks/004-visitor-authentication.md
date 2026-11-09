@@ -12,7 +12,7 @@ Todas las tareas están bajo `apps/api/src`, más una nota en `apps/api/docs/`. 
 
 No editar al implementar estas tareas:
 
-- `apps/mobile`. Este checklist no la edita. El corte HTTP, con `expo-secure-store` y el cliente visitante, quedó en `mobile-004` el 2026-10-21. Sin `EXPO_PUBLIC_API_URL`, Jest sigue con el mock y el código de prueba `123456`.
+- `apps/mobile`. Este checklist no la edita. El corte HTTP, con `expo-secure-store` y el cliente visitante, quedó en `mobile-004` el 2026-10-21. Sin `EXPO_PUBLIC_API_URL`, Jest sigue con el mock y sin un código de prueba publicado.
 - `packages/api-client`, incluido `auth.ts`. No se crea el módulo visitante.
 - `apps/web` y `apps/dashboard`.
 - `docs/adr` y `docs/database`. Este checklist no instala `expo-secure-store`. ADR 0011 está aceptado y esa dependencia pertenece al checklist HTTP de la app.

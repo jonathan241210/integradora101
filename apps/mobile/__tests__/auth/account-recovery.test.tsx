@@ -104,6 +104,7 @@ describe('Cuenta visitante, corte 2', () => {
       isAdult: true,
       privacyNoticeVersion: '2026-10',
     });
+    const issuedCode = authRepository.issuedCode('ana.nueva@correo.com');
     const verify = await render(<VerifyEmailRoute />);
     expect(verify.getByText(/ana.nueva@correo.com/)).toBeTruthy();
     expect(verify.getByText('Reenviar')).toBeTruthy();
@@ -112,7 +113,7 @@ describe('Cuenta visitante, corte 2', () => {
     await fireEvent.press(verify.getByRole('button', { name: 'Reenviar código' }));
     expect(await verify.findByText('Espera 30 segundos e inténtalo de nuevo.')).toBeTruthy();
     expect(verify.getByRole('button', { name: 'Espera 30 segundos' })).toBeTruthy();
-    await fireEvent.changeText(verify.getByLabelText('Código'), '123456');
+    await fireEvent.changeText(verify.getByLabelText('Código'), issuedCode ?? '');
     await fireEvent.press(verify.getByRole('button', { name: 'Confirmar código' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
   }, 15000);
@@ -157,7 +158,7 @@ describe('Cuenta visitante, corte 2', () => {
     mockParams.email = 'correo@ejemplo.com';
     const verify = await render(<VerifyEmailRoute />);
     expect(verify.queryByText('Ese correo ya está registrado.')).toBeNull();
-    await fireEvent.changeText(verify.getByLabelText('Código'), '123456');
+    await fireEvent.changeText(verify.getByLabelText('Código'), authRepository.issuedCode('correo@ejemplo.com') ?? '');
     await fireEvent.press(verify.getByRole('button', { name: 'Confirmar código' }));
     expect(await verify.findByText('Ese correo ya está registrado.')).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalledWith('/');
@@ -180,7 +181,7 @@ describe('Cuenta visitante, corte 2', () => {
     mockParams.email = 'correo@ejemplo.com';
     const reset = await render(<ResetPasswordRoute />);
     expect(reset.queryByText(/123456/)).toBeNull();
-    await fireEvent.changeText(reset.getByLabelText('Código'), '123456');
+    await fireEvent.changeText(reset.getByLabelText('Código'), authRepository.issuedCode('correo@ejemplo.com', 'recovery') ?? '');
     await fireEvent.changeText(reset.getByLabelText('Nueva contraseña'), 'nueva123');
     await fireEvent.changeText(reset.getByLabelText('Confirmar contraseña'), 'nueva123');
     await fireEvent.press(reset.getByRole('button', { name: 'Restablecer contraseña' }));

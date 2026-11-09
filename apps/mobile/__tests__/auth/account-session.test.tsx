@@ -46,7 +46,8 @@ describe('Cuenta visitante simulada', () => {
       params: { email: 'sin-verificar@ejemplo.com' },
     });
 
-    await fireEvent.changeText(login.getByLabelText('Correo electrónico'), 'limitado@ejemplo.com');
+    authRepository.limitLogin = true;
+    await fireEvent.changeText(login.getByLabelText('Correo electrónico'), 'otro@ejemplo.com');
     await fireEvent.press(login.getByRole('button', { name: 'Iniciar sesión' }));
     expect(await login.findByText('Espera 30 segundos e inténtalo de nuevo.')).toBeTruthy();
 

@@ -14,7 +14,6 @@ interface VerifyEmailScreenProps {
   onResend: () => void;
   onGoToLogin: () => void;
   alreadyRegistered?: boolean;
-  showTestCode?: boolean;
   busy?: boolean;
 }
 
@@ -29,7 +28,6 @@ export function VerifyEmailScreen({
   onResend,
   onGoToLogin,
   alreadyRegistered = false,
-  showTestCode = false,
   busy = false,
 }: VerifyEmailScreenProps) {
   const waiting = resendWaitSeconds !== null && resendWaitSeconds > 0;
@@ -49,7 +47,7 @@ export function VerifyEmailScreen({
     <ScreenContainer busyMessage={busy ? 'Verificando correo…' : null}>
       <View style={styles.page}>
         <AppText variant="title">Verifica tu correo</AppText>
-        <AppText variant="body">{showTestCode ? `${hint} En esta versión de prueba el código es 123456.` : hint}</AppText>
+        <AppText variant="body">{hint}</AppText>
         <TextField label="Código" value={code} onChangeText={onCodeChange} keyboardType="number-pad" maxLength={6} placeholder="000000" />
         {notice ? <AppText variant="small">{notice}</AppText> : null}
         {error ? <AppText variant="small" color="danger" accessibilityLiveRegion="polite">{error}</AppText> : null}

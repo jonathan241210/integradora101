@@ -87,7 +87,7 @@ Mobile no usa `fetch`/`axios` fuera del paquete (CA-12). La fase simulada ya usa
 
 | Fase | Condición | Entregable |
 |---|---|---|
-| **F1 — Mock** | Cumplida. Spec, plan y T-01 a T-30 aprobados e integrados. El ADR 0011 se aceptó después de ese corte, así que `TokenStorage` quedó en memoria. | `MockAuthRepository` y pruebas CA-xx con simulaciones. Las cuentas de prueba y el código `123456` siguen en la app mientras no haya URL de API. |
+| **F1 — Mock** | Cumplida. Spec, plan y T-01 a T-30 aprobados e integrados. El ADR 0011 se aceptó después de ese corte, así que `TokenStorage` quedó en memoria. | `MockAuthRepository` y pruebas CA-xx con simulaciones. Sin URL de API la app no trae cuentas ni muestra un código. Las cuentas de la suite viven solo en Jest. |
 | **F2 — HTTP** | `api-004` implementada, ADR 0011 aceptado y checklist HTTP (T-31 en adelante) aprobado | Módulo visitante de `@arca/api-client`, `expo-secure-store`, `HttpAuthRepository`, pruebas con cliente simulado y smoke manual contra la API de pruebas |
 
 DBR-001 y DBR-003 ya están en `Lista para backend` y aplicadas en `arca_pruebas`. `api-004` tiene plan, tasks y endpoints. F2 espera la aprobación del checklist HTTP. No se conecta a producción ni a `arca_zoo`. No se crean migraciones desde mobile.
@@ -152,7 +152,7 @@ Mobile **no** define migraciones ni SQL. Consume el contrato de **`apps/api/spec
 |---|---|---|
 | CA-01 | `test-ca-01-auth-login-redirect` | Guest → login; sin tabs. Enmienda UX 2026-10-23. |
 | CA-02 | `test-ca-02-register-form` | Campos, checkboxes, avatar picker, enlace aviso |
-| CA-03 | `test-ca-03-verify-email-flow`, `test-ca-03-registered-email-after-code` | Tras mock 201 register → verify UI; resend cooldown. El correo ya usado muestra la leyenda solo tras el código. La frase `123456` solo aparece sin URL de API. Enmienda 2026-11-05. |
+| CA-03 | `test-ca-03-verify-email-flow`, `test-ca-03-registered-email-after-code` | Tras mock 201 register → verify UI; resend cooldown. El correo ya usado muestra la leyenda solo tras el código. La pantalla no muestra un código de prueba. Enmienda 2026-11-05. |
 | CA-04 | `test-ca-04-auth-errors` | 422 mensajes; 403 → verify con el correo; 429 espera. Enmienda 2026-11-05. |
 | CA-05 | `test-ca-05-login-stores-tokens`, `test-ca-05-login-ignores-a-second-tap` | Mock Secure Store; navegación a tabs una sola vez. El indicador tapa la pantalla mientras la petición sigue. Enmienda 2026-10-23. |
 | CA-06 | `test-ca-06-refresh-single-flight` | Cliente simulado: N requests + 401 → 1 refresh → retry |

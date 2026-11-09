@@ -213,6 +213,6 @@ Ninguna brecha queda abierta para el código de este plan. La excepción de Soft
 1. Plan aprobado por Aksel el 2026-10-21.
 2. Checklist `apps/api/tasks/004-visitor-authentication.md` aprobado por Aksel el 2026-10-21.
 3. Implementación solo en `apps/api/src`: modelos, Actions, HTTP, middleware de aislamiento, config y pruebas. Después `php artisan test`.
-4. El corte del cliente se cerró en `mobile-004` el 2026-10-21: módulo visitante nuevo en `@arca/api-client` (sin editar `auth.ts`) y `HttpAuthRepository` en `apps/mobile`. Sin `EXPO_PUBLIC_API_URL`, Jest sigue en memoria con el código de prueba `123456`.
+4. El corte del cliente se cerró en `mobile-004` el 2026-10-21: módulo visitante nuevo en `@arca/api-client` (sin editar `auth.ts`) y `HttpAuthRepository` en `apps/mobile`. Sin `EXPO_PUBLIC_API_URL`, Jest sigue en memoria y no publica un código fijo.
 
 Aprobador funcional: Aksel. Fecha de este documento: 2026-10-20. Evidencia de esquema: DBR-003 aplicada en `arca_pruebas` con la migración `2026_10_15_000003_visitor_accounts_schema.php`.
