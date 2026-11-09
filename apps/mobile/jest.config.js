@@ -2,9 +2,10 @@ module.exports = {
   preset: 'jest-expo',
   collectCoverageFrom: [
     'src/viewmodels/**/*.ts',
-    'src/repositories/index.ts',
-    'src/repositories/visitorAccessRepository.ts',
+    'src/services/**/*.ts',
+    'src/repositories/**/*.ts',
   ],
+  coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
     'src/viewmodels/**/*.ts': {
       branches: 80,

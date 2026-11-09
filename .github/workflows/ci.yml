@@ -55,10 +55,18 @@ jobs:
       - name: Instalar dependencias del monorepo
         run: npm ci
 
-      - name: Ejecutar pruebas de la aplicación móvil
-        run: npm run test --workspace=apps/mobile -- --runInBand
+      - name: Ejecutar pruebas de Mobile con cobertura
+        run: npm run test:coverage --workspace=apps/mobile -- --runInBand
         env:
           CI: true
+
+      - name: Guardar reporte de cobertura móvil
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-coverage-report
+          path: apps/mobile/coverage/
+          if-no-files-found: ignore
 
   dashboard-build:
     name: Build y artefacto del Dashboard
