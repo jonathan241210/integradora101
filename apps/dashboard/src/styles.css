@@ -2172,6 +2172,35 @@ ul.enclosure-grid {
   overflow-y: auto;
 }
 
+.ticket-sale-screen {
+  display: grid;
+  gap: 20px;
+}
+
+.ticket-print-area {
+  display: none;
+}
+
+.ticket-folio-list {
+  display: grid;
+  max-height: 320px;
+  margin: 0;
+  padding: 0;
+  gap: 4px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style: none;
+}
+
+.ticket-folio-list li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+}
+
 .ticket-receipt {
   display: grid;
   box-sizing: border-box;
@@ -2199,19 +2228,12 @@ ul.enclosure-grid {
 }
 
 .ticket-receipt__folio strong,
-.ticket-receipt__total strong {
+.ticket-receipt__price strong {
   font-size: 1.25em;
 }
 
-.ticket-receipt__quantities {
-  display: grid;
-  gap: 2px;
-}
-
-.ticket-receipt__quantities div {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
+.ticket-receipt__kind {
+  font-weight: 700;
 }
 
 .ticket-receipt__qr {
@@ -2235,23 +2257,48 @@ ul.enclosure-grid {
 }
 
 @media print {
-  body * {
-    visibility: hidden;
+  /* dashboard-005 CA-37: solo los boletos, en flujo normal y sin salto forzado. */
+  .sidebar,
+  .topbar,
+  .mobile-nav-backdrop,
+  .global-feedback,
+  .demo-banner,
+  .ticket-sale-screen--printable {
+    display: none !important;
   }
 
-  .ticket-receipt,
-  .ticket-receipt * {
-    visibility: visible;
+  html,
+  body,
+  .dashboard-app {
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  .dashboard-main {
+    min-height: 0;
+    margin: 0;
+  }
+
+  .dashboard-content {
+    display: block;
+    width: auto;
+    padding: 0;
+  }
+
+  .ticket-print-area {
+    display: block;
+    overflow: visible;
   }
 
   .ticket-receipt {
-    position: absolute;
-    top: 0;
-    left: 0;
-    margin: 0;
+    margin: 0 auto;
     border: 0;
     background: var(--surface);
     color: var(--foreground);
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 }
 
@@ -2341,19 +2388,48 @@ ul.enclosure-grid {
 }
 
 .upload-box__preview {
+  display: grid;
+  place-items: center;
   width: 100%;
   max-width: 260px;
   max-height: 160px;
   border-radius: 6px;
-  object-fit: cover;
+  background: var(--surface-subtle);
+  overflow: clip;
+}
+
+.upload-box__preview-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.content-card,
+.event-card {
+  min-width: 0;
 }
 
 .content-card__thumb {
-  display: block;
+  display: grid;
+  place-items: center;
   width: 100%;
   height: 130px;
-  object-fit: cover;
+  overflow: clip;
   background: var(--surface-subtle);
+}
+
+.content-card__thumb-img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
 }
 
 .content-card__thumb--empty {

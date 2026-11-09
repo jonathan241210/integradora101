@@ -109,20 +109,56 @@ describe("CA-12 ticket-sales", () => {
   });
 });
 
-describe("CA-21 ticket-sales", () => {
-  it("sales.create no envía zona ni montos y desenvuelve data", async () => {
+describe("CA-05 ticket-sales (cliente)", () => {
+  it("sales.quote envía solo las cantidades, sin zona horaria, y desenvuelve data", async () => {
     const { api, calls } = clientWith(() =>
-      json(201, { data: { folio: 5, total_amount: "66.00", qr_svg: "<svg/>" } }),
+      json(200, { data: { adult_unit_price: "25.00", child_unit_price: "16.00", adult_subtotal: "50.00", child_subtotal: "16.00", total_amount: "66.00" } }),
     );
 
-    const ticket = await api.sales.create({ adult_quantity: 2, child_quantity: 1 });
+    const quote = await api.sales.quote({ adult_quantity: 2, child_quantity: 1 });
 
-    expect(ticket.total_amount).toBe("66.00");
-    expect(calls[0].url).toBe("/api/v1/admin/tickets");
+    expect(quote.total_amount).toBe("66.00");
+    expect(calls[0].url).toBe("/api/v1/admin/tickets/quote");
     expect(calls[0].init?.method).toBe("POST");
     expect(JSON.parse(String(calls[0].init?.body))).toEqual({
       adult_quantity: 2,
       child_quantity: 1,
+    });
+  });
+
+  it("sales.quote acepta la respuesta sin envoltura", async () => {
+    const { api } = clientWith(() => json(200, { total_amount: "10.00" }));
+
+    expect((await api.sales.quote({ adult_quantity: 1, child_quantity: 0 })).total_amount).toBe("10.00");
+  });
+});
+
+describe("CA-21 ticket-sales", () => {
+  it("sales.create no envía zona ni montos y devuelve la compra con sus boletos desenvuelta de data", async () => {
+    const { api, calls } = clientWith(() =>
+      json(201, {
+        data: {
+          adult_quantity: 1,
+          child_quantity: 3,
+          total_amount: "73.00",
+          tickets: [
+            { folio: 101, ticket_type: "adult", unit_price: "25.00", total_amount: "25.00", qr_svg: "<svg/>" },
+            { folio: 102, ticket_type: "child", unit_price: "16.00", total_amount: "16.00", qr_svg: "<svg/>" },
+          ],
+        },
+      }),
+    );
+
+    const sale = await api.sales.create({ adult_quantity: 1, child_quantity: 3 });
+
+    expect(sale.total_amount).toBe("73.00");
+    expect(sale.tickets).toHaveLength(2);
+    expect(sale.tickets[1].ticket_type).toBe("child");
+    expect(calls[0].url).toBe("/api/v1/admin/tickets");
+    expect(calls[0].init?.method).toBe("POST");
+    expect(JSON.parse(String(calls[0].init?.body))).toEqual({
+      adult_quantity: 1,
+      child_quantity: 3,
     });
   });
 

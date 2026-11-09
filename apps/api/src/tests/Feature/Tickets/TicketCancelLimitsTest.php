@@ -6,7 +6,7 @@ use App\Models\Ticket;
 
 class TicketCancelLimitsTest extends TicketFeatureTestCase
 {
-    public function test_ca44_ticket_cancel_limite_de_20_por_minuto(): void
+    public function test_ca44_ticket_cancel_limit_of_20_per_minute(): void
     {
         $cashier = $this->createAccount('cashier', false);
         $this->setPrices($cashier);

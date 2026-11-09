@@ -14,7 +14,7 @@ class AdminCoverageTest extends AdminFeatureTestCase
             ->reject(fn ($file) => $file->getFilename() === 'AdminCoverageTest.php');
         $source = $files->map(fn ($file) => $file->getContents())->implode("\n");
 
-        for ($index = 1; $index <= 28; $index++) {
+        for ($index = 1; $index <= 29; $index++) {
             if ($index === 27) {
                 continue; // CA-27 es este mismo test.
             }

@@ -44,7 +44,7 @@ const navigationCandidates: NavigationCandidate[] = [
   },
   {
     item: { id: "users", label: "Usuarios", icon: "users" },
-    permission: ["users.manage", "operational-staff.manage"],
+    permission: "users.manage",
   },
   {
     item: { id: "tickets", label: "Venta", icon: "ticket" },

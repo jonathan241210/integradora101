@@ -44,7 +44,7 @@ El esquema se construye ejecutando en orden las migraciones versionadas en `apps
 - **Área clínica:** `clinical_evaluations`, `clinical_evaluation_findings`, `animal_restraints`, `lab_samples`.
 - **Contenido institucional:** `news`, `events`.
 - **Taquilla y financiero:** `tickets`, `ticket_prices`, `staff_notifications`.
-- **Visitantes y gamificación:** `visitors`, `visitor_collections`, `visitor_scans`, `achievements`, `missions`, `visitor_point_ledger`.
+- **Visitantes y gamificación:** `visitors`, `visitor_collections`, `visitor_scans`, `achievements`, `missions`, `visitor_point_entries`.
 
 ---
 

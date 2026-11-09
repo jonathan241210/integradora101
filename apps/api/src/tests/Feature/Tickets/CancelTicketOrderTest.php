@@ -44,6 +44,7 @@ class CancelTicketOrderTest extends TicketFeatureTestCase
         $this->setPrices($cashier);
         $sale = $this->sell($cashier);
         $ticket = Ticket::query()->findOrFail($sale['folio']);
+        $cancelledEvents = $this->activityCount('ticket-cancelled'); // la base de pruebas puede tener eventos previos
         $ticket->delete(); // borrado lógico entre el authorize() y el bloqueo
 
         try {
@@ -53,6 +54,6 @@ class CancelTicketOrderTest extends TicketFeatureTestCase
             $this->assertSame('Boleto no encontrado.', $e->getMessage());
             $this->assertSame(404, $e->getStatusCode());
         }
-        $this->assertSame(0, $this->activityCount('ticket-cancelled'));
+        $this->assertSame($cancelledEvents, $this->activityCount('ticket-cancelled'));
     }
 }

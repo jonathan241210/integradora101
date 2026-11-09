@@ -45,10 +45,10 @@ class TicketPriceChangeTest extends TicketFeatureTestCase
 
         $this->travelTo($this->at('2026-12-01 11:59:59'));
         $this->assertSame('25.00', $this->actAs($cashier)->getJson('/api/v1/admin/ticket-prices/current')->json('data.adult.amount'));
-        $this->assertSame('41.00', $this->sell($cashier, 1, 1)['total_amount']);
+        $this->assertSame('41.00', $this->sellPurchase($cashier, 1, 1)['total_amount']);
 
         $this->travelTo($this->at('2026-12-01 12:00:00'));
         $this->assertSame('30.00', $this->actAs($cashier)->getJson('/api/v1/admin/ticket-prices/current')->json('data.adult.amount'));
-        $this->assertSame('50.00', $this->sell($cashier, 1, 1)['total_amount']);
+        $this->assertSame('50.00', $this->sellPurchase($cashier, 1, 1)['total_amount']);
     }
 }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\Admin\Tickets\RegisterTicketSaleAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Tickets\RegisterTicketSaleRequest;
-use App\Http\Resources\Admin\Tickets\TicketSaleResource;
+use App\Http\Resources\Admin\Tickets\TicketSaleBatchResource;
 use Illuminate\Http\JsonResponse;
 
 class TicketSaleController extends Controller
@@ -18,6 +18,6 @@ class TicketSaleController extends Controller
             (int) $request->validated('child_quantity'),
         );
 
-        return (new TicketSaleResource($sale))->response()->setStatusCode(201);
+        return (new TicketSaleBatchResource($sale))->response()->setStatusCode(201);
     }
 }

@@ -1,12 +1,25 @@
 # Plan técnico · 009 · ticket-sales
 
 - Spec: `apps/api/specs/009-ticket-sales.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-02)
+- Estado de spec: Aprobada (revisión aprobada por Jonathan el 2026-11-05 y revisión de boletos individuales aprobada por Jonathan el 2026-11-06; estado previo: Aprobada, Jonathan, 2026-11-02)
 - Responsable técnico: Jonathan (backend, Actions, controladores, tests); Víctor Adrián (BD, DBR-006 aprobada y aplicada en `arca_pruebas`)
 - Consumidores: `dashboard-005` (vía `@arca/api-client`)
-- Estado del plan: Aprobado — Jonathan, 2026-11-02 (aprueba la solución y el Constitution Check con las excepciones de Constitución V registradas abajo y las decisiones 1, 3 y 5 de la sección «Decisiones de aprobación (2026-11-02)»)
-- Alcance de este plan: CA y RN **vigentes** de la spec (CA-01 a CA-22, CA-27 a CA-31, CA-34 y, por la revisión de 2026-11-02, CA-42 a CA-45; RN-29 a RN-31). Excluidos por diferimiento (decisión 2026-11-02): CA-23 a CA-26, CA-32, CA-33, CA-35 a CA-41; RN-10, RN-11, RN-19 a RN-28; rutas de `notifications`. No se crea modelo ni Action para `staff_notifications` en esta iteración.
+- Estado del plan: Aprobado — Jonathan, 2026-11-02; revisión de 2026-11-05 aprobada (ver «Decisiones de la revisión 2026-11-05»); revisión de boletos individuales aprobada el 2026-11-06 (ver «Revisión boletos individuales»). Aprobación de 2026-11-02 (aprueba la solución y el Constitution Check con las excepciones de Constitución V registradas abajo y las decisiones 1, 3 y 5 de la sección «Decisiones de aprobación (2026-11-02)»)
+- Alcance de este plan: CA y RN **vigentes** de la spec (CA-01 a CA-22, CA-27 a CA-31, CA-34 y, por la revisión de 2026-11-02, CA-42 a CA-45; RN-29 a RN-31; y, aprobadas el 2026-11-05, CA-46 a CA-49 y RN-32 a RN-34; y, aprobadas el 2026-11-06, CA-50 a CA-55 y RN-35 a RN-38). Excluidos por diferimiento (decisión 2026-11-02): CA-23 a CA-26, CA-32, CA-33, CA-35 a CA-41; RN-10, RN-11, RN-19 a RN-28; rutas de `notifications`. No se crea modelo ni Action para `staff_notifications` en esta iteración.
 - ADR: 0019 **Aceptado** (2026-11-02), librería `bacon/bacon-qr-code` ^3.1 (v3.1.1) para CA-09. ADR 0021 **Aceptado** (2026-11-02), con las excepciones de Constitución V y la Policy por registro de este plan (`docs/adr/0021-ticket-sales-constitution-exceptions.md`). ADR 0020 (correo) diferido, sin trabajo en este plan.
+
+## Decisiones de la revisión 2026-11-05 (aprobada por Jonathan el 2026-11-05)
+
+Revisión de la spec 009 (sección «Revisión 2026-11-05», aprobada de Jonathan). Añade la cotización previa a la venta. Las decisiones 1 a 11 no cambian. Las tareas nuevas son T-75 a T-85 en `tasks/009-ticket-sales.md`.
+
+12. **Endpoint de cotización.** `POST /api/v1/admin/tickets/quote` (`admin.tickets.quote`) dentro del grupo `admin.` de `routes/api.php`, con `permission:tickets.create` y, después, el límite `ticket-quotes` (RN-33; 120 por minuto, pregunta R4). Controlador invocable y delgado: `TicketQuoteController`.
+13. **Action compartida.** `App\Actions\Admin\Tickets\QuoteTicketSaleAction` reúne lo que hoy hace `RegisterTicketSaleAction` en sus líneas 31 a 46: resolver el precio vigente de ambos tipos (`ResolveCurrentTicketPriceAction`), calcular el total (`CalculateTicketTotalAction`), aplicar el tope de importe máximo y lanzar el 422 con los mismos mensajes. `RegisterTicketSaleAction` la usa y conserva el resto (token, boleto, SVG, Activitylog y transacción). La respuesta de la venta no cambia.
+14. **Validación compartida.** La cotización usa `RegisterTicketSaleRequest` sin cambios: las mismas reglas que la venta (CA-03, CA-42, RN-29).
+15. **Respuesta.** `TicketQuoteResource` con `adult_unit_price`, `child_unit_price`, `adult_subtotal`, `child_subtotal` y `total_amount` (cadenas con dos decimales) y código 200. Nombres y código confirmados por Jonathan (pregunta R5).
+16. **Sin efectos.** La cotización no escribe en ninguna tabla, no emite token QR, no genera SVG y no registra Activitylog. No hay transacción de escritura. Sin DBR: no cambia el esquema.
+17. **Precio que cambia entre cotización y venta (RN-32).** Se acepta y se documenta: la venta resuelve el precio al registrarse.
+18. **Permisos en `arca_pruebas`.** BD ejecuta `RolesAndPermissionsSeeder` (T-75), con el seeder ya sin `operational-staff.manage` (`api-007`, T-42). Hasta entonces, los CA de acceso con `admin` (CA-06, CA-47) no son válidos en `arca_pruebas`.
+19. **Producción.** No hay procedimiento documentado para resembrar permisos en `arca_zoo` (pregunta R6; T-84, bloqueada). Ningún agente aplica permisos en producción.
 
 ## Decisiones de aprobación (2026-11-02)
 
@@ -22,7 +35,7 @@ Aprobado por Jonathan (responsable funcional y técnico de backend) el 2026-11-0
 Revisión de la spec 009 (estado Aprobada, sin cambio). Sustituyen o amplían las decisiones anteriores donde se indica. Cambian código que hoy está marcado como hecho; esas tareas se reabren por la sección «Revisión 2026-11-02» de `tasks/009-ticket-sales.md`.
 
 6. **Zona fija de cancelación (RN-16, CA-31, CA-14).** `CancelTicketRequest` deja de validar y leer `timezone`. `CancelTicketAction` e `IsTicketCancellableAction` usan `config('arca.report_timezone')`. `ListTicketHistoryAction` calcula `cancellable` con esa misma zona; su `timezone` de query sigue para `from`/`to` y presentación. `ResolveRequestedTimezoneAction` de `api-007` no se modifica. Sustituye la decisión de «Zona horaria» anterior para la cancelación.
-7. **Tope por tipo (CA-42, RN-29).** `RegisterTicketSaleRequest` valida `adult_quantity` y `child_quantity` con máximo 100. El mensaje sale de `lang/es/validation.php`. Sin tope en el cliente.
+7. **Tope por tipo (CA-42, RN-29).** `RegisterTicketSaleRequest` valida `adult_quantity` y `child_quantity` con máximo 100. El mensaje sale de `lang/es/validation.php`. Sin tope en el cliente. *Superada el 2026-11-06 por el tope de 50 boletos en total (decisión 27).*
 8. **Cantidades estrictas (CA-03 aclarado).** Booleanos, fracciones y cadenas no numéricas responden 422 en `RegisterTicketSaleRequest`. La admisión de cadenas numéricas enteras depende de la pregunta R1 de la spec; hasta su respuesta, se implementa la propuesta (admitir `"2"`).
 9. **Límites de frecuencia (CA-43, CA-44, RN-30).** Limitadores con nombre registrados en `AppServiceProvider`, con el mismo patrón que `visitor-*`: `ticket-sales` (60 por minuto) y `ticket-cancel` (20 por minuto), con clave por usuario autenticado. Se aplican en la ruta después de `permission:`. Responden 429 con el mensaje `auth.throttle` de `lang/es/auth.php`. No se usa IP como clave.
 10. **Límite de `effective_at` (CA-45, RN-31).** `SaveTicketPricesRequest` añade una regla en modo `scheduled`: `effective_at` ≤ momento de la operación + 1 año; si no, 422.
@@ -60,6 +73,7 @@ Límites:
 | API / datos | `app/Models/Ticket.php` (quitar el bloqueo `saving`/`deleting`; añadir `SoftDeletes`, `fillable`, casts); `app/Models/TicketPrice.php` (nuevo; `SoftDeletes`, timestamps por DBR-006 resolución 8). No se crea `app/Models/BaseModel.php` (decisión 1); `TicketPrice` sigue el mismo patrón que `Ticket` (decisión 1) | Modelos según DBR-006 aplicada |
 | API / Actions | `app/Actions/Admin/Tickets/`: `RegisterTicketSaleAction`, `CalculateTicketTotalAction`, `ResolveCurrentTicketPriceAction`, `IssueTicketQrTokenAction`, `RenderTicketQrSvgAction`, `IsTicketCancellableAction`, `CancelTicketAction`, `ListTicketHistoryAction`, `ListCurrentTicketPricesAction`, `ScheduleTicketPriceChangeAction` | Lógica de venta, cancelación, historial y precios |
 | API / revisión 2026-11-02 | `app/Http/Requests/Admin/Tickets/CancelTicketRequest.php` (sin `timezone`), `RegisterTicketSaleRequest.php` (tope 100 y cantidades estrictas), `SaveTicketPricesRequest.php` (límite de un año); `app/Actions/Admin/Tickets/CancelTicketAction.php`, `IsTicketCancellableAction.php` y `ListTicketHistoryAction.php` (zona `config('arca.report_timezone')`); `app/Providers/AppServiceProvider.php` (limitadores `ticket-sales` y `ticket-cancel`); `routes/api.php` (`throttle` tras `permission:`); `lang/es/validation.php` (mensajes nuevos) | Decisiones 6 a 10 de la revisión; CA-03 aclarado, CA-14, CA-31, CA-42 a CA-45; RN-16, RN-29 a RN-31 |
+| API / cotización (revisión 2026-11-05) | `app/Actions/Admin/Tickets/QuoteTicketSaleAction.php` (nuevo, extraído de `RegisterTicketSaleAction.php` líneas 31-46); `RegisterTicketSaleAction.php` (usa la Action); `app/Http/Controllers/Admin/TicketQuoteController.php` (nuevo, invocable); `app/Http/Resources/Admin/Tickets/TicketQuoteResource.php` (nuevo); `routes/api.php` (ruta `admin.tickets.quote`); `app/Providers/AppServiceProvider.php` (limitador `ticket-quotes`, valor pendiente); `tests/Feature/Tickets/` (CA-46 a CA-49) | Cotización previa a la venta (CA-46 a CA-49; RN-32 a RN-34) |
 | API / auditoría | `app/Actions/Admin/LogAdminActivityAction.php` (añadir `qr_svg` a `FORBIDDEN_KEYS`) | CA-28 |
 | API / HTTP | `app/Http/Controllers/Admin/`: `TicketSaleController` (store), `TicketController` (index), `TicketCancelController` (invocable), `TicketPriceController` (current, store) | Controladores delgados |
 | API / validación | `app/Http/Requests/Admin/Tickets/`: `RegisterTicketSaleRequest`, `CancelTicketRequest` (resuelve el boleto en `authorize()`), `ListTicketsRequest`, `SaveTicketPricesRequest` | Validación en español (CA-03, CA-11, CA-20, CA-21) |
@@ -81,6 +95,7 @@ Middleware común: `auth:sanctum`, `staff.user`, `administrator.two-factor`.
 | Método y ruta | Nombre | Permiso | CA |
 |---|---|---|---|
 | `POST /tickets` | `admin.tickets.store` | `permission:tickets.create` + límite `ticket-sales` (60/min, RN-30) | 01 a 09 (CA-09 incluido: `qr_svg`), 42, 43; CA-03 aclarado |
+| `POST /tickets/quote` | `admin.tickets.quote` | `permission:tickets.create` + límite `ticket-quotes` (120 por minuto, RN-33) | 46 a 49 (revisión 2026-11-05) |
 | `GET /tickets` | `admin.tickets.index` | `permission:tickets.view` | 14, 15, 16, 29 |
 | `POST /tickets/{ticket}/cancel` | `admin.tickets.cancel` | `permission:tickets.cancel` + límite `ticket-cancel` (20/min, RN-30) | 10, 11, 12, 13, 29, 31, 44 |
 | `GET /ticket-prices/current` | `admin.ticket-prices.current` | `permission:tickets.create\|ticket-prices.manage` | 17 |
@@ -89,6 +104,8 @@ Middleware común: `auth:sanctum`, `staff.user`, `administrator.two-factor`.
 Ruta `ticket-prices/current` declarada antes que cualquier `ticket-prices/{...}` futuro.
 
 **Venta (`POST /tickets`).** Body: `adult_quantity`, `child_quantity` (enteros ≥ 0 y ≤ 100 cada uno; al menos uno > 0; 422 en español por campo, CA-03 y CA-42; booleanos, fracciones y cadenas no numéricas → 422, revisión de 2026-11-02; 429 por límite de 60/min, CA-43). Respuesta 201: `folio` (`tickets.id`), `purchased_at` (UTC ISO 8601), `adult_quantity`, `child_quantity`, `adult_unit_price`, `child_unit_price`, `total_amount` (cadena), `cashier_name`, `qr_svg`. Errores: 401; 403 sin `tickets.create` (admin, zoo-admin, executive, veterinarian; CA-06); 422 sin precio vigente (CA-04) o validación (CA-03).
+
+**Cotización (`POST /tickets/quote`, revisión 2026-11-05).** Body: `adult_quantity` y `child_quantity` con las mismas reglas que la venta (CA-03, CA-42). Respuesta 200 (pregunta R5): `adult_unit_price`, `child_unit_price`, `adult_subtotal`, `child_subtotal` y `total_amount`. Sin boleto, sin QR y sin Activitylog (CA-49). Errores: 401; 403 sin `tickets.create` (CA-47); 422 por cantidades, tope, falta de precio vigente o importe máximo, con los mismos mensajes que la venta (CA-48); 429 por `ticket-quotes` cuando se fije su valor (RN-33).
 
 **Cancelación (`POST /tickets/{ticket}/cancel`).** Body: `reason` (obligatorio, no vacío, ≤ 255). Revisión de 2026-11-02: el campo `timezone` sale del contrato; si llega, se ignora. Orden de RN-16: 403 por permiso (middleware); 429 por límite de 20/min (CA-44, middleware tras `permission:`); 404 en `authorize()` si no es boleto del cajero; 422 por motivo vacío; 422 si `cancelled` (CA-12); 422 si no es mismo día en la zona del zoológico (CA-31); luego 200 con el boleto actualizado.
 
@@ -178,10 +195,14 @@ Convención: `test_caNN_ticket_sales_<descripción>()`, PHPUnit, `apps/api/src/t
 | CA-30 | Cobertura: busca `CA-01`…`CA-22`, `CA-27`…`CA-31`, `CA-34` y, por la revisión de 2026-11-02, `CA-42`…`CA-45` (32 CA) en los tests y verifica `DB_DATABASE=arca_pruebas` | `TicketSalesCoverageTest` (patrón de `Admin/AdminCoverageTest`) |
 | CA-31 | Boleto de día anterior en la zona → 422 «Solo se pueden cancelar boletos el mismo día en que se vendieron.»; mismo día → CA-10. Revisión: `timezone` del cuerpo ignorado (caso de un día distinto en otra zona → 200) | `CancelTicketSameDayTest` (método nuevo para `timezone` ignorado) |
 | CA-34 (`api-007`) | Boleto cancelado no suma en panel, reporte, listado ni exportación | `Feature/Admin/ReportExcludesCancelledTicketsTest` |
-| CA-42 | 100 por tipo pasa; 101 adultos o 101 niños → 422 con el mensaje; sin boleto ni log | `TicketSaleLimitsTest` |
+| CA-42 | (Revisión 2026-11-06) 50 boletos en total pasan; 51 → 422 con el mensaje; sin boleto ni log | `TicketSaleLimitsTest` (T-99) |
 | CA-43 | 60 ventas por minuto pasan; la 61 → 429; sin boleto extra | `TicketSaleLimitsTest` |
 | CA-44 | 20 cancelaciones por minuto pasan; la 21 → 429; ningún boleto cambia por el 429 | `TicketCancelLimitsTest` |
 | CA-45 | `scheduled` con `effective_at` a más de un año → 422 sin filas; dentro del año → 201 | `TicketPriceHorizonTest` |
+| CA-46 (revisión 2026-11-05) | Cotización con las mismas cantidades que la venta real: importes idénticos (2 adultos y 1 niño = 66.00) | `TicketQuoteTest` |
+| CA-47 (revisión 2026-11-05) | `admin`, `zoo-admin`, `executive` y `veterinarian` → 403; sin sesión → 401. Con `admin` requiere T-75 en `arca_pruebas` | `TicketQuoteAccessTest` |
+| CA-48 (revisión 2026-11-05) | Cantidades inválidas, más de 50 boletos en total, sin precio vigente e importe máximo → 422 con los mensajes de la venta | `TicketQuoteValidationTest` |
+| CA-49 (revisión 2026-11-05) | Cotización válida e inválida: conteos de boletos, tokens, Activitylog y precios iguales antes y después | `TicketQuoteNoSideEffectsTest` |
 
 Los CA diferidos no tienen test en este plan.
 
@@ -190,7 +211,7 @@ Los CA diferidos no tienen test en este plan.
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí, con dependencia aprobada | Laravel 12, MySQL 8.0.x, `.env`. Única dependencia nueva: `bacon/bacon-qr-code` ^3.1, fijada por ADR 0019 (Aceptado, 2026-11-02). Pendiente de backend: verificar `composer audit` y `ext-iconv` en PHP 8.4. Sin correo ni SDK de proveedor (ADR 0020 diferido). |
-| II. La spec manda | Sí | Spec 009 Aprobada (2026-11-02). Este plan (Aprobado 2026-11-02), `apps/api/tasks/009-ticket-sales.md` y el PR enlazan `009-ticket-sales`. Tareas sin marcar hasta tener evidencia. |
+| II. La spec manda | Sí | Spec 009 Aprobada (2026-11-02); revisión de 2026-11-05 aprobada. Este plan (Aprobado 2026-11-02; revisión de 2026-11-05 aprobada), `apps/api/tasks/009-ticket-sales.md` y el PR enlazan `009-ticket-sales`. Tareas sin marcar hasta tener evidencia. |
 | III. Lógica separada de la interfaz | Sí | Precios, total, token, SVG, cancelabilidad y alcance en `App\Actions\Admin\Tickets`. Controladores delgados. El dashboard no calcula (`dashboard-005` CA-21). |
 | IV. Un test por criterio | Sí (plan) | Tabla de mapeo con un test por CA vigente, incluido CA-09 con `bacon/bacon-qr-code`. `TicketSalesCoverageTest` lo verifica. No se da por cumplido hasta que la suite esté en verde (evidencia pendiente de ejecución). |
 | V. Una sola fuente de verdad para los datos | Sí, con excepciones aprobadas por Jonathan (2026-11-02) | Esquema solo por DBR-006 (aprobada; aplicada en `arca_pruebas` según el commit `5d0b62d`). Excepciones formalizadas en ADR 0021 (Aceptado, 2026-11-02): (a) `Ticket` y `TicketPrice` no extienden `BaseModel` (no existe en el repositorio y `tickets` no tiene `created_by` en DBR-006); usan SoftDeletes y auditoría propias (decisión 1). (b) `staff_notifications` no usa `SoftDeletes` (DBR-006 resolución 6); la tabla queda sin uso en esta iteración y la excepción se revisa al reactivar avisos (decisión 5). El equipo debe leer ADR 0021 para enterarse de estas excepciones; el acuerdo de Jonathan consta en ese ADR. |
@@ -212,7 +233,47 @@ Excepción adicional registrada (no de la Constitución, sino de `apps/api/AGENT
 - **Reversión.** DBR-006 solo es reversible mientras no existan ventas con columnas nuevas.
 - **Zona del día de cancelación.** Resuelta por la revisión de 2026-11-02: zona fija del zoológico (RN-16; decisión 6).
 - **Cuota compartida de taquilla.** Si varias personas usan la misma cuenta de `cashier` en un equipo, comparten el límite de 60 ventas y 20 cancelaciones por minuto (RN-30). Valores propuestos en la revisión; cambiarlos exige nueva revisión de la spec.
+- **Revisión 2026-11-05 (aprobada):** (a) cotización y venta comparten `QuoteTicketSaleAction`: un cambio de regla afecta a ambas (intencionado, RN-34); (b) precio que cambia entre cotización y venta: RN-32; (c) permisos de `arca_pruebas` desactualizados hasta T-75; (d) sin procedimiento de resiembra en producción (pregunta R6; T-84).
 - **Alternativas descartadas:** (1) `TicketPolicy` con 403 (contradice CA-13); (2) cálculo de total en el cliente (viola Constitución III); (3) SVG persistido (viola RN-07 y DBR-006); (4) codificador QR propio (`api-009` pregunta 4).
+
+## Revisión boletos individuales (2026-11-05, aprobada por Jonathan el 2026-11-06)
+
+Decisión de Jonathan del 2026-11-05 sobre la spec 009 («Revisión boletos individuales»), aprobada el 2026-11-06. No cambia las decisiones 12 a 19 ni la cotización (aprobada). Tareas T-86 a T-101 en `tasks/009-ticket-sales.md`; ninguna casilla marcada.
+
+20. **Un boleto por unidad (CA-50, RN-35).** `RegisterTicketSaleAction` llama a `QuoteTicketSaleAction` para los importes, emite un token QR por fila (`IssueTicketQrTokenAction`), genera el SVG por fila en memoria (`RenderTicketQrSvgAction`) y crea una fila de `tickets` por unidad: primero los adultos y después los niños, de modo que los folios sean ascendentes. Fila de adulto: `adult_quantity=1`, `child_quantity=0`, `total_amount` = precio de adulto; fila de niño, a la inversa. Todas las filas comparten `purchased_at` y `cashier_id`, y guardan `adult_unit_price` y `child_unit_price` vigentes.
+21. **Transacción única (CA-52).** Filas, SVG y eventos `ticket-sold` van en una sola `DB::transaction`. Un fallo en cualquier fila revierte la venta completa (CA-07).
+22. **Respuesta.** `TicketSaleResource` representa un boleto; nuevo `TicketSaleBatchResource` envuelve `data.tickets` y las cantidades y el total de la compra. Contrato aprobado en la spec (R-B1, 2026-11-06): sin precios por tipo en la respuesta.
+23. **Sin esquema y sin DBR.** `tickets` ya guarda folio, `qr_code` único, `status`, `cancelled_*` y cantidades por fila. No hay columna de agrupación (RN-35). Las filas anteriores no se separan ni se migran (RN-36).
+24. **Contabilidad.** La suma de cantidades para «boletos» la define `api-007` CA-29 y RN-15; esta revisión solo la referencia.
+25. **Auditoría por fila.** `LogAdminActivityAction` escribe un `ticket-sold` por boleto con folio, tipo y precio (CA-53). `qr_code` y `qr_svg` siguen en `FORBIDDEN_KEYS`.
+26. **Tamaño (CA-54, RN-37).** Hasta 50 filas, 50 SVG y una respuesta en una transacción (tope de 50 boletos en total). La prueba mide tamaño y duración como evidencia, sin umbral fijo (R-B2 resuelta el 2026-11-06): si los valores resultan inaceptables, se avisa a Jonathan.
+27. **Tope de 50 boletos en total (CA-42, RN-29; aprobado 2026-11-06).** `RegisterTicketSaleRequest` valida `adult_quantity + child_quantity` ≤ 50 y sustituye a `RegisterTicketSaleRequest::MAX_PER_TYPE`. El valor vive en `config/arca.php`, clave `ticket_sale_max_tickets` (50). La cotización (CA-48) usa la misma validación. Cambiar el valor requiere desplegar; la edición por Presidencia sin despliegue está fuera de esta revisión y documentada en la spec 010 (Borrador, no aprobada, no planificada).
+28. **Sin cambio de la forma de la respuesta de la cotización** (CA-46) ni del código 200; el total de la compra sigue siendo el de `POST /tickets/quote`.
+
+Cambios por área de esta revisión:
+
+| Área | Archivos | Propósito |
+|---|---|---|
+| API / Actions | `app/Actions/Admin/Tickets/RegisterTicketSaleAction.php` (bucle por unidad) | CA-50, CA-52 |
+| API / Resources | `app/Http/Resources/Admin/Tickets/TicketSaleResource.php` (un boleto); `TicketSaleBatchResource.php` (nuevo) | CA-50 |
+| API / auditoría | `LogAdminActivityAction.php` sin cambio de código; evento por fila | CA-53 |
+| API / pruebas | `tests/Feature/Tickets/` (CA-50 a CA-55) | Un test por CA |
+| Documentación | `apps/api/docs/tickets.md`, `docs/07-glosario.md` | Contrato y definiciones |
+
+Mapeo de criterios a pruebas (revisión de boletos individuales, aprobada el 2026-11-06):
+
+| Criterio | Prueba automatizada | Ubicación |
+|---|---|---|
+| CA-50 | Un boleto por unidad; folios ascendentes; QR distinto; `data.tickets`; total igual a la cotización; ejemplo 4 boletos y 73.00 | `TicketSaleSplitTest` (nuevo); `CreateTicketSaleTest` (ajustado) |
+| CA-51 | Cancelar un boleto de niño: 3 boletos vigentes, ingresos 57.00 | `CancelTicketPerRowTest` (nuevo) |
+| CA-52 | Fallo forzado en la fila 3 de 4: ninguna fila ni evento `ticket-sold` | `CreateTicketSaleAtomicityTest` (ampliado) |
+| CA-53 | Un `ticket-sold` por boleto, sin `qr_code` ni SVG en propiedades | `TicketAuditTest` (ampliado) |
+| CA-54 | Venta más grande (50 boletos): 201, 50 filas, 50 SVG; tamaño y duración registrados como evidencia | `TicketSaleBatchSizeTest` (nuevo) |
+| CA-55 | Fila anterior con `adult_quantity` 2: se lista y cancela como una fila | `TicketLegacyRowsTest` (nuevo) |
+
+Constitution Check de la revisión: sin cambio de esquema (principio V sin cambio); el bucle y el cálculo viven en la Action (principio III).
+
+Riesgos: ver RN-37 y RN-38 de la spec y el riesgo del doble envío (ahora de hasta 50 filas).
 
 ## Orden y aprobación
 
@@ -230,6 +291,7 @@ Excepción adicional registrada (no de la Constitución, sino de `apps/api/AGENT
 9. Cambio en `api-007`: filtro `status = completed` y CA-34; `api-007` tests en verde.
 10. Cobertura `TicketSalesCoverageTest` (CA-30), `apps/api/docs/tickets.md`.
 11. Revisión de 2026-11-02 (decisiones 6 a 10): zona fija y contrato de cancelación; tope por tipo y cantidades estrictas; límites de frecuencia; límite de `effective_at`; pruebas CA-42 a CA-45 y actualización de CA-03, CA-14, CA-31 y CA-30. Tareas T-58 a T-74 en `tasks/009-ticket-sales.md`. Son cambios de código que deben pasar por `/sdd-implement` tras la aprobación de la spec revisada.
+12. Revisión de 2026-11-05 (cotización CA-46 a CA-49, RN-32 a RN-34; permisos de `arca_pruebas`): T-75 a T-85 en `tasks/009-ticket-sales.md`. Aprobada. T-75 depende de `api-007` T-42 (seeder sin `operational-staff.manage`).
 
 **Reparto:**
 - Backend (Jonathan): pasos 1 a 10 (Actions, Requests, Resources, controladores, rutas, pruebas, cambio en `api-007`).
@@ -245,3 +307,7 @@ Excepción adicional registrada (no de la Constitución, sino de `apps/api/AGENT
 | Responsable técnico | Solución técnica y Constitution Check de este plan (incluidas excepciones de V) | Jonathan, 2026-11-02 (Aprobado; excepciones formalizadas en ADR 0021, Aceptado el 2026-11-02) |
 | Responsable de BD | DBR-006 | Aprobada 2026-11-02; evidencia por ambiente pendiente |
 | Equipo | ADR 0019 (SVG) | Aceptado 2026-11-02 |
+| Responsable funcional | Revisión 2026-11-05 de la spec 009 (cotización previa a la venta) | Aprobada por Jonathan, 2026-11-05 |
+| Responsable funcional y técnico | Revisión «Boletos individuales» (spec y plan, 2026-11-05) | Aprobada por Jonathan el 2026-11-06 |
+| Responsable técnico | Revisión 2026-11-05 del plan (`QuoteTicketSaleAction`, endpoint y límite `ticket-quotes`) | Aprobada por Jonathan, 2026-11-05 |
+| Responsable de BD | Ejecución de `RolesAndPermissionsSeeder` en `arca_pruebas` (T-75) y procedimiento de producción (T-84) | Pendiente |

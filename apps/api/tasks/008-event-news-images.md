@@ -57,7 +57,14 @@ Precondición, no tarea: DBR-005 aplicada en el ambiente (`deleted_at` en `news`
 
 - [x] **T-20**: Desde `apps/api/src` ejecutar `php artisan test --filter=Images`, la suite `Admin` completa y la suite completa para confirmar que `api-006` y `api-007` siguen en verde; ejecutar `./vendor/bin/pint --test`. Registrar resultados en el PR. Sin ejecutar nada en `arca_zoo`. Suite Admin + Catalog: 82 passed (2026-11-02).
 - [ ] **T-21** (CA-01, CA-07, RN-03): Verificación manual en un ambiente local con `storage:link`: subir, reemplazar, quitar y eliminar; comprobar en `storage/app/public/{news,events}` que el archivo aparece y desaparece. Probar un archivo mayor de 5 MB para confirmar el comportamiento de los límites HTTP (riesgo de la spec). Evidencia en el PR.
+  - Evidencia parcial (2026-11-06): Jonathan informó que probó subir y gestionar imágenes. Al reemplazar la imagen de la noticia 15, el archivo anterior desapareció de `storage/app/public/news`; el nuevo quedó sin EXIF, XMP ni mapa de ganancia, con perfil ICC, y Jonathan confirmó que se ve bien. **Sigue abierta:** la foto HEIF de 6.1 MB llegó a la API como JPEG de 400 KB, así que no comprueba los límites; falta probar un JPG real de más de 5 MB. En este equipo PHP tiene `upload_max_filesize=2M`.
 - [ ] **T-22**: Completar el Constitution Check del PR, enlazar spec, plan y tasks, citar `api-008` en los commits y pasar la spec a Implementada solo cuando CA-01 a CA-13 estén verificados con evidencia y exista aprobación funcional.
+
+## Revisión 2026-11-06: metadatos y HDR
+
+- [x] **T-26** (CA-14, CA-15; RN-13): `app/Actions/Admin/Content/StripImageMetadataAction.php` recorta JPG, PNG y WebP. `StoreContentImageAction` guarda el resultado.
+- [x] **T-27** (CA-14, CA-15): `tests/Feature/Admin/ContentImageMetadataTest.php`: los tres formatos, eventos, orientación normal y archivo truncado.
+- [x] **T-28** (RN-13): actualizar `apps/api/docs/administracion.md`.
 
 ## Trazabilidad
 
@@ -71,6 +78,7 @@ Precondición, no tarea: DBR-005 aplicada en el ambiente (`deleted_at` en `news`
 - CA-11 → T-06, T-10, T-23 (implementación); T-17 (prueba).
 - CA-12 → T-08 (implementación); T-18 (prueba).
 - CA-13 → T-19 (prueba de cobertura); T-20 (ejecución).
+- CA-14, CA-15 → T-26 (implementación); T-27 (prueba).
 - RN-01 a RN-12: T-01, T-02, T-03, T-04, T-05, T-07, T-09 y T-10 según corresponda. RN-10: ninguna tarea crea migraciones.
 - RN-09 (P2): T-04 (implementación); T-14 y T-18 (prueba).
 

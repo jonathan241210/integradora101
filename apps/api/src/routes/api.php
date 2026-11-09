@@ -1,6 +1,5 @@
 <?php
 
-
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EnclosureController as AdminEnclosureController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
@@ -12,15 +11,14 @@ use App\Http\Controllers\Admin\StaffAccountTwoFactorController;
 use App\Http\Controllers\Admin\TicketCancelController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\TicketPriceController;
+use App\Http\Controllers\Admin\TicketQuoteController;
 use App\Http\Controllers\Admin\TicketReportController;
 use App\Http\Controllers\Admin\TicketReportExportController;
 use App\Http\Controllers\Admin\TicketSaleController;
-use App\Http\Controllers\Api\AnimalController;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\ClinicalEvaluationController;
 use App\Http\Controllers\Auth\MeController;
 use App\Http\Controllers\Catalog\EnclosureController;
 use App\Http\Controllers\Catalog\EventController;
+use App\Http\Controllers\Catalog\NewsController as PublicNewsController;
 use App\Http\Controllers\Catalog\SpeciesController;
 use App\Http\Controllers\Visitor\PrivacyNoticeController;
 use App\Http\Controllers\Visitor\VisitorAuthenticationController;
@@ -40,6 +38,9 @@ Route::get('/enclosures/{enclosure}', [EnclosureController::class, 'show'])->nam
 
 Route::get('/events', [EventController::class, 'index'])->name('events.index');
 Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+
+Route::get('/news', [PublicNewsController::class, 'index'])->name('news.index');
+Route::get('/news/{news}', [PublicNewsController::class, 'show'])->name('news.show');
 Route::prefix('visitor')->name('visitor.')->group(function () {
     Route::get('legal/privacy-notice', PrivacyNoticeController::class)
         ->name('legal.privacy-notice');
@@ -91,7 +92,7 @@ Route::prefix('admin')
     ->name('admin.')
     ->middleware(['auth:sanctum', 'staff.user', 'administrator.two-factor'])
     ->group(function () {
-        Route::middleware('permission:users.manage|operational-staff.manage')->group(function () {
+        Route::middleware('permission:users.manage')->group(function () {
             Route::get('users', [StaffAccountController::class, 'index'])->name('users.index');
             Route::get('users/options', [StaffAccountController::class, 'options'])->name('users.options');
             Route::post('users', [StaffAccountController::class, 'store'])->name('users.store');
@@ -129,6 +130,9 @@ Route::prefix('admin')
             ->middleware('permission:dashboard.view')
             ->name('dashboard.show');
 
+        Route::post('tickets/quote', TicketQuoteController::class)
+            ->middleware(['permission:tickets.create', 'throttle:ticket-quotes'])
+            ->name('tickets.quote');
         Route::post('tickets', [TicketSaleController::class, 'store'])
             ->middleware(['permission:tickets.create', 'throttle:ticket-sales'])
             ->name('tickets.store');

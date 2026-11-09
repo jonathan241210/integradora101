@@ -4,7 +4,7 @@ namespace Tests\Feature\Tickets;
 
 class TicketCancellableZoneTest extends TicketFeatureTestCase
 {
-    public function test_ca14_ticket_sales_cancellable_usa_zona_del_zoologico(): void
+    public function test_ca14_ticket_sales_cancellable_uses_zoo_timezone(): void
     {
         $cashier = $this->createAccount('cashier', false);
         $today = $this->insertSale($cashier, '2026-11-02 15:00:00');     // 09:00 del día D en Ciudad de México

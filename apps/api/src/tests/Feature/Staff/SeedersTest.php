@@ -38,8 +38,11 @@ class SeedersTest extends FeatureTestCase
         $zooAdmin = Role::findByName('zoo-admin', 'web');
 
         $this->assertTrue($admin->hasPermissionTo('users.manage'));
-        $this->assertTrue($admin->hasPermissionTo('operational-staff.manage'));
-        $this->assertTrue($zooAdmin->hasPermissionTo('operational-staff.manage'));
+        // T-42/T-47: el permiso sale del catálogo del seeder; la fila antigua de `permissions` puede persistir,
+        // pero ningún rol la recibe.
+        foreach (Role::query()->where('guard_name', 'web')->get() as $role) {
+            $this->assertNotContains('operational-staff.manage', $role->permissions->pluck('name')->all(), "{$role->name} no debe tenerlo");
+        }
         $this->assertFalse($zooAdmin->hasPermissionTo('users.manage'));
         $this->assertTrue($zooAdmin->hasPermissionTo('news.manage'));
     }
