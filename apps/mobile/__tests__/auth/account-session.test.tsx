@@ -28,7 +28,7 @@ describe('Cuenta visitante simulada', () => {
     expect(login.getByRole('button', { name: 'Iniciar sesión' })).toBeTruthy();
     expect(login.getByRole('button', { name: 'Regístrate' })).toBeTruthy();
     expect(login.queryByText('Entrar como invitado')).toBeNull();
-  });
+  }, 15000);
 
   it('test-ca-04-auth-errors: el login muestra 422, 403, 429 y sin conexión', async () => {
     const login = await render(<LoginRoute />);

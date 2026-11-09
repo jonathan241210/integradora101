@@ -16,7 +16,7 @@ Un token de visitante no entra a `GET /api/v1/auth/me`. Una sesión de personal 
 | `POST /api/v1/visitor/auth/register` | Pública | 201 sin tokens y el mismo mensaje si el correo es nuevo o ya tiene cuenta. El alta nueva envía `email_verification`. El correo ya usado envía `registration_notice` y no cambia la cuenta |
 | `POST /api/v1/visitor/auth/email/verify` | Pública | 200 con el par de tokens si el código es `email_verification`. 200 «Ese correo ya está registrado.» (`email_already_registered`, sin tokens) si el código es `registration_notice`. 422 si el código no sirve |
 | `POST /api/v1/visitor/auth/email/resend` | Pública | 202 genérico. 1 por minuto y 5 por hora. Repite el código vigente más reciente de esos dos propósitos |
-| `POST /api/v1/visitor/auth/login` | Pública | Par de tokens. 403 `email_not_verified` si falta confirmar el correo |
+| `POST /api/v1/visitor/auth/login` | Pública | Par de tokens. 403 `email_not_verified` y envía un código `email_verification` de 6 dígitos si falta confirmar el correo |
 | `POST /api/v1/visitor/auth/refresh` | El refresh | Par nuevo, o 401 si la sesión ya no es válida |
 | `POST /api/v1/visitor/auth/logout` | Bearer | 204. Revoca el dispositivo |
 | `POST /api/v1/visitor/auth/password/forgot` | Pública | 202 genérico. 3 por hora |
@@ -26,7 +26,7 @@ Un token de visitante no entra a `GET /api/v1/auth/me`. Una sesión de personal 
 | `PUT /api/v1/visitor/me/password` | Bearer | Cambia la contraseña y conserva esta sesión |
 | `DELETE /api/v1/visitor/me` | Bearer | 204. Borrado físico si la contraseña es correcta |
 
-La contraseña del visitante pide 8 caracteres, letras y números. La del personal no cambia. El correo usa `MAIL_MAILER` del `.env`; en desarrollo el ejemplo deja `log`. El aviso provisional es la versión `2026-10` hasta que el zoológico entregue el texto definitivo.
+La contraseña del visitante pide 8 caracteres, letras y números. La del personal no cambia. El correo usa `MAIL_MAILER` del `.env`; en desarrollo el ejemplo deja `log`. Para enviar correos reales con **Gmail SMTP**, configura en `apps/api/src/.env` (sin versionarlo): `MAIL_MAILER=smtp`, `MAIL_SCHEME=smtp`, `MAIL_HOST=smtp.gmail.com`, `MAIL_PORT=587`, `MAIL_USERNAME`, `MAIL_PASSWORD` (contraseña de aplicación de 16 caracteres de Google) y `MAIL_FROM_ADDRESS` igual a tu cuenta de Gmail. El aviso provisional es la versión `2026-10` hasta que el zoológico entregue el texto definitivo.
 
 Los límites responden 429 con «Espera N segundos e inténtalo de nuevo.»
 

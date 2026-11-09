@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Visitor;
 
+use App\Mail\VisitorAccessCodeMail;
 use App\Models\Visitor;
 use App\Models\VisitorVerificationCode;
 use Illuminate\Support\Facades\Hash;
@@ -24,6 +25,15 @@ class VerificationCodeTest extends VisitorFeatureTestCase
         $this->assertTrue($row->expires_at->greaterThan(now()->addMinutes(14)));
         $this->assertTrue($row->expires_at->lessThan(now()->addMinutes(16)));
         $this->assertMatchesRegularExpression('/^\d{6}$/', $code);
+
+        $verificationHtml = (new VisitorAccessCodeMail($code, 'email_verification'))->render();
+        $this->assertStringContainsString('Confirma tu correo electrónico', $verificationHtml);
+        $this->assertStringContainsString($code, $verificationHtml);
+        $this->assertStringContainsString('Vence en 15 minutos y solo puede usarse una vez.', $verificationHtml);
+
+        $resetHtml = (new VisitorAccessCodeMail($code, 'password_reset'))->render();
+        $this->assertStringContainsString('restablecer la contraseña', $resetHtml);
+        $this->assertStringContainsString($code, $resetHtml);
 
         $this->postJson('/api/v1/visitor/auth/email/verify', [
             'email' => $email,

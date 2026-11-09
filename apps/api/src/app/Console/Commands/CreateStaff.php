@@ -8,7 +8,8 @@ use Illuminate\Console\Command;
 
 class CreateStaff extends Command
 {
-    protected $signature = 'arca:create-staff {email} {first_name} {last_name} {--department=veterinary : Código del departamento}';
+    // Renamed from `arca:create-staff`: that name belongs to CreateStaffCommand (api-003 CA-14).
+    protected $signature = 'arca:create-staff-simple {email} {first_name} {last_name} {--department=veterinary : Código del departamento}';
 
     protected $description = 'Crea una cuenta de personal (la contraseña se pide por consola).';
 

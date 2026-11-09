@@ -80,6 +80,7 @@ Cada prueba vive en `tests/Feature/Visitor/`, usa `DatabaseTransactions` sobre `
 
 - [x] **T-39**: Ejecutar `php artisan test` desde `apps/api/src`. La suite de personal existente debe seguir en verde.
 - [x] **T-40**: Documentar el contrato del visitante en `apps/api/docs/`, sin secretos ni credenciales. El PR enlaza spec, plan y tasks.
+- [x] **T-41** (CA-04, CA-16, CA-20): Enmienda 2026-11-05. Enviar automáticamente código de verificación en `LoginVisitorAction` cuando `email_verified_at === null` (`LoginTest.php`), mejorar la plantilla `resources/views/mail/visitor-access-code.blade.php` para distinguir verificación de correo y recuperación de contraseña en español (`VerificationCodeTest.php`) y documentar la configuración SMTP (Gmail) en `apps/api/docs/visitante-autenticacion.md`.
 
 - [x] **T-41** (CA-03, RN-04): Enmienda de Aksel, 2026-11-05. Un registro con correo ya usado responde 201 con el mismo mensaje, no crea otra cuenta ni cambia nombre, apodo, avatar ni contraseña, y envía `registration_notice`. Verificar ese código responde 200 «Ese correo ya está registrado.» con `email_already_registered` y sin tokens. Un código inválido suma intento solo al código vigente más reciente de `email_verification` y `registration_notice`. El reenvío repite ese propósito más reciente. Prueba en `RegisterTest.php`. El asunto del correo de aviso se distingue del de verificación.
 

@@ -22,7 +22,7 @@ export default function RegisterRoute() {
   const inFlight = useRef(false);
 
   useEffect(() => {
-    void accountSession.getPrivacyNotice().then((notice) => setPrivacyVersion(notice.version));
+    void accountSession.getPrivacyNotice().then((notice) => setPrivacyVersion(notice.version)).catch(() => setPrivacyVersion('2026-10'));
   }, []);
 
   const submit = async () => {

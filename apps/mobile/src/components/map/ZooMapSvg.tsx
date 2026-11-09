@@ -30,7 +30,7 @@ const rectZones: RectZone[] = [
   { id: 'zone-entrance', label: 'ACCESO', x: 350, y: 1180, width: 300, height: 160, fill: colors.accent, fillOpacity: 0.7, labelX: 500, labelY: 1270, labelSize: 26 },
 ];
 
-export function ZooMapSvg({ highlightedSectionId }: ZooMapSvgProps) {
+function ZooMapSvgComponent({ highlightedSectionId }: ZooMapSvgProps) {
   return (
     <Svg
       width="100%"
@@ -151,3 +151,5 @@ export function ZooMapSvg({ highlightedSectionId }: ZooMapSvgProps) {
     </Svg>
   );
 }
+
+export const ZooMapSvg = React.memo(ZooMapSvgComponent);

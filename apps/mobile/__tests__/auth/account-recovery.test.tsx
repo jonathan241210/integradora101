@@ -179,6 +179,7 @@ describe('Cuenta visitante, corte 2', () => {
 
     mockParams.email = 'correo@ejemplo.com';
     const reset = await render(<ResetPasswordRoute />);
+    expect(reset.queryByText(/123456/)).toBeNull();
     await fireEvent.changeText(reset.getByLabelText('Código'), '123456');
     await fireEvent.changeText(reset.getByLabelText('Nueva contraseña'), 'nueva123');
     await fireEvent.changeText(reset.getByLabelText('Confirmar contraseña'), 'nueva123');

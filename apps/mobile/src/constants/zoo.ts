@@ -49,3 +49,19 @@ export const LOCATION_DOT_COLOR = 'hsl(217, 89%, 61%)';
 export const LOCATION_DOT_BORDER = 'hsl(0, 0%, 100%)';
 export const LOCATION_PULSE_COLOR = 'hsla(217, 89%, 61%, 0.25)';
 export const LOCATION_DOT_SHADOW = 'hsl(0, 0%, 0%)';
+
+/**
+ * Estilo de la línea de ruta punteada hacia el destino (CA-14 / V2.1).
+ */
+export const ROUTE_LINE_COLOR = 'hsl(217, 89%, 61%)';
+export const ROUTE_LINE_DASH = '8, 6';
+export const ROUTE_LINE_WIDTH = 3;
+
+/**
+ * Parámetros de zoom, desplazamiento y centrado del visor del mapa (CA-15, CA-16, CA-17 / V2.2).
+ */
+export const MIN_ZOOM_SCALE = 1.0;
+export const MAX_ZOOM_SCALE = 2.5;
+export const ZOOM_STEP = 0.5;
+export const CENTER_LOCATION_ZOOM = 2.0;
+export const MAX_PAN_RANGE = 180;
