@@ -40,4 +40,48 @@ class ConsumeVisitorCodeAction
             return true;
         });
     }
+
+    /**
+     * @param  list<string>  $purposes
+     */
+    public function match(Visitor $visitor, string $plainCode, array $purposes): ?string
+    {
+        return DB::transaction(function () use ($visitor, $plainCode, $purposes) {
+            $rows = VisitorVerificationCode::query()
+                ->where('visitor_id', $visitor->id)
+                ->whereIn('purpose', $purposes)
+                ->whereNull('consumed_at')
+                ->orderByDesc('id')
+                ->lockForUpdate()
+                ->get();
+
+            $pending = $rows->filter(
+                fn (VisitorVerificationCode $row): bool => $row->expires_at->gt(now()) && $row->attempts < 5,
+            )->values();
+
+            foreach ($pending as $row) {
+                if (! Hash::check($plainCode, $row->code_hash)) {
+                    continue;
+                }
+
+                $row->consumed_at = now();
+                $row->save();
+
+                return $row->purpose;
+            }
+
+            $newest = $pending->first();
+            if ($newest === null) {
+                return null;
+            }
+
+            $newest->attempts++;
+            if ($newest->attempts >= 5) {
+                $newest->consumed_at = now();
+            }
+            $newest->save();
+
+            return null;
+        });
+    }
 }

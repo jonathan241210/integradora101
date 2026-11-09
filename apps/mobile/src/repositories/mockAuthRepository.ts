@@ -22,6 +22,7 @@ interface StoredVisitor {
   avatarCode: string;
   verified: boolean;
   privacyNoticeVersion: string;
+  registrationNotice?: boolean;
 }
 
 function success(suffix: string): AuthResult {
@@ -120,7 +121,11 @@ export function createMockAuthRepository(): AuthRepository & {
       if (!input.privacyNoticeVersion) return { ok: false, status: 422, message: 'Acepta el aviso de privacidad.' };
       if (!isAvatarCode(input.avatarCode)) return { ok: false, status: 422, message: 'Elige un avatar del catálogo.' };
       const email = input.email.trim().toLowerCase();
-      if (visitors.has(email)) return accepted(201, 'Te enviamos un código de 6 dígitos para verificar tu correo.');
+      const existing = visitors.get(email);
+      if (existing) {
+        existing.registrationNotice = true;
+        return accepted(201, 'Te enviamos un código de 6 dígitos para verificar tu correo.');
+      }
       visitors.set(email, {
         email,
         firstName: input.firstName.trim(),
@@ -137,6 +142,15 @@ export function createMockAuthRepository(): AuthRepository & {
       const account = visitors.get(email.trim().toLowerCase());
       if (!account || code.trim() !== VALID_CODE) {
         return { ok: false, status: 422, message: 'El código no es válido.' };
+      }
+      if (account.registrationNotice) {
+        account.registrationNotice = false;
+        return {
+          ok: true,
+          status: 200,
+          message: 'Ese correo ya está registrado.',
+          code: 'email_already_registered',
+        };
       }
       account.verified = true;
       currentEmail = account.email;

@@ -41,7 +41,10 @@ describe('Cuenta visitante simulada', () => {
     await fireEvent.changeText(login.getByLabelText('Correo electrónico'), 'sin-verificar@ejemplo.com');
     await fireEvent.press(login.getByRole('button', { name: 'Iniciar sesión' }));
     expect(await login.findByText('Confirma tu correo para entrar.')).toBeTruthy();
-    expect(mockPush).toHaveBeenCalledWith('/verify-email');
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/verify-email',
+      params: { email: 'sin-verificar@ejemplo.com' },
+    });
 
     await fireEvent.changeText(login.getByLabelText('Correo electrónico'), 'limitado@ejemplo.com');
     await fireEvent.press(login.getByRole('button', { name: 'Iniciar sesión' }));

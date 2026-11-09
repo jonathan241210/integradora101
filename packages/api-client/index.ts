@@ -7,12 +7,14 @@ export type {
   VisitorCatalogItemDto,
   VisitorDiscoveryDto,
   VisitorDiscoveryInput,
+  VisitorAlreadyRegistered,
   VisitorMessage,
   VisitorProfileDto,
   VisitorProgressDto,
   VisitorRegisterInput,
   VisitorSpeciesDto,
   VisitorTokenPayload,
+  VisitorVerifyResult,
 } from "./visitor";
 export { createAdminApi } from "./admin";
 export type { AdminApi, CreateAdminApiOptions } from "./admin";

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Visitor;
 
+use App\Mail\VisitorAccessCodeMail;
 use App\Models\VisitorVerificationCode;
 use Illuminate\Support\Facades\Mail;
 
@@ -66,6 +67,7 @@ class VerifyEmailTest extends VisitorFeatureTestCase
 
         $email = $this->registerVisitor();
         $this->postJson('/api/v1/visitor/auth/email/resend', ['email' => $email])->assertStatus(202);
+        $this->assertSame('email_verification', Mail::sent(VisitorAccessCodeMail::class)->last()->purpose);
         $this->postJson('/api/v1/visitor/auth/email/resend', ['email' => $email])
             ->assertStatus(429)
             ->assertSee('Espera', false);

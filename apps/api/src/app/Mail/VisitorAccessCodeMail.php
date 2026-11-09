@@ -16,9 +16,11 @@ class VisitorAccessCodeMail extends Mailable
 
     public function envelope(): Envelope
     {
-        $subject = $this->purpose === 'password_reset'
-            ? 'Código para restablecer tu contraseña'
-            : 'Código para verificar tu correo';
+        $subject = match ($this->purpose) {
+            'password_reset' => 'Código para restablecer tu contraseña',
+            'registration_notice' => 'Alguien intentó registrar tu correo',
+            default => 'Código para verificar tu correo',
+        };
 
         return new Envelope(subject: $subject);
     }
