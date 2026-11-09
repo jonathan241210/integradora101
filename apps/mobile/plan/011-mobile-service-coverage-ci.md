@@ -2,7 +2,7 @@
 
 - Spec: `apps/mobile/specs/011-mobile-service-coverage-ci.md`
 - Estado de spec: Aprobada — usuario solicitante, 2026-11-09
-- Estado del plan: Aprobado — usuario solicitante, 2026-11-09
+- Estado del plan: Aprobado e implementado — usuario solicitante, 2026-11-09
 - Responsable técnico: usuario solicitante
 
 ## Diseño de solución
@@ -65,3 +65,9 @@ No se transmiten datos de usuario ni cobertura a servicios externos. El reporte 
 4. Ejecutar `/verify` para Mobile y revisar `git diff --check`; conservar evidencia de Jest, el reporte y el artefacto Actions.
 
 Responsable de aprobación técnica: pendiente de identificar según acuerdo del equipo. Aprobación funcional: usuario solicitante.
+
+## Evidencia de implementación
+
+- La corrida local produjo `lcov-report/index.html` y `lcov.info`; los 16 archivos de `src/services/` y `src/repositories/` aparecen en LCOV.
+- La [ejecución 42703309235](https://github.com/jonathan241210/integradora101/actions/runs/42703309235) publicó `mobile-coverage-report`; se descargó y verificó la presencia del HTML y LCOV.
+- El job móvil quedó rojo: tres suites/tests fallidos y varios umbrales de cobertura preexistentes bajo 80%. El upload del artefacto pasó y el fallo no se ocultó. CA-03 se cumple.

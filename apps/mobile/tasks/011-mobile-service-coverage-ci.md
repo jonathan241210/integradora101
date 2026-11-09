@@ -2,7 +2,7 @@
 
 - Spec: `apps/mobile/specs/011-mobile-service-coverage-ci.md`
 - Plan: `apps/mobile/plan/011-mobile-service-coverage-ci.md`
-- Estado: En progreso
+- Estado: Implementada
 - Plan aprobado: usuario solicitante, 2026-11-09
 
 ## Implementación
@@ -13,9 +13,9 @@
 
 ## Pruebas automatizadas
 
-- [x] **T-04** (CA-01, CA-04): ejecutar la suite móvil completa con cobertura; verificar en salida y en `lcov.info`/HTML que cada servicio y repositorio está incluido, junto con los ViewModels ya configurados, sin `node_modules`, `__tests__` ni código generado. Evidencia local: los 16 archivos de servicios/repositorios aparecen en LCOV; la suite reportó 52 suites y 224 tests aprobados, 3 suites/tests fallidos. La ejecución normal sin cobertura reportó los mismos tres fallos; `src/repositories/index.ts` queda bajo el umbral preexistente del 80% (LCOV: 21/29 líneas, 14/22 ramas).
-- [ ] **T-05** (CA-02): pendiente de ejecución de Actions para comprobar el artifact descargable `mobile-coverage-report`; el job móvil aún tiene fallos preexistentes, por lo que no se ha observado una ejecución exitosa.
-- [ ] **T-06** (CA-03): pendiente de ejecución remota para comprobar que el upload se ejecuta después del fallo y no cambia el estado rojo del job.
+- [x] **T-04** (CA-01, CA-04): ejecutar la suite móvil completa con cobertura; verificar en salida y en `lcov.info`/HTML que cada servicio y repositorio está incluido, junto con los ViewModels ya configurados, sin `node_modules`, `__tests__` ni código generado. Evidencia local: los 16 archivos de servicios/repositorios aparecen en LCOV; 52 suites y 224 tests aprobaron, 3 suites/tests fallaron. La ejecución normal sin cobertura reportó los mismos tres fallos. En Actions también quedaron bajo el umbral preexistente del 80% `useVisitorProfile`, `useCameraPermissionSetting`, `useVisitorProgress`, `useQrScanViewModel`, `useArTourViewModel`, `useLocationViewModel` e `src/repositories/index.ts`.
+- [x] **T-05** (CA-02): la ejecución [42703309235](https://github.com/jonathan241210/integradora101/actions/runs/42703309235) publicó `mobile-coverage-report`; se descargó y verificó que contiene `lcov-report/index.html` y `lcov.info`.
+- [x] **T-06** (CA-03): en la misma ejecución, el job móvil quedó rojo por fallos en `mapViewport.test.tsx`, `mapAccessibility.test.tsx` y `architecture.test.ts`; el paso de upload se ejecutó y pasó, conservando el resultado fallido del job.
 
 ## Calidad y entrega
 
@@ -32,4 +32,5 @@
 
 - Los reportes locales se generaron en `apps/mobile/coverage/lcov-report/index.html` y `apps/mobile/coverage/lcov.info` (ambos ignorados por Git).
 - `git diff --check`: sin errores.
-- Acciones pendientes: T-05 y T-06 requieren ejecutar el workflow en GitHub después de subir estos cambios.
+- El artifact remoto `mobile-coverage-report` fue descargado a `/tmp/mobile-coverage-report` para comprobar su contenido.
+- Evidencia de Actions: [ejecución 42703309235](https://github.com/jonathan241210/integradora101/actions/runs/42703309235).

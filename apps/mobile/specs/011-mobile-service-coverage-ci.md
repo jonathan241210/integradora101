@@ -2,7 +2,7 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `apps/mobile`, `.github/workflows/ci.yml`
-- Estado: En progreso
+- Estado: Implementada
 - Solicitante / responsable funcional: usuario solicitante
 - Aprobación funcional: usuario solicitante, 2026-11-09
 
@@ -66,4 +66,4 @@ La cobertura contiene nombres de archivos, líneas ejecutadas y métricas técni
 ## Revisión
 
 - Aprobadores y fecha: usuario solicitante, 2026-11-09.
-- Evidencia/enlaces: workflow actual `.github/workflows/ci.yml`; configuración Jest `apps/mobile/jest.config.js`; servicios `apps/mobile/src/services/`.
+- Evidencia/enlaces: [ejecución de GitHub Actions 42703309235](https://github.com/jonathan241210/integradora101/actions/runs/42703309235); workflow `.github/workflows/ci.yml`; configuración Jest `apps/mobile/jest.config.js`; servicios `apps/mobile/src/services/`.
