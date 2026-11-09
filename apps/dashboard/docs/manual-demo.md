@@ -5,6 +5,10 @@
 - Las cuentas demo de `api-003` deben estar sembradas en `arca_pruebas` por la persona responsable de BD.
 - La API local debe tener `.env` configurado para `arca_pruebas`, `SANCTUM_STATEFUL_DOMAINS` con `localhost:5174` y `CORS_ALLOWED_ORIGINS` con `http://localhost:5174`.
 - La contraseña común de las cuentas demo se configura mediante `DEMO_STAFF_PASSWORD` fuera del repositorio. No se versiona y se comparte por un canal externo. Este manual no contiene contraseñas.
+- Imágenes de noticias y eventos (`api-008`), en la máquina local:
+  - En el `.env` de la API, `APP_URL=http://localhost:8000`, para que `image_url` apunte a la API local.
+  - Desde `apps/api/src`, ejecutar `php artisan storage:link`. Sin ese enlace las imágenes no se ven.
+  - En `php.ini`, `upload_max_filesize` mayor que 5 MB. El valor por defecto de PHP es 2 MB: con ese valor, PHP rechaza antes de llegar a Laravel los archivos de más de 2 MB, aunque `api-008` admita hasta 5 MB. Revisar también que `post_max_size` no sea menor.
 
 ## Iniciar localmente
 
@@ -32,7 +36,7 @@ Las seis cuentas comparten `DEMO_STAFF_PASSWORD`. No pegues ni guardes ese valor
 |---|---|---|
 | `presidencia@arca.local` | `admin` | Administración; 2FA obligatorio |
 | `admin@arca.local` | `admin` | Administración; 2FA obligatorio |
-| `direccion_zoo@arca.local` | `zoo-admin` | Administración según permisos; 2FA obligatorio |
+| `direccion_zoo@arca.local` | `zoo-admin` | Administración sin Usuarios (desde 2026-11-05); 2FA obligatorio |
 | `ejecutivo@arca.local` | `executive` | Panel y reporte de solo lectura |
 | `boletaje@arca.local` | `cashier` | Venta e historial reales (`api-009`) |
 | `veterinario@arca.local` | `veterinarian` | Redirección a la PWA |
@@ -51,7 +55,7 @@ El mensaje de credenciales incorrectas es genérico. Los errores de límite de i
 
 La API entrega `home` y permisos; el dashboard solo muestra las secciones asociadas:
 
-- `administration`: Panel principal, Noticias, Eventos, Reporte de boletos, Recintos y Usuarios según permisos.
+- `administration`: Panel principal, Noticias, Eventos, Reporte de boletos, Recintos y, solo con `users.manage`, Usuarios.
 - `executive`: Panel y Reporte reales en solo lectura, con exportación.
 - `ticket`: Venta e Historial reales (el cajero ve solo sus boletos).
 - `pwa`: la sesión veterinaria se dirige a `pwa_url`. Si la URL no está configurada, se informa que la aplicación no está disponible y no se redirige.
@@ -60,7 +64,7 @@ La API entrega `home` y permisos; el dashboard solo muestra las secciones asocia
 
 Las secciones de administración usan datos reales de `arca_pruebas` mediante `api-007` y no muestran el aviso de demostración:
 
-- **Usuarios:** tabla paginada con búsqueda y filtros por rol, área y estado; formulario fijo (minimizable) de alta y edición; activar/desactivar, eliminar, restablecer contraseña y restablecer 2FA con confirmación en línea en la propia fila, sin ventanas emergentes. `zoo-admin` solo ve y gestiona cuentas de taquilla y veterinaria.
+- **Usuarios:** tabla paginada con búsqueda y filtros por rol, área y estado; formulario fijo (minimizable) de alta y edición; activar/desactivar, eliminar, restablecer contraseña y restablecer 2FA con confirmación en línea en la propia fila, sin ventanas emergentes. Solo `admin` (con `users.manage`) ve esta sección; `zoo-admin` no la ve desde el 2026-11-05.
 - **Noticias y Eventos:** listado de activos e inactivos, formulario fijo (minimizable) de alta y edición con caja de imagen (selector o arrastrar y soltar; JPG, PNG o WebP de hasta 5 MB; vista previa, «Quitar imagen» y miniatura en las tarjetas); activar/desactivar y eliminar con confirmación en línea en la tarjeta.
 - **Recintos:** lista con número de animales, alta y renombrado; no se eliminan.
 - **Panel principal:** totales de hoy y de los últimos 7 días y serie diaria de ingresos. Sin ventas se muestra un estado vacío.
@@ -70,7 +74,7 @@ Las secciones de administración usan datos reales de `arca_pruebas` mediante `a
 
 ### Taquilla y precios (`api-009`)
 
-- **Venta (`cashier`):** cantidades de adultos y niños, precios unitarios vigentes de la API, confirmación, boleto con folio y QR e «Imprimir boleto». «Configurar impresión» guarda la preferencia solo en el equipo.
+- **Venta (`cashier`):** cantidades de adultos y niños, precios unitarios vigentes de la API, confirmación, boleto con folio y QR y la lista de boletos, uno por unidad vendida, cada uno con su folio y su QR; «Imprimir boletos» imprime todos, sin salto forzado de página: los boletos fluyen según el formato y ninguno se parte entre hojas (revisión de boletos individuales, aprobada por Jonathan el 2026-11-06). «Configurar impresión» guarda la preferencia solo en el equipo.
 - **Historial:** `cashier` ve sus boletos y puede cancelar los marcados como cancelables indicando el motivo; `admin` y `zoo-admin` lo ven en solo lectura.
 - **Precios (`admin`):** precio vigente y próximo cambio, cambio inmediato o programado con confirmación; sin segundo factor confirmado la API responde 403 y se muestra un aviso.
 

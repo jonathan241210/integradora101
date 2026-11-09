@@ -5,7 +5,7 @@
 - Estado: Borrador (listo para aprobación funcional)
 - Solicitante / responsable funcional: Víctor Adrián
 - Aprobación funcional: Víctor Adrián (pendiente de firma final para pasar a Plan/Tasks)
-- ADR relacionado: `docs/adr/0023-mobile-ar-3d-camera-threejs.md` (Propuesto)
+- ADR relacionado: `docs/adr/0025-mobile-ar-3d-camera-threejs.md` (Propuesto)
 
 ---
 
@@ -113,7 +113,7 @@ flowchart TD
 ## Dependencias, riesgos y preguntas
 
 - **Dependencias / ADR:**
-  - [ADR 0023 · Visor de Guía 3D y Realidad Aumentada con Cámara, Three.js y Sensores](../../../docs/adr/0023-mobile-ar-3d-camera-threejs.md).
+  - [ADR 0025 · Visor de Guía 3D y Realidad Aumentada con Cámara, Three.js y Sensores](../../../docs/adr/0025-mobile-ar-3d-camera-threejs.md).
   - [ADR 0014 · Caché offline y detección de conectividad en la app móvil](file:///c:/Users/vic22/OneDrive/Escritorio/ARCA-NB/docs/adr/0014-mobile-offline-cache-and-connectivity.md).
   - [ADR 0016 · Ubicación GPS en tiempo real con expo-location](file:///c:/Users/vic22/OneDrive/Escritorio/ARCA-NB/docs/adr/0016-expo-location-gps-blue-dot.md).
 - **Riesgos y mitigaciones:**
@@ -127,6 +127,6 @@ flowchart TD
 
 - **Responsable funcional:** Víctor Adrián (2026-11-05).
 - **Evidencia/enlaces:**
-  - `docs/adr/0023-mobile-ar-3d-camera-threejs.md`
+  - `docs/adr/0025-mobile-ar-3d-camera-threejs.md`
   - `apps/mobile/docs/009-guia-mapa-3d-ar-threejs.md`
   - `apps/mobile/specs/007-map-location.md`

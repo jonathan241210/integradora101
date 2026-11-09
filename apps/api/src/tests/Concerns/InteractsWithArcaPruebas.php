@@ -7,7 +7,7 @@ use RuntimeException;
 
 trait InteractsWithArcaPruebas
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         $configuredDatabase = $_ENV['DB_DATABASE']
             ?? $_SERVER['DB_DATABASE']

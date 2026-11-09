@@ -1,4 +1,6 @@
-import type { Router } from 'expo-router';
+import type { useRouter } from 'expo-router';
+
+type Router = ReturnType<typeof useRouter>;
 import type { ScanPresentation } from '../services/scanQueue';
 
 let remembered: ScanPresentation | null = null;

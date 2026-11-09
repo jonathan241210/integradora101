@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   actionLabel: { flex: 1 },
   divider: { height: 1, backgroundColor: colors.accent },
   backdrop: { flex: 1, justifyContent: 'center', padding: spacing.lg },
-  backdropTap: { ...StyleSheet.absoluteFillObject },
+  backdropTap: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   dim: { backgroundColor: colors.text, opacity: 0.45 },
   sheet: {
     backgroundColor: colors.surface,

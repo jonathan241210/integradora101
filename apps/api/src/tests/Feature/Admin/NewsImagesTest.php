@@ -13,7 +13,7 @@ class NewsImagesTest extends AdminFeatureTestCase
 {
     private const BASE = '/api/v1/admin/news';
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         Storage::fake('public');

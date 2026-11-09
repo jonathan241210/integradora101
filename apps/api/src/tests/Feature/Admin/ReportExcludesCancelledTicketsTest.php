@@ -29,17 +29,17 @@ class ReportExcludesCancelledTicketsTest extends AdminFeatureTestCase
 
         // Panel (api-007 CA-19)
         $dashboard = $this->actAs($admin)->getJson('/api/v1/admin/dashboard')->assertOk()->json('data');
-        $this->assertSame(['tickets' => 1, 'adults' => 2, 'children' => 1, 'revenue' => '66.00'], $dashboard['today']);
-        $this->assertSame(['tickets' => 1, 'adults' => 2, 'children' => 1, 'revenue' => '66.00'], $dashboard['last_7_days']);
+        $this->assertSame(['tickets' => 3, 'adults' => 2, 'children' => 1, 'revenue' => '66.00'], $dashboard['today']);
+        $this->assertSame(['tickets' => 3, 'adults' => 2, 'children' => 1, 'revenue' => '66.00'], $dashboard['last_7_days']);
         $this->assertSame('66.00', end($dashboard['series'])['revenue']);
 
         // Reporte: totales, desglose y listado (api-007 CA-20)
         $report = $this->actAs($admin)->getJson('/api/v1/admin/reports/tickets?period=week&date=2026-11-05')->assertOk();
-        $this->assertSame(['tickets' => 1, 'adults' => 2, 'children' => 1, 'revenue' => '66.00'], $report->json('data.totals'));
+        $this->assertSame(['tickets' => 3, 'adults' => 2, 'children' => 1, 'revenue' => '66.00'], $report->json('data.totals'));
         $this->assertSame([(string) $kept], array_column($report->json('data.tickets'), 'folio'));
         $this->assertSame(1, $report->json('meta.total'));
         $day = collect($report->json('data.daily'))->firstWhere('date', '2026-11-05');
-        $this->assertSame(1, $day['tickets']);
+        $this->assertSame(3, $day['tickets']);
         $this->assertSame('66.00', $day['revenue']);
 
         // Exportación (api-007 CA-22 y CA-23): mismos boletos y totales

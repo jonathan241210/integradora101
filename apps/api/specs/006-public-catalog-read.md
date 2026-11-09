@@ -65,12 +65,12 @@ El esquema actual no guarda en `species` todos los campos que consume la ficha m
 - **RN-04:** Los mensajes de error visibles para el cliente van en español.
 - **RN-05:** Los controladores son delgados y delegan en Actions (`ListSpeciesAction`, `GetSpeciesAction`, `ListEventsAction`, `GetEventAction`); la serialización vive en API Resources.
 - **RN-06:** Una colección vacía responde `200` con `{"data": []}`, no `404`.
-- **RN-07:** No hay paginación: el catálogo del zoológico es pequeño y la app móvil espera la lista completa en una sola respuesta.
+- **RN-07:** (Nota de vigencia, api-011: `GET /events` acepta `limit` opcional 1..50, sin `page` ni `meta`; sin `limit` el contrato no cambia.) No hay paginación: el catálogo del zoológico es pequeño y la app móvil espera la lista completa en una sola respuesta.
 - **RN-08:** La regla del animal representativo es determinista y estable entre llamadas.
 - **RN-09:** Los eventos inactivos o vencidos no se exponen ni en el listado ni en el detalle.
 - **RN-10:** `model_3d_path` se expone tal cual como referencia; servirlo o renderizarlo queda fuera de alcance.
 - **RN-11:** No se exponen identificadores internos de personal (`author_id`, `responsible_id`) ni datos de auditoría.
-- **RN-12:** La vigencia se evalúa con la fecha actual en la zona horaria configurada por la API; `end_date` nulo significa vigencia indefinida.
+- **RN-12:** (Nota de vigencia, api-011 RN-14: «hoy» se calcula en `America/Mexico_City` mediante `App\Support\PublicCalendar::today()`; un evento que termina hoy sigue visible hasta las 24:00 locales y no se oculta a las 18:00. Avisar al equipo de `mobile-003`.) La vigencia se evalúa con la fecha actual en la zona horaria configurada por la API; `end_date` nulo significa vigencia indefinida.
 
 ## Datos, privacidad y auditoría
 

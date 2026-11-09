@@ -1,10 +1,10 @@
-# 0023 · Recorrido Guiado 3D y Realidad Aumentada Offline con Cámara, Three.js y Sensores
+# 0025 · Recorrido Guiado 3D y Realidad Aumentada Offline con Cámara, Three.js y Sensores
 
 - Estado: Propuesto (listo para aceptación en `mobile-009`)
 - Fecha: 2026-11-05
 - Spec relacionada: `apps/mobile/specs/009-ar-3d-map-guide.md`
 - Autor / Responsable: Víctor Adrián
-- Nota: Renumerado desde 0022 el 2026-11-09 para no colisionar con ADR 0022 (escaneo QR con `expo-camera`, `mobile-006`).
+- Nota: Renumerado desde 0022 el 2026-11-09. El 0022 quedó para el escaneo QR (`mobile-006`). El 0023 y el 0024 los ocupan el checklist de despliegue y el portal estático.
 
 ---
 

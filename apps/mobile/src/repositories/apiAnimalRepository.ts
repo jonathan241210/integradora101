@@ -79,11 +79,12 @@ export class ApiAnimalRepository implements AnimalRepository {
     return all.slice(0, 3);
   }
 
-  private async fetchAndCacheAllAnimals(): Promise<Animal[]> {
+  async fetchAndCacheAllAnimals(): Promise<Animal[]> {
     try {
-      const response = await this.httpClient.get<{ data: ApiSpeciesResponse[] }>('/species');
-      const list = Array.isArray(response?.data)
-        ? response.data.map(mapSpeciesToAnimalModel)
+      const response = await this.httpClient.get<{ data: ApiSpeciesResponse[] } | ApiSpeciesResponse[]>('/species');
+      const rawData = (response as { data?: unknown })?.data ?? response;
+      const list = Array.isArray(rawData)
+        ? rawData.map((item) => mapSpeciesToAnimalModel(item as ApiSpeciesResponse))
         : [];
       await this.writeCache(CACHE_KEY_ALL, list);
       return list;

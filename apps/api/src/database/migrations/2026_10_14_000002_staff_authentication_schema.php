@@ -15,13 +15,13 @@ return new class extends Migration
         // 1. Modificar tabla `departments`
         if (Schema::hasTable('departments')) {
             Schema::table('departments', function (Blueprint $table) {
-                if (!Schema::hasColumn('departments', 'code')) {
+                if (! Schema::hasColumn('departments', 'code')) {
                     $table->string('code', 50)->unique('uk_departments_code')->after('name');
                 }
-                if (!Schema::hasColumn('departments', 'is_active')) {
+                if (! Schema::hasColumn('departments', 'is_active')) {
                     $table->tinyInteger('is_active')->default(1)->after('description');
                 }
-                if (!Schema::hasColumn('departments', 'created_at')) {
+                if (! Schema::hasColumn('departments', 'created_at')) {
                     $table->timestamps();
                 }
             });
@@ -49,27 +49,27 @@ return new class extends Migration
             $dropFkIfExists('users', 'fk_users_department_id');
 
             Schema::table('users', function (Blueprint $table) {
-                if (!Schema::hasColumn('users', 'email')) {
+                if (! Schema::hasColumn('users', 'email')) {
                     $table->string('email', 255)->unique('uk_users_email')->after('second_last_name');
                 }
-                if (!Schema::hasColumn('users', 'is_active')) {
+                if (! Schema::hasColumn('users', 'is_active')) {
                     $table->tinyInteger('is_active')->default(1)->after('department_id');
                 }
-                if (!Schema::hasColumn('users', 'remember_token')) {
+                if (! Schema::hasColumn('users', 'remember_token')) {
                     $table->rememberToken()->after('password');
                 }
-                if (!Schema::hasColumn('users', 'two_factor_secret')) {
+                if (! Schema::hasColumn('users', 'two_factor_secret')) {
                     $table->text('two_factor_secret')->nullable()->after('remember_token');
                     $table->text('two_factor_recovery_codes')->nullable()->after('two_factor_secret');
                     $table->timestamp('two_factor_confirmed_at')->nullable()->after('two_factor_recovery_codes');
                 }
-                if (!Schema::hasColumn('users', 'created_at')) {
+                if (! Schema::hasColumn('users', 'created_at')) {
                     $table->timestamps();
                 }
-                if (!Schema::hasColumn('users', 'deleted_at')) {
+                if (! Schema::hasColumn('users', 'deleted_at')) {
                     $table->softDeletes();
                 }
-                if (!Schema::hasColumn('users', 'created_by')) {
+                if (! Schema::hasColumn('users', 'created_by')) {
                     $table->integer('created_by')->nullable()->after('deleted_at');
                     $table->integer('updated_by')->nullable()->after('created_by');
 
@@ -83,7 +83,7 @@ return new class extends Migration
         }
 
         // 3. Crear tabla `sessions` (Sanctum cookie sessions)
-        if (!Schema::hasTable('sessions')) {
+        if (! Schema::hasTable('sessions')) {
             Schema::create('sessions', function (Blueprint $table) {
                 $table->string('id')->primary();
                 $table->integer('user_id')->nullable()->index();
@@ -95,7 +95,7 @@ return new class extends Migration
         }
 
         // 4. Crear tablas de Spatie Permission
-        if (!Schema::hasTable('permissions')) {
+        if (! Schema::hasTable('permissions')) {
             Schema::create('permissions', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('name');
@@ -106,7 +106,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('roles')) {
+        if (! Schema::hasTable('roles')) {
             Schema::create('roles', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('name');
@@ -117,7 +117,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('model_has_permissions')) {
+        if (! Schema::hasTable('model_has_permissions')) {
             Schema::create('model_has_permissions', function (Blueprint $table) {
                 $table->unsignedBigInteger('permission_id');
                 $table->string('model_type');
@@ -129,7 +129,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('model_has_roles')) {
+        if (! Schema::hasTable('model_has_roles')) {
             Schema::create('model_has_roles', function (Blueprint $table) {
                 $table->unsignedBigInteger('role_id');
                 $table->string('model_type');
@@ -141,7 +141,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('role_has_permissions')) {
+        if (! Schema::hasTable('role_has_permissions')) {
             Schema::create('role_has_permissions', function (Blueprint $table) {
                 $table->unsignedBigInteger('permission_id');
                 $table->unsignedBigInteger('role_id');
@@ -153,7 +153,7 @@ return new class extends Migration
         }
 
         // 5. Crear tabla `activity_log` (Spatie Activitylog)
-        if (!Schema::hasTable('activity_log')) {
+        if (! Schema::hasTable('activity_log')) {
             Schema::create('activity_log', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('log_name')->nullable()->index();

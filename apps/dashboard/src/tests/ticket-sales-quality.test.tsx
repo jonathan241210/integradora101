@@ -22,6 +22,7 @@ import {
 } from "../viewmodels/ticket-prices";
 import {
   initialTicketSaleState,
+  requestSaleQuote,
   submitSale,
   ticketSaleReducer,
   type TicketSaleViewModel,
@@ -31,6 +32,7 @@ import {
   createTicketSalesApiMock,
   historyRow,
   printSettingsViewModel,
+  quoteDto,
 } from "./ticket-sales-fixtures";
 
 const srcDirectory = fileURLToPath(new URL("..", import.meta.url));
@@ -45,6 +47,7 @@ const presentationFiles = [
   "components/TicketReceipt.tsx",
   "components/PrintSettingsDialog.tsx",
   "components/CancelTicketDialog.tsx",
+  "components/ConfirmDialog.tsx",
   "sections/TicketSaleSection.tsx",
   "sections/TicketHistorySection.tsx",
   "sections/TicketPricesSection.tsx",
@@ -84,7 +87,7 @@ const pricesActions: TicketPricesViewModel["actions"] = {
 
 describe("CA-21 ticket-sales", () => {
   it("views, components y sections no usan fetch, axios, servicios ni @arca/api-client", () => {
-    expect(presentationFiles).toHaveLength(9);
+    expect(presentationFiles).toHaveLength(10);
 
     for (const { file, source } of presentationFiles) {
       expect(source, file).not.toMatch(/\bfetch\s*\(/);
@@ -124,9 +127,9 @@ describe("CA-21 ticket-sales", () => {
     expect(history.state.status).toBe("ready");
   });
 
-  it("(CA-08) ningún archivo de la venta fija el tope de 100 ni max en los controles de cantidad", () => {
+  it("(CA-08) ningún archivo de la venta fija el tope (50 o el 100 anterior) ni max en los controles de cantidad", () => {
     for (const { file, source } of presentationFiles) {
-      expect(source, file).not.toMatch(/\b100\b/);
+      expect(source, file).not.toMatch(/\b(?:100|50)\b/);
     }
 
     const saleFiles = presentationFiles.filter(({ file }) =>
@@ -139,6 +142,29 @@ describe("CA-21 ticket-sales", () => {
       expect(source, file).not.toMatch(/\bmax\s*=/);
       expect(source, file).not.toMatch(/\bmax\s*:/);
     }
+  });
+});
+
+describe("CA-38 ticket-sales", () => {
+  it("ningún archivo de la venta suma, multiplica ni reparte importes", () => {
+    const saleFiles = presentationFiles.filter(({ file }) =>
+      /TicketSale|TicketReceipt|ConfirmDialog/.test(file),
+    );
+
+    expect(saleFiles.length).toBeGreaterThanOrEqual(4);
+    for (const { file, source } of saleFiles) {
+      expect(source, file).not.toMatch(/\w\s[+*]\s\w/);
+      expect(source, file).not.toMatch(/[+*/]=/);
+      expect(source, file).not.toMatch(/\.reduce\(|\bparseFloat\b|\btoFixed\b|\bNumber\(/);
+      expect(source, file).not.toMatch(/\bMath\./);
+    }
+  });
+});
+
+describe("CA-39 ticket-sales", () => {
+  it("la lista de folios tiene desplazamiento propio y no desborda la página; la impresión no la recorta", () => {
+    expect(ticketStyles).toMatch(/\.ticket-folio-list\s*\{[^}]*max-height:[^}]*overflow-y:\s*auto[^}]*overflow-x:\s*hidden/s);
+    expect(ticketStyles).toMatch(/\.ticket-print-area\s*\{\s*display:\s*none/);
   });
 });
 
@@ -156,10 +182,21 @@ describe("CA-22 ticket-sales", () => {
     for (const action of [
       { type: "quantity-changed", field: "adults", value: "1" },
       { type: "confirmation-requested" },
+      { type: "quote-loaded", requestId: 1, quote: quoteDto() },
     ] as const) {
       sale.dispatch(action);
     }
     await submitSale(api, sale.dispatch, () => sale.state);
+
+    const quoting = createHarness(ticketSaleReducer, initialTicketSaleState);
+    quoting.dispatch({ type: "quantity-changed", field: "adults", value: "1" });
+    api.sales.quote.mockRejectedValue(unauthorized);
+    await requestSaleQuote(api, quoting.dispatch, () => quoting.state);
+
+    expect(api.sales.create).toHaveBeenCalledOnce();
+    expect(quoting.state.step).toBe("idle");
+    expect(quoting.state.quote.error).toBe("");
+    expect(quoting.state.error).toBe("");
 
     const history = createHarness(ticketHistoryReducer, initialTicketHistoryState);
     await loadTicketHistory(api, history.dispatch, { page: 1 });
@@ -285,12 +322,21 @@ describe("CA-24 ticket-sales", () => {
     expect(ticketStyles).toContain("var(--surface)");
   });
 
-  it("el modo de impresión muestra solo el boleto, con variables y tokens, sin ocultarlo", () => {
+  it("CA-37: el modo de impresión deja los boletos en flujo normal, sin position absolute ni salto forzado", () => {
     const printBlock = ticketStyles.slice(ticketStyles.indexOf("@media print"));
 
-    expect(printBlock).toMatch(/body \*\s*\{[^}]*visibility:\s*hidden/s);
-    expect(printBlock).toMatch(/\.ticket-receipt,\s*\.ticket-receipt \*\s*\{[^}]*visibility:\s*visible/s);
-    expect(printBlock).not.toMatch(/\.ticket-receipt[^{]*\{[^}]*(?:display:\s*none|visibility:\s*hidden)/s);
+    expect(printBlock).toMatch(/\.ticket-sale-screen--printable[^{]*\{[^}]*display:\s*none/s);
+    // El ocultamiento solo aplica con área de impresión: sin venta no se imprime una hoja en blanco.
+    expect(printBlock).not.toMatch(/\.ticket-sale-screen\s*[,{]/);
+    // Reinicio de mínimos del body para que el rollo no se desplace ni agregue hoja (CA-37).
+    expect(printBlock).toMatch(/html,\s*body,\s*\.dashboard-app\s*\{[^}]*min-width:\s*0[^}]*min-height:\s*0/s);
+    expect(printBlock).toMatch(/\.ticket-print-area\s*\{[^}]*display:\s*block/s);
+    expect(printBlock).toMatch(/\.ticket-receipt\s*\{[^}]*break-inside:\s*avoid/s);
+    expect(printBlock).not.toMatch(/position:\s*absolute/);
+    expect(printBlock).not.toMatch(/break-(?:before|after)\s*:\s*(?:page|always)/);
+    expect(printBlock).not.toMatch(/page-break-(?:before|after)\s*:\s*always/);
+    expect(printBlock).not.toMatch(/\.ticket-folio-list/);
+    expect(printBlock).not.toMatch(/overflow(?:-y)?:\s*(?:hidden|auto|scroll)/);
     expect(printBlock).not.toMatch(/#[\da-f]{3,8}\b/i);
     expect(printBlock).toContain("var(--surface)");
     expect(ticketStyles).toContain("var(--ticket-width");

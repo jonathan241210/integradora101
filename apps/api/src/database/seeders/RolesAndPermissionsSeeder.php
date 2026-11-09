@@ -28,7 +28,6 @@ class RolesAndPermissionsSeeder extends Seeder
             'specimens.view',
             'specimens.update',
             'users.manage',
-            'operational-staff.manage',
             'news.manage',
             'events.manage',
             'enclosures.manage',
@@ -42,7 +41,6 @@ class RolesAndPermissionsSeeder extends Seeder
             // Only the box office sells and cancels tickets; admin manages prices.
             'admin' => array_values(array_diff($permissions, ['tickets.create', 'tickets.cancel'])),
             'zoo-admin' => [
-                'operational-staff.manage',
                 'news.manage',
                 'events.manage',
                 'enclosures.manage',

@@ -9,8 +9,10 @@ import { TicketReceipt } from "@/components/TicketReceipt";
 import { formatCurrency } from "@/viewmodels/formatters";
 import type { TicketPrintSettingsViewModel } from "@/viewmodels/useTicketPrintSettings";
 import {
+  canConfirmSale,
   canRegisterSale,
   isSaleBusy,
+  ticketKindLabel,
   saleConfirmationCopy,
   type TicketSaleViewModel,
 } from "@/viewmodels/ticket-sale";
@@ -51,16 +53,19 @@ export function TicketSaleView({
 }: TicketSaleViewModel & { printSettings: TicketPrintSettingsViewModel }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const busy = isSaleBusy(state);
-  const sold = state.step === "done" && state.ticket;
+  const sold = state.step === "done" && state.sale;
   const copy = saleConfirmationCopy(state);
   const loadingPrices = state.prices.status === "loading";
 
   return (
     <>
+      <div
+        className={`ticket-sale-screen${sold ? " ticket-sale-screen--printable" : ""}`}
+      >
       <SectionHeading
         eyebrow="Taquilla / Venta"
         title="Venta de boletos"
-        description="Registra una venta en efectivo e imprime el boleto con folio y código QR."
+        description="Registra una venta en efectivo e imprime los boletos, cada uno con su folio y código QR."
       />
 
       <div className="ticket-sale-toolbar">
@@ -69,25 +74,47 @@ export function TicketSaleView({
         </Button>
       </div>
 
-      {sold ? (
+      {sold && state.sale ? (
         <Card className="ticket-sale-result">
           <div className="card-heading">
             <div>
               <h2>Venta registrada</h2>
-              <p>Folio {state.ticket?.folio} · pago en efectivo</p>
+              <p>Pago en efectivo</p>
             </div>
             <Badge tone="success">Registrada</Badge>
           </div>
-          {state.ticket && (
-            <TicketReceipt ticket={state.ticket} settings={printSettings.settings} />
-          )}
+          <dl className="sale-summary">
+            <div>
+              <dt>Total de la compra</dt>
+              <dd>
+                <strong>{formatCurrency(state.sale.total_amount)}</strong>
+              </dd>
+            </div>
+            <div>
+              <dt>Boletos</dt>
+              <dd>{state.sale.tickets.length}</dd>
+            </div>
+          </dl>
+          <ul
+            className="ticket-folio-list"
+            aria-label="Boletos de la venta"
+            tabIndex={0}
+          >
+            {state.sale.tickets.map((ticket) => (
+              <li key={ticket.folio}>
+                <span>Folio {ticket.folio}</span>
+                <span>{ticketKindLabel(ticket.ticket_type)}</span>
+                <span>{formatCurrency(ticket.unit_price)}</span>
+              </li>
+            ))}
+          </ul>
           <div className="ticket-actions">
             <Button variant="secondary" onClick={actions.newSale}>
               Nueva venta
             </Button>
             <Button onClick={actions.print}>
               <Icon name="ticket" />
-              Imprimir boleto
+              Imprimir boletos
             </Button>
           </div>
         </Card>
@@ -143,7 +170,7 @@ export function TicketSaleView({
           {state.prices.status === "error" && (
             <Alert className="inline-alert" role="alert" aria-live="assertive">
               {state.prices.error}{" "}
-              <Button variant="secondary" onClick={actions.reloadPrices}>
+              <Button type="button" variant="secondary" onClick={actions.reloadPrices}>
                 Reintentar precios
               </Button>
             </Alert>
@@ -166,20 +193,41 @@ export function TicketSaleView({
         copy={copy}
         idleTitle="Confirmar venta"
         busy={busy}
-        error=""
+        confirmDisabled={!canConfirmSale(state)}
+        error={state.quote.status === "error" ? state.quote.error : ""}
         onConfirm={actions.confirm}
         onCancel={actions.cancelConfirmation}
       >
-        <dl className="sale-summary">
-          <div>
-            <dt>Adultos</dt>
-            <dd>{state.adults}</dd>
-          </div>
-          <div>
-            <dt>Niños</dt>
-            <dd>{state.children}</dd>
-          </div>
-        </dl>
+        <p className="sale-quote-status" role="status" aria-live="polite">
+          {state.quote.status === "loading" && "Calculando el total…"}
+          {state.quote.status === "ready" &&
+            state.quote.quote &&
+            `Total calculado: ${formatCurrency(state.quote.quote.total_amount)}`}
+        </p>
+        {state.quote.status === "ready" && state.quote.quote && (
+          <dl className="sale-summary">
+            <div>
+              <dt>Adultos</dt>
+              <dd>
+                {state.quote.adults} × {formatCurrency(state.quote.quote.adult_unit_price)} ={" "}
+                {formatCurrency(state.quote.quote.adult_subtotal)}
+              </dd>
+            </div>
+            <div>
+              <dt>Niños</dt>
+              <dd>
+                {state.quote.children} × {formatCurrency(state.quote.quote.child_unit_price)} ={" "}
+                {formatCurrency(state.quote.quote.child_subtotal)}
+              </dd>
+            </div>
+            <div>
+              <dt>Total</dt>
+              <dd>
+                <strong>{formatCurrency(state.quote.quote.total_amount)}</strong>
+              </dd>
+            </div>
+          </dl>
+        )}
       </ConfirmDialog>
 
       <PrintSettingsDialog
@@ -189,6 +237,19 @@ export function TicketSaleView({
         onReset={printSettings.reset}
         onClose={() => setSettingsOpen(false)}
       />
+      </div>
+
+      {sold && state.sale && (
+        <div className="ticket-print-area" aria-hidden="true">
+          {state.sale.tickets.map((ticket) => (
+            <TicketReceipt
+              key={ticket.folio}
+              ticket={ticket}
+              settings={printSettings.settings}
+            />
+          ))}
+        </div>
+      )}
     </>
   );
 }

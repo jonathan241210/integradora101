@@ -3,6 +3,8 @@ import type { ApiError } from "@arca/api-client";
 import type {
   TicketHistoryRowDto,
   TicketPriceCurrentDto,
+  TicketQuoteDto,
+  TicketSaleBatchDto,
   TicketSaleDto,
   TicketSalesApi,
 } from "../viewmodels/ticket-types";
@@ -28,19 +30,45 @@ export function codedApiError(
   return Object.assign(apiError(status, message, errors), code ? { code } : {});
 }
 
-export function saleDto(overrides: Partial<TicketSaleDto> = {}): TicketSaleDto {
+/** Un boleto individual (`api-009` CA-50). */
+export function ticketDto(overrides: Partial<TicketSaleDto> = {}): TicketSaleDto {
   return {
-    folio: 123,
+    folio: 101,
+    ticket_type: "adult",
+    unit_price: "25.00",
+    total_amount: "25.00",
     purchased_at: "2026-11-02T18:30:15Z",
-    adult_quantity: 2,
-    child_quantity: 1,
-    adult_unit_price: "25.00",
-    child_unit_price: "16.00",
-    total_amount: "66.00",
-    status: "completed",
-    payment_method: "cash",
     cashier_name: "Caja Prueba",
     qr_svg: qrSvg,
+    ...overrides,
+  };
+}
+
+/** Compra de ejemplo: 1 adulto y 3 niños = 4 boletos y $73.00. */
+export function saleDto(overrides: Partial<TicketSaleBatchDto> = {}): TicketSaleBatchDto {
+  return {
+    adult_quantity: 1,
+    child_quantity: 3,
+    total_amount: "73.00",
+    purchased_at: "2026-11-02T18:30:15Z",
+    cashier_name: "Caja Prueba",
+    tickets: [
+      ticketDto(),
+      ...[102, 103, 104].map((folio) =>
+        ticketDto({ folio, ticket_type: "child", unit_price: "16.00", total_amount: "16.00" }),
+      ),
+    ],
+    ...overrides,
+  };
+}
+
+export function quoteDto(overrides: Partial<TicketQuoteDto> = {}): TicketQuoteDto {
+  return {
+    adult_unit_price: "25.00",
+    child_unit_price: "16.00",
+    adult_subtotal: "50.00",
+    child_subtotal: "16.00",
+    total_amount: "66.00",
     ...overrides,
   };
 }
@@ -80,7 +108,10 @@ export const historyPage = (rows: TicketHistoryRowDto[]) => ({
 
 export function createTicketSalesApiMock() {
   const mock = {
-    sales: { create: vi.fn(async (..._args: unknown[]) => saleDto()) },
+    sales: {
+      quote: vi.fn(async (..._args: unknown[]) => quoteDto()),
+      create: vi.fn(async (..._args: unknown[]) => saleDto()),
+    },
     history: {
       list: vi.fn(async (..._args: unknown[]) => historyPage([historyRow()])),
       cancel: vi.fn(async (..._args: unknown[]) =>
@@ -111,7 +142,7 @@ export function withFields(
 ): TicketPrintSettings {
   let next = settings;
 
-  for (const name of ["dateTime", "quantities", "total", "cashier", "footer"] as const) {
+  for (const name of ["dateTime", "cashier", "footer"] as const) {
     next = changeTicketPrintSettings(next, { type: "field", name, value });
   }
 

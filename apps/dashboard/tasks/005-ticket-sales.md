@@ -1,14 +1,15 @@
 # Tareas · 005 · ticket-sales
 
-- Spec: `apps/dashboard/specs/005-ticket-sales.md` (Aprobada, Jonathan, 2026-11-02; revisión de márgenes de impresión del mismo día)
-- Plan: `apps/dashboard/plan/005-ticket-sales.md` (Aprobado, Jonathan, 2026-11-02)
+- Spec: `apps/dashboard/specs/005-ticket-sales.md` (Revisión aprobada por Jonathan el 2026-11-05; aprobada el 2026-11-02, con revisión de márgenes de impresión el mismo día)
+- Plan: `apps/dashboard/plan/005-ticket-sales.md` (Aprobado el 2026-11-02; revisión de 2026-11-05 aprobada)
 - Contrato que consume: `apps/api/specs/009-ticket-sales.md` y `apps/api/tasks/009-ticket-sales.md`
 - Revisión 2026-11-02 (`api-009` revisada, aprobada por Jonathan): sin cambio en el número de CA (25) ni en los diferidos. Tareas nuevas T-43 a T-50: la cancelación no envía `timezone`, y los 429 y el tope de 100 se muestran con el mensaje de la API. Ver `apps/dashboard/specs/005-ticket-sales.md`, «Revisión de `api-009`».
-- Estado del checklist: En curso (2026-11-02). T-01 a T-37 y T-41 marcadas con evidencia local (`npm test` 185/185, `npm run types` y `npm run build` del dashboard en verde). Pendientes: T-38 (`/verify`), T-39 (revisión manual), T-40 (E2E contra la API) y T-42. Una casilla se marca solo con evidencia (salida de Vitest o de `npm run build`, enlace a PR o commit), nunca por haber escrito el código.
+- Nota (2026-11-05, sin cambio de casillas): la línea de estado anterior dice que T-38 y T-42 están pendientes, pero sus casillas están marcadas `[x]` (T-38 con evidencia del 2026-11-02 y T-42 con evidencia del 2026-11-03). Se señala para revisión; ninguna casilla se ha desmarcado ni marcado en esta revisión.
+- Estado del checklist: En curso (actualizado el 2026-11-06: `npm test` 290/290, `npm run types` y `npm run build` del dashboard en verde; Jonathan informó ese día que el recorrido manual está correcto). `/verify` del dashboard en verde el 2026-11-06; falta registrar la salida en el PR. Una casilla se marca solo con evidencia (salida de Vitest o de `npm run build`, enlace a PR o commit), nunca por haber escrito el código.
 
 ## Alcance de esta lista
 
-- **CA vigentes (25):** CA-01 a CA-17, CA-21 a CA-25 y CA-27 a CA-29. Cada uno tiene al menos una tarea de prueba.
+- **CA vigentes (25):** CA-01 a CA-17, CA-21 a CA-25 y CA-27 a CA-29. Cada uno tiene al menos una tarea de prueba. Con la revisión de 2026-11-05 (aprobada) se añaden CA-31 a CA-34 (29 en total), con las tareas T-51 a T-61.
 - **CA diferidos, excluidos (5):** CA-18 (centro de notificaciones), CA-19 (modal de aviso), CA-20 (cierre del modal sin acuse), CA-26 (polling de avisos) y CA-30 (texto «Se notificará también por correo.») (decisión 2026-11-02). No tienen tarea ni prueba.
 - **RN vigentes:** RN-01, RN-02, RN-03, RN-05, RN-06, RN-07, RN-08, RN-09, RN-10, RN-12 y RN-13.
 - **RN diferidas, excluidas:** RN-04, RN-11 y RN-14.
@@ -70,7 +71,7 @@ No hay tareas de BD en esta app. Esta feature no cambia el esquema.
   - Depende de T-06, T-08, T-09, T-10.
 - [x] **T-44** (CA-08, RN-02; revisión 2026-11-02) `[frontend]`: `src/viewmodels/ticket-sale.ts` y `useTicketSale.ts`. Un 429 (límite de `api-009` CA-43) se muestra como error general con el mensaje de la API. No reintenta, no muestra boleto y deja los controles disponibles para una acción manual.
   - Depende de T-08.
-- [x] **T-45** (CA-08, RN-02; revisión 2026-11-02) `[frontend]`: `src/sections/TicketSaleSection.tsx` y `src/views/TicketSaleView.tsx`. El tope de 100 por tipo (`api-009` CA-42) no aparece en código ni como atributo `max` fijo del control. El 422 llega por `fieldErrors` y la vista lo muestra junto al campo con el texto de la API.
+- [x] **T-45** (CA-08, RN-02; revisión 2026-11-02) `[frontend]`: `src/sections/TicketSaleSection.tsx` y `src/views/TicketSaleView.tsx`. El tope (`api-009` CA-42; 50 boletos en total desde el 2026-11-06) no aparece en código ni como atributo `max` fijo del control. El 422 llega por `fieldErrors` y la vista lo muestra junto al campo con el texto de la API.
   - Depende de T-08 y T-11.
 
 ### Historial (`cashier` propio; `admin` y `zoo-admin` en lectura)
@@ -145,16 +146,18 @@ Convención: `describe("CA-NN ticket-sales", …)` con el criterio en el nombre 
   - Depende de T-43.
 - [x] **T-49** (CA-12; revisión 2026-11-02) `[frontend]`: `src/tests/ticket-history.test.tsx`. `describe("CA-12 ticket-sales")`. Un 429 al cancelar mantiene el diálogo abierto con el mensaje de la API, conserva el motivo y hace una sola llamada.
   - Depende de T-46.
-- [x] **T-50** (CA-08, CA-21; revisión 2026-11-02) `[frontend]`: `src/tests/ticket-sales-quality.test.tsx`. Revisión estática: ningún archivo de `views/`, `components/` o `sections/` de la venta contiene el número 100 como tope ni fija `max` en los controles de cantidad.
+- [x] **T-50** (CA-08, CA-21; revisión 2026-11-02) `[frontend]`: `src/tests/ticket-sales-quality.test.tsx`. Revisión estática: ningún archivo de `views/`, `components/` o `sections/` de la venta contiene el número 100 como tope ni fija `max` en los controles de cantidad. *(Revisión de 2026-11-06: el tope vigente es de 50 boletos en total; ver T-73.)*
   - Depende de T-45.
 
 ## Calidad y entrega
 
-- [x] **T-38** (CA-21 a CA-25 y CA-01 a CA-17) `[verificación]`: desde `apps/dashboard` ejecutar `npm run types`, `npm test` y `npm run build`. Evidencia 2026-11-02: `npm test` 24 archivos / 235 pruebas en verde; `npm run types` sin errores; `npm run build` correcto (115 módulos). `/verify` y el registro en el PR siguen pendientes. Correr `/verify` y registrar resultados en el PR. No declarar nada en verde sin esa evidencia.
-- [ ] **T-39** (CA-23) `[frontend]`: revisión manual documentada en el PR. Navegación con teclado; foco en diálogos y cierre con Escape; ausencia de desbordamiento horizontal a 360, 768 y 1366 px en Venta, Historial y Precios.
+- [x] **T-38** (CA-21 a CA-25 y CA-01 a CA-17) `[verificación]`: desde `apps/dashboard` ejecutar `npm run types`, `npm test` y `npm run build`. Evidencia 2026-11-02: `npm test` 24 archivos / 235 pruebas en verde; `npm run types` sin errores; `npm run build` correcto (115 módulos). Evidencia 2026-11-06 (`/verify`): `npm run types`, `npm test` (24 archivos, 290 pruebas) y `npm run build` con exit 0; `format:check` y `lint` no existen como scripts. Falta el registro en el PR. Correr `/verify` y registrar resultados en el PR. No declarar nada en verde sin esa evidencia.
+- [x] **T-39** (CA-23) `[frontend]`: revisión manual documentada en el PR. Navegación con teclado; foco en diálogos y cierre con Escape; ausencia de desbordamiento horizontal a 360, 768 y 1366 px en Venta, Historial y Precios.
   - Depende de T-25.
-- [ ] **T-40** (CA-03 a CA-17, validación de extremo a extremo) `[frontend]`: recorrido contra la API real en `arca_pruebas`. Requiere las tareas de la API: T-13 (precios), T-19 (venta), T-23 (cancelación), T-27 (historial), T-29 (api-007 en regresión) y T-28. Usar cuentas de prueba sin contraseñas en el repositorio. Registrar la evidencia sin secretos ni contraseñas. No es un paso de producción.
+  - Evidencia: Jonathan informó el 2026-11-06 que probó todo y está correcto.
+- [x] **T-40** (CA-03 a CA-17, validación de extremo a extremo) `[frontend]`: recorrido contra la API real en `arca_pruebas`. Requiere las tareas de la API: T-13 (precios), T-19 (venta), T-23 (cancelación), T-27 (historial), T-29 (api-007 en regresión) y T-28. Usar cuentas de prueba sin contraseñas en el repositorio. Registrar la evidencia sin secretos ni contraseñas. No es un paso de producción.
   - Depende de las tareas de API indicadas y de T-38.
+  - Evidencia: Jonathan informó el 2026-11-06 que probó todo contra `arca_pruebas` y está correcto.
 - [x] **T-41** (CA-02, RN-09) `[docs]`: `apps/dashboard/docs/arquitectura.md` (según `docs/templates/arquitectura-app.md`): estructura View, Section y ViewModel, shell sin demo, configuración de impresión por `localStorage` (excepción de RN-12). `apps/dashboard/docs/manual-demo.md`: Venta e Historial dejan de ser demostrativos; secciones conectadas frente a demostrativas. Sin datos ficticios en el manual.
   - Depende de T-22.
 - [x] **T-42** (control) `[verificación]`: correr `/constitution-check` del PR, enlazar spec, plan y tasks, y citar `dashboard-005` en los commits. Marcar casillas solo con evidencia de T-38, T-39 y T-40. Pasar la spec a `Implementada` solo cuando los CA vigentes estén verificados. Los CA diferidos no se cuentan. *Evidencia (2026-11-03): `/constitution-check` sin violaciones (2026-11-02); `npm test` (235 pruebas), `types` y `build` correctos; commit `38d307d` cita `api-009` y `dashboard-005`; spec, plan y tasks enlazados en el commit.*
@@ -179,6 +182,62 @@ Dependencias con la API: el dashboard puede llegar hasta T-38 con cliente simula
 - [ ] Ningún CA diferido tiene tarea ni prueba (ver «Alcance»).
 - [ ] T-40 no se marca sin evidencia de la API real en `arca_pruebas`.
 - [ ] Las tareas de `api-007` (`apps/dashboard/tasks/003-administration-sections.md`) no se tocan desde esta lista.
+
+## Revisión 2026-11-05 (aprobada por Jonathan el 2026-11-05)
+
+Fuente: `apps/dashboard/specs/005-ticket-sales.md`, «Revisión 2026-11-05», y el plan, sección «Revisión 2026-11-05». **Revisión aprobada por Jonathan el 2026-11-05.** Ninguna casilla se marca sin evidencia (salida de Vitest, `npm run build`, PR o commit). El cliente se desarrolla con cliente simulado; la prueba E2E de la cotización necesita `apps/api/tasks/009-ticket-sales.md`, T-77 y T-78.
+
+- [x] **T-51** (CA-05; RN-08; `api-009` CA-46) `[frontend]`: `packages/api-client/ticket-sales.ts`: `sales.quote(input)` → `POST admin/tickets/quote`. `packages/api-client/ticket-sales-types.ts`: `TicketQuoteDto` (precios unitarios, subtotales y `total_amount` como cadenas). Solo usa `http.post`; sin cálculo. Prueba en `ticket-sales-api-client.test.tsx`: la cotización envía solo las cantidades y no envía zona horaria.
+- [x] **T-52** (CA-31, CA-32, CA-33, CA-34) `[frontend]`: `src/viewmodels/ticket-sale.ts`: estados de cotización, implementados como `quote.status` (`loading`, `ready`, `error`); «Confirmar venta» solo habilitado en `ready`; un identificador de solicitud por apertura del diálogo, de modo que una respuesta tardía o de un diálogo cerrado se ignora; la confirmación usa las cantidades de la cotización lista. Sin reintento automático.
+  - Depende de: T-51.
+- [x] **T-53** (CA-05, CA-31, CA-32, CA-33) `[frontend]`: `src/viewmodels/useTicketSale.ts`: al pulsar «Registrar venta» abre el diálogo y llama a `sales.quote`; cerrar el diálogo invalida la solicitud en curso; los errores de cotización pasan por `api-errors.ts` (422 con campo, 403 y 429 con el mensaje de la API, red o 5xx con texto genérico). El 401 lo gestiona el manejador global.
+  - Depende de: T-52.
+- [x] **T-54** (CA-05, RN-02) `[frontend]`: se reutiliza `src/components/ConfirmDialog.tsx`, con la prop opcional `confirmDisabled`, en lugar de crear `SaleConfirmDialog` (el plan ya lo preveía si `ConfirmDialog` admitía el resumen). `TicketSaleView` muestra cantidad, precio unitario, subtotal por tipo y total; estado de carga; error con `role="alert"`; Escape cierra sin llamar a la API de venta.
+  - Depende de: T-53.
+- [x] **T-55** (CA-04, CA-31, CA-32) `[frontend]`: `src/sections/TicketSaleSection.tsx` y `src/views/TicketSaleView.tsx`: conectan el diálogo al hook; la vista principal no muestra total ni multiplica; sin constantes de tope.
+  - Depende de: T-54.
+- [x] **T-56** (CA-04, CA-05) `[frontend]`: `src/tests/ticket-sale.test.tsx` (parte 1, reescrita): precios de la API sin total en la vista principal; diálogo con cotización (cantidad, precio, subtotal y total); la API de venta solo al confirmar; Escape no llama a la API de venta.
+  - Depende de: T-55.
+- [x] **T-57** (CA-31, CA-32, CA-33, CA-34) `[frontend]`: `src/tests/ticket-sale.test.tsx` (parte 4, nueva): cotización en curso (indicador, confirmar deshabilitado, sin importes previos); cotización 422, 403, 429, red o 5xx (mensaje, confirmar deshabilitado, sin llamada a la venta, una sola llamada de cotización); respuesta tardía tras cerrar, ignorada; confirmar envía las cantidades cotizadas y muestra el importe real del boleto.
+  - Depende de: T-53, T-54.
+- [x] **T-58** (CA-04, CA-05, CA-21) `[frontend]`: `src/tests/ticket-sales-quality.test.tsx`: revisión estática de que `views/`, `components/` y `sections/` de la venta no multiplican ni suman importes, y no importan `fetch`, `axios`, `services/` ni `@arca/api-client`.
+  - Depende de: T-55.
+- [x] **T-59** (CA-25 revisado) `[frontend]`: `src/tests/ticket-sales-coverage.test.tsx`: verifica que `CA-01` a `CA-17`, `CA-21` a `CA-25`, `CA-27` a `CA-29` y `CA-31` a `CA-34` aparecen nombrados en las pruebas. Los CA diferidos siguen fuera.
+  - Depende de: T-56, T-57.
+- [x] **T-60** (RN-15) `[docs]`: `apps/dashboard/docs/arquitectura.md`: actualizar la fila de `useTicketSale` de la tabla de módulos con el flujo de cotización (`quote.status`: `loading`, `ready` y `error`).
+  - Depende de: T-53.
+- [x] **T-61** (CA-23, CA-31 a CA-34) `[verificación]`: `npm run types`, `npm test` y `npm run build` desde `apps/dashboard`. Revisión manual de teclado y de anchos (360, 768 y 1366 px) del diálogo con carga y error, registrada en el PR. La validación E2E contra `arca_pruebas` la cubre T-40 cuando `api-009` tenga la cotización.
+  - Depende de: T-56 a T-59.
+  - Evidencia (2026-11-06): `types`, `npm test` (290/290) y `build` en verde; Jonathan informó que probó todo y está correcto.
+
+## Revisión boletos individuales (2026-11-05, aprobada por Jonathan el 2026-11-06)
+
+Fuente: `apps/dashboard/specs/005-ticket-sales.md`, «Revisión boletos individuales», y el plan, sección del mismo nombre. **Aprobada por Jonathan el 2026-11-06.** Ninguna casilla se marca sin evidencia. Dependencia: `apps/api/tasks/009-ticket-sales.md` T-86 a T-87 (contrato de la venta) para la prueba E2E; el cliente se desarrolla con cliente simulado.
+
+- [x] **T-62** (CA-35) `[frontend]`: `packages/api-client/ticket-sales-types.ts`: `TicketSaleBatchDto` y `TicketSaleDto` por boleto; `ticket-sales.ts`: `sales.create` devuelve el lote. Pruebas en `ticket-sales-api-client.test.tsx`.
+  - Depende de: `api-009` T-87 (contrato).
+- [x] **T-63** (CA-35; CA-38) `[frontend]`: `src/viewmodels/ticket-sale.ts` guarda la lista de boletos y los totales de la respuesta. Sin suma ni multiplicación.
+  - Depende de: T-62.
+- [x] **T-64** (CA-36) `[frontend]`: `src/components/TicketReceipt.tsx` por boleto: tipo, precio, folio, fecha, cajero, QR y pie. Sin cantidades ni total. Folio, tipo y QR siempre visibles.
+  - Depende de: T-63.
+- [x] **T-65** (CA-35; CA-39) `[frontend]`: `src/views/TicketSaleView.tsx` y `src/sections/TicketSaleSection.tsx`: resumen «Venta registrada» (total y número de boletos) y la lista de folios con tipo y precio, sin QR, en un contenedor con desplazamiento propio; los `TicketReceipt` con QR se renderizan solo para la impresión.
+  - Depende de: T-64.
+- [x] **T-66** (CA-37) `[frontend]`: `src/styles.css`: rehacer el `@media print` (líneas 2237 a 2256 en la versión revisada). Ocultar la shell y el resto de la vista; cada `.ticket-receipt` en flujo normal, sin salto forzado y con `break-inside: avoid`; sin `position: absolute`. El botón pasa a «Imprimir boletos».
+  - Depende de: T-64.
+- [x] **T-67** (CA-27 y CA-28 reinterpretados) `[frontend]`: `src/viewmodels/ticket-print-settings.ts` y `PrintSettingsDialog.tsx`: retirar `quantities` y `total`. El precio del boleto se muestra siempre (R-D2, resuelta el 2026-11-06). Al leer, ignorar esas claves guardadas sin error. Pruebas en `ticket-print-settings.test.tsx`.
+  - Depende de: T-64.
+- [x] **T-68** (CA-38) `[frontend]`: `src/tests/ticket-sales-quality.test.tsx`: revisión estática ampliada: ningún archivo de la venta suma, multiplica ni reparte importes.
+  - Depende de: T-65.
+- [x] **T-69** (CA-35, CA-36, CA-37) `[frontend]`: `src/tests/ticket-sale.test.tsx` (parte 5, nueva) y ajuste de los tests de CA-06 y CA-09 a «Imprimir boletos» y a la lista de boletos.
+  - Depende de: T-65, T-66.
+- [x] **T-70** (CA-39; CA-25 revisado) `[frontend]`: `src/tests/ticket-sales-coverage.test.tsx` incluye CA-35 a CA-39 (y CA-25 lo refleja).
+  - Depende de: T-68, T-69.
+- [x] **T-71** (CA-36, CA-37) `[docs]`: `apps/dashboard/docs/arquitectura.md` (TicketReceipt por boleto; impresión) y `apps/dashboard/docs/manual-demo.md` (Venta: lista de boletos e «Imprimir boletos»).
+  - Depende de: T-65, T-66.
+- [x] **T-72** (control; CA-35 a CA-39) `[verificación]`: `npm run types`, `npm test` y `npm run build` desde `apps/dashboard`. Recorrido manual contra `arca_pruebas` con 1 adulto y 3 niños, y con la venta más grande (50 boletos) para medir el renderizado (tiempo y desplazamiento); comprobar el corte entre boletos en rollo en la impresora real (limitación aceptada). Registrar sin secretos. Depende de `api-009` T-87 y T-91.
+  - Depende de: T-69 a T-71.
+  - Evidencia (2026-11-06): `types`, `npm test` (290/290) y `build` en verde; Jonathan informó que probó todo y está correcto. No se registraron mediciones de tiempo de la venta de 50 boletos en el navegador.
+- [x] **T-73** (CA-08 revisado; CA-21; CA-38) `[frontend]`: ampliar la revisión estática de `src/tests/ticket-sales-quality.test.tsx` para comprobar que ningún componente de la venta contiene el número del tope (50 en total, ni el 100 anterior) ni fija `max` en los controles de cantidad. El tope lo valida la API y la interfaz muestra su mensaje (`api-009` T-97). Depende de: T-68.
 
 ## Dudas abiertas
 

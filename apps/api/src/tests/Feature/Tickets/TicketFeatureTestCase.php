@@ -53,12 +53,19 @@ abstract class TicketFeatureTestCase extends FeatureTestCase
         ]);
     }
 
-    protected function sell(User $cashier, int $adults = 1, int $children = 0): array
+    /** Vende y devuelve la compra completa (`data`, con `tickets`). */
+    protected function sellPurchase(User $cashier, int $adults = 1, int $children = 0): array
     {
         return $this->actAs($cashier)->postJson('/api/v1/admin/tickets', [
             'adult_quantity' => $adults,
             'child_quantity' => $children,
         ])->assertCreated()->json('data');
+    }
+
+    /** Vende y devuelve el primer boleto (adulto si hay adultos); cada boleto es una fila (api-009 CA-50). */
+    protected function sell(User $cashier, int $adults = 1, int $children = 0): array
+    {
+        return $this->sellPurchase($cashier, $adults, $children)['tickets'][0];
     }
 
     /** Inserta un boleto completado (purchased_at en UTC). */

@@ -36,7 +36,7 @@ class CancelTicketSameDayTest extends TicketFeatureTestCase
             ->assertJsonPath('data.status', 'cancelled');
     }
 
-    public function test_ca31_ticket_sales_timezone_del_cuerpo_se_ignora(): void
+    public function test_ca31_ticket_sales_body_timezone_is_ignored(): void
     {
         $cashier = $this->createAccount('cashier', false);
         $this->setPrices($cashier);
