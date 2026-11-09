@@ -7,6 +7,7 @@
 - Responsable de BD: no aplica. Esta feature no requiere DBR (ver «Datos, privacidad y auditoría»).
 - Aprobación funcional: aprobada por Jonathan el 2026-11-02.
 - Relación con otras specs: complementa `api-007` (reemplaza su exclusión de subida de imágenes) y acompaña a `dashboard-004` (formularios en línea con imagen).
+- Revisión 2026-11-06 (aprobada por Jonathan el 2026-11-06): la API quita metadatos y HDR de las imágenes al guardarlas (CA-14, CA-15, RN-13; revierte P8). Ver «Revisión 2026-11-06».
 - Nota de vigencia (2026-11-01): la eliminación de noticias y eventos sigue siendo **lógica** (`deleted_at`, DBR-005; `api-007` CA-15 y RN-09 vigentes). Esta spec no reemplaza esas reglas: solo añade el borrado del archivo de imagen al eliminar (CA-07, P2). La subida, el reemplazo y quitar la imagen tampoco requieren DBR adicional. DBR-007 (borrado físico) queda descartada (`docs/database/requests/DBR-007-news-events-hard-delete.md`).
 
 ## Problema y contexto
@@ -30,8 +31,7 @@ Afectados: `admin` y `zoo-admin` (publican y editan), `executive` (solo consulta
 - Varias imágenes o galería por registro.
 - Recorte, redimensionado o generación de miniaturas en el servidor.
 - Formatos distintos de JPG, PNG y WebP (GIF, SVG, PDF, HEIC, etc.).
-- Eliminación de metadatos EXIF de las fotos (P8): no se reprocesa la imagen y requeriría una dependencia nueva con ADR.
-- Carga masiva o migración de imágenes para registros existentes.
+- Carga masiva o migración de imágenes para registros existentes. Tampoco se limpian los metadatos de las imágenes ya guardadas: se limpian al volver a subirlas (Revisión 2026-11-06).
 - Restauración de noticias o eventos desde la aplicación: no se incluye en esta spec (`api-007`). Tras el borrado lógico, la fila puede recuperarse por base de datos (`deleted_at`), pero el archivo de imagen borrado no se recupera (ver «Riesgos», P2).
 - Cambios en `apps/web`, `apps/pwa` y `apps/mobile`. Pueden usar `image_url` cuando lo decidan en su propia spec.
 - Aceptar `image_path` como texto editable desde la petición (se ignora, CA-09).
@@ -87,6 +87,11 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
 - **CA-12:** Dada una acción que crea, reemplaza, quita o elimina una imagen, cuando se registra en Activitylog, entonces: (a) el alta con imagen, el reemplazo y el quitar registran además el evento `image-changed`, junto al `created` o `updated` que corresponda (P6); (b) la eliminación registra `deleted`; y (c) ninguna propiedad registrada incluye el contenido binario del archivo ni la ruta absoluta del disco.
 - **CA-13:** Dada la suite de PHPUnit, cuando se ejecuta `php artisan test` contra `arca_pruebas`, entonces existe al menos un test que nombra cada CA-01 a CA-12 y que usa `Storage::fake('public')` y `DatabaseTransactions` (sin `RefreshDatabase` ni migraciones desde los tests).
 
+### Metadatos y HDR (revisión 2026-11-06)
+
+- **CA-14:** Dado un JPG, PNG o WebP con metadatos (EXIF con GPS, fecha y modelo; XMP; comentarios; textos) o datos HDR (mapa de ganancia, imágenes adicionales, señalización HDR de PNG), cuando se guarda en una noticia o un evento, entonces el archivo guardado no contiene esos datos, conserva los píxeles comprimidos sin cambios, conserva el perfil de color y, si la orientación no es la normal, conserva solo esa etiqueta.
+- **CA-15:** Dado un archivo que pasa la validación de tipo y tamaño pero cuya estructura no se puede procesar (por ejemplo, truncado), cuando se envía, entonces la API responde 422 en `errors.image` con «No se pudo procesar la imagen. Prueba con otro archivo.», no escribe ningún archivo y no guarda el registro.
+
 ## Reglas de negocio
 
 - **RN-01 (formatos):** Solo se aceptan JPG (`.jpg`, `.jpeg`), PNG y WebP. La API valida el archivo con las reglas `image` y `mimes` de Laravel; la extensión del nombre original no decide por sí sola.
@@ -101,11 +106,12 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
 - **RN-10 (sin DBR para la subida ni la eliminación):** La subida, el reemplazo, quitar la imagen y la eliminación no crean ni modifican esquema: `image_path` (VARCHAR(255), NULL) y `deleted_at` (DBR-005) ya existen. No requieren DBR ni migración. Sí requieren que DBR-005 esté aplicada en el ambiente de despliegue. DBR-007 queda descartada.
 - **RN-11 (dependencias):** No añade dependencias PHP ni JavaScript. Usa el sistema de archivos y `Storage` de Laravel, por lo que no requiere ADR de dependencia.
 - **RN-12 (archivo y quitar a la vez):** Si una petición trae un archivo nuevo válido y `remove_image` verdadero, el archivo nuevo sustituye la imagen y `remove_image` se ignora (P4).
+- **RN-13 (metadatos y HDR, revisión 2026-11-06):** Antes de guardar, la API recorta del contenedor todo lo que no sea imagen, perfil de color u orientación, sin decodificar ni recomprimir. Lo que no se reconoce se descarta. Si el archivo no se puede procesar, no se guarda nada (CA-15).
 
 ## Datos, privacidad y auditoría
 
 - Los datos son imágenes institucionales de noticias y eventos (carteles o fotos). No son datos personales del personal, clínicos ni financieros. Aun así, son archivos subidos por personal, por lo que la validación de tipo y tamaño es obligatoria (RN-01, RN-02).
-- Las imágenes son accesibles por URL pública por diseño, porque alimentan el catálogo. Los metadatos EXIF de las fotos pueden contener datos sensibles (p. ej. ubicación). No se eliminan en esta feature (P8): queda fuera de alcance y requeriría una dependencia nueva con ADR.
+- Las imágenes son accesibles por URL pública por diseño, porque alimentan el catálogo. Los metadatos de las fotos pueden contener datos sensibles (p. ej. ubicación), por lo que la API los quita al guardar (CA-14, RN-13). El contenido visible de la foto sigue siendo responsabilidad de quien la publica.
 - Auditoría: Activitylog registra las operaciones ya definidas en `api-007` CA-26 (`created`, `updated`, `deleted`) y, además, `image-changed` cuando cambia la imagen (CA-12). Las propiedades no incluyen contenido binario ni ruta absoluta.
 - Borrado: la fila se marca con `deleted_at` (borrado lógico, `api-007`) y el archivo de imagen se borra del disco. La aplicación no conserva copia del archivo; una restauración de la fila por base de datos no recupera la imagen. Activitylog conserva la acción `deleted` (CA-12 b), sin binario ni ruta absoluta. Clasificación: contenido institucional público, no clínico ni financiero. Constitución V: se cumple con SoftDeletes (ver «Dependencias, riesgos y decisiones»).
 - Esquema: la subida y la eliminación no crean ni modifican tablas, columnas ni índices. Las columnas que usa ya existen (`image_path` en `news` y `events`; `deleted_at` por DBR-005).
@@ -120,7 +126,7 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
    - 401 sin sesión (`api-007`).
    - 403 sin permiso de `news.manage` o `events.manage` (CA-10).
    - 404 «Noticia no encontrada.» o «Evento no encontrado.» (`api-007`).
-   - 422 en `errors.image` para tipo o tamaño no válidos (CA-02), con mensaje en español.
+   - 422 en `errors.image` para tipo o tamaño no válidos (CA-02) o archivo que no se puede procesar (CA-15), con mensaje en español.
    - Error del servidor (5xx) si el disco falla al escribir: no se guarda un registro con una ruta que no existe.
 5. **Compatibilidad:** las peticiones JSON existentes de `api-007` siguen funcionando sin cambios cuando no llevan archivo.
 
@@ -132,7 +138,7 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
   - DBR-007 (borrado físico de noticias y eventos, `docs/database/requests/DBR-007-news-events-hard-delete.md`): **Descartada** el 2026-11-01. El equipo mantiene el borrado lógico por la Constitución V. No bloquea esta spec ni deja tareas pendientes.
   - `api-006` (catálogo público): impacto decidido (P7): `GET /api/v1/events` añade `image_url` como campo nuevo. Es un cambio aditivo; la spec `api-006` se anota cuando esta spec se apruebe (T-23).
   - `dashboard-004` (consumidor de la subida con archivo).
-  - ADR: ninguno. Un almacenamiento externo o el reprocesado de imágenes (P8) requerirían ADR. La eliminación lógica cumple la Constitución V sin excepción.
+  - ADR: ninguno. Un almacenamiento externo o una biblioteca de procesamiento de imágenes requerirían ADR; el recorte de metadatos no añade dependencias (RN-11, RN-13). La eliminación lógica cumple la Constitución V sin excepción.
 - **Decisiones tomadas (2026-11-01, por la sesión principal con la decisión del usuario):**
   - **P1 (ruta de actualización con archivo):** `POST` multipart con `_method=PATCH` sobre las mismas rutas `admin.news.update` y `admin.events.update`. No se crean endpoints `…/image`. Las rutas de `api-007` no cambian de nombre.
   - **P2 (campo tras eliminar, decisión del usuario):** al eliminar se borra el archivo de imagen y `image_path` queda en `null`; el resto de la fila se conserva con `deleted_at` (borrado lógico, DBR-005). Es una decisión explícita, con el riesgo de «Imagen tras el borrado lógico» en «Riesgos».
@@ -141,17 +147,27 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
   - **P5 (ruta pública):** mismo dominio de la API mediante `storage:link`. No hay CDN ni dominio distinto por ahora.
   - **P6 (auditoría):** sí, evento propio `image-changed` en Activitylog (CA-12).
   - **P7 (catálogo público):** sí, `image_url` se añade a `GET /api/v1/events`. Impacto: `api-006` gana un campo aditivo; los clientes que ignoran campos desconocidos no se ven afectados. Se anota en `api-006` cuando esta spec se apruebe (T-23).
-  - **P8 (EXIF):** no se quitan metadatos EXIF. Queda fuera de alcance (ver «Fuera de alcance»).
+  - **P8 (EXIF):** *revertida el 2026-11-06.* Decisión original: no quitar metadatos EXIF. Ahora la API los quita (Revisión 2026-11-06).
 - **Riesgos:**
   - **Límites de la capa HTTP:** `upload_max_filesize`, `post_max_size` y el límite del servidor web pueden rechazar el archivo antes de llegar a Laravel. En ese caso la respuesta no es el 422 en español de CA-02. Mitigación: configuración de despliegue y prueba manual con un archivo de más de 5 MB.
   - **PATCH con archivo:** PHP no entrega el cuerpo multipart en peticiones PATCH; por eso se usa `POST` con `_method=PATCH` (P1). Los clientes deben usar esa forma para subir archivos.
   - **Disco local en varios servidores:** el disco `public` local no se comparte entre servidores. Si la API corre en más de un nodo, las imágenes no estarían disponibles en todos. Pendiente de decisión de infraestructura (requeriría ADR si se usa almacenamiento externo).
   - **Archivos huérfanos:** si la base de datos falla después de guardar el archivo, el archivo nuevo debe borrarse (plan, decisiones).
-  - **Metadatos EXIF públicos:** las fotos subidas pueden exponer ubicación en la URL pública (P8, fuera de alcance). Mitigación: instruir al personal en el manual; decisión futura con ADR.
+  - **Imágenes ya guardadas:** las subidas antes de esta revisión conservan sus metadatos hasta que se vuelvan a subir.
+  - **Colores amplios sin gestión:** el perfil de color se conserva; un cliente que lo ignore puede mostrar colores algo distintos. Es el mismo comportamiento que antes de esta revisión.
   - **Espacio en disco:** no hay límite de cantidad de imágenes; el crecimiento se vigila en operación.
   - **Desarrollo local:** sin `storage:link` la URL pública no resuelve.
   - **Imagen tras el borrado lógico (P2):** al eliminar, el archivo se borra y `image_path` queda en `null`. Si BD restaura la fila (`deleted_at = NULL`), la noticia o el evento vuelve sin imagen. Esta pérdida se asume como decisión explícita; recuperar el archivo solo sería posible desde una copia de seguridad del disco, fuera de esta spec.
   - **Archivo tras el commit:** si el borrado del archivo falla después del commit, queda un archivo sin referencia en la base de datos. Decisión pendiente: basta registrar el fallo en el log o se requiere un comando de limpieza de huérfanos.
+
+## Revisión 2026-11-06 (aprobada por Jonathan el 2026-11-06)
+
+Decisión de Jonathan tras revisar una foto de iPhone guardada con sus coordenadas GPS y un mapa de ganancia HDR: quitar metadatos y HDR al guardar.
+
+- **Revierte P8.** Añade CA-14, CA-15 y RN-13. Los CA-01 a CA-13 no cambian.
+- **Recorte, no recompresión.** Volver a generar la imagen con GD perdería calidad y el perfil de color. El recorte no añade dependencias ni requiere ADR, DBR ni cambios en clientes.
+- **Orientación.** Se conserva esa única etiqueta porque, sin ella, las fotos de teléfono pueden verse giradas.
+- **Imágenes existentes.** No se limpian; hay que volver a subirlas.
 
 ## Revisión
 

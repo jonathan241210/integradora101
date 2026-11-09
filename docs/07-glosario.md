@@ -6,8 +6,8 @@
 | Especie | `Species` | Clasificación de uno o más ejemplares |
 | Recinto | `Enclosure` | Espacio físico asociado a ejemplares y contenido público |
 | Hábitat | `Habitat` | Entorno natural o educativo representado en catálogo/juego |
-| Boleto | `Ticket` | Derecho de acceso vendido al visitante |
-| Venta | `Sale` | Operación registrada en taquilla |
+| Boleto | `Ticket` | Derecho de acceso vendido al visitante: un boleto por unidad vendida, con su propio folio y su propio QR, cancelable por separado (revisión de boletos individuales de `api-009`, aprobada el 2026-11-06) |
+| Venta | `Sale` | Operación registrada en taquilla que genera un boleto por unidad vendida. No se registra qué boletos se vendieron juntos (aprobada el 2026-11-06, `api-009`) |
 | Taquilla | `BoxOffice` | Punto y módulo de venta presencial |
 | Corte / arqueo de caja | `CashClosing` | Conciliación de ventas y efectivo de una jornada |
 | Expediente clínico | `MedicalRecord` | Historial de atención de un ejemplar |

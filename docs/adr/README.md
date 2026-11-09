@@ -1,4 +1,4 @@
-# Registro de decisiones de arquitectura
+﻿# Registro de decisiones de arquitectura
 
 Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisión y consecuencias de cambios tecnológicos o estructurales. Se numeran con cuatro dígitos y no se borran: una decisión reemplazada se marca como Superseded e indica el ADR que la sustituye. Las propuestas no autorizan dependencias ni implementación.
 
@@ -34,6 +34,8 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0021 · Excepciones a la Constitución en la feature de ventas de boletos](0021-ticket-sales-constitution-exceptions.md) — Aceptado (2026-11-02)
 - [0022 · Escaneo QR con expo-camera (mobile-006)](0022-expo-camera-qr-scan.md) — Aceptado
 - [0023 · Recorrido guiado 3D y realidad aumentada offline](0023-mobile-ar-3d-camera-threejs.md) — Propuesto
+- [0024 · Excepción de arquitectura para el portal público: HTML y JavaScript estático en apps/web](0024-web-static-portal-exception.md) — Aceptado (2026-11-07)
+- [0025 · Checklist de despliegue en la Constitución](0025-deployment-checklist-constitution.md) — Propuesto (2026-11-05)
 
 ## Plantilla
 

@@ -8,5 +8,9 @@ export function ContentThumbnail({ url, name }: { url: string | null; name: stri
     );
   }
 
-  return <img className="content-card__thumb" src={url} alt={`Imagen de ${name}`} loading="lazy" />;
+  return (
+    <div className="content-card__thumb">
+      <img className="content-card__thumb-img" src={url} alt={`Imagen de ${name}`} loading="lazy" />
+    </div>
+  );
 }

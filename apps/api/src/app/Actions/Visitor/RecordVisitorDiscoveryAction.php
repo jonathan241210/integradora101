@@ -132,7 +132,6 @@ class RecordVisitorDiscoveryAction
     }
 
     /**
-     * @param  object  $scan
      * @return array{status: int, body: array<string, mixed>}
      */
     private function replay(Visitor $visitor, object $scan): array

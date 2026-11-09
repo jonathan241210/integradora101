@@ -8,11 +8,13 @@ export type TicketPrintFormat = "thermal" | "letter";
 export type TicketPaperWidth = 58 | 80;
 export type TicketFontSize = "small" | "normal" | "large";
 
-/** Campos opcionales; el folio y el QR siempre se imprimen (CA-27). */
+/**
+ * Campos opcionales. Folio, tipo, precio y QR siempre se imprimen; «cantidades»
+ * y «total» dejaron de ser campos del boleto (CA-36). Las claves guardadas de
+ * versiones anteriores se ignoran al leer (CA-28).
+ */
 export type TicketPrintFields = {
   dateTime: boolean;
-  quantities: boolean;
-  total: boolean;
   cashier: boolean;
   footer: boolean;
 };
@@ -45,8 +47,6 @@ export const defaultTicketPrintSettings: TicketPrintSettings = {
   marginMm: MARGIN_RANGE_MM.thermal.default,
   fields: {
     dateTime: true,
-    quantities: true,
-    total: true,
     cashier: true,
     footer: true,
   },

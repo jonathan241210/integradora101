@@ -12,8 +12,6 @@ import {
 
 const optionalFields: { name: keyof TicketPrintFields; label: string }[] = [
   { name: "dateTime", label: "Fecha y hora" },
-  { name: "quantities", label: "Cantidades" },
-  { name: "total", label: "Total" },
   { name: "cashier", label: "Cajero" },
   { name: "footer", label: "Pie de texto" },
 ];
@@ -49,8 +47,8 @@ export function PrintSettingsDialog({
         }}
       >
         <p className="dialog-copy">
-          Esta configuración se guarda solo en este equipo. El folio y el código
-          QR siempre se imprimen.
+          Esta configuración se guarda solo en este equipo. El folio, el tipo, el
+          precio y el código QR siempre se imprimen.
         </p>
         <SelectField
           id="print-format"
@@ -60,7 +58,7 @@ export function PrintSettingsDialog({
             onChange({ type: "format", value: event.target.value as TicketPrintFormat })
           }
         >
-          <option value="thermal">Térmica</option>
+          <option value="thermal">{`Térmica ${settings.paperWidth} mm`}</option>
           <option value="letter">Hoja carta</option>
         </SelectField>
         {settings.format === "thermal" && (
@@ -107,7 +105,7 @@ export function PrintSettingsDialog({
         />
         <fieldset className="check-group">
           <legend>Campos visibles</legend>
-          <p className="check-group__fixed">Folio y QR: siempre visibles.</p>
+          <p className="check-group__fixed">Tipo, precio, folio y QR: siempre visibles.</p>
           {optionalFields.map(({ name, label }) => (
             <label className="check-field" key={name}>
               <input

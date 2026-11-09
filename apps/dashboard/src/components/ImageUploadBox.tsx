@@ -93,7 +93,9 @@ export function ImageUploadBoxView({
           onChange={change}
         />
         {previewUrl ? (
-          <img className="upload-box__preview" src={previewUrl} alt={previewAlt} />
+          <span className="upload-box__preview">
+            <img className="upload-box__preview-img" src={previewUrl} alt={previewAlt} />
+          </span>
         ) : (
           <span className="upload-box__icon" aria-hidden="true">
             <Icon name="plus" />

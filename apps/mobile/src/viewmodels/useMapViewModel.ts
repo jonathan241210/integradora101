@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Vibration } from 'react-native';
 import { MapFilter, MapPlace, MapSection } from '../models';
-import { MapRepository, MapRepositoryImpl } from '../repositories';
+import { MapRepository, createMapRepository } from '../repositories';
 import { haversineMeters } from '../utils/haversine';
-import { ARRIVAL_RADIUS_METERS } from '../constants/zoo';
+import { geoTransform } from '../utils/geoTransform';
+import {
+  ARRIVAL_RADIUS_METERS,
+  SVG_HEIGHT,
+  SVG_WIDTH,
+} from '../constants/zoo';
+import { SVG_UNIT_TO_METERS } from '../constants/zooPaths';
 
-const defaultRepository = new MapRepositoryImpl();
+const defaultRepository = createMapRepository();
 
 export function useMapViewModel(repository: MapRepository = defaultRepository) {
   const [places, setPlaces] = useState<MapPlace[]>([]);
@@ -70,6 +77,7 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
 
   const selectPlace = useCallback((id: string) => {
     setSelectedPlaceId(id);
+    setDismissedArrivalPlaceId(null);
   }, []);
 
   const clearSelection = useCallback(() => {
@@ -84,9 +92,7 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
 
   const setDestination = useCallback((id: string | null) => {
     setDestinationPlaceId(id);
-    if (id) {
-      setDismissedArrivalPlaceId(null);
-    }
+    setDismissedArrivalPlaceId(null);
   }, []);
 
   const dismissArrival = useCallback(() => {
@@ -94,31 +100,50 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
       setDismissedArrivalPlaceId(arrivedAtPlace.id);
     }
     setArrivedAtPlace(null);
+    setDestinationPlaceId(null);
   }, [arrivedAtPlace]);
 
   const checkArrival = useCallback(
     (userLat: number, userLon: number) => {
-      if (!destinationPlace || destinationPlace.gpsLat === undefined || destinationPlace.gpsLon === undefined) {
+      const target = destinationPlace ?? selectedPlace;
+      if (!target) {
         return;
       }
 
-      if (dismissedArrivalPlaceId === destinationPlace.id) {
+      if (dismissedArrivalPlaceId === target.id) {
         return;
       }
 
-      const distance = haversineMeters(
-        userLat,
-        userLon,
-        destinationPlace.gpsLat,
-        destinationPlace.gpsLon,
-      );
+      let distance = 999999;
+      if (target.gpsLat !== undefined && target.gpsLon !== undefined) {
+        distance = haversineMeters(
+          userLat,
+          userLon,
+          target.gpsLat,
+          target.gpsLon,
+        );
+      }
 
-      if (distance <= ARRIVAL_RADIUS_METERS) {
-        setArrivedAtPlace(destinationPlace);
+      // Medición en espacio SVG para asegurar detección en el plano
+      const { svgX: userSvgX, svgY: userSvgY } = geoTransform(userLat, userLon);
+      const targetSvgX = target.mapX * SVG_WIDTH;
+      const targetSvgY = target.mapY * SVG_HEIGHT;
+      const svgDistance =
+        Math.hypot(userSvgX - targetSvgX, userSvgY - targetSvgY) * SVG_UNIT_TO_METERS;
+
+      const effectiveDistance = Math.min(distance, svgDistance);
+
+      if (effectiveDistance <= ARRIVAL_RADIUS_METERS) {
+        setArrivedAtPlace(target);
         setDestinationPlaceId(null);
+        try {
+          Vibration.vibrate([0, 150, 80, 150]);
+        } catch {
+          // Si el dispositivo no tiene soporte de vibración, continúa normalmente
+        }
       }
     },
-    [destinationPlace, dismissedArrivalPlaceId],
+    [destinationPlace, selectedPlace, dismissedArrivalPlaceId],
   );
 
   return {
@@ -135,7 +160,6 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
     arrivedAtPlace,
     isLoading,
     error,
-    load,
     retry: load,
     setFilter,
     selectPlace,

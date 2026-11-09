@@ -334,3 +334,29 @@ En la V2.1 la línea hacia el recinto destino es una recta euclidiana directa (`
 ### Reglas de negocio (V3)
 - **RN-18 (Velocidad peatonal estándar):** La velocidad promedio de caminata familiar se define como constante `WALKING_SPEED_MPS = 1.1` en `src/constants/zooPaths.ts`.
 - **RN-19 (Grafo desacoplado de la vista):** Los nodos y aristas del sendero residen en `src/constants/zooPaths.ts` y la lógica Dijkstra en `src/utils/pathfinding.ts`, sin cálculos de grafos dentro de componentes React.
+
+
+---
+
+## Enmienda V4 — Integración con API de Recintos (`api-010`) y Caché Offline
+
+- **Estado:** **Aprobada** (2026-11-07)
+- **Responsable funcional:** Víctor Adrián
+- **Fecha:** 2026-11-07
+- **Spec API vinculada:** `apps/api/specs/010-public-enclosures-read.md`
+- **DBR vinculada:** `docs/database/requests/DBR-008-enclosure-gps-coordinates.md`
+
+### Problema y contexto (V4)
+
+En las versiones V1 a V3 del mapa móvil, los recintos y puntos de interés provienen de un fixture local estático (`MOCK_MAP_PLACES`). Con la aprobación de `DBR-008` y la especificación del endpoint `api-010` (`GET /api/v1/enclosures`), la app móvil debe poder consultar los recintos reales de la base de datos central cuando haya conexión disponible, almacenarlos en caché local (`AsyncStorage`) y seguir funcionando al 100 % cuando el visitante esté dentro del zoológico sin señal ni datos móviles.
+
+### Criterios de aceptación (V4)
+
+- **CA-21 (Carga remota de recintos vía API):** Dado que `EXPO_PUBLIC_API_URL` está configurado y hay conexión de red, cuando el ViewModel inicializa el mapa, entonces `ApiMapRepository` consulta `GET /api/v1/enclosures`, mapea los recintos devueltos a objetos `MapPlace` utilizando `gps_lat`, `gps_lon`, `map_x` y `map_y`, y posiciona los marcadores correspondientes sobre el plano SVG.
+- **CA-22 (Persistencia y recuperación en caché offline):** Dado que se reciben recintos válidos desde la API, cuando la petición finaliza con éxito, entonces se almacenan en `AsyncStorage` bajo la clave `@arca:map_places_cache`; en arranques posteriores sin conexión a internet o con la API no disponible, el mapa carga inmediatamente los recintos desde dicha caché local permitiendo el uso normal del mapa, las rutas y el recorrido 3D sin mostrar pantalla de error.
+- **CA-23 (Degradación elegante ante ausencia total de datos):** Dado que la app se ejecuta por primera vez sin conexión y sin caché previa en `AsyncStorage`, cuando falla la petición de red, entonces el repositorio degrada graciosamente al fixture local (`MOCK_MAP_PLACES`) garantizando que el mapa nunca quede vacío ni arroje excepciones no controladas.
+
+### Reglas de negocio (V4)
+
+- **RN-20 (Prioridad de coordenadas):** Si un recinto cuenta con `map_x` y `map_y` explícitos de la API, se utilizan directamente para posicionar el marcador en el SVG; si solo cuenta con `gps_lat` y `gps_lon`, se calcula su posición con `geoTransform(lat, lon)`.
+- **RN-21 (Desacoplamiento MVVM):** El ViewModel `useMapViewModel` consume la interfaz abstracta `MapRepository`, resolviendo la instancia adecuada (`ApiMapRepository` vs `MapRepositoryImpl`) de forma transparente según la configuración del entorno.

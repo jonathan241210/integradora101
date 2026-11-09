@@ -4,7 +4,8 @@ import { printer } from "@/services/printer";
 import {
   initialTicketSaleState,
   loadSalePrices,
-  printTicket,
+  printTickets,
+  requestSaleQuote,
   submitSale,
   ticketSaleReducer,
   type TicketSaleAction,
@@ -39,10 +40,11 @@ export function useTicketSale(): TicketSaleViewModel {
     actions: {
       changeQuantity: (field, value) =>
         dispatch({ type: "quantity-changed", field, value }),
-      requestConfirmation: () => dispatch({ type: "confirmation-requested" }),
+      requestConfirmation: () =>
+        void requestSaleQuote(ticketSalesApi, dispatch, () => latest.current),
       cancelConfirmation: () => dispatch({ type: "confirmation-cancelled" }),
       confirm: () => void submitSale(ticketSalesApi, dispatch, () => latest.current),
-      print: () => void printTicket(printer, latest.current),
+      print: () => void printTickets(printer, latest.current),
       newSale: () => dispatch({ type: "new-sale" }),
       reloadPrices: () => void loadSalePrices(ticketSalesApi, dispatch),
     },

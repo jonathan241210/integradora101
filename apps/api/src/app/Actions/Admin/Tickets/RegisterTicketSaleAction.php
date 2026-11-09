@@ -8,70 +8,67 @@ use App\Models\TicketPrice;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class RegisterTicketSaleAction
 {
-    /** Máximo de céntimos que admite tickets.total_amount (DECIMAL(8,2)). */
-    private const MAX_TOTAL_CENTS = 99999999;
-
     public function __construct(
-        private ResolveCurrentTicketPriceAction $resolvePrice,
-        private CalculateTicketTotalAction $calculateTotal,
+        private QuoteTicketSaleAction $quote,
         private IssueTicketQrTokenAction $issueToken,
         private RenderTicketQrSvgAction $renderSvg,
         private LogAdminActivityAction $log,
     ) {}
 
-    public function execute(User $cashier, int $adultQuantity, int $childQuantity): IssuedTicketSale
+    /**
+     * Una fila por boleto (adultos primero, después niños), todas en una sola transacción (api-009 CA-50, CA-52).
+     * El total de la compra sale de QuoteTicketSaleAction (CA-46).
+     */
+    public function execute(User $cashier, int $adultQuantity, int $childQuantity): IssuedTicketPurchase
     {
         return DB::transaction(function () use ($cashier, $adultQuantity, $childQuantity) {
             $at = CarbonImmutable::now('UTC')->startOfSecond();
 
-            $adult = $this->resolvePrice->execute(TicketPrice::TYPE_ADULT, $at);
-            $child = $this->resolvePrice->execute(TicketPrice::TYPE_CHILD, $at);
+            $quote = $this->quote->execute($adultQuantity, $childQuantity, $at);
+            $adult = $quote->adultPrice;
+            $child = $quote->childPrice;
 
-            if ($adult === null || $child === null) {
-                throw ValidationException::withMessages([
-                    ($adult === null ? 'adult_quantity' : 'child_quantity') => ['No hay un precio vigente configurado para este tipo de boleto.'],
+            $units = [
+                ...array_fill(0, $adultQuantity, TicketPrice::TYPE_ADULT),
+                ...array_fill(0, $childQuantity, TicketPrice::TYPE_CHILD),
+            ];
+
+            $issued = [];
+            foreach ($units as $type) {
+                $isAdult = $type === TicketPrice::TYPE_ADULT;
+                $unitPrice = CalculateTicketTotalAction::format(CalculateTicketTotalAction::toCents($isAdult ? $adult->amount : $child->amount));
+                $token = $this->issueToken->execute();
+
+                $ticket = Ticket::query()->create([
+                    'adult_quantity' => $isAdult ? 1 : 0,
+                    'child_quantity' => $isAdult ? 0 : 1,
+                    'status' => Ticket::STATUS_COMPLETED,
+                    'payment_method' => 'cash',
+                    'adult_unit_price' => $adult->amount,
+                    'child_unit_price' => $child->amount,
+                    'total_amount' => $unitPrice,
+                    'purchased_at' => $at,
+                    'qr_code' => $token,
+                    'cashier_id' => $cashier->id,
                 ]);
+
+                $svg = $this->renderSvg->execute($token);
+
+                $this->log->execute('ticket-sold', 'Boleto vendido', $ticket, [
+                    'folio' => $ticket->id,
+                    'ticket_type' => $type,
+                    'unit_price' => $unitPrice,
+                    'total_amount' => $unitPrice,
+                ]);
+
+                $ticket->setRelation('cashier', $cashier);
+                $issued[] = new IssuedTicketSale($ticket, $svg, $type);
             }
 
-            $total = $this->calculateTotal->execute($adultQuantity, $adult->amount, $childQuantity, $child->amount);
-
-            if (CalculateTicketTotalAction::toCents($total) > self::MAX_TOTAL_CENTS) {
-                throw ValidationException::withMessages([
-                    'adult_quantity' => ['El total de la venta excede el importe máximo permitido.'],
-                ]);
-            }
-
-            $token = $this->issueToken->execute();
-
-            $ticket = Ticket::query()->create([
-                'adult_quantity' => $adultQuantity,
-                'child_quantity' => $childQuantity,
-                'status' => Ticket::STATUS_COMPLETED,
-                'payment_method' => 'cash',
-                'adult_unit_price' => $adult->amount,
-                'child_unit_price' => $child->amount,
-                'total_amount' => $total,
-                'purchased_at' => $at,
-                'qr_code' => $token,
-                'cashier_id' => $cashier->id,
-            ]);
-
-            $svg = $this->renderSvg->execute($token);
-
-            $this->log->execute('ticket-sold', 'Boleto vendido', $ticket, [
-                'folio' => $ticket->id,
-                'adult_quantity' => $adultQuantity,
-                'child_quantity' => $childQuantity,
-                'total_amount' => $total,
-            ]);
-
-            $ticket->load('cashier');
-
-            return new IssuedTicketSale($ticket, $svg);
+            return new IssuedTicketPurchase($issued, $adultQuantity, $childQuantity, $quote->totalAmount, $at);
         });
     }
 }

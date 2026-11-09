@@ -36,6 +36,7 @@ Sistema del Zoológico Municipal Nicolás Bravo (Tulancingo). Monorepo con Spec-
 - Esquema solo por migraciones Laravel que el responsable de BD crea, prueba y aplica tras una DBR aprobada en `docs/database/requests/`; ningún agente, solicitante ni cliente crea SQL ejecutable, migraciones ni cambios directos; la aplicación se registra por ambiente. Modelos de negocio extienden `BaseModel` y usan SoftDeletes (Constitución V); datos clínicos y financieros además nunca se borran físicamente y quedan auditados.
 - MySQL 8.0.x (revisión mínima pendiente del inventario inicial), configuración por `.env`, portable entre Aiven (proveedor MySQL administrado, ADR 0013) y MySQL Server local. `arca_pruebas` es la base de trabajo y de tests; `arca_zoo` es producción y ningún agente la usa.
 - Conectar la API o probar conectividad sin alterar el esquema no requiere DBR, pero sí spec, plan y tasks aprobados, `.env` y cero secretos versionados.
+- Todo despliegue cumple el checklist de `infra/README.md` (`APP_URL`, `storage:link`, disco persistente, límites de subida, seeder de permisos). Un cambio que agregue un requisito de servidor o de ambiente lo anota ahí en el mismo PR.
 - No fijar colores de marca en componentes: usar tokens semánticos y el tema de `GET /api/theme`; modo claro.
 - SPAs con rutas del cliente y API con rutas Laravel nombradas; no usar Inertia ni Wayfinder.
 - Dependencia o tecnología nueva requiere ADR aprobado en `docs/adr/`.

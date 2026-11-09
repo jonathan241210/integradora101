@@ -6,6 +6,7 @@ use App\Models\Department;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use RuntimeException;
@@ -52,6 +53,33 @@ class DemoStaffSeeder extends Seeder
             );
 
             $user->syncRoles($account['role']);
+        }
+
+        // Carga inicial aprobada en DBR-006: Adulto $25.00, Niño $16.00 si la tabla está vacía
+        if (Schema::hasTable('ticket_prices') && DB::table('ticket_prices')->count() === 0) {
+            $admin = User::query()->whereHas('roles', fn ($q) => $q->where('name', 'admin'))->first()
+                ?? User::query()->first();
+            if ($admin) {
+                $now = now();
+                DB::table('ticket_prices')->insert([
+                    [
+                        'ticket_type' => 'adult',
+                        'amount' => 25.00,
+                        'effective_at' => $now,
+                        'created_by' => $admin->id,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                    [
+                        'ticket_type' => 'child',
+                        'amount' => 16.00,
+                        'effective_at' => $now,
+                        'created_by' => $admin->id,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                ]);
+            }
         }
     }
 

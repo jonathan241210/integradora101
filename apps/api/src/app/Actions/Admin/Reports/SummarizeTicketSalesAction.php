@@ -34,7 +34,8 @@ class SummarizeTicketSalesAction
             if (! isset($days[$date])) {
                 continue;
             }
-            $days[$date]['tickets']++;
+            // Boletos = suma de cantidades, también en filas anteriores con varias (api-007 CA-29, RN-15).
+            $days[$date]['tickets'] += (int) $ticket->adult_quantity + (int) $ticket->child_quantity;
             $days[$date]['adults'] += (int) $ticket->adult_quantity;
             $days[$date]['children'] += (int) $ticket->child_quantity;
             $days[$date]['cents'] += self::toCents($ticket->total_amount);

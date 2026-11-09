@@ -8,6 +8,8 @@
 
 > **Vigencia (2026-11-02):** `dashboard-005-ticket-sales` (aprobada el 2026-11-02) conecta Venta e Historial de taquilla con la API, así que dejan de ser datos ficticios. RN-02 deja de aplicarse a esas dos pantallas; sigue vigente para las demás que no conecte otra spec.
 
+> **Vigencia (2026-11-05, aprobada):** `dashboard-003` y `api-007` dejan la gestión de usuarios solo con `users.manage`. Se ajusta CA-06: `zoo-admin` deja de ver Usuarios y se retira `operational-staff.manage`.
+
 ## Problema y contexto
 
 El prototipo del dashboard (`dashboard-001`) usa un selector de perfil y credenciales ficticias en memoria. Con la autenticación real del personal definida en `api-003`, el dashboard debe reemplazar ese acceso simulado por un único formulario de correo institucional + contraseña que consuma la API, resuelva el reto/enrolamiento de 2FA de los administradores (`admin` y `zoo-admin`) y presente las secciones según el `home` y los permisos devueltos por `GET /api/v1/auth/me`. El `veterinarian` que entra por error al dashboard se redirige a la PWA; la PWA tendrá su propia pantalla de login en una spec futura de `apps/pwa`.
@@ -55,7 +57,7 @@ El prototipo sigue siendo una demostración en sus demás secciones: venta, hist
 - **CA-03:** Dada una respuesta de error de la API, cuando el login falle, entonces el mensaje se muestra en un contenedor con `role="alert"` en español: el 422 muestra «Correo o contraseña incorrectos.» y el 429 muestra el mensaje de espera devuelto por la API con sus segundos.
 - **CA-04:** Dada una respuesta `two_factor: true` del login, cuando se presente el reto, entonces el formulario acepta un código TOTP o un código de recuperación, muestra sus errores de forma accesible y, al completarlo, inicia la sesión.
 - **CA-05:** Dado un `admin` o `zoo-admin` que recibe `two_factor_setup_required`, cuando entre a la vista de enrolamiento, entonces muestra el QR SVG devuelto por la API, permite confirmar con un código TOTP válido y presenta los códigos de recuperación una sola vez con aviso para guardarlos.
-- **CA-06:** Dada una sesión autenticada, cuando `me` devuelve `home` y permisos, entonces el dashboard muestra las secciones correspondientes: `administration` → Dashboard, Noticias, Eventos, Reporte, Recintos y Usuarios, cada sección según el permiso correspondiente (Usuarios aparece con `users.manage` o `operational-staff.manage`), de modo que sirve igual para `admin` y `zoo-admin`; `executive` → Dashboard y Reporte en solo lectura; `ticket` → Venta e Historial.
+- **CA-06:** Dada una sesión autenticada, cuando `me` devuelve `home` y permisos, entonces el dashboard muestra las secciones correspondientes: `administration` → Dashboard, Noticias, Eventos, Reporte, Recintos y Usuarios, cada sección según el permiso correspondiente (Usuarios aparece solo con `users.manage`, así que `admin` lo ve y `zoo-admin` no); `executive` → Dashboard y Reporte en solo lectura; `ticket` → Venta e Historial.
 - **CA-07:** Dado `home: pwa`, cuando la sesión de `veterinarian` queda autenticada, entonces el dashboard muestra una pantalla con el mensaje correspondiente y redirige a `pwa_url`.
 - **CA-08:** Dada cualquier llamada a la API que responda 401, cuando el estado de sesión lo detecte, entonces el dashboard vuelve al login mostrando «Tu sesión expiró».
 - **CA-09:** Dada una sesión activa, cuando la persona elija cerrar sesión, entonces se llama a `logout` de la API y el dashboard regresa al login sin dejar visibles las secciones protegidas.

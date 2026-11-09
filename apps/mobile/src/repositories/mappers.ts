@@ -1,4 +1,6 @@
-import { Animal, ZooEvent } from '../models';
+import { Animal, MapPlace, ZooEvent } from '../models';
+import { SVG_HEIGHT, SVG_WIDTH, ZOO_BOUNDS } from '../constants/zoo';
+import { geoTransform } from '../utils/geoTransform';
 
 export interface ApiSpeciesResponse {
   id: number | string;
@@ -106,5 +108,116 @@ export function mapEventToZooEventModel(item: ApiEventResponse): ZooEvent {
     location,
     description,
     imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
+  };
+}
+
+export interface ApiEnclosureAnimal {
+  id: number;
+  name: string;
+  sex?: string | null;
+  age?: string | null;
+  origin?: string | null;
+  longevity?: string | null;
+  diet?: string | null;
+  reproduction?: string | null;
+  characteristics?: string | null;
+  photo_path?: string | null;
+  stay_status?: string | null;
+  can_receive_visits?: boolean | number | null;
+  species_id?: number | null;
+  species_name?: string | null;
+  scientific_name?: string | null;
+  species?: {
+    id: number;
+    common_name: string;
+    scientific_name: string;
+    category?: string | null;
+    distribution?: string | null;
+    conservation_status?: string | null;
+    habitat?: string | null;
+    gestation_period?: string | null;
+    size_cm?: number | null;
+    model_3d_path?: string | null;
+  } | null;
+}
+
+export interface ApiEnclosureResponse {
+  id: number | string;
+  name: string;
+  gps_lat?: number | null;
+  gps_lon?: number | null;
+  map_x?: number | null;
+  map_y?: number | null;
+  animals_count?: number;
+  animals?: ApiEnclosureAnimal[];
+}
+
+/**
+ * Mapea un recinto de la API al modelo MapPlace de UI (camelCase).
+ * Cumple con CA-21 y RN-20.
+ */
+export function mapEnclosureToMapPlace(item: ApiEnclosureResponse): MapPlace {
+  let mapX = 0.5;
+  let mapY = 0.5;
+
+  if (item.map_x != null && item.map_y != null) {
+    mapX = Number(item.map_x);
+    mapY = Number(item.map_y);
+  } else if (item.gps_lat != null && item.gps_lon != null) {
+    const { svgX, svgY } = geoTransform(Number(item.gps_lat), Number(item.gps_lon));
+    mapX = svgX / SVG_WIDTH;
+    mapY = svgY / SVG_HEIGHT;
+  }
+
+  const animalsList = Array.isArray(item.animals) && item.animals.length > 0
+    ? item.animals.map((a) => a.name || a.species_name).filter(Boolean).join(', ')
+    : '';
+
+  const description = animalsList
+    ? `Habitan: ${animalsList}.`
+    : `Recinto de ${item.name}.`;
+
+  const animals = Array.isArray(item.animals)
+    ? item.animals.map((a) => {
+        const scientificName = a.scientific_name || a.species?.scientific_name || undefined;
+        const speciesName = a.species_name || a.species?.common_name || undefined;
+        return {
+          id: String(a.id),
+          name: a.name,
+          speciesName,
+          scientificName,
+          sex: a.sex ?? undefined,
+          age: a.age ?? undefined,
+          origin: a.origin ?? undefined,
+          longevity: a.longevity ?? undefined,
+          diet: a.diet ?? undefined,
+          reproduction: a.reproduction ?? undefined,
+          veterinaryStatus: a.stay_status ? `Estatus: ${a.stay_status}` : undefined,
+          characteristics: a.characteristics ?? undefined,
+          funFact: a.characteristics ?? undefined,
+          photoPath: a.photo_path ?? undefined,
+        };
+      })
+    : undefined;
+
+  const gpsLat = item.gps_lat != null
+    ? Number(item.gps_lat)
+    : Math.round((ZOO_BOUNDS.latMax - mapY * (ZOO_BOUNDS.latMax - ZOO_BOUNDS.latMin)) * 1000000) / 1000000;
+  const gpsLon = item.gps_lon != null
+    ? Number(item.gps_lon)
+    : Math.round((ZOO_BOUNDS.lonMin + mapX * (ZOO_BOUNDS.lonMax - ZOO_BOUNDS.lonMin)) * 1000000) / 1000000;
+
+  return {
+    id: String(item.id),
+    name: item.name,
+    kind: 'animal',
+    sectionId: `enclosure-${item.id}`,
+    description,
+    mapX,
+    mapY,
+    visible: true,
+    gpsLat,
+    gpsLon,
+    animals,
   };
 }

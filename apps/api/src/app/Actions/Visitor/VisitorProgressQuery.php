@@ -116,7 +116,7 @@ class VisitorProgressQuery
         $owned = DB::table($table)->where('visitor_id', $visitor->id)->get()->keyBy($foreign);
         $metrics = $this->metrics($visitor);
 
-        return $rows->map(function (Achievement|Mission $row) use ($owned, $foreign, $when, $mission, $metrics): array {
+        return $rows->map(function (Achievement|Mission $row) use ($owned, $when, $mission, $metrics): array {
             $hit = $owned->get($row->id);
             $current = $this->metricFor($metrics, $row->rule_type, $row->rule_param);
 

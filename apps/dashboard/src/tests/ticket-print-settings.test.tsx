@@ -17,7 +17,7 @@ import {
   type SettingsStorage,
   type TicketPrintSettings,
 } from "../viewmodels/ticket-print-settings";
-import { saleDto, withFields } from "./ticket-sales-fixtures";
+import { saleDto, ticketDto, withFields } from "./ticket-sales-fixtures";
 
 function memoryStorage(initial?: string) {
   const values = new Map<string, string>();
@@ -105,8 +105,9 @@ describe("CA-27 ticket-sales", () => {
     expect(paper).not.toContain("Ancho de papel");
     expect(paper).toMatch(/id="print-margin"[^>]*min="0" max="20"/);
     expect(thermal).toMatch(/id="print-footer"[^>]*maxLength="80"/);
-    expect(thermal.match(/type="checkbox"/g)).toHaveLength(5);
-    expect(thermal).toContain("Folio y QR: siempre visibles.");
+    expect(thermal.match(/type="checkbox"/g)).toHaveLength(3);
+    expect(thermal).not.toContain("Cantidades");
+    expect(thermal).toContain("Tipo, precio, folio y QR: siempre visibles.");
     expect(thermal).toContain("Configurar impresión");
   });
 
@@ -167,7 +168,7 @@ describe("CA-28 ticket-sales", () => {
       paperWidth: 70,
       fontSize: "large",
       marginMm: 500,
-      fields: { total: false, cashier: "sí" },
+      fields: { total: false, quantities: true, dateTime: false, cashier: "sí" },
       footer: "Pie propio",
     });
     const result = loadTicketPrintSettings(memoryStorage(stored).storage);
@@ -175,7 +176,11 @@ describe("CA-28 ticket-sales", () => {
     expect(result.format).toBe("letter");
     expect(result.fontSize).toBe("large");
     expect(result.footer).toBe("Pie propio");
-    expect(result.fields.total).toBe(false);
+    expect(result.fields.dateTime).toBe(false);
+    // Claves retiradas de versiones anteriores: se ignoran sin error (T-67).
+    expect(result.fields).not.toHaveProperty("total");
+    expect(result.fields).not.toHaveProperty("quantities");
+    expect(JSON.parse(serializeTicketPrintSettings(result)).fields).not.toHaveProperty("total");
     expect(result.paperWidth).toBe(80);
     expect(result.marginMm).toBe(15);
     expect(result.fields.cashier).toBe(true);
@@ -187,46 +192,51 @@ describe("CA-29 ticket-sales", () => {
     ["térmica", withFields(defaultTicketPrintSettings, false)],
     ["carta", withFields(letter, false)],
   ];
+  const child = ticketDto({ folio: 102, ticket_type: "child", unit_price: "16.00", total_amount: "16.00" });
 
   it.each(settingsList)(
-    "muestra folio y QR en %s incluso con todos los opcionales desactivados",
+    "muestra folio, tipo, precio y QR en %s incluso con todos los opcionales desactivados",
     (_name, settings) => {
-      const markup = renderToStaticMarkup(<TicketReceipt ticket={saleDto()} settings={settings} />);
+      const markup = renderToStaticMarkup(<TicketReceipt ticket={child} settings={settings} />);
 
-      expect(markup).toContain("Folio <strong>123</strong>");
+      expect(markup).toContain("Folio <strong>102</strong>");
+      expect(markup).toContain("Niño");
+      expect(markup).toContain("$16.00");
       expect(markup).toMatch(/<img[^>]*src="data:image\/svg\+xml/);
-      expect(markup).not.toContain("Total");
       expect(markup).not.toContain("Cajero");
-      expect(markup).not.toContain("Adultos");
       expect(markup).not.toContain(DEFAULT_TICKET_FOOTER);
       expect(markup).toContain(`ticket-receipt--${settings.format}`);
     },
   );
 
-  it("muestra solo los campos activados y no cambia cantidades, total ni QR", () => {
-    const full = renderToStaticMarkup(<TicketReceipt ticket={saleDto()} settings={defaultTicketPrintSettings} />);
-    const letterFull = renderToStaticMarkup(<TicketReceipt ticket={saleDto()} settings={letter} />);
-    const onlyTotal = renderToStaticMarkup(
+  it("muestra solo los campos activados y no cambia el QR; nunca muestra total ni cantidades de la compra", () => {
+    const full = renderToStaticMarkup(<TicketReceipt ticket={saleDto().tickets[0]} settings={defaultTicketPrintSettings} />);
+    const letterFull = renderToStaticMarkup(<TicketReceipt ticket={saleDto().tickets[0]} settings={letter} />);
+    const onlyCashier = renderToStaticMarkup(
       <TicketReceipt
-        ticket={saleDto()}
+        ticket={saleDto().tickets[0]}
         settings={changeTicketPrintSettings(withFields(defaultTicketPrintSettings, false), {
           type: "field",
-          name: "total",
+          name: "cashier",
           value: true,
         })}
       />,
     );
     const qr = (markup: string) => /src="(data:image[^"]+)"/.exec(markup)?.[1];
 
-    expect(full).toContain("$66.00");
-    expect(full).toContain("2 × $25.00");
+    expect(full).toContain("Adulto");
+    expect(full).toContain("$25.00");
+    expect(full).toContain("Cajero: Caja Prueba");
     expect(full).toContain(DEFAULT_TICKET_FOOTER);
-    expect(letterFull).toContain("$66.00");
-    expect(letterFull).toContain("2 × $25.00");
-    expect(onlyTotal).toContain("$66.00");
-    expect(onlyTotal).not.toContain("2 × $25.00");
+    expect(onlyCashier).toContain("Cajero: Caja Prueba");
+    expect(onlyCashier).not.toContain(DEFAULT_TICKET_FOOTER);
+    for (const markup of [full, letterFull, onlyCashier]) {
+      expect(markup).not.toContain("$73.00");
+      expect(markup).not.toContain("Total");
+      expect(markup).not.toMatch(/Adultos|Niños/);
+    }
     expect(qr(full)).toBe(qr(letterFull));
-    expect(qr(full)).toBe(qr(onlyTotal));
+    expect(qr(full)).toBe(qr(onlyCashier));
     expect(full).toContain('style="--ticket-width:80mm;--ticket-margin:2mm;--ticket-font:12pt"');
   });
 });

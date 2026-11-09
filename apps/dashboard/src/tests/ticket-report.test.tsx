@@ -60,6 +60,21 @@ describe("CA-11 administration-sections", () => {
     expect(markup).not.toContain("Prototipo de demostración");
   });
 
+  it("cuenta boletos con totals.tickets y rotula aparte los registros (fila anterior de 2 adultos + 4 individuales)", () => {
+    const markup = render(
+      readyState({
+        report: ticketReport({
+          totals: { tickets: 6, adults: 3, children: 3, revenue: "100.00" },
+          meta: { current_page: 1, last_page: 1, per_page: 50, total: 5 },
+        }),
+      }),
+    );
+
+    expect(markup).toContain("6 boletos");
+    expect(markup).toContain("5 registros");
+    expect(markup).not.toContain("5 boletos");
+  });
+
   it("carga por periodo y navega reenviando previous_date/next_date sin calcular fechas", async () => {
     const api = createAdminApiMock();
     const h = createHarness(ticketReportReducer, initialTicketReportState);

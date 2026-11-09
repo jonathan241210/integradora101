@@ -49,6 +49,21 @@ const cancelled = historyRow({
 });
 const meta = { current_page: 1, last_page: 3, per_page: 25, total: 60 };
 
+describe("CA-10 ticket-sales (registros)", () => {
+  it("rotula el conteo como registros porque la API no devuelve la suma de boletos", () => {
+    const markup = render(
+      stateWith({
+        type: "loaded",
+        rows: [completed],
+        meta: { current_page: 1, last_page: 1, per_page: 25, total: 5 },
+      }),
+    );
+
+    expect(markup).toContain("5 registros");
+    expect(markup).not.toContain("5 boletos");
+  });
+});
+
 describe("CA-10 ticket-sales", () => {
   it("lista folio, fecha local, cantidades, total, estado y motivo de los cancelados", () => {
     const markup = render(stateWith({ type: "loaded", rows: [completed, cancelled], meta }));

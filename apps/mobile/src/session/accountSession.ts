@@ -4,6 +4,7 @@ import type { AccountResult, AuthRepository, AuthResult, RegisterInput, VisitorP
 import { clearSharedProgress } from '../repositories/sharedProgress';
 import { createSecureTokenStorage, tokenStorage, type TokenStorage } from '../services/tokenStorage';
 import { clearScanQueue } from '../services/scanQueue';
+import { syncZooData } from '../services/zooSyncService';
 
 export type AccountSessionStatus = 'bootstrapping' | 'guest' | 'authenticated';
 
@@ -118,6 +119,7 @@ export const accountSession = {
     }
     if (!httpMode) {
       setStatus('authenticated');
+      void syncZooData();
       return;
     }
     try {
@@ -128,6 +130,7 @@ export const accountSession = {
         return;
       }
       setStatus('authenticated');
+      void syncZooData();
     } catch {
       setStatus('guest');
     }
@@ -138,6 +141,7 @@ export const accountSession = {
       await activeStorage.write(result.tokens);
       await warmProfile();
       setStatus('authenticated');
+      void syncZooData();
     }
     return result;
   },
@@ -155,6 +159,7 @@ export const accountSession = {
       await activeStorage.write(result.tokens);
       await warmProfile();
       setStatus('authenticated');
+      void syncZooData();
     }
     return result;
   },
@@ -215,6 +220,7 @@ export const accountSession = {
         }
         await activeStorage.write(result.tokens);
         setStatus('authenticated');
+      void syncZooData();
         return result;
       }).finally(() => {
         refreshFlight = null;

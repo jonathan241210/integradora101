@@ -13,19 +13,37 @@ export type TicketSaleInput = {
   child_quantity: number;
 };
 
-export type TicketSaleDto = {
-  folio: number;
-  purchased_at: string;
-  adult_quantity: number;
-  child_quantity: number;
+/** Cotización de `POST admin/tickets/quote` (`api-009` CA-46): importes calculados por la API. */
+export type TicketQuoteDto = {
   adult_unit_price: string;
   child_unit_price: string;
+  adult_subtotal: string;
+  child_subtotal: string;
   total_amount: string;
-  status: TicketStatus;
-  payment_method: string;
+};
+
+export type TicketKind = "adult" | "child";
+
+/** Un boleto individual de una venta (`api-009` CA-50): un folio y un QR por unidad. */
+export type TicketSaleDto = {
+  folio: number;
+  ticket_type: TicketKind;
+  unit_price: string;
+  total_amount: string;
+  purchased_at: string;
   cashier_name: string | null;
   /** SVG del QR generado por la API; nunca incluye el token `qr_code`. */
   qr_svg: string;
+};
+
+/** Respuesta de `POST admin/tickets`: datos de la compra y su lista de boletos. */
+export type TicketSaleBatchDto = {
+  adult_quantity: number;
+  child_quantity: number;
+  total_amount: string;
+  purchased_at: string;
+  cashier_name: string | null;
+  tickets: TicketSaleDto[];
 };
 
 export type TicketHistoryRowDto = {

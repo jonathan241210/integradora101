@@ -41,7 +41,7 @@ Public visitors registered via the mobile application.
 | `nickname` | VARCHAR(50) | Public nickname displayed in mobile app | NOT NULL |
 | `email` | VARCHAR(150) | Electronic mail address for login | UNIQUE, NOT NULL |
 | `first_name` | VARCHAR(100) | Given name | NOT NULL |
-| `last_name` | VARCHAR(100) | First surname | NOT NULL |
+| `last_name` | VARCHAR(100) | First surname | NULL |
 | `second_last_name` | VARCHAR(100) | Second surname | NULL |
 | `password` | VARCHAR(255) | Password hash | NOT NULL |
 | `is_active` | TINYINT(1) | Account status flag (1=active, 0=inactive) | NOT NULL, DEFAULT 1 |
