@@ -38,4 +38,30 @@ class SendVisitorCodeAction
 
         Mail::to($visitor->email)->send(new VisitorAccessCodeMail($code, $purpose));
     }
+
+    public function resendFor(?Visitor $visitor): void
+    {
+        if ($visitor === null) {
+            return;
+        }
+
+        $purpose = VisitorVerificationCode::query()
+            ->where('visitor_id', $visitor->id)
+            ->whereIn('purpose', ['email_verification', 'registration_notice'])
+            ->whereNull('consumed_at')
+            ->where('expires_at', '>', now())
+            ->where('attempts', '<', 5)
+            ->orderByDesc('id')
+            ->value('purpose');
+
+        if ($purpose === null && $visitor->email_verified_at === null) {
+            $purpose = 'email_verification';
+        }
+
+        if (! is_string($purpose)) {
+            return;
+        }
+
+        $this->execute($visitor, $purpose);
+    }
 }

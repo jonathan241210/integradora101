@@ -2,7 +2,7 @@
 
 - Spec: `apps/mobile/specs/009-ar-3d-map-guide.md` (Aprobada, 2026-11-05)
 - Plan: `apps/mobile/plan/009-ar-3d-map-guide.md` (Aprobado, 2026-11-05)
-- ADR: `docs/adr/0022-mobile-ar-3d-camera-threejs.md` (Aceptado, 2026-11-05)
+- ADR: `docs/adr/0025-mobile-ar-3d-camera-threejs.md` (Aceptado, 2026-11-05)
 
 ---
 

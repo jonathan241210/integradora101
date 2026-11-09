@@ -1,10 +1,11 @@
-# 0022 — Escaneo QR con expo-camera (mobile-006)
+# 0022 · Escaneo QR con expo-camera (mobile-006)
 
 - Estado: Aceptado
 - Fecha: 2026-11-01
 - Aprobado por: Aksel (2026-11-01)
 - Spec relacionada: `apps/mobile/specs/006-qr-scan.md`
 - Autor: Aksel
+- Nota: Renumerado desde 0019 el 2026-11-04 para no colisionar con ADR 0019 (generación QR SVG en la API, `api-009`).
 
 ---
 

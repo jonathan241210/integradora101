@@ -12,6 +12,8 @@ interface VerifyEmailScreenProps {
   onCodeChange: (value: string) => void;
   onSubmit: () => void;
   onResend: () => void;
+  onGoToLogin: () => void;
+  alreadyRegistered?: boolean;
   busy?: boolean;
 }
 
@@ -24,34 +26,50 @@ export function VerifyEmailScreen({
   onCodeChange,
   onSubmit,
   onResend,
+  onGoToLogin,
+  alreadyRegistered = false,
   busy = false,
 }: VerifyEmailScreenProps) {
   const waiting = resendWaitSeconds !== null && resendWaitSeconds > 0;
+  const hint = `Escribe el código de 6 dígitos para ${email || 'tu correo'}.`;
+  if (alreadyRegistered) {
+    return (
+      <ScreenContainer>
+        <View style={styles.page}>
+          <AppText variant="title">Correo ya registrado</AppText>
+          <AppText variant="body">{notice ?? 'Ese correo ya está registrado.'}</AppText>
+          <Button label="Ir a iniciar sesión" onPress={onGoToLogin} />
+        </View>
+      </ScreenContainer>
+    );
+  }
   return (
     <ScreenContainer busyMessage={busy ? 'Verificando correo…' : null}>
       <View style={styles.page}>
         <AppText variant="title">Verifica tu correo</AppText>
-        <AppText variant="body">Escribe el código de 6 dígitos que enviamos a {email || 'tu correo'}.</AppText>
+        <AppText variant="body">{hint}</AppText>
         <TextField label="Código" value={code} onChangeText={onCodeChange} keyboardType="number-pad" maxLength={6} placeholder="000000" />
         {notice ? <AppText variant="small">{notice}</AppText> : null}
         {error ? <AppText variant="small" color="danger" accessibilityLiveRegion="polite">{error}</AppText> : null}
         <View style={styles.nav}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={waiting ? `Espera ${resendWaitSeconds} segundos` : 'Reenviar código'}
-            accessibilityState={busy || waiting ? { disabled: true } : undefined}
-            disabled={busy || waiting}
-            onPress={onResend}
-            style={[styles.resend, (busy || waiting) && styles.resendOff]}
-          >
-            <Icon name="refresh" size={22} color={colors.textOnPrimary} />
-          </Pressable>
+          <View style={styles.resendWrap}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={waiting ? `Espera ${resendWaitSeconds} segundos` : 'Reenviar código'}
+              accessibilityState={busy || waiting ? { disabled: true } : undefined}
+              disabled={busy || waiting}
+              onPress={onResend}
+              style={[styles.resend, (busy || waiting) && styles.resendOff]}
+            >
+              <Icon name="refresh" size={22} color={colors.textOnPrimary} />
+            </Pressable>
+            <AppText variant="caption" color="textMuted" center>
+              {waiting ? `${resendWaitSeconds} s` : 'Reenviar'}
+            </AppText>
+          </View>
           <Button label="Confirmar código" onPress={onSubmit} disabled={busy} style={styles.confirm} />
           <View style={styles.spacer} />
         </View>
-        <AppText variant="caption" color="textMuted">
-          {waiting ? `Reenviar en ${resendWaitSeconds} s` : 'Reenviar código'}
-        </AppText>
       </View>
     </ScreenContainer>
   );
@@ -59,7 +77,8 @@ export function VerifyEmailScreen({
 
 const styles = StyleSheet.create({
   page: { padding: spacing.lg, gap: spacing.md },
-  nav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: spacing.sm },
+  nav: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginTop: spacing.sm },
+  resendWrap: { alignItems: 'center', gap: spacing.xs, minWidth: 52 },
   resend: {
     width: 52,
     height: 52,

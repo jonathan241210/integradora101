@@ -100,6 +100,26 @@ describe('Repositorio HTTP de la cuenta', () => {
     expect(patchBody).toEqual({ first_name: 'Ana', nickname: 'Nita', avatar_code: 'wolf' });
   });
 
+  it('test-ca-03-http-verify-registered-email: CA-03 no guarda tokens si el correo ya existe', async () => {
+    const storage = createMemoryTokenStorage();
+    const repository = createHttpAuthRepository({
+      baseUrl: 'https://api.pruebas.invalid',
+      storage,
+      fetchImpl: jest.fn(async () => jsonResponse(200, {
+        message: 'Ese correo ya está registrado.',
+        code: 'email_already_registered',
+      })) as unknown as typeof fetch,
+    });
+
+    const result = await repository.verifyEmail('ana@ejemplo.com', '123456');
+    expect(result).toMatchObject({
+      ok: true,
+      code: 'email_already_registered',
+      message: 'Ese correo ya está registrado.',
+    });
+    expect(await storage.read()).toBeNull();
+  });
+
   it('test-ca-10-http-delete-clears-storage: CA-10 limpia los tokens al borrar', async () => {
     const storage = createMemoryTokenStorage();
     await storage.write({ accessToken: 'access-http', refreshToken: 'refresh-http' });

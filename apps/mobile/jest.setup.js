@@ -53,6 +53,15 @@ jest.mock('./src/hooks/useScreenFocusEffect', () => {
   };
 });
 
+const { authRepository, installAuthFixturesForTests } = require('./src/repositories/mockAuthRepository');
+
+installAuthFixturesForTests([
+  { email: 'correo@ejemplo.com', firstName: 'Ana', nickname: 'Anita', password: 'secreta', avatarCode: 'jaguar', verified: true },
+  { email: 'maria@correo.com', firstName: 'María', nickname: 'María', password: 'secreta', avatarCode: 'macaw', verified: true },
+  { email: 'sin-verificar@ejemplo.com', firstName: 'Luis', nickname: 'Luis', password: 'secreta', avatarCode: 'wolf', verified: false },
+]);
+authRepository.reset();
+
 jest.mock('react-native-safe-area-context', () => {
   const RNActual = jest.requireActual('react-native-safe-area-context');
   return {

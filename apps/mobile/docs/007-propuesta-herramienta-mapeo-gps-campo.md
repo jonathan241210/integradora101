@@ -4,7 +4,7 @@
 - **Feature asociada:** `apps/mobile/specs/007-map-location.md` (Frente 1 / DBR-008)
 - **Fecha:** 2026-11-09
 - **Autor / Responsable:** Víctor Adrián
-- **Estado:** Propuesta en revisión
+- **Estado:** Aprobada por Aksel (2026-11-09)
 
 ---
 
@@ -138,7 +138,7 @@ Una vez concluido el levantamiento en el zoológico:
 
 ## 6. Próximos Pasos Recomendados
 
-1. **Revisión y Aprobación:** Validar los elementos de esta propuesta.
+1. **Revisión y Aprobación:** Aksel aprobó esta propuesta el 2026-11-09.
 2. **Implementación de la herramienta:** Creación de los archivos en `tools/zoo-mapper/`.
 3. **Prueba local preliminar:** Probar la captura en calle/parque cercano para validar la respuesta del semáforo y la vibración en el teléfono.
 4. **Levantamiento en Tulancingo:** Jornada de mapeo en el Zoológico Nicolás Bravo.
