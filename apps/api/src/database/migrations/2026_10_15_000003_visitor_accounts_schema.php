@@ -14,8 +14,14 @@ return new class extends Migration
         // 1. Modificar tabla `visitors`
         if (Schema::hasTable('visitors')) {
             Schema::table('visitors', function (Blueprint $table) {
-                // Hacer nickname obligatorio
+                // Hacer nickname obligatorio y apellidos opcionales (el alta móvil solo pide first_name y nickname)
                 $table->string('nickname', 100)->nullable(false)->change();
+                if (Schema::hasColumn('visitors', 'last_name')) {
+                    $table->string('last_name', 100)->nullable()->change();
+                }
+                if (Schema::hasColumn('visitors', 'second_last_name')) {
+                    $table->string('second_last_name', 100)->nullable()->change();
+                }
 
                 if (!Schema::hasColumn('visitors', 'email_verified_at')) {
                     $table->timestamp('email_verified_at')->nullable()->after('email');

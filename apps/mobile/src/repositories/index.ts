@@ -86,6 +86,7 @@ export class MapRepositoryImpl implements MapRepository {
 // Exportamos las implementaciones reales con API y caché
 export { ApiAnimalRepository } from './apiAnimalRepository';
 export { ApiZooRepository } from './apiZooRepository';
+export { ApiMapRepository, CACHE_KEY_MAP_PLACES } from './apiMapRepository';
 export * from './mappers';
 export * from './storage';
 
@@ -94,6 +95,7 @@ export * from './storage';
  */
 import { ApiAnimalRepository } from './apiAnimalRepository';
 import { ApiZooRepository } from './apiZooRepository';
+import { ApiMapRepository } from './apiMapRepository';
 
 export function createAnimalRepository(): AnimalRepository {
   if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
@@ -113,4 +115,14 @@ export function createZooRepository(): ZooRepository {
     return new ZooRepositoryImpl();
   }
   return new ApiZooRepository();
+}
+
+export function createMapRepository(): MapRepository {
+  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
+    return new MapRepositoryImpl();
+  }
+  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+    return new MapRepositoryImpl();
+  }
+  return new ApiMapRepository();
 }

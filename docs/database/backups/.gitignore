@@ -1,0 +1,14 @@
+# Ignorar archivos de respaldos y certificados locales para proteger datos sensibles
+*.sql
+*.pem
+*.gz
+*.bak
+
+# Mantener versionados los scripts y la documentación
+!README.md
+!.gitignore
+!backup.ps1
+!backup.php
+!restore.ps1
+!restore.php
+!reset-and-init.php

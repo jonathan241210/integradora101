@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useCameraPermissions } from 'expo-camera';
-import type { Router } from 'expo-router';
+import type { useRouter } from 'expo-router';
+
+type Router = ReturnType<typeof useRouter>;
 import { presentScanResult } from '../navigation/presentScanResult';
 import { submitScan, type ScanPresentation } from '../services/scanQueue';
 import { normalizeQrCode } from '../utils/normalizeQrCode';
