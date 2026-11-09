@@ -4,7 +4,7 @@
 - Estado de spec: Aprobada (Víctor Adrián, 2026-11-05)
 - Estado del plan: Aprobado (Víctor Adrián, 2026-11-05)
 - Responsable técnico: Víctor Adrián
-- ADR habilitador: `docs/adr/0023-mobile-ar-3d-camera-threejs.md` (Aceptado)
+- ADR habilitador: `docs/adr/0025-mobile-ar-3d-camera-threejs.md` (Aceptado)
 
 ---
 
@@ -46,7 +46,7 @@ La feature `mobile-009` añade un **Recorrido Guiado 3D y de Realidad Aumentada 
 | Componentes (`apps/mobile/src/components/map/`) | `src/components/map/ThreeTourScene.tsx` (**nuevo**)<br>`src/components/map/ArTourOverlay.tsx` (**nuevo**)<br>`src/components/map/index.ts` (**modificado**) | Renderizado en perspectiva 3D de sendero conectado, flechas animadas y bifurcaciones + HUD accesible en español |
 | Pantalla (`apps/mobile/src/screens/`) | `src/screens/MapScreen.tsx` (**modificado**) | Botón accesible «Iniciar Recorrido 3D» e integración de `ArTourOverlay` conservando estado 2D ↔ 3D |
 | Pruebas (`apps/mobile/__tests__/`) | `__tests__/arMathAndTour.test.ts` (**nuevo**)<br>`__tests__/arTourOverlay.test.tsx` (**nuevo**) | Pruebas unitarias y de integración para `CA-01` a `CA-08` |
-| Documentación | `docs/adr/0023-mobile-ar-3d-camera-threejs.md`<br>`apps/mobile/docs/009-guia-mapa-3d-ar-threejs.md` | ADR 0023 y guía técnica de arquitectura 3D/AR |
+| Documentación | `docs/adr/0025-mobile-ar-3d-camera-threejs.md`<br>`apps/mobile/docs/009-guia-mapa-3d-ar-threejs.md` | ADR 0025 y guía técnica de arquitectura 3D/AR |
 
 ---
 
@@ -96,7 +96,7 @@ La feature `mobile-009` añade un **Recorrido Guiado 3D y de Realidad Aumentada 
 
 ## Riesgos y decisiones
 
-- **ADR requerido/aprobado:** `docs/adr/0023-mobile-ar-3d-camera-threejs.md` (Aceptado).
+- **ADR requerido/aprobado:** `docs/adr/0025-mobile-ar-3d-camera-threejs.md` (Aceptado).
 - **Compatibilidad con Expo Go y Jest sin binarios adicionales bloqueantes:**
   - Para garantizar que el Recorrido 3D funcione inmediatamente en Expo Go SDK 57, en dispositivos sin soporte ARCore y en el runner de Jest sin fallos nativos, `ThreeTourScene.tsx` proyecta matemáticamente los vectores 3D $(X, Y, Z)$ de la cámara en perspectiva tridimensional (`project3DPointToViewport` en `arMath.ts`) sobre el lienzo vectorial de alta velocidad y soporta la capa de cámara/escena 3D sin requerir compilación nativa personalizada.
 

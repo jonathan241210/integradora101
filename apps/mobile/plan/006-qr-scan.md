@@ -4,7 +4,7 @@
 - Estado de spec: Implementada (2026-11-01; aprobación funcional Aksel, 2026-11-01)
 - Estado del plan: Aprobado e implementado (Aksel, 2026-11-01)
 - Responsable técnico: Aksel
-- ADR: `docs/adr/0022-expo-camera-qr-scan.md` (Aceptado, 2026-11-01)
+- ADR: `docs/adr/0022-expo-camera-qr-scan.md` (Aceptado, 2026-11-01; renumerado 0022 el 2026-11-04)
 
 ## Diseño de solución
 

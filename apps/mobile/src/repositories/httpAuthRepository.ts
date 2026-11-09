@@ -1,4 +1,4 @@
-import { createVisitorApi, type ApiError } from '@arca/api-client';
+import { createVisitorApi, type ApiError, type VisitorAlreadyRegistered, type VisitorVerifyResult } from '@arca/api-client';
 import type { AuthTokens, TokenStorage } from '../services/tokenStorage';
 import type {
   AccountResult,
@@ -37,6 +37,10 @@ function failure(error: unknown): AuthFailure {
     code: error.code === 'email_not_verified' ? 'email_not_verified' : undefined,
     retryAfterSeconds: error.retryAfterSeconds,
   };
+}
+
+function isAlreadyRegistered(payload: VisitorVerifyResult): payload is VisitorAlreadyRegistered {
+  return (payload as { code?: string }).code === 'email_already_registered';
 }
 
 function tokensFrom(accessToken: string, refreshToken: string): AuthTokens {
@@ -126,6 +130,14 @@ export function createHttpAuthRepository({ baseUrl, storage, fetchImpl }: HttpAu
     async verifyEmail(email, code) {
       try {
         const payload = await api.verifyEmail(email, code);
+        if (isAlreadyRegistered(payload)) {
+          return {
+            ok: true,
+            status: 200,
+            message: payload.message,
+            code: 'email_already_registered' as const,
+          };
+        }
         const tokens = tokensFrom(payload.access_token, payload.refresh_token);
         await storage.write(tokens);
         return accepted(200, 'Correo verificado.', tokens);

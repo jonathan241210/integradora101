@@ -35,7 +35,8 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0022 · Escaneo QR con expo-camera (mobile-006)](0022-expo-camera-qr-scan.md) — Aceptado
 - [0023 · Recorrido guiado 3D y realidad aumentada offline](0023-mobile-ar-3d-camera-threejs.md) — Propuesto
 - [0024 · Excepción de arquitectura para el portal público: HTML y JavaScript estático en apps/web](0024-web-static-portal-exception.md) — Aceptado (2026-11-07)
-- [0025 · Checklist de despliegue en la Constitución](0025-deployment-checklist-constitution.md) — Propuesto (2026-11-05)
+- [0023 · Checklist de despliegue en la Constitución](0023-deployment-checklist-constitution.md) — Propuesto (2026-11-05)
+- [0025 · Recorrido guiado 3D y realidad aumentada offline](0025-mobile-ar-3d-camera-threejs.md) — Propuesto
 
 ## Plantilla
 

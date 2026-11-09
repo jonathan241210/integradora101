@@ -1,4 +1,4 @@
-# 0025 · Checklist de despliegue en la Constitución
+# 0023 · Checklist de despliegue en la Constitución
 
 - Estado: Propuesto (2026-11-05); pendiente del acuerdo del equipo
 - Fecha: 2026-11-05
