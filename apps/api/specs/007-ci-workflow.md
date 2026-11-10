@@ -41,7 +41,7 @@ Como integrante del equipo, quiero que GitHub ejecute las pruebas automatizadas 
 ## Criterios de aceptación
 
 - **CA-01:** Dado un push o pull request hacia `main` o `DevOps`, cuando GitHub Actions procesa el evento, entonces ejecuta el workflow con nombre y textos visibles en español.
-- **CA-02:** Dada una ejecución del workflow, cuando se ejecuta el job de API, entonces corre únicamente la suite PHPUnit `Unit` sin requerir credenciales ni conexión a una base de datos.
+- **CA-02:** Dada una ejecución del workflow, cuando se ejecuta el job de API, entonces usa PHP 8.4 y corre únicamente la suite PHPUnit `Unit` sin requerir credenciales ni conexión a una base de datos.
 - **CA-03:** Dada una ejecución del workflow, cuando se ejecuta el job móvil, entonces instala dependencias con `npm ci` usando el lockfile compartido de la raíz y corre Jest en modo no interactivo.
 - **CA-04:** Dada una falla de una suite, cuando termina el job correspondiente, entonces GitHub reporta el job y el workflow como fallidos e identifica qué verificación falló.
 - **CA-05:** Dada una ejecución del workflow, entonces ningún paso se conecta a Aiven o producción ni ejecuta migraciones.
@@ -79,3 +79,7 @@ Si falla la instalación o una prueba, el job termina con error y la ejecución 
 
 - Aprobadores y fecha: usuario solicitante, 2026-10-26.
 - Evidencia/enlaces: pendiente de primera ejecución en GitHub Actions.
+
+## Corrección de compatibilidad — 2026-11-09
+
+La copia residual `.github/workflows/main.yml` también se activa en `DevOps` y conservaba PHP 8.2. Se alinea a PHP 8.4, como ya establece el plan aprobado y el ADR 0018. Esta corrección aplica CA-02 sin agregar dependencias ni cambiar la suite o los lockfiles. El workflow ampliado `ci.yml` mantiene su configuración actual.
