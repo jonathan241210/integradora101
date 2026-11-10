@@ -287,3 +287,24 @@
 - [x] **T-61** (CA-15, CA-16, CA-17): Crear `__tests__/mapViewport.test.tsx` cubriendo explícitamente `CA-15` (zoom in/out/reset), `CA-16` (clamping de desplazamiento) y `CA-17` (centrar en ubicación activa y ocultamiento sin GPS).
 - [x] **T-62**: Ejecutar `npx tsc --noEmit` y suite de Jest en `apps/mobile`, verificando 0 errores (incluyendo `architecture.test.ts`).
 - [x] **T-63**: Actualizar documentación en `apps/mobile/docs/003-008-roadmap-y-asignacion.md` y `apps/mobile/docs/007-roadmap-mapa-gps-ar.md`.
+
+## Enmienda correctiva — CA-07 y CA-17
+
+- Estado: tasks correctivas aprobadas por el usuario solicitante, 2026-11-09.
+
+- [x] **T-64** (CA-17): aplicar el zoom de centrado `CENTER_LOCATION_ZOOM` y calcular el pan con esa escala; preservar el comportamiento cuando no hay ubicación activa.
+- [x] **T-65** (CA-07): sustituir literales hexadecimales y `rgba()` de componentes/pantallas por tokens semánticos compartidos; añadir solo los roles semánticos ausentes en `packages/tokens/index.ts`.
+- [x] **T-66** (CA-07, CA-17): ejecutar y aprobar `mapAccessibility.test.tsx`, `architecture.test.ts` y `mapViewport.test.tsx`; verificar que la búsqueda de colores fijos no encuentre resultados en componentes/pantallas. Resultado: 3 suites y 11 pruebas aprobadas, sin modificar las expectativas.
+
+Aprobación de las tasks correctivas: usuario solicitante, 2026-11-09.
+
+Se continúa desde T-63 de la enmienda anterior para evitar duplicar identificadores de tareas.
+
+### Evidencia local de la corrección — 2026-11-09
+
+- Suite publicada: `npm run test --workspace=apps/mobile -- --runInBand --silent '--testPathIgnorePatterns=apiRepositories.coverage.test.ts|mappers.coverage.test.ts|repositoriesCore.coverage.test.ts'`: exit 0, 55 suites, 227 pruebas y 1 snapshot aprobados; 16,039 s. Los tres archivos excluidos son pruebas no versionadas de otra tarea; no forman parte del commit.
+- La primera ejecución completa tuvo un timeout de 5 s en el formulario de registro. La repetición aprobó sin cambiar pruebas ni límites; se conserva como observación de estabilidad.
+- TypeScript sobre los archivos versionados y los cambios que se publican: 0 errores, mediante la API TypeScript con `noEmit` y la configuración existente, excluyendo los mismos tres tests no versionados. El comando general `tsc --noEmit` detectó TS2790 en `repositoriesCore.coverage.test.ts:92`, trabajo local fuera de esta corrección.
+- `/verify`: Mobile tiene el manifiesto en la raíz de la app, no en `src/`; se utilizó el script workspace existente. No declara lint, format ni types; se usó TypeScript instalado sin instalar dependencias. `@arca/tokens` no declara scripts; se validó mediante los consumidores móviles y `theme.test.ts` en la suite completa.
+- `git diff --check`: exit 0. Sin cambios de tests, dependencias, datos, permisos o umbrales de cobertura.
+- No se repitió la suite con cobertura en esta corrección; los umbrales y tareas de `mobile-011` conservan su verificación propia. La nueva corrida remota y la inspección visual del mapa quedan pendientes.

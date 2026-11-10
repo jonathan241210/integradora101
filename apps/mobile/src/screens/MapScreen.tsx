@@ -21,6 +21,7 @@ import {
 import {
   MAX_ZOOM_SCALE,
   MIN_ZOOM_SCALE,
+  CENTER_LOCATION_ZOOM,
   SVG_HEIGHT,
   SVG_WIDTH,
   ZOOM_STEP,
@@ -140,10 +141,13 @@ export function MapScreen({
     if (!userPosition) {
       return;
     }
+    const centerZoom = clampZoom(CENTER_LOCATION_ZOOM);
+    zoomScaleRef.current = centerZoom;
+    setZoomScale(centerZoom);
     const centerPan = computeCenterPanForSvgPoint(
       userPosition.svgX,
       userPosition.svgY,
-      zoomScaleRef.current,
+      centerZoom,
     );
     setPanOffset(centerPan);
   }, [userPosition]);
@@ -408,12 +412,12 @@ const styles = StyleSheet.create({
   },
   gpsBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(33, 150, 243, 0.1)',
+    backgroundColor: colors.infoSurface,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderWidth: 1,
-    borderColor: 'rgba(33, 150, 243, 0.3)',
+    borderColor: colors.infoBorder,
   },
   gpsText: {
     color: colors.primary,

@@ -12,7 +12,6 @@ import Svg, {
   Text as SvgText,
 } from 'react-native-svg';
 import {
-  ROUTE_LINE_COLOR,
   SVG_HEIGHT,
   SVG_WIDTH,
 } from '../../constants/zoo';
@@ -90,7 +89,7 @@ export function ThreeTourScene({
     return pts.join(' ');
   }, [segments, beaconPoint]);
 
-  const beaconColor = isArrived ? '#2E7D32' : ROUTE_LINE_COLOR;
+  const beaconColor = isArrived ? colors.success : colors.info;
 
   return (
     <View
@@ -144,7 +143,8 @@ export function ThreeTourScene({
           <Polyline
             points={routePointsString}
             fill="none"
-            stroke="rgba(33, 150, 243, 0.35)"
+            stroke={colors.info}
+            strokeOpacity={0.35}
             strokeWidth={20}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -197,11 +197,12 @@ export function ThreeTourScene({
                   cy={cy + 4}
                   rx={Math.max(8, Math.round(halfW * 1.05))}
                   ry={Math.max(4, Math.round(tipH * 0.75))}
-                  fill="rgba(0, 0, 0, 0.22)"
+                  fill={colors.text}
+                  fillOpacity={0.22}
                 />
                 <Path
                   d={chevronPath}
-                  fill={isArrived ? '#2E7D32' : colors.primary}
+                  fill={isArrived ? colors.success : colors.primary}
                   stroke={colors.surface}
                   strokeWidth="3"
                 />
@@ -218,7 +219,7 @@ export function ThreeTourScene({
             cx={beaconPoint.x}
             cy={beaconPoint.y}
             r={32}
-            fill={isArrived ? 'rgba(46, 125, 50, 0.28)' : 'rgba(33, 150, 243, 0.28)'}
+            fill={isArrived ? colors.successSurfaceHighlight : colors.infoSurfaceMuted}
             stroke={beaconColor}
             strokeWidth={3}
           />
@@ -229,14 +230,14 @@ export function ThreeTourScene({
             cy={beaconPoint.y}
             r={14}
             fill={beaconColor}
-            stroke="#FFFFFF"
+            stroke={colors.surface}
             strokeWidth={3}
           />
           <Circle
             cx={beaconPoint.x}
             cy={beaconPoint.y}
             r={5}
-            fill="#FFFFFF"
+            fill={colors.surface}
           />
 
           {/* Vástago o poste vertical hacia el cartel flotante del recinto */}
@@ -255,7 +256,7 @@ export function ThreeTourScene({
             cx={beaconPoint.x}
             cy={beaconPoint.y - 48}
             r={20}
-            fill="#FFFFFF"
+            fill={colors.surface}
             stroke={beaconColor}
             strokeWidth={3}
           />
@@ -275,7 +276,7 @@ export function ThreeTourScene({
             width={180}
             height={32}
             rx={16}
-            fill="rgba(15, 23, 42, 0.90)"
+            fill={colors.overlayStrong}
             stroke={beaconColor}
             strokeWidth={2}
           />
@@ -283,7 +284,7 @@ export function ThreeTourScene({
             x={beaconPoint.x}
             y={beaconPoint.y - 71}
             textAnchor="middle"
-            fill="#FFFFFF"
+            fill={colors.surface}
             fontSize="12"
             fontWeight="bold"
           >

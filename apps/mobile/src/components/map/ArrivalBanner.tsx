@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     right: spacing.md,
     zIndex: 20,
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   badgeText: {
-    color: '#ffffff',
+    color: colors.surface,
     fontWeight: '700',
     fontSize: 10,
     letterSpacing: 0.5,

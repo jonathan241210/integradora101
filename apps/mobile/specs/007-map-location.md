@@ -360,3 +360,7 @@ En las versiones V1 a V3 del mapa móvil, los recintos y puntos de interés prov
 
 - **RN-20 (Prioridad de coordenadas):** Si un recinto cuenta con `map_x` y `map_y` explícitos de la API, se utilizan directamente para posicionar el marcador en el SVG; si solo cuenta con `gps_lat` y `gps_lon`, se calcula su posición con `geoTransform(lat, lon)`.
 - **RN-21 (Desacoplamiento MVVM):** El ViewModel `useMapViewModel` consume la interfaz abstracta `MapRepository`, resolviendo la instancia adecuada (`ApiMapRepository` vs `MapRepositoryImpl`) de forma transparente según la configuración del entorno.
+
+## Corrección de regresiones — CA-07 y CA-17 (2026-11-09)
+
+Se aplica la corrección aprobada de tokens y centrado: componentes y pantallas consumen roles semánticos compartidos en lugar de colores literales, y centrar la ubicación activa aplica `CENTER_LOCATION_ZOOM` y calcula el desplazamiento con la misma escala. No cambian criterios, dependencias ni contratos. La evidencia de las pruebas existentes se registra en plan y tasks.

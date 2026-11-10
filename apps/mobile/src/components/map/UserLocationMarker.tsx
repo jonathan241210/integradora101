@@ -1,12 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { SVG_WIDTH, SVG_HEIGHT } from '../../constants/zoo';
-import {
-  LOCATION_DOT_COLOR,
-  LOCATION_DOT_BORDER,
-  LOCATION_PULSE_COLOR,
-  LOCATION_DOT_SHADOW,
-} from '../../constants/zoo';
+import { colors } from '../../theme/tokens';
 
 interface UserLocationMarkerProps {
   svgX: number;
@@ -145,11 +140,11 @@ const styles = StyleSheet.create({
     width: DOT_SIZE,
     height: DOT_SIZE,
     borderRadius: DOT_SIZE / 2,
-    backgroundColor: LOCATION_DOT_COLOR,
+    backgroundColor: colors.info,
     borderWidth: 2,
-    borderColor: LOCATION_DOT_BORDER,
+    borderColor: colors.surface,
     elevation: 3,
-    shadowColor: LOCATION_DOT_SHADOW,
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.3,
     shadowRadius: 2,
@@ -159,7 +154,7 @@ const styles = StyleSheet.create({
     width: PULSE_SIZE,
     height: PULSE_SIZE,
     borderRadius: PULSE_SIZE / 2,
-    backgroundColor: LOCATION_PULSE_COLOR,
+    backgroundColor: colors.infoPulse,
   },
   headingWrapper: {
     position: 'absolute',
@@ -177,7 +172,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderBottomLeftRadius: 6,
     borderBottomRightRadius: 6,
-    backgroundColor: 'rgba(33, 150, 243, 0.22)',
+    backgroundColor: colors.infoSurfaceMuted,
   },
   headingTip: {
     position: 'absolute',
@@ -189,6 +184,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 7,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderBottomColor: LOCATION_DOT_COLOR,
+    borderBottomColor: colors.info,
   },
 });

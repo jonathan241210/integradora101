@@ -185,7 +185,7 @@ export function ArAnimalProximityCard({
 
 const styles = StyleSheet.create({
   cardContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.96)',
+    backgroundColor: colors.surfaceOverlay,
     borderRadius: radius.lg,
     padding: spacing.sm,
     marginHorizontal: spacing.md,
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
   cardContainerArrived: {
     borderWidth: 2.5,
     borderColor: colors.primary,
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    backgroundColor: colors.surfaceOverlayStrong,
     elevation: 8,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
@@ -225,13 +225,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
     borderWidth: 1,
-    borderColor: '#ffffff',
+    borderColor: colors.surface,
   },
   closeButton: {
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: 'rgba(0, 0, 0, 0.06)',
+    backgroundColor: colors.overlaySoft,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -245,12 +245,12 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(46, 125, 50, 0.12)',
+    backgroundColor: colors.successSurface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconCircleArrived: {
-    backgroundColor: 'rgba(46, 125, 50, 0.22)',
+    backgroundColor: colors.successSurfaceMuted,
     borderWidth: 1.5,
     borderColor: colors.primary,
   },
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   categoryChip: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(46, 125, 50, 0.08)',
+    backgroundColor: colors.successSurfaceSoft,
     paddingHorizontal: 6,
     paddingVertical: 1,
     borderRadius: radius.pill,
@@ -282,7 +282,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   funFactBox: {
-    backgroundColor: 'rgba(46, 125, 50, 0.06)',
+    backgroundColor: colors.successSurfaceFaint,
     borderRadius: radius.sm,
     padding: spacing.xs,
     flexDirection: 'row',
@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   sheetButton: {
-    backgroundColor: 'rgba(46, 125, 50, 0.12)',
+    backgroundColor: colors.successSurface,
     paddingHorizontal: spacing.sm,
     paddingVertical: 5,
     borderRadius: radius.pill,
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   dismissPill: {
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: colors.overlaySurface,
     paddingHorizontal: spacing.md,
     paddingVertical: 6,
     borderRadius: radius.pill,

@@ -269,7 +269,7 @@ export function EnclosureDetailModal({
 const styles = StyleSheet.create({
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.58)',
+    backgroundColor: colors.overlay,
     justifyContent: 'flex-end',
   },
   backdropTouchArea: {
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
     maxHeight: '82%',
     elevation: 20,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
@@ -310,13 +310,13 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
     paddingVertical: 8,
     paddingHorizontal: spacing.md,
-    backgroundColor: 'rgba(0, 0, 0, 0.03)',
+    backgroundColor: colors.overlaySubtle,
   },
   closeCircleButton: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: colors.overlaySurface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: 'rgba(46, 125, 50, 0.12)',
+    backgroundColor: colors.successSurface,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -382,10 +382,10 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   sexTagMale: {
-    backgroundColor: 'rgba(33, 150, 243, 0.12)',
+    backgroundColor: colors.infoSurface,
   },
   sexTagFemale: {
-    backgroundColor: 'rgba(233, 30, 99, 0.12)',
+    backgroundColor: colors.dangerSurface,
   },
   chevronWrapper: {
     width: 32,
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   funFactBox: {
-    backgroundColor: 'rgba(46, 125, 50, 0.08)',
+    backgroundColor: colors.successSurfaceSoft,
     borderRadius: radius.sm,
     padding: spacing.xs,
     marginTop: 4,

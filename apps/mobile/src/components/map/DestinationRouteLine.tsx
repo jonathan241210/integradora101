@@ -5,11 +5,11 @@ import { MapPlace } from '../../models';
 import {
   SVG_WIDTH,
   SVG_HEIGHT,
-  ROUTE_LINE_COLOR,
   ROUTE_LINE_DASH,
   ROUTE_LINE_WIDTH,
 } from '../../constants/zoo';
 import { computeWalkRoute } from '../../utils/pathfinding';
+import { colors } from '../../theme/tokens';
 
 interface DestinationRouteLineProps {
   userPosition: { svgX: number; svgY: number } | null;
@@ -56,7 +56,7 @@ export function DestinationRouteLine({
         testID="destination-route-polyline"
         points={walkRoute.svgPointsString}
         fill="none"
-        stroke={ROUTE_LINE_COLOR}
+        stroke={colors.info}
         strokeWidth={ROUTE_LINE_WIDTH}
         strokeDasharray={ROUTE_LINE_DASH}
         strokeLinecap="round"
@@ -68,8 +68,9 @@ export function DestinationRouteLine({
         cx={destSvgX}
         cy={destSvgY}
         r={16}
-        fill="rgba(33, 150, 243, 0.22)"
-        stroke={ROUTE_LINE_COLOR}
+        fill={colors.info}
+        fillOpacity={0.22}
+        stroke={colors.info}
         strokeWidth={2}
       />
       {/* Punto central del destino conectado */}
@@ -78,13 +79,13 @@ export function DestinationRouteLine({
         cx={destSvgX}
         cy={destSvgY}
         r={7}
-        fill={ROUTE_LINE_COLOR}
+        fill={colors.info}
       />
       <Circle
         cx={destSvgX}
         cy={destSvgY}
         r={3}
-        fill="#FFFFFF"
+        fill={colors.surface}
       />
     </Svg>
   );
