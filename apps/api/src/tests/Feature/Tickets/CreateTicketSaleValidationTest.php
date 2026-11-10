@@ -36,7 +36,7 @@ class CreateTicketSaleValidationTest extends TicketFeatureTestCase
         $this->assertSame($logs, $this->activityCount('ticket-sold'));
     }
 
-    public function test_ca03_ticket_sales_booleanos_fracciones_y_cadenas_no_numericas(): void
+    public function test_ca03_ticket_sales_booleans_fractions_and_non_numeric_strings(): void
     {
         $cashier = $this->createAccount('cashier', false);
         $this->setPrices($cashier);

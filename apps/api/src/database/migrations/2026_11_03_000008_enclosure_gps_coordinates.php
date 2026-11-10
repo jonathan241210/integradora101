@@ -16,16 +16,16 @@ return new class extends Migration
     {
         if (Schema::hasTable('enclosures')) {
             Schema::table('enclosures', function (Blueprint $table) {
-                if (!Schema::hasColumn('enclosures', 'gps_lat')) {
+                if (! Schema::hasColumn('enclosures', 'gps_lat')) {
                     $table->decimal('gps_lat', 10, 8)->nullable()->after('name');
                 }
-                if (!Schema::hasColumn('enclosures', 'gps_lon')) {
+                if (! Schema::hasColumn('enclosures', 'gps_lon')) {
                     $table->decimal('gps_lon', 11, 8)->nullable()->after('gps_lat');
                 }
-                if (!Schema::hasColumn('enclosures', 'map_x')) {
+                if (! Schema::hasColumn('enclosures', 'map_x')) {
                     $table->decimal('map_x', 5, 4)->nullable()->after('gps_lon');
                 }
-                if (!Schema::hasColumn('enclosures', 'map_y')) {
+                if (! Schema::hasColumn('enclosures', 'map_y')) {
                     $table->decimal('map_y', 5, 4)->nullable()->after('map_x');
                 }
             });
@@ -54,7 +54,7 @@ return new class extends Migration
                     $columnsToDrop[] = 'gps_lat';
                 }
 
-                if (!empty($columnsToDrop)) {
+                if (! empty($columnsToDrop)) {
                     $table->dropColumn($columnsToDrop);
                 }
             });

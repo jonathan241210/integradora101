@@ -104,14 +104,16 @@ describe('Cuenta visitante, corte 2', () => {
       isAdult: true,
       privacyNoticeVersion: '2026-10',
     });
+    const issuedCode = authRepository.issuedCode('ana.nueva@correo.com');
     const verify = await render(<VerifyEmailRoute />);
     expect(verify.getByText(/ana.nueva@correo.com/)).toBeTruthy();
-    expect(verify.queryByText(/123456/)).toBeNull();
+    expect(verify.getByText('Reenviar')).toBeTruthy();
+    expect(verify.queryByText('Reenviar código')).toBeNull();
     authRepository.limitResend = true;
     await fireEvent.press(verify.getByRole('button', { name: 'Reenviar código' }));
     expect(await verify.findByText('Espera 30 segundos e inténtalo de nuevo.')).toBeTruthy();
     expect(verify.getByRole('button', { name: 'Espera 30 segundos' })).toBeTruthy();
-    await fireEvent.changeText(verify.getByLabelText('Código'), '123456');
+    await fireEvent.changeText(verify.getByLabelText('Código'), issuedCode ?? '');
     await fireEvent.press(verify.getByRole('button', { name: 'Confirmar código' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
   }, 15000);
@@ -138,6 +140,38 @@ describe('Cuenta visitante, corte 2', () => {
     expect(await verify.findByText('El código no es válido.')).toBeTruthy();
   });
 
+  it('test-ca-03-registered-email-after-code: la leyenda sale solo después del código', async () => {
+    const register = await render(<RegisterRoute />);
+    await fillRegistration(register);
+    await fireEvent.press(register.getByRole('button', { name: 'Anterior' }));
+    await fireEvent.press(register.getByRole('button', { name: 'Anterior' }));
+    await fireEvent.changeText(register.getByLabelText('Correo electrónico'), 'correo@ejemplo.com');
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
+    await fireEvent.press(register.getByRole('button', { name: 'Crear cuenta' }));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/verify-email',
+      params: { email: 'correo@ejemplo.com' },
+    }));
+    expect(register.queryByText('Ese correo ya está registrado.')).toBeNull();
+
+    mockParams.email = 'correo@ejemplo.com';
+    const verify = await render(<VerifyEmailRoute />);
+    expect(verify.queryByText('Ese correo ya está registrado.')).toBeNull();
+    await fireEvent.changeText(verify.getByLabelText('Código'), authRepository.issuedCode('correo@ejemplo.com') ?? '');
+    await fireEvent.press(verify.getByRole('button', { name: 'Confirmar código' }));
+    expect(await verify.findByText('Ese correo ya está registrado.')).toBeTruthy();
+    expect(mockReplace).not.toHaveBeenCalledWith('/');
+    await fireEvent.press(verify.getByRole('button', { name: 'Ir a iniciar sesión' }));
+    expect(mockReplace).toHaveBeenCalledWith('/login');
+
+    const kept = await accountSession.login('correo@ejemplo.com', 'secreta');
+    expect(kept.ok).toBe(true);
+    await accountSession.logout();
+    const replaced = await accountSession.login('correo@ejemplo.com', 'secreta1');
+    expect(replaced.ok).toBe(false);
+  });
+
   it('test-ca-07-password-recovery-flow: olvido, código, nueva contraseña y regreso al login', async () => {
     const forgot = await render(<ForgotPasswordRoute />);
     await fireEvent.changeText(forgot.getByLabelText('Correo electrónico'), 'correo@ejemplo.com');
@@ -147,7 +181,7 @@ describe('Cuenta visitante, corte 2', () => {
     mockParams.email = 'correo@ejemplo.com';
     const reset = await render(<ResetPasswordRoute />);
     expect(reset.queryByText(/123456/)).toBeNull();
-    await fireEvent.changeText(reset.getByLabelText('Código'), '123456');
+    await fireEvent.changeText(reset.getByLabelText('Código'), authRepository.issuedCode('correo@ejemplo.com', 'recovery') ?? '');
     await fireEvent.changeText(reset.getByLabelText('Nueva contraseña'), 'nueva123');
     await fireEvent.changeText(reset.getByLabelText('Confirmar contraseña'), 'nueva123');
     await fireEvent.press(reset.getByRole('button', { name: 'Restablecer contraseña' }));

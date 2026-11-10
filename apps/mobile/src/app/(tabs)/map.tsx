@@ -40,7 +40,7 @@ export default function MapRoute() {
   }, [focus, focusPlace]);
 
   useEffect(() => {
-    if (userPosition && !userPosition.searching) {
+    if (userPosition) {
       checkArrival(userPosition.lat, userPosition.lon);
     }
   }, [userPosition, checkArrival]);

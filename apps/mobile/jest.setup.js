@@ -4,16 +4,13 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
 
-jest.mock('expo-location', () => ({
-  Accuracy: { BestForNavigation: 6 },
-  requestForegroundPermissionsAsync: jest.fn(async () => ({ status: 'granted', granted: true, canAskAgain: true })),
-  watchPositionAsync: jest.fn(async () => ({ remove: jest.fn() })),
-}));
-
 jest.mock('expo-camera', () => {
   const React = require('react');
   const { View } = require('react-native');
   return {
+    Camera: {
+      requestCameraPermissionsAsync: jest.fn(async () => ({ status: 'granted', granted: true })),
+    },
     CameraView: (props) => React.createElement(View, { testID: 'camera-view', ...props }),
     useCameraPermissions: jest.fn(() => [
       { granted: true, canAskAgain: true, status: 'granted' },
@@ -31,8 +28,9 @@ jest.mock('expo-network', () => ({
 }));
 
 jest.mock('expo-location', () => ({
-  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted' }),
+  requestForegroundPermissionsAsync: jest.fn().mockResolvedValue({ status: 'granted', granted: true }),
   watchPositionAsync: jest.fn().mockResolvedValue({ remove: jest.fn() }),
+  watchHeadingAsync: jest.fn().mockResolvedValue({ remove: jest.fn() }),
   Accuracy: {
     Lowest: 1,
     Low: 2,
@@ -54,6 +52,15 @@ jest.mock('./src/hooks/useScreenFocusEffect', () => {
     },
   };
 });
+
+const { authRepository, installAuthFixturesForTests } = require('./src/repositories/mockAuthRepository');
+
+installAuthFixturesForTests([
+  { email: 'correo@ejemplo.com', firstName: 'Ana', nickname: 'Anita', password: 'secreta', avatarCode: 'jaguar', verified: true },
+  { email: 'maria@correo.com', firstName: 'María', nickname: 'María', password: 'secreta', avatarCode: 'macaw', verified: true },
+  { email: 'sin-verificar@ejemplo.com', firstName: 'Luis', nickname: 'Luis', password: 'secreta', avatarCode: 'wolf', verified: false },
+]);
+authRepository.reset();
 
 jest.mock('react-native-safe-area-context', () => {
   const RNActual = jest.requireActual('react-native-safe-area-context');

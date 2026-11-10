@@ -80,6 +80,23 @@ export interface MapSection {
   svgZoneId: string;
 }
 
+export interface MapPlaceAnimalInfo {
+  id: string;
+  name: string;
+  speciesName?: string;
+  scientificName?: string;
+  sex?: string;
+  age?: string;
+  origin?: string;
+  longevity?: string;
+  diet?: string;
+  reproduction?: string;
+  veterinaryStatus?: string;
+  characteristics?: string;
+  funFact?: string;
+  photoPath?: string;
+}
+
 export interface MapPlace {
   id: string;
   name: string;
@@ -93,6 +110,8 @@ export interface MapPlace {
   gpsLat?: number;
   /** Longitud GPS del POI (sintética hasta medición real). */
   gpsLon?: number;
+  /** Animales que habitan este recinto */
+  animals?: MapPlaceAnimalInfo[];
 }
 
 export type MapFilter = 'all' | 'animal' | 'service';

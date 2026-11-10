@@ -9,8 +9,7 @@ import type {
 
 const INVALID_CREDENTIALS = 'Correo o contraseña incorrectos.';
 const OFFLINE_MESSAGE = 'Sin conexión';
-const VERIFIED_PASSWORD = 'secreta';
-const VALID_CODE = '123456';
+const INVALID_CODE = 'El código no es válido.';
 const PRIVACY_VERSION = '2026-10';
 const FORGOT_NOTICE = 'Si el correo está registrado, enviamos un código de 6 dígitos.';
 
@@ -22,6 +21,37 @@ interface StoredVisitor {
   avatarCode: string;
   verified: boolean;
   privacyNoticeVersion: string;
+  verificationCode: string | null;
+  recoveryCode: string | null;
+  registrationNotice?: boolean;
+}
+
+interface AuthFixture {
+  email: string;
+  firstName: string;
+  nickname: string;
+  password: string;
+  avatarCode: string;
+  verified: boolean;
+}
+
+let testFixtures: AuthFixture[] = [];
+
+function newCode(): string {
+  return String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0');
+}
+
+function visitorFromFixture(fixture: AuthFixture): StoredVisitor {
+  return {
+    ...fixture,
+    privacyNoticeVersion: PRIVACY_VERSION,
+    verificationCode: newCode(),
+    recoveryCode: null,
+  };
+}
+
+export function installAuthFixturesForTests(accounts: AuthFixture[]) {
+  testFixtures = accounts;
 }
 
 function success(suffix: string): AuthResult {
@@ -38,13 +68,8 @@ function accepted(status: 200 | 201 | 202 | 204, message: string, tokens?: AuthR
   return { ok: true, status, message, tokens: tokens && tokens.ok ? tokens.tokens : undefined };
 }
 
-function seedVisitors(): Map<string, StoredVisitor> {
-  return new Map([
-    ['correo@ejemplo.com', { email: 'correo@ejemplo.com', firstName: 'Ana', nickname: 'Anita', password: VERIFIED_PASSWORD, avatarCode: 'jaguar', verified: true, privacyNoticeVersion: PRIVACY_VERSION }],
-    ['maria@correo.com', { email: 'maria@correo.com', firstName: 'María', nickname: 'María', password: VERIFIED_PASSWORD, avatarCode: 'macaw', verified: true, privacyNoticeVersion: PRIVACY_VERSION }],
-    ['sin-verificar@ejemplo.com', { email: 'sin-verificar@ejemplo.com', firstName: 'Luis', nickname: 'Luis', password: VERIFIED_PASSWORD, avatarCode: 'wolf', verified: false, privacyNoticeVersion: PRIVACY_VERSION }],
-    ['limitado@ejemplo.com', { email: 'limitado@ejemplo.com', firstName: 'Leo', nickname: 'Leo', password: VERIFIED_PASSWORD, avatarCode: 'lion', verified: true, privacyNoticeVersion: PRIVACY_VERSION }],
-  ]);
+function freshVisitors(): Map<string, StoredVisitor> {
+  return new Map(testFixtures.map((fixture) => [fixture.email, visitorFromFixture(fixture)]));
 }
 
 export function createMockAuthRepository(): AuthRepository & {
@@ -52,9 +77,11 @@ export function createMockAuthRepository(): AuthRepository & {
   offline: boolean;
   failRefresh: boolean;
   limitResend: boolean;
+  limitLogin: boolean;
   reset(): void;
+  issuedCode(email: string, purpose?: 'verification' | 'recovery'): string | null;
 } {
-  let visitors = seedVisitors();
+  let visitors = freshVisitors();
   let currentEmail: string | null = null;
   let refreshFlight: Promise<AuthResult> | null = null;
 
@@ -63,14 +90,21 @@ export function createMockAuthRepository(): AuthRepository & {
     offline: false,
     failRefresh: false,
     limitResend: false,
+    limitLogin: false,
     reset() {
-      visitors = seedVisitors();
+      visitors = freshVisitors();
       currentEmail = null;
       refreshFlight = null;
       repository.refreshAttempts = 0;
       repository.offline = false;
       repository.failRefresh = false;
       repository.limitResend = false;
+      repository.limitLogin = false;
+    },
+    issuedCode(email: string, purpose: 'verification' | 'recovery' = 'verification') {
+      const account = visitors.get(email.trim().toLowerCase());
+      if (!account) return null;
+      return purpose === 'recovery' ? account.recoveryCode : account.verificationCode;
     },
     async getPrivacyNotice() {
       return {
@@ -81,7 +115,7 @@ export function createMockAuthRepository(): AuthRepository & {
     async login(email: string, password: string): Promise<AuthResult> {
       if (repository.offline) return { ok: false, status: 0, message: OFFLINE_MESSAGE };
       const normalized = email.trim().toLowerCase();
-      if (normalized === 'limitado@ejemplo.com' && password === VERIFIED_PASSWORD) {
+      if (repository.limitLogin) {
         return { ok: false, status: 429, message: 'Espera 30 segundos e inténtalo de nuevo.', retryAfterSeconds: 30 };
       }
       const account = visitors.get(normalized);
@@ -120,7 +154,12 @@ export function createMockAuthRepository(): AuthRepository & {
       if (!input.privacyNoticeVersion) return { ok: false, status: 422, message: 'Acepta el aviso de privacidad.' };
       if (!isAvatarCode(input.avatarCode)) return { ok: false, status: 422, message: 'Elige un avatar del catálogo.' };
       const email = input.email.trim().toLowerCase();
-      if (visitors.has(email)) return accepted(201, 'Te enviamos un código de 6 dígitos para verificar tu correo.');
+      const existing = visitors.get(email);
+      if (existing) {
+        existing.registrationNotice = true;
+        existing.verificationCode = newCode();
+        return accepted(201, 'Te enviamos un código de 6 dígitos para verificar tu correo.');
+      }
       visitors.set(email, {
         email,
         firstName: input.firstName.trim(),
@@ -129,36 +168,55 @@ export function createMockAuthRepository(): AuthRepository & {
         avatarCode: input.avatarCode,
         verified: false,
         privacyNoticeVersion: input.privacyNoticeVersion,
+        verificationCode: newCode(),
+        recoveryCode: null,
       });
       return accepted(201, 'Cuenta creada. Revisa el código de verificación.');
     },
     async verifyEmail(email: string, code: string): Promise<AccountResult> {
       if (repository.offline) return { ok: false, status: 0, message: OFFLINE_MESSAGE };
       const account = visitors.get(email.trim().toLowerCase());
-      if (!account || code.trim() !== VALID_CODE) {
-        return { ok: false, status: 422, message: 'El código no es válido.' };
+      if (!account || account.verificationCode === null || code.trim() !== account.verificationCode) {
+        return { ok: false, status: 422, message: INVALID_CODE };
+      }
+      account.verificationCode = null;
+      if (account.registrationNotice) {
+        account.registrationNotice = false;
+        return {
+          ok: true,
+          status: 200,
+          message: 'Ese correo ya está registrado.',
+          code: 'email_already_registered',
+        };
       }
       account.verified = true;
       currentEmail = account.email;
       const tokens = success(account.email);
       return accepted(200, 'Correo verificado.', tokens.ok ? tokens : undefined);
     },
-    async resendVerification(): Promise<AccountResult> {
+    async resendVerification(email: string): Promise<AccountResult> {
       if (repository.offline) return { ok: false, status: 0, message: OFFLINE_MESSAGE };
       if (repository.limitResend) {
         return { ok: false, status: 429, message: 'Espera 30 segundos e inténtalo de nuevo.', retryAfterSeconds: 30 };
       }
+      const account = visitors.get(email.trim().toLowerCase());
+      if (account) account.verificationCode = newCode();
       return accepted(202, 'Si la cuenta existe, reenviamos el código.');
     },
-    async forgotPassword(): Promise<AccountResult> {
+    async forgotPassword(email: string): Promise<AccountResult> {
       if (repository.offline) return { ok: false, status: 0, message: OFFLINE_MESSAGE };
+      const account = visitors.get(email.trim().toLowerCase());
+      if (account) account.recoveryCode = newCode();
       return accepted(202, FORGOT_NOTICE);
     },
     async resetPassword(email: string, code: string, password: string): Promise<AccountResult> {
       if (repository.offline) return { ok: false, status: 0, message: OFFLINE_MESSAGE };
-      if (code.trim() !== VALID_CODE) return { ok: false, status: 422, message: 'El código no es válido.' };
       const account = visitors.get(email.trim().toLowerCase());
-      if (account) account.password = password;
+      if (!account || account.recoveryCode === null || code.trim() !== account.recoveryCode) {
+        return { ok: false, status: 422, message: INVALID_CODE };
+      }
+      account.recoveryCode = null;
+      account.password = password;
       return accepted(200, 'Contraseña actualizada. Entra de nuevo.');
     },
     async getProfile(): Promise<VisitorProfile | null> {

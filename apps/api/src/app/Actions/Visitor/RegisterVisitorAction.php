@@ -38,7 +38,10 @@ class RegisterVisitorAction
 
         $email = Str::lower((string) ($data['email'] ?? ''));
         $created = 'Te enviamos un código de 6 dígitos para verificar tu correo.';
-        if (Visitor::query()->where('email', $email)->exists()) {
+        $existing = Visitor::query()->where('email', $email)->first();
+        if ($existing !== null) {
+            $this->codes->execute($existing, 'registration_notice');
+
             return VisitorAuthResult::message(201, $created);
         }
 
@@ -55,6 +58,11 @@ class RegisterVisitorAction
                 'privacy_accepted_at' => now(),
             ]);
         } catch (UniqueConstraintViolationException) {
+            $visitor = Visitor::query()->where('email', $email)->first();
+            if ($visitor !== null) {
+                $this->codes->execute($visitor, 'registration_notice');
+            }
+
             return VisitorAuthResult::message(201, $created);
         }
 

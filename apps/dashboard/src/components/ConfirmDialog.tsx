@@ -11,6 +11,7 @@ export function ConfirmDialog({
   copy,
   idleTitle,
   busy,
+  confirmDisabled = false,
   error,
   onConfirm,
   onCancel,
@@ -19,6 +20,8 @@ export function ConfirmDialog({
   copy: ConfirmationCopy | null;
   idleTitle: string;
   busy: boolean;
+  /** Deshabilita solo «Confirmar» (p. ej. mientras se cotiza). */
+  confirmDisabled?: boolean;
   error: string;
   onConfirm: () => void;
   onCancel: () => void;
@@ -26,7 +29,7 @@ export function ConfirmDialog({
 }) {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!busy) onConfirm();
+    if (!busy && !confirmDisabled) onConfirm();
   };
 
   return (
@@ -54,7 +57,7 @@ export function ConfirmDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit" variant={copy.danger ? "danger" : "primary"} disabled={busy}>
+            <Button type="submit" variant={copy.danger ? "danger" : "primary"} disabled={busy || confirmDisabled}>
               {busy ? "Procesando…" : copy.confirmLabel}
             </Button>
           </div>

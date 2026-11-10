@@ -1,7 +1,14 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { PanResponder, StyleSheet, View } from 'react-native';
-import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { PanResponder, StyleSheet, View, Pressable } from 'react-native';
+import { ArrivalBanner } from '../components/map/ArrivalBanner';
+import { DestinationRouteLine } from '../components/map/DestinationRouteLine';
+import { MapMarker } from '../components/map/MapMarker';
+import { MapPlaceCard } from '../components/map/MapPlaceCard';
+import { MapViewportControls } from '../components/map/MapViewportControls';
+import { WalkEstimateBadge } from '../components/map/WalkEstimateBadge';
+import { ZooMapSvg } from '../components/map/ZooMapSvg';
+import { ArTourOverlay } from '../components/map/ArTourOverlay';
+import { UserLocationMarker } from '../components/map/UserLocationMarker';
 import {
   AppText,
   Card,
@@ -12,30 +19,22 @@ import {
   ScreenContainer,
 } from '../components/ui';
 import {
-  ArrivalBanner,
-  DestinationRouteLine,
-  MapMarker,
-  MapPlaceCard,
-  MapViewportControls,
-  UserLocationMarker,
-  WalkEstimateBadge,
-  ZooMapSvg,
-} from '../components/map';
-import {
-  CENTER_LOCATION_ZOOM,
+  MAX_ZOOM_SCALE,
   MIN_ZOOM_SCALE,
+  CENTER_LOCATION_ZOOM,
   SVG_HEIGHT,
   SVG_WIDTH,
   ZOOM_STEP,
 } from '../constants/zoo';
 import { MapFilter, MapPlace, MapSection } from '../models';
-import { colors, spacing } from '../theme/tokens';
+import { colors, radius, spacing } from '../theme/tokens';
 import {
   clampPan,
   clampZoom,
   computeCenterPanForSvgPoint,
 } from '../utils/mapViewport';
 import { computeWalkRoute } from '../utils/pathfinding';
+import { useArTourViewModel } from '../viewmodels/useArTourViewModel';
 import type { UserPosition } from '../viewmodels/useLocationViewModel';
 
 interface MapScreenProps {
@@ -99,105 +98,99 @@ export function MapScreen({
   });
 
   const zoomScaleRef = useRef<number>(MIN_ZOOM_SCALE);
-  const panOffsetRef = useRef<{ panX: number; panY: number }>({ panX: 0, panY: 0 });
-  const dragOriginRef = useRef<{ panX: number; panY: number }>({ panX: 0, panY: 0 });
+  zoomScaleRef.current = zoomScale;
 
-  const applyViewport = useCallback(
-    (nextScale: number, nextPan: { panX: number; panY: number }) => {
-      zoomScaleRef.current = nextScale;
-      panOffsetRef.current = nextPan;
-      setZoomScale(nextScale);
-      setPanOffset(nextPan);
-    },
-    [],
-  );
+  const panOffsetRef = useRef<{ panX: number; panY: number }>({
+    panX: 0,
+    panY: 0,
+  });
+  panOffsetRef.current = panOffset;
+
+  const applyPan = useCallback((nextPanX: number, nextPanY: number) => {
+    const clamped = clampPan(nextPanX, nextPanY, zoomScaleRef.current);
+    setPanOffset(clamped);
+  }, []);
+
+  const applyZoom = useCallback((nextZoom: number) => {
+    const clampedZoom = clampZoom(nextZoom);
+    zoomScaleRef.current = clampedZoom;
+    setZoomScale(clampedZoom);
+
+    const clampedPan = clampPan(
+      panOffsetRef.current.panX,
+      panOffsetRef.current.panY,
+      clampedZoom,
+    );
+    setPanOffset(clampedPan);
+  }, []);
 
   const handleZoomIn = useCallback(() => {
-    const nextScale = clampZoom(zoomScaleRef.current + ZOOM_STEP);
-    const nextPan = clampPan(
-      panOffsetRef.current.panX,
-      panOffsetRef.current.panY,
-      nextScale,
-    );
-    applyViewport(nextScale, nextPan);
-  }, [applyViewport]);
+    applyZoom(zoomScaleRef.current + ZOOM_STEP);
+  }, [applyZoom]);
 
   const handleZoomOut = useCallback(() => {
-    const nextScale = clampZoom(zoomScaleRef.current - ZOOM_STEP);
-    const nextPan = clampPan(
-      panOffsetRef.current.panX,
-      panOffsetRef.current.panY,
-      nextScale,
-    );
-    applyViewport(nextScale, nextPan);
-  }, [applyViewport]);
+    applyZoom(zoomScaleRef.current - ZOOM_STEP);
+  }, [applyZoom]);
 
   const handleResetView = useCallback(() => {
-    applyViewport(MIN_ZOOM_SCALE, { panX: 0, panY: 0 });
-  }, [applyViewport]);
+    setZoomScale(MIN_ZOOM_SCALE);
+    setPanOffset({ panX: 0, panY: 0 });
+  }, []);
 
   const handleCenterLocation = useCallback(() => {
     if (!userPosition) {
       return;
     }
-    const currentScale = zoomScaleRef.current;
-    const targetScale =
-      currentScale > MIN_ZOOM_SCALE ? currentScale : CENTER_LOCATION_ZOOM;
-    const nextScale = clampZoom(targetScale);
-    const nextPan = computeCenterPanForSvgPoint(
+    const centerZoom = clampZoom(CENTER_LOCATION_ZOOM);
+    zoomScaleRef.current = centerZoom;
+    setZoomScale(centerZoom);
+    const centerPan = computeCenterPanForSvgPoint(
       userPosition.svgX,
       userPosition.svgY,
-      nextScale,
+      centerZoom,
     );
-    applyViewport(nextScale, nextPan);
-  }, [userPosition, applyViewport]);
+    setPanOffset(centerPan);
+  }, [userPosition]);
 
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => zoomScaleRef.current > MIN_ZOOM_SCALE,
-      onMoveShouldSetPanResponder: (_, gestureState) =>
-        zoomScaleRef.current > MIN_ZOOM_SCALE &&
-        (Math.abs(gestureState.dx) > 4 || Math.abs(gestureState.dy) > 4),
-      onMoveShouldSetPanResponderCapture: (_, gestureState) =>
-        zoomScaleRef.current > MIN_ZOOM_SCALE &&
-        (Math.abs(gestureState.dx) > 6 || Math.abs(gestureState.dy) > 6),
-      onPanResponderGrant: () => {
-        dragOriginRef.current = { ...panOffsetRef.current };
-      },
-      onPanResponderMove: (_, gestureState) => {
-        const currentScale = zoomScaleRef.current;
-        if (currentScale <= MIN_ZOOM_SCALE) {
-          return;
-        }
-        const nextPan = clampPan(
-          dragOriginRef.current.panX + gestureState.dx / currentScale,
-          dragOriginRef.current.panY + gestureState.dy / currentScale,
-          currentScale,
-        );
-        if (
-          nextPan.panX !== panOffsetRef.current.panX ||
-          nextPan.panY !== panOffsetRef.current.panY
-        ) {
-          panOffsetRef.current = nextPan;
-          setPanOffset(nextPan);
-        }
-      },
-      onPanResponderTerminationRequest: () => false,
-    }),
-  ).current;
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: (_, gestureState) =>
+          Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2,
+        onPanResponderGrant: () => {
+          panOffsetRef.current = panOffset;
+        },
+        onPanResponderMove: (_, gestureState) => {
+          const nextPanX = panOffsetRef.current.panX + gestureState.dx;
+          const nextPanY = panOffsetRef.current.panY + gestureState.dy;
+          applyPan(nextPanX, nextPanY);
+        },
+      }),
+    [applyPan, panOffset],
+  );
+
+  const activeTargetPlace = destinationPlace ?? selectedPlace;
 
   const walkRoute = useMemo(() => {
-    if (!userPosition || !destinationPlace) {
+    if (!userPosition || !activeTargetPlace) {
       return null;
     }
     return computeWalkRoute(
       { svgX: userPosition.svgX, svgY: userPosition.svgY },
       {
-        svgX: destinationPlace.mapX * SVG_WIDTH,
-        svgY: destinationPlace.mapY * SVG_HEIGHT,
+        svgX: activeTargetPlace.mapX * SVG_WIDTH,
+        svgY: activeTargetPlace.mapY * SVG_HEIGHT,
       },
     );
-  }, [userPosition, destinationPlace]);
+  }, [userPosition, activeTargetPlace]);
+
+  const arTour = useArTourViewModel({
+    places: filteredPlaces,
+    userPosition,
+    activeDestinationPlace: destinationPlace,
+    onSelectDestination: onToggleDestination,
+  });
 
   const selectedSectionName =
     sections.find((section) => section.id === selectedPlace?.sectionId)?.name ?? 'Sin sección';
@@ -206,28 +199,46 @@ export function MapScreen({
 
   return (
     <ScreenContainer scroll={false}>
-      <View style={styles.header}>
-        <AppText variant="title">Mapa del zoológico</AppText>
-        <Pressable accessibilityRole="button" accessibilityLabel="Buscar animales" onPress={onSearchPress} style={styles.searchLink}>
-          <AppText variant="body" bold style={styles.searchLinkText}>Buscar animales</AppText>
-        </Pressable>
-        <View style={styles.filters}>
-          {filters.map((item) => (
-            <Chip
-              key={item.key}
-              label={item.label}
-              selected={filter === item.key}
-              onPress={() => onFilterChange(item.key)}
-            />
-          ))}
+      {!arTour.isTourOpen && (
+        <View style={styles.header}>
+          <AppText variant="title">Mapa del zoológico</AppText>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Buscar animales"
+            onPress={onSearchPress}
+            style={styles.searchLink}
+          >
+            <AppText variant="body" bold style={styles.searchLinkText}>
+              Buscar animales
+            </AppText>
+          </Pressable>
+          <View style={styles.filters}>
+            {filters.map((item) => (
+              <Chip
+                key={item.key}
+                label={item.label}
+                selected={filter === item.key}
+                onPress={() => onFilterChange(item.key)}
+              />
+            ))}
+          </View>
+          <View style={styles.infoRow}>
+            <AppText variant="small" color="textMuted">
+              Toca un punto del mapa para ver su información.
+            </AppText>
+            {userPosition && (
+              <View style={styles.gpsBadge}>
+                <AppText variant="caption" style={styles.gpsText}>
+                  {`📍 GPS: ${userPosition.lat.toFixed(6)}, ${userPosition.lon.toFixed(6)}`}
+                </AppText>
+              </View>
+            )}
+          </View>
         </View>
-        <AppText variant="small" color="textMuted">
-          Toca un punto del mapa para ver su información.
-        </AppText>
-      </View>
+      )}
 
-      <View style={styles.mapArea}>
-        {arrivedAtPlace && onDismissArrival && (
+      <View style={[styles.mapArea, arTour.isTourOpen && styles.mapAreaFullBleed]}>
+        {arrivedAtPlace && onDismissArrival && !arTour.isTourOpen && (
           <ArrivalBanner place={arrivedAtPlace} onDismiss={onDismissArrival} />
         )}
 
@@ -247,10 +258,10 @@ export function MapScreen({
               ]}
             >
               <ZooMapSvg highlightedSectionId={focusedSectionId} />
-              {userPosition && destinationPlace && (
+              {userPosition && activeTargetPlace && (
                 <DestinationRouteLine
                   userPosition={userPosition}
-                  destinationPlace={destinationPlace}
+                  destinationPlace={activeTargetPlace}
                 />
               )}
               {filteredPlaces.map((place) => (
@@ -266,36 +277,53 @@ export function MapScreen({
                   svgX={userPosition.svgX}
                   svgY={userPosition.svgY}
                   searching={userPosition.searching}
+                  heading={userPosition.heading}
                 />
               )}
             </View>
           </View>
 
-          <MapViewportControls
-            zoomScale={zoomScale}
-            canCenterLocation={Boolean(userPosition)}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            onResetView={handleResetView}
-            onCenterLocation={handleCenterLocation}
-          />
+          {!arTour.isTourOpen && (
+            <MapViewportControls
+              zoomScale={zoomScale}
+              canCenterLocation={Boolean(userPosition)}
+              onZoomIn={handleZoomIn}
+              onZoomOut={handleZoomOut}
+              onResetView={handleResetView}
+              onCenterLocation={handleCenterLocation}
+            />
+          )}
 
-          {walkRoute && destinationPlace && (
+          {!arTour.isTourOpen && walkRoute && destinationPlace && (
             <WalkEstimateBadge
               destinationName={destinationPlace.name}
               distanceMeters={walkRoute.distanceMeters}
               estimatedMinutes={walkRoute.estimatedMinutes}
             />
           )}
+
+          {!arTour.isTourOpen && (
+            <Pressable
+              testID="start-ar-tour-button"
+              accessibilityRole="button"
+              accessibilityLabel="Iniciar Recorrido 3D"
+              onPress={arTour.startTour}
+              style={styles.tourStartButton}
+            >
+              <AppText variant="caption" bold color="textOnPrimary">
+                Iniciar Recorrido 3D
+              </AppText>
+            </Pressable>
+          )}
         </View>
 
-        {isLoading && (
+        {!arTour.isTourOpen && isLoading && (
           <Card style={styles.stateCard}>
             <LoadingView message="Cargando mapa del zoológico..." />
           </Card>
         )}
 
-        {error && (
+        {!arTour.isTourOpen && error && (
           <Card style={styles.stateCard}>
             <ErrorView
               title="No se pudo cargar el mapa"
@@ -305,7 +333,7 @@ export function MapScreen({
           </Card>
         )}
 
-        {hasNoPlaces && (
+        {!arTour.isTourOpen && hasNoPlaces && (
           <Card style={styles.stateCard}>
             <EmptyView
               title="No hay puntos para este filtro"
@@ -314,7 +342,7 @@ export function MapScreen({
           </Card>
         )}
 
-        {showFocusNotice && (
+        {!arTour.isTourOpen && showFocusNotice && (
           <Card style={styles.noticeCard}>
             <AppText variant="small" color="textMuted">
               No encontramos ese destino en el mapa.
@@ -322,7 +350,7 @@ export function MapScreen({
           </Card>
         )}
 
-        {selectedPlace && (
+        {!arTour.isTourOpen && selectedPlace && (
           <MapPlaceCard
             place={selectedPlace}
             sectionName={selectedSectionName}
@@ -332,6 +360,31 @@ export function MapScreen({
           />
         )}
       </View>
+
+      {arTour.isTourOpen && (
+        <ArTourOverlay
+          visualMode={arTour.visualMode}
+          currentStopIndex={arTour.currentStopIndex}
+          totalStops={arTour.tourStops.length}
+          currentStop={arTour.currentStop}
+          walkRoute={arTour.walkRoute}
+          guidance={arTour.guidance}
+          forkBranches={arTour.forkBranches}
+          showProximityCard={arTour.showProximityCard}
+          proximityDistanceMeters={arTour.proximityDistanceMeters}
+          isArrived={arTour.isArrived}
+          onDismissProximityCard={arTour.dismissProximityCard}
+          onClose={arTour.closeTour}
+          onToggleVisualMode={arTour.toggleVisualMode}
+          onNextStop={arTour.nextStop}
+          onPrevStop={arTour.prevStop}
+          onSelectForkStop={arTour.selectForkStop}
+          onRotateLeft={arTour.rotateLeft}
+          onRotateRight={arTour.rotateRight}
+          onAlignFront={arTour.alignFront}
+          onStepAnimation={arTour.stepAnimation}
+        />
+      )}
     </ScreenContainer>
   );
 }
@@ -342,40 +395,81 @@ const styles = StyleSheet.create({
     paddingTop: spacing.lg,
     gap: spacing.sm,
   },
-  searchLink: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
-  searchLinkText: { color: colors.secondary },
+  searchLink: {
+    alignSelf: 'flex-start',
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  searchLinkText: {
+    color: colors.secondary,
+  },
   filters: {
     flexDirection: 'row',
-    gap: spacing.xs,
+    gap: spacing.sm,
+  },
+  infoRow: {
+    gap: 4,
+  },
+  gpsBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.infoSurface,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: colors.infoBorder,
+  },
+  gpsText: {
+    color: colors.primary,
+    fontWeight: '600',
+    fontSize: 11,
   },
   mapArea: {
     flex: 1,
-    minHeight: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: 'relative',
     padding: spacing.md,
   },
+  mapAreaFullBleed: {
+    padding: 0,
+  },
   canvas: {
-    width: '100%',
-    maxWidth: 620,
-    aspectRatio: 1000 / 1400,
-    backgroundColor: colors.background,
+    flex: 1,
+    borderRadius: radius.md,
     overflow: 'hidden',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    position: 'relative',
   },
   viewportContent: {
     width: '100%',
     height: '100%',
   },
+  tourStartButton: {
+    position: 'absolute',
+    bottom: spacing.md,
+    left: spacing.md,
+    backgroundColor: colors.primary,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    elevation: 3,
+    shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+  },
   stateCard: {
     position: 'absolute',
-    left: spacing.lg,
-    right: spacing.lg,
-    top: spacing.lg,
+    left: spacing.md,
+    right: spacing.md,
+    bottom: spacing.md,
   },
   noticeCard: {
     position: 'absolute',
-    left: spacing.lg,
-    right: spacing.lg,
-    top: spacing.lg,
+    left: spacing.md,
+    right: spacing.md,
+    bottom: spacing.md,
+    padding: spacing.sm,
   },
 });

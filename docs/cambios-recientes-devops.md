@@ -35,3 +35,9 @@ Esta integración no crea migraciones. Usa el esquema de progreso ya aprobado en
 
 - API: `apps/api/specs/005-visitor-progress.md`, `apps/api/plan/005-visitor-progress.md` y `apps/api/tasks/005-visitor-progress.md`.
 - Mobile: `apps/mobile/specs/005-visitor-progress.md`, `apps/mobile/plan/005-visitor-progress.md` y `apps/mobile/tasks/005-visitor-progress.md`.
+
+## Interpretación de métricas CI
+
+- Un pipeline verde no garantiza calidad si la cobertura de pruebas es baja.
+- Una cobertura alta indica código ejecutado, pero no asegura que las pruebas detecten resultados incorrectos o casos límite.
+- Una tasa de éxito baja reduce la confianza en CI; hay que investigar fallos reales, pruebas inestables y problemas del entorno.

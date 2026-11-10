@@ -23,10 +23,6 @@ class ResolveManageableRolesAction
             return array_keys(self::LABELS);
         }
 
-        if ($actor->can('operational-staff.manage')) {
-            return ['cashier', 'veterinarian'];
-        }
-
         return [];
     }
 }

@@ -14,9 +14,9 @@ class TicketSalesCoverageTest extends TicketFeatureTestCase
             ->push(new \SplFileInfo(dirname(__DIR__).'/Admin/ReportExcludesCancelledTicketsTest.php'));
         $source = $files->map(fn ($file) => file_get_contents($file->getPathname()))->implode("\n");
 
-        // 32 CA vigentes: CA-01 a CA-22, CA-27 a CA-31, CA-34 y CA-42 a CA-45 (revisión 2026-11-02).
-        $current = [...range(1, 22), ...range(27, 31), 34, ...range(42, 45)];
-        $this->assertCount(32, $current);
+        // 42 CA vigentes: CA-01 a CA-22, CA-27 a CA-31, CA-34, CA-42 a CA-45 (revisión 2026-11-02) CA-46 a CA-49 (revisión 2026-11-05) y CA-50 a CA-55 (boletos individuales, 2026-11-06).
+        $current = [...range(1, 22), ...range(27, 31), 34, ...range(42, 55)];
+        $this->assertCount(42, $current);
         foreach ($current as $index) {
             if ($index === 30) {
                 continue; // CA-30 es esta misma prueba.

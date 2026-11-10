@@ -47,8 +47,8 @@ Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de
 
 - **CA-01:** Dado un adulto, cuando envía `POST /api/v1/visitor/auth/register` con `email, password, password_confirmation, first_name, nickname, avatar_code, is_adult=true, privacy_notice_version`, entonces la API valida mayoría de edad y aceptación del aviso, crea la cuenta, responde 201 **sin tokens** y envía un código de 6 dígitos al correo.
 - **CA-02:** Dado un registro pendiente, cuando envía `POST /api/v1/visitor/auth/email/verify` con `email` y `code` válidos, entonces responde 200 con el par de tokens y el visitante; un código inválido, vencido, consumido o con 5 intentos fallidos responde 422 sin crear sesión.
-- **CA-03:** Dada una solicitud de reenvío, cuando se llama `POST /api/v1/visitor/auth/email/resend`, entonces responde 202 genérico sin revelar si el correo existe, con límite de 1 por minuto y 5 por hora por correo.
-- **CA-04:** Dado un visitante con correo verificado, cuando envía `POST /api/v1/visitor/auth/login` con `email, password, device_name`, entonces responde el par de tokens; correo no verificado → envía un nuevo código de 6 dígitos al correo y responde 403 `email_not_verified`; credenciales incorrectas → 422 «Correo o contraseña incorrectos.»; más de 5 intentos/minuto por correo+IP → 429 con mensaje en español. Enmienda 2026-11-05.
+- **CA-03:** Dada una solicitud de reenvío, cuando se llama `POST /api/v1/visitor/auth/email/resend`, entonces responde 202 genérico sin revelar si el correo existe, con límite de 1 por minuto y 5 por hora por correo. Si hay un código vigente de `email_verification` o `registration_notice`, reenvía el más reciente de esos dos. Si la cuenta no está verificada y no hay código vigente, reenvía `email_verification`. Si la cuenta ya está verificada y no hay aviso vigente, no envía correo. Enmienda de Aksel, 2026-11-05.
+- **CA-04:** Dado un visitante con correo verificado, cuando envía `POST /api/v1/visitor/auth/login` con `email, password, device_name`, entonces responde el par de tokens; correo no verificado → envía un código `email_verification` de 6 dígitos y responde 403 `email_not_verified`; credenciales incorrectas → 422 «Correo o contraseña incorrectos.»; más de 5 intentos/minuto por correo+IP → 429 con mensaje en español. Enmienda 2026-11-05.
 - **CA-05:** Dada una sesión emitida, cuando se inspeccionan los tokens, entonces el token de acceso es Sanctum con ability `visitor` y `expires_at` a 15 minutos, y el refresh es opaco de 64 bytes, almacenado solo como hash SHA-256, con vigencia de 30 días por emisión y rotación en cada uso.
 - **CA-06:** Dado un refresh válido, cuando se llama `POST /api/v1/visitor/auth/refresh` con `refresh_token`, entonces rota el par y marca el anterior como reemplazado; si se reusa un refresh revocado, la API revoca toda la familia de tokens y responde 401.
 - **CA-07:** Dados dos refresh simultáneos con el mismo token, cuando ambos compiten, entonces solo uno renueva el par y el otro falla sin emitir un segundo par válido (detección de reuso/concurrencia).
@@ -72,7 +72,7 @@ Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de
 - **RN-01:** Solo adultos (18+) crean cuenta y aceptan aviso y términos; el niño juega con la cuenta del tutor y su perfil visible muestra solo `nickname` y avatar.
 - **RN-02:** El avatar se elige de un catálogo de ilustraciones incluidas en la app (sin fotos). `avatar_code` se valida contra los códigos aceptados: `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`. El arte final puede cambiar sin cambiar los códigos.
 - **RN-03:** Sesión = token de acceso de 15 min + refresh rotatorio de 30 días con detección de reuso; la rotación es lógica propia sobre Sanctum.
-- **RN-04:** Respuestas genéricas donde aplique: «Correo o contraseña incorrectos.» y 202 en resend/forgot, para no revelar la existencia de una cuenta. Un registro con correo ya usado responde igual que uno nuevo (201 y el mismo mensaje) y no crea otra cuenta ni otro código. Enmienda de Aksel, 2026-11-01.
+- **RN-04:** Respuestas genéricas donde aplique: «Correo o contraseña incorrectos.» y 202 en resend/forgot, para no revelar la existencia de una cuenta. Un registro con correo ya usado responde igual que uno nuevo (201 y el mismo mensaje) y no crea otra cuenta ni cambia nombre, apodo, avatar ni contraseña. Sí envía un código de un solo uso con propósito `registration_notice` al correo que ya tiene cuenta, esté verificada o no. Al validar ese código, `POST /api/v1/visitor/auth/email/verify` responde 200 con `code` `email_already_registered` y el mensaje «Ese correo ya está registrado.», sin tokens y sin abrir sesión. Un código inválido sigue en 422 «El código no es válido.» sin decir cuál propósito falló. La comparación de hashes no suma intentos al otro código: un fallo solo cuenta para el código vigente más reciente de esos dos propósitos. Enmienda de Aksel, 2026-11-05.
 - **RN-05:** DBR-001 y DBR-003 están en `Lista para backend` y esta spec está aprobada. El código de estos endpoints espera el plan técnico y las tasks de `api-004`. No se crean migraciones nuevas desde esta spec.
 - **RN-06:** Ningún secreto se versiona: SMTP y claves se configuran por `.env`; `.env.example` solo lleva claves sin valores.
 - **RN-07:** Rutas nombradas de Laravel bajo el prefijo `/api/v1/visitor`; sin Inertia ni Wayfinder.
@@ -93,16 +93,18 @@ Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de
 
 ### Flujo principal
 
-1. Registro → 201 + código por correo → verificación → par de tokens → sesión activa.
-2. La app renueva con `auth/refresh` cuando el acceso vence; cada uso rota el refresh.
-3. Logout o borrado revocan la familia de tokens.
-4. Recuperación: `password/forgot` → código → `password/reset` → revoca todo.
+1. Registro de correo nuevo → 201 + código `email_verification` → verificación → par de tokens → sesión activa.
+2. Registro de correo ya usado → el mismo 201, sin otra cuenta ni cambios, + código `registration_notice` → al acertar, «Ese correo ya está registrado.» sin sesión. Enmienda de Aksel, 2026-11-05.
+3. La app renueva con `auth/refresh` cuando el acceso vence; cada uso rota el refresh.
+4. Logout o borrado revocan la familia de tokens.
+5. Recuperación: `password/forgot` → código → `password/reset` → revoca todo.
 
 ### Errores esperados
 
 - Credenciales incorrectas → 422 «Correo o contraseña incorrectos.»
 - Correo sin verificar en login → 403 `email_not_verified`.
 - Código inválido/vencido/consumido o >5 intentos → 422.
+- Código `registration_notice` válido → 200 «Ese correo ya está registrado.» sin tokens.
 - Límites de intentos superados → 429 con mensaje en español.
 - Refresh revocado o reusado → 401 y revocación de la familia.
 - Token staff en rutas de visitante (o viceversa) → 401/403.

@@ -94,12 +94,9 @@ Las pruebas, el chequeo de tipos y la exportación JavaScript no necesitan telé
 
 La spec 004 tiene sesión, registro, verificación, recuperación, edición, cambio de contraseña y borrado. Hay dos caminos. No pongas secretos en `EXPO_PUBLIC_API_URL`, no versiones `apps/mobile/.env` y no apuntes a producción ni a la base `arca_zoo`.
 
-### Sin API: cuentas de prueba
+### Sin API
 
-Si `EXPO_PUBLIC_API_URL` no existe o está vacía, la app y Jest usan el repositorio simulado. Los tokens quedan en memoria. Esas cuentas no existen en la API.
-
-- `correo@ejemplo.com` o `maria@correo.com`, contraseña `secreta`.
-- Una cuenta creada en esa simulación usa el código de prueba `123456`.
+Si `EXPO_PUBLIC_API_URL` no existe o está vacía, la app usa el repositorio simulado y los tokens quedan en memoria. No hay cuentas precargadas ni un código de prueba visible. El alta y la recuperación reales requieren la API. Jest arma sus propias cuentas solo dentro de la suite.
 
 ### Con la API de pruebas, en cada máquina
 

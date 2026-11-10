@@ -4,6 +4,8 @@ Referencia de `/api/v1/admin/*`, contrato de `api-007`. Spec: `apps/api/specs/00
 
 Este documento describe el código revisado. No certifica que las pruebas pasen: la suite (T-35) se verifica aparte. No contiene secretos ni credenciales.
 
+> Nota de vigencia (2026-11-05, revisión aprobada de `api-007`): solo `admin` (con `users.manage`) gestiona cuentas del personal. `zoo-admin` responde 403 en todas las rutas de cuentas. El permiso `operational-staff.manage` se retiró del catálogo y del código, y el seeder ya se aplicó en `arca_pruebas` (`api-007` T-42 a T-44).
+
 > Nota de vigencia (2026-11-01): `image_path` deja de ser solo de lectura. La subida, el reemplazo, el borrado del archivo y `image_url` se especifican en `apps/api/specs/008-event-news-images.md` (Aprobada, implementada en el backend). Ver la sección «Imágenes».
 
 > Nota de vigencia (2026-11-02, `api-009`): el panel (`/dashboard`), el reporte (`/reports/tickets`, totales, desglose diario y listado) y las exportaciones CSV, Excel y PDF excluyen los boletos con `status` `cancelled` (CA-34 de `api-009`, RN-18). El filtro `completed` vive en `SummarizeTicketSalesAction`, `BuildTicketReportAction` y `ExportTicketReportAction` (scope `Ticket::completed()`). Al desplegar, las cifras históricas pueden bajar si ya existen boletos cancelados; despliega junto con `dashboard-003`. `Ticket` ya no es de solo lectura: lo escriben las Actions de `api-009` (ver `apps/api/docs/tickets.md`).
@@ -32,24 +34,24 @@ Los recursos individuales van envueltos en `data`, como es estándar en los Reso
 | Rol | Permisos de ruta | Cuentas que ve y opera | 2FA obligatorio |
 |---|---|---|---|
 | `admin` | `users.manage`, `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view` | Todas | Sí |
-| `zoo-admin` | `operational-staff.manage`, `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view` | Solo cuentas cuyos roles son todos `cashier` o `veterinarian` | Sí |
+| `zoo-admin` | `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view`; además, según la matriz de `docs/03-roles-y-permisos.md`, `tickets.view` y `cash-closings.view` (fuera de estas rutas) | Ninguna desde 2026-11-05: sin `users.manage`, 403 en todas las rutas de cuentas | Sí |
 | `executive` | `dashboard.view`, `reports.view` (solo lectura) | Ninguna | No |
 | `cashier`, `veterinarian` | Ninguno | Ninguna (403) | No |
 
 Roles asignables (`ResolveManageableRolesAction`):
 
 - `admin`: los cinco roles.
-- `zoo-admin`: `cashier` y `veterinarian`.
+- `zoo-admin`: ninguno desde el 2026-11-05 (no gestiona cuentas).
 
-Asignar un rol fuera de ese conjunto responde 403 en alta y edición. Un rol que no existe en el catálogo responde 422.
+Con `admin` como único gestor, todos los roles son asignables. El 403 de asignación de rol «No tienes permiso para asignar ese rol.» queda sin caso de uso y su retirada es la pregunta 8 de `api-007`. Un rol que no existe en el catálogo responde 422.
 
-Fuera de alcance, el listado no incluye la cuenta y el detalle, la edición, el estado, la eliminación, la contraseña y el 2FA responden 404 «Usuario no encontrado.».
+Sin `users.manage`, cualquier ruta de cuentas responde 403 por permiso. Una cuenta inexistente responde 404 «Usuario no encontrado.» en el detalle, la edición, el estado, la eliminación, la contraseña y el 2FA.
 
 Decisión de 2026-10-30 (Jonathan): la cuenta se resuelve antes de validar el cuerpo, así que el 404 prevalece sobre cualquier 422 o 403 causado por el contenido del cuerpo. Implementado con `ManagedStaffAccountRequest`.
 
 ## Cuentas del personal
 
-Permiso de todas las rutas: `users.manage` o `operational-staff.manage`.
+Permiso de todas las rutas: `users.manage` (desde el 2026-11-05; antes, `users.manage` u `operational-staff.manage`).
 
 | Método y ruta | Nombre | Respuesta |
 |---|---|---|
@@ -93,7 +95,7 @@ Un administrador no puede, sobre su propia cuenta, desde `/api/v1/admin/users/{u
 
 El cambio de contraseña propio queda para otra feature. Implementado; el 422 usa la clave `errors.user`.
 
-Un `zoo-admin` no puede desactivar, eliminar ni cambiar cuentas `admin`: quedan fuera de su alcance (404).
+Un `zoo-admin` no accede a las rutas de cuentas desde el 2026-11-05: responde 403 por permiso en todas ellas.
 
 ## Revocación de sesiones
 
@@ -180,6 +182,8 @@ Todos los totales, periodos y series se calculan en el servidor, en Actions. El 
   }
 }
 ```
+
+Revisión boletos individuales (aprobada por Jonathan el 2026-11-06): `tickets` cuenta boletos, es decir, la suma de `adult_quantity` + `child_quantity` de los boletos `completed` (`api-007` CA-29, RN-15), no el número de filas. Las filas anteriores con varias cantidades suben su conteo al desplegar.
 
 `series` tiene 7 días, con el actual incluido. Sin ventas, todos los valores son 0 o `"0.00"`.
 
@@ -298,6 +302,7 @@ Las propiedades nunca incluyen `password`, `remember_token`, secretos ni recover
 7. **Driver de sesión:** confirmar que existe la prueba que exige `SESSION_DRIVER=database`.
 8. **Clave de `errors` de los 422 de autorrestricción (Resuelta):** `errors.user`, igual que el resto de reglas de continuidad.
 9. **Zona horaria del dispositivo (RN-14):** implementada (T-40 y T-41). Alias aceptados y listado sin desfase: Confirmado por Jonathan, 2026-10-30 (ver «Zona horaria»). Pendiente real: no hay prueba que cubra el alias `US/Pacific`; ver T-41 en `apps/api/tasks/007-administration-management.md`.
+10. **Revisión de 2026-11-05 (aprobada):** `zoo-admin` sin gestión de cuentas y retirada de `operational-staff.manage` (implementada: `api-007` T-42 a T-44). Preguntas 8 y 9 de la spec resueltas: se conservan el 403 de asignación de rol y `UserPolicy`. No hay procedimiento documentado para resembrar permisos en producción (`api-009` pregunta R6; T-84).
 
 ## Imágenes (api-008)
 
@@ -305,6 +310,7 @@ Spec: `apps/api/specs/008-event-news-images.md`. Plan: `apps/api/plan/008-event-
 
 - Noticias y eventos aceptan el campo opcional `image` (JPG, PNG o WebP, máximo 5 MB = 5 120 KB). El servidor valida tipo y tamaño; los errores llegan como 422 en `errors.image`, con mensaje en español.
 - Los archivos se guardan en el disco `public` de Laravel, en `news/` o `events/`, con nombre `<uuid>.<ext>` generado por la API. `image_path` guarda la ruta relativa e `image_url` la URL pública (`null` si no hay imagen gestionada o si `image_path` es un valor externo).
+- Al guardar, la API quita metadatos (GPS, fecha, modelo, XMP, comentarios) y HDR, sin recomprimir; conserva el perfil de color y la orientación (`api-008` CA-14, RN-13). Las imágenes subidas antes del 2026-11-06 los conservan hasta volver a subirlas. Un archivo que no se puede procesar responde 422 (CA-15).
 - Alta: `POST /api/v1/admin/news` o `/events`, JSON o `multipart/form-data`.
 - Edición con archivo: `POST /api/v1/admin/{news|events}/{id}` multipart con `_method=PATCH` (PHP no entrega multipart en PATCH). La edición sin archivo sigue funcionando por `PATCH` JSON.
 - `remove_image` verdadero (sin archivo nuevo) borra el archivo y deja `image_path`/`image_url` en `null`. Con archivo nuevo, gana el archivo y `remove_image` se ignora. Sin ambos, la imagen se conserva.
@@ -312,5 +318,5 @@ Spec: `apps/api/specs/008-event-news-images.md`. Plan: `apps/api/plan/008-event-
 - Eliminar sigue siendo borrado lógico: `deleted_at`, `image_path` en `null` y archivo borrado. Una restauración de la fila por base de datos no recupera la imagen.
 - `GET /api/v1/events` (catálogo público) incluye `image_url` como campo aditivo.
 - Auditoría (log `admin`): además de `created`/`updated`/`deleted`, el evento `image-changed` con `action` (`set`, `replaced`, `removed`) e `image_changed`; sin binario ni ruta absoluta.
-- Operación: ejecutar `php artisan storage:link` en cada ambiente; sin él las URLs no resuelven. Los límites `upload_max_filesize` y `post_max_size` de PHP/servidor web pueden rechazar archivos antes de llegar a Laravel.
+- Operación: ejecutar `php artisan storage:link` en cada ambiente; sin él las URLs no resuelven. Los límites `upload_max_filesize` y `post_max_size` de PHP/servidor web pueden rechazar archivos antes de llegar a Laravel. Pasos completos para desplegar: «Checklist obligatorio de despliegue de la API» en `infra/README.md`.
 - Sin migraciones ni DBR: `image_path` y `deleted_at` ya existen.

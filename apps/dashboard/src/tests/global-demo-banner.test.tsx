@@ -22,7 +22,6 @@ const adminPermissions = [
   "reports.view",
   "enclosures.manage",
   "users.manage",
-  "operational-staff.manage",
   "tickets.view",
   "ticket-prices.manage",
 ];

@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { formatCurrency } from "@/viewmodels/formatters";
-import { qrSvgDataUri } from "@/viewmodels/ticket-sale";
+import { qrSvgDataUri, ticketKindLabel } from "@/viewmodels/ticket-sale";
 import { formatTicketDateTime } from "@/viewmodels/ticket-history";
 import {
   ticketReceiptStyle,
@@ -9,9 +9,10 @@ import {
 import type { TicketSaleDto } from "@/viewmodels/ticket-types";
 
 /**
- * Boleto imprimible (dashboard-005 CA-06, CA-29). El folio y el QR aparecen
- * siempre; el resto depende de la configuración del equipo. Importes y total
- * vienen de la API: aquí solo se muestran. El QR es un `<img>` con data URI;
+ * Boleto individual imprimible (dashboard-005 CA-36, CA-29). Folio, tipo,
+ * precio y QR aparecen siempre; el resto depende de la configuración del
+ * equipo. No muestra total ni cantidades de la compra. Los importes vienen de
+ * la API: aquí solo se muestran. El QR es un `<img>` con data URI;
  * el SVG no se inyecta en el DOM.
  */
 export function TicketReceipt({
@@ -39,27 +40,10 @@ export function TicketReceipt({
           {formatTicketDateTime(ticket.purchased_at)}
         </p>
       )}
-      {fields.quantities && (
-        <dl className="ticket-receipt__quantities">
-          <div>
-            <dt>Adultos</dt>
-            <dd>
-              {ticket.adult_quantity} × {formatCurrency(ticket.adult_unit_price)}
-            </dd>
-          </div>
-          <div>
-            <dt>Niños</dt>
-            <dd>
-              {ticket.child_quantity} × {formatCurrency(ticket.child_unit_price)}
-            </dd>
-          </div>
-        </dl>
-      )}
-      {fields.total && (
-        <p className="ticket-receipt__total">
-          Total <strong>{formatCurrency(ticket.total_amount)}</strong>
-        </p>
-      )}
+      <p className="ticket-receipt__kind">{ticketKindLabel(ticket.ticket_type)}</p>
+      <p className="ticket-receipt__price">
+        Precio <strong>{formatCurrency(ticket.unit_price)}</strong>
+      </p>
       {fields.cashier && ticket.cashier_name && (
         <p className="ticket-receipt__line">Cajero: {ticket.cashier_name}</p>
       )}

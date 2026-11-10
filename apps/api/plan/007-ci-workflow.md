@@ -1,5 +1,9 @@
 # Plan técnico · 007 · ci-workflow
 
+## Corrección de configuración residual — 2026-11-09
+
+El workflow residual `main.yml` ejecuta el mismo job de API en `main` y `DevOps`, pero conservaba PHP 8.2. Se corrigen únicamente la versión y su nombre de paso a PHP 8.4 para aplicar el runtime ya aprobado en este plan (CA-02). `ci.yml` ya usa PHP 8.4. No cambian dependencias, permisos, comandos, datos ni criterios. Validación: parsear ambos YAML y comprobar que todos los jobs con Composer activos en `DevOps` preparan PHP 8.4. El resultado remoto queda pendiente de la nueva corrida.
+
 - Spec: `apps/api/specs/007-ci-workflow.md`
 - Estado de spec: Aprobada
 - Aprobación del plan: aprobada por el usuario solicitante el 2026-10-26

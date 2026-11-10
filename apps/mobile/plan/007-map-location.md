@@ -564,3 +564,20 @@ flowchart LR
 | IV. Un test por criterio | ✅ | Pruebas `test-ca-18`, `test-ca-19` y `test-ca-20`. |
 | V. Una sola fuente de verdad | ✅ | Nodos de sendero centralizados en `zooPaths.ts`. |
 | VI. Inglés código / español UI | ✅ | Código en inglés; textos de UI y etiquetas accesibles en español. |
+
+## Enmienda correctiva — CA-07 y CA-17
+
+- Estado: aprobado por el usuario solicitante, 2026-11-09.
+- Los criterios CA-07 y CA-17 ya están aprobados en la spec; esta enmienda corrige divergencias detectadas por las pruebas existentes, sin cambiar su comportamiento esperado.
+
+La prueba de CA-17 demuestra que el botón de centrar no aplica el zoom previsto de 2x. La corrección usará `CENTER_LOCATION_ZOOM` al actualizar la escala y calculará el desplazamiento con esa misma escala para que el punto azul quede centrado.
+
+Los tests CA-07/arquitectura encontraron valores hexadecimales y `rgba()` en fuentes de `src/components/` y `src/screens/`. La corrección trasladará esos valores a tokens semánticos de `@arca/tokens`, incluidos tokens semánticos de información, éxito y superficies translúcidas cuando sean necesarios. Los componentes y pantallas consumirán los tokens; no se relajarán las pruebas arquitectónicas.
+
+Archivos funcionales y de estilo afectados se determinarán mediante la búsqueda automatizada de literales en `apps/mobile/src/components/` y `apps/mobile/src/screens/`. Se actualizará `packages/tokens/index.ts` únicamente para los roles semánticos que no existan. La suite de arquitectura y la de CA-17 serán la evidencia de aceptación.
+
+### Implementación y evidencia local
+
+Las correcciones ya presentes en el árbol local se revisaron para su publicación. `MapScreen` aplica el zoom de centrado y los componentes del mapa consumen los nuevos roles de `@arca/tokens` a través de su adaptador. Las constantes cromáticas locales de ubicación/ruta se sustituyen por tokens. Se conservan las pruebas y sus expectativas.
+
+La ejecución dirigida de `architecture.test.ts`, `mapAccessibility.test.tsx` y `mapViewport.test.tsx` aprobó 3 suites y 11 pruebas. No hay verificación visual nueva en dispositivo; no se declara ese resultado como validado visualmente.

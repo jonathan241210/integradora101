@@ -136,7 +136,7 @@ export function TicketHistoryView({ state, actions }: TicketHistoryViewModel) {
           <div>
             <h2>Boletos</h2>
             <p>
-              {state.meta ? `${formatCount(state.meta.total)} boletos` : "Consulta de la API"}
+              {state.meta ? `${formatCount(state.meta.total)} registros` : "Consulta de la API"}
             </p>
           </div>
         </div>

@@ -1,5 +1,11 @@
 # Tareas · 007 · ci-workflow
 
+## Corrección residual — 2026-11-09
+
+- [x] **T-10** (CA-02): corregir `php-version` y el nombre del paso en `.github/workflows/main.yml` a PHP 8.4; aplicar la decisión de runtime aprobada en T-02 sin cambiar dependencias ni lockfiles.
+- [x] **T-11** (CA-01, CA-02): validar YAML y comprobar el runtime de los jobs Composer activados en `DevOps`. Los cuatro YAML parsearon sin errores; `ci.yml` y `main.yml` preparan PHP 8.4 y ejecutan PHPUnit Unit. `git diff --check`: exit 0. La corrección no cambia código de aplicación; no se repitieron las suites funcionales. La verificación previa de API en este chat aprobó 1 prueba unitaria con PHP 8.5.12 local.
+- [ ] **T-12** (CA-02): confirmar instalación Composer y PHPUnit en la nueva corrida de Actions tras publicar la corrección.
+
 - Spec: `apps/api/specs/007-ci-workflow.md`
 - Plan: `apps/api/plan/007-ci-workflow.md`
 - Estado: workflow y ejemplo de fallo controlado creados localmente; publicación remota pendiente por permiso del token
