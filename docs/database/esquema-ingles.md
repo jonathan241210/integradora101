@@ -89,7 +89,7 @@ Taxonomic and biological catalog of zoo species.
 |---|---|---|---|
 | `id` | INT AUTO_INCREMENT | Species identifier | PRIMARY KEY |
 | `common_name` | VARCHAR(100) | Common vernacular name | NOT NULL |
-| `scientific_name` | VARCHAR(150) | Latin scientific taxonomic name | NOT NULL |
+| `scientific_name` | VARCHAR(150) | Latin scientific taxonomic name | NULL (DBR-011) |
 | `distribution` | VARCHAR(255) | Natural geographic range | NULL |
 | `conservation_status`| VARCHAR(100) | IUCN conservation red list category | NULL |
 | `habitat` | VARCHAR(255) | Natural biome / habitat type | NULL |
@@ -105,7 +105,7 @@ Individual animals sheltered in the zoo.
 | Column | Type | Description | Key / Constraint |
 |---|---|---|---|
 | `id` | INT AUTO_INCREMENT | Specimen unique identifier | PRIMARY KEY |
-| `tag_number` | VARCHAR(50) | Unique tag / microchip / ring number | UNIQUE, NOT NULL |
+| `tag_number` | VARCHAR(50) | Unique tag / microchip / ring number | UNIQUE, NULL (DBR-011) |
 | `responsible_id` | INT | Responsible keeper/staff member | FOREIGN KEY → `users(id)` |
 | `name` | VARCHAR(100) | Animal individual name | NOT NULL |
 | `sex` | VARCHAR(20) | Biological sex (Male / Female / Undetermined)| NOT NULL |
@@ -225,7 +225,7 @@ News and announcements published on the public web portal.
 | `end_date` | DATE | Effective end display date | NULL |
 | `category` | VARCHAR(100) | Editorial category | NOT NULL |
 | `is_active` | TINYINT(1) | Publication status (1=active, 0=draft/inactive) | NOT NULL, DEFAULT 1 |
-| `author_id` | INT | Author staff member | FOREIGN KEY → `users(id)` |
+| `author_id` | INT | Author staff member | FOREIGN KEY → `users(id)`, NULL (DBR-011) |
 
 ---
 
@@ -244,7 +244,7 @@ Public events, workshops, and seasonal activities at the park.
 | `end_time` | TIME | Daily closing time | NULL |
 | `location` | VARCHAR(255) | Specific venue location inside the zoo | NULL |
 | `is_active` | TINYINT(1) | Status (1=active, 0=canceled/inactive) | NOT NULL, DEFAULT 1 |
-| `author_id` | INT | Event coordinator staff member | FOREIGN KEY → `users(id)` |
+| `author_id` | INT | Event coordinator staff member | FOREIGN KEY → `users(id)`, NULL (DBR-011) |
 
 ---
 
