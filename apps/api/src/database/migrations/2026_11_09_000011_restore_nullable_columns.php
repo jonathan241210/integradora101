@@ -35,10 +35,21 @@ return new class extends Migration
             });
         }
 
-        // 4. animals.tag_number
-        if (Schema::hasTable('animals') && Schema::hasColumn('animals', 'tag_number')) {
+        // 4. animals (tag_number, responsible_id, name, sex)
+        if (Schema::hasTable('animals')) {
             Schema::table('animals', function (Blueprint $table) {
-                $table->string('tag_number', 50)->nullable()->change();
+                if (Schema::hasColumn('animals', 'tag_number')) {
+                    $table->string('tag_number', 50)->nullable()->change();
+                }
+                if (Schema::hasColumn('animals', 'responsible_id')) {
+                    $table->integer('responsible_id')->nullable()->change();
+                }
+                if (Schema::hasColumn('animals', 'name')) {
+                    $table->string('name', 100)->nullable()->change();
+                }
+                if (Schema::hasColumn('animals', 'sex')) {
+                    $table->string('sex', 20)->nullable()->change();
+                }
             });
         }
 
@@ -83,13 +94,22 @@ return new class extends Migration
             }
         }
 
-        // 4. animals.tag_number
-        if (Schema::hasTable('animals') && Schema::hasColumn('animals', 'tag_number')) {
-            if (DB::table('animals')->whereNull('tag_number')->count() === 0) {
-                Schema::table('animals', function (Blueprint $table) {
+        // 4. animals (tag_number, responsible_id, name, sex)
+        if (Schema::hasTable('animals')) {
+            Schema::table('animals', function (Blueprint $table) {
+                if (Schema::hasColumn('animals', 'tag_number') && DB::table('animals')->whereNull('tag_number')->count() === 0) {
                     $table->string('tag_number', 50)->nullable(false)->change();
-                });
-            }
+                }
+                if (Schema::hasColumn('animals', 'responsible_id') && DB::table('animals')->whereNull('responsible_id')->count() === 0) {
+                    $table->integer('responsible_id')->nullable(false)->change();
+                }
+                if (Schema::hasColumn('animals', 'name') && DB::table('animals')->whereNull('name')->count() === 0) {
+                    $table->string('name', 100)->nullable(false)->change();
+                }
+                if (Schema::hasColumn('animals', 'sex') && DB::table('animals')->whereNull('sex')->count() === 0) {
+                    $table->string('sex', 20)->nullable(false)->change();
+                }
+            });
         }
 
         // 5. species.scientific_name

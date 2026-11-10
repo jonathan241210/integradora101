@@ -35,6 +35,9 @@ Las cinco columnas pasan a aceptar `NULL` (`DEFAULT NULL`), manteniendo tipo, lo
 | columna | `events.author_id` | `INT NULL` (conserva FK) |
 | columna | `visitors.last_name` | `VARCHAR(100) NULL` |
 | columna | `animals.tag_number` | `VARCHAR(50) NULL` (conserva UNIQUE; MySQL permite varios NULL) |
+| columna | `animals.responsible_id` | `INT NULL` (conserva FK a `users.id`) |
+| columna | `animals.name` | `VARCHAR(100) NULL` |
+| columna | `animals.sex` | `VARCHAR(20) NULL` |
 | columna | `species.scientific_name` | `VARCHAR(150) NULL` |
 
 ## SQL de referencia (MySQL 8.0)

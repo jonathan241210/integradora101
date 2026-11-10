@@ -106,9 +106,9 @@ Individual animals sheltered in the zoo.
 |---|---|---|---|
 | `id` | INT AUTO_INCREMENT | Specimen unique identifier | PRIMARY KEY |
 | `tag_number` | VARCHAR(50) | Unique tag / microchip / ring number | UNIQUE, NULL (DBR-011) |
-| `responsible_id` | INT | Responsible keeper/staff member | FOREIGN KEY → `users(id)` |
-| `name` | VARCHAR(100) | Animal individual name | NOT NULL |
-| `sex` | VARCHAR(20) | Biological sex (Male / Female / Undetermined)| NOT NULL |
+| `responsible_id` | INT | Responsible keeper/staff member | FOREIGN KEY → `users(id)`, NULL (DBR-011) |
+| `name` | VARCHAR(100) | Animal individual name | NULL (DBR-011) |
+| `sex` | VARCHAR(20) | Biological sex (Male / Female / Undetermined)| NULL (DBR-011) |
 | `age` | VARCHAR(50) | Estimated or exact age | NULL |
 | `origin` | VARCHAR(100) | Provenance (donation, confiscation, rescue) | NULL |
 | `longevity` | VARCHAR(50) | Estimated life expectancy | NULL |
