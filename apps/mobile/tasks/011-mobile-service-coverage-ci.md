@@ -2,7 +2,7 @@
 
 - Spec: `apps/mobile/specs/011-mobile-service-coverage-ci.md`
 - Plan: `apps/mobile/plan/011-mobile-service-coverage-ci.md`
-- Estado: Implementada
+- Estado: En progreso — enmienda del 80 % validada localmente; pendiente Actions
 - Plan aprobado: usuario solicitante, 2026-11-09
 
 ## Implementación
@@ -34,3 +34,32 @@
 - `git diff --check`: sin errores.
 - El artifact remoto `mobile-coverage-report` fue descargado a `/tmp/mobile-coverage-report` para comprobar su contenido.
 - Evidencia de Actions: [ejecución 42703309235](https://github.com/jonathan241210/integradora101/actions/runs/42703309235).
+
+## Enmienda de tasks aprobada — requisito del 80 %
+
+- Estado: tasks aprobadas por el usuario solicitante, 2026-11-09.
+- Se conserva la implementación original documentada arriba; las siguientes tasks cubren el nuevo alcance aprobado funcionalmente.
+
+### Pruebas de cobertura y fallos actuales
+
+- [x] **T-09** (CA-05): añadir casos unitarios para cada servicio que tenga sentencias, ramas, funciones o líneas debajo de 80 %, con foco inicial en `scanQueue.ts` y `zooSyncService.ts`.
+- [x] **T-10** (CA-05): añadir pruebas para todos los repositorios medidos, incluyendo ramas de error y archivos actualmente en 0 %; alcanzar al menos 80 % en cada métrica y archivo.
+- [x] **T-11** (CA-05): completar pruebas de ramas de los ViewModels que actualmente incumplen los umbrales existentes, incluyendo la configuración de permisos de cámara.
+- [x] **T-12** (CA-05): configurar en Jest los umbrales de 80 % para sentencias, ramas, funciones y líneas en cada archivo de servicios y repositorios; conservar los umbrales existentes de ViewModels y repositorios sin reducirlos.
+- [x] **T-13** (CA-06; mobile-007 CA-07, CA-17): corregir las divergencias detectadas en centrar el mapa y en colores fijos, actualizando plan y tasks de `mobile-007`; mantener las pruebas existentes como criterio de aceptación.
+- [x] **T-14** (CA-05, CA-06): ejecutar la suite completa con cobertura, confirmar al menos 80 % en las cuatro métricas de todos los archivos cubiertos y revisar el reporte por archivo.
+- [ ] **T-15** (CA-02, CA-03, CA-06): verificar en Actions una ejecución verde, confirmar que se conserva `mobile-coverage-report` y actualizar la evidencia SDD con el enlace de la corrida.
+
+### Aprobación de la enmienda
+
+- Requisito funcional del 80 %: aprobado por el usuario solicitante, 2026-11-09.
+- Alcance técnico y tasks T-09 a T-15: aprobados por el usuario solicitante, 2026-11-09.
+
+## Evidencia local de T-09 a T-14 — 2026-11-09
+
+- `npm run test:coverage --workspace=apps/mobile -- --runInBand --silent`: exit 0; 62 suites, 310 pruebas y 1 snapshot aprobados; 21,327 s. No se excluyeron pruebas, fuentes ni se redujeron umbrales.
+- Sentencias: **98,03 %**; ramas: **94,51 %**; funciones: **96,49 %**; líneas: **98,61 %**. Todos los archivos con código instrumentado cumplen el mínimo del 80 % en cada métrica.
+- `./node_modules/.bin/tsc --noEmit --project apps/mobile/tsconfig.json`: exit 0, usando todas las pruebas, incluidas las tres suites antes no versionadas. Se corrigió en su fixture la restauración de `NODE_ENV` y se usó el estado contractual `unlocked` para logros.
+- T-13 ya fue publicada en `8f144b9` y sus pruebas de arquitectura/mapa continúan pasando en la suite completa.
+- `/verify`: Mobile declara `test` y `test:coverage` en `apps/mobile/package.json`; se ejecutó el segundo y TypeScript disponible. No hay scripts lint/format/types declarados. No se instalaron dependencias, no cambiaron lockfiles ni se accedió a BD.
+- Reporte HTML y LCOV presentes en `apps/mobile/coverage/`, sin versionar archivos generados. La evidencia remota de T-15 queda pendiente.
