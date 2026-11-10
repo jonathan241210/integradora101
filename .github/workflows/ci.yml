@@ -70,7 +70,6 @@ jobs:
 
   dashboard-build:
     name: Build y artefacto del Dashboard
-    needs: [api-unit, mobile-tests]
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -106,3 +105,94 @@ jobs:
         with:
           name: dashboard-build
           path: dashboard-dist.zip
+
+  dashboard-types:
+    name: Verificación de tipos del Dashboard
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Instalar dependencias del monorepo
+        run: npm ci
+
+      - name: Verificar tipos del Dashboard
+        run: npm run types --workspace=@arca/dashboard
+
+  dashboard-tests:
+    name: Pruebas del Dashboard
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Instalar dependencias del monorepo
+        run: npm ci
+
+      - name: Ejecutar pruebas del Dashboard
+        run: npm run test --workspace=@arca/dashboard
+        env:
+          CI: true
+
+  pwa-tests:
+    name: Pruebas de la PWA veterinaria
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Instalar dependencias del monorepo
+        run: npm ci
+
+      - name: Ejecutar pruebas de la PWA
+        run: npm run test --workspace=apps/pwa
+        env:
+          CI: true
+
+  pwa-build:
+    name: Build de la PWA veterinaria
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Preparar Node.js 22
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Instalar dependencias del monorepo
+        run: npm ci
+
+      - name: Compilar PWA
+        run: npm run build --workspace=apps/pwa
+
+      - name: Comprobar salida de PWA
+        run: test -f apps/pwa/dist/index.html
