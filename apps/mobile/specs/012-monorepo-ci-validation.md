@@ -2,7 +2,7 @@
 
 - App dueña: `mobile` (CI transversal del monorepo)
 - Apps/paquetes afectados: `apps/api`, `apps/dashboard`, `apps/pwa`, `apps/mobile`, `.github/workflows/ci.yml`
-- Estado: En progreso
+- Estado: Implementada
 - Solicitante / responsable funcional: usuario solicitante
 - Aprobación funcional: usuario solicitante, 2026-11-09; alcance y borrador detallado aprobados en este chat
 
@@ -74,3 +74,7 @@ Los jobs procesan código y reportes técnicos. No requieren datos de visitantes
 ## Evidencia de implementación local — 2026-11-09
 
 Se añadieron los cuatro jobs y se independizó el build de Dashboard. Dashboard aprobó 299 pruebas, tipos y build; PWA aprobó 36 pruebas y build. API aprobó 1 test y 1 aserción con PHP 8.5.12 local. YAML y diff válidos. La ejecución remota de los siete jobs queda pendiente de publicación; no se declara aceptación completa en Actions.
+
+## Aceptación remota — 2026-11-09
+
+La [ejecución 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501) sobre `e59793b` aprobó los siete jobs independientes: API Unit, Mobile con cobertura, Dashboard tipos/pruebas/build y PWA pruebas/build. El artefacto de cobertura se descargó y verificó. Queda satisfecha la verificación remota pendiente del alcance aprobado.

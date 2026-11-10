@@ -83,3 +83,7 @@ Aprobación técnica: usuario solicitante, 2026-11-09, en este chat. Workflow am
 ## Evidencia local
 
 La implementación sigue el diseño de siete jobs. Dashboard y PWA aprobaron sus verificaciones locales; API Unit también aprobó. Los resultados y límites están documentados en `tasks/012-monorepo-ci-validation.md`. No se han instalado dependencias ni se han ejecutado migraciones. La corrida remota queda pendiente.
+
+## Evidencia remota final
+
+La [ejecución 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501) acredita los siete jobs del diseño aprobados sobre `e59793b`; verificación remota completada el 2026-11-09.

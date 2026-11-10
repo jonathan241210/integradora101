@@ -2,7 +2,7 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `apps/mobile`, `.github/workflows/ci.yml`
-- Estado: En progreso
+- Estado: Implementada
 - Solicitante / responsable funcional: usuario solicitante
 - Aprobación funcional: usuario solicitante, 2026-11-09
 
@@ -90,3 +90,7 @@ La ejecución 42703309235 publicó el artefacto, pero falló por tres pruebas de
 ## Evidencia local de CA-05 y CA-06 — 2026-11-09
 
 La suite con cobertura aprobó 62 suites, 310 pruebas y 1 snapshot (21,327 s). Resultado agregado: 98,03 % de sentencias, 94,51 % de ramas, 96,49 % de funciones y 98,61 % de líneas. Jest exige 80 % en las cuatro métricas por cada servicio y repositorio medidos y conserva todos los umbrales anteriores. Las pruebas añadidas se identifican como `mobile-011 CA-05` y cubren errores, permisos, desmontaje, cambios de cuenta, caché y navegación. La lógica funcional y las dependencias no cambiaron. Falta confirmar la nueva corrida y artefacto en Actions.
+
+## Aceptación remota — 2026-11-09
+
+La [ejecución 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501) del commit `e59793b` terminó en `success`: los siete jobs aprobaron, incluido Mobile con cobertura. Se descargó `mobile-coverage-report` a `/tmp/arca-mobile-coverage-e59793b` y se verificaron `lcov.info` y `lcov-report/index.html`. CA-05 y CA-06 y la verificación remota T-15 quedan satisfechos.

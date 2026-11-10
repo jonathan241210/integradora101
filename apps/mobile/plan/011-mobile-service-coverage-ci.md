@@ -147,3 +147,7 @@ Se agregaron los globs de servicios y repositorios a `coverageThreshold`, cada u
 El reporte lista `authRepository.ts` (interfaces) y `userRepository.ts` (reexportación) en 0 %, pero carecen de contadores de sentencias/ramas/funciones instrumentados; Jest no los considera incumplimientos. No se excluyeron de `collectCoverageFrom`; la reexportación se verifica en la suite de repositorios locales.
 
 Evidencia: `apps/mobile/coverage/lcov.info` y `apps/mobile/coverage/lcov-report/index.html`, ignorados por Git; `/tmp/arca-mobile-coverage-final.log`. Pendiente evidencia remota de la nueva versión.
+
+## Aceptación remota
+
+[Actions 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501) sobre `e59793b`: siete jobs aprobados y artefacto móvil descargado/verificado. Enmienda del 80 % implementada y validada el 2026-11-09.

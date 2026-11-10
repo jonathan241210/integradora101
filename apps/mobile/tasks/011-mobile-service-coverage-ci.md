@@ -2,7 +2,7 @@
 
 - Spec: `apps/mobile/specs/011-mobile-service-coverage-ci.md`
 - Plan: `apps/mobile/plan/011-mobile-service-coverage-ci.md`
-- Estado: En progreso — enmienda del 80 % validada localmente; pendiente Actions
+- Estado: Implementada — enmienda del 80 % validada localmente y en Actions
 - Plan aprobado: usuario solicitante, 2026-11-09
 
 ## Implementación
@@ -48,7 +48,7 @@
 - [x] **T-12** (CA-05): configurar en Jest los umbrales de 80 % para sentencias, ramas, funciones y líneas en cada archivo de servicios y repositorios; conservar los umbrales existentes de ViewModels y repositorios sin reducirlos.
 - [x] **T-13** (CA-06; mobile-007 CA-07, CA-17): corregir las divergencias detectadas en centrar el mapa y en colores fijos, actualizando plan y tasks de `mobile-007`; mantener las pruebas existentes como criterio de aceptación.
 - [x] **T-14** (CA-05, CA-06): ejecutar la suite completa con cobertura, confirmar al menos 80 % en las cuatro métricas de todos los archivos cubiertos y revisar el reporte por archivo.
-- [ ] **T-15** (CA-02, CA-03, CA-06): verificar en Actions una ejecución verde, confirmar que se conserva `mobile-coverage-report` y actualizar la evidencia SDD con el enlace de la corrida.
+- [x] **T-15** (CA-02, CA-03, CA-06): verificar en Actions una ejecución verde, confirmar que se conserva `mobile-coverage-report` y actualizar la evidencia SDD con el enlace de la corrida.
 
 ### Aprobación de la enmienda
 
@@ -63,3 +63,10 @@
 - T-13 ya fue publicada en `8f144b9` y sus pruebas de arquitectura/mapa continúan pasando en la suite completa.
 - `/verify`: Mobile declara `test` y `test:coverage` en `apps/mobile/package.json`; se ejecutó el segundo y TypeScript disponible. No hay scripts lint/format/types declarados. No se instalaron dependencias, no cambiaron lockfiles ni se accedió a BD.
 - Reporte HTML y LCOV presentes en `apps/mobile/coverage/`, sin versionar archivos generados. La evidencia remota de T-15 queda pendiente.
+
+## Evidencia remota de T-15 — 2026-11-09
+
+- Commit de implementación: `e59793b`, publicado en `DevOps`.
+- [Actions 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501): conclusión `success`; siete jobs en verde, incluido el job móvil con cobertura.
+- `gh run download` descargó `mobile-coverage-report`; comprobaciones de existencia de HTML y LCOV: exit 0.
+- La evidencia anterior pendiente se conserva como historial; esta corrida acredita la aceptación de la enmienda.
