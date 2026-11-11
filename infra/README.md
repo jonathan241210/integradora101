@@ -38,6 +38,24 @@ Ninguno de estos ajustes viaja con el código: la configuración local no se cop
 
 El límite de 5 MB también está en la validación de la API, en la pantalla y en `apps/api/specs/008-event-news-images.md`. Para aceptar más, hay que cambiar la spec y los tres lugares, además del servidor.
 
+**Medios de prueba compartidos** (decisión del responsable 2026-11-10, pendiente de aprobación formal; ADR 0026 y `apps/api/specs/013-object-storage-images.md`)
+
+- [ ] `.env` de cada equipo de pruebas: `PUBLIC_MEDIA_DISK=media` y `PRIVATE_MEDIA_DISK=media`. Sin ellas, las imágenes van a `storage/` y no se versionan.
+- [ ] `MEDIA_PUBLIC_URL` vacía (por defecto `APP_URL` + `/media`) o con una URL alcanzable desde el equipo que consulta.
+- [ ] `php artisan storage:link` desde `apps/api/src` crea `public/media` apuntando a `media/`. Los medios de prueba no usan `public/storage`. `public/media` no se versiona.
+- [ ] Se versiona toda `apps/api/src/media/` (`news/`, `events/`, `memories/`). Solo datos de prueba: nunca visitantes reales, producción ni `arca_zoo` (api-013 CA-22). Los momentos pendientes y rechazados también se versionan (api-013 D-02); su contenido queda en el historial de git aunque se borre (ADR 0026, riesgo a).
+- [ ] Todas las imágenes ya subidas de noticias y eventos se vuelven a subir desde el dashboard antes del commit (api-013 D-04; confirmado por Jonathan el 2026-11-10).
+- [ ] Flujo: subir o recibir un momento → `git add apps/api/src/media` → commit citando `api-013` → `git pull` en los demás equipos. Reemplazos, borrados y rechazos se confirman igual (api-013 CA-18, CA-20).
+- [ ] La API no devuelve la URL de un momento pendiente, pero su archivo es alcanzable por `/media/memories/<uuid>` si se conoce (api-013 RN-16).
+- [ ] `.env` de momentos (api-010): `MEMORIES_PUBLICATION_DAYS` (vigencia en el portal; propuesta 90) y `MEMORIES_TERMS_VERSION` (versión de términos aceptada al enviar).
+- [ ] Quién commitea los momentos recibidos y con qué frecuencia: pendiente (api-013, pregunta 5).
+- [ ] El equipo registra la aceptación de los riesgos a, b, c y g del ADR 0026 antes de la primera subida de un momento.
+- [ ] Antes de producción se retira `memories/` del repositorio y de su historial (api-013, pregunta 4).
+- [ ] Sin dependencias nuevas en `composer.json`. Git no es respaldo ni producción; `arca_zoo` no usa esta carpeta.
+- [ ] **Evidencia:** otro equipo, con `pull` del mismo commit, abre la URL de una imagen publicada y responde 200 con `image/*` (api-013 CA-21).
+
+**Opción futura de almacenamiento de objetos:** ver `docs/propuestas/almacenamiento-objetos-s3.md`. Es una propuesta no implementada ni aprobada; no es un requisito de despliegue ni tiene checklist aquí.
+
 **Roles y permisos**
 
 - [ ] Se aplicó `php artisan db:seed --class=RolesAndPermissionsSeeder` después de cualquier cambio en ese seeder. El código no actualiza los permisos de una base existente. No correr `db:seed` sin `--class`: también ejecuta `DemoStaffSeeder`, que crea cuentas de prueba.
