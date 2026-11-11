@@ -2,29 +2,29 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña de envío, corrección y reenvío, estados, archivo, revisión, publicación, vigencia, borrado de cuenta y auditoría); `mobile` (envío, corrección y «Mis momentos», spec `mobile-010`); `dashboard` (revisión para `zoo-admin`, spec `dashboard-008`); `web` (galería pública, spec `web-010`, a través de `api-012`); `packages/api-client` (métodos y tipos, sin lógica de negocio). Dependencia con divergencia pendiente: `api-004` (borrado de cuenta) y `mobile-004` (pantalla de borrado de cuenta); no se modifican desde esta spec.
-- Estado: Borrador (revisado el 2026-11-10 con las respuestas del responsable; no aprobado)
-- Solicitante / responsable funcional: Aksel (borrador original del 2026-11-05). Respuestas del responsable: Jonathan (2026-11-10).
-- Responsable de BD: por definir. Requiere la DBR `docs/database/requests/DBR-012-visitor-memories.md` (Borrador), que acompaña a esta spec y no la sustituye.
-- Responsable backend: por definir.
-- Aprobación funcional: pendiente.
-- Aprobado por: (pendiente, nombre del compañero)
+- Estado: Borrador (respuestas del responsable 2026-11-10; validación técnica/BD aprobada el 2026-11-11; DBR-012 aplicada y Lista para backend; pendiente la aprobación funcional de Aksel, mobile).
+- Solicitante / responsable funcional: Aksel (borrador original del 2026-11-05). Respuestas del responsable: Jonathan (2026-11-10). Validación técnica/BD: Víctor Adrián (2026-11-11).
+- Responsable de BD: Víctor Adrián. Requiere la DBR `docs/database/requests/DBR-012-visitor-memories.md` (Aprobada el 2026-11-11; aplicada en `arca_pruebas` el 2026-11-11; Lista para backend), que acompaña a esta spec y no la sustituye.
+- Responsable backend: Jonathan.
+- Aprobación funcional: pendiente (Aksel, mobile).
+- Aprobado por: validación técnica/BD — Víctor Adrián, 2026-11-11; aprobación funcional pendiente de Aksel.
 
 ## Problema y contexto
 
 En el portal público, la sección «Momentos para recordar» (`#galeria` en `apps/web/src/index.html`) muestra tres fotos fijas. No existe forma de que un visitante proponga una foto ni de que el zoológico la revise.
 
-Esta spec define la petición y su ciclo de vida. Un visitante con cuenta y correo verificados envía desde la app móvil una imagen y una opinión corta. La Dirección (`zoo-admin`) la revisa en el dashboard. Si la acepta, la foto y la opinión se publican en la galería del portal durante un plazo. Si la rechaza, indica qué falló (la foto, la opinión o ambas) y el visitante puede corregir y reenviar la misma petición. Solo `zoo-admin` revisa: la Presidencia (`admin`) no tiene acceso (RN-07).
+Esta spec define la petición y su ciclo de vida. Un visitante con cuenta y correo verificados envía desde la app móvil una imagen y, opcionalmente, una opinión corta. La Dirección (`zoo-admin`) la revisa en el dashboard. Si la acepta, la foto y la opinión se publican en la galería del portal durante un plazo. Si la rechaza, indica qué falló (la foto, la opinión o ambas) y el visitante puede corregir y reenviar la misma petición. Solo `zoo-admin` revisa: la Presidencia (`admin`) no tiene acceso (RN-07).
 
 `api-008` cubre las imágenes de noticias y eventos que sube el personal. No es el mismo flujo: aquí la imagen llega de un visitante y pasa por revisión antes de publicarse. La validación de archivo y el retiro de metadatos sí se reutilizan (RN-05).
 
 ## Decisiones tomadas (2026-11-10)
 
-Respuestas del responsable (Jonathan, 2026-11-10). Las que tienen «propuesta» dentro de la decisión quedan señaladas como pregunta de confirmación en «Dependencias, riesgos y preguntas».
+Respuestas del responsable (Jonathan, 2026-11-10). Las que tenían «propuesta» dentro de la decisión quedaron confirmadas o ajustadas en «Decisiones tomadas (2026-11-11)».
 
-- **Frecuencia (P2):** cada visitante puede enviar **un momento nuevo como máximo cada 7 días**. La ventana se cuenta desde la fecha de creación (`created_at`) de su última petición nueva (RN-17; CA-23). Se mantiene **una petición abierta a la vez** (RN-18; CA-24). La app comunica el tiempo restante con la fecha desde la que puede enviar otro: `meta.next_submission_at` de la lista del visitante y el error 429 (CA-06, CA-23). Reenviar una rechazada **no cuenta** para el límite (propuesta; pregunta 2).
+- **Frecuencia (P2):** cada visitante puede enviar **un momento nuevo como máximo cada 7 días**. La ventana se cuenta desde la fecha de creación (`created_at`) de su última petición nueva (RN-17; CA-23). Se mantiene **una petición abierta a la vez** (RN-18; CA-24). La app comunica el tiempo restante con la fecha desde la que puede enviar otro: `meta.next_submission_at` de la lista del visitante y el error 429 (CA-06, CA-23). Reenviar una rechazada **no cuenta** para el límite (aprobado; Pregunta 2, 2026-11-11).
 - **Decisión final por revisión (P3, P6):** cada decisión de `zoo-admin` es final para esa revisión. El motivo de rechazo admite hasta 500 caracteres (aprobado). Una rechazada **no es terminal**: el visitante puede corregir la foto y/o la opinión y reenviar la misma petición (RN-19; CA-26).
-- **Motivos del rechazo (P6):** al rechazar, `zoo-admin` marca **una o más** opciones de lo que falló, con los valores `image` (la foto) y `content` (la opinión), además del motivo en texto (RN-20; CA-28). Si falla `image`, el reenvío exige una foto distinta a la rechazada; si falla `content`, la opinión debe cambiar (CA-27). El archivo rechazado se borra solo si falla `image` (CA-29; pregunta 4).
-- **Publicación con plazo (P5):** al aceptar se calcula `published_until` = `published_at` + plazo de exhibición. Propuesta de valor por defecto: **90 días**, configurable por `.env` (`MEMORIES_PUBLICATION_DAYS`) mientras no exista la gestión de ajustes del sistema (RN-21; CA-30; pregunta 1). Al vencer, la petición deja de mostrarse en el portal; **la fila no se borra** (CA-31). El visitante ve el aviso de cuánto tiempo estuvo o estará publicada (`mobile-010` CA-08). Retirar una foto antes del vencimiento es **fuera de alcance de esta versión** (propuesta; pregunta 1).
+- **Motivos del rechazo (P6):** al rechazar, `zoo-admin` marca **una o más** opciones de lo que falló, con los valores `image` (la foto) y `content` (la opinión), además del motivo en texto (RN-20; CA-28). Si falla `image`, el reenvío exige una foto distinta a la rechazada; si falla `content`, la opinión debe cambiar (CA-27). El archivo rechazado se borra solo si falla `image` (CA-29; Pregunta 4, aprobada el 2026-11-11).
+- **Publicación con plazo (P5):** al aceptar se calcula `published_until` = `published_at` + plazo de exhibición. Valor por defecto: **90 días**, configurable por `.env` (`MEMORIES_PUBLICATION_DAYS`) mientras no exista la gestión de ajustes del sistema (RN-21; CA-30; Pregunta 1, aprobada el 2026-11-11). Al vencer, la petición deja de mostrarse en el portal; **la fila no se borra** (CA-31). El visitante ve el aviso de cuánto tiempo estuvo o estará publicada (`mobile-010` CA-08). Retirar una foto antes del vencimiento es **fuera de alcance de esta versión** (aprobado en la Pregunta 1).
 - **Borrado de cuenta (P4):** al eliminar su cuenta el visitante **elige** si se conservan o se eliminan sus momentos, con un aviso claro y los términos y condiciones (RN-22; CA-32). Lo que se desvincula o se borra está en «Datos, privacidad y auditoría» y en «Flujos y errores».
 - **Términos y casilla de consentimiento (P7):** el texto de la casilla y los términos y condiciones los **redacta y aprueba el zoológico**. El texto de RN-23 es de referencia hasta esa aprobación. Se aceptan en el registro (`api-004`, divergencia pendiente) y en cada envío o reenvío con la casilla (RN-23).
 - **Imágenes ya subidas (P11, `api-013` D-04):** confirmado por Jonathan: se vuelven a subir todas desde el dashboard antes de versionarlas en la carpeta `media/`.
@@ -33,9 +33,24 @@ Respuestas del responsable (Jonathan, 2026-11-10). Las que tienen «propuesta» 
 - **Revisión en el dashboard (P13):** `zoo-admin` ve la imagen y la opinión antes de aceptar o rechazar. La imagen llega por ruta autenticada de la API, con proxy de mismo origen (`dashboard-008` CA-17). Es la decisión D-06 de `api-013` (antes pregunta 11).
 - **Entrada en la app y selector de imágenes (P8, P9):** delegados al encargado de móvil tras la documentación. No se desarrollan aquí.
 
+## Decisiones tomadas (2026-11-11)
+
+Respuestas del responsable y validación técnica/BD (Víctor Adrián, 2026-11-11). Las ocho preguntas de «Dependencias, riesgos y preguntas» quedan resueltas; se conservan como historial.
+
+- **Pregunta 1 (plazo de publicación):** se confirman 90 días por defecto, configurables por `.env`, y que `zoo-admin` no retira una foto aceptada antes del vencimiento en esta versión.
+- **Pregunta 2 (frecuencia y reenvíos):** el reenvío de una rechazada no cuenta para el límite semanal; una rechazada cuenta como abierta y bloquea envíos nuevos hasta corregirse; no hay límite de reenvíos en v1.
+- **Pregunta 3 (archivos de vencidas):** al vencer se conserva el archivo, sin borrado físico de la fila.
+- **Pregunta 4 (archivo al rechazar):** se borra el archivo rechazado solo si el motivo incluye `image`; si es solo `content`, se conserva.
+- **Pregunta 5 (borrado de cuenta):** se autoriza modificar `DELETE /api/v1/visitor/me` (`api-004`) y la pantalla de `mobile-004` para añadir `memories_policy`; se avisa a sus responsables antes de aprobar.
+- **Pregunta 6 (texto de casilla y términos):** lo redacta y aprueba el zoológico; hasta entonces RN-08 y RN-23 son de referencia y no se publican en producción.
+- **Pregunta 7 (opinión):** **opcional** (decisión 2026-11-11). El visitante puede subir solo el recuerdo; si la envía, es texto plano de 1 a 300 caracteres. La API devuelve `opinion` en NULL cuando no se envía. No se acepta una opinión de más de 300 caracteres.
+- **Pregunta 8 (peticiones abiertas de cuentas eliminadas):** las peticiones en revisión de una cuenta eliminada con `keep` se revisan igual, sin autor.
+
+Estas decisiones actualizan CA-01, CA-03, RN-06 y «Datos, privacidad y auditoría». La DBR-012 las refleja: `opinion` NULL y `rejected_image`/`rejected_content` booleanos.
+
 ## Objetivos
 
-- Guardar una petición por visitante verificado, con imagen, opinión y consentimiento, en estado `submitted`.
+- Guardar una petición por visitante verificado, con imagen, opinión opcional y consentimiento, en estado `submitted`.
 - Permitir que `zoo-admin` revise, acepte o rechace con motivo y campos marcados, y dejar constancia de cada revisión.
 - Permitir que el visitante corrija y reenvíe una petición rechazada, sin perder el historial.
 - Publicar en el portal, a través de `api-012`, solo las peticiones aceptadas y vigentes.
@@ -71,7 +86,7 @@ Respuestas del responsable (Jonathan, 2026-11-10). Las que tienen «propuesta» 
 
 ## Historias de usuario
 
-- Como visitante verificado, quiero enviar una foto mía del zoológico con una opinión corta, para que el zoológico decida si entra en «Momentos para recordar».
+- Como visitante verificado, quiero enviar una foto mía del zoológico con una opinión corta opcional, para que el zoológico decida si entra en «Momentos para recordar».
 - Como visitante, quiero ver si mi petición está enviada, en proceso, aceptada o rechazada y, si fue rechazada, qué hay que corregir y por qué.
 - Como visitante cuya foto fue rechazada, quiero corregir solo lo que el zoológico señaló y reenviar la misma petición, para no empezar de cero.
 - Como visitante, quiero saber cuánto tiempo estará publicada mi foto y desde cuándo puedo enviar otra.
@@ -82,9 +97,9 @@ Respuestas del responsable (Jonathan, 2026-11-10). Las que tienen «propuesta» 
 
 ### Envío (visitante)
 
-- **CA-01 (envío correcto):** Dado un visitante con sesión y correo verificado, sin petición abierta y fuera del límite semanal (CA-23, CA-24), cuando envía `POST /api/v1/visitor/memories` en multipart con un archivo JPG, PNG o WebP de hasta 5 MB, una opinión de 1 a 300 caracteres y la casilla de consentimiento marcada, entonces responde 201, guarda el archivo en la carpeta `media/memories/` (`api-013`), guarda `consent_at` y `terms_version`, crea la petición en `submitted` con `resubmitted_count` en 0 y responde con `id`, `status` (`submitted`), `opinion`, `created_at` y `resubmitted_count`, sin ninguna URL de la imagen.
+- **CA-01 (envío correcto):** Dado un visitante con sesión y correo verificado, sin petición abierta y fuera del límite semanal (CA-23, CA-24), cuando envía `POST /api/v1/visitor/memories` en multipart con un archivo JPG, PNG o WebP de hasta 5 MB, una opinión opcional de 1 a 300 caracteres y la casilla de consentimiento marcada, entonces responde 201, guarda el archivo en la carpeta `media/memories/` (`api-013`), guarda `consent_at` y `terms_version`, crea la petición en `submitted` con `resubmitted_count` en 0 y responde con `id`, `status` (`submitted`), `opinion`, `created_at` y `resubmitted_count`, sin ninguna URL de la imagen.
 - **CA-02 (archivo inválido):** Dado un archivo que no es JPG, PNG o WebP, que pesa más de 5 MB o que no se puede procesar, cuando se envía, entonces responde 422 con el mensaje en español en `errors.image`, no escribe ningún archivo y no crea la petición. Aplica también a la imagen de un reenvío (CA-27).
-- **CA-03 (opinión inválida):** Dada una opinión vacía (si la pregunta 7 la deja obligatoria) o de más de 300 caracteres, cuando se envía, entonces responde 422 en `errors.opinion`, sin archivo ni petición.
+- **CA-03 (opinión inválida):** Dada una opinión de más de 300 caracteres, cuando se envía, entonces responde 422 en `errors.opinion`, sin archivo ni petición. La opinión vacía es válida (Pregunta 7, 2026-11-11); si se envía, debe tener entre 1 y 300 caracteres.
 - **CA-04 (consentimiento):** Dado un envío o un reenvío sin la casilla de consentimiento marcada, cuando se envía, entonces responde 422 en `errors.consent` con el mensaje «Confirma que tienes permiso para compartir esta foto y que aceptas los términos.», sin archivo ni petición. La casilla es obligatoria también en cada reenvío (RN-08, RN-23).
 - **CA-05 (sesión):** Dado un envío sin sesión, responde 401. Dado un envío con correo sin verificar, responde 403 `email_not_verified` (`api-004` CA-04). En ambos casos no se guarda archivo ni petición.
 - **CA-06 (lista propia):** Dado un visitante con peticiones propias y ajenas, cuando consulta `GET /api/v1/visitor/memories`, entonces ve solo las suyas, de la más reciente a la más antigua (máximo 50, RN-11), con `id`, `status`, `opinion`, `created_at`, `reviewed_at` y `resubmitted_count`. Si la petición está `rejected`, incluye `rejection_reason` y `rejected_fields`. Si está `accepted`, incluye `published_until` e `is_published` (`true` mientras `published_until` sea posterior a ahora). En `meta` incluye `can_submit`, `next_submission_at` (fecha desde la que puede enviar, o `null` si puede ahora) y `open_request_id` (id de la petición abierta, o `null`). No ve nombres, correos ni datos del revisor.
@@ -95,11 +110,11 @@ Respuestas del responsable (Jonathan, 2026-11-10). Las que tienen «propuesta» 
 
 ### Corrección y reenvío (visitante)
 
-- **CA-26 (reenvío de rechazada):** Dada una petición `rejected` del visitante, cuando llama `POST /api/v1/visitor/memories/{id}/resubmit` con opinión, casilla de consentimiento y, si la regla de CA-27 lo exige, una imagen válida, entonces responde 200, la petición pasa a `submitted`, `resubmitted_count` aumenta en 1, `rejection_reason` y `rejected_fields` quedan en NULL, `consent_at` y `terms_version` se actualizan, el historial (`visitor_memory_reviews`) conserva la decisión anterior, Activitylog registra `resubmitted` y el reenvío no cuenta para el límite semanal (RN-17). Si la petición está en `submitted`, `in_review` o `accepted`, responde 422 en `errors.status` con «Solo puedes corregir una petición rechazada.» y no cambia nada. Si la petición no existe o pertenece a otra cuenta, responde 404 «Petición no encontrada.».
+- **CA-26 (reenvío de rechazada):** Dada una petición `rejected` del visitante, cuando llama `POST /api/v1/visitor/memories/{id}/resubmit` con opinión opcional, casilla de consentimiento y, si la regla de CA-27 lo exige, una imagen válida, entonces responde 200, la petición pasa a `submitted`, `resubmitted_count` aumenta en 1, `rejection_reason` y `rejected_fields` quedan en NULL (en la base, `rejected_image` y `rejected_content` vuelven a 0), `consent_at` y `terms_version` se actualizan, el historial (`visitor_memory_reviews`) conserva la decisión anterior, Activitylog registra `resubmitted` y el reenvío no cuenta para el límite semanal (RN-17). Si la petición está en `submitted`, `in_review` o `accepted`, responde 422 en `errors.status` con «Solo puedes corregir una petición rechazada.» y no cambia nada. Si la petición no existe o pertenece a otra cuenta, responde 404 «Petición no encontrada.».
 - **CA-27 (reglas de corrección según el motivo):** Dada una petición rechazada, cuando se reenvía:
   - si `rejected_fields` incluye `image`, el reenvío exige un archivo nuevo y válido (CA-02). Si su SHA-256 coincide con `image_sha256`, responde 422 en `errors.image` con «Sube una foto distinta a la que fue rechazada.»;
   - si `rejected_fields` incluye `content`, la opinión (sin espacios al inicio ni al final) debe ser distinta de la guardada. Si no, responde 422 en `errors.opinion` con «Cambia la opinión antes de reenviarla.»;
-  - la opinión se envía siempre (CA-03) y la casilla de consentimiento es obligatoria (CA-04);
+  - la opinión es opcional (Pregunta 7); si el rechazo incluye `content`, debe enviarse y cumplir la regla anterior; la casilla de consentimiento es obligatoria (CA-04);
   - si solo incluye `content`, la imagen es opcional; si se envía, sustituye a la anterior y el archivo anterior se borra después del commit (RN-19).
 
   En todos los 422 de esta regla no cambia nada.
@@ -160,28 +175,28 @@ Respuestas del responsable (Jonathan, 2026-11-10). Las que tienen «propuesta» 
 - **RN-03 (aceptar publica durante un plazo):** Aceptar publica la foto y la opinión en «Momentos para recordar» del portal, a través de `api-012`, desde la aceptación hasta `published_until`. Ninguna pantalla debe decir que una petición está publicada si no está aceptada o si ya venció (CA-08 de `mobile-010`, CA-31).
 - **RN-04 (rechazo con motivo):** El motivo es obligatorio, de 1 a 500 caracteres (aprobado). El visitante lo ve en la app junto con los campos marcados (CA-07 de `mobile-010`).
 - **RN-05 (archivo):** Solo se aceptan JPG (`.jpg`, `.jpeg`), PNG y WebP. Una imagen por petición, de máximo 5 MB (5 120 KB). Se aplican las mismas reglas que `api-008` RN-01 y RN-02 (`image` y `mimes` de Laravel). Antes de guardar se quitan los metadatos, como en `api-008` RN-13 y CA-14: las fotos de visitantes pueden llevar la ubicación GPS. Se guarda el SHA-256 del archivo ya limpio en `image_sha256`.
-- **RN-06 (opinión):** La opinión es texto plano de hasta 300 caracteres. La obligatoriedad depende de la pregunta 7. Se guarda y se muestra como texto, nunca como HTML.
+- **RN-06 (opinión):** La opinión es **opcional** (Pregunta 7, decisión 2026-11-11). Si se envía, es texto plano de 1 a 300 caracteres y se guarda como `NULL` cuando no se envía. Se guarda y se muestra como texto, nunca como HTML.
 - **RN-07 (permisos):** `memories.review` se crea en `RolesAndPermissionsSeeder` y se asigna solo a `zoo-admin`. El seeder da hoy a `admin` todos los permisos salvo `tickets.create` y `tickets.cancel`, así que hay que excluir `memories.review` de `admin` de forma explícita. `executive`, `cashier` y `veterinarian` no lo reciben. Las sesiones de visitante siguen su propio régimen (`api-004`).
 - **RN-08 (consentimiento):** La casilla de consentimiento es obligatoria en cada envío y en cada reenvío. Su fecha se guarda en `consent_at`. Texto de referencia, pendiente de aprobación por el zoológico (P7): «Confirmo que tengo permiso de las personas que aparecen en la foto y, si hay menores, de sus madres, padres o tutores, y que acepto los términos y condiciones de «Momentos para recordar».»
 - **RN-09 (datos públicos):** Lo publicado contiene solo la imagen y la opinión. No se publica ningún nombre, correo, apodo, avatar, identificador de visitante ni de revisor.
-- **RN-10 (imagen pendiente; excepción de la carpeta `media/`):** Mientras una petición no está aceptada, su imagen no se expone por la API pública. Solo se entrega por una ruta autenticada con `memories.review` y 2FA (CA-08). Al aceptar, la imagen queda disponible para la lectura pública mientras esté vigente. **Excepción:** pendientes y rechazadas viven en `media/memories/`, publicado por `/media`, y la barrera es la API (CA-17; `api-013` RN-16). Esta excepción se registra en la nota de almacenamiento y en CA-17. La opción futura de almacenamiento privado está en `docs/propuestas/almacenamiento-objetos-s3.md`.
-- **RN-11 (listas):** La revisión pagina por defecto de 10 en 10, con máximo 50 (igual que `api-011` RN-05). La lista del visitante no pagina en esta versión y devuelve como máximo las 50 peticiones más recientes (propuesta).
+- **RN-10 (imagen pendiente; excepción de la carpeta `media/`):** Mientras una petición no está aceptada, su imagen no se expone por la API pública. Solo se entrega por una ruta autenticada con `memories.review` y 2FA (CA-08). Al aceptar, la imagen queda disponible para la lectura pública mientras esté vigente. **Excepción:** pendientes y rechazadas viven en `media/memories/`, publicado por `/media`, y la barrera es la API (CA-17; `api-013` RN-16). Esta excepción se registra en la nota de almacenamiento y en CA-17. La implementación actual usa la carpeta local `apps/api/src/media/` (sin S3); la opción futura de almacenamiento privado en la nube está en `docs/propuestas/almacenamiento-objetos-s3.md` y la documentará Jonathan cuando el cliente la solicite.
+- **RN-11 (listas):** La revisión pagina por defecto de 10 en 10, con máximo 50 (igual que `api-011` RN-05). La lista del visitante no pagina en esta versión y devuelve como máximo las 50 peticiones más recientes (aprobado el 2026-11-11).
 - **RN-12 (concurrencia):** Cada cambio de estado es condicional: se aplica solo si el estado previo es el esperado (por ejemplo, el reenvío solo si está `rejected`). Gana una sola transición y las demás reciben 422 con el estado actual (CA-10, CA-13). La creación de una petición bloquea la fila del visitante para que no haya dos envíos abiertos a la vez (CA-25).
 - **RN-13 (mensajes):** Los mensajes al visitante y al personal van en español; los identificadores, rutas y permisos van en inglés.
 - **RN-14 (arquitectura):** Controladores HTTP delgados → Form Requests → Actions → API Resources. Los modelos `VisitorMemory` y `VisitorMemoryReview` extienden `BaseModel` y usan SoftDeletes (Constitución V). La regla de estados, de límites y de vigencia vive en las Actions y en la consulta del modelo, no en el controlador.
 - **RN-15 (esquema):** Ningún cambio de esquema se hace sin DBR aprobada. Mientras la DBR esté en Borrador, no hay migración ni se programa contra la tabla.
 - **RN-16 (fallo de guardado):** Si el disco falla al guardar, no se crea ni se cambia la petición ni queda un archivo sin registro (mismo criterio que `api-008` RN-04). En un reenvío que falla, la petición sigue `rejected` y el archivo anterior no se borra.
-- **RN-17 (frecuencia):** Un visitante crea como máximo una petición nueva cada 7 días. La ventana se cuenta desde el `created_at` de su última petición nueva, incluidas las rechazadas, las revisadas y las eliminadas lógicamente. Los reenvíos no abren ni cuentan la ventana (propuesta; pregunta 2). El servidor decide. La app muestra la fecha que devuelve la API.
+- **RN-17 (frecuencia):** Un visitante crea como máximo una petición nueva cada 7 días. La ventana se cuenta desde el `created_at` de su última petición nueva, incluidas las rechazadas, las revisadas y las eliminadas lógicamente. Los reenvíos no abren ni cuentan la ventana (aprobado; Pregunta 2, 2026-11-11). El servidor decide. La app muestra la fecha que devuelve la API.
 - **RN-18 (una petición abierta):** Una petición está abierta si su estado es `submitted`, `in_review` o `rejected`. Un visitante solo puede tener una abierta. Una rechazada se puede corregir o quedar abierta; no hay cancelación en esta versión (riesgo).
 - **RN-19 (corrección y reenvío):** Una rechazada no es terminal y no se borra. El visitante corrige y reenvía la misma petición. Al reenviar, el estado vuelve a `submitted`, `resubmitted_count` aumenta en 1 y se conserva el historial de revisiones (`visitor_memory_reviews`). El reenvío sigue las reglas de CA-27 según los campos marcados. No hay límite de reenvíos en esta versión (pregunta 2).
 - **RN-20 (motivos del rechazo):** `rejected_fields` admite los valores `image` (la foto) y `content` (la opinión), uno o los dos. El motivo en texto es obligatorio (RN-04). Los valores van en inglés y la interfaz los traduce al español.
-- **RN-21 (plazo de publicación):** Al aceptar se calcula `published_until` = `published_at` + `MEMORIES_PUBLICATION_DAYS` días. Valor por defecto propuesto: 90 días (pregunta 1). Mientras no se apruebe la gestión de ajustes del sistema (`apps/api/specs/010-configurable-system-settings.md`, Borrador), el plazo se configura por `.env` (Constitución I). El plazo es fijo para cada petición desde su aceptación (CA-30). La vigencia es visible si `published_until` es posterior a ahora (CA-31). Retirar antes del vencimiento no está permitido en esta versión.
+- **RN-21 (plazo de publicación):** Al aceptar se calcula `published_until` = `published_at` + `MEMORIES_PUBLICATION_DAYS` días. Valor por defecto: 90 días (Pregunta 1, aprobada el 2026-11-11). Mientras no se apruebe la gestión de ajustes del sistema (`apps/api/specs/010-configurable-system-settings.md`, Borrador), el plazo se configura por `.env` (Constitución I). El plazo es fijo para cada petición desde su aceptación (CA-30). La vigencia es visible si `published_until` es posterior a ahora (CA-31). Retirar antes del vencimiento no está permitido en esta versión.
 - **RN-22 (borrado de cuenta):** Al borrar su cuenta, el visitante elige `keep` (conservar sin su cuenta) o `delete` (eliminar), con el aviso de la sección «Datos, privacidad y auditoría» (CA-32). En ambos casos `visitor_id` queda en NULL y no se borra ninguna fila físicamente.
 - **RN-23 (términos y casilla):** El texto de la casilla y los términos y condiciones los redacta y aprueba el zoológico (P7). Hasta entonces, RN-08 es de referencia. Los términos se aceptan en el registro del visitante (`api-004`, divergencia pendiente) y en cada envío o reenvío, con la casilla de consentimiento. Se guardan `consent_at` y `terms_version` (versión configurada en `MEMORIES_TERMS_VERSION`) para poder demostrar qué se aceptó.
 
 ## Datos, privacidad y auditoría
 
-- **Datos:** `visitor_id` (NULL tras la elección de borrado de cuenta), `status`, `opinion`, imagen (`image_path`, privada hasta aceptar), `image_sha256`, `published_image_path`, `consent_at`, `terms_version`, `rejection_reason`, `rejected_fields`, `resubmitted_count`, `reviewed_by`, `reviewed_at`, `published_at`, `published_until`, marcas de tiempo y `deleted_at`. Historial en `visitor_memory_reviews`. El detalle está en `docs/database/requests/DBR-012-visitor-memories.md`.
+- **Datos:** `visitor_id` (NULL tras la elección de borrado de cuenta), `status`, `opinion` (NULL si no se envía), imagen (`image_path`, privada hasta aceptar), `image_sha256`, `published_image_path`, `consent_at`, `terms_version`, `rejection_reason`, `rejected_image` y `rejected_content` (la API expone `rejected_fields` como lista), `resubmitted_count`, `reviewed_by`, `reviewed_at`, `published_at`, `published_until`, marcas de tiempo y `deleted_at`. Historial en `visitor_memory_reviews`. El detalle está en `docs/database/requests/DBR-012-visitor-memories.md`.
 - **Clasificación:** dato personal, no clínico ni financiero. Constitución V se cumple con SoftDeletes. Ninguna acción de esta spec borra filas físicamente.
 - **Menores:** las fotos pueden mostrar a menores dentro del zoológico. El visitante declara el consentimiento (RN-08) y el revisor decide antes de aceptar. La API quita los metadatos al guardar (RN-05).
 - **Opinión libre:** el visitante puede escribir datos personales en la opinión. Lo que se publica es lo que aprueba el revisor, que debe leerla antes de aceptar. La API no filtra texto libre.
@@ -198,7 +213,7 @@ Respuestas del responsable (Jonathan, 2026-11-10). Las que tienen «propuesta» 
 
 ## Flujos y errores
 
-1. **Envío:** el visitante elige una imagen en la app, escribe la opinión, marca el consentimiento y envía. La API valida (CA-01 a CA-05), comprueba la petición abierta (CA-24) y el límite semanal (CA-23), guarda la imagen en privado y crea la petición en `submitted`.
+1. **Envío:** el visitante elige una imagen en la app, escribe la opinión (opcional), marca el consentimiento y envía. La API valida (CA-01 a CA-05), comprueba la petición abierta (CA-24) y el límite semanal (CA-23), guarda la imagen en privado y crea la petición en `submitted`.
 2. **Revisión:** `zoo-admin` abre la lista con filtro por estado. Al abrir una petición en `submitted`, pasa a `in_review` (CA-08). Ve la foto y la opinión antes de decidir (`dashboard-008`). Después acepta (CA-11) o rechaza con motivo y campos marcados (CA-12, CA-28).
 3. **Rechazada y corrección:** la app muestra el motivo y los campos marcados (CA-07 de `mobile-010`). El visitante corrige lo marcado y reenvía (CA-26, CA-27). El reenvío vuelve a `submitted` y entra de nuevo en la revisión.
 4. **Publicación y vencimiento:** al aceptar, la petición aparece en la lectura pública de `api-012` hasta `published_until` (CA-18). Después deja de mostrarse (CA-31), sin borrarse.
@@ -221,11 +236,11 @@ Errores previstos:
   - `api-004`: sesión de visitante y correo verificado (CA-04, CA-05). **Divergencia pendiente:** para el borrado de cuenta de CA-32, `DELETE /api/v1/visitor/me` (CA-14 y RN-10 de `api-004`) necesita el parámetro `memories_policy` (`keep` o `delete`), obligatorio solo si el visitante tiene peticiones, y la aceptación de los términos en el registro. No se modifica desde esta spec; ver pregunta 5.
   - `api-007`: rutas bajo `/api/v1/admin`, 2FA (CA-25) y Activitylog (CA-26).
   - `api-008`: validación de imagen, retiro de metadatos y disco público.
-  - `api-013` (Borrador) y ADR 0026 (Propuesto): pendientes, aceptadas y rechazadas viven en la carpeta `media/`; excepción de esa carpeta (RN-10, CA-17). Ver «Nota de almacenamiento».
+  - `api-013` (Borrador) y ADR 0026 (Propuesto): almacenamiento local en la carpeta `media/` para pruebas; S3/nube es opción futura y Jonathan la documentará cuando el cliente la solicite. Pendientes, aceptadas y rechazadas viven en `media/`; excepción de esa carpeta (RN-10, CA-17). Ver «Nota de almacenamiento».
   - `api-011`: CORS por ambiente y límites de paginación.
   - `api-012`: lectura pública de las aceptadas y vigentes (depende de esta spec).
   - `apps/api/specs/010-configurable-system-settings.md` (ajustes del sistema, Borrador, sin aprobar y sin DBR aplicada): cuando se apruebe, el plazo de RN-21 puede pasar de `.env` a ajustes.
-  - DBR-012 (Borrador; `docs/database/requests/DBR-012-visitor-memories.md`), que depende de DBR-001 y DBR-003.
+  - DBR-012 (Aprobada el 2026-11-11; aplicada en `arca_pruebas` el 2026-11-11; Lista para backend; `docs/database/requests/DBR-012-visitor-memories.md`), que depende de DBR-001 y DBR-003.
   - `dashboard-008`, `mobile-010` y `web-010` son consumidores. `web-010` usa ADR 0027 (Propuesto).
   - No hay dependencia nueva de PHP. Un almacenamiento externo requeriría ADR propio (opción futura en `docs/propuestas/almacenamiento-objetos-s3.md`).
 - **Infraestructura (`infra/README.md`):** el mismo PR debe anotar `storage:link` (enlace `public/media`), los límites de subida, el seeder de permisos con `memories.review`, y las variables `MEMORIES_PUBLICATION_DAYS` y `MEMORIES_TERMS_VERSION`. **Pendiente:** `infra/README.md` no se edita desde esta documentación.
@@ -247,19 +262,19 @@ Errores previstos:
   - Vencidas que siguen accesibles por URL en la carpeta `media/` (`api-013` RN-16). Ver pregunta 3.
   - El disco local no se comparte entre servidores (heredado de `api-008`).
   - Cuenta eliminada con elección `keep`: las peticiones abiertas se revisan sin autor (pregunta 8).
-- **Preguntas pendientes (máximo 8; cada una con propuesta):**
-  1. **Plazo de publicación:** ¿se confirma **90 días** por defecto (RN-21), configurable por `.env`? ¿Se confirma que el zoo-admin **no** puede retirar una foto aceptada antes del vencimiento en esta versión? Propuesta: sí a ambas. La retirada manual sigue como pregunta abierta para una spec posterior, que debe resolverse antes de producción.
-  2. **Frecuencia y reenvíos:** ¿un reenvío de rechazada **no** cuenta para el límite semanal? Propuesta: no (RN-17). ¿Una petición rechazada cuenta como **abierta** y bloquea nuevos envíos hasta que se corrija? Propuesta: sí (RN-18). ¿Hay límite de reenvíos por petición? Propuesta: no en v1 (RN-19).
-  3. **Archivos de vencidas:** ¿al vencer la publicación se conserva el archivo (sin mostrarlo) o se borra? Propuesta: se conserva en v1, sin borrado físico de la fila, hasta que se decida la retención de datos personales. Mientras tanto, el archivo es alcanzable por `/media` (riesgo).
-  4. **Borrado del archivo según el motivo:** ¿se aprueba borrar el archivo rechazado solo si el motivo incluye `image` (CA-29) y conservarlo si es solo `content`? Propuesta: sí.
-  5. **Cambio en el borrado de cuenta:** ¿se autoriza modificar el contrato de `DELETE /api/v1/visitor/me` (`api-004` CA-14 y RN-10) y la pantalla de borrado de `mobile-004` para añadir `memories_policy` y la aceptación de términos en el registro? Propuesta: sí, avisando a los responsables de `api-004` y `mobile-004` antes de aprobar.
-  6. **Texto de la casilla y de los términos:** ¿quién en el zoológico aprueba el texto de RN-08, RN-23 y el aviso de borrado de cuenta, y en qué plazo? Hasta entonces, el texto es de referencia y no se publica en producción.
-  7. **Opinión obligatoria:** ¿la opinión es obligatoria (1 a 300 caracteres)? Propuesta: sí (pregunta original 1; CA-03).
-  8. **Peticiones abiertas de cuentas eliminadas:** ¿las peticiones en revisión de una cuenta eliminada con `keep` se revisan igual, sin autor? Propuesta: sí (CA-32).
+- **Preguntas resueltas (2026-11-11; se conservan como historial):** todas quedaron resueltas en «Decisiones tomadas (2026-11-11)».
+  1. **Plazo de publicación:** ¿se confirma **90 días** por defecto (RN-21), configurable por `.env`? ¿Se confirma que el zoo-admin **no** puede retirar una foto aceptada antes del vencimiento en esta versión? Resuelta: sí a ambas (Pregunta 1). La retirada manual sigue como pregunta abierta para una spec posterior, que debe resolverse antes de producción.
+  2. **Frecuencia y reenvíos:** ¿un reenvío de rechazada **no** cuenta para el límite semanal? ¿Una petición rechazada cuenta como **abierta** y bloquea nuevos envíos hasta que se corrija? ¿Hay límite de reenvíos por petición? Resuelta: reenvío no cuenta; rechazada cuenta como abierta; sin límite de reenvíos en v1 (Pregunta 2).
+  3. **Archivos de vencidas:** ¿al vencer la publicación se conserva el archivo (sin mostrarlo) o se borra? Resuelta: se conserva en v1, sin borrado físico de la fila (Pregunta 3).
+  4. **Borrado del archivo según el motivo:** ¿se aprueba borrar el archivo rechazado solo si el motivo incluye `image` (CA-29) y conservarlo si es solo `content`? Resuelta: sí (Pregunta 4).
+  5. **Cambio en el borrado de cuenta:** ¿se autoriza modificar el contrato de `DELETE /api/v1/visitor/me` (`api-004` CA-14 y RN-10) y la pantalla de borrado de `mobile-004` para añadir `memories_policy` y la aceptación de términos en el registro? Resuelta: sí, avisando a los responsables de `api-004` y `mobile-004` antes de aprobar (Pregunta 5).
+  6. **Texto de la casilla y de los términos:** ¿quién en el zoológico aprueba el texto de RN-08, RN-23 y el aviso de borrado de cuenta, y en qué plazo? Resuelta: lo redacta y aprueba el zoológico; hasta entonces el texto es de referencia y no se publica en producción (Pregunta 6).
+  7. **Opinión (Pregunta 7):** ¿la opinión es obligatoria (1 a 300 caracteres)? Resuelta el 2026-11-11: **opcional**; si se envía, 1 a 300 caracteres (Pregunta 7; CA-01, CA-03, RN-06).
+  8. **Peticiones abiertas de cuentas eliminadas:** ¿las peticiones en revisión de una cuenta eliminada con `keep` se revisan igual, sin autor? Resuelta: sí (Pregunta 8).
 
-## Nota de almacenamiento (2026-11-10)
+## Nota de almacenamiento (2026-11-11)
 
-Decisión del responsable pendiente de aprobación formal del equipo (`api-013` D-01 a D-04). Esta spec cambia el texto de RN-10 y CA-17 para registrar la excepción de la carpeta `media/`; los estados no cambian.
+Almacenamiento actual: carpeta local del proyecto `apps/api/src/media/` (subcarpeta `memories/`), sin S3 ni servicio externo. La decisión de `api-013` D-01 a D-04 se mantiene para pruebas; su aprobación formal sigue su propio flujo y no bloquea esta migración. S3/nube es opción futura: Jonathan la documentará cuando el cliente la solicite (`docs/propuestas/almacenamiento-objetos-s3.md`, ADR 0026 Propuesto). Esta spec cambia el texto de RN-10 y CA-17 para registrar la excepción de la carpeta `media/`; los estados no cambian.
 
 - **Disco (RN-10).** Pendientes, aceptadas y rechazadas viven en `media/memories/`, con `PUBLIC_MEDIA_DISK=media` y `PRIVATE_MEDIA_DISK=media`, publicado por `/media`. Al aceptar, `published_image_path` toma el valor de `image_path` y el archivo no se mueve. Al rechazar por `image`, se borra el archivo (`api-013` CA-12).
 - **Excepción a RN-10 y CA-17:** la barrera es la API (ninguna respuesta incluye la URL de una imagen no aceptada, `api-013` RN-16), no el almacenamiento: el archivo es alcanzable si alguien conoce su URL (ADR 0026, riesgo b).
@@ -269,10 +284,11 @@ Decisión del responsable pendiente de aprobación formal del equipo (`api-013` 
 
 ## Revisión
 
-- Aprobadores y fecha: pendiente. Aprobación funcional de Aksel (solicitante) y validación técnica del equipo con el Constitution Check del plan.
-- Aprobado por: (pendiente, nombre del compañero)
+- Aprobadores y fecha: aprobación funcional de Aksel (mobile), pendiente; Aksel firma la spec y no se registra por adelantado. Validación técnica/BD de Víctor Adrián, 2026-11-11, aprobada.
+- Aprobado por: validación técnica/BD — Víctor Adrián, 2026-11-11. La aprobación funcional de Aksel queda pendiente; por eso la spec sigue en Borrador.
 - Historial:
   - borrador del 2026-11-05 («Aceptar no publica», sin motivo ni opinión);
   - revisión del 2026-11-10 con las decisiones iniciales (opinión, consentimiento, En proceso automático, publicación al aceptar, motivo visible, `memories.review` solo para `zoo-admin`);
-  - revisión del 2026-11-10 con las respuestas del responsable (frecuencia semanal, decisión final por revisión, rechazo con motivos, corrección y reenvío, plazo de publicación, borrado de cuenta con elección, términos y ruta pública).
+  - revisión del 2026-11-10 con las respuestas del responsable (frecuencia semanal, decisión final por revisión, rechazo con motivos, corrección y reenvío, plazo de publicación, borrado de cuenta con elección, términos y ruta pública);
+  - validación técnica/BD del 2026-11-11: se aprueban las ocho respuestas (opinión opcional), se actualiza la DBR-012 (Aprobada, `opinion` NULL, `rejected_image`/`rejected_content`), se crea y aplica la migración en `arca_pruebas` sin errores, y la DBR-012 queda Lista para backend; queda pendiente la firma funcional de Aksel. La implementación de la API espera esa firma. El almacenamiento actual es la carpeta local del proyecto; S3/nube queda como opción futura que Jonathan documentará cuando el cliente la solicite.
 - Evidencia/enlaces: `apps/web/src/index.html` (sección `#galeria`, «Momentos para recordar»), `apps/mobile/specs/010-visitor-memory-requests.md`, `apps/dashboard/specs/008-memory-moderation.md`, `apps/web/specs/010-dynamic-memories.md`, `apps/api/specs/012-public-memories-read.md`, `apps/api/specs/013-object-storage-images.md`, `apps/api/specs/004-visitor-authentication.md`, `apps/api/specs/007-administration-management.md`, `apps/api/specs/008-event-news-images.md`, `apps/api/specs/010-configurable-system-settings.md`, `docs/adr/0026-object-storage-s3-images.md`, `docs/adr/0027-dynamic-public-memories-gallery.md`, `docs/database/requests/DBR-012-visitor-memories.md`.

@@ -18,7 +18,7 @@
   - `apps/api/src/media/` **no existe todavía**. Crearla es parte de la implementación de esta decisión.
   - Las subidas nuevas pasan por `StripImageMetadataAction` (sin EXIF; `api-008`, revisión 2026-11-06). Las imágenes guardadas antes de esa fecha pueden conservar metadatos.
 - Momentos para recordar (`apps/api/specs/010-visitor-memory-requests.md`, Borrador): la regla de que una imagen pendiente o rechazada no tenga URL pública (`api-010` RN-10) es un requisito de datos personales. Con esta decisión, **la API no devuelve URL de esas imágenes**, pero el archivo queda en una carpeta que el servidor publica por `/media`. La barrera es de la API, no del almacenamiento: es una excepción registrada en este ADR (riesgo b).
-- DBR-012 (`docs/database/requests/DBR-012-visitor-memories.md`, Borrador) describe `image_path` como ruta en el disco privado y `published_image_path` como ruta en el disco público. Con esta decisión, ambos viven en `media/`. **Divergencia:** DBR-012 se alinea antes de aprobarse (ya actualizado en el borrador de 2026-11-10).
+- DBR-012 (`docs/database/requests/DBR-012-visitor-memories.md`, Aprobada y aplicada en `arca_pruebas` el 2026-11-11) describe `image_path` y `published_image_path` como rutas relativas en la carpeta local `media/`. Con esta decisión, ambos viven en `media/`. **Divergencia resuelta:** la DBR se alineó y se aplicó el 2026-11-11; la opción S3/nube sigue como propuesta futura en `docs/propuestas/almacenamiento-objetos-s3.md`.
 - ADR 0013 deja el almacenamiento de archivos detrás de discos de Laravel Filesystem. Constitución I: stack declarado, sin nada propietario de la nube en el código. Constitución V: la base de datos es la fuente de verdad y los archivos viven fuera de ella.
 
 ## Decisión

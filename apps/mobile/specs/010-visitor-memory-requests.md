@@ -6,7 +6,7 @@
 - Solicitante / responsable funcional: Aksel (borrador original del 2026-11-05). Respuestas del responsable: Jonathan (2026-11-10).
 - Aprobación funcional: pendiente.
 - Aprobado por: (pendiente, nombre del compañero)
-- Dependencias de contrato: `api-010` (Borrador) y DBR-012 (Borrador).
+- Dependencias de contrato: `api-010` (Borrador; validación técnica/BD aprobada el 2026-11-11) y DBR-012 (Aprobada y aplicada en `arca_pruebas` el 2026-11-11; Lista para backend).
 - Encargado de móvil: entrada en la app y selector de imágenes delegados (ver «Decisiones tomadas» y «Preguntas pendientes»).
 
 ## Problema y contexto

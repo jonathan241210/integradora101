@@ -6,7 +6,7 @@
 - Opción futura: `docs/propuestas/almacenamiento-objetos-s3.md`. Propuesta no implementada ni aprobada. No es una fase de esta spec y no tiene CA ni RN aquí.
 - Estado: Borrador
 - Solicitante / responsable funcional: Jonathan (decisión del responsable del 2026-11-10, pendiente de confirmación formal del equipo).
-- Responsable de BD: no requerido por el almacenamiento (RN-08). La tabla de momentos sigue necesitando DBR-012; su descripción de discos debe alinearse con esta spec antes de aprobarla (ver «Dependencias, riesgos y preguntas»).
+- Responsable de BD: no requerido por el almacenamiento (RN-08). La tabla de momentos ya tiene DBR-012 aprobada y aplicada en `arca_pruebas` el 2026-11-11; su descripción de discos se alineó con la carpeta local `media/`.
 - Responsable backend: por definir.
 - Aprobación funcional: pendiente. No puede pasar a Aprobada mientras el ADR 0026 esté en Propuesto.
 - Aprobado por: (pendiente, nombre del compañero)
@@ -24,7 +24,7 @@ Hallazgos del análisis que motivan la spec:
 
 - `FILESYSTEM_DISK` no basta. `api-008` llama a `Storage::disk('public')` por nombre en `StoreContentImageAction`, `DeleteContentImageAction` y `ResolveContentImageUrlAction`. El disco por defecto no se usa para estos archivos.
 - La carpeta `apps/api/src/storage/app/public` tiene un `.gitignore` con `*`: nada se versiona. Por eso se necesita una carpeta propia (`apps/api/src/media/`), que hoy no existe.
-- DBR-012 describe `image_path` como ruta «en el disco privado» y `published_image_path` como ruta en el disco público, con la idea de que lo rechazado nunca quede en el público. Con la carpeta compartida ambos viven en `media/`; esa descripción debe actualizarse (divergencia, ver «Dependencias, riesgos y preguntas»).
+- DBR-012 describe `image_path` como ruta relativa en la carpeta local `apps/api/src/media/`; ya se alineó con esta spec y se aplicó en `arca_pruebas` el 2026-11-11. No queda divergencia de disco.
 
 ## Decisiones tomadas (2026-11-10)
 
@@ -102,7 +102,7 @@ Consecuencia de D-04: las filas anteriores a la carpeta compartida apuntan a `ne
 
 ### Aceptar y rechazar
 
-- **CA-11 (aceptar):** Dada una petición en revisión, cuando `zoo-admin` la acepta (`api-010` CA-11), entonces el archivo no se copia ni se mueve, porque ya está en `media/memories/`. `published_image_path` toma el valor de `image_path` (propuesta, pendiente de DBR-012 y del plan). La imagen queda accesible por `image_url` desde la aceptación. La API no comprueba que el archivo exista en cada lectura: si falta (flujo 8), la imagen no carga hasta el `pull`.
+- **CA-11 (aceptar):** Dada una petición en revisión, cuando `zoo-admin` la acepta (`api-010` CA-11), entonces el archivo no se copia ni se mueve, porque ya está en `media/memories/`. `published_image_path` toma el valor de `image_path` (DBR-012 aplicada; el plan lo confirma). La imagen queda accesible por `image_url` desde la aceptación. La API no comprueba que el archivo exista en cada lectura: si falta (flujo 8), la imagen no carga hasta el `pull`.
 - **CA-12 (rechazar borra el original si el motivo incluye la foto):** Dada una petición en revisión, cuando `zoo-admin` la rechaza con motivo (`api-010` CA-12) y `rejected_fields` incluye `image`, entonces después del commit se borra el archivo de `media/memories/`, `image_path` queda en `null` y `image_sha256` se conserva (`api-010` CA-29). Si el motivo es solo `content`, el archivo se conserva para la corrección y no cambia (D-05). Si el borrado falla, la petición queda rechazada, el fallo se registra en el log y el archivo queda como huérfano (riesgos). El borrado se confirma con commit (CA-18).
 - **CA-13 (rechazada sin copia pública):** Dada una petición rechazada, cuando se consulta su fila, entonces `published_image_path` es `null` y ninguna respuesta incluye su imagen. Si el motivo incluye `image`, `image_path` es `null` y el archivo no existe (CA-12). Si el motivo es solo `content`, el archivo sigue en `media/memories/` para la corrección (`api-010` CA-29), sin copia pública aparte.
 
@@ -136,7 +136,7 @@ Consecuencia de D-04: las filas anteriores a la carpeta compartida apuntan a `ne
 - **RN-05 (privado sin URL en la respuesta):** El ámbito privado no tiene URL en ningún campo de respuesta de la API. El archivo pendiente o rechazado está en `media/memories/`, que el servidor publica por `/media`. La API no devuelve esa URL (RN-16). La barrera es de la API, no del almacenamiento (riesgo g del ADR 0026).
 - **RN-06 (lectura de la imagen en revisión):** La imagen en revisión llega como binario por ruta autenticada, nunca como URL en el JSON (CA-10).
 - **RN-07 (sin subida directa):** La API escribe el archivo; el navegador nunca escribe en la carpeta de medios.
-- **RN-08 (sin DBR por el almacenamiento):** Esta spec no crea ni modifica tablas, columnas ni índices. `published_image_path` ya está propuesta en DBR-012 y no cambia por esta spec, aunque su descripción de disco sí debe alinearse antes de aprobar DBR-012. Si el plan necesita una columna nueva, se abre una DBR antes de implementar (Constitución V). El cambio de base de datos de Aiven a MySQL local tampoco requiere DBR nueva, porque no cambia el esquema; sí requiere que el responsable de BD aplique y registre las migraciones aprobadas por ambiente.
+- **RN-08 (sin DBR por el almacenamiento):** Esta spec no crea ni modifica tablas, columnas ni índices. `published_image_path` ya está en DBR-012 y no cambia por esta spec; la descripción de disco se alineó con la carpeta local `media/`. Si el plan necesita una columna nueva, se abre una DBR antes de implementar (Constitución V). El cambio de base de datos de Aiven a MySQL local tampoco requiere DBR nueva, porque no cambia el esquema; sí requiere que el responsable de BD aplique y registre las migraciones aprobadas por ambiente.
 - **RN-09 (un solo disco por ámbito y ambiente):** En cada ambiente, un ámbito usa un único disco. En la carpeta compartida los dos ámbitos usan `media`; la separación es por subcarpeta y por la API.
 - **RN-10 (fallo de almacenamiento):** Si el disco falla al escribir o al borrar antes del commit, no se crea, acepta ni rechaza nada (CA-08, CA-12). Si falla después del commit, se registra el fallo y se deja el objeto como huérfano (riesgos).
 - **RN-11 (sin lectura de la imagen privada desde el navegador):** El dashboard muestra la imagen privada solo con la ruta que indica la API (RN-06) y no guarda la imagen ni la URL en el navegador (`dashboard-008` RN-07).
@@ -192,7 +192,7 @@ Errores previstos:
   - `api-008` (`image_path`, validación, disco público): su CA-13 usa `Storage::fake('public')`, que sigue siendo válido con el valor por defecto (CA-01). Su nota de almacenamiento se actualiza en el mismo cambio.
   - `api-010` (RN-10 sobre disco privado y público, CA-08 sobre la ruta de imagen, CA-11, CA-12 y CA-29 sobre aceptar, rechazar y archivo según motivo). Su RN-10 y su CA-17 tienen una excepción registrada en su nota.
   - `api-012` (CA-06 sobre `image_url` del disco público y la ruta publicada).
-  - `DBR-012` (`published_image_path` y `image_path`). Su descripción de discos se alineó con D-02 (2026-11-10), pendiente de aprobación de la DBR.
+  - `DBR-012` (`published_image_path` y `image_path`). Su descripción de discos se alineó con D-02; la DBR se aprobó y se aplicó en `arca_pruebas` el 2026-11-11.
   - `dashboard-008` (consumidor de la imagen de revisión) y `web-010` (consumidor de `image_url`).
   - `infra/README.md` (checklist de despliegue y medios de prueba: CA-20 y CA-24).
   - `apps/api/docs/contenido-publico.md` (referencia de `image_url`).
@@ -210,9 +210,9 @@ Errores previstos:
   - Huérfanos: si el borrado falla después del commit, queda un archivo sin registro (CA-12). Hace falta un comando de limpieza o una decisión de aceptar el riesgo.
   - Retirada tardía de contenido público por cachés (heredado de `api-010` pregunta 2).
   - **Divergencias detectadas (pendientes de aplicar en el mismo cambio que su documento):**
-    1. `docs/database/requests/DBR-012-visitor-memories.md`: sus descripciones de `image_path` y `published_image_path` se limpian en este cambio para que solo describan la carpeta `media/` (sin la rama de almacenamiento de objetos). **Pendiente de revisión del responsable de BD antes de aprobar la DBR.**
+    1. `docs/database/requests/DBR-012-visitor-memories.md`: sus descripciones de `image_path` y `published_image_path` se alinearon con la carpeta `media/` (sin la rama de almacenamiento de objetos). Revisado por el responsable de BD; la DBR se aprobó y se aplicó en `arca_pruebas` el 2026-11-11.
     2. `infra/README.md`, bloque «Medios de prueba compartidos»: debe quitar la etiqueta de fase, incluir CA-20 y CA-24 y eliminar el bloque de almacenamiento de objetos, que sale del plan (la sesión principal aplica el texto propuesto).
-    3. `apps/api/specs/010-visitor-memory-requests.md`: RN-10 y CA-17 tienen una excepción de la carpeta compartida registrada en su nota. Pendiente de aprobación.
+    3. `apps/api/specs/010-visitor-memory-requests.md`: RN-10 y CA-17 tienen una excepción de la carpeta compartida registrada en su nota. Validación técnica/BD aprobada; la firma funcional de Aksel sigue pendiente.
     4. `apps/api/plan/` y `apps/api/tasks/` de `api-008` no se han actualizado con la nota de almacenamiento. Si se aprueba esta spec, la divergencia se registra en plan y tasks en el mismo cambio (`docs/05-flujo-sdd.md`, paso 7).
 - **Preguntas pendientes:**
   1. ¿Hay requisito de ubicación de los datos (país o región) para las imágenes de visitantes y para el repositorio que guardará los medios? Si lo hay, cambia el alojamiento del repositorio. Propuesta: confirmar antes de la primera subida de un momento.

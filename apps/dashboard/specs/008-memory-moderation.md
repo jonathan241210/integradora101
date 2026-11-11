@@ -6,7 +6,7 @@
 - Solicitante / responsable funcional: Aksel (decisión del 2026-11-10). Respuestas del responsable: Jonathan (2026-11-10).
 - Aprobación funcional: pendiente.
 - Aprobado por: (pendiente, nombre del compañero)
-- Dependencias de contrato: `api-010` (Borrador) y DBR-012 (Borrador). La sección no se implementa hasta que la API esté disponible en el ambiente de pruebas con el permiso asignado.
+- Dependencias de contrato: `api-010` (Borrador; validación técnica/BD aprobada el 2026-11-11) y DBR-012 (Aprobada y aplicada en `arca_pruebas` el 2026-11-11; Lista para backend). La sección no se implementa hasta que la API esté disponible en el ambiente de pruebas con el permiso asignado.
 
 ## Problema y contexto
 
@@ -132,7 +132,7 @@ El dashboard solo presenta. Los estados, las transiciones, los plazos y la autor
 - **Dependencias/ADR:**
   - `api-010` (endpoints `admin/memories*`, permiso, vigencia y auditoría; Borrador).
   - `api-013` (Borrador) y ADR 0026 (Propuesto): la imagen de revisión llega por ruta autenticada sin URL en el JSON, con proxy de mismo origen (`api-013` D-06).
-  - DBR-012 (`docs/database/requests/DBR-012-visitor-memories.md`; Borrador).
+  - DBR-012 (`docs/database/requests/DBR-012-visitor-memories.md`; Aprobada y aplicada en `arca_pruebas` el 2026-11-11; Lista para backend).
   - `dashboard-002` (sesión, `me` con permisos, 401).
   - `dashboard-007` (criterio de imagen completa y centrada).
   - `api-007` (2FA y rutas `/api/v1/admin`).
