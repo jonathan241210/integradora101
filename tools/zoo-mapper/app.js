@@ -49,6 +49,7 @@ const btnExportJson = document.getElementById('btnExportJson');
 const btnExportCsv = document.getElementById('btnExportCsv');
 const btnClearAll = document.getElementById('btnClearAll');
 const btnSimulateWalk = document.getElementById('btnSimulateWalk');
+const exportHint = document.getElementById('exportHint');
 
 // 1. Inicialización
 document.addEventListener('DOMContentLoaded', () => {
@@ -347,6 +348,7 @@ function renderEnclosuresList() {
   btnExportJson.disabled = count === 0;
   btnExportCsv.disabled = count === 0;
   btnClearAll.style.display = count > 0 ? 'block' : 'none';
+  if (exportHint) exportHint.style.display = count > 0 ? 'block' : 'none';
 
   if (count === 0) {
     enclosuresList.innerHTML = '<div class="empty-state">Aún no has registrado ningún recinto.</div>';
@@ -437,10 +439,36 @@ function escapeHtml(text) {
 }
 
 // 8. Registro de PWA Service Worker
+// Una PWA solo se puede instalar y usar el GPS sirviéndose por HTTPS (o localhost).
 function initServiceWorker() {
-  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log('ServiceWorker registrado correctamente'))
-      .catch((err) => console.log('Error al registrar ServiceWorker:', err));
+  if (!('serviceWorker' in navigator)) {
+    console.warn('[pwa] Este navegador no soporta Service Workers: no habrá modo offline.');
+    return;
   }
+
+  const isSecure = location.protocol === 'https:'
+    || location.hostname === 'localhost'
+    || location.hostname === '127.0.0.1';
+
+  if (!isSecure) {
+    console.warn('[pwa] Abre la app por HTTPS o en localhost. Con "file://" no hay instalación ni GPS.');
+    return;
+  }
+
+  navigator.serviceWorker.register('./sw.js', { scope: './' })
+    .then((registration) => {
+      console.log('[pwa] Service Worker registrado en', registration.scope);
+
+      // El registro se resuelve aunque la instalación falle después: se vigila.
+      registration.addEventListener('updatefound', () => {
+        const worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener('statechange', () => {
+          console.log('[pwa] Estado del Service Worker:', worker.state);
+        });
+      });
+    })
+    .catch((error) => {
+      console.error('[pwa] No se pudo registrar el Service Worker:', error);
+    });
 }

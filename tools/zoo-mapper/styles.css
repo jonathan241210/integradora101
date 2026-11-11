@@ -547,3 +547,27 @@ input[type="text"]:focus {
   align-self: center;
   margin-top: 4px;
 }
+
+/* Aviso de persistencia local y pie de versión */
+.export-hint {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border: 1px solid var(--warning-border);
+  border-radius: 10px;
+  background: var(--warning-bg);
+  color: var(--warning);
+  font-size: 12px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.app-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  padding: 8px 4px 24px;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-align: center;
+}

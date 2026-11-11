@@ -5,9 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>ARCA-NB · Mapeador GPS</title>
   <meta name="theme-color" content="#1b4d24">
+  <meta name="description" content="Levantamiento de coordenadas GPS de los recintos del Zoológico Municipal Nicolás Bravo">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ZooMapper">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -137,6 +142,9 @@
       <button type="button" id="btnExportCsv" class="btn-export-csv" disabled>
         📄 Descargar CSV
       </button>
+      <p id="exportHint" class="export-hint" style="display: none;">
+        ⚠️ Los datos viven solo en este teléfono. Descarga el JSON antes de cerrar la app o de borrar los datos del navegador.
+      </p>
       <button type="button" id="btnClearAll" class="btn-clear-all" style="display: none;">
         Borrar todos los registros
       </button>
@@ -144,6 +152,11 @@
         🚶 Probar animación de coordenadas en vivo
       </button>
     </section>
+
+    <footer class="app-footer">
+      <span>ARCA-NB · Zoo Mapper v2</span>
+      <span>Funciona sin internet después de la primera carga</span>
+    </footer>
   </div>
 
   <script src="app.js"></script>
