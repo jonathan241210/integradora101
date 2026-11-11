@@ -52,7 +52,7 @@ Los jobs propagan los códigos de salida originales para que cualquier instalaci
 | CA-03 | Jest ejecutado por el comando workspace con `CI=true` | Mobile, `apps/mobile/__tests__/` |
 | CA-04 | Los comandos de PHPUnit y Jest propagan fallo al job; inspección de estado del job en ejecuciones de prueba | GitHub Actions, ambos jobs |
 | CA-05 | Revisión automatizada de los pasos del workflow y de su contexto sin credenciales DB; confirmación en logs de que no se ejecutan migraciones | GitHub Actions, `.github/workflows/ci.yml` |
-| CA-06 | Ejecutar manualmente el workflow y observar el job fallido con mensaje explícito | GitHub Actions, `.github/workflows/prueba-fallo-controlado.yml` |
+| CA-06 | Comprobar automáticamente que `ci.yml` es el único YAML de `.github/workflows/` y validar su sintaxis | `.github/workflows/` |
 
 ## Constitution Check
 
@@ -81,3 +81,13 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos. Si algo no 
 2. Tras aprobación, crear tasks atómicas para el workflow, su validación y verificación de jobs.
 3. Implementar únicamente después de aprobación de plan y tasks.
 4. Aprobar técnicamente por el equipo; la aceptación funcional de la spec ya fue dada por el usuario solicitante el 2026-10-26.
+
+## Enmienda de consolidación — 2026-11-10
+
+- Autorización: solicitud directa del usuario de borrar los workflows distintos de `ci.yml`.
+- Esta enmienda sustituye las instrucciones anteriores de crear o conservar el workflow demostrativo; esas secciones quedan como historial.
+- Eliminar `.github/workflows/main.yml`, `.github/workflows/laravel.yml` y `.github/workflows/prueba-fallo-controlado.yml`.
+- Conservar el contenido completo de `ci.yml`: eventos, permisos, runtimes, siete jobs, umbrales y artefactos.
+- Validación automatizada de CA-06: inventario de YAML igual a `['ci.yml']`, parseo sin errores ni claves duplicadas y comparación binaria del archivo con su versión anterior.
+- Revisar `git diff --check` y registrar el resultado en tasks. No se repiten suites de aplicaciones porque no cambia su código ni el workflow conservado.
+- Constitution Check I–VI: herramientas existentes, alcance actualizado por solicitud explícita, sin lógica de aplicación, criterio cubierto por verificación estructural, sin BD y documentación en español. El commit en español sigue la preferencia explícita del usuario en este chat.
