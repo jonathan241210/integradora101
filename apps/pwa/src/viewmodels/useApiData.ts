@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import {
   getAnimal,
   listAnimals,
+  listEnclosures,
   type AnimalProfile,
   type AnimalSummary,
+  type EnclosureOption,
 } from '@/services/apiClient';
 
 export function formToRecord(form: HTMLFormElement): Record<string, string> {
@@ -111,4 +113,37 @@ export function useAnimals(search = '') {
   const reload = useCallback(() => setVersion((current) => current + 1), []);
 
   return { animals, loading, error, reload };
+}
+
+export function useEnclosures() {
+  const [enclosures, setEnclosures] = useState<EnclosureOption[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    listEnclosures()
+      .then((result) => {
+        if (cancelled) return;
+        setEnclosures(result);
+        setError('');
+      })
+      .catch((reason: unknown) => {
+        if (cancelled) return;
+        setError(reason instanceof Error ? reason.message : 'No se pudieron cargar los recintos.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [version]);
+
+  const reload = useCallback(() => setVersion((current) => current + 1), []);
+
+  return { enclosures, loading, error, reload };
 }

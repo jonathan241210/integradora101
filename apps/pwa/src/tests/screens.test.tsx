@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { AnimalFormView } from '@/views/AnimalFormView';
 import { AppShell } from '@/views/AppShell';
 import {
   initialPwaDemoState,
@@ -48,5 +49,16 @@ describe('CA-03 PWA responsive demo screens', () => {
     for (const section of pwaSections) {
       expect(markup).toContain(`aria-label="${section.label}"`);
     }
+  });
+});
+
+describe('CA-03 PWA animal-registration', () => {
+  it('requiere seleccionar un recinto antes de permitir el registro', () => {
+    const markup = renderToStaticMarkup(<AnimalFormView />);
+
+    expect(markup).toContain('name="animal-enclosure"');
+    expect(markup).toContain('required=""');
+    expect(markup).toContain('disabled=""');
+    expect(markup).toContain('Registrar animal');
   });
 });

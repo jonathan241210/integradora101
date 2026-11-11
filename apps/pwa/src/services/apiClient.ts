@@ -1,3 +1,5 @@
+import { createHttpClient } from '@arca/api-client';
+
 export type AnimalSummary = {
   id: number;
   tag_number: string;
@@ -6,6 +8,11 @@ export type AnimalSummary = {
   age: string | null;
   stay_status: string;
   species: string | null;
+};
+
+export type EnclosureOption = {
+  id: number;
+  name: string;
 };
 
 export type EvaluationKind = 'intense' | 'quick' | 'review';
@@ -74,56 +81,61 @@ export class ApiError extends Error {
   }
 }
 
-const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
-const baseUrl = (env?.VITE_API_URL ?? 'http://localhost:8000/api/v1').replace(/\/$/, '');
+const http = createHttpClient({
+  baseUrl: '',
+  fetchImpl: (...args) => globalThis.fetch(...args),
+});
 
-type ValidationBody = { message?: string; errors?: Record<string, string[]> };
-
-async function request<T>(path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
-  let response: Response;
-
+async function request<T>(
+  path: string,
+  init: { method?: string; body?: unknown } = {},
+): Promise<T> {
   try {
-    response = await fetch(`${baseUrl}${path}`, {
-      method: init.method ?? 'GET',
-      headers: {
-        Accept: 'application/json',
-        ...(init.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
-      },
-      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+    return await http.request<T>(path, {
+      method: init.method,
+      body: init.body,
     });
-  } catch {
-    throw new ApiError(
-      'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
-      0,
-    );
+  } catch (error) {
+    if (error instanceof Error) {
+      const status =
+        typeof error === 'object' && 'status' in error &&
+        typeof error.status === 'number'
+          ? error.status
+          : 0;
+      const message = status === 401
+        ? 'Tu sesión expiró. Inicia sesión de nuevo.'
+        : status === 0
+          ? 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.'
+          : error.message;
+      throw new ApiError(message, status);
+    }
+
+    throw new ApiError('No se pudo completar la solicitud.', 0);
   }
-
-  const body = (await response.json().catch(() => ({}))) as ValidationBody;
-
-  if (!response.ok) {
-    const firstError = body.errors ? Object.values(body.errors)[0]?.[0] : undefined;
-    throw new ApiError(
-      firstError ?? body.message ?? 'No se pudo completar la solicitud.',
-      response.status,
-    );
-  }
-
-  return body as T;
 }
 
 export async function listAnimals(search = ''): Promise<AnimalSummary[]> {
   const query = search.trim() ? `?search=${encodeURIComponent(search.trim())}` : '';
-  return (await request<{ data: AnimalSummary[] }>(`/staff/animals${query}`)).data;
+  return (await request<{ data: AnimalSummary[] }>(
+    `/api/v1/staff/animals${query}`,
+  )).data;
+}
+
+export async function listEnclosures(): Promise<EnclosureOption[]> {
+  return (await request<{ data: EnclosureOption[] }>('/api/v1/enclosures')).data;
 }
 
 export async function getAnimal(id: number): Promise<AnimalProfile> {
-  return (await request<{ data: AnimalProfile }>(`/staff/animals/${id}`)).data;
+  return (await request<{ data: AnimalProfile }>(
+    `/api/v1/staff/animals/${id}`,
+  )).data;
 }
 
 export type NewAnimal = {
   name: string;
   species: string;
   tag_number: string;
+  enclosure_id: number;
   sex: string;
   birth_date?: string;
   origin?: string;
@@ -131,7 +143,10 @@ export type NewAnimal = {
 };
 
 export async function createAnimal(animal: NewAnimal): Promise<AnimalSummary> {
-  return (await request<{ data: AnimalSummary }>('/staff/animals', { method: 'POST', body: animal })).data;
+  return (await request<{ data: AnimalSummary }>('/api/v1/staff/animals', {
+    method: 'POST',
+    body: animal,
+  })).data;
 }
 
 export async function createEvaluation(
@@ -139,8 +154,11 @@ export async function createEvaluation(
   animalId: number,
   data: Record<string, string>,
 ): Promise<void> {
-  await request('/staff/clinical-evaluations', {
-    method: 'POST',
-    body: { kind, animal_id: animalId, data },
-  });
+  void kind;
+  void animalId;
+  void data;
+  throw new ApiError(
+    'El guardado de registros clínicos no está habilitado en esta versión. No se enviaron datos.',
+    0,
+  );
 }
