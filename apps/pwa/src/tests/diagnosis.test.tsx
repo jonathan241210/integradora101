@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { institution } from '@/viewmodels/diagnosisForms';
 import { getSectionLabel, isNavigationActive } from '@/viewmodels/pwaDemo';
-import { manualInstallController } from '@/tests/testFixtures';
 import { AppShell } from '@/views/AppShell';
 import { DiagnosisChooserView } from '@/views/DiagnosisChooserView';
 import { DiagnosisIntenseView } from '@/views/DiagnosisIntenseView';
@@ -167,7 +166,6 @@ describe('CA-07 PWA diagnóstico intenso y rápido', () => {
     const markup = renderToStaticMarkup(
       <AppShell
         activeSection="diagnosis-quick"
-        installController={manualInstallController}
         onLogout={() => undefined}
         onNavigate={() => undefined}
       />,

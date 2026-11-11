@@ -2,7 +2,6 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { manualInstallController } from '@/tests/testFixtures';
 import { LoginView } from '@/views/LoginView';
 import { AppShell } from '@/views/AppShell';
 
@@ -16,7 +15,6 @@ describe('CA-05 PWA responsive demo screens', () => {
     const loginMarkup = renderToStaticMarkup(
       <LoginView
         error="El usuario o la contraseña no son correctos."
-        installController={manualInstallController}
         onLogin={() => undefined}
       />,
     );
@@ -33,7 +31,6 @@ describe('CA-05 PWA responsive demo screens', () => {
     const appMarkup = renderToStaticMarkup(
       <AppShell
         activeSection="home"
-        installController={manualInstallController}
         onLogout={() => undefined}
         onNavigate={() => undefined}
       />,

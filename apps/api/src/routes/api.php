@@ -15,6 +15,9 @@ use App\Http\Controllers\Admin\TicketQuoteController;
 use App\Http\Controllers\Admin\TicketReportController;
 use App\Http\Controllers\Admin\TicketReportExportController;
 use App\Http\Controllers\Admin\TicketSaleController;
+use App\Http\Controllers\Api\AnimalController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\ClinicalEvaluationController;
 use App\Http\Controllers\Auth\MeController;
 use App\Http\Controllers\Catalog\EnclosureController;
 use App\Http\Controllers\Catalog\EventController;
@@ -29,6 +32,19 @@ use Illuminate\Support\Facades\Route;
 Route::get('/auth/me', MeController::class)
     ->middleware(['auth:sanctum', 'staff.user'])
     ->name('auth.me');
+
+Route::prefix('staff')->name('staff.')->group(function () {
+    Route::post('auth/login', [AuthController::class, 'login'])->name('auth.login');
+
+    Route::middleware(['auth:sanctum', 'staff.user'])->group(function () {
+        Route::get('auth/session', [AuthController::class, 'me'])->name('auth.session');
+        Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+        Route::get('animals', [AnimalController::class, 'index'])->name('animals.index');
+        Route::post('animals', [AnimalController::class, 'store'])->name('animals.store');
+        Route::get('animals/{animal}', [AnimalController::class, 'show'])->whereNumber('animal')->name('animals.show');
+        Route::post('clinical-evaluations', [ClinicalEvaluationController::class, 'store'])->name('clinical-evaluations.store');
+    });
+});
 
 Route::get('/species', [SpeciesController::class, 'index'])->name('species.index');
 Route::get('/species/{species}', [SpeciesController::class, 'show'])->name('species.show');

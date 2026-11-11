@@ -1,4 +1,4 @@
-import { Button, Card, Field, TextAreaField } from '@arca/ui';
+import { Button, Card, Field, SelectField, TextAreaField } from '@arca/ui';
 import { useState, type FormEvent } from 'react';
 import { createEvaluation } from '@/services/apiClient';
 import { formToRecord, useSaveRequest } from '@/viewmodels/useApiData';
@@ -10,6 +10,7 @@ import {
   intenseVitals,
   physicalRestraints,
   sampleTypes,
+  sexOptions,
 } from '@/viewmodels/diagnosisForms';
 import {
   PrintActions,
@@ -18,11 +19,11 @@ import {
 } from '@/views/DiagnosisPrint';
 
 const restraintColumns = [
-  ['medication', 'Medicamento'],
-  ['dose-mg-kg', 'Dosis mg/kg'],
-  ['dose-ml', 'Dosis en ml'],
-  ['time', 'Hora de aplicación'],
-  ['notes', 'Observaciones'],
+  ['medication', 'Medicamento', 'text'],
+  ['dose-mg-kg', 'Dosis mg/kg', 'number'],
+  ['dose-ml', 'Dosis en ml', 'number'],
+  ['time', 'Hora de aplicación', 'time'],
+  ['notes', 'Observaciones', 'text'],
 ] as const;
 
 export function DiagnosisIntenseView() {
@@ -68,9 +69,14 @@ export function DiagnosisIntenseView() {
               <Field label="Nombre" name="intense-name" />
               <Field label="Especie" name="intense-species" />
               <Field label="Identificación" name="intense-identification" />
-              <Field label="Edad" name="intense-age" />
-              <Field label="Sexo" name="intense-sex" />
-              <Field label="Peso" name="intense-weight" />
+              <Field label="Edad (años)" min={0} name="intense-age" step="any" type="number" />
+              <SelectField defaultValue="" label="Sexo" name="intense-sex">
+                <option value="">Seleccionar</option>
+                {sexOptions.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </SelectField>
+              <Field label="Peso (kg)" min={0} name="intense-weight" step="any" type="number" />
             </div>
             <h4>Anamnesis</h4>
             <div className="form-grid">
@@ -90,13 +96,15 @@ export function DiagnosisIntenseView() {
                 <tbody>
                   {Array.from({ length: chemicalRestraintRows }, (_, row) => (
                     <tr key={row}>
-                      {restraintColumns.map(([key, label]) => (
+                      {restraintColumns.map(([key, label, type]) => (
                         <td key={key}>
                           <input
                             aria-label={`${label}, fila ${row + 1}`}
                             className="table-input"
+                            min={type === 'number' ? 0 : undefined}
                             name={`intense-restraint-${row + 1}-${key}`}
-                            type="text"
+                            step={type === 'number' ? 'any' : undefined}
+                            type={type}
                           />
                         </td>
                       ))}
@@ -127,12 +135,20 @@ export function DiagnosisIntenseView() {
             </div>
             <div className="form-grid vitals-grid">
               {intenseVitals.map((item) => (
-                <Field key={item.name} label={item.label} name={`intense-vital-${item.name}`} />
+                <Field
+                  key={item.name}
+                  label={item.label}
+                  max={'max' in item ? item.max : undefined}
+                  min={item.min}
+                  name={`intense-vital-${item.name}`}
+                  step={item.step}
+                  type="number"
+                />
               ))}
             </div>
             <h4>Sinología</h4>
             <div className="form-grid">
-              <Field label="No. de animales afectados" name="intense-affected" />
+              <Field label="No. de animales afectados" min={0} name="intense-affected" step="1" type="number" />
               <fieldset className="check-group">
                 <legend>Toma de muestra</legend>
                 <label><input name="intense-sample" type="radio" value="si" /> Sí</label>
