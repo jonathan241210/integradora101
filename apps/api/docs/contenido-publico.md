@@ -57,6 +57,16 @@ El detalle devuelve `{"data": {...}}` con los mismos campos más `content`. No s
 
 `CORS_ALLOWED_ORIGINS` en `.env` debe incluir el origen exacto del portal. En desarrollo: `http://localhost:8080` (no `127.0.0.1`, que es otro origen). `config/cors.php` no cambia.
 
+## Origen de `image_url`
+
+Vigente hoy: `image_url` sale del disco `public` de Laravel con `APP_URL` y `/storage`, y requiere `php artisan storage:link`. La imagen solo existe en la máquina o el servidor donde se subió (`api-008`).
+
+**Carpeta compartida de pruebas (decisión del responsable, pendiente de aprobación formal del equipo; ADR 0026 y `apps/api/specs/013-object-storage-images.md`, D-01 a D-04):** las imágenes de noticias y eventos se guardan en la carpeta versionada `apps/api/src/media/`, en `news/` y `events/` (disco `media`, con `PUBLIC_MEDIA_DISK=media` en el `.env` de cada equipo de pruebas). `image_url` sale de `MEDIA_PUBLIC_URL` o, si está vacía, de `APP_URL` más `/media`, y el enlace `public/media` lo crea `php artisan storage:link`. Con esa configuración, el mismo archivo aparece como `.../media/news/<uuid>.<ext>` en lugar de `.../storage/...`. Toda la carpeta `media/` se versiona, y eso incluye `memories/` (momentos); esta referencia cubre solo noticias y eventos. Un equipo ve la imagen si tiene el archivo (`git pull`) y la API que consulta responde desde una `APP_URL` alcanzable. Las imágenes de momentos (`api-010`) están en `media/memories/`; la API no les devuelve `image_url` mientras no estén aceptadas (`api-013` RN-16), pero el archivo es alcanzable por su URL si alguien la conoce (riesgo del ADR 0026). Solo se usan datos de prueba (`api-013` CA-22).
+
+Opción futura, no implementada ni aprobada: `docs/propuestas/almacenamiento-objetos-s3.md`.
+
+El formato de la respuesta no cambia: el campo sigue siendo una URL absoluta o `null`. La base de datos guarda solo la ruta relativa, nunca la URL.
+
 ## Precondición
 
 DBR-005 aplicada en el ambiente (`deleted_at` en `news` y `events`).

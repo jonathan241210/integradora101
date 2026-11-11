@@ -27,7 +27,7 @@ Afectados: `admin` y `zoo-admin` (publican y editan), `executive` (solo consulta
 ## Fuera de alcance
 
 - GitHub Actions, workflows de CI y pruebas automáticas de CI: las atiende otro compañero. No se tocan `.github/workflows` ni la configuración de CI.
-- Almacenamiento en la nube (S3 u otro proveedor). Requeriría un ADR aprobado (Constitución I).
+- Almacenamiento en la nube u otro proveedor de objetos. Requiere un ADR aprobado (Constitución I) y queda fuera de alcance. Para pruebas compartidas, la carpeta versionada `media/` de `api-013` y el ADR 0026 (Propuesto) (ver «Nota de almacenamiento 2026-11-10»). Opción futura: `docs/propuestas/almacenamiento-objetos-s3.md`.
 - Varias imágenes o galería por registro.
 - Recorte, redimensionado o generación de miniaturas en el servidor.
 - Formatos distintos de JPG, PNG y WebP (GIF, SVG, PDF, HEIC, etc.).
@@ -138,7 +138,7 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
   - DBR-007 (borrado físico de noticias y eventos, `docs/database/requests/DBR-007-news-events-hard-delete.md`): **Descartada** el 2026-11-01. El equipo mantiene el borrado lógico por la Constitución V. No bloquea esta spec ni deja tareas pendientes.
   - `api-006` (catálogo público): impacto decidido (P7): `GET /api/v1/events` añade `image_url` como campo nuevo. Es un cambio aditivo; la spec `api-006` se anota cuando esta spec se apruebe (T-23).
   - `dashboard-004` (consumidor de la subida con archivo).
-  - ADR: ninguno. Un almacenamiento externo o una biblioteca de procesamiento de imágenes requerirían ADR; el recorte de metadatos no añade dependencias (RN-11, RN-13). La eliminación lógica cumple la Constitución V sin excepción.
+  - ADR: ninguno para esta versión. Un almacenamiento externo o una biblioteca de procesamiento de imágenes requerirían ADR; el recorte de metadatos no añade dependencias (RN-11, RN-13). La eliminación lógica cumple la Constitución V sin excepción. Para la carpeta compartida, ver ADR 0026 (Propuesto, 2026-11-10) y `api-013` (Borrador). Un almacenamiento externo, si se decide, tendría su propio ADR.
 - **Decisiones tomadas (2026-11-01, por la sesión principal con la decisión del usuario):**
   - **P1 (ruta de actualización con archivo):** `POST` multipart con `_method=PATCH` sobre las mismas rutas `admin.news.update` y `admin.events.update`. No se crean endpoints `…/image`. Las rutas de `api-007` no cambian de nombre.
   - **P2 (campo tras eliminar, decisión del usuario):** al eliminar se borra el archivo de imagen y `image_path` queda en `null`; el resto de la fila se conserva con `deleted_at` (borrado lógico, DBR-005). Es una decisión explícita, con el riesgo de «Imagen tras el borrado lógico» en «Riesgos».
@@ -168,6 +168,18 @@ Decisión de Jonathan tras revisar una foto de iPhone guardada con sus coordenad
 - **Recorte, no recompresión.** Volver a generar la imagen con GD perdería calidad y el perfil de color. El recorte no añade dependencias ni requiere ADR, DBR ni cambios en clientes.
 - **Orientación.** Se conserva esa única etiqueta porque, sin ella, las fotos de teléfono pueden verse giradas.
 - **Imágenes existentes.** No se limpian; hay que volver a subirlas.
+
+## Nota de almacenamiento (2026-11-10, decisión del responsable pendiente de aprobación formal del equipo)
+
+Petición del 2026-11-10: las imágenes de noticias y eventos deben verse desde cualquier equipo, no solo desde la máquina donde se subieron. La propuesta está en `api-013` (Borrador) y en el ADR 0026 (Propuesto). La decisión vigente es una carpeta de medios versionada en git (`apps/api/src/media/`, con `news/`, `events/` y `memories/`) para pruebas compartidas. Un almacenamiento de objetos queda como opción futura, sin fecha ni aprobación (`docs/propuestas/almacenamiento-objetos-s3.md`). Esta nota no cambia ningún CA-01 a CA-15 ni el estado de la spec (En progreso).
+
+- **Qué no cambia:** la subida, el reemplazo, quitar la imagen, el borrado, los errores y los CA de esta spec siguen igual. Con la configuración por defecto, la API sigue usando el disco `public` y `Storage::fake('public')` (CA-13) sigue siendo válido.
+- **Disco.** Hoy `StoreContentImageAction`, `DeleteContentImageAction` y `ResolveContentImageUrlAction` llaman a `Storage::disk('public')` por nombre. `FILESYSTEM_DISK` no lo cambia. Con `api-013`, el nombre del disco sale de la configuración (`api-013` CA-02) y cada equipo de pruebas lo fija en `.env` con `PUBLIC_MEDIA_DISK=media`. Esa es la forma de cambiar de disco; no se cambia `FILESYSTEM_DISK`. En la carpeta compartida, las imágenes de noticias y eventos no usan `storage/` (`api-013` D-03).
+- **Ruta pública (P5).** El cuerpo de P5 (2026-11-01, «mismo dominio mediante `storage:link`») sigue siendo el valor por defecto con `PUBLIC_MEDIA_DISK=public`. Con la decisión del responsable del 2026-11-10 (`api-013` D-01), en la carpeta compartida la URL de noticias y eventos sale de `MEDIA_PUBLIC_URL` o de `APP_URL` más `/media` (carpeta `apps/api/src/media/`, `api-013` CA-17), en vez de `/storage`. El cambio de P5 queda pendiente de aprobación formal del equipo.
+- **Riesgo «disco local en varios servidores»:** para pruebas compartidas queda cubierto por la carpeta `media/` (`api-013`) cuando se apruebe. En producción sigue abierto.
+- **Imágenes existentes:** las imágenes ya subidas (incluidas las anteriores a la revisión del 2026-11-06) se vuelven a subir desde el dashboard antes de versionarlas (`api-013` D-04; confirmado por Jonathan el 2026-11-10); la nueva subida cambia la ruta de la fila. Las filas anteriores apuntan a `storage/` de la máquina que subió la imagen y no se ven en otros equipos hasta esa nueva subida.
+- **Infraestructura:** el checklist de `infra/README.md` describe los medios de prueba (carpeta `media/`, enlace `public/media` con `storage:link`). `storage:link` y el disco persistente del servidor siguen aplicando al disco `public` por defecto y al disco local de desarrollo.
+- **Plan y tareas:** `apps/api/plan/008-event-news-images.md` y `apps/api/tasks/008-event-news-images.md` no se actualizan con esta nota. Si se aprueba `api-013`, la divergencia se registra en plan y tasks en el mismo cambio (`docs/05-flujo-sdd.md`, paso 7).
 
 ## Revisión
 
