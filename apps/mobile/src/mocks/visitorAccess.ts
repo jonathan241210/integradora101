@@ -53,12 +53,12 @@ export const HELP_SECTIONS: InfoSection[] = [
   {
     id: 'password',
     title: 'Contraseña olvidada',
-    body: 'Indica tu correo. El aviso no dice si ese correo existe. Después escribe un código de 6 dígitos y la nueva contraseña. En esta demostración el código no se envía; cualquiera de 6 dígitos permite continuar.',
+    body: 'Indica tu correo. El aviso no dice si ese correo existe. Después escribe el código de 6 dígitos que llegó al correo y la nueva contraseña. Esta pantalla no muestra ningún código.',
   },
   {
     id: 'settings',
     title: 'Ajustes',
-    body: 'Notificaciones y ubicación solo cambian de estado en pantalla. La aplicación permanece en modo claro.',
+    body: 'La cámara pide el permiso del teléfono. La ubicación solo cambia de estado en pantalla. La aplicación permanece en modo claro.',
   },
 ];
 

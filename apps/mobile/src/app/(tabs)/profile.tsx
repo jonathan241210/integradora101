@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { AppText, LoadingView, ScreenContainer } from '../../components/ui';
+import { AppText, ScreenContainer, TitledLoading } from '../../components/ui';
 import { avatarLabel } from '../../constants/avatarCatalog';
 import { ProfileScreen } from '../../screens/ProfileScreen';
 import { useUserViewModel } from '../../viewmodels/useUserViewModel';
@@ -16,8 +16,8 @@ export default function ProfileRoute() {
     : null;
   if (loading || (progress.loading && !progress.snapshot)) {
     return (
-      <ScreenContainer>
-        <LoadingView message="Cargando perfil…" />
+      <ScreenContainer scroll={false}>
+        <TitledLoading title="Perfil" message="Cargando perfil…" />
       </ScreenContainer>
     );
   }

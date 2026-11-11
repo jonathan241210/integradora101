@@ -19,6 +19,13 @@ export type VisitorMessage = {
   message: string;
 };
 
+export type VisitorAlreadyRegistered = {
+  message: string;
+  code: "email_already_registered";
+};
+
+export type VisitorVerifyResult = VisitorTokenPayload | VisitorAlreadyRegistered;
+
 export type VisitorProgressDto = {
   points: number;
   level: number;
@@ -44,6 +51,7 @@ export type VisitorCatalogItemDto = {
   points: number;
   rule_type: string;
   rule_target: number;
+  rule_param?: string | null;
   progress: number;
   state: "pending" | "unlocked" | "completed";
   earned_at: string | null;
@@ -250,7 +258,7 @@ export function createVisitorApi({
     register: (input: VisitorRegisterInput) =>
       request<VisitorMessage>("/api/v1/visitor/auth/register", { method: "POST", body: input, auth: false }),
     verifyEmail: (email: string, code: string) =>
-      request<VisitorTokenPayload>("/api/v1/visitor/auth/email/verify", {
+      request<VisitorVerifyResult>("/api/v1/visitor/auth/email/verify", {
         method: "POST",
         body: { email, code },
         auth: false,

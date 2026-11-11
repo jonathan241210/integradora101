@@ -48,7 +48,7 @@ El archivo anterior se borra **después** del commit, no antes: si la base de da
 - **Eliminación lógica con borrado de archivo (P2).** `delete()` con SoftDeletes dentro de la transacción, después de poner `image_path` en `null`. El archivo gestionado se borra después del commit a partir de la ruta capturada antes de la transacción. La fila conserva el resto de sus datos con `deleted_at`. La restauración por base de datos no recupera el archivo (riesgo en la spec).
 - **Modelos y SoftDeletes (RN-10, Constitución V).** `News` y `Event` conservan el trait `SoftDeletes` (`api-007`). No se cambia ningún modelo ni se requiere migración.
 - **Activitylog (CA-12, P6).** Eventos existentes `created`, `updated`, `deleted` del log `admin`, más `image-changed` cuando la imagen se crea, se reemplaza o se quita. Propiedades: como máximo `image_changed` (booleano) y `action` (`set`, `replaced`, `removed`); nunca el binario ni la ruta absoluta.
-- **EXIF (P8).** Fuera de alcance: no se reprocesa la imagen. No se añade ninguna librería.
+- **Metadatos y HDR (P8, revertida el 2026-11-06).** `StripImageMetadataAction` recorta el contenedor antes de guardar, sin decodificar ni recomprimir, con una lista de lo que se conserva por formato. No se añade ninguna librería ni se requiere GD. Si la estructura no se puede procesar, responde 422 (CA-15).
 - **Sin dependencias (RN-11).** Se usan `Storage`, `UploadedFile` y las reglas `image`, `mimes` y `max` de Laravel.
 - **Pruebas sin archivos reales.** Todas las pruebas usan `Storage::fake('public')` y `UploadedFile::fake()`.
 
@@ -122,7 +122,7 @@ No se crean endpoints `…/image` (P1 decidida).
 - **Validación de archivo.** Tipo y tamaño en servidor; el contenido se valida con las reglas de Laravel, no solo con la extensión. No se admiten SVG (pueden contener scripts) ni PDF.
 - **Nombres.** Nombre generado, sin nombre original ni rutas enviadas por el cliente; evita path traversal.
 - **Borrado acotado.** Solo se borran rutas gestionadas (CA-08).
-- **Datos públicos.** Las imágenes son públicas por diseño. Metadatos EXIF: fuera de alcance (P8); riesgo documentado en la spec.
+- **Datos públicos.** Las imágenes son públicas por diseño. Los metadatos y el HDR se quitan al guardar (CA-14, RN-13); las imágenes anteriores a la revisión de 2026-11-06 los conservan hasta volver a subirlas.
 - **Privacidad y auditoría.** Activitylog sin binario ni ruta absoluta (CA-12).
 - **Secretos.** Ninguno nuevo. El disco `public` y `APP_URL` se configuran por `.env`.
 - **Portabilidad (ADR 0013).** No se usa ninguna función de base de datos ni servicio propietario. El almacenamiento es el disco local de Laravel. Un disco externo (p. ej. S3) requeriría ADR y se decidirá aparte.

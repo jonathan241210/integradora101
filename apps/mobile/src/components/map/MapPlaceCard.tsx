@@ -7,7 +7,9 @@ import { spacing } from '../../theme/tokens';
 interface MapPlaceCardProps {
   place: MapPlace;
   sectionName: string;
+  isDestination?: boolean;
   onClose: () => void;
+  onToggleDestination?: (id: string) => void;
 }
 
 const kindLabels: Record<MapPlace['kind'], string> = {
@@ -16,7 +18,13 @@ const kindLabels: Record<MapPlace['kind'], string> = {
   entrance: 'Acceso',
 };
 
-export function MapPlaceCard({ place, sectionName, onClose }: MapPlaceCardProps) {
+export function MapPlaceCard({
+  place,
+  sectionName,
+  isDestination = false,
+  onClose,
+  onToggleDestination,
+}: MapPlaceCardProps) {
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
@@ -36,6 +44,15 @@ export function MapPlaceCard({ place, sectionName, onClose }: MapPlaceCardProps)
           {place.description}
         </AppText>
       ) : null}
+      {onToggleDestination && (
+        <View style={styles.actions} testID="toggle-destination-button">
+          <Button
+            label={isDestination ? 'Cancelar destino' : 'Fijar como destino'}
+            variant={isDestination ? 'soft' : 'primary'}
+            onPress={() => onToggleDestination(place.id)}
+          />
+        </View>
+      )}
     </Card>
   );
 }
@@ -50,12 +67,15 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    gap: spacing.sm,
+    alignItems: 'flex-start',
+    gap: spacing.md,
   },
   titleGroup: {
     flex: 1,
-    gap: 2,
+    gap: spacing.xs,
+  },
+  actions: {
+    paddingTop: spacing.xs,
   },
 });

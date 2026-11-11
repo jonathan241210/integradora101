@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Planea tu visita al Zoológico Nicolás Bravo: descubre animales, actividades, instalaciones y opciones para tu próxima visita.">
+<meta name="arca-api-base" content="http://localhost:8000/api/v1">
 <meta name="theme-color" content="#4f7a3a">
 <title>Zoológico Nicolás Bravo</title>
 
@@ -31,6 +32,7 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="stylesheet" href="animations.css">
 <link rel="stylesheet" href="accessibility.css">
+<link rel="stylesheet" href="news-events.css">
 
 <!-- Mejoras de rendimiento y accesibilidad -->
 <style>
@@ -65,6 +67,8 @@
 <script src="script.js" defer></script>
 <script src="animations.js" defer></script>
 <script src="accessibility.js" defer></script>
+<script src="js/api.js" defer></script>
+<script src="js/news-events.js" defer></script>
 </head>
 
 <body>
@@ -742,35 +746,11 @@
             <p>Historias, avisos y actividades para mantenerte al día.</p>
         </div>
 
-        <div class="news-grid">
-
-            <article class="news-card">
-                <span class="news-date"><i class="bi bi-tree" aria-hidden="true"></i> Conservación</span>
-                <h3>Pequeñas acciones, grandes cambios</h3>
-                <p>Descubre cómo reducir residuos y cuidar la fauna desde casa y durante tu visita.</p>
-                <a href="#preguntas" class="link">Consejos para tu visita <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-            </article>
-
-            <article class="news-card">
-                <span class="news-date"><i class="bi bi-megaphone" aria-hidden="true"></i> Aviso a visitantes</span>
-                <h3>Planea tu recorrido con tiempo</h3>
-                <p>Consulta horarios y recomendaciones antes de llegar para disfrutar mejor el día.</p>
-                <a href="#visita" class="link">Ver información <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-            </article>
-
-            <article class="news-card">
-                <span class="news-date"><i class="bi bi-calendar-event" aria-hidden="true"></i> Próximamente</span>
-                <h3>Nuevas actividades para descubrir</h3>
-                <p>Vuelve a consultar esta sección para conocer las próximas actividades educativas.</p>
-                <a href="#eventos" class="link">Explorar eventos <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
-            </article>
-
+        <div class="news-grid" id="newsGrid" data-ne-list="news" data-ne-limit="3" aria-busy="true">
+            <div class="ne-state ne-state-loading"><p class="ne-status" role="status" aria-live="polite">Cargando noticias…</p></div>
         </div>
 
-        <p class="demo-note">
-            <i class="bi bi-info-circle" aria-hidden="true"></i>
-            Las noticias son contenido de muestra. Confirma los avisos vigentes con el zoológico.
-        </p>
+        <p class="ne-all"><a class="ne-all-link" href="noticias.html">Ver todas las noticias</a></p>
 
     </section>
 
@@ -784,38 +764,14 @@
                 Guarda la fecha
             </span>
             <h2>Próximos eventos</h2>
-            <p>Actividades de ejemplo; las fechas oficiales se publicarán próximamente.</p>
+            <p>Actividades y fechas publicadas por el zoológico.</p>
         </div>
 
-        <div class="event-grid">
-
-            <article class="event-card">
-                <div class="event-date"><strong>01</strong><span>Próximamente</span></div>
-                <div>
-                    <span class="animal-label"><i class="bi bi-people" aria-hidden="true"></i> Actividad familiar</span>
-                    <h3>Exploradores de la naturaleza</h3>
-                    <p>Recorrido educativo para observar y aprender sobre la vida silvestre.</p>
-                    <span class="service-label">
-                        <i class="bi bi-clock" aria-hidden="true"></i> Horario por confirmar ·
-                        <i class="bi bi-geo-alt" aria-hidden="true"></i> Punto de encuentro por confirmar
-                    </span>
-                </div>
-            </article>
-
-            <article class="event-card">
-                <div class="event-date"><strong>02</strong><span>Próximamente</span></div>
-                <div>
-                    <span class="animal-label"><i class="bi bi-mortarboard" aria-hidden="true"></i> Taller educativo</span>
-                    <h3>Guardianes de los hábitats</h3>
-                    <p>Una actividad participativa para descubrir por qué cada hábitat importa.</p>
-                    <span class="service-label">
-                        <i class="bi bi-clock" aria-hidden="true"></i> Horario por confirmar ·
-                        <i class="bi bi-geo-alt" aria-hidden="true"></i> Punto de encuentro por confirmar
-                    </span>
-                </div>
-            </article>
-
+        <div class="event-grid" id="eventGrid" data-ne-list="events" data-ne-limit="2" aria-busy="true">
+            <div class="ne-state ne-state-loading"><p class="ne-status" role="status" aria-live="polite">Cargando eventos…</p></div>
         </div>
+
+        <p class="ne-all"><a class="ne-all-link" href="eventos.html">Ver todos los eventos</a></p>
 
     </section>
 

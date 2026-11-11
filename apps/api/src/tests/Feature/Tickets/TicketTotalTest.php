@@ -23,5 +23,6 @@ class TicketTotalTest extends TicketFeatureTestCase
         ])->assertCreated()->json('data');
 
         $this->assertSame('66.00', $data['total_amount']);
+        $this->assertSame(66.0, array_sum(array_map('floatval', array_column($data['tickets'], 'total_amount'))));
     }
 }

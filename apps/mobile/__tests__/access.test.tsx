@@ -11,6 +11,7 @@ import PrivacyRoute from '../src/app/(tabs)/privacy';
 import HelpRoute from '../src/app/(tabs)/help';
 import AboutRoute from '../src/app/(tabs)/about';
 import ProfileRoute from '../src/app/(tabs)/profile';
+import { authRepository } from '../src/repositories/mockAuthRepository';
 import { visitorAccessRepository } from '../src/repositories/visitorAccessRepository';
 import { accountSession } from '../src/session/accountSession';
 import { tokenStorage } from '../src/services/tokenStorage';
@@ -81,16 +82,17 @@ describe('Acceso visual del visitante', () => {
 
   it('test-ca-12: el registro pide nombre, apodo y contraseña antes de crear la cuenta', async () => {
     const register = await render(<RegisterRoute />);
-    await fireEvent.press(register.getByRole('button', { name: 'Crear cuenta' }));
-    expect(register.getByText('Completa nombre, apodo, correo, contraseña y confirmación.')).toBeTruthy();
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
+    expect(register.getByText('Completa nombre, apodo y correo.')).toBeTruthy();
     expect(mockReplace).not.toHaveBeenCalled();
 
     await fireEvent.changeText(register.getByLabelText('Nombre'), 'María');
     await fireEvent.changeText(register.getByLabelText('Apodo'), 'Mari');
     await fireEvent.changeText(register.getByLabelText('Correo electrónico'), 'nueva@correo.com');
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
     await fireEvent.changeText(register.getByLabelText('Contraseña'), 'secreta');
     await fireEvent.changeText(register.getByLabelText('Confirmar contraseña'), 'otra');
-    await fireEvent.press(register.getByRole('button', { name: 'Crear cuenta' }));
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
     expect(register.getByText('La confirmación no coincide con la contraseña.')).toBeTruthy();
   });
 
@@ -114,7 +116,7 @@ describe('Acceso visual del visitante', () => {
     await fireEvent.press(reset.getByRole('button', { name: 'Restablecer contraseña' }));
     expect(reset.getByText('Escribe el código de 6 dígitos.')).toBeTruthy();
 
-    await fireEvent.changeText(reset.getByLabelText('Código'), '123456');
+    await fireEvent.changeText(reset.getByLabelText('Código'), authRepository.issuedCode('correo@ejemplo.com', 'recovery') ?? '');
     await fireEvent.press(reset.getByRole('button', { name: 'Restablecer contraseña' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/login'));
   });
@@ -128,7 +130,8 @@ describe('Acceso visual del visitante', () => {
     expect(settings.getByText('Ana')).toBeTruthy();
     expect(settings.getByText('correo@ejemplo.com')).toBeTruthy();
 
-    expect(settings.getByLabelText('Notificaciones')).toBeTruthy();
+    expect(settings.getByLabelText('Cámara')).toBeTruthy();
+    expect(settings.queryByLabelText('Notificaciones')).toBeNull();
     expect(settings.getByLabelText('Ubicación')).toBeTruthy();
     expect(settings.queryByLabelText('Modo oscuro')).toBeNull();
     expect(visitorAccessRepository.getPreferences().notifications).toBe(true);

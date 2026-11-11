@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AVATAR_CODES, AVATAR_LABELS, AvatarCode } from '../constants/avatarCatalog';
-import { colors, radius, spacing } from '../theme/tokens';
+import { colors, spacing } from '../theme/tokens';
 import { AppText } from './ui';
 
 interface AvatarPickerProps {
@@ -21,9 +21,11 @@ export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
             accessibilityLabel={`Avatar ${AVATAR_LABELS[code]}`}
             accessibilityState={{ selected }}
             onPress={() => onChange(code)}
-            style={[styles.item, selected ? styles.selected : null]}
+            style={styles.choice}
           >
-            <AppText variant="small" center>{AVATAR_LABELS[code]}</AppText>
+            <View style={[styles.circle, selected ? styles.selected : null]}>
+              <AppText variant="small" center bold={selected}>{AVATAR_LABELS[code]}</AppText>
+            </View>
           </Pressable>
         );
       })}
@@ -32,17 +34,18 @@ export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  item: {
-    minWidth: 88,
-    minHeight: 44,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radius.md,
-    borderWidth: 1,
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.md },
+  choice: { width: 96, alignItems: 'center' },
+  circle: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    borderWidth: 2,
     borderColor: colors.border,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
+    padding: spacing.sm,
   },
-  selected: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  selected: { borderColor: colors.secondary, backgroundColor: colors.accent, borderWidth: 3 },
 });

@@ -19,6 +19,7 @@ export interface AccountAccepted {
   ok: true;
   status: 200 | 201 | 202 | 204;
   message: string;
+  code?: 'email_already_registered';
   tokens?: AuthTokens;
   profile?: VisitorProfile;
 }

@@ -94,12 +94,9 @@ Las pruebas, el chequeo de tipos y la exportación JavaScript no necesitan telé
 
 La spec 004 tiene sesión, registro, verificación, recuperación, edición, cambio de contraseña y borrado. Hay dos caminos. No pongas secretos en `EXPO_PUBLIC_API_URL`, no versiones `apps/mobile/.env` y no apuntes a producción ni a la base `arca_zoo`.
 
-### Sin API: cuentas de prueba
+### Sin API
 
-Si `EXPO_PUBLIC_API_URL` no existe o está vacía, la app y Jest usan el repositorio simulado. Los tokens quedan en memoria. Esas cuentas no existen en la API.
-
-- `correo@ejemplo.com` o `maria@correo.com`, contraseña `secreta`.
-- Una cuenta creada en esa simulación usa el código de prueba `123456`.
+Si `EXPO_PUBLIC_API_URL` no existe o está vacía, la app usa el repositorio simulado y los tokens quedan en memoria. No hay cuentas precargadas ni un código de prueba visible. El alta y la recuperación reales requieren la API. Jest arma sus propias cuentas solo dentro de la suite.
 
 ### Con la API de pruebas, en cada máquina
 
@@ -122,7 +119,7 @@ EXPO_PUBLIC_API_URL=http://ESA-IP:8000/api/v1
 Ese `/api/v1` es el de la variable, el mismo que usa el catálogo. La cuenta no lo repite.
 
 4. Reinicia Expo. La variable se lee al arrancar: si ya estaba `npm start`, detenlo con `Ctrl+C` y vuelve a lanzarlo. El teléfono y la computadora tienen que estar en la misma red.
-5. El alta real pide al menos 8 caracteres, con letras y números. El código de 6 dígitos no llega a una bandeja: con `MAIL_MAILER=log` queda en `apps/api/src/storage/logs/laravel.log`.
+5. El alta real pide al menos 8 caracteres, con letras y números. Para enviar el código de 6 dígitos por **Gmail SMTP**, configura en `apps/api/src/.env`: `MAIL_MAILER=smtp`, `MAIL_SCHEME=smtp`, `MAIL_HOST=smtp.gmail.com`, `MAIL_PORT=587`, `MAIL_USERNAME`, `MAIL_PASSWORD` (contraseña de aplicación de Google) y `MAIL_FROM_ADDRESS` (si dejas `MAIL_MAILER=log`, el correo queda en `apps/api/src/storage/logs/laravel.log`).
 
 ## Estado y límites
 

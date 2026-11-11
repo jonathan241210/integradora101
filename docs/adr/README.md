@@ -1,4 +1,4 @@
-# Registro de decisiones de arquitectura
+﻿# Registro de decisiones de arquitectura
 
 Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisión y consecuencias de cambios tecnológicos o estructurales. Se numeran con cuatro dígitos y no se borran: una decisión reemplazada se marca como Superseded e indica el ADR que la sustituye. Las propuestas no autorizan dependencias ni implementación.
 
@@ -25,12 +25,18 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0012 · Canal de distribución Android](0012-android-distribution-channel.md) — Aceptado
 - [0013 · Aiven como proveedor de MySQL administrado](0013-aiven-managed-mysql.md) — Aceptado
 - [0014 · Caché offline y detección de conectividad en la app móvil](0014-mobile-offline-cache-and-connectivity.md) — Aceptado
+- [0015 · Renderizado del mapa SVG en la app móvil](0015-mobile-svg-map-rendering.md) — Aceptado
+- [0016 · Ubicación GPS con expo-location (mapa V2)](0016-expo-location-gps-blue-dot.md) — Aceptado
 - [0017 · Exportación del reporte a Excel y PDF](0017-report-export-excel-pdf.md) — Aceptado
 - [0018 · PHP mínimo de la API en 8.4](0018-php-minimum-8-4.md) — Aceptado
-- [0015 · Renderizado del mapa SVG en la app móvil](0015-mobile-svg-map-rendering.md) — Aceptado
 - [0019 · Generación del QR del boleto en SVG desde la API](0019-qr-svg-generation-api.md) — Aceptado
 - [0020 · Notificaciones por correo electrónico de cambios de precio](0020-price-change-email-notifications.md) — Propuesto — diferido (2026-11-02)
 - [0021 · Excepciones a la Constitución en la feature de ventas de boletos](0021-ticket-sales-constitution-exceptions.md) — Aceptado (2026-11-02)
+- [0022 · Escaneo QR con expo-camera (mobile-006)](0022-expo-camera-qr-scan.md) — Aceptado
+- [0023 · Recorrido guiado 3D y realidad aumentada offline](0023-mobile-ar-3d-camera-threejs.md) — Propuesto
+- [0024 · Excepción de arquitectura para el portal público: HTML y JavaScript estático en apps/web](0024-web-static-portal-exception.md) — Aceptado (2026-11-07)
+- [0023 · Checklist de despliegue en la Constitución](0023-deployment-checklist-constitution.md) — Propuesto (2026-11-05)
+- [0025 · Recorrido guiado 3D y realidad aumentada offline](0025-mobile-ar-3d-camera-threejs.md) — Propuesto
 
 ## Plantilla
 

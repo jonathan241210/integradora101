@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Crear tabla ticket_prices
-        if (!Schema::hasTable('ticket_prices')) {
+        if (! Schema::hasTable('ticket_prices')) {
             Schema::create('ticket_prices', function (Blueprint $table) {
                 $table->id();
                 $table->string('ticket_type', 20); // 'adult' o 'child'
@@ -30,31 +30,33 @@ return new class extends Migration
                 $table->index(['ticket_type', 'effective_at'], 'idx_ticket_prices_type_effective');
             });
 
-            // Carga inicial aprobada en DBR-006: Adulto $25.00, Niño $16.00
-            $defaultAdminId = DB::table('users')->orderBy('id')->value('id') ?? 1;
-            $now = now();
-            DB::table('ticket_prices')->insert([
-                [
-                    'ticket_type' => 'adult',
-                    'amount' => 25.00,
-                    'effective_at' => $now,
-                    'created_by' => $defaultAdminId,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ],
-                [
-                    'ticket_type' => 'child',
-                    'amount' => 16.00,
-                    'effective_at' => $now,
-                    'created_by' => $defaultAdminId,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ],
-            ]);
+            // Carga inicial aprobada en DBR-006: Adulto $25.00, Niño $16.00 (si ya existen usuarios)
+            $defaultAdminId = DB::table('users')->orderBy('id')->value('id');
+            if ($defaultAdminId !== null) {
+                $now = now();
+                DB::table('ticket_prices')->insert([
+                    [
+                        'ticket_type' => 'adult',
+                        'amount' => 25.00,
+                        'effective_at' => $now,
+                        'created_by' => $defaultAdminId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                    [
+                        'ticket_type' => 'child',
+                        'amount' => 16.00,
+                        'effective_at' => $now,
+                        'created_by' => $defaultAdminId,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ],
+                ]);
+            }
         }
 
         // 2. Crear tabla staff_notifications (sin SoftDeletes según resolución de DBR-006)
-        if (!Schema::hasTable('staff_notifications')) {
+        if (! Schema::hasTable('staff_notifications')) {
             Schema::create('staff_notifications', function (Blueprint $table) {
                 $table->id();
                 $table->integer('user_id');
@@ -79,31 +81,31 @@ return new class extends Migration
         // 3. Agregar columnas y backfill a tickets
         if (Schema::hasTable('tickets')) {
             Schema::table('tickets', function (Blueprint $table) {
-                if (!Schema::hasColumn('tickets', 'status')) {
+                if (! Schema::hasColumn('tickets', 'status')) {
                     $table->string('status', 20)->default('completed')->after('child_quantity');
                 }
-                if (!Schema::hasColumn('tickets', 'payment_method')) {
+                if (! Schema::hasColumn('tickets', 'payment_method')) {
                     $table->string('payment_method', 20)->default('cash')->after('status');
                 }
-                if (!Schema::hasColumn('tickets', 'adult_unit_price')) {
+                if (! Schema::hasColumn('tickets', 'adult_unit_price')) {
                     $table->decimal('adult_unit_price', 10, 2)->nullable()->after('payment_method');
                 }
-                if (!Schema::hasColumn('tickets', 'child_unit_price')) {
+                if (! Schema::hasColumn('tickets', 'child_unit_price')) {
                     $table->decimal('child_unit_price', 10, 2)->nullable()->after('adult_unit_price');
                 }
-                if (!Schema::hasColumn('tickets', 'cancelled_at')) {
+                if (! Schema::hasColumn('tickets', 'cancelled_at')) {
                     $table->dateTime('cancelled_at')->nullable()->after('purchased_at');
                 }
-                if (!Schema::hasColumn('tickets', 'cancelled_by')) {
+                if (! Schema::hasColumn('tickets', 'cancelled_by')) {
                     $table->integer('cancelled_by')->nullable()->after('cancelled_at');
                 }
-                if (!Schema::hasColumn('tickets', 'cancellation_reason')) {
+                if (! Schema::hasColumn('tickets', 'cancellation_reason')) {
                     $table->string('cancellation_reason', 255)->nullable()->after('cancelled_by');
                 }
-                if (!Schema::hasColumn('tickets', 'updated_by')) {
+                if (! Schema::hasColumn('tickets', 'updated_by')) {
                     $table->integer('updated_by')->nullable()->after('cancellation_reason');
                 }
-                if (!Schema::hasColumn('tickets', 'deleted_at')) {
+                if (! Schema::hasColumn('tickets', 'deleted_at')) {
                     $table->softDeletes()->nullable()->after('updated_by');
                 }
             });

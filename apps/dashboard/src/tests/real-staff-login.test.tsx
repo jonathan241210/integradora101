@@ -296,11 +296,10 @@ describe("CA-06 real-staff-login", () => {
       "reports.view",
       "enclosures.manage",
       "users.manage",
-      "operational-staff.manage",
     ];
 
     const profiles = [
-      { role: "admin", permissions: adminPermissions },
+      { role: "admin", permissions: adminPermissions, users: true },
       {
         role: "zoo-admin",
         permissions: [
@@ -309,12 +308,12 @@ describe("CA-06 real-staff-login", () => {
           "events.manage",
           "reports.view",
           "enclosures.manage",
-          "operational-staff.manage",
         ],
+        users: false,
       },
     ];
 
-    for (const { role, permissions } of profiles) {
+    for (const { role, permissions, users } of profiles) {
       const admin = staffProfile({
         roles: [role],
         home: "administration",
@@ -327,7 +326,7 @@ describe("CA-06 real-staff-login", () => {
         "events",
         "reports",
         "enclosures",
-        "users",
+        ...(users ? ["users"] : []),
       ]);
       expect(getPresentationProfile(admin.home)).toBe("administration");
     }

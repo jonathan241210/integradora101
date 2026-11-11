@@ -41,12 +41,12 @@ class ReportTimezoneTest extends AdminFeatureTestCase
 
         $this->assertSame('America/Mexico_City', $default['timezone']);
         $this->assertSame('2026-11-08', $default['series'][6]['date']);
-        $this->assertSame(['tickets' => 3, 'adults' => 4, 'children' => 2, 'revenue' => '210.50'], $default['today']);
+        $this->assertSame(['tickets' => 6, 'adults' => 4, 'children' => 2, 'revenue' => '210.50'], $default['today']);
 
         $this->assertSame('Asia/Tokyo', $tokyo['timezone']);
         $this->assertSame('2026-11-09', $tokyo['series'][6]['date']);
         $this->assertSame('200.50', $tokyo['series'][6]['revenue']);
-        $this->assertSame(['tickets' => 2, 'adults' => 3, 'children' => 2, 'revenue' => '200.50'], $tokyo['today']);
+        $this->assertSame(['tickets' => 5, 'adults' => 3, 'children' => 2, 'revenue' => '200.50'], $tokyo['today']);
         $this->assertSame('2026-11-03', $tokyo['series'][0]['date']);
     }
 
@@ -60,7 +60,7 @@ class ReportTimezoneTest extends AdminFeatureTestCase
         $this->assertSame('America/Mexico_City', $mx['period']['timezone']);
         $this->assertSame('2026-11-02', $mx['period']['from']);
         $this->assertNull($mx['period']['next_date']);
-        $this->assertSame(2, $mx['totals']['tickets']);
+        $this->assertSame(5, $mx['totals']['tickets']);
         $this->assertSame('200.50', $mx['totals']['revenue']);
         $this->assertSame('2026-11-08 21:00:00', end($mx['tickets'])['purchased_at']);
 
@@ -89,7 +89,7 @@ class ReportTimezoneTest extends AdminFeatureTestCase
                 ->assertOk()->assertJsonPath('data.timezone', 'America/Mexico_City');
             $this->actAs($admin)->getJson(self::WEEK."&{$query}")
                 ->assertOk()->assertJsonPath('data.period.timezone', 'America/Mexico_City')
-                ->assertJsonPath('data.totals.tickets', 2);
+                ->assertJsonPath('data.totals.tickets', 5);
             $csv = $this->actAs($admin)->get(self::EXPORT."&{$query}")->assertOk()->streamedContent();
             $this->assertStringContainsString("\r\n\"Zona horaria\",America/Mexico_City\r\n", $csv);
         }
@@ -151,15 +151,15 @@ class ReportTimezoneTest extends AdminFeatureTestCase
         $this->assertContains('2026-09-06', $days);
         $this->assertSame('2026-09-30', end($days));
         $this->assertSame('30.00', end($json['daily'])['revenue']);
-        $this->assertSame(3, $json['totals']['tickets']);
+        $this->assertSame(5, $json['totals']['tickets']);
         $this->assertSame('60.00', $json['totals']['revenue']);
         $this->assertCount(3, $json['tickets']);
         $this->assertSame('2026-09-06 01:30:00', $json['tickets'][1]['purchased_at']);
 
         $csv = $this->actAs($admin)->get('/api/v1/admin/reports/tickets/export?period=month&date=2026-09-15&format=csv&timezone=America/Santiago')
             ->assertOk()->streamedContent();
-        $this->assertStringContainsString('3,4,1,60.00'."\r\n", $csv);
-        $this->assertStringContainsString('2026-09-30,1,1,1,30.00', $csv);
+        $this->assertStringContainsString('5,4,1,60.00'."\r\n", $csv);
+        $this->assertStringContainsString('2026-09-30,2,1,1,30.00', $csv);
         foreach ($json['tickets'] as $ticket) {
             $this->assertStringContainsString("{$ticket['folio']},\"{$ticket['purchased_at']}\"", $csv);
         }
@@ -173,7 +173,7 @@ class ReportTimezoneTest extends AdminFeatureTestCase
         $this->assertSame('20.00', $dash['series'][5]['revenue']);
         $this->assertSame('10.00', $dash['series'][4]['revenue']);
         $this->assertSame(0, $dash['today']['tickets']);
-        $this->assertSame(2, $dash['last_7_days']['tickets']);
+        $this->assertSame(3, $dash['last_7_days']['tickets']);
     }
 
     /** CA-28 */

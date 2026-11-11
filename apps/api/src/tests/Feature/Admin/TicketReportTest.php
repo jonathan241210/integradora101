@@ -41,7 +41,7 @@ class TicketReportTest extends AdminFeatureTestCase
         $this->assertSame('2026-11-08', $data['period']['to']);
         $this->assertSame('2026-10-26', $data['period']['previous_date']);
         $this->assertNull($data['period']['next_date']);
-        $this->assertSame(['tickets' => 2, 'adults' => 3, 'children' => 1, 'revenue' => '170.50'], $data['totals']);
+        $this->assertSame(['tickets' => 4, 'adults' => 3, 'children' => 1, 'revenue' => '170.50'], $data['totals']);
         $this->assertCount(7, $data['daily']);
         $this->assertSame(['date' => '2026-11-02', 'tickets' => 1, 'adults' => 1, 'children' => 0, 'revenue' => '50.00'], $data['daily'][0]);
         $this->assertSame('120.50', $data['daily'][6]['revenue']);
@@ -59,11 +59,11 @@ class TicketReportTest extends AdminFeatureTestCase
         $this->assertSame('2026-09-01', $month['period']['previous_date']);
         $this->assertSame('2026-11-01', $month['period']['next_date']);
         $this->assertCount(31, $month['daily']);
-        $this->assertSame(['tickets' => 1, 'adults' => 1, 'children' => 1, 'revenue' => '75.00'], $month['totals']);
+        $this->assertSame(['tickets' => 2, 'adults' => 1, 'children' => 1, 'revenue' => '75.00'], $month['totals']);
         $this->assertSame('Octubre de 2026', $month['period']['label']);
 
         $custom = $this->actAs($admin)->getJson('/api/v1/admin/reports/tickets?period=custom&from=2026-11-01&to=2026-11-03')->assertOk()->json('data');
-        $this->assertSame(2, $custom['totals']['tickets']);
+        $this->assertSame(9, $custom['totals']['tickets']); // 1 + (4 + 4) por cantidades
         $this->assertSame('450.00', $custom['totals']['revenue']);
         $this->assertNull($custom['period']['previous_date']);
         $this->assertNull($custom['period']['next_date']);

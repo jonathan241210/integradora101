@@ -34,9 +34,8 @@ class VisitorAuthenticationController extends VisitorController
 
     public function resend(EmailOnlyVisitorRequest $request, SendVisitorCodeAction $action): JsonResponse
     {
-        $action->execute(
+        $action->resendFor(
             Visitor::query()->where('email', $request->validated('email'))->first(),
-            'email_verification',
         );
 
         return response()->json([

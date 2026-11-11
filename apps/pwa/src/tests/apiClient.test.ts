@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, createEvaluation, login } from '@/services/apiClient';
+import { ApiError, createEvaluation, listAnimals } from '@/services/apiClient';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -34,7 +34,7 @@ describe('PWA API client', () => {
   it('expone el mensaje de validación de la API', async () => {
     stubFetch(422, { message: 'Credenciales incorrectas.' });
 
-    await expect(login('a@b.com', 'x')).rejects.toMatchObject({
+    await expect(listAnimals()).rejects.toMatchObject({
       message: 'Credenciales incorrectas.',
       status: 422,
     });
@@ -43,6 +43,6 @@ describe('PWA API client', () => {
   it('informa cuando no hay conexión con el servidor', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('network')));
 
-    await expect(login('a@b.com', 'x')).rejects.toBeInstanceOf(ApiError);
+    await expect(listAnimals()).rejects.toBeInstanceOf(ApiError);
   });
 });

@@ -25,7 +25,7 @@ ADR 0011 fue aceptado el 2026-10-21, después de aprobar este plan. El backend n
 | API / HTTP | `app/Http/Controllers/Visitor/*`, `app/Http/Requests/Visitor/*`, `app/Http/Resources/VisitorProfileResource.php`, `VisitorTokenResource.php`, `PrivacyNoticeResource.php` | Contrato JSON |
 | API / acceso | `app/Http/Middleware/EnsureVisitorToken.php`, `EnsureStaffUser.php`; alias en `bootstrap/app.php` | CA-08. `EnsureStaffUser` se agrega solo a `auth.me` |
 | API / config | `config/sanctum.php` (`expiration` = 15), `config/visitor.php`, `lang/es/visitor.php`, `AppServiceProvider` | Vigencia, aviso, límites, HTTPS fuera de local/testing y regla de contraseña del visitante |
-| API / correo | `app/Mail/VisitorAccessCodeMail.php` | Código de verificación o de recuperación. Sin SDK |
+| API / correo | `app/Mail/VisitorAccessCodeMail.php`, `resources/views/mail/visitor-access-code.blade.php` | Código de verificación o de recuperación con plantilla HTML en español que distingue propósito, vigencia (15 min) y uso único. Sin SDK |
 | API / rutas | `routes/api.php` | Rutas nombradas bajo el prefijo ya existente `api/v1` |
 | API / pruebas | `tests/Feature/Visitor/*` | Un test por CA-01 a CA-21, con `DatabaseTransactions` sobre `arca_pruebas` |
 | API / docs | `apps/api/docs/` nota breve del contrato visitante | Referencia local, sin secretos |
@@ -61,13 +61,13 @@ El prefijo `api/v1` ya lo pone `bootstrap/app.php`. Las rutas nuevas se agrupan 
 
 Campos en inglés. Mensajes `message` en español.
 
-Registro: `email`, `password`, `password_confirmation`, `first_name`, `nickname`, `avatar_code`, `is_adult`, `privacy_notice_version`. Respuesta 201 `{ "message": "Te enviamos un código de 6 dígitos para verificar tu correo." }` y ningún token. `is_adult` debe ser `true`. `privacy_notice_version` debe ser la versión vigente. `avatar_code` debe ser uno de `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`. Correo duplicado: 422 «Ese correo ya está registrado.» El registro sí puede decir que el correo existe; la respuesta genérica de RN-04 aplica a login, reenvío y olvido.
+Registro: `email`, `password`, `password_confirmation`, `first_name`, `nickname`, `avatar_code`, `is_adult`, `privacy_notice_version`. Respuesta 201 `{ "message": "Te enviamos un código de 6 dígitos para verificar tu correo." }` y ningún token. `is_adult` debe ser `true`. `privacy_notice_version` debe ser la versión vigente. `avatar_code` debe ser uno de `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`. Correo duplicado: la misma respuesta 201 que un alta nueva, sin crear otra cuenta ni cambiar sus datos, y con un código `registration_notice`. Verificar ese código responde 200 `{ "message": "Ese correo ya está registrado.", "code": "email_already_registered" }` sin tokens. La respuesta genérica de RN-04 aplica a registro, login, reenvío y olvido. Enmienda de Aksel, 2026-11-05.
 
 Verificación: `email`, `code`. Éxito 200 con el par y el visitante. Código inválido, vencido, consumido o con 5 intentos: 422 «El código no es válido.» sin sesión.
 
 Reenvío y olvido: solo `email`. Siempre 202 `{ "message": "Si el correo está registrado, enviamos un código de 6 dígitos." }`, haya o no cuenta. Reenvío: 1 por minuto y 5 por hora por correo. Olvido: 3 por hora por correo.
 
-Login: `email`, `password`, `device_name`. Éxito 200 con el par. Correo sin verificar: 403 `{ "message": "Confirma tu correo antes de entrar.", "code": "email_not_verified" }`. Credenciales incorrectas, incluido un correo inexistente: 422 «Correo o contraseña incorrectos.» Más de 5 intentos por minuto por correo e IP: 429 «Espera N segundos e inténtalo de nuevo.» Más de 5 registros por hora por IP: el mismo 429.
+Login: `email`, `password`, `device_name`. Éxito 200 con el par. Correo sin verificar: envía código `email_verification` de 6 dígitos por correo y responde 403 `{ "message": "Confirma tu correo antes de entrar.", "code": "email_not_verified" }`. Credenciales incorrectas, incluido un correo inexistente: 422 «Correo o contraseña incorrectos.» Más de 5 intentos por minuto por correo e IP: 429 «Espera N segundos e inténtalo de nuevo.» Más de 5 registros por hora por IP: el mismo 429.
 
 Refresh: `refresh_token`. Éxito 200 con un par nuevo. El refresh anterior queda con `replaced_by_id`. Si el refresh ya estaba revocado o reemplazado y no es la petición perdedora de una carrera, 401 «La sesión ya no es válida. Vuelve a entrar.» y se revoca toda la familia.
 
@@ -104,9 +104,9 @@ Par de tokens:
 
 ### Actions
 
-- `RegisterVisitorAction`: valida mayoría y versión del aviso, crea `Visitor` sin `email_verified_at`, guarda `adult_confirmed_at` y `privacy_accepted_at`, y pide el código `email_verification`. `last_name` queda nulo: el alta no lo pide. `is_active` queda verdadero.
-- `SendVisitorCodeAction`: código de 6 dígitos con `random_int`, guardado solo con `Hash::make`. Vence a los 15 minutos, `attempts` en 0. Invalida el código anterior del mismo propósito. Envía `VisitorAccessCodeMail`. Si el correo no existe, reenvío y olvido no envían nada y aun así responden 202.
-- `VerifyVisitorEmailAction`: busca el código vigente, compara con `Hash::check`, suma intentos y a los 5 lo deja inservible. Si es válido, marca `email_verified_at`, consume el código y llama a `IssueVisitorTokensAction`.
+- `RegisterVisitorAction`: valida mayoría y versión del aviso, crea `Visitor` sin `email_verified_at`, guarda `adult_confirmed_at` y `privacy_accepted_at`, y pide el código `email_verification`. `last_name` queda nulo: el alta no lo pide. `is_active` queda verdadero. Si el correo ya existe, no escribe la fila y pide `registration_notice`. Enmienda de Aksel, 2026-11-05.
+- `SendVisitorCodeAction`: código de 6 dígitos con `random_int`, guardado solo con `Hash::make`. Vence a los 15 minutos, `attempts` en 0. Invalida el código anterior del mismo propósito. Envía `VisitorAccessCodeMail`. No envía `email_verification` si el correo ya está verificado. `registration_notice` sí se envía a una cuenta ya verificada. El reenvío repite el propósito vigente más reciente entre `email_verification` y `registration_notice`; si la cuenta sigue sin verificar y no hay código vigente, reenvía `email_verification`; si no hay cuenta, no envía nada y la ruta responde 202. Enmienda de Aksel, 2026-11-05.
+- `VerifyVisitorEmailAction`: compara en lectura los códigos vigentes de `email_verification` y `registration_notice`. Si uno coincide, consume solo ese. Si `registration_notice` coincide, responde 200 con el mensaje y `email_already_registered`, sin tokens ni cambios en la cuenta. Si `email_verification` coincide, marca `email_verified_at` y llama a `IssueVisitorTokensAction`. Si ninguno coincide, suma un intento solo al código vigente más reciente de esos dos y, a los 5, lo deja inservible. Enmienda de Aksel, 2026-11-05.
 - `IssueVisitorTokensAction`: crea un access token Sanctum con nombre igual al `family_id` (UUID), ability `visitor` y `expires_at` a 15 minutos. El refresh son 64 bytes aleatorios; en `visitor_refresh_tokens` solo se guarda `hash('sha256', $plain)`, con `expires_at` a 30 días. El plano se devuelve una sola vez.
 - `RotateRefreshTokenAction`: ver la sección de concurrencia. La familia es el conjunto de filas con el mismo `family_id` más los access tokens Sanctum cuyo `name` es ese `family_id`.
 - `RevokeVisitorSessionAction`: logout de un dispositivo, revocación del resto al cambiar contraseña, o revocación total al recuperar la contraseña.
@@ -213,6 +213,6 @@ Ninguna brecha queda abierta para el código de este plan. La excepción de Soft
 1. Plan aprobado por Aksel el 2026-10-21.
 2. Checklist `apps/api/tasks/004-visitor-authentication.md` aprobado por Aksel el 2026-10-21.
 3. Implementación solo en `apps/api/src`: modelos, Actions, HTTP, middleware de aislamiento, config y pruebas. Después `php artisan test`.
-4. El corte del cliente se cerró en `mobile-004` el 2026-10-21: módulo visitante nuevo en `@arca/api-client` (sin editar `auth.ts`) y `HttpAuthRepository` en `apps/mobile`. Sin `EXPO_PUBLIC_API_URL`, Jest sigue en memoria con el código de prueba `123456`.
+4. El corte del cliente se cerró en `mobile-004` el 2026-10-21: módulo visitante nuevo en `@arca/api-client` (sin editar `auth.ts`) y `HttpAuthRepository` en `apps/mobile`. Sin `EXPO_PUBLIC_API_URL`, Jest sigue en memoria y no publica un código fijo.
 
 Aprobador funcional: Aksel. Fecha de este documento: 2026-10-20. Evidencia de esquema: DBR-003 aplicada en `arca_pruebas` con la migración `2026_10_15_000003_visitor_accounts_schema.php`.

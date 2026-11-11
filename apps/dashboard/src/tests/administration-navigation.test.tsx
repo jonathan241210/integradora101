@@ -49,14 +49,23 @@ describe("CA-01 administration-sections", () => {
     expect(getNavigationForProfile(admin).map((item) => item.id)).toContain("users");
   });
 
-  it("muestra «Usuarios» con operational-staff.manage y lo oculta sin ningún permiso de cuentas", () => {
+  it("CA-01: «Usuarios» exige solo users.manage; zoo-admin y operational-staff.manage no la reciben", () => {
+    const admin = profile({
+      roles: ["admin"],
+      permissions: ["dashboard.view", "users.manage"],
+    });
     const zooAdmin = profile({
       roles: ["zoo-admin"],
+      permissions: ["dashboard.view", "news.manage", "events.manage"],
+    });
+    const legacyOnly = profile({
       permissions: ["dashboard.view", "operational-staff.manage"],
     });
     const withoutAccounts = profile({ permissions: ["dashboard.view", "news.manage"] });
 
-    expect(labels(getNavigationForProfile(zooAdmin))).toContain("Usuarios");
+    expect(labels(getNavigationForProfile(admin))).toContain("Usuarios");
+    expect(labels(getNavigationForProfile(zooAdmin))).not.toContain("Usuarios");
+    expect(labels(getNavigationForProfile(legacyOnly))).not.toContain("Usuarios");
     expect(labels(getNavigationForProfile(withoutAccounts))).not.toContain("Usuarios");
   });
 
@@ -70,7 +79,6 @@ describe("CA-01 administration-sections", () => {
         "reports.view",
         "enclosures.manage",
         "users.manage",
-        "operational-staff.manage",
       ],
     });
 

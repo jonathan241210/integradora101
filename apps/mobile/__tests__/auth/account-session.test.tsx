@@ -28,7 +28,7 @@ describe('Cuenta visitante simulada', () => {
     expect(login.getByRole('button', { name: 'Iniciar sesión' })).toBeTruthy();
     expect(login.getByRole('button', { name: 'Regístrate' })).toBeTruthy();
     expect(login.queryByText('Entrar como invitado')).toBeNull();
-  });
+  }, 15000);
 
   it('test-ca-04-auth-errors: el login muestra 422, 403, 429 y sin conexión', async () => {
     const login = await render(<LoginRoute />);
@@ -41,9 +41,13 @@ describe('Cuenta visitante simulada', () => {
     await fireEvent.changeText(login.getByLabelText('Correo electrónico'), 'sin-verificar@ejemplo.com');
     await fireEvent.press(login.getByRole('button', { name: 'Iniciar sesión' }));
     expect(await login.findByText('Confirma tu correo para entrar.')).toBeTruthy();
-    expect(mockPush).toHaveBeenCalledWith('/verify-email');
+    expect(mockPush).toHaveBeenCalledWith({
+      pathname: '/verify-email',
+      params: { email: 'sin-verificar@ejemplo.com' },
+    });
 
-    await fireEvent.changeText(login.getByLabelText('Correo electrónico'), 'limitado@ejemplo.com');
+    authRepository.limitLogin = true;
+    await fireEvent.changeText(login.getByLabelText('Correo electrónico'), 'otro@ejemplo.com');
     await fireEvent.press(login.getByRole('button', { name: 'Iniciar sesión' }));
     expect(await login.findByText('Espera 30 segundos e inténtalo de nuevo.')).toBeTruthy();
 

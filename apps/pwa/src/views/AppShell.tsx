@@ -1,5 +1,6 @@
 import { Button } from '@arca/ui';
 import { useState, type ComponentType } from 'react';
+import type { PwaInstallController } from '@/viewmodels/usePwaInstall';
 import {
   getSectionLabel,
   isNavigationActive,
@@ -13,12 +14,16 @@ import { DiagnosisChooserView } from '@/views/DiagnosisChooserView';
 import { DiagnosisIntenseView } from '@/views/DiagnosisIntenseView';
 import { DiagnosisQuickView } from '@/views/DiagnosisQuickView';
 import { HomeView } from '@/views/HomeView';
+import { InstallAppAction } from '@/views/InstallAppAction';
 import { ReviewFormView } from '@/views/ReviewFormView';
 
 type AppShellProps = {
   activeSection: PwaSection;
+  installController?: PwaInstallController;
   onNavigate: (section: PwaSection) => void;
   onLogout: () => void;
+  sessionError?: string;
+  signingOut?: boolean;
 };
 
 type ActiveViewProps = {
@@ -42,8 +47,11 @@ const sectionViews: Record<PwaSection, ComponentType<ActiveViewProps>> = {
 
 export function AppShell({
   activeSection,
+  installController,
   onNavigate,
   onLogout,
+  sessionError,
+  signingOut,
 }: AppShellProps) {
   const ActiveView = sectionViews[activeSection];
   const currentLabel = getSectionLabel(activeSection);
@@ -81,7 +89,7 @@ export function AppShell({
               <small>Sesión activa</small>
             </span>
           </span>
-          <Button onClick={onLogout} variant="ghost">
+          <Button disabled={signingOut} onClick={onLogout} variant="ghost">
             Cerrar sesión
           </Button>
         </div>
@@ -94,10 +102,14 @@ export function AppShell({
             <h1>{currentLabel}</h1>
           </div>
           <div className="topbar-actions">
+            {installController && (
+              <InstallAppAction controller={installController} />
+            )}
           </div>
         </header>
 
         <main className="view-content" key={activeSection}>
+          {sessionError && <p role="alert">{sessionError}</p>}
           <ActiveView
             animalId={animalId}
             onNavigate={onNavigate}
@@ -109,7 +121,7 @@ export function AppShell({
         </main>
 
         <div className="mobile-logout">
-          <Button onClick={onLogout} variant="ghost">
+          <Button disabled={signingOut} onClick={onLogout} variant="ghost">
             Cerrar sesión
           </Button>
         </div>

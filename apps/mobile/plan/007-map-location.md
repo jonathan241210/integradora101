@@ -403,3 +403,181 @@ dismissArrival: () => void;
 - **Revisión técnica:** Aksel (pendiente — no bloquea inicio de tareas para Víctor como responsable de 007)
 - **Alcance V2 (este plan):** CA-08, CA-09, CA-10, CA-11 — punto azul, permiso GPS, posición inicial en entrada, transformación geoTransform. Sin línea al destino ni detección de llegada.
 - **Alcance V2.1 (plan futuro):** CA-12 — selección de recinto destino, línea SVG hacia el destino, detección de llegada (haversine), `ArrivalBanner`. Requiere su propia enmienda de plan y tasks cuando se inicie.
+
+---
+
+## Enmienda V2.1 — Ruta hacia el destino y Detección de Llegada (CA-12, CA-14)
+
+- Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V2.1, Aprobada 2026-11-01)
+- Estado del plan: **Aprobado** (Víctor Adrián, 2026-11-01)
+- Alcance: CA-12, CA-14 (Ruta punteada SVG, cálculo Haversine de proximidad ≤ 10 m y banner visual de llegada).
+
+### Diseño técnico detallado V2.1
+
+#### 1. Cálculo geodésico Haversine (`src/utils/haversine.ts`)
+```ts
+export function haversineMeters(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number;
+```
+Fórmula de semiverseno:
+$a = \sin^2(\Delta \varphi / 2) + \cos(\varphi_1) \cdot \cos(\varphi_2) \cdot \sin^2(\Delta \lambda / 2)$
+$c = 2 \cdot \text{atan2}(\sqrt{a}, \sqrt{1 - a})$
+$d = R \cdot c$ (con $R = 6,371,000\text{ m}$).
+
+#### 2. Constantes geográficas (`src/constants/zoo.ts`)
+- `ARRIVAL_RADIUS_METERS = 10`
+- `ROUTE_LINE_COLOR = '#1976D2'`
+- `ROUTE_LINE_DASH = '8, 6'`
+
+#### 3. Componente de ruta SVG (`src/components/map/DestinationRouteLine.tsx`)
+- Renderiza dentro de un `<Svg>` sobre el mapa una `<Line>` punteada:
+  - `x1 = userPosition.svgX`
+  - `y1 = userPosition.svgY`
+  - `x2 = destinationPlace.mapX * SVG_WIDTH`
+  - `y2 = destinationPlace.mapY * SVG_HEIGHT`
+  - `stroke={ROUTE_LINE_COLOR}`
+  - `strokeWidth={3}`
+  - `strokeDasharray={ROUTE_LINE_DASH}`
+- Si no hay destino o no hay `userPosition`, no renderiza nada (`null`).
+
+#### 4. Componente de aviso de llegada (`src/components/map/ArrivalBanner.tsx`)
+- Banner inferior accesible tipo Card con:
+  - Texto destacado: *"¡Llegaste a {place.name}!"*
+  - Icono o indicador visual accesible
+  - Botón *"Entendido"* para descartar y limpiar el aviso (`onDismiss`)
+
+#### 5. Ampliación del ViewModel (`src/viewmodels/useMapViewModel.ts`)
+- `destinationPlaceId: string | null`
+- `destinationPlace: MapPlace | null` (calculado de `places.find(...)`)
+- `arrivedAtPlace: MapPlace | null`
+- `setDestination: (id: string | null) => void`
+- `dismissArrival: () => void`
+- `checkArrival: (userLat: number, userLon: number) => void`
+  - Si `destinationPlace` tiene `gpsLat` y `gpsLon`, calcula `haversineMeters(userLat, userLon, dest.gpsLat, dest.gpsLon)`.
+  - Si distancia $\le 10\text{ m}$ y no fue descartado previamente para este destino, asigna `arrivedAtPlace = destinationPlace` y resetea `destinationPlaceId = null`.
+
+---
+
+## Enmienda V2.2 — Controles Interactivos del Mapa: Zoom, Desplazamiento y Centrado (CA-15, CA-16, CA-17)
+
+- Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V2.2, Aprobada 2026-11-04)
+- Estado del plan: **Aprobado** (Víctor Adrián, 2026-11-04)
+- Alcance: CA-15, CA-16, CA-17 (Zoom `+`/`-`/`1x`, desplazamiento acotado del lienzo y centrado en la ubicación del visitante).
+
+### Diseño técnico detallado V2.2
+
+#### 1. Utilidad pura de cámara/viewport (`src/utils/mapViewport.ts`)
+Centraliza los cálculos matemáticos del visor para mantener los componentes y ViewModels limpios y 100 % testeables en Jest:
+- Constantes exportadas en `src/constants/zoo.ts`:
+  - `MIN_ZOOM_SCALE = 1.0`
+  - `MAX_ZOOM_SCALE = 2.5`
+  - `ZOOM_STEP = 0.5`
+  - `CENTER_LOCATION_ZOOM = 2.0`
+- Funciones puras en `src/utils/mapViewport.ts`:
+  - `clampZoom(scale: number): number` — limita `scale` al rango `[MIN_ZOOM_SCALE, MAX_ZOOM_SCALE]` redondeado a 2 decimales.
+  - `clampPan(panX: number, panY: number, scale: number, maxRange?: number): { panX: number; panY: number }` — si `scale <= 1`, devuelve `{ panX: 0, panY: 0 }`; si `scale > 1`, acota `panX` y `panY` dentro de `[-maxOffset, +maxOffset]` proporcional a `(scale - 1)` para que el mapa nunca salga del contenedor.
+  - `computeCenterPanForSvgPoint(svgX: number, svgY: number, scale: number): { panX: number; panY: number }` — calcula el desplazamiento necesario para centrar un punto `(svgX, svgY)` del `viewBox` (`1000 × 1400`) en el centro del lienzo, aplicando `clampPan`.
+
+#### 2. Componente de controles accesibles (`src/components/map/MapViewportControls.tsx`)
+Barra flotante de botones accesibles sobre la esquina del mapa (usando solo tokens semánticos de `src/theme/tokens.ts`, sin hex fijos):
+- Botón **"Acercar mapa"** (`+`, `testID="map-zoom-in"`, `accessibilityLabel="Acercar mapa"`, deshabilitado cuando `zoomScale >= MAX_ZOOM_SCALE`).
+- Botón **"Alejar mapa"** (`-`, `testID="map-zoom-out"`, `accessibilityLabel="Alejar mapa"`, deshabilitado cuando `zoomScale <= MIN_ZOOM_SCALE`).
+- Botón **"Restablecer vista"** (`1x`, `testID="map-zoom-reset"`, `accessibilityLabel="Restablecer vista del mapa"`).
+- Botón **"Centrar en mi ubicación"** (`◎`, `testID="map-center-location"`, `accessibilityLabel="Centrar en mi ubicación"`), renderizado cuando `canCenterLocation` es `true` (`userPosition != null`).
+
+#### 3. Integración en `MapScreen.tsx`
+- El contenedor `styles.canvas` mantiene `overflow: 'hidden'` como máscara del visor.
+- Dentro de `styles.canvas`, una vista transformada (`testID="map-viewport-content"`) envuelve conjuntamente `<ZooMapSvg>`, `<DestinationRouteLine>`, los `<MapMarker>` y `<UserLocationMarker>`, aplicándoles `transform: [{ scale: zoomScale }, { translateX: panX }, { translateY: panY }]`. Así todos los elementos escalan y se desplazan en perfecta sincronía.
+- Incluye un `PanResponder` ligero para arrastrar el lienzo cuando `zoomScale > 1`, además de botones accesibles para cumplir `CA-07` y `RN-16`.
+
+### Mapeo de criterios a pruebas (V2.2)
+
+| Criterio | Prueba automatizada | Ubicación |
+|---|---|---|
+| **CA-15** Controles de zoom accesibles | `test-ca-15`: acercar, alejar y restablecer vista actualizan escala y mantienen sincronizado el lienzo | `__tests__/mapViewport.test.tsx` |
+| **CA-16** Desplazamiento acotado | `test-ca-16`: `clampPan` acota desplazamientos dentro de los bordes y fuerza `(0, 0)` en `1.0x` | `__tests__/mapViewport.test.tsx` |
+| **CA-17** Centrar en mi ubicación | `test-ca-17`: botón "Centrar en mi ubicación" centra sobre `userPosition` y no aparece si no hay GPS | `__tests__/mapViewport.test.tsx` |
+
+### Constitution Check (V2.2)
+
+| Principio | Cumple | Evidencia |
+|---|---|---|
+| I. Stack mínimo y portable | ✅ | Cero dependencias nuevas; usa APIs de React Native incluidas en el stack. |
+| II. La spec manda | ✅ | Spec, plan y tasks actualizados con CA-15 a CA-17. |
+| III. Lógica separada de UI | ✅ | Cálculos de límites y centrado en `src/utils/mapViewport.ts` (funciones puras). |
+| IV. Un test por criterio | ✅ | Pruebas nombrando `CA-15`, `CA-16` y `CA-17` en `__tests__/mapViewport.test.tsx`. |
+| V. Una sola fuente de verdad | ✅ | Constantes de zoom en `src/constants/zoo.ts`. |
+| VI. Inglés código / español UI | ✅ | Código en inglés; etiquetas accesibles y textos en español. |
+
+---
+
+## Enmienda V3 — Grafo de Senderos Peatonales, Pathfinding y Estimación de Caminata (CA-18, CA-19, CA-20)
+
+- **Spec:** `apps/mobile/specs/007-map-location.md` (Enmienda V3, Aprobada 2026-11-04)
+- **Estado del plan:** **Aprobado** (Víctor Adrián, 2026-11-04)
+- **Alcance:** CA-18, CA-19, CA-20 (Grafo de andadores peatonales, algoritmo Dijkstra en memoria, polilínea SVG por pasillos e insignia accesible de distancia/tiempo a pie).
+
+### Arquitectura V3
+
+```mermaid
+flowchart LR
+    GPS[GPS del visitante] --> NearestNode[Proyectar a nodo de andador más cercano]
+    NearestNode --> Dijkstra[Algoritmo Dijkstra en memoria]
+    Destination[Recinto Destino] --> DestNode[Nodo de acceso al recinto]
+    DestNode --> Dijkstra
+    Dijkstra --> Polyline[Polilínea SVG por andadores]
+    Dijkstra --> DistanceTime[WalkEstimateBadge: metros y minutos a pie]
+```
+
+### Componentes y módulos de V3:
+1. `src/constants/zooPaths.ts`:
+   - Define `PathNode` (`id`, `svgX`, `svgY`) y `PathEdge` (`from`, `to`), modelando el pasillo de entrada, el anillo de la Plaza central y las bifurcaciones a Felinos, Aves, Acuario, Reptiles, Herbívoros y Servicios.
+   - Exporta `WALKING_SPEED_MPS = 1.1` y `SVG_UNIT_TO_METERS = 0.42`.
+2. `src/utils/pathfinding.ts`:
+   - `findNearestPathNode(svgX, svgY, nodes)`: proyecta cualquier coordenada al nodo peatonal más cercano.
+   - `findShortestPath(startNodeId, endNodeId, nodes, edges)`: algoritmo Dijkstra que devuelve la lista óptima de nodos y su longitud en unidades SVG.
+   - `computeWalkRoute(start, destination, nodes?, edges?)`: devuelve `{ points, svgPointsString, distanceMeters, estimatedMinutes }`.
+3. `src/components/map/DestinationRouteLine.tsx`:
+   - Traza la polilínea SVG (`<Polyline testID="destination-route-polyline">`) siguiendo los puntos devueltos por `computeWalkRoute` dentro del contenedor `<Svg testID="destination-route-line">`.
+4. `src/components/map/WalkEstimateBadge.tsx`:
+   - Insignia accesible (`testID="walk-estimate-badge"`) construida con tokens semánticos que muestra *"Ruta a {place.name}: ~{distanceMeters} m • {estimatedMinutes} min a pie"*.
+
+### Mapeo de criterios a pruebas (V3)
+
+| Criterio | Prueba automatizada | Ubicación |
+|---|---|---|
+| **CA-18** Camino mínimo en grafo peatonal | `test-ca-18`: `findShortestPath` y `computeWalkRoute` trazan ruta por nodos de pasillos y manejan nodos aislados | `__tests__/pathfinding.test.ts` |
+| **CA-19** Estimación de distancia y tiempo | `test-ca-19`: calcula metros ($\ge 1$) y minutos a pie a $1.1\text{ m/s}$ proporcionales a la ruta | `__tests__/pathfinding.test.ts` |
+| **CA-20** Polilínea e insignia en pantalla | `test-ca-20`: renderiza polilínea multi-segmento y `WalkEstimateBadge` al fijar destino, ocultándolos al cancelar | `__tests__/mapPathRoute.test.tsx` |
+
+### Constitution Check (V3)
+
+| Principio | Cumple | Evidencia |
+|---|---|---|
+| I. Stack mínimo y portable | ✅ | Cero dependencias nuevas; usa `<Polyline>` de `react-native-svg` (ADR 0015). |
+| II. La spec manda | ✅ | Spec, plan y tasks actualizados con CA-18 a CA-20. |
+| III. Lógica separada de UI | ✅ | Grafo en `src/constants/zooPaths.ts` y Dijkstra en `src/utils/pathfinding.ts`. |
+| IV. Un test por criterio | ✅ | Pruebas `test-ca-18`, `test-ca-19` y `test-ca-20`. |
+| V. Una sola fuente de verdad | ✅ | Nodos de sendero centralizados en `zooPaths.ts`. |
+| VI. Inglés código / español UI | ✅ | Código en inglés; textos de UI y etiquetas accesibles en español. |
+
+## Enmienda correctiva — CA-07 y CA-17
+
+- Estado: aprobado por el usuario solicitante, 2026-11-09.
+- Los criterios CA-07 y CA-17 ya están aprobados en la spec; esta enmienda corrige divergencias detectadas por las pruebas existentes, sin cambiar su comportamiento esperado.
+
+La prueba de CA-17 demuestra que el botón de centrar no aplica el zoom previsto de 2x. La corrección usará `CENTER_LOCATION_ZOOM` al actualizar la escala y calculará el desplazamiento con esa misma escala para que el punto azul quede centrado.
+
+Los tests CA-07/arquitectura encontraron valores hexadecimales y `rgba()` en fuentes de `src/components/` y `src/screens/`. La corrección trasladará esos valores a tokens semánticos de `@arca/tokens`, incluidos tokens semánticos de información, éxito y superficies translúcidas cuando sean necesarios. Los componentes y pantallas consumirán los tokens; no se relajarán las pruebas arquitectónicas.
+
+Archivos funcionales y de estilo afectados se determinarán mediante la búsqueda automatizada de literales en `apps/mobile/src/components/` y `apps/mobile/src/screens/`. Se actualizará `packages/tokens/index.ts` únicamente para los roles semánticos que no existan. La suite de arquitectura y la de CA-17 serán la evidencia de aceptación.
+
+### Implementación y evidencia local
+
+Las correcciones ya presentes en el árbol local se revisaron para su publicación. `MapScreen` aplica el zoom de centrado y los componentes del mapa consumen los nuevos roles de `@arca/tokens` a través de su adaptador. Las constantes cromáticas locales de ubicación/ruta se sustituyen por tokens. Se conservan las pruebas y sus expectativas.
+
+La ejecución dirigida de `architecture.test.ts`, `mapAccessibility.test.tsx` y `mapViewport.test.tsx` aprobó 3 suites y 11 pruebas. No hay verificación visual nueva en dispositivo; no se declara ese resultado como validado visualmente.

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Actividades vigentes publicadas por el zoológico.">
+<meta name="arca-api-base" content="http://localhost:8000/api/v1">
+<meta name="theme-color" content="#4f7a3a">
+<title>Eventos · Zoológico Nicolás Bravo</title>
+<link rel="icon" href="assets/zoo-logo.jpeg" type="image/jpeg">
+<link rel="stylesheet" href="assets/icons/bootstrap-icons.css">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="news-events.css">
+<script src="js/api.js" defer></script>
+<script src="js/news-events.js" defer></script>
+</head>
+
+<body>
+<div class="page-shell">
+
+<header class="topbar">
+    <a class="brand" href="index.html" aria-label="Zoológico Nicolás Bravo, inicio">
+        <picture><source type="image/webp" srcset="assets/logo-120.webp"><img class="brand-logo" src="assets/TransformandoTulancingo-2024-300x261.png" alt="" width="48" height="42" decoding="async"></picture>
+        <span>Zoológico <strong>Nicolás Bravo</strong></span>
+    </a>
+    <nav class="main-nav" aria-label="Navegación principal">
+        <a href="index.html">Inicio</a>
+        <a href="noticias.html">Noticias</a>
+        <a href="eventos.html" aria-current="page">Eventos</a>
+        <a href="index.html#visita">Contacto</a>
+    </nav>
+</header>
+
+<main class="ne-page-main" id="contenido">
+    <div class="section-heading">
+        <h2>Próximos eventos</h2>
+        <p>Actividades vigentes publicadas por el zoológico.</p>
+    </div>
+
+    <div class="event-grid" id="eventGrid" data-ne-list="events" aria-busy="true">
+        <div class="ne-state ne-state-loading"><p class="ne-status" role="status" aria-live="polite">Cargando eventos…</p></div>
+    </div>
+
+</main>
+
+<footer class="footer" id="visita">
+    <div class="footer-info">
+        <h3>Zoológico Nicolás Bravo</h3>
+        <p>Un espacio para aprender, convivir y acercarnos a la vida silvestre.</p>
+        <p><a class="link" href="index.html#visita">Información de contacto y visita</a></p>
+    </div>
+</footer>
+
+<div class="bottombar">
+    <span>© 2026 Zoológico Tulancingo · Sitio demostrativo</span>
+</div>
+
+</div>
+</body>
+</html>

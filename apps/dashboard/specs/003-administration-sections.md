@@ -2,13 +2,15 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard`, `packages/api-client`, `packages/ui` (solo si falta algún componente compartido)
-- Estado: Implementada
+- Estado: Aprobada · En progreso (revisión aprobada por Jonathan el 2026-11-05; estado previo: Implementada)
 - Solicitante / responsable funcional: Jonathan
 - Aprobación funcional: Jonathan, 2026-10-30
 
 > **Nota de vigencia (2026-11-01):** en Noticias y Eventos, el «sin campo de subida de imagen» (CA-08 y «Fuera de alcance») y en Usuarios, el uso de diálogos para alta, edición, eliminación, activar/desactivar, restablecer contraseña y restablecer 2FA (CA-06, CA-08 y RN-09 en esas secciones) quedan reemplazados por `dashboard-004` (formulario fijo, caja de imagen, paneles colapsables y confirmación en línea) y `api-008` (subida de imágenes). Recintos, Venta e Historial y el resto de criterios no cambian. El texto original se conserva como historial.
 
 > **Nota de vigencia (2026-11-02):** en CA-02, Venta e Historial de taquilla dejan de ser demostrativos por `dashboard-005` (`apps/dashboard/specs/005-ticket-sales.md`), que reemplaza para esas dos vistas el aviso de demostración de CA-02 y `dashboard-001` CA-04, CA-11 y CA-15. El texto de CA-02 y la mención a Venta e Historial en el resto de la spec se conservan como historial. El estado de esta spec (Implementada) y sus demás criterios no cambian.
+
+> **Nota de vigencia (2026-11-05, aprobada):** la sección Usuarios solo se muestra con `users.manage` (`admin`). `zoo-admin` deja de ver y gestionar cuentas del personal; el permiso `operational-staff.manage` se retira. Afecta a la navegación (CA-01), al formulario de alta (CA-04), a la tabla de actores, a la historia de `zoo-admin` y a los objetivos. Ver «Revisión 2026-11-05». El resto de criterios no cambia.
 
 ## Problema y contexto
 
@@ -21,7 +23,7 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 - Gestionar cuentas del personal desde el dashboard: listar, buscar y filtrar, crear, editar, activar/desactivar, eliminar, restablecer contraseña y restablecer 2FA.
 - Gestionar noticias, eventos y recintos con datos reales (según `api-007`).
 - Mostrar el Panel principal y el Reporte de boletos con datos reales, con periodo semanal o mensual y exportación a CSV, Excel y PDF.
-- Que la misma interfaz sirva a `admin` y `zoo-admin`, mostrando solo las opciones que sus permisos permiten.
+- Que la misma interfaz sirva a `admin` y `zoo-admin`, mostrando solo las opciones que sus permisos permiten (Usuarios, solo para `admin` desde 2026-11-05).
 - Mantener MVVM, accesibilidad, diseño adaptable y tokens semánticos.
 
 ## Fuera de alcance
@@ -40,14 +42,14 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 | Actor/rol | Necesidad | Permisos requeridos |
 |---|---|---|
 | `admin` | Todas las secciones de administración y todas las cuentas | `users.manage`, `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view` |
-| `zoo-admin` | Las mismas secciones; en Usuarios solo cuentas de taquilla y veterinaria | `operational-staff.manage`, `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view` |
+| `zoo-admin` | Las mismas secciones excepto Usuarios (decisión de 2026-11-05) | `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view` |
 | `executive` | Panel y Reporte en solo lectura, con exportación | `dashboard.view`, `reports.view` |
 | `cashier` | Sin cambios (Venta e Historial demostrativos) | `tickets.*` |
 
 ## Historias de usuario
 
 - Como `admin`, quiero administrar las cuentas de todo el personal desde una tabla con búsqueda y filtros para mantener los accesos al día.
-- Como `zoo-admin`, quiero ver y gestionar solo las cuentas de taquilla y veterinaria para operar mi área.
+- *(Retirada, decisión de 2026-11-05.)* Como `zoo-admin`, quería ver y gestionar solo las cuentas de taquilla y veterinaria.
 - Como administrador, quiero restablecer la contraseña o el 2FA de una cuenta para devolver el acceso a quien lo perdió.
 - Como administrador, quiero crear, editar y retirar noticias y eventos, y renombrar recintos, para mantener la información al día.
 - Como administrador o directivo, quiero ver el reporte semanal o mensual y exportarlo en PDF, Excel o CSV.
@@ -56,13 +58,13 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 
 ### Navegación y estructura
 
-- **CA-01:** Dada una sesión con `home: administration`, cuando se presenta la navegación, entonces muestra Panel principal, Noticias, Eventos, Reporte, Recintos y Usuarios según los permisos de `me` (Usuarios con `users.manage` u `operational-staff.manage`); la etiqueta de la sección es «Usuarios» y deja de decir «Usuarios de taquilla».
+- **CA-01:** Dada una sesión con `home: administration`, cuando se presenta la navegación, entonces muestra Panel principal, Noticias, Eventos, Reporte, Recintos y Usuarios según los permisos de `me` (Usuarios solo con `users.manage`; `zoo-admin` no ve Usuarios desde 2026-11-05); la etiqueta de la sección es «Usuarios» y deja de decir «Usuarios de taquilla».
 - **CA-02:** Dadas las secciones conectadas a la API, cuando se presentan, entonces no muestran el aviso de demostración ni datos ficticios; Venta e Historial de taquilla conservan el suyo.
 
 ### Usuarios
 
 - **CA-03:** Dada la sección Usuarios, cuando carga, entonces muestra una tabla paginada con nombre, correo, área, rol, estado y último acceso, con búsqueda por texto y filtros por rol, área y estado, y estados de carga, vacío y error con `role="alert"` en español.
-- **CA-04:** Dado el formulario de alta, cuando la persona elige un área, entonces propone el rol sugerido por la API (editable), solo ofrece los roles asignables que devuelve `api-007` (`zoo-admin` no ve `admin`, `zoo-admin` ni `executive`) y muestra los errores 422 junto a cada campo.
+- **CA-04:** Dado el formulario de alta, cuando la persona elige un área, entonces propone el rol sugerido por la API (editable), solo ofrece los roles asignables que devuelve `api-007` (`users/options`; para `admin`, los cinco roles) y muestra los errores 422 junto a cada campo.
 - **CA-05:** Dada una cuenta, cuando se edita, entonces el formulario permite cambiar nombre, apellidos, área y rol; el correo se muestra y no es editable.
 - **CA-06:** Dada una cuenta, cuando se elige desactivar/activar, eliminar, restablecer contraseña o restablecer 2FA, entonces se pide confirmación explícita en un diálogo accesible que nombra la cuenta y el efecto, y solo al confirmar se llama a la API; el restablecimiento de contraseña pide la nueva contraseña (con mostrar/ocultar accesible).
 - **CA-07:** Dadas las reglas de la API, cuando responde 403, 404 o 422 (p. ej. desactivar la propia cuenta o al último `admin`), entonces el dashboard muestra su mensaje en español sin cambiar la lista, y tras una operación exitosa refresca la lista y confirma con un aviso accesible.
@@ -129,6 +131,16 @@ El dashboard muestra datos personales del personal (nombre, correo, área, rol) 
   3. Diseño: no cambia colores ni tipografía; las vistas nuevas siguen los patrones de las pantallas actuales. Se pueden agregar secciones, botones, ventanas (diálogos) y similares, siempre con los mismos patrones y componentes ya definidos (RN-09).
 - **Pregunta de zona horaria (2026-10-30): confirmada por Jonathan, 2026-10-30.**
   4. ¿El Panel y el Reporte deben mostrar la zona horaria que la API usó (p. ej. «Hora de Ciudad de México»)? Respuesta: no. La interfaz no muestra la zona usada y esta feature no añade ese texto. Confirmado por Jonathan, 2026-10-30.
+
+## Revisión 2026-11-05 (aprobada por Jonathan el 2026-11-05)
+
+Decisión de Jonathan del 2026-11-05. **Estado: revisión aprobada por Jonathan el 2026-11-05.** Sin CA ni RN nuevos: se modifican CA-01 y CA-04, la tabla de actores, la historia de `zoo-admin` y los objetivos.
+
+- **Usuarios solo con `users.manage`.** La sección aparece solo para quien tiene `users.manage` (`admin`). `zoo-admin` no la ve (CA-01, RN-01). La API responde 403 por permiso y `api-007` retira `operational-staff.manage` (revisión de 2026-11-05).
+- **Alta sin filtro por actor.** Los roles que propone el formulario son los de `users/options` (CA-04). Para `admin`, los cinco roles.
+- **Sin cambios** en Noticias, Eventos, Recintos, Panel, Reporte ni exportación (incluido `zoo-admin` en esas secciones).
+- **Efectos en otras specs:** `dashboard-004` (`zoo-admin` deja de tener Usuarios en su tabla de actores; ver su revisión), `dashboard-002` (CA-06 ajustado: Usuarios solo con `users.manage`), `apps/dashboard/docs/arquitectura.md` y `manual-demo.md`.
+- **Tareas:** T-33 a T-38 en `tasks/003-administration-sections.md`.
 
 ## Revisión
 

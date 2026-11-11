@@ -2,10 +2,12 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` (dueña de las vistas Noticias, Eventos y Usuarios); `packages/api-client` (envío con archivo para noticias y eventos, ver `api-008` T-10); `api-008` (contrato de subida de imágenes, dependencia fuerte para noticias y eventos); `api-007` (contrato de cuentas, sin cambios).
-- Estado: En progreso
+- Estado: Aprobada · En progreso (revisión aprobada por Jonathan el 2026-11-05; estado previo: En progreso)
 - Solicitante / responsable funcional: Jonathan
 - Aprobación funcional: aprobada por Jonathan el 2026-11-02. `api-008` también aprobada; la parte de imágenes depende de su implementación.
 - Relación con otras specs: reemplaza parcialmente `dashboard-003` en Noticias, Eventos y Usuarios (formularios en modal, diálogos de confirmación, «sin campo de imagen»). Ver RN-09.
+
+> **Nota de vigencia (2026-11-05, aprobada):** `zoo-admin` deja de gestionar cuentas del personal (sección Usuarios solo para `admin`, decisión de 2026-11-05; ver `dashboard-003`). Los formularios en línea de Usuarios se aplican solo a `admin`. Noticias y Eventos no cambian para `zoo-admin`.
 
 ## Problema y contexto
 
@@ -13,7 +15,7 @@ En `dashboard-003`, Noticias, Eventos y Usuarios se gestionan con un botón de c
 
 Esta feature devuelve el formulario a la página en las tres secciones, sin ventanas emergentes; añade la subida real de imágenes para noticias y eventos (`api-008`); pide las confirmaciones en línea dentro de cada tarjeta o fila; y permite minimizar o expandir cada formulario.
 
-Afectados: `admin` y `zoo-admin` (quienes publican, editan y administran cuentas). `executive` no ve acciones de edición (`dashboard-003` CA-13).
+Afectados: `admin` (noticias, eventos y cuentas) y `zoo-admin` (noticias y eventos; sin Usuarios desde el 2026-11-05). `executive` no ve acciones de edición (`dashboard-003` CA-13).
 
 ## Objetivos
 
@@ -41,16 +43,16 @@ Afectados: `admin` y `zoo-admin` (quienes publican, editan y administran cuentas
 | Actor/rol | Necesidad | Permisos requeridos |
 |---|---|---|
 | `admin` | Crear, editar, subir o quitar imagen, activar/desactivar y eliminar noticias y eventos; gestionar cuentas del personal | `news.manage`, `events.manage`, `users.manage` |
-| `zoo-admin` | Lo mismo para noticias y eventos; en Usuarios, solo cuentas de taquilla y veterinaria | `news.manage`, `events.manage`, `operational-staff.manage` |
+| `zoo-admin` | Lo mismo para noticias y eventos; sin Usuarios desde el 2026-11-05 | `news.manage`, `events.manage` |
 | `executive` | Solo consulta; sin formularios de edición ni acciones | — (sin acciones de escritura) |
 
 La interfaz solo presenta lo que `me` permite. La autorización real la aplica la API (`api-007`, `api-008`).
 
 ## Historias de usuario
 
-- Como `admin` o `zoo-admin`, quiero escribir la noticia, el evento o la cuenta en un formulario fijo en la página, para no perder el contexto de la lista.
+- Como `admin` o `zoo-admin`, quiero escribir la noticia o el evento en un formulario fijo en la página, para no perder el contexto de la lista. Como `admin`, quiero hacer lo mismo con la cuenta del personal (`zoo-admin` no gestiona cuentas desde el 2026-11-05).
 - Como `admin` o `zoo-admin`, quiero subir, cambiar o quitar la imagen de una noticia o evento desde ese mismo formulario y ver una vista previa antes de guardar.
-- Como `admin` o `zoo-admin`, quiero confirmar en línea antes de eliminar, desactivar, restablecer una contraseña o restablecer un 2FA, para no hacerlo por error.
+- Como `admin` o `zoo-admin`, quiero confirmar en línea antes de eliminar o desactivar noticias y eventos. Como `admin`, quiero confirmar en línea antes de desactivar, eliminar, restablecer una contraseña o restablecer un 2FA de una cuenta, para no hacerlo por error.
 - Como `admin` o `zoo-admin`, quiero minimizar el formulario cuando solo necesito la lista, y volver a expandirlo sin perder lo escrito.
 
 ## Criterios de aceptación

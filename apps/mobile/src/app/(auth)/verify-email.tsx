@@ -11,6 +11,7 @@ export default function VerifyEmailRoute() {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [resendWaitSeconds, setResendWaitSeconds] = useState<number | null>(null);
+  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
 
@@ -35,6 +36,12 @@ export default function VerifyEmailRoute() {
       const result = await accountSession.verifyEmail(email, code);
       if (!result.ok) {
         setError(result.message);
+        return;
+      }
+      if (result.code === 'email_already_registered') {
+        setError(null);
+        setNotice(result.message);
+        setAlreadyRegistered(true);
         return;
       }
       router.replace('/');
@@ -63,6 +70,8 @@ export default function VerifyEmailRoute() {
       onCodeChange={setCode}
       onSubmit={() => confirm()}
       onResend={() => resend()}
+      onGoToLogin={() => router.replace('/login')}
+      alreadyRegistered={alreadyRegistered}
       busy={busy}
     />
   );

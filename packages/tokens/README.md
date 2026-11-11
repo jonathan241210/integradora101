@@ -25,6 +25,8 @@ Los hex son valores de fallback centralizados, no clases ni literales para vista
 
 Los valores `placeholderTint` de animales son fixtures ilustrativos de Mobile cuando una ficha no tiene fotografía; no representan ni sustituyen colores de marca.
 
+Mobile también consume roles nativos para información (`info`, superficies y pulso), éxito (`success` y superficies), sombras y capas translúcidas (`overlay*`, `surfaceOverlay*`). Estos valores se centralizan en `index.ts`; los estados de éxito usan la paleta secundaria institucional. Los componentes SVG pueden combinar un token con `fillOpacity` o `strokeOpacity`. Esta adaptación mantiene el tema estático actual y no añade acceso ni escrituras a `settings_colores`.
+
 ### Tokens del prototipo administrativo
 
 El paquete conserva los defaults del contrato institucional y proporciona aliases `--dashboard-*` como valores base para la UI compartida. La SPA de administración puede mapear esos aliases a `--sidebar`, `--primary`, `--secondary`, `--accent` y tokens semánticos desde su hoja de estilos; ese mapeo no cambia los defaults globales del paquete ni la fuente externa `settings_colores`. En la demo del dashboard, los aliases se enlazan a la paleta institucional en `apps/dashboard/src/styles.css`. Una integración operativa futura deberá definir cómo aplicar el tema validado por `GET /api/theme`.

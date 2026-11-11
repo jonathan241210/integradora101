@@ -16,7 +16,17 @@ class VerifyVisitorEmailAction
     {
         $visitor = Visitor::query()->where('email', Str::lower($email))->first();
 
-        if ($visitor === null || ! $this->codes->execute($visitor, 'email_verification', $code)) {
+        if ($visitor === null) {
+            return VisitorAuthResult::message(422, 'El código no es válido.');
+        }
+
+        $purpose = $this->codes->match($visitor, $code, ['email_verification', 'registration_notice']);
+
+        if ($purpose === 'registration_notice') {
+            return VisitorAuthResult::message(200, 'Ese correo ya está registrado.', 'email_already_registered');
+        }
+
+        if ($purpose !== 'email_verification') {
             return VisitorAuthResult::message(422, 'El código no es válido.');
         }
 

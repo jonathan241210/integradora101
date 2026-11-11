@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Agregar columna `category` a `species`
-        if (Schema::hasTable('species') && !Schema::hasColumn('species', 'category')) {
+        if (Schema::hasTable('species') && ! Schema::hasColumn('species', 'category')) {
             Schema::table('species', function (Blueprint $table) {
                 $table->string('category', 30)->nullable()->after('scientific_name');
             });
@@ -50,23 +50,23 @@ return new class extends Migration
         // 3. Reestructurar `visitor_collections` (Colección por especie)
         if (Schema::hasTable('visitor_collections')) {
             // Deshabilitar temporalmente sql_require_primary_key para la reestructuración de la PK
-            DB::statement("SET SESSION sql_require_primary_key = 0");
+            DB::statement('SET SESSION sql_require_primary_key = 0');
 
             // Soltar llaves foráneas e índices antiguos
             $dropConstraintIfExists = function (string $table, string $constraint, string $type) {
-                $exists = DB::selectOne("
+                $exists = DB::selectOne('
                     SELECT 1 
                     FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS 
                     WHERE TABLE_SCHEMA = DATABASE() 
                       AND TABLE_NAME = ? 
                       AND CONSTRAINT_NAME = ? 
                       AND CONSTRAINT_TYPE = ?
-                ", [$table, $constraint, $type]);
+                ', [$table, $constraint, $type]);
 
                 if ($exists) {
                     if ($type === 'FOREIGN KEY') {
                         DB::statement("ALTER TABLE `{$table}` DROP FOREIGN KEY `{$constraint}`");
-                    } else if ($type === 'UNIQUE') {
+                    } elseif ($type === 'UNIQUE') {
                         DB::statement("ALTER TABLE `{$table}` DROP INDEX `{$constraint}`");
                     }
                 }
@@ -77,12 +77,12 @@ return new class extends Migration
             $dropConstraintIfExists('visitor_collections', 'uk_usuario_recinto', 'UNIQUE');
 
             // Reestructurar campos y llaves primarias
-            DB::statement("ALTER TABLE visitor_collections ADD COLUMN species_id INT NOT NULL");
-            DB::statement("ALTER TABLE visitor_collections MODIFY id INT, DROP PRIMARY KEY");
-            DB::statement("ALTER TABLE visitor_collections DROP COLUMN id, ADD PRIMARY KEY (visitor_id, species_id)");
-            DB::statement("ALTER TABLE visitor_collections CHANGE COLUMN unlocked_date discovered_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP");
-            DB::statement("ALTER TABLE visitor_collections MODIFY enclosure_qr_code_id INT NULL");
-            DB::statement("ALTER TABLE visitor_collections ADD COLUMN created_at TIMESTAMP NULL");
+            DB::statement('ALTER TABLE visitor_collections ADD COLUMN species_id INT NOT NULL');
+            DB::statement('ALTER TABLE visitor_collections MODIFY id INT, DROP PRIMARY KEY');
+            DB::statement('ALTER TABLE visitor_collections DROP COLUMN id, ADD PRIMARY KEY (visitor_id, species_id)');
+            DB::statement('ALTER TABLE visitor_collections CHANGE COLUMN unlocked_date discovered_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP');
+            DB::statement('ALTER TABLE visitor_collections MODIFY enclosure_qr_code_id INT NULL');
+            DB::statement('ALTER TABLE visitor_collections ADD COLUMN created_at TIMESTAMP NULL');
 
             // Crear nuevas FKs
             Schema::table('visitor_collections', function (Blueprint $table) {
@@ -93,7 +93,7 @@ return new class extends Migration
         }
 
         // 4. Crear tabla `visitor_scans` (Auditoría antiabuso y escaneos de QR)
-        if (!Schema::hasTable('visitor_scans')) {
+        if (! Schema::hasTable('visitor_scans')) {
             Schema::create('visitor_scans', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->integer('visitor_id');
@@ -111,7 +111,7 @@ return new class extends Migration
         }
 
         // 5. Crear tabla `achievements` (Catálogo de logros)
-        if (!Schema::hasTable('achievements')) {
+        if (! Schema::hasTable('achievements')) {
             Schema::create('achievements', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('code', 50)->unique('uk_achievements_code');
@@ -129,7 +129,7 @@ return new class extends Migration
         }
 
         // 6. Crear tabla `visitor_achievements` (Pivote de logros desbloqueados)
-        if (!Schema::hasTable('visitor_achievements')) {
+        if (! Schema::hasTable('visitor_achievements')) {
             Schema::create('visitor_achievements', function (Blueprint $table) {
                 $table->integer('visitor_id');
                 $table->unsignedBigInteger('achievement_id');
@@ -142,7 +142,7 @@ return new class extends Migration
         }
 
         // 7. Crear tabla `missions` (Catálogo de misiones)
-        if (!Schema::hasTable('missions')) {
+        if (! Schema::hasTable('missions')) {
             Schema::create('missions', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->string('code', 50)->unique('uk_missions_code');
@@ -161,7 +161,7 @@ return new class extends Migration
         }
 
         // 8. Crear tabla `visitor_mission_completions` (Pivote de misiones completadas)
-        if (!Schema::hasTable('visitor_mission_completions')) {
+        if (! Schema::hasTable('visitor_mission_completions')) {
             Schema::create('visitor_mission_completions', function (Blueprint $table) {
                 $table->integer('visitor_id');
                 $table->unsignedBigInteger('mission_id');
@@ -174,7 +174,7 @@ return new class extends Migration
         }
 
         // 9. Crear tabla `visitor_point_entries` (Libro mayor de puntos)
-        if (!Schema::hasTable('visitor_point_entries')) {
+        if (! Schema::hasTable('visitor_point_entries')) {
             Schema::create('visitor_point_entries', function (Blueprint $table) {
                 $table->bigIncrements('id');
                 $table->integer('visitor_id');
@@ -204,7 +204,7 @@ return new class extends Migration
 
         // 2. Revertir `visitor_collections`
         if (Schema::hasTable('visitor_collections')) {
-            DB::statement("SET SESSION sql_require_primary_key = 0");
+            DB::statement('SET SESSION sql_require_primary_key = 0');
 
             Schema::table('visitor_collections', function (Blueprint $table) {
                 $table->dropForeign('fk_vc_visitor_id');
@@ -212,13 +212,13 @@ return new class extends Migration
                 $table->dropForeign('fk_vc_enclosure_qr_code_id');
             });
 
-            DB::statement("ALTER TABLE visitor_collections DROP PRIMARY KEY");
-            DB::statement("ALTER TABLE visitor_collections ADD COLUMN id INT AUTO_INCREMENT PRIMARY KEY FIRST");
-            DB::statement("ALTER TABLE visitor_collections DROP COLUMN species_id");
-            DB::statement("ALTER TABLE visitor_collections CHANGE COLUMN discovered_at unlocked_date DATE NULL");
-            DB::statement("ALTER TABLE visitor_collections MODIFY enclosure_qr_code_id INT NOT NULL");
-            DB::statement("ALTER TABLE visitor_collections DROP COLUMN created_at");
-            DB::statement("ALTER TABLE visitor_collections ADD UNIQUE KEY uk_usuario_recinto (visitor_id, enclosure_qr_code_id)");
+            DB::statement('ALTER TABLE visitor_collections DROP PRIMARY KEY');
+            DB::statement('ALTER TABLE visitor_collections ADD COLUMN id INT AUTO_INCREMENT PRIMARY KEY FIRST');
+            DB::statement('ALTER TABLE visitor_collections DROP COLUMN species_id');
+            DB::statement('ALTER TABLE visitor_collections CHANGE COLUMN discovered_at unlocked_date DATE NULL');
+            DB::statement('ALTER TABLE visitor_collections MODIFY enclosure_qr_code_id INT NOT NULL');
+            DB::statement('ALTER TABLE visitor_collections DROP COLUMN created_at');
+            DB::statement('ALTER TABLE visitor_collections ADD UNIQUE KEY uk_usuario_recinto (visitor_id, enclosure_qr_code_id)');
         }
 
         // 3. Revertir FK `enclosure_qr_codes`

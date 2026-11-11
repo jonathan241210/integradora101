@@ -34,11 +34,11 @@ class TicketPriceResolutionTest extends TicketFeatureTestCase
         $this->addPrice($cashier, 'child', '20.00', '2026-12-01 12:00:00');
 
         $this->travelTo($this->at('2026-12-01 11:59:59'));
-        $before = $this->sell($cashier, 1, 1);
+        $before = $this->sellPurchase($cashier, 1, 1);
         $this->assertSame('41.00', $before['total_amount']);
 
         $this->travelTo($this->at('2026-12-01 12:00:00'));
-        $after = $this->sell($cashier, 1, 1);
+        $after = $this->sellPurchase($cashier, 1, 1);
         $this->assertSame('50.00', $after['total_amount']);
     }
 }

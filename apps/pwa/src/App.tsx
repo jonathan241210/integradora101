@@ -1,83 +1,61 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useState } from 'react';
+import type { PwaSection } from '@/viewmodels/pwaDemo';
+import { usePwaInstall, type PwaInstallController } from '@/viewmodels/usePwaInstall';
+import { useStaffSession } from '@/viewmodels/useStaffSession';
 import { AppShell } from '@/views/AppShell';
 import { LoginView } from '@/views/LoginView';
 import { LoadingScreen } from '@/views/Spinner';
-import {
-  fetchCurrentUser,
-  getToken,
-  login,
-  logout,
-  onUnauthorized,
-} from '@/services/apiClient';
-import {
-  initialPwaDemoState,
-  pwaDemoReducer,
-} from '@/viewmodels/pwaDemo';
 
 function App() {
-  const [state, dispatch] = useReducer(
-    pwaDemoReducer,
-    initialPwaDemoState,
-  );
-  const [loginError, setLoginError] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [restoring, setRestoring] = useState(() => getToken() !== null);
+  const installController = usePwaInstall();
+  const { session, error, busy, login, logout } = useStaffSession();
 
-  useEffect(() => {
-    onUnauthorized(() => {
-      setLoginError('Tu sesión expiró. Vuelve a iniciar sesión.');
-      dispatch({ type: 'logout' });
-    });
-
-    if (getToken()) {
-      fetchCurrentUser()
-        .then(() => dispatch({ type: 'authenticated' }))
-        .catch(() => undefined)
-        .finally(() => setRestoring(false));
-    }
-
-    return () => onUnauthorized(null);
-  }, []);
-
-  async function handleLogin(email: string, password: string) {
-    setBusy(true);
-    setLoginError('');
-    try {
-      await login(email.trim(), password);
-      dispatch({ type: 'authenticated' });
-    } catch (error) {
-      setLoginError(
-        error instanceof Error ? error.message : 'No se pudo iniciar sesión.',
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function handleLogout() {
-    await logout();
-    dispatch({ type: 'logout' });
-  }
-
-  if (restoring) {
+  if (session === 'restoring') {
     return <LoadingScreen label="Cargando…" />;
   }
 
-  if (!state.isLoggedIn) {
+  if (session !== 'authenticated') {
     return (
       <LoginView
         busy={busy}
-        error={loginError || state.loginError}
-        onLogin={handleLogin}
+        error={error}
+        installController={installController}
+        onLogin={login}
       />
     );
   }
 
   return (
+    <StaffWorkspace
+      installController={installController}
+      error={error}
+      busy={busy}
+      logout={logout}
+    />
+  );
+}
+
+function StaffWorkspace({
+  installController,
+  error,
+  busy,
+  logout,
+}: {
+  installController: PwaInstallController;
+  error: string;
+  busy: boolean;
+  logout: () => Promise<void>;
+}) {
+  const [activeSection, setActiveSection] = useState<PwaSection>('home');
+
+  return (
     <AppShell
-      activeSection={state.activeSection}
-      onLogout={handleLogout}
-      onNavigate={(section) => dispatch({ type: 'navigate', section })}
+      activeSection={activeSection}
+      installController={installController}
+      sessionError={error}
+      signingOut={busy}
+      onLogout={logout}
+      onNavigate={setActiveSection}
     />
   );
 }

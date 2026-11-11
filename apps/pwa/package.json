@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@arca/api-client": "file:../../packages/api-client",
     "@arca/tokens": "file:../../packages/tokens",
     "@arca/ui": "file:../../packages/ui",
     "html2pdf.js": "^0.14.0",

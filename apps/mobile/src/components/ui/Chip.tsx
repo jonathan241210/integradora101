@@ -32,11 +32,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.secondary,
     backgroundColor: colors.background,
   },
   selected: {
     backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    borderColor: colors.secondary,
   },
 });

@@ -8,7 +8,8 @@ import type {
   TicketPriceChangeDto,
   TicketPriceCurrentDto,
   TicketPriceScheduleInput,
-  TicketSaleDto,
+  TicketQuoteDto,
+  TicketSaleBatchDto,
   TicketSaleInput,
 } from "./ticket-sales-types";
 
@@ -86,9 +87,18 @@ export function createTicketSalesApi(
 
   return {
     sales: {
-      async create(input: TicketSaleInput): Promise<TicketSaleDto> {
+      /** Cotiza sin registrar venta; la API calcula todos los importes. */
+      async quote(input: TicketSaleInput): Promise<TicketQuoteDto> {
         return unwrap(
-          await http.post<Enveloped<TicketSaleDto>>(`${base}/tickets`, {
+          await http.post<Enveloped<TicketQuoteDto>>(`${base}/tickets/quote`, {
+            adult_quantity: input.adult_quantity,
+            child_quantity: input.child_quantity,
+          }),
+        );
+      },
+      async create(input: TicketSaleInput): Promise<TicketSaleBatchDto> {
+        return unwrap(
+          await http.post<Enveloped<TicketSaleBatchDto>>(`${base}/tickets`, {
             adult_quantity: input.adult_quantity,
             child_quantity: input.child_quantity,
           }),

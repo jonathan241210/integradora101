@@ -15,7 +15,7 @@ interface EventDetailScreenProps {
 export function EventDetailScreen({ event, loading = false, error, isOffline = false, onBackPress }: EventDetailScreenProps) {
   if (loading) {
     return (
-      <ScreenContainer>
+      <ScreenContainer scroll={false}>
         <View style={styles.message}>
           <AppText variant="body">Cargando información del evento…</AppText>
         </View>
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
   content: { padding: spacing.lg, gap: spacing.md },
   message: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: spacing.md, padding: spacing.lg },
   imageList: { gap: spacing.md },
-  eventImage: { width: 280, height: 180 },
+  eventImage: { width: 280, height: 180, borderWidth: 1, borderColor: colors.accent },
   details: { gap: spacing.sm },
   locationTitle: { marginTop: spacing.sm },
 });

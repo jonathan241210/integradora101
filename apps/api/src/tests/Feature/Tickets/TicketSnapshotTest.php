@@ -18,9 +18,10 @@ class TicketSnapshotTest extends TicketFeatureTestCase
         ])->assertCreated();
 
         $ticket = Ticket::query()->findOrFail($sale['folio']);
-        $this->assertSame('66.00', $ticket->total_amount);
+
+        $this->assertSame('25.00', $ticket->total_amount);
         $this->assertSame('25.00', $ticket->adult_unit_price);
         $this->assertSame('16.00', $ticket->child_unit_price);
-        $this->assertSame('66.00', $this->actAs($cashier)->getJson("/api/v1/admin/tickets?folio={$sale['folio']}")->json('data.0.total_amount'));
+        $this->assertSame('25.00', $this->actAs($cashier)->getJson("/api/v1/admin/tickets?folio={$sale['folio']}")->json('data.0.total_amount'));
     }
 }

@@ -104,6 +104,9 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('ticket-sales', fn (Request $request) => $request->user()?->can('tickets.create')
             ? Limit::perMinute(60)->by($key($request))->response($response)
             : Limit::none());
+        RateLimiter::for('ticket-quotes', fn (Request $request) => $request->user()?->can('tickets.create')
+            ? Limit::perMinute(120)->by($key($request))->response($response)
+            : Limit::none());
         RateLimiter::for('ticket-cancel', fn (Request $request) => $request->user()?->can('tickets.cancel')
             ? Limit::perMinute(20)->by($key($request))->response($response)
             : Limit::none());

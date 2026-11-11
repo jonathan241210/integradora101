@@ -1,5 +1,5 @@
-import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection, QrOutcome, QrSimulation } from '../models';
-import { MOCK_ANIMALS, MOCK_USER, MOCK_MISSIONS, MOCK_EVENTS, MOCK_NEWS, MOCK_ACHIEVEMENTS, MOCK_MILESTONES, MOCK_MAP_SECTIONS, MOCK_MAP_PLACES, MOCK_QR_SIMULATIONS } from '../mocks/zoo';
+import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection } from '../models';
+import { MOCK_ANIMALS, MOCK_USER, MOCK_MISSIONS, MOCK_EVENTS, MOCK_NEWS, MOCK_ACHIEVEMENTS, MOCK_MILESTONES, MOCK_MAP_SECTIONS, MOCK_MAP_PLACES } from '../mocks/zoo';
 
 export interface AnimalRepository {
   getAllAnimals(): Promise<Animal[]>;
@@ -23,10 +23,6 @@ export interface ZooRepository {
 export interface MapRepository {
   getPlaces(): Promise<MapPlace[]>;
   getSections(): Promise<MapSection[]>;
-}
-
-export interface QrRepository {
-  simulateScan(outcome: QrOutcome): Promise<QrSimulation>;
 }
 
 export class AnimalRepositoryImpl implements AnimalRepository {
@@ -87,15 +83,10 @@ export class MapRepositoryImpl implements MapRepository {
   }
 }
 
-export class QrRepositoryImpl implements QrRepository {
-  async simulateScan(outcome: QrOutcome): Promise<QrSimulation> {
-    return MOCK_QR_SIMULATIONS[outcome];
-  }
-}
-
 // Exportamos las implementaciones reales con API y caché
 export { ApiAnimalRepository } from './apiAnimalRepository';
 export { ApiZooRepository } from './apiZooRepository';
+export { ApiMapRepository, CACHE_KEY_MAP_PLACES } from './apiMapRepository';
 export * from './mappers';
 export * from './storage';
 
@@ -104,6 +95,7 @@ export * from './storage';
  */
 import { ApiAnimalRepository } from './apiAnimalRepository';
 import { ApiZooRepository } from './apiZooRepository';
+import { ApiMapRepository } from './apiMapRepository';
 
 export function createAnimalRepository(): AnimalRepository {
   if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
@@ -123,4 +115,14 @@ export function createZooRepository(): ZooRepository {
     return new ZooRepositoryImpl();
   }
   return new ApiZooRepository();
+}
+
+export function createMapRepository(): MapRepository {
+  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
+    return new MapRepositoryImpl();
+  }
+  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+    return new MapRepositoryImpl();
+  }
+  return new ApiMapRepository();
 }

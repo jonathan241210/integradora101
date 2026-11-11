@@ -201,6 +201,8 @@ La V1 entregó un mapa 2D consultable pero estático: el visitante no sabe dónd
 
 - **CA-13 (Modo degradado):** Dado que el permiso GPS fue denegado o `expo-location` no está disponible, cuando el visitante usa el mapa, entonces todas las funciones de V1 (CA-01 a CA-07) siguen funcionando sin errores visibles relacionados con GPS.
 
+- **CA-14 (Línea de ruta hacia el destino):** Dado que el visitante tiene un recinto destino seleccionado y el punto azul de ubicación está visible, cuando se muestra el mapa, entonces se traza una línea visual punteada sobre el SVG que conecta las coordenadas de la posición del usuario con las coordenadas SVG del recinto destino; si el usuario deselecciona el destino o se dispara la llegada (CA-12), la línea desaparece automáticamente.
+
 ### Reglas de negocio (V2)
 
 - **RN-11 (Solo primer plano):** El GPS solo se activa mientras la pantalla Mapa está en primer plano (`requestForegroundPermissionsAsync`). No se usa ubicación en segundo plano.
@@ -256,3 +258,109 @@ flowchart TD
 - **Evidencia/enlaces:**
   - `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado
   - `apps/mobile/docs/007-roadmap-mapa-gps-ar.md`
+
+---
+
+## Enmienda V2.2 — Controles Interactivos del Mapa (Zoom, Desplazamiento y Centrado)
+
+- Estado: **Aprobada** (2026-11-04)
+- Solicitante / responsable funcional: Víctor Adrián
+- Fecha: 2026-11-03
+- Sin nuevas dependencias externas (usa primitivas de React Native + controles accesibles para cumplir `CA-07`).
+
+### Problema y contexto (V2.2)
+
+En las versiones V1 a V2.1 el lienzo del mapa se muestra fijo al 100 % dentro de su contenedor. En pantallas pequeñas o zonas con varios puntos cercanos, el visitante necesita acercar el plano (zoom in), desplazarse por las áreas acercadas (pan) y regresar rápidamente a la vista general o centrar el mapa sobre su ubicación GPS (punto azul) o sobre un recinto enfocado.
+
+### Objetivos (V2.2)
+
+- Permitir acercar (`+`) y alejar (`-`) el mapa 2D dentro de límites controlados (`1.0x` a `2.5x`, en pasos de `0.5x`) manteniendo alineados el SVG, los marcadores, el punto azul y la línea de ruta.
+- Permitir desplazar el lienzo cuando el nivel de zoom sea mayor a `1.0x` (tanto mediante arrastre táctil con `PanResponder` como al centrar un punto/ubicación).
+- Incluir un botón accesible de **"Restablecer vista"** para volver a escala `1.0x` centrada `(0, 0)`.
+- Incluir un botón accesible de **"Centrar en mi ubicación"** cuando el punto azul (`userPosition`) esté activo, que centre el visor sobre la posición del visitante.
+
+### Historias de usuario (V2.2)
+
+- **HU-10 (Zoom y desplazamiento):** Como visitante, quiero acercar, alejar y desplazar el plano del zoológico para explorar con mayor claridad las zonas con varios puntos de interés.
+- **HU-11 (Centrar en mi ubicación):** Como visitante con GPS activo, quiero un botón para centrar el mapa en mi punto azul para encontrarme rápidamente después de explorar otras áreas del plano.
+
+### Criterios de aceptación (V2.2)
+
+- **CA-15 (Controles de zoom accesibles):** Dado el mapa visible, cuando el visitante presiona el botón "Acercar mapa" (`+`) o "Alejar mapa" (`-`), entonces la escala del lienzo (`zoomScale`) aumenta o disminuye dentro del rango `[1.0, 2.5]` manteniendo sincronizados el SVG, los marcadores, el punto azul y la línea de destino; y al presionar "Restablecer vista", el mapa vuelve a escala `1.0` y desplazamiento `(0, 0)`.
+- **CA-16 (Desplazamiento acotado del lienzo):** Dado que el mapa tiene un nivel de zoom mayor a `1.0`, cuando el visitante desplaza el lienzo o se enfoca un punto/ubicación, entonces el desplazamiento (`panX`, `panY`) se limita a los bordes del mapa (`clampPan`) para que el plano nunca salga del área visible; en `1.0x` el desplazamiento se mantiene en `(0, 0)`.
+- **CA-17 (Centrar en mi ubicación):** Dado que el visitante tiene ubicación activa (`userPosition` no nulo), cuando presiona el botón "Centrar en mi ubicación", entonces el mapa se centra sobre las coordenadas del punto azul (aplicando zoom si estaba en `1.0x`); si no hay ubicación activa (`userPosition === null`), el botón no se muestra o permanece deshabilitado de forma accesible sin romper el mapa.
+
+### Reglas de negocio (V2.2)
+
+- **RN-16 (Accesibilidad y sin gestos obligatorios):** Conforme a `CA-07`, toda acción de zoom, restablecimiento y centrado debe poder ejecutarse mediante botones accesibles con etiquetas en español (`accessibilityLabel`), sin depender exclusivamente de gestos multitáctiles.
+- **RN-17 (Sin dependencias nuevas):** Se implementa con APIs nativas de React Native (`View`, transformaciones de escala/traslación y `PanResponder`), sin instalar paquetes adicionales.
+
+---
+
+## Próxima Evolución — Fase V3: Navegación Guiada por Senderos (Pathfinding)
+
+- **Estado:** Propuesta formal planificada
+- **Responsable funcional:** Víctor Adrián
+- **Dependencia bloqueante:** Recepción de fotos/videos con dron del zoológico Nicolás Bravo y generación del SVG cartográfico definitivo.
+
+### Justificación de alcance
+En la V2.1 la línea hacia el recinto destino es una recta euclidiana directa (`DestinationRouteLine`). Esta solución es óptima para la fase esquemática porque evita invertir tiempo en trazar senderos matemáticos sobre un plano provisional que cambiará cuando se digitalice la topografía real con dron.
+
+### Objetivos funcionales V3 (cuando llegue el SVG real)
+1. **Grafo de andadores peatonales:**
+   - Modelar las intersecciones y curvas de los pasillos peatonales como un grafo ponderado de nodos y aristas (`src/utils/zooPaths.ts`).
+2. **Cálculo de ruta más corta (Pathfinding):**
+   - Algoritmo A* o Dijkstra ligero ejecutado en memoria en el cliente:
+     $$\text{Posición del visitante} \longrightarrow \text{Nodo de sendero más cercano} \longrightarrow \text{Recorrido por pasillos} \longrightarrow \text{Recinto destino}$$
+   - Renderizar una polilínea SVG curva/segmentada que siga los andadores físicos sin atravesar jaulas, lagos ni muros.
+3. **Métricas de caminata en tiempo real:**
+   - Distancia real a recorrer por los senderos (metros).
+   - Tiempo estimado a pie considerando velocidad promedio de paseo familiar ($1.1\text{ m/s}$ / $4\text{ km/h}$).
+   - Tarjeta informativa en pantalla: *"A 140 m • 2 min a pie"*.
+
+
+### Estado de aprobación (Enmienda V3)
+- **Estado:** **Aprobada** (2026-11-04) — Implementada sobre la red de andadores del SVG actual y desacoplada en `src/constants/zooPaths.ts` para recalibración directa con cartografía de dron.
+
+### Historias de usuario (V3)
+- **HU-12 (Ruta por senderos):** Como visitante con un destino activo, quiero que la línea de ruta siga los pasillos peatonales del zoológico para saber por qué camino debo avanzar sin cruzar zonas restringidas.
+- **HU-13 (Distancia y tiempo a pie):** Como visitante, quiero ver cuántos metros y minutos aproximados me faltan para llegar al recinto destino caminando por los senderos.
+
+### Criterios de aceptación (V3)
+- **CA-18 (Cálculo de camino mínimo sobre grafo peatonal):** Dado un punto de origen `(svgX, svgY)` y un punto de destino `(destSvgX, destSvgY)`, cuando se ejecuta `computeWalkRoute`, entonces el algoritmo Dijkstra devuelve una secuencia ordenada de puntos que pasa por los nodos de los andadores peatonales conectando origen y destino por la ruta más corta, manejando de forma segura nodos aislados o coordenadas idénticas sin lanzar excepciones.
+- **CA-19 (Estimación de distancia y tiempo a pie):** Dada una ruta calculada sobre el grafo de senderos, cuando `computeWalkRoute` retorna el resultado, entonces incluye `distanceMeters` (entero $\ge 1$) y `estimatedMinutes` (entero $\ge 1$, calculado a $1.1\text{ m/s}$), actualizándose conforme cambia la posición del visitante o el destino seleccionado.
+- **CA-20 (Polilínea en senderos e insignia de caminata en UI):** Dado que el visitante tiene ubicación activa (`userPosition`) y un recinto destino seleccionado (`destinationPlace`), cuando se muestra el mapa, entonces la ruta se dibuja como una polilínea SVG (`testID="destination-route-polyline"`) siguiendo los senderos y se muestra la insignia accesible (`testID="walk-estimate-badge"`) con el nombre del destino, la distancia en metros y el tiempo estimado en minutos; al cancelar el destino o llegar al recinto, ambos elementos desaparecen.
+
+### Reglas de negocio (V3)
+- **RN-18 (Velocidad peatonal estándar):** La velocidad promedio de caminata familiar se define como constante `WALKING_SPEED_MPS = 1.1` en `src/constants/zooPaths.ts`.
+- **RN-19 (Grafo desacoplado de la vista):** Los nodos y aristas del sendero residen en `src/constants/zooPaths.ts` y la lógica Dijkstra en `src/utils/pathfinding.ts`, sin cálculos de grafos dentro de componentes React.
+
+
+---
+
+## Enmienda V4 — Integración con API de Recintos (`api-010`) y Caché Offline
+
+- **Estado:** **Aprobada** (2026-11-07)
+- **Responsable funcional:** Víctor Adrián
+- **Fecha:** 2026-11-07
+- **Spec API vinculada:** `apps/api/specs/010-public-enclosures-read.md`
+- **DBR vinculada:** `docs/database/requests/DBR-008-enclosure-gps-coordinates.md`
+
+### Problema y contexto (V4)
+
+En las versiones V1 a V3 del mapa móvil, los recintos y puntos de interés provienen de un fixture local estático (`MOCK_MAP_PLACES`). Con la aprobación de `DBR-008` y la especificación del endpoint `api-010` (`GET /api/v1/enclosures`), la app móvil debe poder consultar los recintos reales de la base de datos central cuando haya conexión disponible, almacenarlos en caché local (`AsyncStorage`) y seguir funcionando al 100 % cuando el visitante esté dentro del zoológico sin señal ni datos móviles.
+
+### Criterios de aceptación (V4)
+
+- **CA-21 (Carga remota de recintos vía API):** Dado que `EXPO_PUBLIC_API_URL` está configurado y hay conexión de red, cuando el ViewModel inicializa el mapa, entonces `ApiMapRepository` consulta `GET /api/v1/enclosures`, mapea los recintos devueltos a objetos `MapPlace` utilizando `gps_lat`, `gps_lon`, `map_x` y `map_y`, y posiciona los marcadores correspondientes sobre el plano SVG.
+- **CA-22 (Persistencia y recuperación en caché offline):** Dado que se reciben recintos válidos desde la API, cuando la petición finaliza con éxito, entonces se almacenan en `AsyncStorage` bajo la clave `@arca:map_places_cache`; en arranques posteriores sin conexión a internet o con la API no disponible, el mapa carga inmediatamente los recintos desde dicha caché local permitiendo el uso normal del mapa, las rutas y el recorrido 3D sin mostrar pantalla de error.
+- **CA-23 (Degradación elegante ante ausencia total de datos):** Dado que la app se ejecuta por primera vez sin conexión y sin caché previa en `AsyncStorage`, cuando falla la petición de red, entonces el repositorio degrada graciosamente al fixture local (`MOCK_MAP_PLACES`) garantizando que el mapa nunca quede vacío ni arroje excepciones no controladas.
+
+### Reglas de negocio (V4)
+
+- **RN-20 (Prioridad de coordenadas):** Si un recinto cuenta con `map_x` y `map_y` explícitos de la API, se utilizan directamente para posicionar el marcador en el SVG; si solo cuenta con `gps_lat` y `gps_lon`, se calcula su posición con `geoTransform(lat, lon)`.
+- **RN-21 (Desacoplamiento MVVM):** El ViewModel `useMapViewModel` consume la interfaz abstracta `MapRepository`, resolviendo la instancia adecuada (`ApiMapRepository` vs `MapRepositoryImpl`) de forma transparente según la configuración del entorno.
+
+## Corrección de regresiones — CA-07 y CA-17 (2026-11-09)
+
+Se aplica la corrección aprobada de tokens y centrado: componentes y pantallas consumen roles semánticos compartidos en lugar de colores literales, y centrar la ubicación activa aplica `CENTER_LOCATION_ZOOM` y calcula el desplazamiento con la misma escala. No cambian criterios, dependencias ni contratos. La evidencia de las pruebas existentes se registra en plan y tasks.

@@ -46,11 +46,13 @@ async function fillRegistration(view: Awaited<ReturnType<typeof render>>) {
   await fireEvent.changeText(view.getByLabelText('Nombre'), 'Ana');
   await fireEvent.changeText(view.getByLabelText('Apodo'), 'Anita');
   await fireEvent.changeText(view.getByLabelText('Correo electrónico'), 'ana.nueva@correo.com');
+  await fireEvent.press(view.getByRole('button', { name: 'Siguiente' }));
   await fireEvent.changeText(view.getByLabelText('Contraseña'), 'secreta1');
   await fireEvent.changeText(view.getByLabelText('Confirmar contraseña'), 'secreta1');
-  await fireEvent.press(view.getByRole('button', { name: 'Avatar Jaguar' }));
   await fireEvent.press(view.getByRole('checkbox', { name: 'Soy mayor de 18 años' }));
   await fireEvent.press(view.getByRole('checkbox', { name: 'Acepto el aviso de privacidad' }));
+  await fireEvent.press(view.getByRole('button', { name: 'Siguiente' }));
+  await fireEvent.press(view.getByRole('button', { name: 'Avatar Jaguar' }));
 }
 
 describe('Cuenta visitante, corte 2', () => {
@@ -66,14 +68,24 @@ describe('Cuenta visitante, corte 2', () => {
     expect(register.getByLabelText('Nombre')).toBeTruthy();
     expect(register.getByLabelText('Apodo')).toBeTruthy();
     expect(register.getByLabelText('Correo electrónico')).toBeTruthy();
+    expect(register.queryByLabelText('Contraseña')).toBeNull();
+    await fireEvent.changeText(register.getByLabelText('Nombre'), 'Ana');
+    await fireEvent.changeText(register.getByLabelText('Apodo'), 'Anita');
+    await fireEvent.changeText(register.getByLabelText('Correo electrónico'), 'ana.nueva@correo.com');
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
     expect(register.getByLabelText('Contraseña')).toBeTruthy();
     expect(register.getByLabelText('Confirmar contraseña')).toBeTruthy();
     expect(register.getByRole('checkbox', { name: 'Soy mayor de 18 años' })).toBeTruthy();
     expect(register.getByRole('checkbox', { name: 'Acepto el aviso de privacidad' })).toBeTruthy();
-    expect(register.getByRole('button', { name: 'Avatar Jaguar' })).toBeTruthy();
     await fireEvent.press(register.getByRole('button', { name: 'Leer aviso de privacidad' }));
     expect(mockPush).toHaveBeenCalledWith('/privacy-notice');
-    await fillRegistration(register);
+    await fireEvent.changeText(register.getByLabelText('Contraseña'), 'secreta1');
+    await fireEvent.changeText(register.getByLabelText('Confirmar contraseña'), 'secreta1');
+    await fireEvent.press(register.getByRole('checkbox', { name: 'Soy mayor de 18 años' }));
+    await fireEvent.press(register.getByRole('checkbox', { name: 'Acepto el aviso de privacidad' }));
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
+    expect(register.getByRole('button', { name: 'Avatar Jaguar' })).toBeTruthy();
+    await fireEvent.press(register.getByRole('button', { name: 'Avatar Jaguar' }));
     await fireEvent.press(register.getByRole('button', { name: 'Crear cuenta' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({
       pathname: '/verify-email',
@@ -92,13 +104,16 @@ describe('Cuenta visitante, corte 2', () => {
       isAdult: true,
       privacyNoticeVersion: '2026-10',
     });
+    const issuedCode = authRepository.issuedCode('ana.nueva@correo.com');
     const verify = await render(<VerifyEmailRoute />);
     expect(verify.getByText(/ana.nueva@correo.com/)).toBeTruthy();
+    expect(verify.getByText('Reenviar')).toBeTruthy();
+    expect(verify.queryByText('Reenviar código')).toBeNull();
     authRepository.limitResend = true;
     await fireEvent.press(verify.getByRole('button', { name: 'Reenviar código' }));
     expect(await verify.findByText('Espera 30 segundos e inténtalo de nuevo.')).toBeTruthy();
     expect(verify.getByRole('button', { name: 'Espera 30 segundos' })).toBeTruthy();
-    await fireEvent.changeText(verify.getByLabelText('Código'), '123456');
+    await fireEvent.changeText(verify.getByLabelText('Código'), issuedCode ?? '');
     await fireEvent.press(verify.getByRole('button', { name: 'Confirmar código' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/'));
   }, 15000);
@@ -106,15 +121,55 @@ describe('Cuenta visitante, corte 2', () => {
   it('test-ca-04-auth-errors: registro y verificación muestran errores en español', async () => {
     const register = await render(<RegisterRoute />);
     await fillRegistration(register);
+    await fireEvent.press(register.getByRole('button', { name: 'Anterior' }));
+    await fireEvent.press(register.getByRole('button', { name: 'Anterior' }));
     await fireEvent.changeText(register.getByLabelText('Correo electrónico'), 'correo@ejemplo.com');
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
     await fireEvent.press(register.getByRole('button', { name: 'Crear cuenta' }));
-    expect(await register.findByText('Ese correo ya está registrado.')).toBeTruthy();
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/verify-email',
+      params: { email: 'correo@ejemplo.com' },
+    }));
+    expect(register.queryByText('Ese correo ya está registrado.')).toBeNull();
 
     mockParams.email = 'sin-verificar@ejemplo.com';
     const verify = await render(<VerifyEmailRoute />);
     await fireEvent.changeText(verify.getByLabelText('Código'), '000000');
     await fireEvent.press(verify.getByRole('button', { name: 'Confirmar código' }));
     expect(await verify.findByText('El código no es válido.')).toBeTruthy();
+  });
+
+  it('test-ca-03-registered-email-after-code: la leyenda sale solo después del código', async () => {
+    const register = await render(<RegisterRoute />);
+    await fillRegistration(register);
+    await fireEvent.press(register.getByRole('button', { name: 'Anterior' }));
+    await fireEvent.press(register.getByRole('button', { name: 'Anterior' }));
+    await fireEvent.changeText(register.getByLabelText('Correo electrónico'), 'correo@ejemplo.com');
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
+    await fireEvent.press(register.getByRole('button', { name: 'Siguiente' }));
+    await fireEvent.press(register.getByRole('button', { name: 'Crear cuenta' }));
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({
+      pathname: '/verify-email',
+      params: { email: 'correo@ejemplo.com' },
+    }));
+    expect(register.queryByText('Ese correo ya está registrado.')).toBeNull();
+
+    mockParams.email = 'correo@ejemplo.com';
+    const verify = await render(<VerifyEmailRoute />);
+    expect(verify.queryByText('Ese correo ya está registrado.')).toBeNull();
+    await fireEvent.changeText(verify.getByLabelText('Código'), authRepository.issuedCode('correo@ejemplo.com') ?? '');
+    await fireEvent.press(verify.getByRole('button', { name: 'Confirmar código' }));
+    expect(await verify.findByText('Ese correo ya está registrado.')).toBeTruthy();
+    expect(mockReplace).not.toHaveBeenCalledWith('/');
+    await fireEvent.press(verify.getByRole('button', { name: 'Ir a iniciar sesión' }));
+    expect(mockReplace).toHaveBeenCalledWith('/login');
+
+    const kept = await accountSession.login('correo@ejemplo.com', 'secreta');
+    expect(kept.ok).toBe(true);
+    await accountSession.logout();
+    const replaced = await accountSession.login('correo@ejemplo.com', 'secreta1');
+    expect(replaced.ok).toBe(false);
   });
 
   it('test-ca-07-password-recovery-flow: olvido, código, nueva contraseña y regreso al login', async () => {
@@ -125,7 +180,8 @@ describe('Cuenta visitante, corte 2', () => {
 
     mockParams.email = 'correo@ejemplo.com';
     const reset = await render(<ResetPasswordRoute />);
-    await fireEvent.changeText(reset.getByLabelText('Código'), '123456');
+    expect(reset.queryByText(/123456/)).toBeNull();
+    await fireEvent.changeText(reset.getByLabelText('Código'), authRepository.issuedCode('correo@ejemplo.com', 'recovery') ?? '');
     await fireEvent.changeText(reset.getByLabelText('Nueva contraseña'), 'nueva123');
     await fireEvent.changeText(reset.getByLabelText('Confirmar contraseña'), 'nueva123');
     await fireEvent.press(reset.getByRole('button', { name: 'Restablecer contraseña' }));
@@ -142,6 +198,7 @@ describe('Cuenta visitante, corte 2', () => {
     await waitFor(() => expect(settings.getByDisplayValue('Ana')).toBeTruthy());
     await fireEvent.changeText(settings.getByLabelText('Nombre'), 'Ana Lucía');
     await fireEvent.changeText(settings.getByLabelText('Apodo'), 'Lucha');
+    await fireEvent.press(settings.getByRole('button', { name: 'Editar imagen' }));
     await fireEvent.press(settings.getByRole('button', { name: 'Avatar León' }));
     await fireEvent.press(settings.getByRole('button', { name: 'Guardar perfil' }));
     expect(await settings.findByText('Perfil actualizado.')).toBeTruthy();

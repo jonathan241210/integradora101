@@ -1,8 +1,8 @@
 # Tareas · 007 · administration-management
 
-- Spec: `apps/api/specs/007-administration-management.md` (Aprobada, Jonathan, 2026-10-30)
+- Spec: `apps/api/specs/007-administration-management.md` (Revisión aprobada por Jonathan el 2026-11-05; aprobada el 2026-10-30)
 - Plan: `apps/api/plan/007-administration-management.md` (Aprobado, Jonathan, 2026-10-30)
-- Estado del checklist: Aprobado
+- Estado del checklist: Aprobado (2026-10-30). revisión de 2026-11-05 aprobada: tareas T-42 a T-48, al final del documento.
 
 > Nota de vigencia (2026-11-01): T-20 y T-21 dejan `image_path` sin aceptar y la spec excluye la subida. Esa exclusión queda reemplazada por `api-008` (`apps/api/tasks/008-event-news-images.md`, pendiente de aprobación). No se marcan ni desmarcan tareas de esta lista; las casillas `[x]` son historial.
 
@@ -22,12 +22,12 @@ Todas las rutas indicadas son relativas a `apps/api/src` salvo que se diga otra 
 - [x] **T-03** (CA-20, CA-21, CA-23): Agregar a `config/arca.php`: `report_export_formats` (`['csv']`), `report_timezone` (`America/Mexico_City`), `report_max_days` (366) y `report_page_size` (50). Sin secretos.
 - [x] **T-04** (CA-16, CA-24, CA-25): En `bootstrap/app.php` registrar el alias `permission` (`Spatie\Permission\Middleware\PermissionMiddleware`) y renderizar `UnauthorizedException` como JSON 403 «No tienes permiso para realizar esta acción.».
 - [x] **T-05** (CA-26): `app/Actions/Admin/LogAdminActivityAction.php`: único punto que escribe en `activity('admin')` con actor, evento, recurso y propiedades sin contraseñas ni secretos.
-- [x] **T-06** (CA-25, RN-10): En `routes/api.php`, grupo `prefix('admin')->name('admin.')` con `auth:sanctum`, `staff.user` y `administrator.two-factor`, con subgrupos por permiso (`users.manage|operational-staff.manage`, `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view`). `users/options` se declara antes que `users/{user}`. Las rutas se agregan junto con la tarea que implementa cada controlador.
+- [x] **T-06** (CA-25, RN-10): En `routes/api.php`, grupo `prefix('admin')->name('admin.')` con `auth:sanctum`, `staff.user` y `administrator.two-factor`, con subgrupos por permiso (`users.manage|operational-staff.manage` [revisión de 2026-11-05: solo `users.manage`, ver T-42], `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view`). `users/options` se declara antes que `users/{user}`. Las rutas se agregan junto con la tarea que implementa cada controlador.
 - [x] **T-07** (CA-25, CA-27): `tests/Concerns/CreatesAdministrators.php`: siembra `RolesAndPermissionsSeeder` dentro de la transacción y crea cuentas por rol con `two_factor_confirmed_at` configurable.
 
 ### Usuarios
 
-- [x] **T-08** (CA-02, CA-04, RN-01, RN-07): `ResolveManageableRolesAction` (`users.manage` → los cinco roles; `operational-staff.manage` → `cashier` y `veterinarian`), scope de consulta de cuentas gestionables en `User` y `app/Policies/UserPolicy.php` (`view`, `update`, `delete`, `assignRole`).
+- [x] **T-08** (CA-02, CA-04, RN-01, RN-07): `ResolveManageableRolesAction` (`users.manage` → los cinco roles; `operational-staff.manage` → `cashier` y `veterinarian`; revisión de 2026-11-05: esta rama se retira en T-43), scope de consulta de cuentas gestionables en `User` y `app/Policies/UserPolicy.php` (`view`, `update`, `delete`, `assignRole`).
 - [x] **T-09** (CA-07, CA-08, CA-10, CA-11, RN-04): `RevokeStaffSessionsAction`: borra las filas de `sessions` de la cuenta y rota `remember_token`.
 - [x] **T-10** (CA-09, RN-03): `GuardAdministratorContinuityAction`: dentro de transacción con `lockForUpdate()`, impide quedarse sin `admin` activo y rechaza autodesactivación y autoeliminación con 422 en español.
 - [x] **T-11** (CA-01, CA-02, CA-12): `ListStaffAccountsAction` (filtros `search`, `role`, `department_id`, `status`; orden por apellidos; paginado), `FindManageableStaffAccountAction` (404 «Usuario no encontrado.» fuera de alcance), `ListStaffOptionsAction`, `StaffAccountResource`, `StaffOptionsResource`, `StaffAccountController@index|show` y la ruta `users/options`. Nunca expone `password`, `remember_token` ni `two_factor_*`.
@@ -55,7 +55,7 @@ Todas las rutas indicadas son relativas a `apps/api/src` salvo que se diga otra 
 
 ## Pruebas (un test por CA)
 
-- [x] **T-23** (CA-01, CA-02, CA-12): `tests/Feature/Admin/StaffAccountsListTest.php`, `StaffAccountsScopeTest.php`, `StaffAccountOptionsTest.php`. Cubre lista con filtros y orden, sin campos sensibles, 404 fuera de alcance para `zoo-admin`, `admin` con todo y opciones por actor.
+- [x] **T-23** (CA-01, CA-02, CA-12): `tests/Feature/Admin/StaffAccountsListTest.php`, `StaffAccountsScopeTest.php`, `StaffAccountOptionsTest.php`. Cubre lista con filtros y orden, sin campos sensibles, 404 fuera de alcance para `zoo-admin`, `admin` con todo y opciones por actor (revisión de 2026-11-05: `zoo-admin` recibe 403 por permiso; ver T-45).
 - [x] **T-24** (CA-03, CA-04, CA-05, CA-06, CA-07, CA-08, CA-09, CA-10, CA-11): `StaffAccountsStoreTest.php`, `StaffAccountsUpdateTest.php`, `StaffAccountStatusTest.php`, `StaffAccountDeleteTest.php`, `StaffAccountGuardsTest.php`, `StaffAccountPasswordTest.php`, `StaffAccountTwoFactorTest.php`. Incluye 403 por rol no asignable, correo repetido incluso eliminado, contraseña débil, sesiones revocadas, baja lógica con fila presente, último `admin`, autodesactivación y `two_factor_setup_required` tras restablecer 2FA.
 - [x] **T-25** (CA-17, CA-18): `EnclosuresAdminTest.php`: conteo sin N+1, nombre repetido sin distinguir mayúsculas y ausencia de ruta DELETE.
 - [x] **T-27** (CA-19): `DashboardSummaryTest.php`: totales del día y de 7 días, serie diaria y ceros sin ventas.
@@ -84,6 +84,45 @@ Decisión de Jonathan (responsable funcional), 2026-10-30: zona del dispositivo 
 ## Exportación Excel y PDF (completada)
 
 - [x] **T-39** (CA-23, RN-12): Completada tras aceptar el ADR 0017 (aprobación del equipo, 2026-10-30; el ADR 0018, PHP mínimo 8.4, se aceptó el mismo día). Se instalaron `openspout/openspout` v5.12.2 y `dompdf/dompdf` v3.1.6 con `composer require --no-scripts` desde `apps/api/src` (enmienda del ADR 0017); se agregaron los exportadores `TicketReportXlsxWriter` y `TicketReportPdfWriter` y el directorio temporal `ReportTempDirectory`; `report_export_formats` = `['csv', 'xlsx', 'pdf']` y `report_pdf_max_tickets` = 2000; y se extendió `tests/Feature/Admin/TicketReportExportTest.php` (CA-23). Evidencia: enmienda del ADR 0017 y reporte de la sesión principal. La ejecución de las pruebas y de `/verify` queda registrada en el PR, no en esta tarea. Historial: antes de esta tarea, CA-23 se verificaba con el 422 de T-29.
+
+## Revisión 2026-11-05 (aprobada por Jonathan el 2026-11-05)
+
+Fuente: `apps/api/specs/007-administration-management.md`, «Revisión 2026-11-05», y el plan, sección «Decisiones de la revisión 2026-11-05». **Revisión aprobada por Jonathan el 2026-11-05.** Ninguna casilla se marca sin evidencia. Ningún agente siembra permisos ni crea SQL: el seeder lo ejecuta el responsable de BD.
+
+- [x] **T-42** (RN-01; CA-02; decisión 2 del plan) `[backend]`: retirar `operational-staff.manage` de `database/seeders/RolesAndPermissionsSeeder.php` (catálogo y asignaciones a `admin` y `zoo-admin`) y del grupo de cuentas de `routes/api.php`, que queda solo con `permission:users.manage`. El seeder no borra filas: la de `permissions` queda sin efecto. Evidencia: diff del seeder y de las rutas en el PR, y salida de `php artisan test --filter=Staff`.
+  - Depende de: aprobación de la revisión.
+- [x] **T-43** (CA-04, CA-12; decisión 3 del plan) `[backend]`: `ResolveManageableRolesAction` devuelve los cinco roles para `users.manage` y se elimina la rama de `operational-staff.manage`. El 403 de asignación (`UserPolicy::assignRole` y su mensaje), el 404 de cuenta inexistente y el orden 404 antes de 422 se mantienen (preguntas 8 y 9 de la spec, resueltas).
+  - Depende de: T-42.
+- [x] **T-44** (RN-01; decisión 2 del plan) `[BD]`: ejecutar `php artisan db:seed --class=RolesAndPermissionsSeeder` en `arca_pruebas` con el seeder de T-42 ya aplicado. Verificar: `operational-staff.manage` sin asignaciones a roles; la fila de `permissions` sigue existiendo; `zoo-admin` sin `users.manage`. Evidencia: consulta de permisos sin datos personales. Sin SQL manual.
+  - Depende de: T-42. Bloquea `apps/api/tasks/009-ticket-sales.md`, T-75. Ejecutada el 2026-11-05 en `arca_pruebas`: ningún rol con `operational-staff.manage`, que conserva su fila; `zoo-admin` sin `users.manage`.
+- [x] **T-45** (CA-02, CA-04, CA-12) `[backend]`: pruebas en `tests/Feature/Admin/` con el patrón `test_caNN_administration_management_<descripción>`:
+  - `StaffAccountsScopeTest`: `zoo-admin`, `executive`, `cashier` y `veterinarian` → 403 en todas las rutas de cuentas, incluida `users/options`; `admin` ve y gestiona todas; cuenta inexistente → 404 «Usuario no encontrado.».
+  - `StaffAccountOptionsTest`: solo `admin` recibe los cinco roles; los demás, 403.
+  - `StaffAccountsStoreTest` y `StaffAccountsUpdateTest`: `admin` asigna cualquiera de los cinco roles; `zoo-admin` recibe 403 sin cambios.
+  - Depende de: T-42, T-43, T-44.
+- [x] **T-46** (CA-02, RN-01) `[docs]`: `apps/api/docs/administracion.md` (alcance por rol, permisos de cada grupo, roles asignables, `operational-staff.manage` retirado, y la corrección de la tabla de roles: `zoo-admin` con `tickets.view` y `cash-closings.view` de la matriz) y `docs/03-roles-y-permisos.md` (matriz y texto de `operational-staff.manage`).
+  - Depende de: aprobación de la revisión.
+- [x] **T-47** (CA-15 y RN-17 de `apps/api/specs/003-staff-authentication.md`; revisión 2026-11-05) `[backend]`: `tests/Feature/Staff/SeedersTest.php` deja de esperar `operational-staff.manage` en `zoo-admin` (líneas 41 y 42) y comprueba el catálogo sin ese permiso.
+  - Depende de: T-42.
+- [x] **T-48** (CA-02, CA-04, CA-12; control) `[verificación]`: desde `apps/api/src`, `php artisan test --filter=Admin`, `php artisan test --filter=Staff`, la suite completa en `arca_pruebas` y `./vendor/bin/pint --test`. Registrar la salida en el PR. Incluir CA-06 de `api-009` con `admin` (depende de T-75 de esa lista).
+  - Depende de: T-42 a T-47.
+  - Evidencia (2026-11-06): suite completa en `arca_pruebas`: 232 pruebas y 4312 aserciones en verde, exit 0; incluye los filtros `Admin` y `Staff`. `./vendor/bin/pint --test` pasa en todo el proyecto. Falta registrar la salida en el PR.
+
+## Revisión boletos individuales (2026-11-05, aprobada por Jonathan el 2026-11-06)
+
+Fuente: `apps/api/specs/007-administration-management.md`, «Revisión boletos individuales» (CA-29, RN-15), y el plan del mismo nombre. **Aprobada por Jonathan el 2026-11-06.** Ninguna casilla se marca sin evidencia.
+
+- [x] **T-49** (CA-29; RN-15) `[backend]`: `app/Actions/Admin/Reports/SummarizeTicketSalesAction.php` (línea 37): contar `adult_quantity + child_quantity` en `tickets` (total y por día) en lugar de 1 por fila. Panel, reporte y exportación heredan el cambio (verificado por lectura del código, 2026-11-05).
+- [ ] **T-50** (CA-23; RN-15) **RETIRADA el 2026-11-06, sin implementar**: el tope de PDF no cambia y sigue contando filas del documento (`count()`, límite de 2000). El número se conserva sin renumerar.
+- [x] **T-51** (CA-19, CA-20, CA-22, CA-29) `[backend]`: ajustar `TicketReportTest`, `ReportExcludesCancelledTicketsTest`, `DashboardSummaryTest` y `TicketReportExportTest`, y crear `TicketCountingTest` (CA-29: compra 1 adulto + 3 niños = 4 y 73.00; cancelar un niño = 3 y 57.00; fila anterior de 2 adultos = 2).
+  - Depende de: T-49.
+- [x] **T-52** (CA-27) `[backend]`: `AdminCoverageTest` verifica CA-01 a CA-29 (CA-29 aprobado el 2026-11-06).
+  - Depende de: T-51.
+- [x] **T-53** (CA-29; R-C1) `[docs]`: `apps/api/docs/administracion.md`: describir el conteo de boletos (suma de cantidades), el listado por registro y la nota de cifras históricas al desplegar. Desplegar junto con `dashboard-005` y `api-009`.
+  - Depende de: aprobación de la revisión.
+- [x] **T-54** (control) `[verificación]`: desde `apps/api/src`, `php artisan test --filter=Admin`, `php artisan test --filter=Ticket` y la suite completa en `arca_pruebas`; `./vendor/bin/pint --test`. Registrar la salida en el PR.
+  - Depende de: T-49, T-51 a T-53.
+  - Evidencia (2026-11-06): suite completa en `arca_pruebas`: 232 pruebas y 4312 aserciones en verde, exit 0; incluye los filtros `Admin` y `Ticket`. `./vendor/bin/pint --test` pasa en todo el proyecto. Falta registrar la salida en el PR.
 
 ## Trazabilidad
 

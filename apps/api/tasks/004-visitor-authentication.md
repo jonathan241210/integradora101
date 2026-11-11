@@ -12,7 +12,7 @@ Todas las tareas están bajo `apps/api/src`, más una nota en `apps/api/docs/`. 
 
 No editar al implementar estas tareas:
 
-- `apps/mobile`. Este checklist no la edita. El corte HTTP, con `expo-secure-store` y el cliente visitante, quedó en `mobile-004` el 2026-10-21. Sin `EXPO_PUBLIC_API_URL`, Jest sigue con el mock y el código de prueba `123456`.
+- `apps/mobile`. Este checklist no la edita. El corte HTTP, con `expo-secure-store` y el cliente visitante, quedó en `mobile-004` el 2026-10-21. Sin `EXPO_PUBLIC_API_URL`, Jest sigue con el mock y sin un código de prueba publicado.
 - `packages/api-client`, incluido `auth.ts`. No se crea el módulo visitante.
 - `apps/web` y `apps/dashboard`.
 - `docs/adr` y `docs/database`. Este checklist no instala `expo-secure-store`. ADR 0011 está aceptado y esa dependencia pertenece al checklist HTTP de la app.
@@ -39,7 +39,7 @@ No editar al implementar estas tareas:
 - [x] **T-08** (CA-05): Crear `IssueVisitorTokensAction`. Access token Sanctum con ability `visitor`, nombre igual al `family_id` y `expires_at` a 15 minutos. Refresh de 64 bytes guardado solo como SHA-256, vigencia 30 días.
 - [x] **T-09** (CA-06, CA-07): Crear `RotateRefreshTokenAction` con `Cache::lock`, `lockForUpdate` y la marca de 10 segundos descrita en el plan. La perdedora de la carrera responde 401 sin revocar a la ganadora. El reuso posterior revoca la familia.
 - [x] **T-10** (CA-09, CA-11, CA-13): Crear `RevokeVisitorSessionAction` para un dispositivo, para las demás sesiones o para todos los tokens del visitante.
-- [x] **T-11** (CA-01, CA-18): Crear `RegisterVisitorAction`. Exige `is_adult = true`, la versión vigente del aviso y un `avatar_code` del catálogo. Responde sin tokens y pide el código `email_verification`. Correo duplicado: 422 «Ese correo ya está registrado.»
+- [x] **T-11** (CA-01, CA-18): Crear `RegisterVisitorAction`. Exige `is_adult = true`, la versión vigente del aviso y un `avatar_code` del catálogo. Responde sin tokens y pide el código `email_verification`. El correo duplicado quedó sustituido por T-41.
 - [x] **T-12** (CA-02): Crear `VerifyVisitorEmailAction`. Código válido: marca `email_verified_at`, consume el código y emite el par. Código inválido, vencido, consumido o con 5 intentos: 422 «El código no es válido.» sin sesión.
 - [x] **T-13** (CA-04): Crear `LoginVisitorAction`. Correo verificado y contraseña correcta: emite el par y guarda `device_name`. Sin verificar: 403 `email_not_verified`. Credenciales incorrectas o correo inexistente: 422 «Correo o contraseña incorrectos.»
 - [x] **T-14** (CA-11): Crear `ResetVisitorPasswordAction`. Código válido: cambia la contraseña y revoca todos los tokens. Código inválido: 422 «El código no es válido.»
@@ -80,6 +80,9 @@ Cada prueba vive en `tests/Feature/Visitor/`, usa `DatabaseTransactions` sobre `
 
 - [x] **T-39**: Ejecutar `php artisan test` desde `apps/api/src`. La suite de personal existente debe seguir en verde.
 - [x] **T-40**: Documentar el contrato del visitante en `apps/api/docs/`, sin secretos ni credenciales. El PR enlaza spec, plan y tasks.
+- [x] **T-41** (CA-04, CA-16, CA-20): Enmienda 2026-11-05. Enviar automáticamente código de verificación en `LoginVisitorAction` cuando `email_verified_at === null` (`LoginTest.php`), mejorar la plantilla `resources/views/mail/visitor-access-code.blade.php` para distinguir verificación de correo y recuperación de contraseña en español (`VerificationCodeTest.php`) y documentar la configuración SMTP (Gmail) en `apps/api/docs/visitante-autenticacion.md`.
+
+- [x] **T-41** (CA-03, RN-04): Enmienda de Aksel, 2026-11-05. Un registro con correo ya usado responde 201 con el mismo mensaje, no crea otra cuenta ni cambia nombre, apodo, avatar ni contraseña, y envía `registration_notice`. Verificar ese código responde 200 «Ese correo ya está registrado.» con `email_already_registered` y sin tokens. Un código inválido suma intento solo al código vigente más reciente de `email_verification` y `registration_notice`. El reenvío repite ese propósito más reciente. Prueba en `RegisterTest.php`. El asunto del correo de aviso se distingue del de verificación.
 
 Cada CA-01 a CA-21 tiene una tarea de prueba que lo nombra. Ninguna tarea sale de `apps/api`.
 

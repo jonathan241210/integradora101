@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import { ScreenContainer, AppText, BackButton, HeroBanner, SectionHeader, Card, Icon } from '../components/ui';
+import { ScreenContainer, AppText, BackButton, SectionHeader, Card, Icon, ProgressBar, LoadingView } from '../components/ui';
 import { colors, radius, spacing } from '../theme/tokens';
 import { Achievement, Mission } from '../models';
 
@@ -13,24 +13,29 @@ interface GameScreenProps {
   onAchievementPress: (id: string) => void;
   onSeeAchievementsPress?: () => void;
   onRetryPress?: () => void;
+  loading?: boolean;
 }
 
-export function GameScreen({ missions, achievements, pendingScans = [], onBackPress, onMissionPress, onAchievementPress, onSeeAchievementsPress, onRetryPress }: GameScreenProps) {
+export function GameScreen({ missions, achievements, pendingScans = [], onBackPress, onMissionPress, onAchievementPress, onSeeAchievementsPress, onRetryPress, loading = false }: GameScreenProps) {
   return (
-    <ScreenContainer>
+    <ScreenContainer scroll={!loading}>
+      <View style={loading ? styles.loadingPage : undefined}>
       <View style={styles.header}>
         <BackButton onPress={onBackPress} />
-        <HeroBanner 
-          overline="Minijuego en vivo" 
-          title="Aventura en el Zoo" 
-          subtitle="Completa misiones y acumula puntos de exploración." 
-        />
+        <AppText variant="title">Aventura en el Zoo</AppText>
+        {loading ? null : (
+          <AppText variant="small" color="textMuted">Completa misiones y acumula puntos de exploración.</AppText>
+        )}
       </View>
-
+      {loading ? (
+        <View style={styles.loadingFill}>
+          <LoadingView message="Cargando misiones…" />
+        </View>
+      ) : (
       <View style={styles.content}>
         {pendingScans.length > 0 ? (
           <View style={styles.missionList}>
-            <AppText variant="heading">Escaneos pendientes</AppText>
+            <AppText variant="title">Escaneos pendientes</AppText>
             {pendingScans.map((scan) => (
               <Card key={scan.clientScanId} style={styles.missionCard}>
                 <AppText variant="body">Pendiente</AppText>
@@ -42,7 +47,7 @@ export function GameScreen({ missions, achievements, pendingScans = [], onBackPr
             </TouchableOpacity>
           </View>
         ) : null}
-        <AppText variant="heading">Misiones Activas</AppText>
+        <AppText variant="title">Misiones Activas</AppText>
         <View style={styles.missionList}>
           {missions.map(m => (
             <TouchableOpacity
@@ -53,7 +58,14 @@ export function GameScreen({ missions, achievements, pendingScans = [], onBackPr
             >
               <Card style={styles.missionCard}>
                 <AppText variant="subheading" bold>{m.title}</AppText>
-                <AppText variant="small">Progreso: {m.progress}/{m.total} - Premio: {m.reward}</AppText>
+                <ProgressBar
+                  value={m.total > 0 ? m.progress / m.total : 0}
+                  label={`${m.progress} de ${m.total}`}
+                  fill="wine"
+                />
+                <View style={styles.rewardPill}>
+                  <AppText variant="caption" bold color="textOnPrimary">{m.reward}</AppText>
+                </View>
               </Card>
             </TouchableOpacity>
           ))}
@@ -82,17 +94,28 @@ export function GameScreen({ missions, achievements, pendingScans = [], onBackPr
           ))}
         </ScrollView>
       </View>
+      )}
+      </View>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   header: { gap: spacing.md, paddingHorizontal: spacing.lg, paddingTop: spacing.lg, alignItems: 'flex-start' },
+  loadingPage: { flex: 1 },
+  loadingFill: { flex: 1, justifyContent: 'center' },
   content: { padding: spacing.lg, gap: spacing.lg },
   missionList: { gap: spacing.md, marginBottom: spacing.lg },
-  missionCard: { padding: spacing.md, gap: spacing.xs },
+  missionCard: { padding: spacing.md, gap: spacing.sm },
+  rewardPill: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.primary,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+  },
   rewardList: { gap: spacing.md, paddingVertical: spacing.md },
   achievementButton: { width: 88, alignItems: 'center', gap: spacing.xs },
-  rewardBadge: { width: 72, height: 72, borderRadius: radius.pill, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center', padding: spacing.sm },
+  rewardBadge: { width: 72, height: 72, borderRadius: radius.pill, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', padding: spacing.sm },
   achievementName: { width: '100%', minHeight: 32 },
 });

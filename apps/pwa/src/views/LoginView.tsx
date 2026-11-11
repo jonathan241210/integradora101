@@ -1,28 +1,38 @@
-import { useState, type FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import { Alert, Button, Card, Field } from '@arca/ui';
 import { Spinner } from '@/views/Spinner';
+import type { PwaInstallController } from '@/viewmodels/usePwaInstall';
+import { InstallAppAction } from '@/views/InstallAppAction';
 
 type LoginViewProps = {
   busy?: boolean;
   error: string;
+  installController?: PwaInstallController;
   onLogin: (username: string, password: string) => void;
 };
 
 export function LoginView({
   busy = false,
   error,
+  installController,
   onLogin,
 }: LoginViewProps) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onLogin(username, password);
+    const fields = new FormData(event.currentTarget);
+    const email = fields.get('username');
+    const password = fields.get('password');
+
+    if (typeof email === 'string' && typeof password === 'string') {
+      onLogin(email, password);
+    }
   }
 
   return (
     <main className="login-page">
+      {installController && (
+        <InstallAppAction controller={installController} />
+      )}
       <Card className="login-card">
         <div className="login-brand" aria-label="ZooHealth">
           <span className="brand-mark" aria-hidden="true">
@@ -49,22 +59,18 @@ export function LoginView({
             id="demo-username"
             label="Correo electrónico"
             name="username"
-            onChange={(event) => setUsername(event.target.value)}
             placeholder="nombre@correo.com"
             required
             type="email"
-            value={username}
           />
           <Field
             autoComplete="current-password"
             id="demo-password"
             label="Contraseña"
             name="password"
-            onChange={(event) => setPassword(event.target.value)}
             placeholder="Ingresa tu contraseña"
             required
             type="password"
-            value={password}
           />
           <Button className="login-submit" disabled={busy} type="submit">
             {busy ? <Spinner label="Cargando…" /> : 'Iniciar sesión'}

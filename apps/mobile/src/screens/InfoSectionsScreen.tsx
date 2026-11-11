@@ -17,7 +17,7 @@ export function InfoSectionsScreen({ title, intro, sections, onBackPress, backLa
     <ScreenContainer>
       <View style={styles.page}>
         <BackButton onPress={onBackPress} accessibilityLabel={backLabel} />
-        <AppText variant="heading">{title}</AppText>
+        <AppText variant="title">{title}</AppText>
         {intro ? <AppText variant="body" color="textMuted">{intro}</AppText> : null}
         {sections.map((section) => (
           <Card key={section.id} style={styles.card}>
