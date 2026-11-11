@@ -54,6 +54,16 @@ El límite de 5 MB también está en la validación de la API, en la pantalla y 
 - [ ] El portal local no usa el puerto 8000, que es el de la API.
 - [ ] **Evidencia:** `curl -i -H "Origin: <origen del portal>" <API>/api/v1/news?limit=3` responde 200 con `Access-Control-Allow-Origin` igual a ese origen.
 
+## Portal público: página no encontrada (web-010)
+
+El hosting y el servidor de producción siguen por definir. Cuando se elijan, se documentará su sintaxis mediante el SDD de despliegue correspondiente; no se asume Nginx, Apache ni un proveedor concreto.
+
+- [ ] El document root del portal contiene `404.html` y el servidor lo usa como documento para rutas inexistentes.
+- [ ] El documento institucional conserva el estado HTTP `404`; no redirige a la portada ni responde `200`.
+- [ ] Las páginas válidas `/index.html`, `/noticias.html` y `/eventos.html` conservan el estado HTTP `200`.
+- [ ] Los enlaces «Volver al inicio», «Ver noticias» y «Ver eventos» funcionan desde una URL inexistente con varios segmentos.
+- [ ] **Evidencia:** `curl -I <PORTAL>/ruta/inexistente` responde `404` y `curl -I <PORTAL>/index.html` responde `200`; se adjunta además una captura de la página institucional.
+
 ## Secretos y operación
 
 Los secretos se administran con mecanismos de cada entorno (Secret Manager u opción local segura) y se inyectan al proceso; nunca se guardan en Git, imágenes ni logs. `.env.example` contiene solo nombres y valores de muestra no sensibles. Definir acceso mínimo, rotación, respaldos, restauración y auditoría antes de producción.
