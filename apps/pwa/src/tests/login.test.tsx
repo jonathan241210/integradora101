@@ -1,19 +1,16 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { manualInstallController } from '@/tests/testFixtures';
 import { LoginView } from '@/views/LoginView';
 import {
-  demoCredentials,
   initialPwaDemoState,
   pwaDemoReducer,
 } from '@/viewmodels/pwaDemo';
 
-describe('CA-01 PWA responsive demo login', () => {
+describe('CA-01 PWA login', () => {
   it('muestra campos etiquetados y acceso con cuenta del personal', () => {
     const markup = renderToStaticMarkup(
       <LoginView
         error=""
-        installController={manualInstallController}
         onLogin={() => undefined}
       />,
     );
@@ -21,49 +18,31 @@ describe('CA-01 PWA responsive demo login', () => {
     expect(markup).toContain('Iniciar sesión');
     expect(markup).toContain('Correo electrónico');
     expect(markup).toContain('Contraseña');
-    expect(markup).not.toContain(demoCredentials.password);
     expect(markup).not.toContain('Modo demostración');
     expect(markup).toContain('type="password"');
   });
 });
 
-describe('CA-02 PWA responsive demo login', () => {
-  it('permite el acceso de demostración solo con las credenciales propuestas', () => {
-    const accepted = pwaDemoReducer(initialPwaDemoState, {
-      type: 'login',
-      username: demoCredentials.username,
-      password: demoCredentials.password,
-    });
+describe('CA-02 PWA sesión', () => {
+  it('abre la sesión solo tras autenticarse y la cierra en memoria', () => {
+    const signedIn = pwaDemoReducer(initialPwaDemoState, { type: 'authenticated' });
+    const signedOut = pwaDemoReducer(signedIn, { type: 'logout' });
 
-    expect(accepted.isLoggedIn).toBe(true);
-    expect(accepted.activeSection).toBe('home');
-    expect(accepted.loginError).toBe('');
+    expect(signedIn.isLoggedIn).toBe(true);
+    expect(signedIn.activeSection).toBe('home');
+    expect(signedOut).toEqual(initialPwaDemoState);
   });
 
-  it('informa el error, no conserva el acceso y cierra la sesión en memoria', () => {
-    const rejected = pwaDemoReducer(initialPwaDemoState, {
-      type: 'login',
-      username: 'incorrecto@demo.local',
-      password: 'incorrecta',
-    });
-    const signedIn = pwaDemoReducer(initialPwaDemoState, {
-      type: 'login',
-      username: demoCredentials.username,
-      password: demoCredentials.password,
-    });
-    const signedOut = pwaDemoReducer(signedIn, { type: 'logout' });
+  it('muestra el error recibido del servidor', () => {
     const markup = renderToStaticMarkup(
       <LoginView
-        error={rejected.loginError}
-        installController={manualInstallController}
+        error="Credenciales incorrectas."
         onLogin={() => undefined}
       />,
     );
 
-    expect(rejected.isLoggedIn).toBe(false);
     expect(markup).toContain('role="alert"');
-    expect(markup).toContain('no son correctos');
-    expect(signedOut).toEqual(initialPwaDemoState);
+    expect(markup).toContain('Credenciales incorrectas.');
   });
 
   it('no permite cambiar de sección cuando no existe una sesión de demo', () => {

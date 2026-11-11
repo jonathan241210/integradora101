@@ -15,7 +15,7 @@ Desde la raíz del repositorio:
 
 ```bash
 cd apps/pwa
-npm install
+corepack pnpm install --frozen-lockfile
 ```
 
 ## Ejecutar en modo desarrollo
@@ -39,7 +39,7 @@ http://localhost:5173/
 
 Vite reenvía `/api` y `/sanctum` a Laravel. Si la API escucha en otro puerto, inicia Vite con `ARCA_API_PROXY_TARGET=http://127.0.0.1:9000`. Si cambia el origen de ZooHealth, registra su host y puerto en Sanctum. Fuera de desarrollo, el servidor anfitrión debe reenviar esas rutas bajo el mismo origen de la PWA.
 
-ZooHealth usa la cookie de sesión de Sanctum. Puedes recargar la pestaña mientras la sesión esté vigente y cerrarla desde el menú. Las pantallas clínicas están disponibles para revisión visual. El listado y el guardado dependen de rutas clínicas que todavía no están disponibles en la API actual.
+ZooHealth usa la cookie de sesión de Sanctum. Puedes recargar la pestaña mientras la sesión esté vigente y cerrarla desde el menú. El directorio, los perfiles y el registro de animales usan esa sesión con la API. Para registrar un animal, selecciona un recinto existente: la API requiere ese vínculo. El guardado de diagnósticos y revisiones clínicas permanece fuera del alcance aprobado y no envía esos datos al servidor.
 
 ## Instalar en un teléfono
 

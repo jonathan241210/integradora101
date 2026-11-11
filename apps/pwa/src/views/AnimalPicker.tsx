@@ -1,5 +1,6 @@
 import { SelectField } from '@arca/ui';
 import { useAnimals } from '@/viewmodels/useApiData';
+import { Spinner } from '@/views/Spinner';
 
 type AnimalPickerProps = {
   className?: string;
@@ -26,6 +27,7 @@ export function AnimalPicker({
           </option>
         ))}
       </SelectField>
+      {loading && <Spinner label="Cargando…" />}
       {error && <p role="alert">{error}</p>}
       {!loading && !error && animals.length === 0 && (
         <p>Aún no hay animales. Registra uno primero.</p>
