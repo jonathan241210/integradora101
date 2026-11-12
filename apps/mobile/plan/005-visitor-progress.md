@@ -16,6 +16,8 @@ Enmienda 2026-10-23: `readSharedProgress` guarda una copia por repositorio. Las 
 
 Enmienda 2026-11-01: el resultado del escaneo es un recuadro de color (vino, dorado o crema) con icono, puntos y nombres grandes. En el perfil, las cifras se leen en el tamaño del título y el siguiente umbral es una barra chica de los puntos actuales contra ese umbral. La colección usa pastillas de estado y foto más alta. La aventura muestra la barra de la misión en vino. El inicio, con sesión, saluda con el apodo y los animales que faltan.
 
+Enmienda visual 2026-11-11: el perfil es una ficha `surface` con franja `primary`. El rango va en pastilla `accent`. El total de descubiertos sale de la lista de la colección cuando `total_species` solo cuenta especies con animal visitable. «Logros recientes» lista 5 y se desplaza dentro de esa zona. La colección no repite el faltante del inicio; «Descubierto» usa `text` sobre `accent` y el borde de la tarjeta es `border`. «Ordenar» es un botón en `primary`. En un descubrimiento, el recuadro no repite el nombre y cada «Ver {nombre}» ocupa su propio renglón. Solo tokens de `@arca/tokens`.
+
 ## Cambios por área
 
 | Área | Archivos | Propósito |

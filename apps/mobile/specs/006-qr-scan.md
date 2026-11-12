@@ -45,7 +45,7 @@ Sin sesión autenticada, la pestaña redirige al flujo de inicio de sesión (ADR
 
 ## Criterios de aceptación
 
-- **CA-01:** Dada la pestaña Escanear con sesión activa, cuando el visitante la abre por primera vez en el dispositivo, entonces la app solicita permiso de cámara con explicación en español (manifest y/o pantalla previa) antes de mostrar la vista en vivo.
+- **CA-01:** Dada la pestaña Escanear con sesión activa, cuando el visitante la abre por primera vez en el dispositivo, entonces la app solicita permiso de cámara con una sola frase en español y el botón «Permitir cámara» antes de mostrar la vista en vivo. El campo para escribir el código sigue en la misma pantalla. Enmienda visual, 2026-11-11.
 - **CA-02:** Dado permiso concedido, cuando la cámara decodifica un QR, entonces la app normaliza el contenido a código opaco: acepta texto plano que coincida con el patrón del zoológico (`ARCA-` + alfanumérico); si el QR es una URL, extrae el último segmento de ruta o el parámetro `code` cuando contenga ese patrón; ignora lecturas duplicadas del mismo código durante ~2 s (debounce).
 - **CA-03:** Dado permiso denegado o revocado, cuando el visitante usa Escanear, entonces muestra mensaje accesible en español, opción de abrir ajustes del sistema si está disponible, y un formulario de **entrada manual** (campo + botón «Registrar código») que usa el mismo flujo que CA-02.
 - **CA-04:** Dado un código normalizado, cuando se envía, entonces la app llama `submitScan(code)` una sola vez por intento de usuario (indicador de carga mientras procesa); al resolver, navega a `scan-result` con los datos de `ScanPresentation` (`discovered`, `already_discovered`, `invalid_code`, `inactive_code`, `expired_scan`, `pending`, `rate_limited`).

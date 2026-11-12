@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { AchievementsScreen } from '../../src/screens/AchievementsScreen';
-import { mapAchievement, mapMission } from '../../src/repositories/progressRepository';
+import { countsFromCollection, mapAchievement, mapMission, profileDiscoveryCounts, type ProgressSnapshot } from '../../src/repositories/progressRepository';
 import type { VisitorCatalogItemDto } from '@arca/api-client';
 
 const achievement: VisitorCatalogItemDto = {
@@ -78,5 +78,28 @@ describe('test-ca-03-progress-achievements-missions', () => {
     );
     expect(view.getByText('Observador de aves')).toBeTruthy();
     expect(view.getByText('1 de 3')).toBeTruthy();
+  });
+
+  it('CA-01 el faltante cuenta las especies de la colección, no el total visitable', () => {
+    const snapshot: ProgressSnapshot = {
+      progress: {
+        points: 0, level: 1, rank: 'Explorador', nextThreshold: null,
+        discoveredSpecies: 0, totalSpecies: 1,
+      },
+      collection: [
+        { id: 1, commonName: 'Jaguar', category: null, discovered: false, discoveredAt: null },
+        { id: 2, commonName: 'León', category: null, discovered: false, discoveredAt: null },
+        { id: 3, commonName: 'Guacamaya', category: null, discovered: false, discoveredAt: null },
+        { id: 4, commonName: 'Cocodrilo', category: null, discovered: false, discoveredAt: null },
+        { id: 5, commonName: 'Nutria', category: null, discovered: false, discoveredAt: null },
+      ],
+      achievements: [],
+      missions: [],
+    };
+    expect(countsFromCollection(snapshot)).toEqual({ discovered: 0, total: 5 });
+    expect(profileDiscoveryCounts({
+      ...snapshot,
+      progress: { ...snapshot.progress, discoveredSpecies: 1, totalSpecies: 2 },
+    })).toEqual({ discovered: 1, total: 5 });
   });
 });

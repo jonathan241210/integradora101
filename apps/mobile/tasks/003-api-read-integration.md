@@ -24,7 +24,7 @@
 - [x] **T-09** (CA-06): Crear componente `RemoteImage` tolerante a fallos en `apps/mobile/src/components/ui/RemoteImage.tsx` con indicador de carga, fallback predeterminado y color temático de respaldo (`placeholderTint`).
 
 ### Fase 3: ViewModels y Pantallas Móviles
-- [x] **T-10** (CA-01, CA-03, CA-04): Actualizar `useHomeViewModel` y `HomeScreen` en `apps/mobile/src/viewmodels/useHomeViewModel.ts` y `apps/mobile/src/screens/HomeScreen.tsx` para manejar los 5 estados de vista (`loading`, `success`, `empty`, `error`, `offline`) al mostrar animales destacados y eventos.
+- [x] **T-10** (CA-01, CA-03, CA-04): Actualizar `useHomeViewModel` y `HomeScreen` en `apps/mobile/src/viewmodels/useHomeViewModel.ts` y `apps/mobile/src/screens/HomeScreen.tsx` para manejar los 5 estados de vista (`loading`, `success`, `empty`, `error`, `offline`) al mostrar animales del inicio y eventos. El título de esa sección pasó a «Animales favoritos» en `mobile-002` CA-16.
 - [x] **T-11** (CA-02, CA-04, CA-06): Actualizar `useAnimalViewModel` y `AnimalDetailScreen` en `apps/mobile/src/viewmodels/useAnimalViewModel.ts` y `apps/mobile/src/screens/AnimalDetailScreen.tsx` para soportar consumo del detalle vía API con manejo de 404, fallback de imagen y estados visuales.
 - [x] **T-12** (CA-03, CA-04): Actualizar la pantalla de detalle de evento `apps/mobile/src/app/(tabs)/event-detail.tsx` para consultar `getEventById` desde `ZooRepository`, soportando estados de carga, error y visualización completa.
 - [x] **T-13** (CA-04, ADR 0014): Crear `apps/mobile/src/viewmodels/useNetworkStatus.ts` con `expo-network`; mostrar `OfflineBanner` en Inicio, Colección, Búsqueda y detalles de animal y evento.
@@ -47,6 +47,20 @@
   - 2026-10-22: `npm test -- --runInBand` (15 suites, 86 tests) y `npx tsc --noEmit` en verde; `pint --test` dirigido a los archivos de `api-006` pasa; `git diff --check` sin errores (solo avisos LF/CRLF). `apps/mobile/package.json` no define `format:check`, `lint` ni `types`; se ejecutó `tsc` directamente.
 - [x] **T-22**: Actualizar la documentación local de la app en `apps/mobile/docs/` para reflejar AsyncStorage, `expo-network` y el contrato real de `api-006`.
   - 2026-10-22: actualizados `arquitectura.md`, `estandares-integracion-api.md` y `003-008-roadmap-y-asignacion.md`.
+
+## Enmienda 2026-11-10 · inicio de noticias y eventos
+
+- [x] **T-23** (CA-03, CA-08, CA-10, RN-02, RN-08): En `mappers.ts`, resolver la foto usable y mapear la noticia. En `ApiZooRepository`, pedir `/events?limit=3` y `/news?limit=3`, y agregar `getNewsById`.
+- [x] **T-24** (CA-03, CA-08, CA-09, RN-06, RN-07): En el inicio, titular «Noticias actuales» y «Próximos eventos», mostrar uno y desplegar hasta tres, avisar antes de abrir el portal y agregar el detalle de la noticia. Las tarjetas muestran la imagen.
+- [x] **T-25** (CA-03, CA-08, CA-09, CA-10, CA-07): Pruebas Jest que nombran esos criterios, y ajuste de las pruebas que esperaban `GET /events` sin límite o una sola noticia de muestra.
+- [x] **T-26** (CA-07): Ejecutar la suite de la app móvil que cubre estos criterios y `tsc --noEmit` sobre los archivos tocados.
+  - 2026-11-10: `npx jest --runInBand` con 63 suites y 315 tests en verde; `tsc --noEmit` sin errores.
+- [x] **T-27** (CA-11, RN-03, RN-09): Deslizar el inicio vuelve a pedir noticias y eventos aunque la caché esté vigente, sin recargar animales ni progreso. Las secciones usan los colores del tema.
+  - 2026-11-10: `homeNewsEvents.test.tsx` y `apiZooRepository.test.ts` en verde; `tsc --noEmit` sin errores.
+- [x] **T-28** (CA-08, CA-12): En el inicio, «Inicio» y «Misiones» se tocan. Misiones ocupa la misma pantalla y la tarjeta de aventura sale de entre noticias y eventos.
+  - 2026-11-10: `homeNewsEvents`, `navigation` y `scan-queue` en verde; `tsc --noEmit` sin errores.
+- [x] **T-29** (CA-12): La frase de las misiones conserva el margen lateral del encabezado.
+  - 2026-11-11: `homeNewsEvents` CA-12 en verde.
 
 ## Evidencia
 

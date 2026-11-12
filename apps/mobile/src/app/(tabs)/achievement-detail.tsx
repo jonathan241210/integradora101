@@ -22,7 +22,9 @@ export default function AchievementDetailRoute() {
       loading={loading}
       error={error}
       onBackPress={() => {
-        if (returnTo === 'achievements') {
+        if (returnTo === 'home') {
+          router.replace({ pathname: '/', params: { panel: 'missions' } });
+        } else if (returnTo === 'achievements') {
           router.replace({ pathname: '/achievements', params: { source } });
         } else {
           router.replace(source === 'profile' ? '/profile' : '/game');

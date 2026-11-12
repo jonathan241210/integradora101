@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, ScrollView, StyleSheet, Pressable, Modal, Image, useWindowDimensions, PanResponder, Animated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, spacing } from '../theme/tokens';
+import { colors, radius, spacing } from '../theme/tokens';
 import {
   AppText,
   BackButton,
@@ -15,6 +15,63 @@ import {
   Stat,
 } from '../components/ui';
 import { Animal } from '../models';
+
+function FavoriteHeartButton({
+  active,
+  label,
+  onPress,
+}: {
+  active: boolean;
+  label: string;
+  onPress: () => void;
+}) {
+  const fill = useRef(new Animated.Value(active ? 1 : 0)).current;
+  const pop = useRef(new Animated.Value(1)).current;
+  const ready = useRef(false);
+
+  useEffect(() => {
+    if (!ready.current) {
+      ready.current = true;
+      fill.setValue(active ? 1 : 0);
+      return;
+    }
+
+    if (active) {
+      fill.setValue(0);
+      pop.setValue(0.86);
+      Animated.spring(fill, { toValue: 1, friction: 5, tension: 140, useNativeDriver: true }).start();
+      Animated.spring(pop, { toValue: 1, friction: 4, tension: 160, useNativeDriver: true }).start();
+      return;
+    }
+
+    Animated.timing(fill, { toValue: 0, duration: 180, useNativeDriver: true }).start();
+  }, [active, fill, pop]);
+
+  const fillScale = fill.interpolate({
+    inputRange: [0, 0.65, 1],
+    outputRange: [0.15, 1.28, 1],
+  });
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      style={[styles.favoriteButton, active ? styles.favoriteButtonOn : null]}
+    >
+      <Animated.View style={[styles.favoriteGlyph, { transform: [{ scale: pop }] }]}>
+        <Icon name="heart-outline" size={24} color={colors.textMuted} />
+        <Animated.View
+          pointerEvents="none"
+          style={[styles.favoriteFill, { opacity: fill, transform: [{ scale: fillScale }] }]}
+        >
+          <Icon name="heart" size={24} color={colors.primary} />
+        </Animated.View>
+      </Animated.View>
+    </Pressable>
+  );
+}
 
 function formatDiscoveredAt(value: string): string {
   const date = new Date(value);
@@ -30,6 +87,8 @@ interface AnimalDetailProps {
   onRetry?: () => void;
   onBackPress?: () => void;
   onNavigatePress?: () => void;
+  isFavorite?: boolean;
+  onToggleFavorite?: () => void;
 }
 
 export function AnimalDetailScreen({
@@ -39,6 +98,8 @@ export function AnimalDetailScreen({
   isOffline = false,
   onBackPress,
   onNavigatePress,
+  isFavorite = false,
+  onToggleFavorite,
 }: AnimalDetailProps) {
   const insets = useSafeAreaInsets();
   const [photoOpen, setPhotoOpen] = useState(false);
@@ -113,14 +174,23 @@ export function AnimalDetailScreen({
         </View>
 
         <View style={styles.content}>
-          <View style={styles.titleGroup}>
-            <AppText variant="title">
-              {animal.nickname} — {animal.commonName}
-            </AppText>
+          <View style={styles.titleRow}>
+            <View style={styles.titleGroup}>
+              <AppText variant="title">
+                {animal.nickname} — {animal.commonName}
+              </AppText>
             {isDiscovered && animal.scientificName ? (
               <AppText variant="small" color="textMuted" style={{ fontStyle: 'italic' }}>
                 {animal.scientificName}
               </AppText>
+            ) : null}
+            </View>
+            {onToggleFavorite ? (
+              <FavoriteHeartButton
+                active={isFavorite}
+                label={isFavorite ? `Quitar ${animal.commonName} de favoritos` : `Marcar ${animal.commonName} como favorito`}
+                onPress={onToggleFavorite}
+              />
             ) : null}
           </View>
 
@@ -276,7 +346,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: { padding: spacing.lg, gap: spacing.md },
-  titleGroup: { gap: 2 },
+  titleGroup: { flex: 1, gap: 2 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  favoriteButton: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  favoriteButtonOn: { borderColor: colors.primary },
+  favoriteGlyph: { width: 24, height: 24, alignItems: 'center', justifyContent: 'center' },
+  favoriteFill: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' },
   card: { gap: spacing.md },
   lockedCard: { gap: spacing.md, backgroundColor: colors.surface },
   statsRow: { flexDirection: 'row', gap: spacing.md },

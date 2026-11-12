@@ -1,4 +1,4 @@
-import { Animal, MapPlace, ZooEvent } from '../models';
+import { Animal, MapPlace, News, ZooEvent } from '../models';
 import { SVG_HEIGHT, SVG_WIDTH, ZOO_BOUNDS } from '../constants/zoo';
 import { geoTransform } from '../utils/geoTransform';
 
@@ -36,7 +36,106 @@ export interface ApiEventResponse {
   location?: string;
   description?: string;
   image_path?: string | null;
+  image_url?: string | null;
   image_urls?: string[] | null;
+}
+
+export interface ApiNewsResponse {
+  id?: number | string;
+  title?: string;
+  titulo?: string;
+  description?: string;
+  body?: string;
+  descripcion?: string;
+  content?: string;
+  category?: string | null;
+  published_date?: string | null;
+  date?: string | null;
+  image_url?: string | null;
+  image_path?: string | null;
+}
+
+const ABSOLUTE_HTTP = /^https?:\/\//i;
+const MONTHS_ES = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+];
+
+/**
+ * Elige una URL que el teléfono pueda abrir.
+ * Cumple CA-10 y RN-08: http(s) primero. Una ruta `news/` o `events/`
+ * se sirve desde `{origen}/storage/`. localhost se reescribe al origen de la API.
+ */
+export function resolveUsableImageUrl(
+  imageUrl?: string | null,
+  imagePath?: string | null,
+  apiBaseUrl: string | null | undefined = process.env.EXPO_PUBLIC_API_URL,
+): string | undefined {
+  const chosen = absoluteHttp(imageUrl) ?? absoluteHttp(imagePath);
+  if (chosen) return rewriteLoopbackHost(chosen, apiBaseUrl);
+  const stored = storagePath(imageUrl) ?? storagePath(imagePath);
+  return stored ? storagePublicUrl(stored, apiBaseUrl) : undefined;
+}
+
+export function usableImageList(
+  item: { image_url?: string | null; image_path?: string | null; image_urls?: string[] | null },
+  apiBaseUrl?: string | null,
+): string[] {
+  const primary = resolveUsableImageUrl(item.image_url, null, apiBaseUrl);
+  if (primary) return [primary];
+  const fromList = (item.image_urls ?? [])
+    .map((value) => resolveUsableImageUrl(value, null, apiBaseUrl))
+    .filter((value): value is string => Boolean(value));
+  if (fromList.length > 0) return fromList;
+  const fromPath = resolveUsableImageUrl(null, item.image_path, apiBaseUrl);
+  return fromPath ? [fromPath] : [];
+}
+
+function absoluteHttp(value?: string | null): string | undefined {
+  const trimmed = value?.trim() ?? '';
+  return ABSOLUTE_HTTP.test(trimmed) ? trimmed : undefined;
+}
+
+function storagePath(value?: string | null): string | undefined {
+  const trimmed = value?.trim().replace(/^\/+/, '') ?? '';
+  if (!trimmed || trimmed.includes('..') || trimmed.includes('\\')) return undefined;
+  return /^(news|events)\/[^/]+\.(jpg|jpeg|png|webp)$/i.test(trimmed) ? trimmed : undefined;
+}
+
+function storagePublicUrl(path: string, apiBaseUrl?: string | null): string | undefined {
+  const base = apiBaseUrl?.trim();
+  if (!base) return undefined;
+  try {
+    return `${new URL(base).origin}/storage/${path}`;
+  } catch {
+    return undefined;
+  }
+}
+
+function rewriteLoopbackHost(url: string, apiBaseUrl?: string | null): string {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return url;
+  }
+  if (parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1') return url;
+  const base = apiBaseUrl?.trim();
+  if (!base) return url;
+  try {
+    const origin = new URL(base).origin;
+    return `${origin}${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return url;
+  }
+}
+
+export function formatPublishedDate(value?: string | null): string | undefined {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(value?.trim() ?? '');
+  if (!match) return value?.trim() || undefined;
+  const month = MONTHS_ES[Number(match[2]) - 1];
+  if (!month) return value?.trim() || undefined;
+  return `${Number(match[3])} de ${month} de ${match[1]}`;
 }
 
 /**
@@ -57,7 +156,7 @@ function normalizeCategory(category?: string): 'mammals' | 'birds' | 'reptiles' 
  * Cumple con CA-01, CA-02 y RN-02.
  */
 export function mapSpeciesToAnimalModel(item: ApiSpeciesResponse): Animal {
-  const imageUrl = item.image_url || item.photo_path || undefined;
+  const imageUrl = resolveUsableImageUrl(item.image_url, item.photo_path);
   const sizeValue = item.size ? String(item.size) : item.size_cm ? `${item.size_cm} cm` : '';
   const longevityValue = item.life_expectancy || item.longevity || '';
 
@@ -93,12 +192,7 @@ export function mapEventToZooEventModel(item: ApiEventResponse): ZooEvent {
   const location = item.location || 'Nicolás Bravo';
   const description = item.description || '';
 
-  const imageUrls: string[] = [];
-  if (item.image_urls && Array.isArray(item.image_urls)) {
-    imageUrls.push(...item.image_urls);
-  } else if (item.image_path) {
-    imageUrls.push(item.image_path);
-  }
+  const imageUrls = usableImageList(item);
 
   return {
     id: String(item.id),
@@ -108,6 +202,23 @@ export function mapEventToZooEventModel(item: ApiEventResponse): ZooEvent {
     location,
     description,
     imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
+  };
+}
+
+/**
+ * Mapea una noticia pública al modelo de UI.
+ * Cumple CA-08, CA-09 y CA-10.
+ */
+export function mapNewsToModel(item: ApiNewsResponse): News {
+  const imageUrl = resolveUsableImageUrl(item.image_url, item.image_path);
+  return {
+    id: item.id != null && String(item.id).trim() !== '' ? String(item.id) : undefined,
+    title: item.title || item.titulo || 'Noticia',
+    body: item.description || item.body || item.descripcion || '',
+    date: formatPublishedDate(item.published_date || item.date),
+    category: item.category || undefined,
+    imageUrl,
+    content: item.content?.trim() ? item.content : undefined,
   };
 }
 

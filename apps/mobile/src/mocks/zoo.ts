@@ -317,6 +317,7 @@ export const MOCK_EVENTS: ZooEvent[] = [
 ];
 
 export const MOCK_NEWS: News = {
+  id: 'n1',
   title: 'Nacimiento de Jirafa',
   body: '¡Una nueva integrante ha llegado a nuestra familia!',
 };

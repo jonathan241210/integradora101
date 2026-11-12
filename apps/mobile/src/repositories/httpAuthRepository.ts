@@ -9,6 +9,7 @@ import type {
   RegisterInput,
   VisitorProfile,
 } from './authRepository';
+import { safeVisitorMessage } from './safeMessage';
 
 const DEVICE_NAME = 'arca-mobile';
 const OFFLINE_MESSAGE = 'Sin conexión';
@@ -27,13 +28,14 @@ function failure(error: unknown): AuthFailure {
   if (!isApiError(error) || error.status === 0) {
     return { ok: false, status: 0, message: OFFLINE_MESSAGE };
   }
-  const status = error.status === 401 || error.status === 403 || error.status === 422 || error.status === 429
-    ? error.status
+  const rawStatus = error.status;
+  const status = rawStatus === 401 || rawStatus === 403 || rawStatus === 422 || rawStatus === 429
+    ? rawStatus
     : 422;
   return {
     ok: false,
     status,
-    message: error.message,
+    message: safeVisitorMessage(error.message, rawStatus),
     code: error.code === 'email_not_verified' ? 'email_not_verified' : undefined,
     retryAfterSeconds: error.retryAfterSeconds,
   };

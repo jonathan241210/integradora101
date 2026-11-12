@@ -63,11 +63,11 @@ export function ScanResultScreen({ result, onBackPress, onRetryPress, onOpenSpec
           {result.kind === 'discovered' && result.pointsAwarded !== undefined ? (
             <AppText variant="heading" center style={styles.points}>+{result.pointsAwarded} puntos</AppText>
           ) : null}
-          {unlockedNames.map((name) => (
+          {result.kind === 'discovered' ? null : unlockedNames.map((name) => (
             <AppText key={name} variant="title" center style={{ color: ink }}>{name}</AppText>
           ))}
           <AppText variant="body" center style={{ color: ink }}>{result.message}</AppText>
-          {unlockedNames.length > 0 ? (
+          {result.kind !== 'discovered' && unlockedNames.length > 0 ? (
             <AppText variant="small" center style={{ color: ink }}>
               {unlockedNames.length === 1
                 ? `Se desbloqueó ${unlockedNames[0]}.`
@@ -90,7 +90,7 @@ export function ScanResultScreen({ result, onBackPress, onRetryPress, onOpenSpec
                 onPress={() => onOpenSpecies?.(species.id)}
                 style={styles.animalButton}
               >
-                <AppText variant="body" bold color="textOnPrimary">{`Ver ${species.name}`}</AppText>
+                <AppText variant="body" bold center color="textOnPrimary" style={styles.animalLabel}>{`Ver ${species.name}`}</AppText>
               </Pressable>
             ))}
           </View>
@@ -123,8 +123,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   points: { color: colors.accent, fontSize: 32, lineHeight: 40 },
-  actions: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm },
+  actions: { alignSelf: 'stretch', gap: spacing.sm },
   animalButton: {
+    alignSelf: 'stretch',
+    flexShrink: 0,
     minHeight: 44,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
@@ -133,4 +135,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  animalLabel: { flexShrink: 1 },
 });

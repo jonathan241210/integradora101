@@ -1,11 +1,12 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
-import { Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import ProfileRoute from '../../src/app/(tabs)/profile';
 import { ProfileScreen } from '../../src/screens/ProfileScreen';
 import { accountSession } from '../../src/session/accountSession';
 import { useUserViewModel } from '../../src/viewmodels/useUserViewModel';
 import { useVisitorProgress } from '../../src/viewmodels/useVisitorProgress';
+import type { Achievement, User } from '../../src/models';
 import type { ProgressRepository } from '../../src/repositories/progressRepository';
 
 jest.mock('expo-router', () => ({
@@ -57,7 +58,6 @@ function Probe() {
       }}
       nextThreshold={snapshot.progress.nextThreshold}
       achievements={[]}
-      milestones={[]}
       onAchievementPress={() => undefined}
       onSeeAllAchievementsPress={() => undefined}
       onSettingsPress={() => undefined}
@@ -84,5 +84,42 @@ describe('test-ca-01-progress-profile', () => {
   it('CA-01 visitor-progress muestra Cargando perfil mientras el progreso no responde', async () => {
     const view = await render(<ProfileRoute />);
     expect(view.getByLabelText('Cargando perfil…')).toBeTruthy();
+  });
+
+  it('CA-01 visitor-progress muestra cinco logros recientes y deja el sexto fuera', async () => {
+    const visitor: User = {
+      id: '1',
+      name: 'Ana',
+      avatar: '',
+      level: 1,
+      rank: 'Explorador',
+      points: 10,
+      discoveredCount: 1,
+      totalAnimals: 5,
+    };
+    const achievements: Achievement[] = Array.from({ length: 6 }, (_, index) => ({
+      id: `logro-${index + 1}`,
+      title: `Logro ${index + 1}`,
+      description: '',
+      icon: 'pets',
+      points: 10,
+      action: '',
+      requirement: '',
+      unlocked: true,
+      earnedAt: `2026-11-0${index + 1}T12:00:00.000Z`,
+    }));
+    const view = await render(
+      <ProfileScreen
+        user={visitor}
+        achievements={achievements}
+        onAchievementPress={() => undefined}
+        onSeeAllAchievementsPress={() => undefined}
+        onSettingsPress={() => undefined}
+      />,
+    );
+    expect(view.getByText('Logro 6')).toBeTruthy();
+    expect(view.getByText('Logro 2')).toBeTruthy();
+    expect(view.queryByText('Logro 1')).toBeNull();
+    expect(StyleSheet.flatten(view.getByTestId('recent-achievements').props.style).maxHeight).toBe(232);
   });
 });
