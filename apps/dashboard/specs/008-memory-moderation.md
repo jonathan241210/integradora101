@@ -8,6 +8,8 @@
 - Aprobado por: (pendiente, nombre del compañero)
 - Dependencias de contrato: `api-010` (Borrador; validación técnica/BD aprobada el 2026-11-11) y DBR-012 (Aprobada y aplicada en `arca_pruebas` el 2026-11-11; Lista para backend). La sección no se implementa hasta que la API esté disponible en el ambiente de pruebas con el permiso asignado.
 
+> **Integrada en dashboard-010 (2026-11-11).** El contenido de esta spec (sección «Momentos») pasa a `apps/dashboard/specs/010-public-content-management.md`, que la integra sin cambios funcionales (CA-18 a CA-35 corresponden a CA-01 a CA-19 de esta spec). Esta spec no se borra y su texto sigue siendo la referencia detallada hasta la aprobación de `dashboard-010`.
+
 ## Problema y contexto
 
 Los visitantes podrán enviar desde la app una foto con una opinión corta (`api-010`, `mobile-010`). Hasta ahora no hay dónde revisarlas. La Dirección (`zoo-admin`) necesita una sección en el dashboard para ver las peticiones, abrir cada una, ver la foto y la opinión, y decidir: aceptarla, con publicación durante un plazo, o rechazarla indicando qué falló (la foto, la opinión o ambas) y un motivo. Al aceptar, la foto y la opinión se publican en la galería del portal (`web-010`) hasta su vencimiento.

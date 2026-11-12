@@ -7,6 +7,8 @@
 - Aprobación funcional: (pendiente)
 - Dependencias de contrato: `api-014` (Borrador) y DBR de `species_requests` (por definir)
 
+> **Integrada en dashboard-010 (2026-11-11).** Las solicitudes de especie pasan a `apps/dashboard/specs/010-public-content-management.md`, que la absorbe y añade la edición de la solicitud antes de aceptarla (`dashboard-010` CA-07 a CA-10) y el efecto en TulanPedia. Esta spec no se borra; su texto sigue como referencia hasta la aprobación de `dashboard-010`. Cada CA de la sección A de `dashboard-010` indica entre paréntesis el CA de esta spec del que procede.
+
 ## Problema y contexto
 
 Los veterinarios envían solicitudes de nuevas especies para el catálogo público desde la PWA (`pwa-005`). La Dirección del Zoológico (`zoo-admin`) necesita una sección en el dashboard para revisar estas solicitudes, ver la foto y decidir aceptarlas (publicarlas en el catálogo) o rechazarlas (con motivo). Solo `zoo-admin` revisa estas solicitudes; `admin` no tiene acceso.
@@ -83,7 +85,7 @@ Los veterinarios envían solicitudes de nuevas especies para el catálogo públi
 
 ### Rechazar
 
-- **CA-14:** Dada una solicitud en Pendiente, cuando se pulsa «Rechazar», entonces se abre un diálogo con un campo de motivo (obligatorio, 1-500 caracteres, con contador) y una casilla de confirmación. El botón «Confirmar» está deshabilitado si el motivo está vacío. Al confirmar, llama a `POST .../reject` con `{rejection_reason}`.
+- **CA-14:** Dada una solicitud en Pendiente, cuando se pulsa «Rechazar», entonces se abre un diálogo con un campo de motivo (obligatorio, 1-500 caracteres, con contador). La casilla de confirmación fue reemplazada por el diálogo obligatorio de `dashboard-010` CA-13 (decisión del usuario 2026-11-11). El botón «Confirmar» está deshabilitado si el motivo está vacío. Al confirmar, llama a `POST .../reject` con `{rejection_reason}`.
 
 - **CA-15:** Dado el diálogo de rechazo, cuando se escribe el motivo, entonces muestra un contador de caracteres (p. ej. «245/500») y el botón «Confirmar» se habilita solo si hay 1+ caracteres.
 
