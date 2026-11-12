@@ -90,7 +90,7 @@ php artisan db:seed --class=DemoStaffSeeder
 
 - No ejecutes `php artisan db:seed` sin `--class`: `DatabaseSeeder` también llama a `DemoStaffSeeder` ([infra/README.md](../infra/README.md)).
 - `DemoStaffSeeder` se niega a correr en `production` y en `arca_zoo`. Necesita que existan los departamentos (`firstOrFail`), así que `DepartmentSeeder` va antes. Crea o actualiza cuentas por correo (`updateOrCreate`). Si `ticket_prices` está vacía, inserta las tarifas iniciales de [DBR-006](database/requests/DBR-006-ticket-sales.md) ($25 adulto y $16 niño).
-- `RolesAndPermissionsSeeder` no define `species.review` ni `memories.review` (verificado con búsqueda en el archivo). Mientras no se agreguen, `zoo-admin` no puede revisar solicitudes de especie.
+- `RolesAndPermissionsSeeder` no define `species.review` ni `memories.review` (verificado con búsqueda en el archivo). Mientras no se agreguen, `zoo-admin` no puede revisar solicitudes de publicación de especie.
 
 ### Cuentas demo
 
@@ -132,7 +132,7 @@ Abre **`http://localhost:5173/`**. Entra con `veterinario@arca.local`. Si el per
 
 - El proxy de [vite.config.ts](../apps/pwa/vite.config.ts) envía `/api` y `/sanctum` a `ARCA_API_PROXY_TARGET`, con valor por defecto `http://127.0.0.1:8000`.
 - La PWA llama a `POST /api/v1/auth/login`, la ruta de Fortify ([packages/api-client/auth.ts](../packages/api-client/auth.ts); prefijo en [fortify.php](../apps/api/src/config/fortify.php)).
-- Hoy registra animales contra la API y exige un recinto existente ([pwa-004](../apps/pwa/specs/004-animal-registration.md)). Según el README de la PWA, diagnósticos y revisiones clínicas no envían datos al servidor. La solicitud de especie es [pwa-005](../apps/pwa/specs/005-species-request-submission.md), en Borrador.
+- Hoy registra animales contra la API y exige un recinto existente ([pwa-004](../apps/pwa/specs/004-animal-registration.md)). Según el README de la PWA, diagnósticos y revisiones clínicas no envían datos al servidor. La solicitud de publicación de especie es [pwa-005](../apps/pwa/specs/005-species-request-submission.md), en Borrador.
 
 ### 5.3 Dashboard (`apps/dashboard`)
 
@@ -203,22 +203,22 @@ Orígenes de navegador (los que ve el usuario): `http://localhost:5173` (PWA), `
 
 Los proxies de PWA y dashboard reenvían con `changeOrigin: false`, así que la API ve el host del navegador (`localhost:5173` o `localhost:5174`) y lo compara con `SANCTUM_STATEFUL_DOMAINS`.
 
-## 8. Flujo de prueba extremo a extremo: solicitud de especie
+## 8. Flujo de prueba extremo a extremo: publicación de una especie en TulanPedia
 
-Caso: un veterinario solicita una especie en la PWA, `zoo-admin` la revisa en el dashboard y, si se aprueba, aparece en TulanPedia del portal.
+Caso: la especie ya existe (se crea hoy al registrar un animal en la PWA). El veterinario solicita publicarla en TulanPedia, `zoo-admin` revisa la solicitud en el dashboard y, si la acepta, la especie aparece en el portal.
 
 **Hoy no se puede ejecutar de punta a punta.** El flujo está en Borrador y no tiene código en ninguna app (búsqueda sin coincidencias en `apps/api`, `apps/pwa`, `apps/dashboard` y `apps/web`).
 
 | Paso | Quién / dónde | Qué debe pasar | Estado |
 |---|---|---|---|
 | 1 | `veterinario@arca.local` en `http://localhost:5173` | Inicia sesión y entra a la PWA (`home = pwa`). | Implementado: [pwa-003](../apps/pwa/specs/003-staff-login.md), Aprobada. |
-| 2 | Veterinario en la PWA | Envía una solicitud de especie. | **Por crear.** [pwa-005](../apps/pwa/specs/005-species-request-submission.md) en Borrador. Depende de [api-014](../apps/api/specs/014-species-requests.md) (Borrador) y de [DBR-013](database/requests/DBR-013-species-requests.md) (Borrador, sin migración). |
-| 3 | `direccion_zoo@arca.local` en `http://localhost:5174` | Inicia sesión con 2FA y revisa la solicitud. | **Por crear.** [dashboard-009](../apps/dashboard/specs/009-species-request-review.md) y [dashboard-010](../apps/dashboard/specs/010-public-content-management.md), ambas en Borrador. Requiere `species.review`, que [api-014](../apps/api/specs/014-species-requests.md) asigna en su tarea futura T-SEED; hoy el seeder no lo define. |
-| 4 | Visitante en `http://localhost:8080` | La especie aprobada aparece en TulanPedia. | **Por crear.** [web-011](../apps/web/specs/011-dynamic-tulanpedia.md) en Borrador. Depende de [ADR 0028](adr/0028-dynamic-tulanpedia-catalog.md) (Propuesto). Hoy TulanPedia muestra fichas de muestra fijas en `index.html`. |
+| 2 | Veterinario en la PWA | Elige una especie existente y envía la solicitud de publicación o de actualización (también sobre una especie despublicada); consulta «Mis solicitudes». | **Por crear.** [pwa-005](../apps/pwa/specs/005-species-request-submission.md) en Borrador. Depende de [api-014](../apps/api/specs/014-species-requests.md) (Borrador) y de [DBR-013](database/requests/DBR-013-species-requests.md) (Borrador, sin migración). |
+| 3 | `direccion_zoo@arca.local` en `http://localhost:5174` | Inicia sesión con 2FA, revisa la solicitud y la publica (o la acepta sin publicar, si la especie está despublicada). Después gestiona la publicación en «Especies publicadas». | **Por crear.** [dashboard-010](../apps/dashboard/specs/010-public-content-management.md) en Borrador (absorbe dashboard-009). Requiere `species.review`, que [api-014](../apps/api/specs/014-species-requests.md) asigna en su tarea futura T-SEED; hoy el seeder no lo define. |
+| 4 | Visitante en `http://localhost:8080` | La especie publicada aparece en TulanPedia. | **Por crear.** [web-011](../apps/web/specs/011-dynamic-tulanpedia.md) en Borrador. Depende de [ADR 0028](adr/0028-dynamic-tulanpedia-catalog.md) (Propuesto). Hoy TulanPedia muestra fichas de muestra fijas en `index.html`. |
 
 Partes que sí puedes probar hoy: el login del veterinario en la PWA, la lectura pública de especies (`GET /api/v1/species`, [api-006](../apps/api/specs/006-public-catalog-read.md), Aprobada) y las noticias y eventos del portal ([web-009](../apps/web/specs/009-dynamic-news-events.md)).
 
-Pendiente de crear: **`api-015`** no tiene archivo en `apps/api/specs/` (verificado al 2026-11-11). Si se confirma que existe en el plan de otro agente, la guía debe actualizarse cuando aparezca.
+Dependencia: [`api-015`](../apps/api/specs/015-public-species-read.md) (lectura pública de especies publicadas, Borrador) ya tiene spec, pero aún no tiene plan, tasks ni código.
 
 ## 9. Solución de problemas
 
