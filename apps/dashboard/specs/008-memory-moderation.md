@@ -8,7 +8,7 @@
 - Aprobado por: (pendiente, nombre del compañero)
 - Dependencias de contrato: `api-010` (Borrador; validación técnica/BD aprobada el 2026-11-11) y DBR-012 (Aprobada y aplicada en `arca_pruebas` el 2026-11-11; Lista para backend). La sección no se implementa hasta que la API esté disponible en el ambiente de pruebas con el permiso asignado.
 
-> **Integrada en dashboard-010 (2026-11-11).** El contenido de esta spec (sección «Momentos») pasa a `apps/dashboard/specs/010-public-content-management.md`, que la integra sin cambios funcionales (CA-18 a CA-35 corresponden a CA-01 a CA-19 de esta spec). Esta spec no se borra y su texto sigue siendo la referencia detallada hasta la aprobación de `dashboard-010`.
+> **Separada de dashboard-010 (2026-11-12):** los momentos son un flujo distinto del de publicación de especies. Esta spec es propia y vigente; su contenido no cambia.
 
 ## Problema y contexto
 
@@ -165,5 +165,5 @@ Decisión del responsable pendiente de aprobación formal del equipo. Esta spec 
 
 - Aprobadores y fecha: pendiente.
 - Aprobado por: (pendiente, nombre del compañero)
-- Historial: borrador del 2026-11-10 → revisión del 2026-11-10 con las respuestas del responsable (decisión final por revisión, rechazo con motivos marcados, previsualización, plazo de publicación visible, imagen por proxy de mismo origen y CA-17 a CA-19).
+- Historial: borrador del 2026-11-10 → revisión del 2026-11-10 con las respuestas del responsable (decisión final por revisión, rechazo con motivos marcados, previsualización, plazo de publicación visible, imagen por proxy de mismo origen y CA-17 a CA-19). 2026-11-12: separada de `dashboard-010` (la sección «Momentos» no se integra en la publicación de especies); sin cambios de contenido.
 - Evidencia/enlaces: `apps/api/specs/010-visitor-memory-requests.md`, `apps/api/specs/013-object-storage-images.md`, `apps/mobile/specs/010-visitor-memory-requests.md`, `apps/web/specs/010-dynamic-memories.md`, `apps/dashboard/specs/005-ticket-sales.md` (patrón de historial y diálogos), `apps/dashboard/specs/007-content-image-display.md` (imagen completa), `apps/dashboard/specs/002-real-staff-login.md` (sesión y 401), `apps/api/specs/007-administration-management.md` (permisos y 2FA de `/api/v1/admin`), `docs/database/requests/DBR-012-visitor-memories.md`.
