@@ -2,7 +2,7 @@
 
 SPA de demostración para recorrer las pantallas de administración y taquilla. La interfaz está construida con React, TypeScript y CSS; React genera el HTML en el navegador.
 
-> Este prototipo no se conecta a la API ni a una base de datos. El login, los recintos, las cuentas, las ventas y el historial son ficticios. No uses datos ni contraseñas reales.
+> Esta SPA se conecta a la API Laravel (`apps/api`): el inicio de sesión es real (`dashboard-002`) y las secciones de administración y taquilla leen y escriben datos de la API mediante `/api/v1`. Para usarla necesitas la API en marcha. El buscador y el botón de notificaciones de la barra superior siguen siendo de demostración (ver [`docs/manual-demo.md`](./docs/manual-demo.md)). Orden de arranque completo: [`docs/09-guia-ejecucion-local.md`](../../docs/09-guia-ejecucion-local.md).
 
 ## Requisitos
 
@@ -19,7 +19,9 @@ npm ci
 npm run dev
 ```
 
-Abre en el navegador la dirección local que muestre Vite en la terminal (normalmente `http://localhost:5173/`). No necesitas iniciar la API.
+Antes, inicia la API (`apps/api/src`, `php artisan serve --host=127.0.0.1 --port=8000`); la configuración de `.env` está en la [guía de ejecución local](../../docs/09-guia-ejecucion-local.md).
+
+Abre **`http://localhost:5174/`** (puerto fijo: `strictPort`; si está ocupado, Vite falla en lugar de cambiar de puerto). Usa `localhost`, no `127.0.0.1`: la API solo emite la cookie de sesión para los hosts de `SANCTUM_STATEFUL_DOMAINS`, y ese valor incluye `localhost:5174`. Vite reenvía `/api` y `/sanctum` a `http://localhost:8000`; para otro destino, define `ARCA_API_PROXY_TARGET` en el entorno antes de `npm run dev`.
 
 ## Perfiles de demostración
 

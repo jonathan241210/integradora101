@@ -5,10 +5,10 @@ Los nombres de roles, permisos, recursos y acciones son identificadores en ingl�
 ## Roles
 
 - `admin` — Administrador General (Presidencia); control total del sistema, incluida la administración de todas las cuentas. Requiere 2FA.
-- `zoo-admin` — Administrador del Zoológico; administra noticias, eventos y recintos, y consulta boletos, cierres de caja, panel y reportes. No administra cuentas del personal desde el 2026-11-05 (decisión de Jonathan, aprobada en `api-007`). Requiere 2FA.
+- `zoo-admin` — Administrador del Zoológico; administra noticias, eventos y recintos, y consulta boletos, cierres de caja, panel y reportes. No administra cuentas del personal desde el 2026-11-05 (decisión de Jonathan, aprobada en `api-007`). Revisa solicitudes de especie y momentos de visitantes. Requiere 2FA.
 - `executive` — Altos Directivos; métricas y reportes de solo lectura.
 - `cashier` — Cajero; operación de taquilla y cierre de caja.
-- `veterinarian` — Médico Veterinario; expedientes y datos clínicos de ejemplares.
+- `veterinarian` — Médico Veterinario; expedientes y datos clínicos de ejemplares. Envía solicitudes de nuevas especies desde la PWA.
 - **Visitante anónimo** — consulta de contenido institucional y pedagógico público; no requiere una cuenta interna ni un rol asignado.
 
 El 2FA obligatorio se configura en la API (`config('arca.two_factor_roles')` = `['admin', 'zoo-admin']`, `api-003`). El destino (`home`) por rol es: `admin` y `zoo-admin` → `administration`, `executive` → `executive`, `cashier` → `ticket`, `veterinarian` → `pwa`.
@@ -40,11 +40,20 @@ Cada permiso usa `<resource>.<action>` en inglés, por ejemplo `tickets.create` 
 | `news.manage` | Administrar noticias | ✓ | ✓ | — | — | — | — |
 | `events.manage` | Administrar eventos | ✓ | ✓ | — | — | — | — |
 | `enclosures.manage` | Administrar recintos | ✓ | ✓ | — | — | — | — |
+| `species.review` | Revisar, editar, aceptar o rechazar solicitudes de especies (con 2FA). *Pendiente de implementar en el seeder (tarea futura T-SEED de `api-014`).* | — | ✓ | — | — | — | — |
+| `memories.review` | Revisar y decidir momentos de visitantes (con 2FA). *Pendiente de implementar en el seeder (tarea futura T-SEED de `api-014`; también `api-010` RN-07 y CA-16).* | — | ✓ | — | — | — | — |
 | `public-content.view` | Consultar contenido público | ✓ | ✓ | ✓ | ✓ | ✓ | Público |
 
 Cambios de `apps/api/specs/009-ticket-sales.md` vigentes desde su aprobación (Jonathan, 2026-11-02): `tickets.create` es solo de `cashier` (se retiró de `admin`); `tickets.cancel` es solo de `cashier`; `ticket-prices.manage` es solo de `admin`, con 2FA. `admin` y `zoo-admin` conservan `tickets.view` para consultar el historial en lectura. `RolesAndPermissionsSeeder` refleja esta matriz para los permisos de boletos (verificado el 2026-11-02); el retiro de `operational-staff.manage` (decisión del 2026-11-05) está pendiente de implementar.
 
 `users.manage` permite administrar todas las cuentas y es el único permiso de gestión de cuentas desde el 2026-11-05 (decisión de Jonathan, aprobada en `api-007`). El permiso `operational-staff.manage` se retira del catálogo y del código, y ya no figura en esta matriz. Una fila de ese permiso que quede en `permissions` de bases existentes no tiene efecto, porque el seeder no borra. La gestión de cuentas desde el dashboard la expone `api-007` (`/api/v1/admin/users`, solo con `users.manage`). Hasta que se aplique `api-007` T-42, el seeder del código todavía contiene `operational-staff.manage`; esta matriz describe el estado objetivo.
+
+### Permisos de solicitudes de especie y momentos (2026-11-11)
+
+- `species.review` (`api-014`) y `memories.review` (`api-010`) se crean con `Permission::findOrCreate` y se asignan **solo a `zoo-admin`**, con 2FA.
+- El seeder da a `admin` todos los permisos de su arreglo salvo los de boletos. Por eso `admin` debe excluirse de `species.review` y de `memories.review` **de forma explícita** (`array_diff`), no por omisión (`api-014` RN-10 y CA-20; `api-010` RN-07 y CA-16). Presidencia no revisa estas solicitudes ni momentos.
+- Estado: **pendiente de implementar en el seeder** (tarea futura T-SEED de `api-014`). La matriz describe el estado objetivo.
+- **Envío de solicitudes de especie:** no tiene fila en la matriz. Lo autoriza el rol `veterinarian` (regla de rol de `pwa-005` RN-01 y `api-014` RN-01), no un permiso. Si el equipo decide convertirlo en permiso (por ejemplo, `species-requests.create`), esta matriz se revisa (pregunta abierta en `api-014`).
 
 La lista no sustituye Policies por registro ni restricciones de datos sensibles. El acceso de visitantes se limita a contenido marcado explícitamente como público; no se le asigna `public-content.view` como permiso de cuenta.
 
