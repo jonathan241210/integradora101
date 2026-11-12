@@ -1,8 +1,8 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Pressable, ScrollView } from 'react-native';
 import { ScreenContainer, AppText, Card, Icon, ProgressBar } from '../components/ui';
 import { colors, spacing, radius } from '../theme/tokens';
-import { Achievement, Milestone, User } from '../models';
+import { Achievement, User } from '../models';
 
 interface ProfileScreenProps {
   user: User;
@@ -10,13 +10,23 @@ interface ProfileScreenProps {
   avatarLabel?: string;
   nextThreshold?: number | null;
   achievements: Achievement[];
-  milestones: Milestone[];
   onAchievementPress: (id: string) => void;
   onSeeAllAchievementsPress: () => void;
   onSettingsPress: () => void;
 }
 
-export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, achievements, milestones, onAchievementPress, onSeeAllAchievementsPress, onSettingsPress }: ProfileScreenProps) {
+const RECENT_LIMIT = 5;
+
+export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, achievements, onAchievementPress, onSeeAllAchievementsPress, onSettingsPress }: ProfileScreenProps) {
+  const recent = achievements
+    .filter((achievement) => achievement.unlocked)
+    .sort((left, right) => {
+      const leftDate = left.earnedAt ? new Date(left.earnedAt).getTime() : 0;
+      const rightDate = right.earnedAt ? new Date(right.earnedAt).getTime() : 0;
+      return rightDate - leftDate;
+    })
+    .slice(0, RECENT_LIMIT);
+
   return (
     <ScreenContainer>
       <View style={styles.container}>
@@ -32,26 +42,32 @@ export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, a
           </Pressable>
         </View>
         <Card style={styles.profileCard}>
-          <View style={styles.avatarPlaceholder} accessibilityLabel={avatarLabel ? `Avatar ${avatarLabel}` : 'Avatar'}>
-            {avatarLabel ? <AppText variant="small" center bold>{avatarLabel}</AppText> : null}
-          </View>
-          <AppText variant="title" center color="textOnPrimary">{displayName ?? user.name}</AppText>
-          <AppText variant="small" center bold color="textOnPrimary">{user.rank}</AppText>
-          {nextThreshold != null && nextThreshold > 0 ? (
-            <View style={styles.threshold}>
-              <ProgressBar
-                value={user.points / nextThreshold}
-                label={`Siguiente umbral: ${nextThreshold} puntos`}
-                labelColor="textOnPrimary"
-              />
+          <View style={styles.identity}>
+            <View style={styles.avatarPlaceholder} accessibilityLabel={avatarLabel ? `Avatar ${avatarLabel}` : 'Avatar'}>
+              {avatarLabel ? <AppText variant="small" center bold>{avatarLabel}</AppText> : null}
             </View>
-          ) : null}
+            <View style={styles.identityText}>
+              <AppText variant="title">{displayName ?? user.name}</AppText>
+              <View style={styles.rankPill}>
+                <AppText variant="small" bold>{user.rank}</AppText>
+              </View>
+            </View>
+          </View>
 
-          <View style={styles.statsRow}>
+          <View style={styles.statsStrip}>
             <StatItem label="Descubiertos" value={`${user.discoveredCount}/${user.totalAnimals}`} />
             <StatItem label="Puntos" value={user.points.toString()} />
             <StatItem label="Nivel" value={user.level.toString()} />
           </View>
+
+          {nextThreshold != null && nextThreshold > 0 ? (
+            <ProgressBar
+              value={user.points / nextThreshold}
+              label={`Siguiente umbral: ${nextThreshold} puntos`}
+              labelColor="textMuted"
+              fill="wine"
+            />
+          ) : null}
         </Card>
 
         <View style={styles.achievementHeader}>
@@ -61,36 +77,26 @@ export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, a
           </Pressable>
         </View>
         <View style={styles.achievementsList}>
-          {achievements.filter((achievement) => achievement.unlocked).length === 0 ? (
+          {recent.length === 0 ? (
             <AppText variant="body" color="textMuted">Aún no tienes logros</AppText>
-          ) : null}
-          {achievements.filter((achievement) => achievement.unlocked).slice(0, 3).map((achievement) => (
-            <TouchableOpacity
-              key={achievement.id}
-              onPress={() => onAchievementPress(achievement.id)}
-              accessibilityRole="button"
-              accessibilityLabel={`Ver logro ${achievement.title}`}
-            >
-              <Card style={styles.achievementCard}>
-                <Icon name={achievement.icon} size={24} color={colors.primary} />
-                <AppText variant="subheading" style={styles.achievementName}>{achievement.title}</AppText>
-                <AppText variant="small" color="textMuted">{achievement.points} puntos</AppText>
-              </Card>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <AppText variant="title" style={{ marginTop: spacing.lg }}>Historial de Hitos</AppText>
-        <View style={styles.milestoneList}>
-          {milestones.map((milestone) => (
-            <View key={milestone.id} style={styles.milestoneItem}>
-              <View style={styles.dot} />
-              <View style={styles.milestoneContent}>
-                <AppText variant="small" bold>{milestone.title}</AppText>
-                <AppText variant="caption" color="textMuted">{milestone.date}</AppText>
-              </View>
-            </View>
-          ))}
+          ) : (
+            <ScrollView testID="recent-achievements" style={styles.recentScroll} nestedScrollEnabled showsVerticalScrollIndicator>
+              {recent.map((achievement) => (
+                <TouchableOpacity
+                  key={achievement.id}
+                  onPress={() => onAchievementPress(achievement.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Ver logro ${achievement.title}`}
+                >
+                  <Card style={styles.achievementCard}>
+                    <Icon name={achievement.icon} size={24} color={colors.primary} />
+                    <AppText variant="subheading" style={styles.achievementName}>{achievement.title}</AppText>
+                    <AppText variant="small" color="textMuted">{achievement.points} puntos</AppText>
+                  </Card>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
         </View>
       </View>
     </ScreenContainer>
@@ -100,8 +106,8 @@ export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, a
 function StatItem({ label, value }: { label: string, value: string }) {
   return (
     <View style={styles.statItem}>
-      <AppText variant="caption" color="textOnPrimary" center>{label}</AppText>
-      <AppText variant="title" bold center color="textOnPrimary">{value}</AppText>
+      <AppText variant="caption" color="textMuted" center>{label}</AppText>
+      <AppText variant="title" bold center>{value}</AppText>
     </View>
   );
 }
@@ -121,15 +127,19 @@ const styles = StyleSheet.create({
   },
   profileCard: {
     padding: spacing.lg,
-    alignItems: 'center',
+    alignItems: 'stretch',
     gap: spacing.md,
-    backgroundColor: colors.primary,
-    borderColor: colors.secondary,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
   },
+  identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  identityText: { flex: 1, gap: spacing.xs },
   avatarPlaceholder: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: colors.accent,
     borderWidth: 3,
     borderColor: colors.secondary,
@@ -137,17 +147,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing.sm,
   },
-  threshold: { width: '100%' },
+  rankPill: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.accent,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  statsStrip: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    width: '100%',
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: spacing.md,
+  },
   seeAll: { minHeight: 44, justifyContent: 'center' },
   seeAllText: { color: colors.secondary },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-between', gap: spacing.md, marginTop: spacing.md, width: '100%' },
   statItem: { flex: 1, alignItems: 'center', gap: spacing.xs },
-  achievementsList: { gap: spacing.sm, marginTop: spacing.sm },
+  achievementsList: { marginTop: spacing.sm },
+  recentScroll: { maxHeight: 232 },
   achievementHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
   achievementCard: { padding: spacing.md, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   achievementName: { flex: 1 },
-  milestoneList: { gap: spacing.md, marginTop: spacing.sm },
-  milestoneItem: { flexDirection: 'row', gap: spacing.sm },
-  dot: { width: 10, height: 10, borderRadius: radius.pill, backgroundColor: colors.secondary, marginTop: 4 },
-  milestoneContent: { gap: 2 },
 });

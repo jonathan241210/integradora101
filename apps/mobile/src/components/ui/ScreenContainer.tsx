@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, ScrollView, StyleProp, ViewStyle, KeyboardAvoidingView, Keyboard, Platform, TextInput, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, StyleProp, ViewStyle, KeyboardAvoidingView, Keyboard, Platform, TextInput, Dimensions, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../theme';
 import { BusyOverlay } from './StateViews';
@@ -60,9 +60,11 @@ interface ScreenContainerProps {
   scroll?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
   busyMessage?: string | null;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }
 
-export function ScreenContainer({ children, scroll = true, contentStyle, busyMessage }: ScreenContainerProps) {
+export function ScreenContainer({ children, scroll = true, contentStyle, busyMessage, refreshing = false, onRefresh }: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
   const keyboard = useAndroidKeyboardOverlap(insets.bottom);
   const keyboardHeight = keyboard.extra;
@@ -93,6 +95,17 @@ export function ScreenContainer({ children, scroll = true, contentStyle, busyMes
         style={[styles.container, keyboardHeight > 0 ? { marginBottom: keyboardHeight } : null]}
         contentContainerStyle={[styles.scrollContent, contentStyle]}
         showsVerticalScrollIndicator={false}
+        refreshControl={onRefresh ? (
+          <RefreshControl
+            testID="home-refresh"
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={theme.colors.primary}
+            colors={[theme.colors.primary]}
+            progressBackgroundColor={theme.colors.surface}
+            accessibilityLabel="Actualizar noticias y eventos"
+          />
+        ) : undefined}
         keyboardShouldPersistTaps="handled"
         scrollEventThrottle={16}
         onScroll={(event) => {

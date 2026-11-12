@@ -62,7 +62,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     - *Prueba:* `test-ca-08`: Ejecución de `npm test` con reporte de cobertura $\ge 80\%$ en las capas de ViewModel y Repository.
 - **CA-09 (Detalles visuales):** Dado que la persona visitante selecciona un evento o misión, entonces verá una pantalla de detalle con la información mock disponible. Eventos muestran título, fecha, horario, ubicación, descripción e imágenes desplazables cuando existan; misiones muestran objetivo, progreso realizado/restante y premio. Desde el mapa o el recorrido 3D, seleccionar un animal en Búsqueda define el destino y regresa al recorrido 3D; la búsqueda iniciada desde Home conserva la ficha normal del animal.
     - *Prueba:* `test-ca-09`: pruebas de navegación y renderizado de detalles de eventos/misiones y selección de destino.
-- **CA-10 (Aventura, logros y colección):** La tarjeta de noticias no promociona misiones; una tarjeta separada conduce a Aventura en el Zoo. Los logros obtenidos y pendientes tienen lista y detalle propios, se pueden abrir desde Game y Perfil, filtrar por estado y ordenar por nombre o fecha de obtención. Los animales pendientes abren una vista previa con imagen difuminada y bloqueo de características y curiosidades; la acción invita a escanear el QR.
+- **CA-10 (Aventura, logros y colección):** La tarjeta de noticias no promociona misiones; una tarjeta separada conduce a Aventura en el Zoo. La pestaña de misiones lista solo misiones. Los logros obtenidos y pendientes tienen lista y detalle propios, se abren desde Perfil, se filtran por estado y se ordenan por nombre o fecha de obtención. Los animales pendientes abren una vista previa con imagen difuminada y bloqueo de características y curiosidades; «Escanear QR para descubrir» abre el escáner encima de la ficha. Atrás vuelve a esa ficha y el siguiente atrás vuelve a la pantalla que abrió el animal, sin regresar al escáner. Enmienda visual, 2026-11-11.
     - *Prueba:* `test-ca-10`: pruebas automatizadas de navegación, filtros/orden de logros y vista previa de animales pendientes.
 - **CA-11 (Acceso visual):** Dado el arranque sin sesión, cuando se abre la app, entonces se muestra el inicio de sesión con el panel de marca redondeado, sin el título «Login». Iniciar sesión con correo y contraseña, o Entrar como invitado, abre el inicio. Debajo del botón principal hay un separador «o» y el acceso de invitado en texto más pequeño. ¿Olvidaste tu contraseña? y Regístrate abren sus pantallas. Cerrar sesión en Ajustes vuelve al inicio de sesión. Nada de esto comprueba ni guarda una cuenta.
     - *Prueba:* `test-ca-11`: resolución de la compuerta visual y navegación de Login.
@@ -74,6 +74,8 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     - *Prueba:* `test-ca-14`: acceso desde Perfil, interruptores, filas y pestaña activa.
 - **CA-15 (Aviso de privacidad de demostración):** Dada Privacidad, cuando se muestra el aviso, entonces explica qué datos recopila la demostración, para qué se utilizarían, cómo se protegerían y cómo ejercer derechos. El texto se identifica como explicación de demostración; el aviso oficial lo publicará el zoológico.
     - *Prueba:* `test-ca-15`: presencia de las cuatro secciones del aviso. La prueba comparte el caso de filas de `test-ca-14`.
+- **CA-16 (Favoritos del visitante):** Dada la ficha de un animal, cuando el visitante toca el corazón, entonces ese animal entra en «Animales favoritos» del inicio. Al marcarlo, el corazón se llena con una animación breve y queda relleno; al quitarlo, vuelve al contorno. La marca se guarda en el teléfono y no se envía al servidor. No hay filtro de favoritos en Colección. Enmienda, 2026-11-11.
+    - *Prueba:* `CA-16 favoritos en el teléfono`.
 
 ## Reglas de negocio
 - **RN-01 (MVVM Obligatorio):** 
@@ -99,7 +101,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
 - **RN-13 (Aviso de demostración):** El texto de Privacidad explica el tratamiento de esta versión y el previsto al conectar la cuenta. No sustituye el aviso que debe proveer el zoológico.
 
 ## Datos, privacidad y auditoría
-En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `src/mocks/`. La compuerta de Login vive en memoria y desaparece al recargar. No hay persistencia, tokens ni envío de credenciales. El aviso de Privacidad describe ese límite y el tratamiento previsto cuando la spec `004` conecte la cuenta.
+En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `src/mocks/`. La compuerta de Login vive en memoria y desaparece al recargar. No hay tokens ni envío de credenciales. La única persistencia de esta spec es la lista local de animales favoritos (CA-16): identificadores en el teléfono, sin enviarse al servidor. El aviso de Privacidad describe ese límite y el tratamiento previsto cuando la spec `004` conecte la cuenta.
 
 ## Flujos y errores
 - **Flujo Principal:** Home $\rightarrow$ Search $\rightarrow$ Animal Detail $\rightarrow$ Map.
@@ -109,7 +111,7 @@ En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `sr
 - **Manejo de Errores:** Se implementará una pantalla de "No encontrado" para rutas dinámicas (animal/[id]) donde el ID no coincida con los mocks. Los formularios de acceso muestran en español si faltan datos, el correo no tiene forma válida, las contraseñas no coinciden o el código no tiene 6 dígitos.
 
 ## Dependencias, riesgos y preguntas
-- **Dependencias/ADR:** ADR 0004 (Expo/Android), Spec 001 (Setup).
+- **Dependencias/ADR:** ADR 0004 (Expo/Android), Spec 001 (Setup). La lista de favoritos reutiliza `AsyncStorage`, ya aceptado en el ADR 0014; la enmienda del 2026-11-11 deja constancia de esos identificadores locales.
 - **Riesgos:** 
     - Conflictos de resolución de módulos en el monorepo al importar `@arca/tokens`.
     - Discrepancias visuales entre el diseño y la renderización real en Android.

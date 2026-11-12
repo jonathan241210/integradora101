@@ -14,6 +14,8 @@ import AchievementsRoute from '../src/app/(tabs)/achievements';
 import AchievementDetailRoute from '../src/app/(tabs)/achievement-detail';
 import AnimalDetailRoute from '../src/app/animal/[id]';
 import { accountSession } from '../src/session/accountSession';
+import { favoriteAnimals } from '../src/repositories/favoriteAnimals';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
@@ -41,7 +43,8 @@ describe('Navegación visitante', () => {
     delete mockParams.returnTo;
     delete mockParams.destination;
     delete mockParams.source;
-    return accountSession.resetForTests();
+    favoriteAnimals.resetForTests();
+    return Promise.all([accountSession.resetForTests(), AsyncStorage.clear()]);
   });
 
   it('test-ca-02: permite navegar a las cinco pestañas principales', async () => {
@@ -93,6 +96,7 @@ describe('Navegación visitante', () => {
   });
 
   it('test-ca-04: Home navega a detalle, búsqueda y Game', async () => {
+    await favoriteAnimals.toggle('juan');
     const view = await render(<HomeRoute />);
     await waitFor(() => expect(view.getByText('Tigre de Bengala')).toBeTruthy());
 
@@ -102,8 +106,12 @@ describe('Navegación visitante', () => {
     await fireEvent.press(view.getByText('Ver todo'));
     expect(mockPush).toHaveBeenCalledWith('/search');
 
-    await fireEvent.press(view.getByText('Ver misiones'));
-    expect(mockPush).toHaveBeenCalledWith('/game');
+    await fireEvent.press(view.getByLabelText('Misiones'));
+    await waitFor(() => expect(view.getByText('Safari Matutino')).toBeTruthy());
+    expect(view.queryByText('Nacimiento de Jirafa')).toBeNull();
+    expect(mockPush).not.toHaveBeenCalledWith('/game');
+
+    await fireEvent.press(view.getByLabelText('Inicio'));
     expect(view.getByText('Nacimiento de Jirafa')).toBeTruthy();
 
     await fireEvent.press(view.getByText('Alimentación de Pingüinos'));
@@ -127,7 +135,7 @@ describe('Navegación visitante', () => {
     await waitFor(() => expect(detail.getByText('Escanear QR para descubrir')).toBeTruthy());
     await fireEvent.press(detail.getByText('Escanear QR para descubrir'));
 
-    expect(mockPush).toHaveBeenCalledWith('/scan');
+    expect(mockPush).toHaveBeenCalledWith('/discover');
   });
 
   it('test-ca-02: Mapa abre la búsqueda de destino, Colección abre animales descubiertos y Perfil carga sus datos', async () => {
@@ -225,14 +233,13 @@ describe('Navegación visitante', () => {
     expect(mockReplace).toHaveBeenCalledWith('/game');
   });
 
-  it('test-ca-10: la pantalla de juego permite abrir logros y sus detalles', async () => {
+  it('test-ca-10: la pantalla de misiones no lista logros; el listado sigue en su ruta', async () => {
     const game = await render(<GameRoute />);
-    await waitFor(() => expect(game.getByText('Primer descubrimiento')).toBeTruthy());
-    expect(game.getByTestId('achievements-carousel').props.horizontal).toBe(true);
+    await waitFor(() => expect(game.getByText('Safari Matutino')).toBeTruthy());
+    expect(game.queryByText('Logros destacados')).toBeNull();
+    expect(game.getByText('Cuando termines una misión, el logro queda en tu perfil.')).toBeTruthy();
     await fireEvent.press(game.getByLabelText('Volver'));
     expect(mockBack).toHaveBeenCalledTimes(1);
-    await fireEvent.press(game.getByText('Ver todos'));
-    expect(mockPush).toHaveBeenCalledWith({ pathname: '/achievements', params: { source: 'game' } });
     await game.unmount();
 
     mockParams.source = 'game';

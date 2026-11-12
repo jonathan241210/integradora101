@@ -15,6 +15,10 @@ El ADR 0011 (estado **Propuesto**) ya nombra `@react-native-async-storage/async-
 
 La app usa Expo SDK 57 / React Native 0.86 (ADR 0004).
 
+## Enmienda 2026-11-11 · Identificadores favoritos
+
+La misma dependencia de `AsyncStorage` guarda, además de la caché de catálogo y eventos, la lista local `visitor.favorite-animal-ids`. Son identificadores públicos de especie, no datos de cuenta, y no se envían al servidor. No cambia el alcance de la caché descrito en la decisión. Spec `mobile-002` CA-16.
+
 ## Decisión
 
 1. **Persistencia:** agregar `@react-native-async-storage/async-storage` como almacenamiento de la caché SWR del catálogo y los eventos. Solo datos públicos del zoológico; nunca tokens, credenciales ni datos personales.

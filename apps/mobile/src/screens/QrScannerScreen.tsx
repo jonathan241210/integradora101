@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Keyboard, Linking, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { CameraView } from 'expo-camera';
-import { AppText, Button, Icon, ScreenContainer } from '../components/ui';
+import { AppText, BackButton, Button, Icon, ScreenContainer } from '../components/ui';
 import { colors, radius, spacing } from '../theme/tokens';
 
 interface QrScannerScreenProps {
@@ -15,6 +15,7 @@ interface QrScannerScreenProps {
   onRequestPermission: () => void;
   onBarcodeScanned: (result: { data: string }) => void;
   onManualSubmit: () => void;
+  onBackPress?: () => void;
 }
 
 export function QrScannerScreen({
@@ -28,6 +29,7 @@ export function QrScannerScreen({
   onRequestPermission,
   onBarcodeScanned,
   onManualSubmit,
+  onBackPress,
 }: QrScannerScreenProps) {
   const [manualMode, setManualMode] = useState(false);
 
@@ -44,6 +46,11 @@ export function QrScannerScreen({
   return (
     <ScreenContainer scroll={false} contentStyle={styles.screen}>
       <View style={styles.header}>
+        {onBackPress ? (
+          <View style={styles.backRow}>
+            <BackButton onPress={onBackPress} accessibilityLabel="Volver al animal" />
+          </View>
+        ) : null}
         <AppText variant="title" color="textOnPrimary" center style={styles.copy}>Escanear código QR</AppText>
         {subtitle ? (
           <AppText variant="body" color="textOnPrimary" center style={styles.copy}>{subtitle}</AppText>
@@ -64,9 +71,6 @@ export function QrScannerScreen({
           >
             <AppText variant="body" bold color="primary">Permitir cámara</AppText>
           </TouchableOpacity>
-          <AppText variant="caption" color="textOnPrimary" center style={styles.copy}>
-            Si no quieres usar la cámara, escribe abajo el código impreso en el QR del recinto.
-          </AppText>
         </View>
       ) : null}
 
@@ -162,6 +166,7 @@ export function QrScannerScreen({
 const styles = StyleSheet.create({
   screen: { flex: 1, padding: spacing.lg, gap: spacing.md, backgroundColor: colors.primary },
   header: { alignItems: 'center', gap: spacing.sm, width: '100%' },
+  backRow: { alignSelf: 'flex-start' },
   copy: { width: '100%', textAlign: 'center' },
   permissionBox: { gap: spacing.md, width: '100%', alignItems: 'center' },
   permissionButton: {

@@ -50,7 +50,7 @@ describe('ViewModels y Repositories', () => {
     await waitFor(() => expect(onLoaded).toHaveBeenCalled());
     expect(onLoaded.mock.calls[0][0][0]).toHaveLength(3);
     expect(onLoaded.mock.calls[0][0][1]).toHaveLength(2);
-    expect(onLoaded.mock.calls[0][0][2].title).toBe('Nacimiento de Jirafa');
+    expect(onLoaded.mock.calls[0][0][2][0].title).toBe('Nacimiento de Jirafa');
   });
 
   it('test-ca-08: obtiene puntos y secciones del mapa del zoológico', async () => {
@@ -118,7 +118,7 @@ describe('ViewModels y Repositories', () => {
     await expect(userRepository.getAchievements()).resolves.toHaveLength(6);
     await expect(userRepository.getMilestones()).resolves.toHaveLength(3);
     await expect(zooRepository.getEvents()).resolves.toHaveLength(2);
-    await expect(zooRepository.getNews()).resolves.toMatchObject({ title: 'Nacimiento de Jirafa' });
+    await expect(zooRepository.getNews()).resolves.toEqual([expect.objectContaining({ title: 'Nacimiento de Jirafa' })]);
     await expect(mapRepository.getPlaces()).resolves.toHaveLength(10);
     await expect(mapRepository.getSections()).resolves.toHaveLength(8);
   });

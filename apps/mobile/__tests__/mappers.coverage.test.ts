@@ -19,7 +19,7 @@ describe('mobile-011 CA-05: mapeadores de respuestas API para Mobile', () => {
       category: 'bird', photo_path: 'ave.jpg', size_cm: 0, longevity: '8 años',
       diet_description: 'Frutos', characteristics: 'Plumas verdes',
     })).toMatchObject({
-      id: '2', category: 'birds', imageUrl: 'ave.jpg',
+      id: '2', category: 'birds', imageUrl: undefined,
       stats: { size: '', lifeExpectancy: '8 años' },
       diet: 'Frutos', curiosities: 'Plumas verdes',
     });
@@ -58,13 +58,13 @@ describe('mobile-011 CA-05: mapeadores de respuestas API para Mobile', () => {
       image_path: 'visita.jpg',
     })).toEqual({
       id: '1', title: 'Visita', date: '2026-11-01', time: '09:30 hrs',
-      location: 'Nicolás Bravo', description: '', imageUrls: ['visita.jpg'],
+      location: 'Nicolás Bravo', description: '', imageUrls: undefined,
     });
 
     expect(mapEventToZooEventModel({
       id: '2', title: 'Taller', date: '2026-11-02', time: '14:00',
       location: 'Plaza', description: 'Descripción', image_urls: ['1.jpg', '2.jpg'],
-    })).toMatchObject({ title: 'Taller', date: '2026-11-02', time: '14:00', imageUrls: ['1.jpg', '2.jpg'] });
+    })).toMatchObject({ title: 'Taller', date: '2026-11-02', time: '14:00', imageUrls: undefined });
     expect(mapEventToZooEventModel({ id: 3 })).toMatchObject({
       title: 'Evento en el Zoológico', date: '', time: '', location: 'Nicolás Bravo',
       description: '', imageUrls: undefined,

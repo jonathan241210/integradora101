@@ -9,7 +9,7 @@ import { useVisitorProgress } from '../../viewmodels/useVisitorProgress';
 
 export default function GameRoute() {
   const router = useRouter();
-  const { missions, achievements } = useUserViewModel();
+  const { missions } = useUserViewModel();
   const progress = useVisitorProgress();
   const [pending, setPending] = useState<QueuedScan[]>([]);
 
@@ -33,16 +33,10 @@ export default function GameRoute() {
   return (
     <GameScreen
       missions={pendingMissions.length > 0 ? pendingMissions : missionSource}
-      achievements={progress.snapshot?.achievements ?? achievements}
       loading={progress.loading && !progress.snapshot}
       pendingScans={pending}
       onBackPress={() => goBackWithinTabs(router)}
       onMissionPress={(id) => router.push({ pathname: '/mission-detail', params: { id } })}
-      onAchievementPress={(id) => router.push({
-        pathname: '/achievement-detail',
-        params: { id, source: 'game', returnTo: 'game' },
-      })}
-      onSeeAchievementsPress={() => router.push({ pathname: '/achievements', params: { source: 'game' } })}
       onRetryPress={() => {
         void scanQueue.retry().finally(reload);
       }}

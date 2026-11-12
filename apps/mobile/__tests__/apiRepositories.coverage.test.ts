@@ -3,7 +3,7 @@ import { ApiAnimalRepository } from '../src/repositories/apiAnimalRepository';
 import { ApiMapRepository } from '../src/repositories/apiMapRepository';
 import { ApiZooRepository } from '../src/repositories/apiZooRepository';
 import { MemoryKeyValueStorage, type KeyValueStorage } from '../src/repositories/storage';
-import { MOCK_MAP_PLACES, MOCK_NEWS } from '../src/mocks/zoo';
+import { MOCK_MAP_PLACES } from '../src/mocks/zoo';
 import { mapSpeciesToAnimalModel, mapEventToZooEventModel } from '../src/repositories/mappers';
 
 function client(get: jest.Mock = jest.fn()): jest.Mocked<HttpClient> {
@@ -261,17 +261,29 @@ describe('mobile-011 CA-05: cobertura de ApiZooRepository', () => {
     expect(await new ApiZooRepository(http, new MemoryKeyValueStorage()).getEvents()).toEqual([]);
   });
 
-  it('usa valores predeterminados y aliases de noticia sin perder fallback offline', async () => {
-    const http = client(jest.fn()
-      .mockResolvedValueOnce({ data: [{ titulo: 'Aviso', descripcion: 'Contenido' }] })
-      .mockResolvedValueOnce({ data: { title: '', body: 'Texto' } })
-      .mockResolvedValueOnce({ data: null })
-      .mockRejectedValueOnce(new Error('offline')));
-    const repo = new ApiZooRepository(http, new MemoryKeyValueStorage());
-    expect(await repo.getNews()).toEqual({ title: 'Aviso', body: 'Contenido' });
-    expect(await repo.getNews()).toEqual({ title: MOCK_NEWS.title, body: 'Texto' });
-    expect(await repo.getNews()).toEqual(MOCK_NEWS);
-    expect(await repo.getNews()).toEqual(MOCK_NEWS);
+  it('CA-08 mapea noticias y conserva la caché si la red falla', async () => {
+    const http = client(jest.fn().mockResolvedValueOnce({
+      data: [{ id: 9, titulo: 'Aviso', descripcion: 'Contenido', image_path: 'news/aviso.jpg' }],
+    }));
+    const repo = new ApiZooRepository(http, new MemoryKeyValueStorage(), 0);
+    const first = await repo.getNews();
+    expect(http.get).toHaveBeenCalledWith('/news?limit=3');
+    expect(first[0]).toMatchObject({ id: '9', title: 'Aviso', body: 'Contenido' });
+    expect(first[0].imageUrl).toBeUndefined();
+
+    http.get.mockRejectedValueOnce(new Error('offline'));
+    expect(await repo.getNews()).toEqual(first);
+
+    const empty = new ApiZooRepository(
+      client(jest.fn().mockResolvedValue({ data: null })),
+      new MemoryKeyValueStorage(),
+    );
+    expect(await empty.getNews()).toEqual([]);
+    const failed = new ApiZooRepository(
+      client(jest.fn().mockRejectedValue(new Error('offline'))),
+      new MemoryKeyValueStorage(),
+    );
+    expect(await failed.getNews()).toEqual([]);
   });
 
   it('retorna null ante 404 y usa una copia cacheada si falla la solicitud de detalle', async () => {

@@ -56,6 +56,29 @@ const RESULT_MESSAGES: Record<VisitorDiscoveryDto['result'], string> = {
   expired_scan: 'El escaneo venció. Vuelve a leer el código.',
 };
 
+export function countsFromCollection(snapshot: ProgressSnapshot | null): { discovered: number; total: number } | null {
+  if (!snapshot) return null;
+  if (snapshot.collection.length > 0) {
+    return {
+      discovered: snapshot.collection.filter((item) => item.discovered).length,
+      total: snapshot.collection.length,
+    };
+  }
+  return {
+    discovered: snapshot.progress.discoveredSpecies,
+    total: snapshot.progress.totalSpecies,
+  };
+}
+
+export function profileDiscoveryCounts(snapshot: ProgressSnapshot | null): { discovered: number; total: number } | null {
+  if (!snapshot) return null;
+  const listed = countsFromCollection(snapshot);
+  return {
+    discovered: snapshot.progress.discoveredSpecies,
+    total: listed?.total ?? snapshot.progress.totalSpecies,
+  };
+}
+
 export function mapProgress(dto: VisitorProgressDto): VisitorProgress {
   return {
     points: dto.points,
