@@ -76,7 +76,7 @@ php artisan storage:link
 
 Sin el enlace `public/storage`, las imágenes no se ven ([infra/README.md](../infra/README.md), sección de imágenes). Además, `php.ini` debe permitir subidas mayores de 5 MB (`upload_max_filesize` y `post_max_size`), según el mismo checklist.
 
-**Pendiente, no aplicar todavía:** la infra prevé `PUBLIC_MEDIA_DISK=media` y `PRIVATE_MEDIA_DISK=media` para los medios de prueba compartidos ([ADR 0026](adr/0026-object-storage-s3-images.md), propuesto; [api-013](../apps/api/specs/013-object-storage-images.md), en Borrador). Hoy estas variables no tienen efecto: no se leen en `apps/api/src/config/`. Las imágenes van a `storage/` y el enlace es `public/storage`. Cuando se aprueben, esta sección cambiará.
+**Pendiente, no aplicar todavía:** la infra prevé `PUBLIC_MEDIA_DISK=media` y `PRIVATE_MEDIA_DISK=media` para los medios de prueba compartidos ([ADR 0026](adr/0026-object-storage-s3-images.md), aceptado el 2026-11-12; [api-013](../apps/api/specs/013-object-storage-images.md), en Borrador). Hoy estas variables no tienen efecto: no se leen en `apps/api/src/config/`. Las imágenes van a `storage/` y el enlace es `public/storage`. Cuando se aprueben, esta sección cambiará.
 
 ### Usuarios demo y seeders
 
@@ -212,13 +212,13 @@ Caso: la especie ya existe (se crea hoy al registrar un animal en la PWA). El ve
 | Paso | Quién / dónde | Qué debe pasar | Estado |
 |---|---|---|---|
 | 1 | `veterinario@arca.local` en `http://localhost:5173` | Inicia sesión y entra a la PWA (`home = pwa`). | Implementado: [pwa-003](../apps/pwa/specs/003-staff-login.md), Aprobada. |
-| 2 | Veterinario en la PWA | Elige una especie existente y envía la solicitud de publicación o de actualización (también sobre una especie despublicada); consulta «Mis solicitudes». | **Por crear.** [pwa-005](../apps/pwa/specs/005-species-request-submission.md) en Borrador. Depende de [api-014](../apps/api/specs/014-species-requests.md) (Borrador) y de [DBR-013](database/requests/DBR-013-species-requests.md) (Borrador, sin migración). |
-| 3 | `direccion_zoo@arca.local` en `http://localhost:5174` | Inicia sesión con 2FA, revisa la solicitud y la publica (o la acepta sin publicar, si la especie está despublicada). Después gestiona la publicación en «Especies publicadas». | **Por crear.** [dashboard-010](../apps/dashboard/specs/010-public-content-management.md) en Borrador (absorbe dashboard-009). Requiere `species.review`, que [api-014](../apps/api/specs/014-species-requests.md) asigna en su tarea futura T-SEED; hoy el seeder no lo define. |
-| 4 | Visitante en `http://localhost:8080` | La especie publicada aparece en TulanPedia. | **Por crear.** [web-011](../apps/web/specs/011-dynamic-tulanpedia.md) en Borrador. Depende de [ADR 0028](adr/0028-dynamic-tulanpedia-catalog.md) (Propuesto). Hoy TulanPedia muestra fichas de muestra fijas en `index.html`. |
+| 2 | Veterinario en la PWA | Elige una especie existente y envía la solicitud de publicación o de actualización (también sobre una especie despublicada); consulta «Mis solicitudes». | **Por crear.** [pwa-005](../apps/pwa/specs/005-species-request-submission.md) en Borrador. Depende de [api-014](../apps/api/specs/014-species-requests.md) (Aprobada 2026-11-12) y de [DBR-013](database/requests/DBR-013-species-requests.md) (aprobada por BD y backend el 2026-11-12; migración aplicada en `arca_pruebas`, lote 5, verificada el 2026-11-12; «Lista para backend»). |
+| 3 | `direccion_zoo@arca.local` en `http://localhost:5174` | Inicia sesión con 2FA, revisa la solicitud y la publica (o la acepta sin publicar, si la especie está despublicada). Después gestiona la publicación en «Especies publicadas». | **Por crear.** [dashboard-010](../apps/dashboard/specs/010-public-content-management.md) Aprobada el 2026-11-12 (absorbe dashboard-009). Requiere `species.review`, que [api-014](../apps/api/specs/014-species-requests.md) asigna en su tarea futura T-SEED; hoy el seeder no lo define. |
+| 4 | Visitante en `http://localhost:8080` | La especie publicada aparece en TulanPedia. | **Por crear.** [web-011](../apps/web/specs/011-dynamic-tulanpedia.md) Aprobada el 2026-11-12. Depende de [ADR 0028](adr/0028-dynamic-tulanpedia-catalog.md) (Aceptado 2026-11-12). Hoy TulanPedia muestra fichas de muestra fijas en `index.html`. |
 
 Partes que sí puedes probar hoy: el login del veterinario en la PWA, la lectura pública de especies (`GET /api/v1/species`, [api-006](../apps/api/specs/006-public-catalog-read.md), Aprobada) y las noticias y eventos del portal ([web-009](../apps/web/specs/009-dynamic-news-events.md)).
 
-Dependencia: [`api-015`](../apps/api/specs/015-public-species-read.md) (lectura pública de especies publicadas, Borrador) ya tiene spec, pero aún no tiene plan, tasks ni código.
+Dependencia: [`api-015`](../apps/api/specs/015-public-species-read.md) (lectura pública de especies publicadas, Aprobada el 2026-11-12) ya tiene spec, pero aún no tiene plan, tasks ni código.
 
 ## 9. Solución de problemas
 

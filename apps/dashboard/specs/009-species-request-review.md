@@ -5,7 +5,7 @@
 - Estado: Borrador
 - Solicitante / responsable funcional: (por designar)
 - Aprobación funcional: (pendiente)
-- Dependencias de contrato: `api-014` (Borrador) y DBR-013 (`species_publication_requests`, Borrador)
+- Dependencias de contrato: `api-014` (Aprobada 2026-11-12) y DBR-013 (`species_publication_requests`, aprobada por BD y backend el 2026-11-12; aplicada en `arca_pruebas`, lote 5, verificada el 2026-11-12; «Lista para backend»)
 
 > **Integrada en dashboard-010 (2026-11-11).** Las solicitudes de especie pasan a `apps/dashboard/specs/010-public-content-management.md`, que la absorbe y añade la edición de la solicitud antes de aceptarla (`dashboard-010` CA-07 a CA-10) y el efecto en TulanPedia. Esta spec no se borra; su texto sigue como referencia hasta la aprobación de `dashboard-010`. Cada CA de la sección A de `dashboard-010` indica entre paréntesis el CA de esta spec del que procede.
 >
@@ -145,7 +145,7 @@ Los veterinarios envían solicitudes de nuevas especies para el catálogo públi
 ## Dependencias, riesgos y preguntas
 
 - **Dependencias:**
-  - `api-014` (Borrador; requiere implementación backend).
+  - `api-014` (Aprobada 2026-11-12; requiere implementación backend, que espera a «Lista para backend» de DBR-013).
   - DBR-013 (`species_publication_requests`, tabla nueva, y columnas de publicación en `species`).
   - `api-013` (almacenamiento de imágenes, rutas autenticadas).
   - Permiso `species.review` nuevo.

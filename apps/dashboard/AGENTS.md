@@ -15,7 +15,7 @@ Los documentos usan el mismo `NNN-slug.md`; sigue el SDD antes de editar código
 - 006 configuración del sistema: Borrador (solo documentada, sin plan ni tasks).
 - 008 moderación de momentos: Borrador, spec propia y vigente (separada de 010 el 2026-11-12).
 - 009 revisión de solicitudes de especie: Borrador, integrada en 010.
-- 010 public-content-management: Borrador; publicación de especies en TulanPedia (solicitudes y especies publicadas; solo `zoo-admin`).
+- 010 public-content-management: Aprobada (2026-11-12); publicación de especies en TulanPedia (solicitudes y especies publicadas; solo `zoo-admin`). La implementación espera a que DBR-013 esté «Lista para backend».
 
 ## Reglas de interfaz
 - SPA interna con React 19, TypeScript, Vite 7 y Tailwind CSS 4.
