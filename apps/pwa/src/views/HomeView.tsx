@@ -1,11 +1,5 @@
-import { Badge, Button, Card } from '@arca/ui';
+import { Button, Card } from '@arca/ui';
 import type { PwaSection } from '@/viewmodels/pwaDemo';
-
-const activities = [
-  { name: 'Luna', detail: 'Lobo mexicano · Revisión registrada', time: 'Hace 2 h', tone: 'success' as const },
-  { name: 'Cuahtli', detail: 'Águila real · Diagnóstico registrado', time: 'Hace 5 h', tone: 'warning' as const },
-  { name: 'Chuy', detail: 'Tapir de Baird · Revisión registrada', time: 'Ayer', tone: 'neutral' as const },
-];
 
 const shortcuts: {
   title: string;
@@ -79,38 +73,6 @@ export function HomeView({
             </Card>
           ))}
         </div>
-      </section>
-
-      <section className="activity-section" aria-labelledby="activity-title">
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Actividad reciente</p>
-            <h2 id="activity-title">Últimos movimientos de muestra</h2>
-          </div>
-          <Button
-            onClick={() => onNavigate('animals')}
-            variant="ghost"
-          >
-            Ver animales
-          </Button>
-        </div>
-        <Card className="activity-card">
-          {activities.map((activity) => (
-            <div className="activity-row" key={activity.name}>
-              <span className="animal-avatar" aria-hidden="true">
-                {activity.name.slice(0, 1)}
-              </span>
-              <div className="activity-description">
-                <strong>{activity.name}</strong>
-                <span>{activity.detail}</span>
-              </div>
-              <div className="activity-meta">
-                <Badge tone={activity.tone}>Muestra</Badge>
-                <small>{activity.time}</small>
-              </div>
-            </div>
-          ))}
-        </Card>
       </section>
     </div>
   );

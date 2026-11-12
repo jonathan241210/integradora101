@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { manualInstallController } from '@/tests/testFixtures';
+import { AnimalFormView } from '@/views/AnimalFormView';
 import { AppShell } from '@/views/AppShell';
 import {
   initialPwaDemoState,
@@ -10,11 +10,7 @@ import {
 
 describe('CA-03 PWA responsive demo screens', () => {
   it('presenta por separado la vista seleccionada en la navegación', () => {
-    const signedIn = pwaDemoReducer(initialPwaDemoState, {
-      type: 'login',
-      username: 'veterinario@demo.local',
-      password: 'demo1234',
-    });
+    const signedIn = pwaDemoReducer(initialPwaDemoState, { type: 'authenticated' });
     const markupBySection = pwaSections.map((section) => {
       const state = pwaDemoReducer(signedIn, {
         type: 'navigate',
@@ -24,7 +20,6 @@ describe('CA-03 PWA responsive demo screens', () => {
       return renderToStaticMarkup(
         <AppShell
           activeSection={state.activeSection}
-          installController={manualInstallController}
           onLogout={() => undefined}
           onNavigate={() => undefined}
         />,
@@ -45,7 +40,6 @@ describe('CA-03 PWA responsive demo screens', () => {
     const markup = renderToStaticMarkup(
       <AppShell
         activeSection="home"
-        installController={manualInstallController}
         onLogout={() => undefined}
         onNavigate={() => undefined}
       />,
@@ -55,5 +49,16 @@ describe('CA-03 PWA responsive demo screens', () => {
     for (const section of pwaSections) {
       expect(markup).toContain(`aria-label="${section.label}"`);
     }
+  });
+});
+
+describe('CA-03 PWA animal-registration', () => {
+  it('requiere seleccionar un recinto antes de permitir el registro', () => {
+    const markup = renderToStaticMarkup(<AnimalFormView />);
+
+    expect(markup).toContain('name="animal-enclosure"');
+    expect(markup).toContain('required=""');
+    expect(markup).toContain('disabled=""');
+    expect(markup).toContain('Registrar animal');
   });
 });

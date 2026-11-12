@@ -1,16 +1,17 @@
 import { useState } from 'react';
-import { AppShell } from '@/views/AppShell';
-import { LoginView } from '@/views/LoginView';
+import type { PwaSection } from '@/viewmodels/pwaDemo';
 import { usePwaInstall, type PwaInstallController } from '@/viewmodels/usePwaInstall';
 import { useStaffSession } from '@/viewmodels/useStaffSession';
-import type { PwaSection } from '@/viewmodels/pwaDemo';
+import { AppShell } from '@/views/AppShell';
+import { LoginView } from '@/views/LoginView';
+import { LoadingScreen } from '@/views/Spinner';
 
 function App() {
   const installController = usePwaInstall();
   const { session, error, busy, login, logout } = useStaffSession();
 
   if (session === 'restoring') {
-    return <p role="status">Comprobando la sesión…</p>;
+    return <LoadingScreen label="Cargando…" />;
   }
 
   if (session !== 'authenticated') {
@@ -25,11 +26,21 @@ function App() {
   }
 
   return (
-    <StaffWorkspace installController={installController} error={error} busy={busy} logout={logout} />
+    <StaffWorkspace
+      installController={installController}
+      error={error}
+      busy={busy}
+      logout={logout}
+    />
   );
 }
 
-function StaffWorkspace({ installController, error, busy, logout }: {
+function StaffWorkspace({
+  installController,
+  error,
+  busy,
+  logout,
+}: {
   installController: PwaInstallController;
   error: string;
   busy: boolean;

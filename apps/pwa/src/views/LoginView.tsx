@@ -1,12 +1,13 @@
 import type { FormEvent } from 'react';
 import { Alert, Button, Card, Field } from '@arca/ui';
+import { Spinner } from '@/views/Spinner';
 import type { PwaInstallController } from '@/viewmodels/usePwaInstall';
 import { InstallAppAction } from '@/views/InstallAppAction';
 
 type LoginViewProps = {
   busy?: boolean;
   error: string;
-  installController: PwaInstallController;
+  installController?: PwaInstallController;
   onLogin: (username: string, password: string) => void;
 };
 
@@ -29,6 +30,9 @@ export function LoginView({
 
   return (
     <main className="login-page">
+      {installController && (
+        <InstallAppAction controller={installController} />
+      )}
       <Card className="login-card">
         <div className="login-brand" aria-label="ZooHealth">
           <span className="brand-mark" aria-hidden="true">
@@ -43,7 +47,6 @@ export function LoginView({
           <p>Accede al espacio de trabajo de cuidado animal.</p>
         </div>
 
-        <InstallAppAction controller={installController} />
 
         <form className="login-form" onSubmit={handleSubmit}>
           {error && (
@@ -70,7 +73,7 @@ export function LoginView({
             type="password"
           />
           <Button className="login-submit" disabled={busy} type="submit">
-            {busy ? 'Entrando…' : 'Iniciar sesión'}
+            {busy ? <Spinner label="Cargando…" /> : 'Iniciar sesión'}
           </Button>
         </form>
       </Card>

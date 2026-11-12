@@ -1,4 +1,4 @@
-import { Alert, Button, Card } from '@arca/ui';
+import { Button, Card } from '@arca/ui';
 import type { PwaSection } from '@/viewmodels/pwaDemo';
 
 const modes: {
@@ -34,9 +34,6 @@ export function DiagnosisChooserView({
         <h2>Elige el tipo de diagnóstico</h2>
         <p>Cada diagnóstico se puede descargar como PDF.</p>
       </div>
-      <Alert className="form-demo-note" role="note">
-        Demostración: el diagnóstico no se guarda ni se envía.
-      </Alert>
       <div className="shortcut-grid">
         {modes.map((mode) => (
           <Card className="shortcut-card" key={mode.section}>

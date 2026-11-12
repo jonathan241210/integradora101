@@ -13,15 +13,16 @@
     "@arca/api-client": "file:../../packages/api-client",
     "@arca/tokens": "file:../../packages/tokens",
     "@arca/ui": "file:../../packages/ui",
+    "html2pdf.js": "^0.14.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^24.0.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^5.0.0",
-    "@types/node": "^24.0.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.8.0",
     "vite": "^7.0.0",

@@ -1,6 +1,7 @@
 import { Badge, Card, Field } from '@arca/ui';
 import { useState } from 'react';
 import { useAnimals } from '@/viewmodels/useApiData';
+import { Spinner } from '@/views/Spinner';
 
 const sexLabels: Record<string, string> = {
   F: 'Hembra',
@@ -8,7 +9,11 @@ const sexLabels: Record<string, string> = {
   I: 'No identificado',
 };
 
-export function AnimalsView() {
+export function AnimalsView({
+  onOpenAnimal,
+}: {
+  onOpenAnimal?: (animalId: number) => void;
+}) {
   const [search, setSearch] = useState('');
   const { animals, loading, error, reload } = useAnimals(search);
 
@@ -32,7 +37,7 @@ export function AnimalsView() {
             value={search}
           />
           <span className="sample-count">
-            {loading ? 'Cargando…' : `${animals.length} animales`}
+            {loading ? <Spinner label="Cargando…" /> : `${animals.length} animales`}
           </span>
         </div>
         {error && (
@@ -47,16 +52,23 @@ export function AnimalsView() {
         <div className="animal-list" role="list" aria-label="Animales registrados">
           {animals.map((animal) => (
             <article className="animal-row" key={animal.id} role="listitem">
-              <span className="animal-avatar" aria-hidden="true">
-                {animal.name.slice(0, 1)}
-              </span>
-              <div className="animal-details">
-                <strong>{animal.name}</strong>
-                <span>
-                  {animal.species ?? 'Sin especie'} · {animal.tag_number}
+              <button
+                aria-label={`Ver perfil de ${animal.name}`}
+                className="animal-row-button"
+                onClick={() => onOpenAnimal?.(animal.id)}
+                type="button"
+              >
+                <span className="animal-avatar" aria-hidden="true">
+                  {animal.name.slice(0, 1)}
                 </span>
-              </div>
-              <Badge tone="info">{sexLabels[animal.sex] ?? animal.sex}</Badge>
+                <span className="animal-details">
+                  <strong>{animal.name}</strong>
+                  <span>
+                    {animal.species ?? 'Sin especie'} · {animal.tag_number}
+                  </span>
+                </span>
+                <Badge tone="info">{sexLabels[animal.sex] ?? animal.sex}</Badge>
+              </button>
             </article>
           ))}
         </div>
