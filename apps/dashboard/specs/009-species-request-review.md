@@ -5,9 +5,11 @@
 - Estado: Borrador
 - Solicitante / responsable funcional: (por designar)
 - Aprobación funcional: (pendiente)
-- Dependencias de contrato: `api-014` (Borrador) y DBR de `species_requests` (por definir)
+- Dependencias de contrato: `api-014` (Aprobada 2026-11-12) y DBR-013 (`species_publication_requests`, aprobada por BD y backend el 2026-11-12; aplicada en `arca_pruebas`, lote 5, verificada el 2026-11-12; «Lista para backend»)
 
 > **Integrada en dashboard-010 (2026-11-11).** Las solicitudes de especie pasan a `apps/dashboard/specs/010-public-content-management.md`, que la absorbe y añade la edición de la solicitud antes de aceptarla (`dashboard-010` CA-07 a CA-10) y el efecto en TulanPedia. Esta spec no se borra; su texto sigue como referencia hasta la aprobación de `dashboard-010`. Cada CA de la sección A de `dashboard-010` indica entre paréntesis el CA de esta spec del que procede.
+>
+> **Cambio de modelo (2026-11-11): fuente de verdad, `dashboard-010`.** La solicitud ya no propone una especie nueva que se crea al aceptar. Propone la **publicación de una especie existente** (`api-014`). «Aceptar» pasa a «Aceptar y publicar»: actualiza la especie, no la crea. El nombre común no es editable. Los textos de este documento que hablen de crear la especie, de «Aceptada» como único estado visible o de la ruta `admin/species-requests` quedan superados por `dashboard-010`.
 
 ## Problema y contexto
 
@@ -143,8 +145,8 @@ Los veterinarios envían solicitudes de nuevas especies para el catálogo públi
 ## Dependencias, riesgos y preguntas
 
 - **Dependencias:**
-  - `api-014` (Borrador; requiere implementación backend).
-  - DBR de `species_requests` (tabla nueva).
+  - `api-014` (Aprobada 2026-11-12; requiere implementación backend, que espera a «Lista para backend» de DBR-013).
+  - DBR-013 (`species_publication_requests`, tabla nueva, y columnas de publicación en `species`).
   - `api-013` (almacenamiento de imágenes, rutas autenticadas).
   - Permiso `species.review` nuevo.
 
@@ -162,3 +164,4 @@ Los veterinarios envían solicitudes de nuevas especies para el catálogo públi
 
 - Aprobadores y fecha: (pendiente)
 - Estado: Borrador (requiere aprobación técnica y de API antes de En progreso)
+- Historial: 2026-11-11, nota de cambio de modelo (publicación de especie existente, no especie nueva). Fuente de verdad: `dashboard-010`. Esta spec no cambia sus CA; quedan como referencia histórica hasta su integración.

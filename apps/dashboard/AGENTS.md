@@ -13,8 +13,9 @@ Los documentos usan el mismo `NNN-slug.md`; sigue el SDD antes de editar código
 ## Specs vigentes
 - 001 prototipo, 002 login real, 003 secciones de administración, 004 formularios en línea con imágenes, 005 venta de boletos y 007 content-image-display: Aprobadas.
 - 006 configuración del sistema: Borrador (solo documentada, sin plan ni tasks).
-- 008 moderación de momentos y 009 revisión de solicitudes de especie: Borrador, integradas en 010.
-- 010 public-content-management: Borrador; solicitudes de especie para TulanPedia (solo `zoo-admin`) y momentos.
+- 008 moderación de momentos: Borrador, spec propia y vigente (separada de 010 el 2026-11-12).
+- 009 revisión de solicitudes de especie: Borrador, integrada en 010.
+- 010 public-content-management: Aprobada (2026-11-12); publicación de especies en TulanPedia (solicitudes y especies publicadas; solo `zoo-admin`). La implementación espera a que DBR-013 esté «Lista para backend».
 
 ## Reglas de interfaz
 - SPA interna con React 19, TypeScript, Vite 7 y Tailwind CSS 4.
