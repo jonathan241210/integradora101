@@ -312,4 +312,112 @@ describe('mobile-011 CA-05: cobertura de ApiZooRepository', () => {
     );
     expect(await fallbackRepo.getEventById('7')).toMatchObject({ title: 'Guardado' });
   });
+
+  it('revalida noticias vencidas como lista, objeto suelto o vacío', async () => {
+    const staleList = async (payload: unknown) => {
+      const storage = new MemoryKeyValueStorage();
+      await storage.setItem('@arca:cache:news_list', JSON.stringify({
+        data: [{ id: '1', title: 'Vieja', body: '' }],
+        cachedAt: 0,
+        ttlMs: 0,
+      }));
+      const http = client(jest.fn().mockResolvedValue(payload));
+      const repo = new ApiZooRepository(http, storage);
+      expect((await repo.getNews())[0].title).toBe('Vieja');
+      await tick();
+      return repo;
+    };
+
+    expect((await (await staleList({ data: [{ id: 2, title: 'Lista' }] })).getNews())[0].title).toBe('Lista');
+    expect((await (await staleList({ data: { id: 3, title: 'Suelta' } })).getNews())[0].title).toBe('Suelta');
+    expect(await (await staleList({ data: null })).getNews()).toEqual([]);
+
+    const storage = new MemoryKeyValueStorage();
+    await storage.setItem('@arca:cache:news_list', JSON.stringify({
+      data: [{ id: '1', title: 'Vieja', body: '' }],
+      cachedAt: 0,
+      ttlMs: 0,
+    }));
+    const failing = new ApiZooRepository(client(jest.fn().mockRejectedValue(new Error('offline'))), storage);
+    expect((await failing.getNews())[0].title).toBe('Vieja');
+    await tick();
+    expect((await failing.getNews())[0].title).toBe('Vieja');
+  });
+
+  it('usa la noticia guardada, la revalida y tolera un detalle ausente', async () => {
+    const freshStorage = new MemoryKeyValueStorage();
+    await freshStorage.setItem('@arca:cache:news:8', JSON.stringify({
+      data: { id: '8', title: 'Vigente', body: '' },
+      cachedAt: Date.now(),
+      ttlMs: 60_000,
+    }));
+    const freshHttp = client(jest.fn());
+    expect((await new ApiZooRepository(freshHttp, freshStorage).getNewsById('8'))?.title).toBe('Vigente');
+    expect(freshHttp.get).not.toHaveBeenCalled();
+
+    const staleStorage = new MemoryKeyValueStorage();
+    await staleStorage.setItem('@arca:cache:news:8', JSON.stringify({
+      data: { id: '8', title: 'Vencida', body: '' },
+      cachedAt: 0,
+      ttlMs: 0,
+    }));
+    const staleHttp = client(jest.fn().mockResolvedValue({ data: { id: 8, title: 'Actual' } }));
+    const staleRepo = new ApiZooRepository(staleHttp, staleStorage);
+    expect((await staleRepo.getNewsById('8'))?.title).toBe('Vencida');
+    await tick();
+    expect((await staleRepo.getNewsById('8'))?.title).toBe('Actual');
+
+    const emptyStorage = new MemoryKeyValueStorage();
+    await emptyStorage.setItem('@arca:cache:news:8', JSON.stringify({
+      data: { id: '8', title: 'Vencida', body: '' },
+      cachedAt: 0,
+      ttlMs: 0,
+    }));
+    const emptyRepo = new ApiZooRepository(client(jest.fn().mockResolvedValue({ data: null })), emptyStorage);
+    expect((await emptyRepo.getNewsById('8'))?.title).toBe('Vencida');
+    await tick();
+    expect((await emptyRepo.getNewsById('8'))?.title).toBe('Vencida');
+
+    const brokenStorage = new MemoryKeyValueStorage();
+    await brokenStorage.setItem('@arca:cache:news:8', JSON.stringify({
+      data: { id: '8', title: 'Vencida', body: '' },
+      cachedAt: 0,
+      ttlMs: 0,
+    }));
+    const brokenRepo = new ApiZooRepository(client(jest.fn().mockRejectedValue(new Error('offline'))), brokenStorage);
+    expect((await brokenRepo.getNewsById('8'))?.title).toBe('Vencida');
+    await tick();
+
+    expect(await new ApiZooRepository(
+      client(jest.fn().mockResolvedValue({ data: null })),
+      new MemoryKeyValueStorage(),
+    ).getNewsById('9')).toBeNull();
+    expect(await new ApiZooRepository(
+      client(jest.fn().mockRejectedValue(Object.assign(new Error('missing'), { status: 404 }))),
+      new MemoryKeyValueStorage(),
+    ).getNewsById('404')).toBeNull();
+
+    let reads = 0;
+    const fallbackStorage: KeyValueStorage = {
+      getItem: async () => {
+        reads += 1;
+        return reads === 1 ? null : JSON.stringify({
+          data: { id: '7', title: 'Guardada', body: '' },
+          cachedAt: Date.now(),
+          ttlMs: 10000,
+        });
+      },
+      setItem: async () => undefined,
+      removeItem: async () => undefined,
+      clear: async () => undefined,
+    };
+    expect(await new ApiZooRepository(
+      client(jest.fn().mockRejectedValue(new Error('offline'))),
+      fallbackStorage,
+    ).getNewsById('7')).toMatchObject({ title: 'Guardada' });
+    await expect(new ApiZooRepository(
+      client(jest.fn().mockRejectedValue(new Error('offline'))),
+      new MemoryKeyValueStorage(),
+    ).getNewsById('7')).rejects.toThrow('offline');
+  });
 });

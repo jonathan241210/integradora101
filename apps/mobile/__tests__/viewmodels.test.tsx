@@ -1,12 +1,15 @@
 import React, { useEffect } from 'react';
-import { Text } from 'react-native';
-import { render, waitFor } from '@testing-library/react-native';
+import { Pressable, Text } from 'react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import { AnimalRepository, AnimalRepositoryImpl, MapRepositoryImpl, UserRepository, UserRepositoryImpl, ZooRepositoryImpl } from '../src/repositories';
+import { favoriteAnimals } from '../src/repositories/favoriteAnimals';
 import { useAnimalViewModel } from '../src/viewmodels/useAnimalViewModel';
+import { useFavoriteAnimals } from '../src/viewmodels/useFavoriteAnimals';
 import { useHomeViewModel } from '../src/viewmodels/useHomeViewModel';
 import { useMapViewModel } from '../src/viewmodels/useMapViewModel';
 import { useUserViewModel } from '../src/viewmodels/useUserViewModel';
 import { MOCK_ANIMALS } from '../src/mocks/zoo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 describe('ViewModels y Repositories', () => {
   it('test-ca-08: filtra animales por texto y categoría y resuelve IDs', async () => {
@@ -41,16 +44,30 @@ describe('ViewModels y Repositories', () => {
     const Probe = () => {
       const vm = useHomeViewModel(new AnimalRepositoryImpl(), new ZooRepositoryImpl());
       useEffect(() => {
-        Promise.all([vm.getFeaturedAnimals(), vm.getEvents(), vm.getNews()]).then(onLoaded);
-      }, [vm.getEvents, vm.getFeaturedAnimals, vm.getNews]);
+        Promise.all([
+          vm.getFeaturedAnimals(),
+          vm.getEvents(),
+          vm.getNews(),
+          vm.getEventDetails('e1'),
+          vm.getNewsDetails('n1'),
+          vm.getNewsDetails('missing'),
+          vm.refreshNewsAndEvents(),
+        ]).then(onLoaded);
+      }, [vm.getEventDetails, vm.getEvents, vm.getFeaturedAnimals, vm.getNews, vm.getNewsDetails, vm.refreshNewsAndEvents]);
       return <Text>Home probe</Text>;
     };
 
     await render(<Probe />);
     await waitFor(() => expect(onLoaded).toHaveBeenCalled());
-    expect(onLoaded.mock.calls[0][0][0]).toHaveLength(3);
-    expect(onLoaded.mock.calls[0][0][1]).toHaveLength(2);
-    expect(onLoaded.mock.calls[0][0][2][0].title).toBe('Nacimiento de Jirafa');
+    const [animals, events, news, event, article, missing, refreshed] = onLoaded.mock.calls[0][0];
+    expect(animals).toHaveLength(3);
+    expect(events).toHaveLength(2);
+    expect(news[0].title).toBe('Nacimiento de Jirafa');
+    expect(event).toMatchObject({ id: 'e1' });
+    expect(article).toMatchObject({ id: 'n1' });
+    expect(missing).toBeNull();
+    expect(refreshed.news[0].title).toBe('Nacimiento de Jirafa');
+    expect(refreshed.events).toHaveLength(2);
   });
 
   it('test-ca-08: obtiene puntos y secciones del mapa del zoológico', async () => {
@@ -121,5 +138,55 @@ describe('ViewModels y Repositories', () => {
     await expect(zooRepository.getNews()).resolves.toEqual([expect.objectContaining({ title: 'Nacimiento de Jirafa' })]);
     await expect(mapRepository.getPlaces()).resolves.toHaveLength(10);
     await expect(mapRepository.getSections()).resolves.toHaveLength(8);
+  });
+
+  it('CA-16: el hook muestra el favorito al marcarlo', async () => {
+    favoriteAnimals.resetForTests();
+    await AsyncStorage.clear();
+    const Probe = () => {
+      const { ids, toggle } = useFavoriteAnimals();
+      return (
+        <Pressable onPress={() => { void toggle('juan'); }}>
+          <Text>{ids.join(',') || 'vacio'}</Text>
+        </Pressable>
+      );
+    };
+
+    const view = await render(<Probe />);
+    await waitFor(() => expect(view.getByText('vacio')).toBeTruthy());
+    await fireEvent.press(view.getByText('vacio'));
+    await waitFor(() => expect(view.getByText('juan')).toBeTruthy());
+    view.unmount();
+  });
+
+  it('CA-16: ignora una respuesta que llega después de salir', async () => {
+    favoriteAnimals.resetForTests();
+    let resolveList: (ids: string[]) => void = () => undefined;
+    let listener: (ids: string[]) => void = () => undefined;
+    const list = jest.spyOn(favoriteAnimals, 'list').mockImplementation(
+      () => new Promise((resolve) => { resolveList = resolve; }),
+    );
+    const subscribe = jest.spyOn(favoriteAnimals, 'subscribe').mockImplementation((next) => {
+      listener = next;
+      return () => undefined;
+    });
+    const Probe = () => {
+      useFavoriteAnimals();
+      return <Text>favoritos</Text>;
+    };
+
+    try {
+      const view = await render(<Probe />);
+      await act(async () => {
+        view.unmount();
+      });
+      await act(async () => {
+        resolveList(['tarde']);
+        listener(['fuera']);
+      });
+    } finally {
+      list.mockRestore();
+      subscribe.mockRestore();
+    }
   });
 });
