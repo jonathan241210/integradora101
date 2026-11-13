@@ -1,11 +1,12 @@
 # Tareas · 010 · public-content-management
 
 - Spec: `apps/dashboard/specs/010-public-content-management.md` (Estado: **Aprobada**, Jonathan, 2026-11-12).
-- Plan: `apps/dashboard/plan/010-public-content-management.md` (Estado: **Borrador, pendiente de aprobación técnica**).
-- Checklist: **pendiente de aprobación.** Ninguna tarea está marcada como hecha. Cada T-xx se marca solo con evidencia (PR, salida de `npm test`, nota de verificación manual o enlace a la prueba de la otra app).
+- Plan: `apps/dashboard/plan/010-public-content-management.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+- Checklist: ninguna tarea está marcada como hecha. Cada T-xx se marca solo con evidencia (PR, salida de `npm test`, nota de verificación manual o enlace a la prueba de la otra app).
 - Alcance: solo publicación de especies (TulanPedia). Los momentos son de `dashboard-008` y no se tratan aquí. CA-18 a CA-38 están retirados: no se cubren.
 - Dependencias: `api-014` y `api-015` aprobadas, **sin implementar**; DBR-013 en «Lista para backend» desde el 2026-11-12 (migración aplicada en `arca_pruebas`, lote 5). Las tareas de base de datos (DBR, migración, pruebas y evidencia) pertenecen al responsable de BD y a `apps/api`; esta lista no las incluye. Solo aparecen como precondición en T-01.
-- Inicio: las tareas de cliente (T-02 a T-22) pueden empezar con pruebas de contrato simuladas. DBR-013 ya cumple «Lista para backend» (2026-11-12). La integración (T-27) y el cierre requieren además `api-014` y `api-015` implementadas (pregunta 3 del plan).
+- Inicio: las tareas de cliente (T-02 a T-22) pueden empezar con pruebas de contrato simuladas. DBR-013 ya cumple «Lista para backend» (2026-11-12). La integración (T-27) y el cierre requieren además `api-014` y `api-015` implementadas (pregunta 3 del plan resuelta el 2026-11-13: sí).
 
 ## Trazabilidad
 
@@ -75,7 +76,7 @@ Cobertura: CA vigentes sin tarea = 0 (40 de 40: CA-01 a CA-17, CA-40 a CA-62). R
 - [ ] **T-01** (RN-01, RN-05; precondición de CA-46): verificar el estado de las dependencias y registrar la decisión en el PR.
   - Contenido: (a) `api-014` y `api-015` Aprobadas con el contrato del plan («Endpoints consumidos» y «Tipos»); (b) enmiendas G-1 (`publication_status` en la fila de la lista), G-2 (`species_id` en el detalle), G-3 (`current.publication_status` en el detalle) pedidas a `api-014` y respondidas; (c) respuestas a las preguntas 1 a 8 del plan; (d) estado de DBR-013 y de la migración en `arca_pruebas`, con fecha.
   - Archivos: ninguno (sin código).
-  - Hecho cuando: el PR o el hilo de aprobación enlaza las respuestas; G-1 a G-3 están aceptadas o rechazadas explícitamente; el estado de DBR-013 consta por fecha. **Nota (2026-11-12, sin marcar):** en el punto (d), la migración está aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura de backend; fecha y responsable de la aplicación: por registrar por BD. Los puntos (a) a (c) siguen abiertos. Si G-1 o G-3 se rechazan, T-07 y T-09 se marcan como bloqueadas, no se resuelven en la UI.
+  - Hecho cuando: el PR o el hilo de aprobación enlaza las respuestas; G-1 a G-3 están aceptadas o rechazadas explícitamente; el estado de DBR-013 consta por fecha. **Nota (2026-11-12, sin marcar):** en el punto (d), la migración está aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura de backend; fecha y responsable de la aplicación: por registrar por BD. Los puntos (a) a (c) siguen abiertos. Si G-1 o G-3 se rechazan, T-07 y T-09 se marcan como bloqueadas, no se resuelven en la UI. Decisiones registradas en el plan el 2026-11-13: G-1 a G-3 incorporadas en `api-014` (2026-11-13); preguntas 1 a 8 resueltas salvo la 7.
 
 ## Cliente de API (`packages/api-client`)
 
@@ -112,10 +113,10 @@ Cobertura: CA vigentes sin tarea = 0 (40 de 40: CA-01 a CA-17, CA-40 a CA-62). R
   - Hecho cuando: pruebas en verde.
 
 - [ ] **T-07** (CA-03, CA-15 en la lista; RN-03): vista de la lista y la sección.
-  - Archivos: `apps/dashboard/src/views/SpeciesRequestsView.tsx` (tabla desde 768 px y tarjetas por debajo; filtro con `<label>`; `PaginationBar`; `ListStatusMessage`), `apps/dashboard/src/components/SpeciesStatusBadge.tsx` (icono y texto), `apps/dashboard/src/sections/SpeciesRequestsSection.tsx` (llama al hook al abrirse).
+  - Archivos: `apps/dashboard/src/views/SpeciesRequestsView.tsx` (tabla desde 768 px y tarjetas por debajo; filtro con `<label>`; `HasMorePaginationBar` (pregunta 3 resuelta: `has_more`, sin total); `ListStatusMessage`), `apps/dashboard/src/components/SpeciesStatusBadge.tsx` (icono y texto), `apps/dashboard/src/sections/SpeciesRequestsSection.tsx` (llama al hook al abrirse).
   - Contenido por fila: nombre común, nombre científico (60 caracteres y «…»), tipo de animal en español, veterinario, fecha de envío, etiqueta de tipo, etiqueta «Especie despublicada» (según `publication_status` de G-1), estado con icono, botón «Revisar» (Pendiente o Publicada) o «Ver» (Rechazada).
   - Test: `species-requests-list.test.tsx`. Nombres: `CA-03 species-requests-list: fila con tipo, «Especie despublicada», truncado a 60 y estado con icono`, `CA-15 species-requests-list: Revisar en Pendiente y Publicada; Ver en Rechazada`.
-  - Bloqueo: G-1 (T-01). Sin G-1 no se marca como hecha.
+  - Bloqueo de contrato levantado (2026-11-13): G-1 incorporada en `api-014` (CA-05). Sin implementar `api-014` no se marca como hecha.
   - Hecho cuando: pruebas en verde y revisión visual en 360 y 1024 px.
 
 - [ ] **T-08** (CA-05, CA-06, CA-44, CA-61; RN-07, RN-10): carga del detalle y de la foto.
@@ -128,14 +129,14 @@ Cobertura: CA vigentes sin tarea = 0 (40 de 40: CA-01 a CA-17, CA-40 a CA-62). R
   - Archivos: `apps/dashboard/src/views/SpeciesRequestDetailView.tsx` (modo lectura; dos columnas «Datos actuales» y «Datos propuestos» desde 768 px; nombre común marcado «no editable»; tipo de solicitud; etiqueta «Especie despublicada»; veterinario, fecha y estado; ficha pública en lectura; motivo si está rechazada; botón «Volver a la lista»), `apps/dashboard/src/sections/SpeciesRequestsSection.tsx` (si cambia).
   - Acciones por estado: Pendiente → «Editar», «Aceptar y publicar», «Aceptar sin publicar» (solo con `current.publication_status = unpublished`, G-3), «Rechazar»; Publicada → «Publicada en el catálogo»; Rechazada → motivo visible. Aviso «La especie no aparece en el catálogo hasta que la aceptes con «Aceptar y publicar».» cuando corresponde.
   - Test: `species-request-detail.test.tsx`. Nombres: `CA-15 species-request-detail: acciones por estado`, `CA-61 species-request-detail: aviso de catálogo en especie despublicada`.
-  - Bloqueo: G-3 (T-01).
+  - Bloqueo de contrato levantado (2026-11-13): G-3 incorporada en `api-014` (CA-06).
   - Hecho cuando: pruebas en verde.
 
 ## Edición de la solicitud
 
 - [ ] **T-10** (CA-07, CA-08, CA-09, CA-10, CA-49; RN-04, RN-14, RN-15): ViewModel de edición de la solicitud.
   - Archivos: `apps/dashboard/src/viewmodels/species-requests.ts` (borrador, `dirty`, `saveEdit`, `cancelEdit`, `chooseNewPhoto`, `cancelPhoto`), `apps/dashboard/src/viewmodels/useSpeciesRequests.ts`.
-  - Contenido: el borrador se precarga con `proposed`. `saveEdit` envía solo los campos cambiados (`category` siempre que se guarde; plan pregunta 5). `200` actualiza el detalle y muestra «Cambios guardados. La solicitud sigue pendiente.». `422` por campo muestra el error junto al campo y no cierra el formulario. `422` «Esta solicitud ya fue revisada.» recarga el detalle. Cancelar o Escape descartan sin llamar a la API. Foto elegida: vista previa `blob:` (`alt="Vista previa de la nueva foto de {common_name}"`) que se revoca al cancelar o al cambiar de solicitud. Solo editable con `status = submitted`.
+  - Contenido: el borrador se precarga con `proposed`. `saveEdit` envía solo los campos cambiados (`category` siempre que se guarde; plan pregunta 5, resuelta). `200` actualiza el detalle y muestra «Cambios guardados. La solicitud sigue pendiente.». `422` por campo muestra el error junto al campo y no cierra el formulario. `422` «Esta solicitud ya fue revisada.» recarga el detalle. Cancelar o Escape descartan sin llamar a la API. Foto elegida: vista previa `blob:` (`alt="Vista previa de la nueva foto de {common_name}"`) que se revoca al cancelar o al cambiar de solicitud. Solo editable con `status = submitted`.
   - Test: `apps/dashboard/src/tests/species-request-edit.test.tsx`. Nombres: `CA-07 species-request-edit: PATCH solo con campos cambiados; éxito deja la solicitud pendiente`, `CA-08 species-request-edit: 422 junto al campo sin cerrar; Cancelar sin llamada`, `CA-09 species-request-edit: 422 «ya fue revisada» recarga el detalle`, `CA-10 species-request-edit: dirty activo con cambios sin guardar`, `CA-49 species-request-edit: vista previa, revocación al cancelar y cambio de solicitud`.
   - Hecho cuando: pruebas en verde.
 
@@ -217,9 +218,9 @@ Cobertura: CA vigentes sin tarea = 0 (40 de 40: CA-01 a CA-17, CA-40 a CA-62). R
   - Hecho cuando: pruebas en verde y ambos archivos de dashboard-007 sin cambios en el diff.
 
 - [ ] **T-23** (CA-40, CA-41, CA-42, CA-48): verificación cruzada. Sin test propio en el dashboard.
-  - Contenido: registrar en el PR la evidencia de `api-015` (CA-01, CA-17, CA-18), `api-014` (CA-31, CA-32), `web-011` (CA-02, CA-03, CA-04, CA-08, CA-22, CA-24) y la prueba manual en `arca_pruebas` de que una especie publicada aparece en TulanPedia y una despublicada no.
+  - Contenido (enmienda 2026-11-13: CA-40, CA-41, CA-42 y CA-48 con tests automatizados, PHPUnit en la API y Vitest simulado aquí; comprobación contra la API real por la sesión principal en la integración): registrar en el PR la evidencia de `api-015` (CA-01, CA-17, CA-18), `api-014` (CA-31, CA-32), `web-011` (CA-02, CA-03, CA-04, CA-08, CA-22, CA-24) y la prueba manual en `arca_pruebas` de que una especie publicada aparece en TulanPedia y una despublicada no.
   - Archivos: ninguno en el dashboard.
-  - Bloqueo: `api-014`, `api-015` y `web-011` implementadas y DBR-013 aplicada. Pregunta 7 del plan.
+  - Bloqueo: `api-014`, `api-015` y `web-011` implementadas y DBR-013 aplicada. Pregunta 7 del plan resuelta (2026-11-13): tests automatizados en lugar de evidencia manual.
   - Hecho cuando: el PR enlaza la evidencia de cada una de esas pruebas.
 
 - [ ] **T-24** (CA-43, CA-47): revisión documental.

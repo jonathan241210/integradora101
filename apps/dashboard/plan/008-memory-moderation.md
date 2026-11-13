@@ -2,8 +2,9 @@
 
 - Spec: `apps/dashboard/specs/008-memory-moderation.md`
 - Estado de spec: Aprobada (2026-11-12, Jonathan, responsable de backend).
-- Estado de este plan: **Borrador, pendiente de aprobación técnica.** No aprobado. No se ejecuta ninguna tarea de `apps/dashboard/tasks/008-memory-moderation.md` hasta que el equipo lo apruebe.
-- Responsable técnico: por identificar (frontend del dashboard).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: no se marca ninguna tarea de `apps/dashboard/tasks/008-memory-moderation.md` sin evidencia. Las preguntas 1 a 8 del plan quedan resueltas el 2026-11-13 (sección «Preguntas»); la integración depende de `api-010` fase 1 y `api-013` implementadas.
+- Responsable técnico: Jonathan (coordina las sesiones de Claude Code), 2026-11-13.
 - Fecha del borrador: 2026-11-12.
 - Dependencias de contrato (Aprobadas, **sin implementar**): `api-010` fase 1 (revisión: CA-07 a CA-14, CA-16 del seeder, CA-21 de rutas), `api-013` (CA-10 y D-06, ruta autenticada de imagen de revisión). ADR 0026 Aceptado (2026-11-12).
 - Dependencia de datos: DBR-012 Aprobada y aplicada en `arca_pruebas` (2026-11-11), «Lista para backend». El dashboard no toca base de datos ni migraciones.
@@ -138,7 +139,7 @@ Estados de la imagen (`image.state`): `loading` («Cargando la foto…»), `read
 | `App.tsx` | Clave `memories` en `sectionTitles` («Momentos») y render de `MemoriesSection` | Claves y render de sus dos secciones | `Record<DashboardSection, string>` exige la clave: quien integre el segundo debe añadir la suya o no compila |
 | `components/Icon.tsx` | Añade el nombre `camera` | Puede añadir iconos propios | Nombres distintos. Si ambos necesitan el mismo icono, se reutiliza el existente |
 | `components/PaginationBar.tsx` | **No se modifica** | Su plan usa `Paginated` con `total` | Sin cambios en el componente compartido |
-| `components/HasMorePaginationBar.tsx` | **Nuevo** (propuesto aquí): paginación con `has_more` sin total | Su CA-02 también pide `meta.has_more` | Lo crea el primero que se implemente (008 propone) y el otro lo reutiliza (pregunta 3) |
+| `components/HasMorePaginationBar.tsx` | **Nuevo** (aprobado aquí): paginación con `has_more` sin total | Su CA-02 también pide `meta.has_more` | Lo crea 008, que va primero (pregunta 3 resuelta); 010 lo reutiliza |
 | `packages/api-client/admin-types.ts` y `viewmodels/admin-types.ts` | Añade `HasMorePage<T>` y los DTO de memoria | Añade los DTO de especies | `HasMorePage<T>` se define una sola vez. Solo se añaden líneas |
 | `packages/api-client/admin.ts` | Namespace `memoryReview` | Namespaces `speciesPublicationRequests` y `publishedSpecies` | Namespaces distintos. `unwrap`, `unwrapList` y `normalizePage` no cambian |
 | `packages/api-client/index.ts` y `README.md` | Exports y documentación de `memoryReview` | Lo mismo para sus namespaces | Bloques separados |
@@ -220,7 +221,7 @@ export type MemoryReviewDetailDto = {
   published_until: string | null;
   is_published: boolean;
   publication_days: number;
-  /** Pendiente de M-3: `published_at` para la «fecha de publicación» de CA-07. */
+  /** M-3 resuelta: `published_at` para la «fecha de publicación» de CA-07 (incorporado en `api-010` el 2026-11-13). */
 };
 
 export type MemoryRejectInput = {
@@ -252,11 +253,11 @@ export type MemoryRejectInput = {
 
 ### Brechas y supuestos de contrato a confirmar (M-1 a M-3)
 
-No bloquean la redacción de este plan. Bloquean T-02 (M-1, M-2) y T-08 (M-3), salvo decisión explícita en contrario.
+Resueltas el 2026-11-13 (ver cada punto). Bloqueaban T-02 (M-1, M-2) y T-08 (M-3).
 
-- **M-1 (campos de la fila de la lista).** `api-010` CA-07 no enumera los campos de cada fila. CA-04 necesita `id`, `status`, `opinion`, `created_at` y `resubmitted_count`. Pedido: confirmar esos campos en `api-010`.
-- **M-2 (envoltura y paginación).** La lista usa `{ data, meta: { page, limit, has_more } }` (api-010 CA-07). El detalle usa `{ data }`, como el resto de `/api/v1/admin` (`unwrap` de `admin.ts`). Pedido: confirmar ambas envolturas.
-- **M-3 (fecha de publicación).** CA-07 pide «la fecha de publicación» para una petición Aceptada, pero `api-010` CA-08 no incluye `published_at` en el detalle. Sin ese campo, la vista solo muestra `published_until` (CA-19). Pedido: decidir si `api-010` CA-08 añade `published_at` (pregunta 2).
+- **M-1 (campos de la fila de la lista).** `api-010` CA-07 no enumera los campos de cada fila. CA-04 necesita `id`, `status`, `opinion`, `created_at` y `resubmitted_count`. **Resuelta (2026-11-13, Jonathan): se adopta.** Estos campos son el contrato de la fila. `api-010` los enumera desde el 2026-11-13 (plan y tasks, T-08).
+- **M-2 (envoltura y paginación).** La lista usa `{ data, meta: { page, limit, has_more } }` (api-010 CA-07). El detalle usa `{ data }`, como el resto de `/api/v1/admin` (`unwrap` de `admin.ts`). **Resuelta (2026-11-13, Jonathan): se adopta**, con el tamaño por defecto de 10 sin enviar `limit`.
+- **M-3 (fecha de publicación).** CA-07 pide «la fecha de publicación» para una petición Aceptada, pero `api-010` CA-08 no incluye `published_at` en el detalle. Sin ese campo, la vista solo muestra `published_until` (CA-19). **Resuelta (2026-11-13, Jonathan): se añade `published_at` al detalle** (pregunta 2). Es una opción propuesta por la sesión de documentación, aceptada por Jonathan; la enmienda de `api-010` CA-08 queda incorporada el 2026-11-13 (plan y tasks).
 
 ## Seguridad, offline y operación
 
@@ -319,7 +320,7 @@ Regresión (sin cambios en el diff): `administration-navigation.test.tsx`, `real
 
 - **R-1 (paginación, compartido con 010).** `Paginated<T>` y `PaginationBar` no sirven para `has_more`. Mitigación: `HasMorePage<T>` y `HasMorePaginationBar` nuevos y compartidos (pregunta 3). Si `api-010` devuelve otro formato, T-02 se bloquea.
 - **R-2 (campos no confirmados).** Sin M-1 a M-3, la fila de la lista y la fecha de publicación no se pueden mostrar como indica la spec. Mitigación: T-01 registra la respuesta; sin ella, T-02 y T-08 no se marcan como hechas.
-- **R-3 (vigencia con la hora del navegador).** CA-19 dice «si `published_until` es posterior a ahora», pero RN-04 y CA-14 prohíben calcular plazos en el cliente. Propuesta: usar `is_published` (que la API calcula, `api-010` CA-08). Queda como pregunta 5 para que la spec se alinee antes de implementar. No se modifica la spec.
+- **R-3 (vigencia con la hora del navegador).** CA-19 dice «si `published_until` es posterior a ahora», pero RN-04 y CA-14 prohíben calcular plazos en el cliente. Propuesta: usar `is_published` (que la API calcula, `api-010` CA-08). Resuelta (pregunta 5, 2026-11-13): se usa `is_published`. La spec no se modifica; su CA-19 se lee con esa interpretación.
 - **R-4 (pruebas de CA-12 y CA-13 sin navegador).** Sin `@testing-library/react` no se prueban foco ni Escape en el DOM, ni el ancho real. Mitigación: pruebas del ViewModel y de marcado estático, más verificación manual en T-17. No se añade dependencia de pruebas (requeriría ADR).
 - **R-5 (datos de prueba).** Mobile no envía momentos todavía. Sin peticiones en `arca_pruebas`, la integración no puede hacerse. Mitigación: contratos simulados; datos creados por el backend (pregunta 6). El dashboard no escribe datos de prueba ni SQL.
 - **R-6 (imagen pendiente en `/media`).** `media/memories/` se publica por `/media` y la API no controla ese acceso (`api-013` RN-16). La sección no lo evita; es riesgo aceptado de la spec.
@@ -343,7 +344,7 @@ Regresión (sin cambios en el diff): `administration-navigation.test.tsx`, `real
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | React 19, TypeScript, Vite 7, Tailwind 4 y `@arca/*` ya existentes. Sin dependencias nuevas, sin React Router, sin `package.json` nuevo, sin servicios propietarios. Sin ADR requerido |
-| II. La spec manda | Sí, con pendiente | Spec 008 Aprobada (2026-11-12). Este plan y `tasks/008-memory-moderation.md` comparten NNN-slug. Pendiente: aprobación técnica del plan y de las tareas. Ninguna tarea se ejecuta antes |
+| II. La spec manda | Sí | Spec 008 Aprobada (2026-11-12). Plan y `tasks/008-memory-moderation.md` aprobados el 2026-11-13 (Jonathan, en nombre del equipo), con el mismo NNN-slug. Ninguna tarea se ejecuta antes de sus precondiciones |
 | III. Lógica separada de la interfaz | Sí, con dependencias | Permisos, estados, transiciones, plazos, visibilidad de la imagen y auditoría los decide la API. La UI solo valida lo que la spec pide como presentación y elige textos según `is_published`. Depende de M-1 a M-3 para no inferir campos |
 | IV. Un test por criterio | Sí, con parte manual | CA-01 a CA-19 con test de Vitest nombrado (mapeo). CA-12 y CA-13 tienen test automatizado parcial (ViewModel y marcado) y verificación manual en T-17 para foco, Escape y ancho real (R-4) |
 | V. Una sola fuente de verdad para los datos | Sí | El dashboard no crea tablas ni migraciones y no cambia esquema. DBR-012 se usa solo a través de la API. Ningún dato se persiste en el navegador (RN-07). Las acciones quedan en Activitylog de la API (`api-010` CA-19) |
@@ -375,22 +376,23 @@ El primero que se integre crea `HasMorePage<T>` (en `packages/api-client/admin-t
 | Rol | Aprueba | Estado |
 |---|---|---|
 | Responsable funcional | Spec 008 | Aprobada (2026-11-12, Jonathan) |
-| Equipo técnico | Este plan, su Constitution Check y las preguntas 1 a 8 | **Pendiente** |
-| Backend | Contrato de `api-010` fase 1 (M-1 a M-3) y `api-013` CA-10 | **Pendiente** |
-| Frontend del dashboard y responsable de `dashboard-010` | Coordinación de la shell y de componentes compartidos | **Pendiente** |
-| Backend o responsable de datos | Datos de prueba en `arca_pruebas` y asignación de `memories.review` a un `zoo-admin` de prueba | **Pendiente** |
+| Equipo técnico | Este plan, su Constitution Check y las preguntas 1 a 8 | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
+| Backend | Contrato de `api-010` fase 1 (M-1 a M-3) y `api-013` CA-10 | Aprobado: Jonathan, responsable de backend, 2026-11-13 (M-1 y M-2 aceptadas; M-3 como `published_at`, incorporada en `api-010`) |
+| Frontend del dashboard y responsable de `dashboard-010` | Coordinación de la shell y de componentes compartidos | Aprobado: Jonathan (coordina las sesiones de Claude Code), 2026-11-13 |
+| Backend o responsable de datos | Datos de prueba en `arca_pruebas` y asignación de `memories.review` a un `zoo-admin` de prueba | Enfoque aprobado: Jonathan, responsable de backend, 2026-11-13 (datos creados por el backend). La creación sigue pendiente |
 
-## Preguntas abiertas
+## Preguntas (resueltas el 2026-11-13)
 
 Máximo 8 por ronda (`AGENTS.md`).
 
-1. **Contrato de la lista (M-1 y M-2).** ¿`api-010` confirma los campos de cada fila (`id`, `status`, `opinion`, `created_at`, `resubmitted_count`), la envoltura `{ data, meta: { page, limit, has_more } }` y el tamaño por defecto de 10 sin enviar `limit`?
+1. **Contrato de la lista (M-1 y M-2).** ¿`api-010` confirma los campos de cada fila (`id`, `status`, `opinion`, `created_at`, `resubmitted_count`), la envoltura `{ data, meta: { page, limit, has_more } }` y el tamaño por defecto de 10 sin enviar `limit`? **Resuelta (2026-11-13, Jonathan): sí.** Los campos quedan como contrato de la fila; `api-010` los incorpora en su plan y tasks (2026-11-13).
 2. **Fecha de publicación (M-3).** CA-07 pide «la fecha de publicación» para una petición Aceptada, pero el detalle de `api-010` CA-08 no incluye `published_at`. ¿Se añade al detalle o la vista solo muestra `published_until`?
-3. **Paginación compartida con 010.** ¿`HasMorePage<T>` y `HasMorePaginationBar` los crea 008 (propuesta, por ser el primero) y 010 los reutiliza? ¿Y 010 cambia su lista de solicitudes de `Paginated` (con total) a `HasMorePage`, ya que su CA-02 también dice `meta.has_more`?
-4. **Orden de la navegación.** ¿Se acepta Usuarios → Momentos → Solicitudes de especies → Especies publicadas? Requiere el visto bueno del responsable de `dashboard-010`.
-5. **Imagen, plazo y vigencia (CA-18, CA-19).** (a) ¿«Aceptar» queda deshabilitado mientras la imagen carga (propuesta) y también si falla por 5xx o red, además del 404 que fija la spec? (b) ¿El texto de vigencia usa `is_published` (propuesta) en lugar de comparar `published_until` con la hora del navegador, como sugiere CA-19? Si la respuesta a (b) es comparar con la hora, habrá que revisar RN-04 y CA-14.
-6. **Datos de prueba.** Sin mobile, ¿quién crea peticiones de prueba en `arca_pruebas` (seeder o comando del backend, nunca SQL del dashboard), y quién asigna `memories.review` a un `zoo-admin` de prueba (`api-010` CA-16)?
-7. **Acceso por URL (CA-01).** ¿Se acepta que «abrir por otra vía» se verifique con la respuesta 403 de la API (sin ruta propia), igual que la pregunta 2 de `dashboard-010`?
-8. **Textos propuestos.** ¿Aprueba el responsable funcional los textos de este plan: el mensaje del diálogo de aceptar («…durante {N} días…» y «1 día»), el del diálogo de rechazar, el aviso «Petición aceptada.», «Reenviada 1 vez» y «Reenviada {n} veces», el fragmento de 120 caracteres y los mensajes de error de lista y detalle?
+   **Resuelta (2026-11-13, Jonathan): se añade `published_at` al detalle de `api-010` CA-08.** Opción propuesta por la sesión de documentación, aceptada por Jonathan: la spec de 008 CA-07 pide la fecha de publicación. Incorporada en `api-010` (plan y tasks, 2026-11-13).
+3. **Paginación compartida con 010.** ¿`HasMorePage<T>` y `HasMorePaginationBar` los crea 008 (propuesta, por ser el primero) y 010 los reutiliza? ¿Y 010 cambia su lista de solicitudes de `Paginated` (con total) a `HasMorePage`, ya que su CA-02 también dice `meta.has_more`? **Resuelta (2026-11-13, Jonathan): sí.** 008 crea primero `HasMorePage<T>` y `HasMorePaginationBar`; 010 los reutiliza y cambia sus listas (solicitudes y publicadas) de `Paginated` a `HasMorePage`, porque `api-014` devuelve `meta.has_more` y no total. El orden de integración es 008 primero.
+4. **Orden de la navegación.** ¿Se acepta Usuarios → Momentos → Solicitudes de especies → Especies publicadas? Requiere el visto bueno del responsable de `dashboard-010`. **Resuelta (2026-11-13, Jonathan): sí.** Queda confirmar con el responsable de `dashboard-010` si no es la misma persona.
+5. **Imagen, plazo y vigencia (CA-18, CA-19).** (a) ¿«Aceptar» queda deshabilitado mientras la imagen carga (propuesta) y también si falla por 5xx o red, además del 404 que fija la spec? (b) ¿El texto de vigencia usa `is_published` (propuesta) en lugar de comparar `published_until` con la hora del navegador, como sugiere CA-19? Si la respuesta a (b) es comparar con la hora, habrá que revisar RN-04 y CA-14. **Resuelta (2026-11-13, Jonathan):** (a) «Aceptar» queda deshabilitado mientras carga la imagen y también si falla por 5xx o red (la extensión a error es opción propuesta por la sesión de documentación, aceptada por Jonathan). (b) Se usa `is_published`; RN-04 y CA-14 se mantienen.
+6. **Datos de prueba.** Sin mobile, ¿quién crea peticiones de prueba en `arca_pruebas` (seeder o comando del backend, nunca SQL del dashboard), y quién asigna `memories.review` a un `zoo-admin` de prueba (`api-010` CA-16)? **Resuelta (2026-11-13, Jonathan): el backend.** Las peticiones de prueba las crea el backend con seeder o comando, nunca con SQL del dashboard. `memories.review` lo asigna `RolesAndPermissionsSeeder` a `zoo-admin` (`api-010` T-06).
+7. **Acceso por URL (CA-01).** ¿Se acepta que «abrir por otra vía» se verifique con la respuesta 403 de la API (sin ruta propia), igual que la pregunta 2 de `dashboard-010`? **Resuelta (2026-11-13, Jonathan): sí.**
+8. **Textos propuestos.** ¿Aprueba el responsable funcional los textos de este plan: el mensaje del diálogo de aceptar («…durante {N} días…» y «1 día»), el del diálogo de rechazar, el aviso «Petición aceptada.», «Reenviada 1 vez» y «Reenviada {n} veces», el fragmento de 120 caracteres y los mensajes de error de lista y detalle? **Resuelta (2026-11-13, Jonathan): se adoptan los textos propuestos** (opción propuesta por la sesión de documentación, aceptada por Jonathan).
 
 Decisiones tomadas en este plan (no preguntas): el ViewModel recarga el detalle tras aceptar o rechazar; `blob.type` debe empezar por `image/`; el GET de detalle se acepta como idempotente en StrictMode; `status` se omite en «Todas»; el icono nuevo es `camera`; no se modifica `PaginationBar`, `ConfirmDialog`, `image-field.ts`, `image-preview.ts` ni `http.ts`.

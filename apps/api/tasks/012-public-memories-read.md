@@ -1,17 +1,18 @@
 # Tareas · 012 · public-memories-read
 
 - Spec: `apps/api/specs/012-public-memories-read.md` (Estado: **Aprobada**, Jonathan, responsable de backend, 2026-11-12).
-- Plan: `apps/api/plan/012-public-memories-read.md` (Estado: **Borrador**, pendiente de aprobación técnica).
-- Estado de estas tareas: **Borrador**. Ninguna tarea está marcada. No se marca nada sin evidencia aportada por quien ejecuta.
+- Plan: `apps/api/plan/012-public-memories-read.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: ninguna tarea está marcada. No se marca nada sin evidencia aportada por quien ejecuta.
 
 ## Puerta de entrada
 
 **No se empieza ninguna tarea de implementación (T-01 en adelante) hasta que:**
 
-1. el plan `apps/api/plan/012-public-memories-read.md` esté aprobado técnicamente;
+1. el plan `apps/api/plan/012-public-memories-read.md` esté aprobado técnicamente (cumplido el 2026-11-13, Jonathan);
 2. T-00 esté marcada con evidencia (solo lectura en `arca_pruebas`);
-3. el modelo `VisitorMemory` exista (lo crea `api-010` o se decide lo contrario, pregunta 1 del plan);
-4. la clave del disco público de `api-013` esté configurada (pregunta 2 del plan). Sin ella, T-05, T-15, T-16 (tramo de imagen) y T-25 quedan bloqueadas.
+3. el modelo `VisitorMemory` exista (lo crea `api-010` T-04; pregunta 1 del plan resuelta el 2026-11-13);
+4. la clave del disco público de `api-013` esté configurada (clave resuelta el 2026-11-13: `filesystems.media_scopes.public`; la configuración sigue pendiente). Sin ella, T-05, T-15, T-16 (tramo de imagen) y T-25 quedan bloqueadas.
 
 DBR-012 está en «Lista para backend» y aplicada en `arca_pruebas` desde el 2026-11-11. Esta feature no tiene DBR propia ni migraciones.
 
@@ -70,7 +71,7 @@ Cobertura: todos los CA-01 a CA-12 y RN-01 a RN-11 tienen al menos una tarea. **
 
 - [ ] **T-01** (CA-01, CA-02, CA-12; RN-03, RN-08, RN-11): **ajustar el modelo `VisitorMemory`** (creado por `api-010`) con el scope `publiclyVisible` y con `casts` de `published_at` y `published_until` a fecha-hora. El scope filtra `status` igual a `accepted` y `published_until` posterior al instante recibido por parámetro. No añadir la regla en el controlador ni en el Resource. SoftDeletes ya excluye las borradas; el test CA-01 lo verifica.
   - Rutas: `apps/api/src/app/Models/VisitorMemory.php` (ajuste).
-  - Bloqueada por: T-00 y pregunta 1 del plan.
+  - Bloqueada por: T-00 y la implementación de `api-010` T-04 (pregunta 1 resuelta).
   - **Criterio de hecho:** el scope devuelve solo aceptadas, vigentes y no borradas; una aceptada con `published_until` igual o anterior al instante, o con `published_until` nulo, no pasa el filtro.
   - Tests que lo cubren: T-10, T-21.
 
@@ -91,9 +92,9 @@ Cobertura: todos los CA-01 a CA-12 y RN-01 a RN-11 tienen al menos una tarea. **
   - **Criterio de hecho:** cada elemento tiene exactamente las claves `id`, `opinion`, `image_url` y `published_at`; `opinion` nula sale como `null`, no se omite.
   - Tests que lo cubren: T-14, T-15, T-16.
 
-- [ ] **T-05** (CA-06, CA-07; RN-06): **crear `ResolvePublishedMemoryImageUrlAction`** con `execute(?string $publishedImagePath): ?string`. Devuelve `null` si la ruta es `null`, si no empieza por `memories/`, si empieza por `/`, si contiene `..` o `\`, o si el archivo no existe en el disco público configurado (`exists()`; ver pregunta 3 del plan). Si existe, devuelve `Storage::disk(...)->url($ruta)`. Si la URL del disco no está configurada, devuelve `null` y registra un error de configuración en el log (`api-013` RN-04). El nombre del disco sale de configuración; no se escribe `'public'` ni `'media'` como literal (`api-013` CA-02). No usa `ResolveContentImageUrlAction` de `api-008`.
+- [ ] **T-05** (CA-06, CA-07; RN-06): **crear `ResolvePublishedMemoryImageUrlAction`** con `execute(?string $publishedImagePath): ?string`. Devuelve `null` si la ruta es `null`, si no empieza por `memories/`, si empieza por `/`, si contiene `..` o `\`, o si el archivo no existe en el disco público configurado (`exists()` por fila, máximo 50 por respuesta; pregunta 3 del plan resuelta). Si existe, devuelve `Storage::disk(...)->url($ruta)`. Si la URL del disco no está configurada, devuelve `null` y registra un error de configuración en el log (`api-013` RN-04). El nombre del disco sale de configuración; no se escribe `'public'` ni `'media'` como literal (`api-013` CA-02). No usa `ResolveContentImageUrlAction` de `api-008`.
   - Rutas: `apps/api/src/app/Actions/Catalog/ResolvePublishedMemoryImageUrlAction.php` (nuevo).
-  - Bloqueada por: `api-013` implementada en la configuración del disco (pregunta 2) y pregunta 3 del plan.
+  - Bloqueada por: `api-013` implementada en la configuración del disco (pregunta 2: clave resuelta el 2026-11-13).
   - **Criterio de hecho:** nunca devuelve una URL con ruta fuera de `memories/`; con `MEDIA_PUBLIC_URL` vacía la URL empieza por `APP_URL` más `/media/`; si el archivo falta, `null` sin error ni `500`.
   - Tests que lo cubren: T-15, T-16.
 
@@ -177,7 +178,7 @@ Archivos: `apps/api/src/tests/Feature/Catalog/PublicMemoriesTest.php` y `apps/ap
 
 - [ ] **T-25** (RN-09, RN-10; infraestructura): **anotar en `infra/README.md`** un bloque «Portal público: momentos para recordar (api-012, web-010)» en el mismo PR de implementación, con líneas y casillas para: DBR-012 aplicada en el ambiente; disco de medios y carpeta `memories/` persistentes (`api-013`); `storage:link` para `public/media`; `CORS_ALLOWED_ORIGINS` con el origen exacto del portal (en desarrollo, `http://localhost:8080`); y la prueba `curl -i -H "Origin: <origen del portal>" <API>/api/v1/memories`, con `Access-Control-Allow-Origin` igual a ese origen. Sin valores reales ni secretos. La spec indica que este documento no edita `infra/README.md`; la edición la hace el PR de implementación.
   - Rutas: `infra/README.md` (ajuste).
-  - Bloqueada por: pregunta 2 del plan (la clave del disco).
+  - Bloqueada por: `api-013` implementada (pregunta 2 del plan: clave resuelta el 2026-11-13; sigue pendiente la configuración).
   - **Criterio de hecho:** el bloque existe y cada línea tiene su casilla y su evidencia pendiente.
 
 - [ ] **T-26** (CA-11; DoD): **enlazar spec, plan y tasks en el PR** y citar `api-012` en el commit. Actualizar el estado de la spec a En progreso o Implementada solo con evidencia de T-23 y T-22. No marcar Implementada si algún CA no tiene un test en verde. Marcar cada T-xx solo con su evidencia.
@@ -198,10 +199,10 @@ Archivos: `apps/api/src/tests/Feature/Catalog/PublicMemoriesTest.php` y `apps/ap
 
 Las preguntas completas están en el plan (`apps/api/plan/012-public-memories-read.md`, sección «Preguntas abiertas»). Las que afectan a estas tareas:
 
-- Pregunta 1 (modelo `VisitorMemory` y `BaseModel`, de `api-010`): bloquea T-01, T-02 y, con ellas, todo el código.
-- Pregunta 2 (clave del disco público y estado de `api-013`): bloquea T-05, T-15, T-16 (tramo de imagen) y T-25.
-- Pregunta 3 (`image_url` con archivo ausente; divergencia CA-06 frente a `api-013` flujo 8): afecta a T-05 y T-15.
-- Pregunta 4 (máximo de `page`): afecta a T-03 y T-12.
-- Pregunta 5 (`opinion` nula: `null` o clave omitida): afecta a T-04 y T-14.
+- Pregunta 1 (modelo `VisitorMemory` y `BaseModel`, de `api-010`): resuelta el 2026-11-13 (`api-010` crea el modelo; sin `BaseModel`). T-01 y T-02 siguen bloqueadas hasta implementar `api-010`.
+- Pregunta 2 (clave del disco público y estado de `api-013`): clave resuelta el 2026-11-13; T-05, T-15, T-16 (tramo de imagen) y T-25 siguen bloqueadas hasta implementar `api-013`.
+- Pregunta 3 (`image_url` con archivo ausente): resuelta el 2026-11-13: `exists()` por fila, máximo 50 (T-05 y T-15).
+- Pregunta 4 (máximo de `page`): resuelta el 2026-11-13: sin tope; una página fuera de rango devuelve lista vacía con la forma normal (T-03 y T-12).
+- Pregunta 5 (`opinion` nula): resuelta el 2026-11-13: clave `opinion` siempre presente, en `null` si falta (T-04 y T-14).
 
-Estado final de estas tareas: **Borrador**; sin casillas marcadas; pendientes de la aprobación técnica del plan y de la puerta de entrada T-00.
+Estado final de estas tareas: **Aprobado** (Jonathan, 2026-11-13); sin casillas marcadas; pendientes los puntos 2 a 4 de la «Puerta de entrada» (T-00, modelo `VisitorMemory` y clave del disco público).

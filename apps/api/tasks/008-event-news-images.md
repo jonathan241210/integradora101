@@ -88,7 +88,7 @@ Trazabilidad añadida por la divergencia con api-013 (2026-11-12): CA-02 y CA-03
 
 ## Divergencia con api-013 (registrada 2026-11-12; tareas nuevas sin marcar)
 
-Detalle en `apps/api/plan/008-event-news-images.md`, sección «Divergencia registrada con api-013». `apps/api/specs/013-object-storage-images.md` está Aprobada (2026-11-12); `apps/api/plan/013-object-storage-images.md` y `apps/api/tasks/013-object-storage-images.md` están en Borrador. Las tareas siguientes dependen de las de api-013 indicadas. Ninguna está marcada; no se marcan sin evidencia.
+Detalle en `apps/api/plan/008-event-news-images.md`, sección «Divergencia registrada con api-013». `apps/api/specs/013-object-storage-images.md` está Aprobada (2026-11-12); `apps/api/plan/013-object-storage-images.md` y `apps/api/tasks/013-object-storage-images.md` están aprobados (Jonathan, responsable de backend, 2026-11-13). Las tareas siguientes dependen de las de api-013 indicadas. Ninguna está marcada; no se marcan sin evidencia.
 
 - [ ] **T-29** (api-013 CA-02, CA-03; RN-02, RN-04): **sustituir el nombre literal del disco por el ámbito público** en `StoreContentImageAction`, `DeleteContentImageAction` y `ResolveContentImageUrlAction`, usando `ResolveMediaDiskAction->publicDisk()` (api-013 T-05). `DeleteContentImageAction` delega en `DeleteMediaFileAfterCommitAction` (api-013 T-06), conservando su contrato y la comprobación de ruta gestionada.
   - Rutas: `app/Actions/Admin/Content/StoreContentImageAction.php`, `DeleteContentImageAction.php`, `ResolveContentImageUrlAction.php`.

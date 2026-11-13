@@ -2,8 +2,9 @@
 
 - Spec: `apps/api/specs/015-public-species-read.md`
 - Estado de spec: Aprobada (Jonathan, responsable de backend, 2026-11-12). Aprobar no autoriza implementar.
-- Estado de este plan: **Borrador**, pendiente de aprobación técnica. Este documento no está aprobado ni lo aprueba su redactor.
-- Responsable técnico: Jonathan (responsable de backend); aprobación técnica del plan pendiente.
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: la implementación depende de `api-014` implementada y de la configuración del disco `media` de `api-013`, pendientes según la sección de precondiciones. Preguntas 1 a 7 resueltas el 2026-11-13 (sección «Preguntas»).
+- Responsable técnico: Jonathan (responsable de backend); aprobación técnica del plan cumplida el 2026-11-13.
 - Precondición de ejecución: DBR-013 en **«Lista para backend»**. Cumplida desde el 2026-11-12: DBR-013 está en «Lista para backend» y su migración (`apps/api/src/database/migrations/2026_11_12_000013_species_publication_requests_schema.php`) está aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura. Pendiente de BD: EXPLAIN (T-29).
 - Consumidores: `web-011` (`apps/web`, TulanPedia; consumidor, sin cambios en este plan). Sin cambios en `apps/mobile`, `apps/dashboard`, `packages/api-client` ni en `api-006`.
 - Dependencias: `api-014` (fuente de los datos publicados; Aprobada, no implementada), DBR-013, ADR 0026 (Aceptado, con enmienda de `media/species/`), ADR 0028 (Aceptado), `api-013` (**Aprobada** 2026-11-12: disco `media` y `MEDIA_PUBLIC_URL`, aún sin configurar), `api-011` (CORS por ambiente y formato de respuestas públicas).
@@ -198,10 +199,10 @@ Notas por criterio:
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Laravel 12, PHP 8.4, Eloquent y MySQL 8.0.x. Sin dependencias nuevas, sin SDK de nube, sin ADR nuevo. Conexión y URLs por `.env`. |
-| II. La spec manda | Sí, con condición | Spec 015 Aprobada (2026-11-12) con plan y tasks del mismo NNN-slug. La implementación queda bloqueada hasta que DBR-013 esté en «Lista para backend». Este plan aún no está aprobado. |
+| II. La spec manda | Sí, con condición | Spec 015 Aprobada (2026-11-12) con plan y tasks del mismo NNN-slug, aprobados el 2026-11-13. DBR-013 ya está en «Lista para backend». La implementación queda bloqueada hasta implementar `api-014` y la configuración del disco de `api-013`. |
 | III. Lógica separada de la interfaz | Sí | Controlador delgado; validación en Form Request; reglas de visibilidad y filtros en Action; serialización en Resource; imagen en su propia Action. No hay UI en esta spec. |
 | IV. Un test por criterio | Sí | CA-01 a CA-18 con un método nombrado cada uno (tabla de mapeo). CA-12 se comprueba con su propio test. |
-| V. Una sola fuente de verdad para los datos | Sí, con brecha registrada | Solo lectura de `species`; sin migraciones, sin escrituras, sin borrado físico. **Brecha:** `Species` extiende `Model` (no `BaseModel`) y no usa SoftDeletes; la Constitución V lo exige para modelos de negocio. Se mitiga con el filtro explícito de `deleted_at` (CA-01, RN-03). La alineación es responsabilidad de `api-014` (RN-20, RN-22) o de este plan, según la pregunta 2. Hay que resolverla antes de implementar T-01. |
+| V. Una sola fuente de verdad para los datos | Sí, con excepción registrada | Solo lectura de `species`; sin migraciones, sin escrituras, sin borrado físico. **Brecha:** `Species` extiende `Model` (no `BaseModel`) y no usa SoftDeletes; la Constitución V lo exige para modelos de negocio. Se mitiga con el filtro explícito de `deleted_at` (CA-01, RN-03). La pregunta 2 queda resuelta el 2026-11-13: `api-014` T-03 añade SoftDeletes a `Species` (decisión F, la misma excepción de `api-014`). Este plan no lo añade ni crea `BaseModel`. |
 | VI. Código en inglés, personas en español | Sí | Rutas, clases, claves y campos en inglés (`published-species.index`, `ListPublishedSpeciesAction`, `PublishedSpeciesResource`, `habitat`, `origin`). Mensajes 422 y documentación en español. |
 
 No hay excepciones que requieran ADR. La brecha de V se cierra con una decisión, no con una excepción.
@@ -251,23 +252,30 @@ No hay excepciones que requieran ADR. La brecha de V se cierra con una decisión
 | Rol | Aprueba | Estado |
 |---|---|---|
 | Responsable funcional | Spec 015 | Aprobada (Jonathan, 2026-11-12) |
-| Equipo técnico | Este plan y su Constitution Check | Pendiente |
+| Equipo técnico | Este plan y su Constitution Check | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
 | Responsable de BD | Confirmación de que DBR-013 está aplicada en `arca_pruebas` (sin DBR propia) | Pendiente de confirmación de BD. Evidencia de solo lectura del 2026-11-12 disponible (lote 5); fecha y responsable por registrar (evidencia de T-00) |
 | Responsable backend | DBR-013 «Lista para backend» | Cumplido el 2026-11-12 (migración aplicada en `arca_pruebas`); EXPLAIN pendiente de BD |
 | Responsable de `api-013` | Disco `media`, `MEDIA_PUBLIC_URL` (`api-013` CA-17 y RN-04) | Pendiente (api-013 Aprobada 2026-11-12; disco sin configurar) |
 
-## Preguntas abiertas (máximo 8)
+## Preguntas (resueltas el 2026-11-13)
 
 1. **Collation de `habitat` y `name`.** ¿Se acepta la comparación binaria tras `LOWER` (sensible a acentos, insensible a mayúsculas), como exige la decisión 8, o se acepta la insensibilidad a acentos de `utf8mb4_unicode_ci`?
+   **Resuelta (2026-11-13, Jonathan): se adopta la recomendación.** Comparación binaria tras `LOWER`, como exige la decisión 8 de la spec. Afecta a T-03, T-04, T-16 y T-18.
 2. **Modelo `Species`.** ¿`T-01` añade `SoftDeletes` ya, o lo hace `api-014` (RN-20, RN-22)? ¿Cuándo se convierte `Species` en modelo de negocio con `BaseModel`? Mientras tanto, el filtro explícito de `deleted_at` se mantiene.
+   **Resuelta (2026-11-13, Jonathan): se adopta la recomendación.** `api-014` T-03 añade `SoftDeletes` a `Species`; este plan no lo añade, mantiene el filtro explícito de `deleted_at` y no crea `BaseModel` (decisión F). Afecta a T-01.
 3. **api-013.** ¿Cuándo se aprueba y se implementa la configuración del disco `media` y de `MEDIA_PUBLIC_URL`? ¿Cuál es el nombre de la clave de configuración del disco público (sin literal `'media'` en las Actions, api-013 CA-02)? Bloquea T-09 y T-22.
+   **Resuelta en cuanto a la clave y la aprobación (2026-11-13):** `filesystems.media_scopes.public`, leída solo por `ResolveMediaDiskAction::publicDisk()`. Plan de `api-013` aprobado el 2026-11-13. La configuración del disco sigue pendiente en `api-013`; T-09 y T-22 siguen bloqueadas hasta entonces.
 4. **Datos inconsistentes.** Una especie con `is_published = 1` y `published_fields` NULL: ¿se trata como lista vacía (propuesta de este plan) o se considera error de datos que debe corregirse?
+   **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.** Se trata como lista vacía. Afecta a T-08 y T-26.
 5. **Lugar del cálculo de la URL.** ¿Se acepta `ResolvePublishedSpeciesImageUrlAction` como Action dedicada (propuesta), que cumple «un único punto de la Action» de RN-07? ¿O debe vivir dentro de `ListPublishedSpeciesAction`?
+   **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.** Action dedicada `ResolvePublishedSpeciesImageUrlAction`.
 6. **Aprobador del plan y de las tasks.** ¿Quién aprueba técnicamente este plan y las tasks: Jonathan, como responsable de backend?
+   **Resuelta (2026-11-13): Jonathan, responsable de backend, aprobó el plan y las tasks en nombre del equipo.**
 7. **Fixtures de CA-17 y CA-18.** ¿Se acepta que los tests inserten `species_publication_requests` con `DB::table` antes de que `api-014` esté implementada, con el riesgo de desalineación que se anota arriba?
+   **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.** Sí, con el riesgo anotado: al implementar `api-014` se repiten los tests de CA-17 y CA-18 con sus flujos reales.
 
 ## Revisión
 
 - Redactado: 2026-11-12, a partir de la spec 015 Aprobada y de DBR-013 (Aprobada; migración aplicada en `arca_pruebas` el 2026-11-12, lote 5).
-- Aprobación técnica: pendiente.
+- Aprobación técnica: Jonathan, responsable de backend, 2026-11-13.
 - Evidencia de precondiciones: pendiente (T-00).

@@ -1,9 +1,10 @@
 # Tareas · 013 · object-storage-images
 
 - Spec: `apps/api/specs/013-object-storage-images.md` (Aprobada, 2026-11-12).
-- Plan: `apps/api/plan/013-object-storage-images.md` (Borrador, 2026-11-12; pendiente de aprobación técnica y del Constitution Check).
-- Estado de estas tareas: **Borrador**. Ninguna casilla marcada. No se marca nada sin evidencia (Constitución II).
-- Puerta de entrada: no se empieza T-01 hasta que el plan esté aprobado (P4) y T-00 esté marcada con evidencia.
+- Plan: `apps/api/plan/013-object-storage-images.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: ninguna casilla marcada. No se marca nada sin evidencia (Constitución II).
+- Puerta de entrada: no se empieza T-01 hasta que el plan esté aprobado (P4, cumplida el 2026-11-13) y T-00 esté marcada con evidencia.
 - Desbloqueos: al cerrar T-01, T-02 y T-04 se desbloquean **P2 de `api-014`** (disco `media` y `PUBLIC_MEDIA_DISK=media`) y **T-09 y T-22 de `api-015`** (resolución de `image_url` y pruebas con `Storage::fake('media')`).
 
 Rutas relativas a `apps/api/src` salvo que se diga otra cosa. Las pruebas usan `DatabaseTransactions` sobre `arca_pruebas` y `Storage::fake`; ninguna tarea crea SQL, migraciones ni usa `RefreshDatabase`. Los nombres de test son propuestos por el plan (la spec no los fija). Cada CA-xx aparece en al menos un método de test; los de evidencia manual se registran además en el PR.
@@ -13,7 +14,7 @@ Rutas relativas a `apps/api/src` salvo que se diga otra cosa. Las pruebas usan `
 - [ ] **T-00** (RN-08, RN-15; precondición de todas las tareas de código): **verificación de precondiciones en `arca_pruebas`, solo lectura.** No se ejecuta DDL ni DML, no se toca `arca_zoo` y no se lee `.env`. Registrar con evidencia y fecha:
   - DBR-012 en «Lista para backend» en `docs/database/requests/DBR-012-visitor-memories.md`, con la migración aplicada en `arca_pruebas` (aplicada el 2026-11-11). Evidencia: salida de `php artisan migrate:status` (solo lectura) con la migración de DBR-012 en «Ran».
   - Columnas `image_path` y `deleted_at` en `news` y `events`; columnas `image_path`, `published_image_path`, `image_sha256` y `status` en `visitor_memories`. Evidencia: `SHOW COLUMNS` o `information_schema.COLUMNS`.
-  - Estado de `apps/api/plan/010-visitor-memory-requests.md` y `apps/api/tasks/010-visitor-memory-requests.md`. Si no existen, T-08 a T-10 y T-24 a T-26 quedan **bloqueadas** y se anota.
+  - Estado de `apps/api/plan/010-visitor-memory-requests.md` y `apps/api/tasks/010-visitor-memory-requests.md`: plan y tasks aprobados el 2026-11-13 (Jonathan). Comprobar que existen en el repositorio al ejecutar T-00; si no existieran, T-08 a T-10 y T-24 a T-26 quedan **bloqueadas** y se anota.
   - Ausencia de `apps/api/src/media/` y de `apps/api/src/public/media` antes de empezar (o contenido esperado si ya existen).
   - **Criterio de hecho:** salida registrada en esta tarea, sin datos personales ni credenciales. Si falta algo, la tarea queda abierta y el plan se revisa.
 
@@ -25,7 +26,7 @@ No hay tareas de base de datos: esta spec no crea tablas, columnas ni índices (
   - Disco `media`: driver `local`, raíz `base_path('media')`, visibilidad pública, `throw` en `false`, URL = `MEDIA_PUBLIC_URL` si no está vacía; si no, `APP_URL` + `/media`.
   - Clave de ámbitos (`media_scopes`): `public` ← `PUBLIC_MEDIA_DISK` (vacía o ausente = `public`); `private` ← `PRIVATE_MEDIA_DISK` (vacía o ausente = `local`). Ver D-P1 y D-P2 del plan.
   - `links`: añadir `public_path('media')` → `base_path('media')`; conservar `public_path('storage')`.
-  - URL del disco `public`: depende de la pregunta 1 del plan. El resto de la tarea no depende de ella.
+  - URL del disco `public`: resuelta (pregunta 1 del plan, 2026-11-13): `MEDIA_PUBLIC_URL` sustituye la URL de cualquier disco del ámbito público; si está vacía, cada disco usa su URL (`/storage` para `public`, `/media` para `media`).
   - Rutas: `apps/api/src/config/filesystems.php`.
   - **Criterio de hecho:** sin variables, los ámbitos resuelven `public` y `local`; con `media`, ambos resuelven `media`; `links` contiene `public/media` y `public/storage`; la URL por defecto del disco `media` es `APP_URL` + `/media`. Cubierto por T-14.
 
@@ -42,7 +43,7 @@ No hay tareas de base de datos: esta spec no crea tablas, columnas ni índices (
   - Crear `apps/api/src/media/.gitignore` con la regla de D-P7 del plan: todo ignorado en la raíz salvo `.gitignore` y las cinco carpetas; dentro de cada carpeta, todo ignorado salvo `.gitkeep`, `.jpg`, `.jpeg`, `.png` y `.webp`. Des-ignorar la carpeta antes que su contenido.
   - Crear `.gitkeep` en `news/`, `events/`, `memories/`, `species/` y `species-requests/`.
   - Rutas: `apps/api/src/.gitignore` (modificar), `apps/api/src/media/.gitignore` y `apps/api/src/media/{news,events,memories,species,species-requests}/.gitkeep` (nuevos).
-  - **Criterio de hecho:** `git check-ignore` confirma: `media/news/x.jpg` no ignorado; `media/memories/x.png` no ignorado; `media/events/.gitkeep` no ignorado; `media/news/.DS_Store` ignorado; `media/species-requests/x.gif` ignorado; `public/media` ignorado. Automatizado en T-18. Ver pregunta 3 del plan (carpetas de especies).
+  - **Criterio de hecho:** `git check-ignore` confirma: `media/news/x.jpg` no ignorado; `media/memories/x.png` no ignorado; `media/events/.gitkeep` no ignorado; `media/news/.DS_Store` ignorado; `media/species-requests/x.gif` ignorado; `public/media` ignorado. Automatizado en T-18. Pregunta 3 del plan resuelta el 2026-11-13: `species/` y `species-requests/` se versionan en pruebas.
 
 ## Implementación: Actions compartidas y noticias/eventos
 
@@ -64,17 +65,17 @@ No hay tareas de base de datos: esta spec no crea tablas, columnas ni índices (
 
 ## Implementación: momentos y revisión (bloqueadas por P7)
 
-Estas tareas **no empiezan** hasta que el plan y las tareas de `api-010` estén aprobados. Los nombres de Actions y Controllers de `api-010` se confirman con su plan.
+Plan y tasks de `api-010` aprobados el 2026-11-13. Las tareas de momentos siguen dependiendo de la implementación de `api-010`. Los nombres de Actions y Controllers de `api-010` se confirman con su plan.
 
-- [ ] **T-08** (CA-05, CA-08, CA-09; RN-02, RN-05, RN-10, RN-16) — **bloqueada por P7**: en la Action de guardado de peticiones de momento de `api-010`, usar `privateDisk()` y la ruta `memories/<uuid>.<ext>`; aplicar `StripImageMetadataAction` antes de escribir; escribir antes de la transacción; si la escritura falla, responder 5xx sin registro y sin archivo. La respuesta no incluye `image_url`.
+- [ ] **T-08** (CA-05, CA-08, CA-09; RN-02, RN-05, RN-10, RN-16) — **bloqueada por la implementación de `api-010`** (P7 cumplida el 2026-11-13): en la Action de guardado de peticiones de momento de `api-010`, usar `privateDisk()` y la ruta `memories/<uuid>.<ext>`; aplicar `StripImageMetadataAction` antes de escribir; escribir antes de la transacción; si la escritura falla, responder 5xx sin registro y sin archivo. La respuesta no incluye `image_url`.
   - Rutas: Action de `api-010` (nombre según su plan).
   - **Criterio de hecho:** el archivo queda en `memories/` del disco privado; ninguna respuesta de visitante ni pública tiene URL de la imagen. Cubierto por T-24.
 
-- [ ] **T-09** (CA-10, CA-23; RN-06, RN-11, RN-13) — **bloqueada por P7**: crear `StreamReviewMemoryImageAction` (`app/Actions/Admin/Memories/`) y `MemoryImageController` (`app/Http/Controllers/Admin/`, delgado). Añadir la ruta `GET /api/v1/admin/memories/{id}/image`, nombre `admin.memories.image`, con `whereNumber`, dentro del grupo de `api-010` con 2FA y `permission:memories.review`. La respuesta es binaria, con `Content-Type` derivado de la extensión almacenada, `Cache-Control: no-store` y `X-Content-Type-Options: nosniff`. Si la petición no existe, 404 «Petición no encontrada.»; si el archivo no existe, 404 «Imagen no encontrada.» (propuesto, pregunta 6). Sin ruta ni nombre original en la respuesta.
+- [ ] **T-09** (CA-10, CA-23; RN-06, RN-11, RN-13) — **bloqueada por la implementación de `api-010`** (P7 cumplida el 2026-11-13): crear `StreamReviewMemoryImageAction` (`app/Actions/Admin/Memories/`) y `MemoryImageController` (`app/Http/Controllers/Admin/`, delgado). Añadir la ruta `GET /api/v1/admin/memories/{id}/image`, nombre `admin.memories.image`, con `whereNumber`, dentro del grupo de `api-010` con 2FA y `permission:memories.review`. La respuesta es binaria, con `Content-Type` derivado de la extensión almacenada, `Cache-Control: no-store` y `X-Content-Type-Options: nosniff`. Si la petición no existe, 404 «Petición no encontrada.»; si el archivo no existe, 404 «La imagen ya no está disponible.» (pregunta 6 resuelta: texto de la spec de `api-010`, CA-08). Sin ruta ni nombre original en la respuesta.
   - Rutas: `apps/api/src/app/Actions/Admin/Memories/StreamReviewMemoryImageAction.php`, `apps/api/src/app/Http/Controllers/Admin/MemoryImageController.php`, `apps/api/src/routes/api.php` (modificar).
   - **Criterio de hecho:** 200 con `image/*` para `memories.review` y 2FA; 403 sin cuerpo sin el permiso; el detalle JSON de `api-010` no contiene URL. Cubierto por T-25.
 
-- [ ] **T-10** (CA-11, CA-12, CA-13, CA-18; RN-05, RN-10, RN-17) — **bloqueada por P7**: en aceptar y rechazar de `api-010`:
+- [ ] **T-10** (CA-11, CA-12, CA-13, CA-18; RN-05, RN-10, RN-17) — **bloqueada por la implementación de `api-010`** (P7 cumplida el 2026-11-13): en aceptar y rechazar de `api-010`:
   - Aceptar: `published_image_path` toma el valor de `image_path`; no se copia ni se mueve el archivo.
   - Rechazar: la transacción pasa la petición a `rejected` y registra el motivo; si `rejected_fields` incluye `image`, `image_path` queda en `null`, y tras el commit de base de datos se llama a `DeleteMediaFileAfterCommitAction`; si solo incluye `content`, el archivo se conserva (D-05); si el borrado falla, la petición queda rechazada, se registra el fallo y el archivo queda huérfano. `image_sha256` se conserva.
   - Rutas: Actions de aceptar y rechazar de `api-010` (nombres según su plan).
@@ -89,7 +90,7 @@ Estas tareas **no empiezan** hasta que el plan y las tareas de `api-010` estén 
   - incluye la instrucción de volver a subir las imágenes existentes antes del commit (D-04);
   - advierte que solo se usan datos de prueba y que el historial de git conserva lo versionado (riesgo a del ADR 0026);
   - indica que `media/` no es producción ni respaldo;
-  - las carpetas `species/` y `species-requests/` se añaden solo cuando la pregunta 3 del plan se resuelva.
+  - las carpetas `species/` y `species-requests/` se incluyen (pregunta 3 del plan resuelta el 2026-11-13).
   - Rutas: `infra/README.md`.
   - **Criterio de hecho:** el bloque existe y cada punto tiene su casilla. Cubierto por T-20.
 
@@ -135,29 +136,29 @@ Archivos en `apps/api/src/tests/Feature/Media/`. Las pruebas usan `DatabaseTrans
   - Rutas: `apps/api/src/tests/Feature/Media/MediaDocsTest.php`.
   - Bloqueada por: T-11.
 
-- [ ] **T-21** (CA-22; RN-14, RN-15): `MediaLimitsTest.php` con `test_ca22_media_folder_within_100_images_or_100_mb`: cuenta los archivos `.jpg`, `.jpeg`, `.png` y `.webp` de `apps/api/src/media/` (sin `.gitkeep` ni `.gitignore`) y su tamaño total; falla si hay más de 100 imágenes o más de 104 857 600 bytes (unidad pendiente, pregunta 5 del plan). La parte de origen y consentimiento es manual (T-29).
+- [ ] **T-21** (CA-22; RN-14, RN-15): `MediaLimitsTest.php` con `test_ca22_media_folder_within_100_images_or_100_mb`: cuenta los archivos `.jpg`, `.jpeg`, `.png` y `.webp` de `apps/api/src/media/` (sin `.gitkeep` ni `.gitignore`) y su tamaño total; falla si hay más de 100 imágenes o más de 104 857 600 bytes (unidad resuelta el 2026-11-13, pregunta 5 del plan). La parte de origen y consentimiento es manual (T-29).
   - Rutas: `apps/api/src/tests/Feature/Media/MediaLimitsTest.php`.
-  - Bloqueada por: T-04 y la respuesta a la pregunta 5 del plan.
+  - Bloqueada por: T-04. Pregunta 5 del plan resuelta (2026-11-13).
 
-- [ ] **T-22** (CA-21; RN-18) — **bloqueada por la pregunta 2 del plan**: `MediaSmokeTest.php` con `test_ca21_smoke_public_image_from_test_environment` en el grupo `smoke`. Lee la URL de una imagen pública de la variable de entorno de prueba (no versionada), comprueba `200` y `Content-Type` `image/*`, y no se ejecuta en la suite por defecto. Sin IP privada ni llaves en el archivo.
+- [ ] **T-22** (CA-21; RN-18) — **bloqueada por T-01 y T-04** (pregunta 2 del plan resuelta: grupo `smoke`): `MediaSmokeTest.php` con `test_ca21_smoke_public_image_from_test_environment` en el grupo `smoke`. Lee la URL de una imagen pública de la variable de entorno de prueba (no versionada), comprueba `200` y `Content-Type` `image/*`, y no se ejecuta en la suite por defecto. Sin IP privada ni llaves en el archivo.
   - Rutas: `apps/api/src/tests/Feature/Media/MediaSmokeTest.php`.
-  - Bloqueada por: T-01, T-04 y la resolución de la pregunta 2 del plan (grupo `smoke`).
+  - Bloqueada por: T-01 y T-04. La pregunta 2 del plan está resuelta (grupo `smoke`, 2026-11-13).
 
 - [ ] **T-23** (CA-23; RN-10): `MediaLogSecurityTest.php` con `test_ca23_activity_log_and_responses_have_no_secrets_or_absolute_paths` para noticias y eventos: tras crear, reemplazar y quitar una imagen, se leen las propiedades de `activity_log` y el cuerpo de la respuesta, y se comprueba que no aparecen rutas absolutas (`base_path`, `storage_path`), URL firmadas (`Signature=`, `X-Amz`) ni binario. Los momentos se cubren en T-26.
   - Rutas: `apps/api/src/tests/Feature/Media/MediaLogSecurityTest.php`.
   - Bloqueada por: T-06, T-07.
 
-- [ ] **T-24** (CA-05, CA-08, CA-09; RN-05, RN-16) — **bloqueada por P7**: `MemoryMediaStorageTest.php` con `test_ca05_private_scope_uses_media_memories_and_null_url_when_not_accepted`, `test_ca09_private_upload_under_memories_strips_metadata_and_no_url` y `test_ca08_memory_write_failure_returns_5xx_and_creates_no_record`. Usa `Storage::fake` del disco privado resuelto.
+- [ ] **T-24** (CA-05, CA-08, CA-09; RN-05, RN-16) — **bloqueada por la implementación de `api-010`** (P7 cumplida el 2026-11-13): `MemoryMediaStorageTest.php` con `test_ca05_private_scope_uses_media_memories_and_null_url_when_not_accepted`, `test_ca09_private_upload_under_memories_strips_metadata_and_no_url` y `test_ca08_memory_write_failure_returns_5xx_and_creates_no_record`. Usa `Storage::fake` del disco privado resuelto.
   - Rutas: `apps/api/src/tests/Feature/Media/MemoryMediaStorageTest.php`.
-  - Bloqueada por: T-08 y P7.
+  - Bloqueada por: T-08 y la implementación de `api-010` (P7 cumplida el 2026-11-13).
 
-- [ ] **T-25** (CA-10; RN-06, RN-11, RN-13) — **bloqueada por P7**: `MemoryReviewImageTest.php` con `test_ca10_review_image_is_binary_and_detail_has_no_url`, `test_ca10_review_image_returns_403_without_permission_and_no_body` (incluye `admin`, `executive`, `cashier` y `veterinarian`) y `test_ca10_review_image_missing_file_returns_404_in_spanish`.
+- [ ] **T-25** (CA-10; RN-06, RN-11, RN-13) — **bloqueada por la implementación de `api-010`** (P7 cumplida el 2026-11-13): `MemoryReviewImageTest.php` con `test_ca10_review_image_is_binary_and_detail_has_no_url`, `test_ca10_review_image_returns_403_without_permission_and_no_body` (incluye `admin`, `executive`, `cashier` y `veterinarian`) y `test_ca10_review_image_missing_file_returns_404_in_spanish`.
   - Rutas: `apps/api/src/tests/Feature/Media/MemoryReviewImageTest.php`.
-  - Bloqueada por: T-09 y P7.
+  - Bloqueada por: T-09 y la implementación de `api-010` (P7 cumplida el 2026-11-13).
 
-- [ ] **T-26** (CA-11, CA-12, CA-13, CA-18; RN-05, RN-10, RN-17) — **bloqueada por P7**: `MemoryDecisionFilesTest.php` con `test_ca11_accept_keeps_file_in_place_and_sets_published_path`, `test_ca12_reject_with_image_deletes_file_after_commit`, `test_ca12_reject_content_only_keeps_file`, `test_ca12_delete_failure_rejects_and_logs`, `test_ca13_rejected_has_no_published_path_and_no_image_in_responses` y `test_ca18_memory_reject_and_delete_remove_files_after_commit`. También comprueba CA-23 para momentos (sin rutas absolutas en `activity_log`).
+- [ ] **T-26** (CA-11, CA-12, CA-13, CA-18; RN-05, RN-10, RN-17) — **bloqueada por la implementación de `api-010`** (P7 cumplida el 2026-11-13): `MemoryDecisionFilesTest.php` con `test_ca11_accept_keeps_file_in_place_and_sets_published_path`, `test_ca12_reject_with_image_deletes_file_after_commit`, `test_ca12_reject_content_only_keeps_file`, `test_ca12_delete_failure_rejects_and_logs`, `test_ca13_rejected_has_no_published_path_and_no_image_in_responses` y `test_ca18_memory_reject_and_delete_remove_files_after_commit`. También comprueba CA-23 para momentos (sin rutas absolutas en `activity_log`).
   - Rutas: `apps/api/src/tests/Feature/Media/MemoryDecisionFilesTest.php`.
-  - Bloqueada por: T-10 y P7.
+  - Bloqueada por: T-10 y la implementación de `api-010`. Pregunta 7 del plan resuelta (2026-11-13): con `delete` el archivo se borra después del commit (`api-010` T-25).
 
 - [ ] **T-27** (CA-25; RN-08): `ObjectStorageCoverageTest.php` con `test_ca25_names_every_automated_criterion_and_uses_arca_pruebas`: busca `test_ca01_` a `test_ca24_` (incluido el nombre de CA-21) en `tests/Feature/Media/` y comprueba que `config('database.connections.mysql.database')` es `arca_pruebas`; comprueba que los archivos de la carpeta no usan `RefreshDatabase`, `migrate:fresh` ni `artisan migrate`.
   - Rutas: `apps/api/src/tests/Feature/Media/ObjectStorageCoverageTest.php`.
@@ -234,7 +235,7 @@ Archivos en `apps/api/src/tests/Feature/Media/`. Las pruebas usan `DatabaseTrans
 
 **Cobertura:** CA-01 a CA-25 tienen al menos una tarea de implementación o de evidencia y al menos un método de test (o evidencia manual registrada). **CA sin cobertura: 0.** RN-01 a RN-18 tienen al menos una tarea. **RN sin cobertura: 0.**
 
-Nota de cobertura: los CA de momentos (CA-05, CA-08 parte momentos, CA-09 a CA-13 y CA-18 parte momentos) dependen de `api-010` (P7). Su cobertura está escrita, pero no puede ejecutarse hasta que su plan y sus tareas estén aprobados.
+Nota de cobertura: los CA de momentos (CA-05, CA-08 parte momentos, CA-09 a CA-13 y CA-18 parte momentos) dependen de `api-010` (P7). Su cobertura está escrita, pero no puede ejecutarse hasta que su plan y sus tareas estén aprobados (cumplido el 2026-11-13) y `api-010` esté implementada.
 
 ## Definición de terminado (DoD)
 
@@ -251,14 +252,14 @@ Nota de cobertura: los CA de momentos (CA-05, CA-08 parte momentos, CA-09 a CA-1
 
 Las preguntas completas están en `apps/api/plan/013-object-storage-images.md`, sección «Suposiciones y preguntas». Las que afectan a estas tareas:
 
-- Pregunta 1 (`MEDIA_PUBLIC_URL` con el disco público por defecto): afecta a T-01 y T-14.
-- Pregunta 2 (prueba automatizada de CA-21 y grupo `smoke`): bloquea T-22.
-- Pregunta 3 (carpetas de especies en la spec): afecta a T-04, T-11, T-18.
-- Pregunta 4 (orden con `api-010`): afecta a T-08 a T-10 y T-24 a T-26.
-- Pregunta 5 (unidad del tope de 100 MB): afecta a T-21 y T-29.
-- Pregunta 6 (estados y mensaje 404 de la imagen de revisión): afecta a T-09 y T-25.
-- Pregunta 7 (borrado de archivo al eliminar la cuenta): afecta a T-26.
-- Pregunta 8 (existencia del archivo al leer, frente a `api-015`): no bloquea esta spec; se registra en `api-015`.
-- P7 (plan y tasks de `api-010` aprobados): bloquea T-08 a T-10 y T-24 a T-26.
+- Pregunta 1 (`MEDIA_PUBLIC_URL` con el disco público por defecto): resuelta el 2026-11-13 (T-01 y T-14 la aplican).
+- Pregunta 2 (prueba automatizada de CA-21 y grupo `smoke`): resuelta el 2026-11-13; T-22 solo espera a T-01 y T-04.
+- Pregunta 3 (carpetas de especies en la spec): resuelta el 2026-11-13: se versionan en pruebas (T-04, T-11, T-18).
+- Pregunta 4 (orden con `api-010`): resuelta el 2026-11-13: primero `api-013`; los momentos después (T-08 a T-10 y T-24 a T-26).
+- Pregunta 5 (unidad del tope de 100 MB): resuelta el 2026-11-13: 104 857 600 bytes (T-21 y T-29).
+- Pregunta 6 (estados y mensaje 404 de la imagen de revisión): resuelta el 2026-11-13: cualquier estado con archivo; «La imagen ya no está disponible.» (T-09 y T-25).
+- Pregunta 7 (borrado de archivo al eliminar la cuenta): resuelta el 2026-11-13: con `delete`, el archivo se borra después del commit (T-26).
+- Pregunta 8 (existencia del archivo al leer, frente a `api-015`): resuelta el 2026-11-13; la regla de especies se registra en `api-015`.
+- P7 (plan y tasks de `api-010` aprobados; cumplida el 2026-11-13): T-08 a T-10 y T-24 a T-26 siguen dependiendo de la implementación de `api-010`.
 
-Estado final de estas tareas: **Borrador**; sin casillas marcadas; pendientes la aprobación técnica del plan (P4) y T-00.
+Estado final de estas tareas: **Aprobado** (Jonathan, 2026-11-13); sin casillas marcadas; pendiente T-00.

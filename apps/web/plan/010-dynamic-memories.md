@@ -1,10 +1,11 @@
 # Plan técnico · 010 · dynamic-memories
 
 - Spec: `apps/web/specs/010-dynamic-memories.md` (Estado: **Aprobada**, Jonathan, responsable de backend, 2026-11-12; aprobar la spec no autoriza implementar).
-- Estado de este plan: **Borrador (2026-11-12), pendiente de aprobación técnica del equipo y de Jonathan.** No está aprobado. No se implementa ninguna T-xx hasta esa aprobación.
-- Tasks: `apps/web/tasks/010-dynamic-memories.md` (Borrador, mismo NNN-slug; ninguna T-xx marcada).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: no se marca ninguna T-xx sin evidencia. Las preguntas 1 a 7 del plan quedan resueltas el 2026-11-13 (sección «Preguntas»). La dependencia de `api-012` implementada sigue abierta.
+- Tasks: `apps/web/tasks/010-dynamic-memories.md` (Aprobado, Jonathan, 2026-11-13; mismo NNN-slug; ninguna T-xx marcada).
 - ADR de excepción: `docs/adr/0027-dynamic-public-memories-gallery.md` (Aceptado 2026-11-12, con la enmienda del carrusel confirmada por Jonathan el mismo día). `docs/adr/0024-web-static-portal-exception.md` no se modifica.
-- Responsable técnico: por identificar (frontend del portal). Ver pregunta 6.
+- Responsable técnico de implementación: Jonathan (coordina las sesiones de Claude Code). Plan y tasks aprobados por él, en nombre del equipo, el 2026-11-13 (pregunta 6).
 - Dependencias:
   - `api-012` (`GET /api/v1/memories`): Aprobada 2026-11-12, **sin implementar**. Hasta que exista, las pruebas usan respuestas simuladas y la verificación real queda en T-15.
   - `api-010` (datos, publicación y vigencia): Aprobada 2026-11-12. DBR-012 aplicada en `arca_pruebas` (2026-11-11), Lista para backend.
@@ -89,7 +90,7 @@ El carrusel no crea encabezados por momento ni landmarks nuevos: el encabezado d
 
 ## Coordinación con web-011 (TulanPedia)
 
-`web-011` (plan en Borrador) edita los mismos archivos compartidos. Esta tabla fija el punto de contacto de cada uno. Las dos specs no tocan el contenido de las otras secciones.
+`web-011` (plan aprobado el 2026-11-13) edita los mismos archivos compartidos. Esta tabla fija el punto de contacto de cada uno. Las dos specs no tocan el contenido de las otras secciones.
 
 | Archivo | web-010 toca | web-011 toca | Regla de integración |
 |---|---|---|---|
@@ -232,7 +233,7 @@ Contenido mínimo, en español:
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Parcial | HTML, CSS y JavaScript estáticos, sin dependencias, sin build, sin `package.json`, sin servicios propietarios; la galería funciona con la misma API en local y en cualquier servidor estático. El stack declarado para el portal es React 19 + TS + Vite (`apps/web/AGENTS.md`). **Excepción:** ADR 0027 (Aceptado 2026-11-12), condiciones 1 a 7 y alcance acotado, con la enmienda del carrusel (punto 7). |
-| II. La spec manda | Parcial | Spec `web-010` Aprobada el 2026-11-12, con este plan y sus tasks en Borrador. No hay código hasta aprobar plan y tasks y cumplir las dependencias (`api-012` implementada). |
+| II. La spec manda | Sí, con condición de dependencias | Spec `web-010` Aprobada el 2026-11-12, con plan y tasks aprobados el 2026-11-13. No hay código hasta cumplir la dependencia de `api-012` implementada. |
 | III. Lógica separada de la interfaz | Parcial | No hay reglas de negocio en el portal: la visibilidad, la vigencia, el orden y la cantidad de momentos los decide la API (RN-01); el `limit=6` es un parámetro de presentación pedido por la spec (CA-15). `fetch` solo en `js/api.js`. **Excepción:** no hay `@arca/api-client` ni hooks (ADR 0027, condición 1). |
 | IV. Un test por criterio | Sí, con runner distinto | Un test por CA-01 a CA-23 con `node --test` y nombres `CA-NN dynamic-memories`, como `web-009`. Vitest no se usa (ADR 0027, condición 3). CA-13 comprueba la cobertura. Este plan no afirma que ninguna prueba pase: el resultado se registra en T-18. |
 | V. Una sola fuente de verdad para los datos | Sí | El portal no guarda ni cachea datos. La API es la única fuente. Sin escritura. No hay tablas nuevas ni migraciones (RN-02 de `api-012`). |
@@ -268,7 +269,7 @@ Excepciones registradas: ADR 0027 (Aceptado 2026-11-12). Si el ADR se revoca, es
 
 Secuencia de implementación (detalle en `apps/web/tasks/010-dynamic-memories.md`):
 
-0. Precondiciones (T-01): `api-012` implementada con evidencia; DBR-012 aplicada en `arca_pruebas`; plan y tasks aprobados; línea base de `index.html`, `relocation.test.mjs` y `news-events.test.mjs`; estado de web-011 acordado.
+0. Precondiciones (T-01): `api-012` implementada con evidencia; DBR-012 aplicada en `arca_pruebas`; plan y tasks aprobados (cumplido el 2026-11-13); línea base de `index.html`, `relocation.test.mjs` y `news-events.test.mjs`; estado de web-011 acordado.
 1. `js/api.js` (`getMemories`) y el archivo de pruebas con su estructura (T-02).
 2. `js/memories.js` helpers y seguridad de URL (T-03), construcción de momentos (T-04), estados y reintento (T-05), carga de 6 y vigencia (T-06).
 3. `js/memories-carousel.js`: núcleo de controles e indicadores (T-07), temporizador y pausa por cursor y foco (T-08), botón de pausa, anuncio y movimiento reducido (T-09), accesibilidad de teclado y lector de pantalla (T-10).
@@ -287,22 +288,22 @@ Secuencia de implementación (detalle en `apps/web/tasks/010-dynamic-memories.md
 | Rol | Aprueba | Estado |
 |---|---|---|
 | Responsable funcional | Spec `web-010` | Aprobada (Jonathan, responsable de backend, 2026-11-12). Solicitante original: Aksel. |
-| Equipo técnico | Este plan, Constitution Check, excepción ADR 0027, respuestas a las preguntas 1 a 7 | **Pendiente** |
+| Equipo técnico | Este plan, Constitution Check, excepción ADR 0027, respuestas a las preguntas 1 a 7 | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
 | Backend | `api-012` implementada con evidencia (PHPUnit y `curl`) | **Pendiente** |
 | Responsable de BD | DBR-012 aplicada en `arca_pruebas` | Cumplido el 2026-11-11 (según `api-012` y `api-010`) |
 | Equipo (ADR) | ADR 0027 | Aceptado (2026-11-12) |
 
 Evidencias requeridas para marcar la spec como Implementada: las de T-18 y los resultados de T-15. Este plan no cambia el estado de la spec ni de las tasks.
 
-## Preguntas abiertas (máximo 8 por ronda)
+## Preguntas (resueltas el 2026-11-13)
 
-1. **Elementos inválidos en `data`.** Si un elemento de `data` no es un objeto, ¿se omite (propuesta, como `web-011` pregunta 4) o se trata la respuesta como error?
-2. **Rutas `//host/…`.** La spec dice «rutas relativas del mismo origen» (RN-04). ¿Se confirma que `//host/…` se rechaza (propuesta) aunque sea `http` o `https` implícito?
-3. **Bloque `.foto` de `script.js`.** ¿Se deja como está en `web-010` (propuesta, sin tocar `script.js` ni el ancla de `relocation.test.mjs` línea 288), o se elimina en una tarea posterior acordada con `web-011`?
-4. **Reinicio de la cuenta de 5 s.** Al pulsar anterior, siguiente o un indicador con el avance activo, ¿la cuenta se reinicia (propuesta) o sigue su curso?
-5. **Orden con web-011.** ¿`web-010` se implementa después de `web-011` (propuesta, un solo PR de `index.html`), o en paralelo con rebase sobre el orden de la tabla de coordinación?
-6. **Aprobador técnico.** La spec deja «Responsable técnico: por identificar». ¿Quién aprueba este plan y sus tasks (propuesta: el equipo técnico, con Jonathan como responsable funcional)?
-7. **Archivo de carrusel.** ¿Dos archivos JavaScript (`js/memories.js` y `js/memories-carousel.js`, propuesta) requieren solo la nota de este plan, o también una enmienda del ADR 0027 (su «Reevaluación» menciona «más lógica de cliente»)?
+1. **Elementos inválidos en `data`.** Si un elemento de `data` no es un objeto, ¿se omite (propuesta, como `web-011` pregunta 4) o se trata la respuesta como error? **Resuelta (2026-11-13, Jonathan): se omite**, como en `web-011`.
+2. **Rutas `//host/…`.** La spec dice «rutas relativas del mismo origen» (RN-04). ¿Se confirma que `//host/…` se rechaza (propuesta) aunque sea `http` o `https` implícito? **Resuelta (2026-11-13, Jonathan): se rechaza.**
+3. **Bloque `.foto` de `script.js`.** ¿Se deja como está en `web-010` (propuesta, sin tocar `script.js` ni el ancla de `relocation.test.mjs` línea 288), o se elimina en una tarea posterior acordada con `web-011`? **Resuelta (2026-11-13, Jonathan): se deja como está** (propuesta).
+4. **Reinicio de la cuenta de 5 s.** Al pulsar anterior, siguiente o un indicador con el avance activo, ¿la cuenta se reinicia (propuesta) o sigue su curso? **Resuelta (2026-11-13, Jonathan): se reinicia** (propuesta).
+5. **Orden con web-011.** ¿`web-010` se implementa después de `web-011` (propuesta, un solo PR de `index.html`), o en paralelo con rebase sobre el orden de la tabla de coordinación? **Resuelta (2026-11-13, Jonathan): `web-010` después de `web-011`**, en un solo PR de `index.html` (propuesta).
+6. **Aprobador técnico.** La spec deja «Responsable técnico: por identificar». ¿Quién aprueba este plan y sus tasks (propuesta: el equipo técnico, con Jonathan como responsable funcional)? **Resuelta (2026-11-13): plan y tasks aprobados por Jonathan en nombre del equipo.** El responsable técnico de la implementación es Jonathan (coordina las sesiones de Claude Code), 2026-11-13.
+7. **Archivo de carrusel.** ¿Dos archivos JavaScript (`js/memories.js` y `js/memories-carousel.js`, propuesta) requieren solo la nota de este plan, o también una enmienda del ADR 0027 (su «Reevaluación» menciona «más lógica de cliente»)? **Resuelta (2026-11-13): solo la nota de este plan.** El carrusel ya está en el alcance del ADR 0027 (punto 7, con su enmienda del 2026-11-12); separar el código en dos archivos no añade alcance. Opción propuesta por la sesión de documentación, aceptada por Jonathan.
 
 ## Supuestos del plan
 

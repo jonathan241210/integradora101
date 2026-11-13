@@ -188,7 +188,7 @@ Afectados: visitantes del portal (lectura), equipo del portal (mantenimiento) y 
 | Portal | `apps/web/src/js/animals.js` (nuevo) | Renderiza estados, tarjetas, filtros con opciones derivadas (CA-04), contador, imagen completa o marcador, y texto seguro con DOM API (`createElement`, `textContent`, `setAttribute`). No llama a `fetch`. |
 | Portal | `apps/web/src/script.js` | Adaptar el filtro que lee `.animal-card` para que trabaje con las tarjetas renderizadas o retirarlo de la sección, sin cambiar lo demás. Pendiente de revisión en el plan. |
 | Portal | `apps/web/src/animals.css` (nuevo) | Estados, caja de imagen de proporción fija, marcador, ajustes de 360 px y anulación del zoom de `animations.css` para las tarjetas dinámicas. No modifica `styles.css`. |
-| Pruebas | `apps/web/src/tests/animals.test.mjs` (nuevo) | Tests `CA-01` a `CA-18` con `node:test`, `node:vm` y un DOM simulado, sin dependencias. |
+| Pruebas | `apps/web/src/tests/animals.test.mjs` (nuevo) | Tests `CA-01` a `CA-24` con `node:test`, `node:vm` y un DOM simulado, sin dependencias. |
 | Pruebas existentes | `apps/web/src/tests/relocation.test.mjs` | Solo revisión. Si una comprobación depende de las fichas de muestra, se informa antes de cambiarla. |
 | Documentación | `apps/web/docs/tulanpedia-catalogo.md` (por crear) | Referencia local: configuración de la base URL, origen permitido, comportamiento de filtros y excepción de arquitectura con enlace al ADR 0028. |
 | Assets (solo documentar) | `apps/web/src/assets/nyilonelycompany-nature-51.glb`, `giraffe-*.webp`, `lion-*.webp`, `macaw-*.webp`, `turtle-*.webp` e `icon-3d-56.webp` | Dejan de estar referenciados por `index.html` en TulanPedia. **No se borran en esta spec.** La limpieza va en una tarea futura, después de comprobar con búsqueda que no hay otra referencia. `assets/Mapa.glb` y `assets/model-viewer.min.js` siguen en uso (mapa) y no cambian. |
@@ -202,6 +202,7 @@ Esta spec no cambia requisitos de ambiente nuevos: reutiliza `CORS_ALLOWED_ORIGI
 
 - Aprobadores y fecha: Jonathan (responsable de backend), 2026-11-12.
 - Aprobado por: Jonathan (responsable de backend), 2026-11-12.
+- Corrección de coherencia (2026-11-13, aprobada por Jonathan): «Cambios por área» indica tests CA-01 a CA-24, igual que CA-16. Sin cambio de alcance.
 - Estado: Aprobada (2026-11-12). Aprobar no autoriza implementar: la implementación sigue a `api-015` y a DBR-013, en «Lista para backend» desde el 2026-11-12 (migración aplicada en `arca_pruebas`, lote 5). ADR 0028 aceptado el 2026-11-12 (BD aprobó con 2a=A el 2026-11-12). Las preguntas 1 a 9 están resueltas (2026-11-11 y 2026-11-12). La pregunta 5 queda cerrada en lo de acentos.
 - Divergencias:
   - **Resuelta (2026-11-11), falso positivo:** la meta `arca-api-base` de `index.html`, `noticias.html` y `eventos.html` apunta a la API (`http://localhost:8000/api/v1`). El origen `http://localhost:8080` es el del portal y se configura en CORS. Pregunta 8.

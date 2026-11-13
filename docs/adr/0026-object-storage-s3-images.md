@@ -136,7 +136,7 @@ Riesgos aceptados por el responsable para pruebas con compañeros. Requieren con
 
 - **I (stack portable):** sin dependencias nuevas. La carpeta `media/` es del sistema de archivos local de Laravel.
 - **III (lógica separada):** las reglas de visibilidad viven en la API; el dashboard solo presenta.
-- **V (fuente de verdad):** la base guarda rutas; los archivos viven fuera de la base. **Tensión:** versionar datos personales en git no es el modelo previsto para datos de visitantes. Se acepta solo como excepción de pruebas y requiere acuerdo del equipo. No se cambia el principio; se documenta una excepción.
+- **V (fuente de verdad):** la base guarda rutas; los archivos viven fuera de la base. **Tensión:** versionar datos personales en git no es el modelo previsto para datos de visitantes. Se acepta solo como excepción de pruebas y requiere acuerdo del equipo. No se cambia el principio; se documenta una excepción. **Acuerdo registrado (2026-11-13):** Jonathan (responsable de backend), en nombre del equipo, acepta la excepción solo para momentos de datos de prueba en `arca_pruebas`, con revisión obligatoria antes de cualquier uso fuera de pruebas. La aplican `api-010` (momentos) y `api-013` (P6). El estado del ADR no cambia (Aceptado).
 
 ## Decisiones humanas pendientes
 

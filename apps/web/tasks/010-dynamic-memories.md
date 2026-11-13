@@ -1,9 +1,10 @@
 # Tareas · 010 · dynamic-memories
 
 - Spec: `apps/web/specs/010-dynamic-memories.md` (Estado: **Aprobada**, Jonathan, responsable de backend, 2026-11-12; aprobar no autoriza implementar).
-- Plan: `apps/web/plan/010-dynamic-memories.md` (Estado: **Borrador**, pendiente de aprobación técnica del equipo y de Jonathan).
+- Plan: `apps/web/plan/010-dynamic-memories.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: **ninguna T-xx se implementa ni se marca sin evidencia** aportada por la sesión principal o por el responsable de la verificación.
 - ADR de excepción: `docs/adr/0027-dynamic-public-memories-gallery.md` (Aceptado 2026-11-12, con la enmienda del carrusel confirmada el mismo día).
-- Estado de este documento: **Borrador**. Se redacta antes de la aprobación del plan, según lo pedido; el skill `/sdd-tasks` exige plan aprobado antes de escribir tasks. **Ninguna T-xx se implementa ni se marca hasta que el plan esté aprobado.**
 - Checklist: sin ninguna T-xx marcada. Cada T-xx se marca solo con evidencia aportada por la sesión principal o por el responsable de la verificación.
 - Dependencias bloqueantes: `api-012` (Aprobada, **sin implementar**) para la verificación real, y DBR-012 (Lista para backend, aplicada en `arca_pruebas` el 2026-11-11). Coordinación con `web-011` sobre `index.html` y `js/api.js` (ver el plan).
 - Sin dependencias nuevas, sin `package.json`, sin build. Las pruebas usan `node --test` y no llaman a la API real.
@@ -17,7 +18,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-012 se comprueba
 - [ ] **T-01** (CA-09, CA-11, CA-15; RN-02, RN-03) — **Precondiciones y línea base** (bloqueante; no es código):
   - (a) `api-012` implementada con evidencia: las pruebas PHPUnit de `api-012` (`CA-01` a `CA-12`) están en verde contra `arca_pruebas` (evidencia del equipo de backend), y `curl -i -H "Origin: http://localhost:8080" "http://localhost:8000/api/v1/memories?limit=6"` responde `200` con `Access-Control-Allow-Origin: http://localhost:8080` y `{"data": [...]}`.
   - (b) DBR-012 aplicada en `arca_pruebas` (`api-010`), con evidencia de solo lectura del responsable de BD. Para T-15, al menos un momento aceptado y vigente creado en `arca_pruebas` por el flujo aprobado. Nunca en `arca_zoo`.
-  - (c) Plan y tasks aprobados por el equipo técnico y por Jonathan, con respuestas a las preguntas 1 a 7 del plan.
+  - (c) Plan y tasks aprobados por Jonathan (2026-11-13), con las respuestas a las preguntas 1 a 7 del plan registradas el mismo día.
   - (d) Línea base de `apps/web/src/index.html`, en el PR: orden de los `section[id]` (`porque-visitar`, `animales`, `mapa`, `ubicacion`, `instalaciones`, `noticias`, `eventos`, `boletos`, `preguntas`, `galeria`) y los `id` de `#galeria`. Se copia a `memories.test.mjs` en T-13.
   - (e) Línea base de regresión: número de pruebas aprobadas y fallidas de `node --test apps/web/src/tests/relocation.test.mjs` y de `node --test apps/web/src/tests/news-events.test.mjs`, antes de cualquier cambio. Los 6 fallos preexistentes de `relocation.test.mjs` se registran sin atribuirlos a este cambio.
   - (f) Acuerdo de orden con `web-011` (pregunta 5 del plan): si `web-011` ya está mergeada, esta implementación parte de su estado; si no, se aplica el orden de la tabla de coordinación del plan.

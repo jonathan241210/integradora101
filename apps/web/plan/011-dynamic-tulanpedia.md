@@ -2,10 +2,11 @@
 
 - Spec: `apps/web/specs/011-dynamic-tulanpedia.md`
 - Estado de spec: Aprobada (Jonathan, responsable de backend, 2026-11-12). Aprobar la spec no autoriza implementar: la implementación espera a `api-015` implementada (DBR-013 ya está en «Lista para backend» desde el 2026-11-12).
-- Estado de este plan: **Borrador, pendiente de aprobación técnica del equipo y de Jonathan.** No está aprobado. No se implementa ni se marca ninguna T-xx hasta esa aprobación.
-- Tasks: `apps/web/tasks/011-dynamic-tulanpedia.md` (Borrador, mismo NNN-slug).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: la implementación espera a `api-015` implementada. No se marca ninguna T-xx sin evidencia. Las preguntas 1 a 8 del plan quedan resueltas el 2026-11-13 (sección «Preguntas»).
+- Tasks: `apps/web/tasks/011-dynamic-tulanpedia.md` (Aprobado, Jonathan, 2026-11-13; mismo NNN-slug).
 - ADR de excepción: `docs/adr/0028-dynamic-tulanpedia-catalog.md` (Aceptado 2026-11-12). Extiende la excepción de `docs/adr/0024-web-static-portal-exception.md` (Aceptado; no se modifica). `docs/adr/0027-dynamic-public-memories-gallery.md` (Aceptado 2026-11-12) no aplica.
-- Responsable técnico: por identificar (frontend del portal).
+- Responsable técnico de implementación: Jonathan (coordina las sesiones de Claude Code). Plan y tasks aprobados por él, en nombre del equipo, el 2026-11-13.
 - Dependencias bloqueantes de implementación:
   - `api-015` (`GET /api/v1/published-species`): Aprobada 2026-11-12, **sin implementar**. No se puede verificar contra la API real hasta que exista. Hasta entonces, las pruebas usan respuestas simuladas.
   - DBR-013 (`docs/database/requests/DBR-013-species-requests.md`): Aprobada por BD y backend; migración **aplicada en `arca_pruebas`** (lote 5), verificada el 2026-11-12; «Lista para backend». Pendiente de BD: EXPLAIN y registro de fecha y responsable.
@@ -294,7 +295,7 @@ Regla de estado: un CA sin prueba automatizada o sin evidencia manual no puede m
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Parcial | HTML, CSS y JavaScript estáticos, sin dependencias ni servicios propietarios, sin build ni `package.json`. La stack declarada para el portal es React 19 + TS + Vite (`apps/web/AGENTS.md`). **Excepción:** ADR 0028, decisión 1 a 3 (sección TulanPedia de la portada), que extiende ADR 0024. |
-| II. La spec manda | Parcial | Spec `web-011` Aprobada el 2026-11-12, con esta propuesta de plan y sus tasks en Borrador. No hay código hasta aprobar plan y tasks y cumplir las dependencias (`api-015` implementada; DBR-013 ya cumple «Lista para backend»). |
+| II. La spec manda | Sí, con condición de dependencias | Spec `web-011` Aprobada el 2026-11-12, con plan y tasks aprobados el 2026-11-13. No hay código hasta cumplir la dependencia de `api-015` implementada (DBR-013 ya cumple «Lista para backend»). |
 | III. Lógica separada de la interfaz | Parcial | Sin reglas de negocio en el portal: la visibilidad, el orden y los campos los decide la API (RN-01). Los filtros son presentación sobre la lista recibida (RN-07) y la tabla de etiquetas es presentación (RN-11). `fetch` solo en `js/api.js`. **Excepción:** no hay `@arca/api-client` ni hooks (ADR 0028, decisión 1). |
 | IV. Un test por criterio | Sí, con runner distinto | Un test por CA-01 a CA-24 con `node --test` y nombres `CA-NN dynamic-tulanpedia`. Vitest no se usa (ADR 0028, decisión 3). CA-16 comprueba la cobertura. Este plan no afirma que ninguna prueba pase: el resultado se registra en T-16 con evidencia de ejecución. |
 | V. Una sola fuente de verdad para los datos | Sí | El portal no guarda ni cachea datos de negocio. La API es la fuente. Sin escritura. Datos públicos, sin datos clínicos ni financieros. |
@@ -327,23 +328,23 @@ Excepciones registradas: ADR 0028 (aceptado el 2026-11-12). Si el ADR no se apru
 
 ## Divergencias detectadas (spec frente a repositorio y entre secciones de la spec)
 
-- **D-1:** la spec dice «CA-01 a CA-18» en «Cambios por área» (`animals.test.mjs`) y «CA-01 a CA-24» en CA-16. El plan sigue CA-16 (CA-01 a CA-24). No se modifica la spec; se pide confirmación (pregunta 8).
+- **D-1:** la spec dice «CA-01 a CA-18» en «Cambios por área» (`animals.test.mjs`) y «CA-01 a CA-24» en CA-16. El plan sigue CA-16 (CA-01 a CA-24). No se modifica la spec; resuelto por la pregunta 8 (CA-01 a CA-24).
 - **D-2:** el texto actual de `#noAnimals` en `index.html` dice «No encontramos animales con esos filtros…»; la spec dice «especies». El plan usa el texto de la spec (pregunta 3).
 - **D-3:** el contador actual dice «animal encontrado» (`script.js`); la spec exige «especie encontrada». El plan usa la spec.
-- **D-4:** la cabecera tiene un formulario de búsqueda (`#searchForm`, `#searchInput`, placeholder «Buscar un animal...») que hoy filtra las tarjetas. La spec no lo menciona. Ver pregunta 1.
+- **D-4:** la cabecera tiene un formulario de búsqueda (`#searchForm`, `#searchInput`, placeholder «Buscar un animal...») que hoy filtra las tarjetas. La spec no lo menciona. Resuelta (pregunta 1).
 - **D-5:** la spec no fija el `id` del nuevo selector «Tipo de animal». El plan propone `categoryFilter` (pregunta 7).
 - **D-6:** la spec pide `#animalCount` (`aria-live`). El plan mantiene el `id` existente.
 
-## Preguntas abiertas (máximo 8 por ronda)
+## Preguntas (resueltas el 2026-11-13)
 
-1. **Cabecera.** El formulario de búsqueda de la cabecera (`#searchForm`, `#searchInput`, «Buscar un animal...») filtraba las tarjetas. Sin tarjetas, ¿qué debe hacer? Propuesta del plan: conservar los IDs (los exige `web-009` CA-11 y `relocation.test.mjs`), que al enviar solo lleve a `#animales` sin filtrar. Alternativas: ocultarlo, o dejarlo sin cambio (sin efecto). Responde Jonathan.
-2. **Bloque «Conocer más».** ¿Se muestra visible (propuesta) o como `details` colapsable? La spec deja fuera el detalle expandible.
-3. **Texto sin resultados.** ¿Se mantiene «No encontramos especies con esos filtros. Prueba con otra búsqueda.» (spec)? «Otra búsqueda» no tiene campo de búsqueda en esta sección. Propuesta: mantener el texto de la spec hasta aprobar un cambio.
-4. **Especie inválida.** Si llega una especie sin `common_name` o un elemento que no es objeto, ¿se omite (propuesta) o se trata como error de carga?
-5. **Unidad de `size_cm`.** ¿Se muestra con ` cm` (propuesta, supuesto S-3) o tal como llega?
-6. **Orden de la ficha.** ¿«Tipo de animal» primero (propuesta) o al final, como en la lista de CA-19?
-7. **Id del selector «Tipo de animal».** ¿`categoryFilter` (propuesta) o otro nombre?
-8. **Alcance de CA-16.** ¿Confirmas que el test de cobertura cubre CA-01 a CA-24 (texto de CA-16), y no CA-01 a CA-18 («Cambios por área»)?
+1. **Cabecera.** El formulario de búsqueda de la cabecera (`#searchForm`, `#searchInput`, «Buscar un animal...») filtraba las tarjetas. Sin tarjetas, ¿qué debe hacer? Propuesta del plan: conservar los IDs (los exige `web-009` CA-11 y `relocation.test.mjs`), que al enviar solo lleve a `#animales` sin filtrar. Alternativas: ocultarlo, o dejarlo sin cambio (sin efecto). **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.** Se conservan los IDs y el buscador; al enviar solo lleva a `#animales`, sin filtrar. Afecta a T-09.
+2. **Bloque «Conocer más».** ¿Se muestra visible (propuesta) o como `details` colapsable? La spec deja fuera el detalle expandible. **Resuelta (2026-11-13): visible** (propuesta, supuesto S-1).
+3. **Texto sin resultados.** ¿Se mantiene «No encontramos especies con esos filtros. Prueba con otra búsqueda.» (spec)? «Otra búsqueda» no tiene campo de búsqueda en esta sección. Propuesta: mantener el texto de la spec hasta aprobar un cambio. **Resuelta (2026-11-13): se mantiene el texto de la spec.**
+4. **Especie inválida.** Si llega una especie sin `common_name` o un elemento que no es objeto, ¿se omite (propuesta) o se trata como error de carga? **Resuelta (2026-11-13): se omite** (propuesta, igual que `web-010`).
+5. **Unidad de `size_cm`.** ¿Se muestra con ` cm` (propuesta, supuesto S-3) o tal como llega? **Resuelta (2026-11-13): con ` cm`** (propuesta, supuesto S-3).
+6. **Orden de la ficha.** ¿«Tipo de animal» primero (propuesta) o al final, como en la lista de CA-19? **Resuelta (2026-11-13): primero** (propuesta).
+7. **Id del selector «Tipo de animal».** ¿`categoryFilter` (propuesta) o otro nombre? **Resuelta (2026-11-13): `categoryFilter`.**
+8. **Alcance de CA-16.** ¿Confirmas que el test de cobertura cubre CA-01 a CA-24 (texto de CA-16), y no CA-01 a CA-18 («Cambios por área»)? **Resuelta (2026-11-13): sí, CA-01 a CA-24**, el texto de CA-16. La incoherencia de «Cambios por área» (CA-01 a CA-18) queda para corregir en la spec; no se toca aquí.
 
 ## Supuestos del plan
 
@@ -380,7 +381,7 @@ Aprobaciones requeridas:
 | Rol | Aprueba | Estado |
 |---|---|---|
 | Responsable funcional | Spec `web-011` | Aprobada (Jonathan, 2026-11-12) |
-| Equipo técnico | Este plan, Constitution Check, excepción ADR 0028 y respuestas a las preguntas 1 a 8 | **Pendiente** |
+| Equipo técnico | Este plan, Constitution Check, excepción ADR 0028 y respuestas a las preguntas 1 a 8 | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
 | Responsable de BD | DBR-013 en «Lista para backend» (migración aplicada en `arca_pruebas` con evidencia) | **Cumplido** el 2026-11-12 (migración aplicada, lote 5). Pendiente de BD: EXPLAIN y registro de fecha y responsable |
 | Backend | `api-015` implementada con evidencia (`curl` y pruebas PHPUnit) | **Pendiente** |
 | Equipo (ADR) | ADR 0028 | Aceptado (2026-11-12) |

@@ -2,8 +2,9 @@
 
 - Spec: `apps/dashboard/specs/010-public-content-management.md`
 - Estado de spec: Aprobada (2026-11-12, Jonathan, responsable de backend).
-- Estado de este plan: **Borrador, pendiente de aprobación técnica.** No aprobado. No se ejecuta ninguna tarea de `apps/dashboard/tasks/010-public-content-management.md` hasta que el equipo lo apruebe.
-- Responsable técnico: por identificar (frontend del dashboard).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: no se marca ninguna tarea de `apps/dashboard/tasks/010-public-content-management.md` sin evidencia. La integración contra la API real depende de `api-014` y `api-015` implementadas. Preguntas 1 a 8 resueltas el 2026-11-13 (la 7, con tests automatizados en lugar de evidencia manual).
+- Responsable técnico: Jonathan (coordina las sesiones de Claude Code), 2026-11-13.
 - Fecha del borrador: 2026-11-12.
 - Dependencias de contrato (aprobadas, **sin implementar**): `api-014` (solicitudes y publicación de especie), `api-015` (lectura pública de especies publicadas). `api-013` no se usa directamente desde el dashboard.
 - Dependencia de datos: DBR-013 aprobada por BD y backend el 2026-11-12; migración `2026_11_12_000013_species_publication_requests_schema` **aplicada en `arca_pruebas`** (lote 5), verificada el 2026-11-12; DBR-013 en «Lista para backend». Pendiente de BD: EXPLAIN y registro de fecha y responsable. La prueba de integración contra la API real depende de que `api-014` y `api-015` estén implementadas.
@@ -107,13 +108,13 @@ Todas las rutas son de `/api/v1/admin` (`api-007`, `api-014`) y pasan por la coo
 
 | Cliente (`@arca/api-client`) | Método y ruta | Entrada | Respuesta usada | Spec |
 |---|---|---|---|---|
-| `speciesPublicationRequests.list({ status?, page? })` | `GET /species-publication-requests?status=&page=` | Filtro `status` (omitido en «Todas») y `page` | `Paginated<SpeciesRequestSummaryDto>` | api-014 CA-05 |
+| `speciesPublicationRequests.list({ status?, page? })` | `GET /species-publication-requests?status=&page=` | Filtro `status` (omitido en «Todas») y `page` | `HasMorePage<SpeciesRequestSummaryDto>` | api-014 CA-05 |
 | `speciesPublicationRequests.get(id)` | `GET /species-publication-requests/{id}` | — | `SpeciesRequestDetailDto` | api-014 CA-06 |
 | `speciesPublicationRequests.update(id, input)` | `PATCH /species-publication-requests/{id}` (sin archivo); `POST` con `_method=PATCH` (con archivo) | Solo campos cambiados y `image` opcional | `SpeciesRequestDetailDto` | api-014 CA-14 a CA-17, CA-21 a CA-23, CA-25; G1 |
 | `speciesPublicationRequests.accept(id, { publish })` | `POST /species-publication-requests/{id}/accept` | `{ publish: boolean }` | `SpeciesPublicationDetailDto` (**no** la solicitud) | api-014 CA-08 |
 | `speciesPublicationRequests.reject(id, { rejection_reason })` | `POST /species-publication-requests/{id}/reject` | `{ rejection_reason: string }` | Se ignora el cuerpo; el ViewModel recarga el detalle | api-014 CA-10 |
 | `speciesPublicationRequests.image(id)` | `GET /species-publication-requests/{id}/image` | — | `DownloadedFile` (blob) | api-014 CA-06, RN-08 |
-| `publishedSpecies.list({ status?, category?, page? })` | `GET /published-species?status=&category=&page=` | Filtros opcionales | `Paginated<PublishedSpeciesRowDto>` | api-014 CA-40 |
+| `publishedSpecies.list({ status?, category?, page? })` | `GET /published-species?status=&category=&page=` | Filtros opcionales | `HasMorePage<PublishedSpeciesRowDto>` | api-014 CA-40 |
 | `publishedSpecies.get(id)` | `GET /species/{id}/publication` | — | `SpeciesPublicationDetailDto` | api-014 CA-37 |
 | `publishedSpecies.update(id, input)` | `PATCH /species/{id}/publication` (sin archivo); `POST` con `_method=PATCH` (con archivo) | Campos cambiados y `image` opcional | `SpeciesPublicationDetailDto` | api-014 CA-37 |
 | `publishedSpecies.unpublish(id)` | `POST /species/{id}/unpublish` | — | `SpeciesPublicationDetailDto` | api-014 CA-35 |
@@ -306,6 +307,8 @@ Todas las pruebas están en `apps/dashboard/src/tests/` con Vitest (`npm test` =
 | CA-61 | `CA-61 species-request-detail: etiqueta «Especie despublicada» y aviso de catálogo` | `species-request-detail.test.tsx` |
 | CA-62 | `CA-62 species-request-decisions: dos acciones en despublicada con publish true o false; una en publicada o sin publicar` | `species-request-decisions.test.tsx` |
 
+**Enmienda 2026-11-13 (CA-40, CA-41, CA-42 y CA-48):** se cubren con tests automatizados, no con evidencia manual. Comportamiento de la API: PHPUnit en `api-014` y `api-015`, y en `web-011` lo que le corresponda. UI: Vitest con respuestas simuladas en `apps/dashboard/src/tests/` (nombres `CA-40`, `CA-41`, `CA-42` y `CA-48` en los archivos `species-*.test.tsx` que correspondan). La comprobación contra la API real la hace la sesión principal en la integración.
+
 Pruebas de contrato del cliente (`species-api-client.test.tsx`): `fetch` simulado que captura método, URL y cuerpo. Cubren las rutas y bodies de la tabla de endpoints, incluido `POST` con `_method=PATCH` cuando hay archivo y `published_fields` como cadena JSON.
 
 Pruebas de regla visual: no se añaden. Las reglas de tamaño y de adaptación se verifican a mano (T-27).
@@ -335,7 +338,7 @@ Pruebas de regla visual: no se añaden. Las reglas de tamaño y de adaptación s
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | React 19, TypeScript, Vite 7, Tailwind 4 y `@arca/*` ya existentes. Sin dependencias nuevas, sin React Router, sin librerías de iconos ni de pruebas. Sin servicios propietarios. Sin ADR requerido. |
-| II. La spec manda | Sí, con pendiente | Spec 010 Aprobada (2026-11-12). Este plan y su `tasks/010-public-content-management.md` comparten NNN-slug. Pendiente: aprobación técnica del plan y de las tareas. Ninguna tarea se ejecuta antes. |
+| II. La spec manda | Sí | Spec 010 Aprobada (2026-11-12). Plan y `tasks/010-public-content-management.md` aprobados el 2026-11-13 (Jonathan, en nombre del equipo), con el mismo NNN-slug. Pendiente: aprobación técnica del plan y de las tareas. Ninguna tarea se ejecuta antes. |
 | III. Lógica separada de la interfaz | Sí, con dependencias | Permisos, estados, elegibilidad y publicación los decide la API. La UI usa `publication_status`, `is_published`, `has_pending_request` tal como llegan. Depende de G-1 a G-3 para no deducir estado. Validaciones de presentación (longitud, tipo y tamaño de foto) se repiten en la API. |
 | IV. Un test por criterio | Sí, con cruzados | CA-01 a CA-17 y CA-49 a CA-62 con test de Vitest nombrado (mapeo). CA-18 a CA-38 retirados. CA-40, CA-41, CA-42 y CA-48 se verifican en `api-015`, `api-014` y `web-011`, sin test en el dashboard. CA-43 y CA-47 son documentales. Pregunta 7. |
 | V. Una sola fuente de verdad para los datos | Sí | El dashboard no crea tablas ni migraciones y no cambia esquema. Ningún dato se persiste en el navegador (RN-10). Las acciones quedan auditadas en la API (Activitylog). |
@@ -353,28 +356,28 @@ Sin excepciones aprobadas. No requiere ADR.
 6. **Imágenes, cruzados y documentales (T-22 a T-24).**
 7. **Cobertura, documentación y entrega (T-25 a T-29).**
 
-**Bloqueos:** T-07 y T-09 requieren G-1 y G-3 (o una decisión de la pregunta 1). La integración de T-27 requiere DBR-013 «Lista para backend» y las implementaciones de `api-014` y `api-015`.
+**Bloqueos:** G-1 y G-3 incorporadas en `api-014` (2026-11-13); T-07 y T-09 ya no tienen bloqueo de contrato. La integración de T-27 requiere DBR-013 «Lista para backend» y las implementaciones de `api-014` y `api-015`.
 
 **Aprobaciones requeridas:**
 
 | Rol | Aprueba | Estado |
 |---|---|---|
 | Responsable funcional | Spec 010 | Aprobada (2026-11-12, Jonathan) |
-| Equipo técnico | Este plan, su Constitution Check y las preguntas 1 a 8 | **Pendiente** |
-| Backend | Enmiendas G-1 a G-3 a `api-014` | **Pendiente** |
+| Equipo técnico | Este plan, su Constitution Check y las preguntas 1 a 8 | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
+| Backend | Enmiendas G-1 a G-3 a `api-014` | Aprobado: Jonathan, responsable de backend, 2026-11-13 (las tres enmiendas incorporadas en `api-014` el 2026-11-13) |
 | Responsable de BD | Aplicación de DBR-013 en `arca_pruebas` con evidencia | **Aplicada** (lote 5, verificada el 2026-11-12). Pendiente de BD: EXPLAIN y registro de fecha y responsable |
 
-## Preguntas abiertas
+## Preguntas (resueltas el 2026-11-13, salvo la 7)
 
 Máximo 8 por ronda (`AGENTS.md`).
 
-1. **Contrato `api-014` (G-1, G-2, G-3).** ¿Se añaden a `api-014` (CA-05 y CA-06) `publication_status` en la fila de la lista, `species_id` en el detalle y `current.publication_status` en el detalle? Propuesta: sí, como enmienda de contrato. Sin ello, T-07 y T-09 quedan bloqueadas.
-2. **Navegación sin router.** ¿Se acepta que «abrir por URL» (CA-01, CA-50) se verifique con la respuesta 403 de la sección y no con una ruta propia? Cualquier ruta propia exige ADR 0002.
-3. **Inicio de la UI.** ¿Pueden empezar T-02 a T-22 con pruebas de contrato simuladas antes de «Lista para backend»? `apps/dashboard/AGENTS.md` dice que la implementación espera a DBR-013 «Lista para backend». Propuesta: sí para cliente y ViewModels; la integración y el cierre quedan después.
-4. **Formato de `published_fields`.** ¿Se envía como cadena JSON también en el cuerpo JSON (literal de `api-014` CA-21) o como array? Propuesta: cadena JSON en ambos casos.
-5. **`category` en el PATCH.** ¿Un PATCH que omite `category` mantiene la corrección anterior (`api-014` CA-25 no lo dice)? Propuesta: el formulario envía `category` siempre que se guarda; los demás campos, solo si cambian.
-6. **2FA sin confirmar.** ¿Qué respuesta devuelve la API a un usuario con `species.review` sin 2FA confirmado (estado y código)? Propuesta: 403 y el mensaje de la sección, sin mensaje específico.
-7. **Brecha en CA-40, CA-41, CA-42 y CA-48.** Son verificaciones de `api-015` y `web-011`, sin test en el dashboard. ¿Basta con la evidencia de esas specs para cumplir la Constitución IV en `dashboard-010`?
-8. **Texto «Petición no encontrada.» (CA-17).** No corresponde a ninguna acción de estas secciones. Propuesta: sustituirlo por «Solicitud no encontrada.» o «Especie no encontrada.» según la sección, o confirmar a qué recurso se refiere.
+1. **Contrato `api-014` (G-1, G-2, G-3).** ¿Se añaden a `api-014` (CA-05 y CA-06) `publication_status` en la fila de la lista, `species_id` en el detalle y `current.publication_status` en el detalle? Propuesta: sí, como enmienda de contrato. Sin ello, T-07 y T-09 quedan bloqueadas. **Resuelta (2026-11-13, Jonathan): sí, como enmienda de contrato** (`publication_status` en la fila; `species_id` y `current.publication_status` en el detalle). Incorporada en `api-014` (plan y tasks, 2026-11-13). T-07 y T-09 quedan sin bloqueo de contrato; su integración depende de `api-014` implementada.
+2. **Navegación sin router.** ¿Se acepta que «abrir por URL» (CA-01, CA-50) se verifique con la respuesta 403 de la sección y no con una ruta propia? Cualquier ruta propia exige ADR 0002. **Resuelta (2026-11-13, Jonathan): sí.**
+3. **Inicio de la UI.** ¿Pueden empezar T-02 a T-22 con pruebas de contrato simuladas antes de «Lista para backend»? `apps/dashboard/AGENTS.md` dice que la implementación espera a DBR-013 «Lista para backend». Propuesta: sí para cliente y ViewModels; la integración y el cierre quedan después. **Resuelta (2026-11-13, Jonathan): sí.** `dashboard-008` tiene DBR-013 en «Lista para backend» desde el 2026-11-12; el cliente y los ViewModels pueden empezar con contratos simulados.
+4. **Formato de `published_fields`.** ¿Se envía como cadena JSON también en el cuerpo JSON (literal de `api-014` CA-21) o como array? Propuesta: cadena JSON en ambos casos. **Resuelta (2026-11-13, Jonathan): cadena JSON en ambos casos.**
+5. **`category` en el PATCH.** ¿Un PATCH que omite `category` mantiene la corrección anterior (`api-014` CA-25 no lo dice)? Propuesta: el formulario envía `category` siempre que se guarda; los demás campos, solo si cambian. **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.**
+6. **2FA sin confirmar.** ¿Qué respuesta devuelve la API a un usuario con `species.review` sin 2FA confirmado (estado y código)? Propuesta: 403 y el mensaje de la sección, sin mensaje específico. **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.** 403, igual que `api-007` CA-25.
+7. **Brecha en CA-40, CA-41, CA-42 y CA-48.** Son verificaciones de `api-015` y `web-011`, sin test en el dashboard. ¿Basta con la evidencia de esas specs para cumplir la Constitución IV en `dashboard-010`? **Resuelta (2026-11-13, Jonathan, en nombre del equipo): los CA cruzados se cubren con tests automatizados, no con evidencia manual.** PHPUnit en `api-014` cubre el comportamiento de la API; Vitest con respuestas simuladas cubre la UI en `apps/dashboard`. La comprobación contra la API real la hace la sesión principal en la fase de integración.
+8. **Texto «Petición no encontrada.» (CA-17).** No corresponde a ninguna acción de estas secciones. Propuesta: sustituirlo por «Solicitud no encontrada.» o «Especie no encontrada.» según la sección, o confirmar a qué recurso se refiere. **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.** La spec de `dashboard-010` (CA-17) admite «Solicitud no encontrada.», «Especie no encontrada.» o «Petición no encontrada.»; el plan usa los dos primeros según la sección.
 
 Decisiones tomadas en el plan, no preguntas: etiquetas de tipo de animal propuestas (R-9); accesibilidad y diseño adaptable verificados por T-27 sin CA propio; `http.ts` sin cambios; la foto se descarga con `http.download`.

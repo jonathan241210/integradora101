@@ -1,12 +1,13 @@
 # Tareas · 015 · public-species-read
 
 - Spec: `apps/api/specs/015-public-species-read.md` (Estado: **Aprobada**, Jonathan, responsable de backend, 2026-11-12).
-- Plan: `apps/api/plan/015-public-species-read.md` (Estado: **Borrador**, pendiente de aprobación técnica).
-- Estado de estas tareas: **Borrador**. Ninguna tarea está marcada. No se marca nada sin evidencia.
+- Plan: `apps/api/plan/015-public-species-read.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: ninguna tarea está marcada. No se marca nada sin evidencia.
 
 ## Puerta de entrada
 
-**No se empieza ninguna tarea de implementación (T-01 en adelante) hasta que T-00 esté marcada con evidencia y DBR-013 esté en «Lista para backend».** Desde el 2026-11-12, DBR-013 está en «Lista para backend»: su migración (`apps/api/src/database/migrations/2026_11_12_000013_species_publication_requests_schema.php`) está aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura. T-00 sigue abierta porque faltan otras precondiciones. Tampoco se empieza T-09 sin la configuración del disco de medios de `api-013` (estado Aprobada desde el 2026-11-12, disco sin configurar; pregunta 3 del plan).
+**No se empieza ninguna tarea de implementación (T-01 en adelante) hasta que T-00 esté marcada con evidencia y DBR-013 esté en «Lista para backend».** Desde el 2026-11-12, DBR-013 está en «Lista para backend»: su migración (`apps/api/src/database/migrations/2026_11_12_000013_species_publication_requests_schema.php`) está aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura. T-00 sigue abierta porque faltan otras precondiciones. Tampoco se empieza T-09 sin la configuración del disco de medios de `api-013` (Aprobada desde el 2026-11-12; plan de `api-013` aprobado el 2026-11-13; disco sin configurar; pregunta 3 del plan resuelta en cuanto a la clave).
 
 Todas las pruebas usan `DatabaseTransactions` sobre `arca_pruebas`; nunca `RefreshDatabase`, `migrate:fresh` ni migraciones desde los tests. Ninguna tarea toca `arca_zoo`. Esta feature no tiene DBR propia ni migraciones.
 
@@ -69,7 +70,7 @@ Cobertura: todos los CA-01 a CA-18 y RN-01 a RN-12 tienen al menos una tarea. CA
 
 ## Implementación (API)
 
-- [ ] **T-01** (CA-13; RN-02, RN-06): **ajustar el modelo `Species`** con `protected $casts = ['published_fields' => 'array']` (o equivalente). No añadir `SoftDeletes` aquí (pregunta 2 del plan). No cambiar otros atributos ni la salida de `api-006`.
+- [ ] **T-01** (CA-13; RN-02, RN-06): **ajustar el modelo `Species`** con `protected $casts = ['published_fields' => 'array']` (o equivalente). No añadir `SoftDeletes` aquí (pregunta 2 del plan, resuelta el 2026-11-13: lo añade `api-014` T-03). No cambiar otros atributos ni la salida de `api-006`.
   - Rutas: `apps/api/src/app/Models/Species.php`.
   - **Criterio de hecho:** `published_fields` llega como array al leer; `PublicCatalogTest.php` (api-006) sigue verde sin cambios.
 
@@ -215,11 +216,11 @@ Archivos: `apps/api/src/tests/Feature/Catalog/PublishedSpeciesTest.php` y `apps/
 
 Las preguntas completas están en el plan (`apps/api/plan/015-public-species-read.md`, sección «Preguntas abiertas»). Las que afectan a estas tareas:
 
-- Pregunta 1 (collation de `habitat` y `name`): afecta a T-03, T-04, T-16 y T-18.
-- Pregunta 2 (`SoftDeletes` y `BaseModel` en `Species`): afecta a T-01 y a la brecha de Constitución V.
-- Disco `media` y `MEDIA_PUBLIC_URL` (`api-013` CA-17 y RN-04; no es una pregunta abierta: depende de que `api-013` se apruebe): bloquea T-09 y T-22.
-- Pregunta 4 (`published_fields` NULL con `is_published = 1`): afecta a T-08 y T-26.
-- Pregunta 6 (aprobador del plan y de las tasks): bloquea el paso a implementación.
-- Pregunta 7 (fixtures de CA-17 y CA-18 sin `api-014`): afecta a T-27.
+- Pregunta 1 (collation de `habitat` y `name`): resuelta el 2026-11-13: comparación binaria tras `LOWER` (T-03, T-04, T-16 y T-18).
+- Pregunta 2 (`SoftDeletes` y `BaseModel` en `Species`): resuelta el 2026-11-13: `api-014` T-03 añade `SoftDeletes`; T-01 no lo añade.
+- Disco `media` y `MEDIA_PUBLIC_URL` (`api-013` CA-17 y RN-04): bloquea T-09 y T-22 hasta que `api-013` esté implementada; la clave del disco público está resuelta (pregunta 3 del plan).
+- Pregunta 4 (`published_fields` NULL con `is_published = 1`): resuelta el 2026-11-13: se trata como lista vacía (T-08 y T-26).
+- Pregunta 6 (aprobador del plan y de las tasks): resuelta el 2026-11-13 (Jonathan, responsable de backend).
+- Pregunta 7 (fixtures de CA-17 y CA-18 sin `api-014`): resuelta el 2026-11-13: se usan `DB::table` con el riesgo anotado (T-27).
 
-Estado final de estas tareas: **Borrador**; sin casillas marcadas; pendientes de aprobación técnica del plan y de la puerta de entrada T-00.
+Estado final de estas tareas: **Aprobado** (Jonathan, 2026-11-13); sin casillas marcadas; pendiente la puerta de entrada T-00.

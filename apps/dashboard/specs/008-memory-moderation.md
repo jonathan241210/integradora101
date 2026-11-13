@@ -77,7 +77,7 @@ El dashboard solo presenta. Los estados, las transiciones, los plazos y la autor
 - **CA-07 (acciones según estado):**
   - Dada una petición en Enviada o En proceso, cuando se muestra el detalle, entonces ofrece «Aceptar» y «Rechazar».
   - Dada una petición Rechazada, cuando se muestra, entonces solo lectura: el motivo, las opciones marcadas («La foto», «La opinión») y el texto «Esperando la corrección del visitante.». Ninguna acción.
-  - Dada una petición Aceptada, cuando se muestra, entonces solo lectura: la fecha de publicación y el texto de vigencia de CA-19. Ninguna acción.
+  - Dada una petición Aceptada, cuando se muestra, entonces solo lectura: la fecha de publicación (`published_at`) y el texto de vigencia de CA-19 (`is_published` de la API). Ninguna acción.
 - **CA-08 (aceptar):** Dada una petición en Enviada o En proceso, cuando se pulsa «Aceptar», entonces se abre un diálogo de confirmación que dice que la foto y la opinión se publicarán en la galería del portal durante {publication_days} días desde la aceptación, y que después dejarán de mostrarse (texto de `api-010` CA-30 y CA-31). Solo «Confirmar» llama a `POST .../accept`. Al éxito, la petición pasa a Aceptada, muestra su fecha de vencimiento (`published_until`) y se muestra un aviso accesible de confirmación. Cancelar no llama a la API.
 - **CA-09 (rechazar con motivo y campos):** Dada una petición en Enviada o En proceso, cuando se pulsa «Rechazar», entonces se abre un diálogo con:
   - el campo «Motivo» obligatorio (de 1 a 500 caracteres, con contador);
@@ -97,7 +97,7 @@ El dashboard solo presenta. Los estados, las transiciones, los plazos y la autor
   - la imagen no se escribe en `localStorage`, `sessionStorage`, IndexedDB ni cookies, y no aparece en la URL de navegación;
   - ningún componente hace la petición de imagen.
 - **CA-18 (imagen no disponible):** Dada una petición en revisión cuya imagen la API no encuentra (404), cuando se muestra el detalle, entonces la vista muestra «No se pudo cargar la imagen.» y la acción «Aceptar» queda deshabilitada con el texto «No se puede aceptar sin la imagen.». «Rechazar» sigue disponible, para que la persona revisora pueda indicar el problema. La API también rechaza aceptar sin imagen (`api-010` CA-11).
-- **CA-19 (plazo visible):** Dada una petición Aceptada, cuando se muestra su detalle, entonces dice «Publicada en la galería hasta el {fecha}.» si `published_until` es posterior a ahora, o «La publicación venció el {fecha}.» si ya pasó. El estado sigue siendo Aceptada en ambos casos.
+- **CA-19 (plazo visible):** Dada una petición Aceptada, cuando se muestra su detalle, entonces dice «Publicada en la galería hasta el {fecha}.» si `is_published` es verdadero (la API compara `published_until` con la hora actual), o «La publicación venció el {fecha}.» si es falso. El estado sigue siendo Aceptada en ambos casos.
 
 ## Reglas de negocio
 
@@ -167,6 +167,7 @@ Decisión del responsable, aprobada con esta spec por Jonathan el 2026-11-12.
 
 - Aprobadores y fecha: Jonathan (responsable de backend), 2026-11-12.
 - Aprobado por: Jonathan (responsable de backend), 2026-11-12.
+- Corrección de coherencia (2026-11-13, aprobada por Jonathan): CA-07 y CA-19 se alinean con el plan (`published_at` para la fecha de publicación; `is_published` para la vigencia). Sin cambio de alcance ni de RN.
 - Estado: Aprobada (2026-11-12). Aprobar no autoriza implementar: la implementación empieza cuando existan plan y tasks aprobados. Sin preguntas abiertas (preguntas 1 a 3 resueltas el 2026-11-12). Separada de `dashboard-010`.
 - Historial: borrador del 2026-11-10 → revisión del 2026-11-10 con las respuestas del responsable (decisión final por revisión, rechazo con motivos marcados, previsualización, plazo de publicación visible, imagen por proxy de mismo origen y CA-17 a CA-19). 2026-11-12: separada de `dashboard-010` (la sección «Momentos» no se integra en la publicación de especies); sin cambios de contenido. Mismo día (2026-11-12): preguntas 1 a 3 resueltas por el usuario (sin nombre ni correo del visitante; página de 10; sin botón de retirar). Estado sin cambios en esa fecha (Borrador). 2026-11-12, aprobación (Jonathan, responsable de backend): spec Aprobada como flujo propio, sin cambio de contenido.
 - Evidencia/enlaces: `apps/api/specs/010-visitor-memory-requests.md`, `apps/api/specs/013-object-storage-images.md`, `apps/mobile/specs/010-visitor-memory-requests.md`, `apps/web/specs/010-dynamic-memories.md`, `apps/dashboard/specs/005-ticket-sales.md` (patrón de historial y diálogos), `apps/dashboard/specs/007-content-image-display.md` (imagen completa), `apps/dashboard/specs/002-real-staff-login.md` (sesión y 401), `apps/api/specs/007-administration-management.md` (permisos y 2FA de `/api/v1/admin`), `docs/database/requests/DBR-012-visitor-memories.md`.

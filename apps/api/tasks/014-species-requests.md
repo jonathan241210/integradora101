@@ -1,9 +1,10 @@
 # Tareas · 014 · species-requests
 
 - Spec: `apps/api/specs/014-species-requests.md` (Aprobada, 2026-11-12)
-- Plan: `apps/api/plan/014-species-requests.md` (Borrador, pendiente de aprobación)
-- Estado de estas tareas: **Borrador. Ninguna tarea está hecha.** Ninguna casilla se marca sin evidencia aportada por la sesión principal.
-- Bloqueo: no empezar T-03 hasta que se cumplan T-01 y T-02 (DBR-013 en «Lista para backend», migración aplicada en `arca_pruebas` con evidencia; cumplido el 2026-11-12 para la parte de la migración) y la precondición P2 del plan (disco `media`, `api-013`, pendiente).
+- Plan: `apps/api/plan/014-species-requests.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: ninguna tarea está hecha. Ninguna casilla se marca sin evidencia aportada por la sesión principal.
+- Bloqueo: no empezar T-03 hasta que se cumplan T-01 y T-02 (DBR-013 en «Lista para backend», migración aplicada en `arca_pruebas` con evidencia; cumplido el 2026-11-12 para la parte de la migración), la precondición P2 del plan (disco `media`, `api-013`, pendiente) y la P5 del plan (brecha de `BaseModel`, registrada como excepción el 2026-11-13). La precondición P4 (plan y tasks aprobados) está cumplida desde el 2026-11-13.
 - Rutas de archivos: son previstas, bajo `apps/api/src/` (no existen aún). Los tests van en `apps/api/src/tests/`.
 - Regla general: PHPUnit contra `arca_pruebas`, con `DatabaseTransactions`; prohibido `RefreshDatabase`, `migrate:fresh` o migraciones desde los tests. Nunca `arca_zoo`.
 
@@ -108,7 +109,7 @@
   - Archivos: `apps/api/src/app/Http/Controllers/Admin/SpeciesPublicationRequestController.php` (nuevo, `index`, `show`); `…/Admin/SpeciesPublicationRequestImageController.php` (nuevo); `apps/api/src/app/Actions/Admin/SpeciesPublication/ListSpeciesPublicationRequestsAction.php` y `ShowSpeciesPublicationRequestAction.php` (nuevos); `apps/api/src/app/Http/Requests/Admin/ListSpeciesPublicationRequestsRequest.php` (nuevo); Resources `apps/api/src/app/Http/Resources/Admin/SpeciesPublicationRequestResource.php` y `SpeciesPublicationRequestDetailResource.php` (nuevos).
   - Cambios: `GET /api/v1/admin/species-publication-requests` (nombre `admin.species-publication-requests.index`) con `status` opcional, 10 por página, orden `created_at` descendente; `GET …/{id}` (`admin.species-publication-requests.show`) con bloques `current` y `proposed` (CA-06); `GET …/{id}/image` (`admin.species-publication-requests.image`) binario o 404. Sin URL de foto en el JSON.
   - Tests: `test_ca05_admin_lists_requests_paginated_without_photo`; `test_ca06_detail_shows_current_and_proposed_without_photo_url` (incluye la descarga binaria de la foto pendiente y el 404 sin foto). Además, en `SeedersTest.php`, se completa el caso «zoo-admin con 2FA recibe 200» de CA-20. Archivo: `AdminSpeciesRequestsReadTest.php`.
-  - Hecho cuando: los tests pasan, `origin` sale de `distribution`, y la ruta está en el provider de T-08.
+  - Hecho cuando: los tests pasan, `origin` sale de `distribution`, y la ruta está en el provider de T-08. Enmienda 2026-11-13 (G-1 a G-3 de `dashboard-010`): `publication_status` en cada fila del listado y `species_id` y `current.publication_status` en el detalle, con sus pruebas dentro de `test_ca05_…` y `test_ca06_…`. (T-09 no cambia: es el selector del veterinario.)
 
 - [ ] **T-15** (CA-14, CA-15, CA-16, CA-17, CA-25; RN-09, RN-12, RN-15): edición de datos de una solicitud `submitted` (JSON, sin foto).
   - Archivos: `apps/api/src/app/Http/Controllers/Admin/SpeciesPublicationRequestController.php` (ampliar, `update`); `apps/api/src/app/Http/Requests/Admin/UpdateSpeciesPublicationRequest.php` (nuevo); `apps/api/src/app/Actions/Admin/SpeciesPublication/UpdateSpeciesPublicationRequestAction.php` (nuevo).

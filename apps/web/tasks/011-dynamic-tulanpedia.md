@@ -1,10 +1,11 @@
 # Tareas · 011 · dynamic-tulanpedia
 
 - Spec: `apps/web/specs/011-dynamic-tulanpedia.md` (Estado: **Aprobada**, Jonathan, 2026-11-12; aprobar no autoriza implementar).
-- Plan: `apps/web/plan/011-dynamic-tulanpedia.md` (Estado: **Borrador**, pendiente de aprobación técnica y de Jonathan).
+- Plan: `apps/web/plan/011-dynamic-tulanpedia.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
 - ADR de excepción: `docs/adr/0028-dynamic-tulanpedia-catalog.md` (Aceptado, 2026-11-12). Extiende `docs/adr/0024-web-static-portal-exception.md`.
 - Dependencias bloqueantes: `api-015` (Aprobada, **sin implementar**) y DBR-013 (en «Lista para backend» desde el 2026-11-12; migración aplicada en `arca_pruebas`, lote 5). `api-015` sigue sin implementar.
-- Checklist: sin ninguna T-xx marcada. Cada T-xx se marca solo con evidencia aportada por la sesión principal o por el responsable de la verificación, y solo después de la aprobación de este plan.
+- Checklist: sin ninguna T-xx marcada. Cada T-xx se marca solo con evidencia aportada por la sesión principal o por el responsable de la verificación (plan aprobado el 2026-11-13).
 - Sin dependencias nuevas, sin `package.json`, sin build. Las pruebas usan `node --test` y no llaman a la API real.
 
 ## Base de datos (responsable de BD)
@@ -16,7 +17,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
 - [ ] **T-01** (CA-01, CA-10, CA-13; RN-02) — **Precondiciones y línea base** (bloqueante; no es código):
   - (a) `api-015` implementada con evidencia: `curl -i -H "Origin: http://localhost:8080" http://localhost:8000/api/v1/published-species` responde `200`, con `Access-Control-Allow-Origin: http://localhost:8080` y `{"data": [...]}`; y las pruebas PHPUnit `test_ca01` a `test_ca18` de `api-015` están en verde (evidencia del equipo de backend).
   - [x] (b) DBR-013 en «Lista para backend» con evidencia de la migración aplicada en `arca_pruebas` (responsable de BD). **Evidencia (verificado 2026-11-12, lote 5):** migración `Ran` por consulta de solo lectura de backend; fecha y responsable de la aplicación: por registrar por BD.
-  - (c) Plan y tasks aprobados por el equipo y por Jonathan, con las respuestas a las preguntas 1 a 8 del plan.
+  - (c) Plan y tasks aprobados por Jonathan (2026-11-13), con las respuestas a las preguntas 1 a 8 del plan registradas el 2026-11-13.
   - (d) Línea base del orden de secciones de `apps/web/src/index.html` registrada en el PR: `porque-visitar`, `animales`, `mapa`, `ubicacion`, `instalaciones`, `noticias`, `eventos`, `boletos`, `preguntas`, `galeria` (y `cognitivePanel`, de tipo diálogo). Esa lista se copia a `animals.test.mjs` en T-04.
   - (e) Línea base de regresión: número de pruebas aprobadas y fallidas de `node --test apps/web/src/tests/relocation.test.mjs` y de `node --test apps/web/src/tests/news-events.test.mjs`, antes de cualquier cambio. Los fallos preexistentes (6 en `relocation.test.mjs`, según `apps/web/tasks/009-dynamic-news-events.md`) se registran sin atribuirlos a este cambio.
   - (f) Confirmar que `apps/web/src/js/api.js` existe con la función `request` de `web-009` sin cambios pendientes.
@@ -120,11 +121,11 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Archivos:** `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs`. La evidencia manual de CA-24 es T-15.
 
-- [ ] **T-09** (CA-12; RN-06) — **Retirar el filtro de animales de `script.js`.** Depende de la respuesta a la pregunta 1 del plan (cabecera).
+- [ ] **T-09** (CA-12; RN-06) — **Retirar el filtro de animales de `script.js`.** Pregunta 1 del plan resuelta (2026-11-13): el formulario de cabecera conserva sus IDs y, al enviar, solo lleva a `#animales` sin filtrar.
   - Quitar `speciesFilter`, `habitatFilter`, `animalCount`, `noAnimals`, `animalCards`, `filterAnimals()`, los listeners de `input` (con `debounce`), de `speciesFilter`, `habitatFilter` y `clearFilters`, y la llamada inicial `filterAnimals()`.
   - Conservar `const menuToggle =` y `const searchInput = $('searchInput');`, que son anclas de `relocation.test.mjs`.
   - Quitar `normalize` y `debounce` solo si ya no tienen usos (comprobar con búsqueda).
-  - Listener de `#searchForm`: según la respuesta a la pregunta 1 (por defecto, sin filtrar; solo `scrollIntoView` a `#animales`).
+  - Listener de `#searchForm`: sin filtrar; solo `scrollIntoView` a `#animales` (pregunta 1 resuelta).
   - Tests:
     - `CA-12 dynamic-tulanpedia: script.js no referencia .animal-card, speciesFilter, habitatFilter, clearFilters, animalCount ni noAnimals`.
   - **Criterios de hecho:** el test en verde; `relocation.test.mjs` y `news-events.test.mjs` sin nuevos fallos respecto de T-01 (e); cero errores de consola al cargar la página sin especies (se verifica en T-15).
@@ -260,7 +261,7 @@ Cobertura: 13 de 13 RN tienen al menos una tarea.
 
 ## Definición de terminado
 
-- Spec Aprobada, plan y tasks con el mismo NNN-slug (`011-dynamic-tulanpedia`), y plan y tasks aprobados por el equipo y por Jonathan.
+- Spec Aprobada, plan y tasks con el mismo NNN-slug (`011-dynamic-tulanpedia`), y plan y tasks aprobados por Jonathan (2026-11-13).
 - Todas las T-xx aplicables marcadas con evidencia. Ninguna marcada sin ella.
 - Un test automatizado por CA-01 a CA-24, nombrado en `apps/web/src/tests/animals.test.mjs`, en verde.
 - `/verify`: `apps/web` no inicializada (sin `package.json`), reportado como tal.
