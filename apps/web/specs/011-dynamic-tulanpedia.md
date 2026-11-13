@@ -6,7 +6,7 @@
 - Solicitante / responsable funcional: veterinario (solicitud de publicar especies, 2026-11-11); responsable funcional del catálogo: por designar.
 - Aprobación funcional: Jonathan (responsable de backend), 2026-11-12.
 - Aprobado por: Jonathan (responsable de backend), 2026-11-12.
-- Dependencias: `api-015` (Aprobada 2026-11-12; lectura pública de especies publicadas, `GET /api/v1/published-species`); `dashboard-010` (Aprobada 2026-11-12; publicación de solicitudes); `web-010` (Borrador; patrón de galería dinámica); ADR 0028 (Aceptado 2026-11-12); ADR 0024 (Aceptado; no se modifica) y ADR 0027 (Propuesto; no se modifica).
+- Dependencias: `api-015` (Aprobada 2026-11-12; lectura pública de especies publicadas, `GET /api/v1/published-species`); `dashboard-010` (Aprobada 2026-11-12; publicación de solicitudes); `web-010` (Aprobada 2026-11-12; patrón de galería dinámica); ADR 0028 (Aceptado 2026-11-12); ADR 0024 (Aceptado; no se modifica) y ADR 0027 (Propuesto; no se modifica).
 
 ## Problema y contexto
 
@@ -155,8 +155,8 @@ Afectados: visitantes del portal (lectura), equipo del portal (mantenimiento) y 
   - `dashboard-010` (Aprobada 2026-11-12; aceptación y edición de solicitudes).
   - `web-010` (patrón de galería dinámica) y `web-009` (módulo `js/api.js`, meta `arca-api-base`).
   - **ADR 0028 (Aceptado 2026-11-12):** excepción de arquitectura para TulanPedia, que extiende la de ADR 0024 a esta sección. Quedó aceptada antes de la aprobación de esta spec.
-  - ADR 0024 (Aceptado) y ADR 0027 (Propuesto): no se modifican.
-  - `api-013` (Borrador) y ADR 0026 (Aceptado 2026-11-12, enmienda del 2026-11-11): la foto de una especie publicada sale de `media/species/`, carpeta pública.
+  - ADR 0024 (Aceptado) y ADR 0027 (Aceptado 2026-11-12): no se modifican.
+  - `api-013` (Aprobada 2026-11-12) y ADR 0026 (Aceptado 2026-11-12, enmienda del 2026-11-11): la foto de una especie publicada sale de `media/species/`, carpeta pública.
   - `api-014` (Aprobada 2026-11-12): la publicación actualiza la especie existente y copia su foto a `media/species/`.
   - No hay dependencias nuevas de npm.
 - **Riesgos:**

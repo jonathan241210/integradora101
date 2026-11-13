@@ -6,7 +6,7 @@
 
 ## Puerta de entrada
 
-**No se empieza ninguna tarea de implementación (T-01 en adelante) hasta que T-00 esté marcada con evidencia y DBR-013 esté en «Lista para backend».** Desde el 2026-11-12, DBR-013 está en «Lista para backend»: su migración (`apps/api/src/database/migrations/2026_11_12_000013_species_publication_requests_schema.php`) está aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura. T-00 sigue abierta porque faltan otras precondiciones. Tampoco se empieza T-09 sin la configuración del disco de medios de `api-013` (estado Borrador; pregunta 3 del plan).
+**No se empieza ninguna tarea de implementación (T-01 en adelante) hasta que T-00 esté marcada con evidencia y DBR-013 esté en «Lista para backend».** Desde el 2026-11-12, DBR-013 está en «Lista para backend»: su migración (`apps/api/src/database/migrations/2026_11_12_000013_species_publication_requests_schema.php`) está aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura. T-00 sigue abierta porque faltan otras precondiciones. Tampoco se empieza T-09 sin la configuración del disco de medios de `api-013` (estado Aprobada desde el 2026-11-12, disco sin configurar; pregunta 3 del plan).
 
 Todas las pruebas usan `DatabaseTransactions` sobre `arca_pruebas`; nunca `RefreshDatabase`, `migrate:fresh` ni migraciones desde los tests. Ninguna tarea toca `arca_zoo`. Esta feature no tiene DBR propia ni migraciones.
 
@@ -217,7 +217,7 @@ Las preguntas completas están en el plan (`apps/api/plan/015-public-species-rea
 
 - Pregunta 1 (collation de `habitat` y `name`): afecta a T-03, T-04, T-16 y T-18.
 - Pregunta 2 (`SoftDeletes` y `BaseModel` en `Species`): afecta a T-01 y a la brecha de Constitución V.
-- Pregunta 3 (`api-013`, disco y `MEDIA_PUBLIC_URL`): bloquea T-09 y T-22.
+- Disco `media` y `MEDIA_PUBLIC_URL` (`api-013` CA-17 y RN-04; no es una pregunta abierta: depende de que `api-013` se apruebe): bloquea T-09 y T-22.
 - Pregunta 4 (`published_fields` NULL con `is_published = 1`): afecta a T-08 y T-26.
 - Pregunta 6 (aprobador del plan y de las tasks): bloquea el paso a implementación.
 - Pregunta 7 (fixtures de CA-17 y CA-18 sin `api-014`): afecta a T-27.

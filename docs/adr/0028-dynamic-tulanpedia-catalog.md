@@ -9,7 +9,7 @@
 
 - `apps/web/AGENTS.md` define el portal institucional como SPA con React 19, TypeScript, Vite 7 y Tailwind CSS 4, que usa `@arca/api-client` y hooks. La Constitución III exige que la UI llame a `@arca/api-client` mediante hooks, y la IV exige un test automatizado por criterio.
 - El ADR 0024 (Aceptado el 2026-11-07) autoriza HTML y JavaScript estático para las páginas de `web-009`: portada, `noticias.html` y `eventos.html`. Su punto 4 limita la excepción a esas páginas y módulos, y dice que no se extiende a otros módulos sin un ADR nuevo.
-- El ADR 0027 (Propuesto) cubre la galería de momentos de `web-010`, con las mismas condiciones.
+- El ADR 0027 (Aceptado 2026-11-12) cubre la galería de momentos de `web-010`, con las mismas condiciones.
 - TulanPedia (`#animales` de `apps/web/src/index.html`) es hoy HTML fijo con cuatro fichas de muestra y un filtro en JavaScript clásico (`script.js`). Con `dashboard-010`, el zoológico publica especies existentes que el veterinario propone (`api-014`; la especie no se crea al publicar). `web-011` sustituye las fichas por la lista pública de especies publicadas, que sirve `api-015` (`GET /api/v1/published-species`).
 - La sección es de lectura pública, sin sesión, sin formularios y sin escritura, igual que la galería. Los datos los revisa el zoológico antes de publicarlos (`dashboard-010`).
 
@@ -29,7 +29,7 @@ Para la sección TulanPedia de la portada (`#animales`, `web-011`), el portal ma
 ## Justificación
 
 - El contenido es público, de solo lectura y de tamaño pequeño. Una lista de especies no justifica un build, dependencias ni un segundo modelo de trabajo en el portal.
-- El portal ya usa este patrón (`web-001`, Implementada; `web-008`, Implementada; `web-009`, Aprobada; `web-010`, Borrador con ADR 0027 Propuesto). Mantenerlo evita tener varios modelos de trabajo en el mismo sitio.
+- El portal ya usa este patrón (`web-001`, Implementada; `web-008`, Implementada; `web-009`, Aprobada; `web-010`, Aprobada 2026-11-12 con ADR 0027 Aceptado 2026-11-12). Mantenerlo evita tener varios modelos de trabajo en el mismo sitio.
 - Se separa de ADR 0024 y de ADR 0027 para que cada ADR registre lo que autoriza y cuándo. Ninguno de los dos cambia.
 
 ## Alternativas consideradas

@@ -2,12 +2,12 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña: ruta pública, Action, Resource, visibilidad por estado y vigencia, y CORS por ambiente); `web` (consumidor: galería «Momentos para recordar», spec `web-010`); `packages/api-client` (sin cambios en esta spec; el portal no usa el paquete, ver ADR 0027)
-- Estado: Borrador
+- Estado: Aprobada (2026-11-12, Jonathan, responsable de backend). Aprobar no autoriza implementar: la implementación empieza cuando existan plan y tasks aprobados. DBR-012 está Lista para backend (aplicada en `arca_pruebas` el 2026-11-11). ADR 0026 y ADR 0027 están Aceptados (2026-11-12).
 - Solicitante / responsable funcional: Aksel (decisión del 2026-11-10 de incluir la lectura pública). Respuestas del responsable: Jonathan (2026-11-10).
 - Responsable de BD: no aplica como DBR propia. Usa la tabla de `api-010`, cuya DBR es `docs/database/requests/DBR-012-visitor-memories.md` (Aprobada el 2026-11-11; aplicada en `arca_pruebas` el 2026-11-11; Lista para backend). Esta spec no crea esquema.
-- Responsable backend: por definir.
-- Aprobación funcional: pendiente.
-- Aprobado por: (pendiente, nombre del compañero)
+- Responsable backend: Jonathan.
+- Aprobación funcional: Jonathan (responsable de backend), 2026-11-12.
+- Aprobado por: Jonathan (responsable de backend), 2026-11-12.
 - Número: `012` es el siguiente libre en `apps/api/specs/` (el máximo existente es `011-public-news-read.md`). Los archivos `010-*` duplicados son `010-configurable-system-settings.md`, `010-public-enclosures-read.md` y `010-visitor-memory-requests.md`; esta spec no los toca.
 
 ## Problema y contexto
@@ -115,11 +115,11 @@ Esta feature no crea permisos ni roles.
 ## Dependencias, riesgos y preguntas
 
 - **Dependencias/ADR:**
-  - `api-010` (datos, estados, publicación al aceptar, vigencia y reglas de imagen; Borrador).
+  - `api-010` (datos, estados, publicación al aceptar, vigencia y reglas de imagen; Aprobada 2026-11-12).
   - DBR-012 (`docs/database/requests/DBR-012-visitor-memories.md`; Aprobada y aplicada en `arca_pruebas` el 2026-11-11; Lista para backend). Incluye `published_until` y el índice por vigencia.
   - `api-011` (formato de paginación, CORS por ambiente y listados); `api-008` (disco público y `storage:link`).
-  - `api-013` (Borrador) y ADR 0026 (Propuesto): `image_url` sale del disco público configurado. Ver «Nota de almacenamiento».
-  - `web-010` (consumidor) y ADR 0027 (Propuesto, excepción de arquitectura del portal para la galería).
+  - `api-013` (Aprobada 2026-11-12) y ADR 0026 (Aceptado 2026-11-12): `image_url` sale del disco público configurado. Ver «Nota de almacenamiento».
+  - `web-010` (consumidor) y ADR 0027 (Aceptado 2026-11-12, excepción de arquitectura del portal para la galería).
   - No hay dependencia nueva ni ADR nuevo de la API.
 - **Infraestructura (`infra/README.md`):** `CORS_ALLOWED_ORIGINS` con el origen del portal en cada ambiente, `storage:link` (enlace `public/media`) y el disco público para las imágenes publicadas. **Pendiente:** `infra/README.md` no se edita desde esta documentación.
 - **Riesgos:**
@@ -130,11 +130,13 @@ Esta feature no crea permisos ni roles.
   - Carga de lectura sin caché en el servidor (igual que `api-011`).
 - **Preguntas pendientes:**
   1. Resuelta por el responsable (2026-11-10): la ruta es `GET /api/v1/memories`, decisión final. Se mantiene en esta lista como referencia.
-  2. ¿Se confirma el máximo de 50 para `limit` y el de 10 por defecto? Propuesta: sí, igual que `api-011`.
+  2. ¿Se confirma el máximo de 50 para `limit` y el de 10 por defecto? Propuesta: sí, igual que `api-011`. **Resuelta, decisión del usuario 2026-11-12:** máximo 50 para `limit` y 10 por defecto, igual que `api-011`.
+
+Estado de las preguntas (2026-11-12): sin preguntas abiertas.
 
 ## Nota de almacenamiento (2026-11-10)
 
-Decisión del responsable pendiente de aprobación formal del equipo. Esta spec no cambia su estado (Borrador). Sí cambia el texto de CA-07 para registrar la excepción de la carpeta `media/`.
+Decisión del responsable, aprobada con esta spec por Jonathan el 2026-11-12. Sí cambia el texto de CA-07 para registrar la excepción de la carpeta `media/`.
 
 - **CA-06 (`image_url`):** la URL sale de `MEDIA_PUBLIC_URL` o de `APP_URL` más `/media` (`api-013` CA-17), sin cambiar el formato de la respuesta. Si el archivo no está en el disco, `image_url` sigue siendo `null` sin error.
 - **Ruta publicada:** la imagen aceptada se lee desde `published_image_path` en el disco público (DBR-012, `api-013` CA-11). Al aceptar, `published_image_path` toma el valor de `image_path` (el archivo ya está en `media/memories/`), así que `image_url` de un momento aceptado tiene valor. Si la imagen no existe en la carpeta, `image_url` es `null` o la imagen no carga hasta el `pull` (flujo 8 de `api-013`).
@@ -144,6 +146,8 @@ Decisión del responsable pendiente de aprobación formal del equipo. Esta spec 
 
 ## Revisión
 
-- Aprobadores y fecha: pendiente.
-- Aprobado por: (pendiente, nombre del compañero)
+- Aprobadores y fecha: Jonathan (responsable de backend), 2026-11-12.
+- Aprobado por: Jonathan (responsable de backend), 2026-11-12.
+- Estado: Aprobada (2026-11-12). Aprobar no autoriza implementar: la implementación empieza cuando existan plan y tasks aprobados. Depende de `api-010` (Aprobada) y de DBR-012 (Lista para backend). Sin preguntas abiertas.
+- Historial: 2026-11-12: pregunta 2 resuelta por el usuario (máximo 50 para `limit` y 10 por defecto, igual que `api-011`). 2026-11-12, aprobación (Jonathan, responsable de backend): spec Aprobada, responsable de backend registrado como Jonathan. Sin cambio de CA, RN ni alcance.
 - Evidencia/enlaces: `apps/api/specs/011-public-news-read.md` (patrón de lectura pública), `apps/api/specs/010-visitor-memory-requests.md` (datos, vigencia y publicación), `apps/web/specs/010-dynamic-memories.md` (consumidor), `apps/api/specs/008-event-news-images.md` (disco público e imágenes), `apps/api/specs/013-object-storage-images.md` (almacenamiento), `docs/adr/0027-dynamic-public-memories-gallery.md`, `docs/database/requests/DBR-012-visitor-memories.md`.

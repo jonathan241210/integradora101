@@ -6,7 +6,7 @@
 - Responsable técnico: Jonathan (responsable de backend); aprobación técnica del plan pendiente.
 - Precondición de ejecución: DBR-013 en **«Lista para backend»**. Cumplida desde el 2026-11-12: DBR-013 está en «Lista para backend» y su migración (`apps/api/src/database/migrations/2026_11_12_000013_species_publication_requests_schema.php`) está aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura. Pendiente de BD: EXPLAIN (T-29).
 - Consumidores: `web-011` (`apps/web`, TulanPedia; consumidor, sin cambios en este plan). Sin cambios en `apps/mobile`, `apps/dashboard`, `packages/api-client` ni en `api-006`.
-- Dependencias: `api-014` (fuente de los datos publicados; Aprobada, no implementada), DBR-013, ADR 0026 (Aceptado, con enmienda de `media/species/`), ADR 0028 (Aceptado), `api-013` (**Borrador**: disco `media` y `MEDIA_PUBLIC_URL`), `api-011` (CORS por ambiente y formato de respuestas públicas).
+- Dependencias: `api-014` (fuente de los datos publicados; Aprobada, no implementada), DBR-013, ADR 0026 (Aceptado, con enmienda de `media/species/`), ADR 0028 (Aceptado), `api-013` (**Aprobada** 2026-11-12: disco `media` y `MEDIA_PUBLIC_URL`, aún sin configurar), `api-011` (CORS por ambiente y formato de respuestas públicas).
 
 ## Diseño de solución
 
@@ -210,7 +210,7 @@ No hay excepciones que requieran ADR. La brecha de V se cierra con una decisión
 
 - **ADR/DBR:** no se requiere ADR nuevo ni DBR propia. Se apoyan ADR 0013 (Aiven), ADR 0026 (medios, Aceptado con enmienda de `species/`) y ADR 0028 (catálogo dinámico, Aceptado).
 - **Bloqueo 1, DBR-013 (resuelto el 2026-11-12).** Las columnas y los índices están aplicados en `arca_pruebas`. T-00 sigue siendo la puerta de entrada y solo lee; T-01 no empieza hasta que T-00 deje constancia de la evidencia.
-- **Bloqueo 2, api-013 en Borrador.** El disco `media`, `MEDIA_PUBLIC_URL` y la regla de `species/` dependen de esa spec. Sin ella, `image_url` no tiene origen configurado (CA-08). Mitigación: T-09 y T-22 esperan a api-013, o se acuerda una configuración provisional por escrito (pregunta 3).
+- **Bloqueo 2, api-013 Aprobada (2026-11-12) y sin disco configurado.** El disco `media`, `MEDIA_PUBLIC_URL` y la regla de `species/` dependen de esa spec. Sin ella, `image_url` no tiene origen configurado (CA-08). Mitigación: T-09 y T-22 esperan a api-013, o se acuerda una configuración provisional por escrito (pregunta 3).
 - **Riesgo: collation insensible a acentos.** Si se usa la collation de la tabla sin cambio, `habitat` y `name` no respetan la decisión 8. Mitigación: `LOWER(...) COLLATE utf8mb4_bin` y las aserciones de CA-04 y CA-05. Pregunta 1.
   - **Colaciones observadas en `arca_pruebas` (2026-11-12):** `species.*` usa `utf8mb4_0900_ai_ci` y `species_publication_requests.*` usa `utf8mb4_unicode_ci`. Ambas son insensibles a acentos (`ai`) y a mayúsculas (`ci`), así que la comparación con la collation de la tabla no respeta la decisión 8 en ninguna de las dos. Esta observación confirma el riesgo y no cambia la decisión 8 ni la mitigación anterior.
 - **Riesgo: el filtro `habitat` no usa índice.** `JSON_CONTAINS` y `LOWER(TRIM(...))` obligan a recorrer las publicadas. Con el catálogo pequeño es aceptable. T-29 lo mide con EXPLAIN.
@@ -254,7 +254,7 @@ No hay excepciones que requieran ADR. La brecha de V se cierra con una decisión
 | Equipo técnico | Este plan y su Constitution Check | Pendiente |
 | Responsable de BD | Confirmación de que DBR-013 está aplicada en `arca_pruebas` (sin DBR propia) | Pendiente de confirmación de BD. Evidencia de solo lectura del 2026-11-12 disponible (lote 5); fecha y responsable por registrar (evidencia de T-00) |
 | Responsable backend | DBR-013 «Lista para backend» | Cumplido el 2026-11-12 (migración aplicada en `arca_pruebas`); EXPLAIN pendiente de BD |
-| Responsable de `api-013` | Disco `media`, `MEDIA_PUBLIC_URL` (pregunta 3) | Pendiente (api-013 en Borrador) |
+| Responsable de `api-013` | Disco `media`, `MEDIA_PUBLIC_URL` (`api-013` CA-17 y RN-04) | Pendiente (api-013 Aprobada 2026-11-12; disco sin configurar) |
 
 ## Preguntas abiertas (máximo 8)
 

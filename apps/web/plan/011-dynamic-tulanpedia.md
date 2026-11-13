@@ -4,7 +4,7 @@
 - Estado de spec: Aprobada (Jonathan, responsable de backend, 2026-11-12). Aprobar la spec no autoriza implementar: la implementación espera a `api-015` implementada (DBR-013 ya está en «Lista para backend» desde el 2026-11-12).
 - Estado de este plan: **Borrador, pendiente de aprobación técnica del equipo y de Jonathan.** No está aprobado. No se implementa ni se marca ninguna T-xx hasta esa aprobación.
 - Tasks: `apps/web/tasks/011-dynamic-tulanpedia.md` (Borrador, mismo NNN-slug).
-- ADR de excepción: `docs/adr/0028-dynamic-tulanpedia-catalog.md` (Aceptado 2026-11-12). Extiende la excepción de `docs/adr/0024-web-static-portal-exception.md` (Aceptado; no se modifica). `docs/adr/0027-dynamic-public-memories-gallery.md` (Propuesto) no aplica.
+- ADR de excepción: `docs/adr/0028-dynamic-tulanpedia-catalog.md` (Aceptado 2026-11-12). Extiende la excepción de `docs/adr/0024-web-static-portal-exception.md` (Aceptado; no se modifica). `docs/adr/0027-dynamic-public-memories-gallery.md` (Aceptado 2026-11-12) no aplica.
 - Responsable técnico: por identificar (frontend del portal).
 - Dependencias bloqueantes de implementación:
   - `api-015` (`GET /api/v1/published-species`): Aprobada 2026-11-12, **sin implementar**. No se puede verificar contra la API real hasta que exista. Hasta entonces, las pruebas usan respuestas simuladas.
