@@ -87,11 +87,13 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 - **CA-15:** Dado cualquier 401 en estas secciones, cuando lo detecta el estado de sesión, entonces el dashboard vuelve al login con «Tu sesión expiró» (`dashboard-002` CA-08).
 - **CA-16:** Dadas las vistas nuevas, cuando se usan con teclado y a anchos de 360 a 1366 px, entonces conservan foco visible, diálogos con foco atrapado y cierre con Escape, tablas con desplazamiento propio o diseño apilado, y no hay desbordamiento horizontal de la página.
 - **CA-17:** Dada la interfaz, cuando se revisa su estilo, entonces usa tokens semánticos y no fija hex de marca.
-- **CA-18:** Dada la suite del dashboard, cuando se ejecutan los tests de Vitest con un cliente simulado de `@arca/api-client`, entonces existe al menos una prueba que nombra cada CA-01 a CA-19.
+- **CA-18:** Dada la suite del dashboard, cuando se ejecutan los tests de Vitest con un cliente simulado de `@arca/api-client`, entonces existe al menos una prueba que nombra cada CA-01 a CA-20.
 
 ### Zona horaria
 
 - **CA-19:** Dado el Panel principal o el Reporte, cuando se piden el panel, el reporte o su exportación, entonces `@arca/api-client` envía en `timezone` la zona horaria del navegador (`Intl.DateTimeFormat().resolvedOptions().timeZone`) en las tres llamadas, y ni la vista ni el ViewModel calculan periodos, días ni fechas con esa zona. Si el navegador no informa la zona, la llamada se hace sin `timezone` y la API responde con su zona por defecto. Aclaración (decisión de Jonathan, 2026-10-30; `api-007` RN-14 y CA-28). Confirmado por Jonathan, 2026-10-30.
+
+- **CA-20:** Dadas las seis secciones administrativas, cuando se presentan entre 360 y 1366 px, entonces comparten una jerarquía visual más clara en encabezados, tarjetas, formularios, filtros y tablas, conservan la paleta y tipografía vigentes, y no cambian acciones, datos, permisos ni navegación. La mejora no se aplica a las pantallas de taquilla.
 
 ## Reglas de negocio
 
@@ -103,7 +105,7 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 - **RN-06:** Sin React Router: la navegación entre vistas sigue por estado de la SPA (ADR 0002).
 - **RN-07:** La contraseña capturada para crear o restablecer una cuenta no se guarda en el cliente y se descarta tras enviarla.
 - **RN-08:** Esta feature depende de `api-007`; mientras no esté implementada, el desarrollo usa un cliente simulado en tests.
-- **RN-09:** El diseño visual no cambia: se conservan colores y tipografía vigentes (tokens semánticos). Las secciones, botones, diálogos, tablas y formularios nuevos reutilizan los componentes y patrones de las pantallas existentes y de `@arca/ui`.
+- **RN-09:** La presentación de las secciones administrativas puede mejorar su jerarquía, orden, espaciado y legibilidad sin alterar su comportamiento. Se conserva la paleta y tipografía vigentes y se usan tokens semánticos; las pantallas de taquilla quedan fuera del rediseño.
 - **RN-10:** La feature se entrega completa en conjunto (Usuarios, Noticias, Eventos, Recintos, Panel y Reporte), no por etapas. Los formatos CSV, Excel y PDF se ofrecen siempre en la interfaz. La API (`api-007`, RN-12 y CA-23) tiene habilitados los tres desde la aceptación del ADR 0017 (2026-10-30); la API solo responde 422 para un formato fuera de su lista («Formato de exportación no disponible.») o para PDF sobre el tope de boletos, y la interfaz muestra ese error según CA-12.
 - **RN-11:** (Decisión y redacción confirmadas por Jonathan, 2026-10-30: zona del dispositivo con respaldo en `America/Mexico_City`.) La zona horaria con la que se calculan los periodos, los días y la exportación es la del dispositivo que consulta. La obtiene y la envía `@arca/api-client` (en el parámetro `timezone` del Panel, del Reporte y de su exportación), no las vistas ni los ViewModels. El cliente no calcula periodos, días ni totales con esa zona: los recibe de la API (RN-04; `api-007` RN-14).
 
@@ -128,7 +130,7 @@ El dashboard muestra datos personales del personal (nombre, correo, área, rol) 
 - **Preguntas resueltas (Jonathan):**
   1. Columnas y filtros propuestos para la tabla de Usuarios: suficientes.
   2. Entrega: todo junto, no por etapas.
-  3. Diseño: no cambia colores ni tipografía; las vistas nuevas siguen los patrones de las pantallas actuales. Se pueden agregar secciones, botones, ventanas (diálogos) y similares, siempre con los mismos patrones y componentes ya definidos (RN-09).
+  3. Diseño (decisión inicial, reemplazada por la revisión visual de 2026-11-12): no cambia colores ni tipografía; las vistas nuevas siguen los patrones de las pantallas actuales. Se pueden agregar secciones, botones, ventanas (diálogos) y similares, siempre con los mismos patrones y componentes ya definidos.
 - **Pregunta de zona horaria (2026-10-30): confirmada por Jonathan, 2026-10-30.**
   4. ¿El Panel y el Reporte deben mostrar la zona horaria que la API usó (p. ej. «Hora de Ciudad de México»)? Respuesta: no. La interfaz no muestra la zona usada y esta feature no añade ese texto. Confirmado por Jonathan, 2026-10-30.
 
@@ -142,11 +144,15 @@ Decisión de Jonathan del 2026-11-05. **Estado: revisión aprobada por Jonathan 
 - **Efectos en otras specs:** `dashboard-004` (`zoo-admin` deja de tener Usuarios en su tabla de actores; ver su revisión), `dashboard-002` (CA-06 ajustado: Usuarios solo con `users.manage`), `apps/dashboard/docs/arquitectura.md` y `manual-demo.md`.
 - **Tareas:** T-33 a T-38 en `tasks/003-administration-sections.md`.
 
+## Revisión visual 2026-11-12
+
+La persona usuaria confirmó el rediseño visual de las seis secciones administrativas, sin cambios de color, funcionalidad ni pantallas de taquilla. Se reemplaza la decisión anterior de RN-09, se añade CA-20 y se amplía CA-18 para cubrirlo.
+
 ## Revisión
 
 - Aprobadores y fecha: Jonathan (responsable funcional), 2026-10-30.
 - Evidencia/enlaces: `apps/api/specs/007-administration-management.md`, `apps/dashboard/specs/002-real-staff-login.md`, `apps/dashboard/specs/001-admin-dashboard-prototype.md`, `docs/03-roles-y-permisos.md`.
-- Cambio de 2026-10-30 (decisión de Jonathan, responsable funcional): zona horaria del dispositivo, con respaldo en `America/Mexico_City`. Jonathan confirmó la decisión y aprobó proceder con la implementación. Se añaden RN-11 y CA-19; CA-18 se amplía a CA-01 a CA-19.
+- Cambio de 2026-10-30 (decisión de Jonathan, responsable funcional): zona horaria del dispositivo, con respaldo en `America/Mexico_City`. Jonathan confirmó la decisión y aprobó proceder con la implementación. Se añaden RN-11 y CA-19; CA-18 se amplía para incluir los criterios vigentes.
 - La redacción literal de CA-19 y RN-11 la proveyó el documentador y fue confirmada por Jonathan, 2026-10-30.
 - Confirmado por Jonathan, 2026-10-30: la interfaz no muestra la zona usada (pregunta 4).
 - Confirmado por Jonathan, 2026-10-30: redacción reconciliada de RN-10 y CA-12 (divergencia de `apps/dashboard/plan/003-administration-sections.md`); Excel y PDF se ofrecen en la interfaz y dependen de la API (ADR 0017).

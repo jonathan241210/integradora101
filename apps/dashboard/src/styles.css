@@ -2499,3 +2499,450 @@ ul.enclosure-grid {
     width: 100%;
   }
 }
+
+/* dashboard-003 · mejora visual del administrador, sin alterar sus flujos */
+.dashboard-app--admin .sidebar {
+  width: 252px;
+  padding: 24px 16px 18px;
+}
+
+.dashboard-app--admin .sidebar-brand {
+  min-height: 60px;
+  padding: 0 6px 16px;
+  border-bottom: 1px solid color-mix(in srgb, var(--sidebar-foreground) 18%, transparent);
+}
+
+.dashboard-app--admin .sidebar-brand__text strong {
+  font-size: 14px;
+}
+
+.dashboard-app--admin .sidebar-label {
+  margin: 26px 10px 12px;
+  font-size: 11px;
+}
+
+.dashboard-app--admin .sidebar-nav {
+  gap: 7px;
+}
+
+.dashboard-app--admin .sidebar-link {
+  position: relative;
+  min-height: 46px;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.dashboard-app--admin .sidebar-link--active {
+  background: var(--sidebar-active);
+  color: var(--sidebar-foreground);
+}
+
+.dashboard-app--admin .sidebar-link--active::before {
+  width: 3px;
+  height: 20px;
+  flex: 0 0 auto;
+  border-radius: 0 3px 3px 0;
+}
+
+.dashboard-app--admin .sidebar-link--active svg {
+  display: block;
+}
+
+.dashboard-app--admin .sidebar-account {
+  min-height: 56px;
+  gap: 11px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.dashboard-app--admin .dashboard-main {
+  margin-left: 252px;
+}
+
+.dashboard-app--admin .topbar {
+  min-height: 76px;
+  justify-content: space-between;
+  padding-inline: clamp(24px, 3vw, 48px);
+  background: var(--surface);
+}
+
+.dashboard-app--admin .search-box {
+  width: min(360px, 38vw);
+  min-height: 42px;
+  border-radius: 10px;
+  background: var(--surface-page);
+}
+
+.dashboard-app--admin .search-box input {
+  font-size: 14px;
+}
+
+.dashboard-app--admin .topbar__actions {
+  gap: 16px;
+}
+
+.dashboard-app--admin .user-profile {
+  gap: 11px;
+}
+
+.dashboard-app--admin .user-profile strong {
+  font-size: 13px;
+}
+
+.dashboard-app--admin .user-profile small {
+  font-size: 11px;
+}
+
+.dashboard-app--admin .dashboard-content {
+  width: min(100%, 1640px);
+  gap: 24px;
+  padding: 34px clamp(24px, 3vw, 48px) 52px;
+}
+
+.dashboard-app--admin .section-heading {
+  gap: 8px;
+}
+
+.dashboard-app--admin .section-heading__eyebrow {
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.dashboard-app--admin .section-heading h1 {
+  font-size: clamp(28px, 2.4vw, 34px);
+  line-height: 1.15;
+}
+
+.dashboard-app--admin .section-heading > p:last-child {
+  max-width: 68ch;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.dashboard-app--admin .dashboard-content .arca-card:not(.table-card) {
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.dashboard-app--admin .card-heading h2,
+.dashboard-app--admin .list-heading h2,
+.dashboard-app--admin .form-panel__header h2,
+.dashboard-app--admin .totals-section__heading {
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.dashboard-app--admin .card-heading p,
+.dashboard-app--admin .list-heading p,
+.dashboard-app--admin .form-panel__header p {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.dashboard-app--admin .form-card,
+.dashboard-app--admin .filter-card,
+.dashboard-app--admin .chart-card {
+  gap: 20px;
+  padding: 24px;
+}
+
+.dashboard-app--admin .form-panel__content {
+  gap: 18px;
+}
+
+.dashboard-app--admin .form-grid {
+  gap: 18px;
+}
+
+.dashboard-app--admin .filter-form {
+  gap: 16px;
+}
+
+.dashboard-app--admin .report-controls {
+  gap: 20px;
+}
+
+.dashboard-app--admin .report-period-label {
+  margin-top: 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 15px;
+}
+
+.dashboard-app--admin .report-export {
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.dashboard-app--admin .metric-grid,
+.dashboard-app--admin .report-metric-grid {
+  gap: 16px;
+}
+
+.dashboard-app--admin .report-metric {
+  min-height: 122px;
+  align-content: center;
+  gap: 8px;
+  padding: 20px;
+}
+
+.dashboard-app--admin .report-metric > span,
+.dashboard-app--admin .report-metric small {
+  font-size: 12px;
+}
+
+.dashboard-app--admin .report-metric strong {
+  font-size: clamp(21px, 2vw, 26px);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-app--admin .table-card {
+  gap: 18px;
+}
+
+.dashboard-app--admin .table-card > .card-heading {
+  padding: 24px 24px 0;
+}
+
+.dashboard-app--admin .table-scroll table {
+  font-size: 13px;
+}
+
+.dashboard-app--admin .table-scroll th,
+.dashboard-app--admin .table-scroll td {
+  padding: 14px 16px;
+}
+
+.dashboard-app--admin .table-scroll th {
+  font-size: 11px;
+  letter-spacing: .02em;
+}
+
+.dashboard-app--admin .row-actions {
+  gap: 8px;
+}
+
+.dashboard-app--admin .row-actions .arca-button {
+  min-height: 36px;
+  padding-inline: 12px;
+  font-size: 12px;
+}
+
+.dashboard-app--admin .pagination-bar {
+  padding: 16px 24px 20px;
+  font-size: 13px;
+}
+
+.dashboard-app--admin .content-list {
+  gap: 18px;
+}
+
+.dashboard-app--admin .content-card-grid,
+.dashboard-app--admin .event-card-grid {
+  gap: 18px;
+}
+
+.dashboard-app--admin .content-card__body,
+.dashboard-app--admin .event-card__body {
+  gap: 13px;
+  padding: 18px;
+}
+
+.dashboard-app--admin .content-card h3,
+.dashboard-app--admin .event-card h3 {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.dashboard-app--admin .content-card p,
+.dashboard-app--admin .event-card p {
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.dashboard-app--admin .content-card time {
+  font-size: 12px;
+}
+
+.dashboard-app--admin .enclosure-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.dashboard-app--admin .enclosure-card {
+  gap: 20px;
+  padding: 22px;
+}
+
+.dashboard-app--admin .enclosure-card .card-heading h2 {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-app--admin .sidebar {
+    width: 228px;
+  }
+
+  .dashboard-app--admin .dashboard-main {
+    margin-left: 228px;
+  }
+
+  .dashboard-app--admin .dashboard-content {
+    gap: 20px;
+  }
+
+  .dashboard-app--admin .enclosure-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .dashboard-app--admin .sidebar {
+    width: min(300px, calc(100vw - 52px));
+  }
+
+  .dashboard-app--admin .dashboard-main {
+    margin-left: 0;
+  }
+
+  .dashboard-app--admin .dashboard-content {
+    padding-block: 28px 40px;
+  }
+
+  .dashboard-app--admin .form-card,
+  .dashboard-app--admin .filter-card,
+  .dashboard-app--admin .chart-card {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dashboard-app--admin .table-scroll table {
+    min-width: 0;
+  }
+
+  .dashboard-app--admin .topbar {
+    padding-inline: 14px;
+  }
+
+  .dashboard-app--admin .search-box {
+    width: 100%;
+    max-width: none;
+  }
+
+  .dashboard-app--admin .dashboard-content {
+    gap: 18px;
+    padding: 22px 14px 32px;
+  }
+
+  .dashboard-app--admin .section-heading h1 {
+    font-size: 27px;
+  }
+
+  .dashboard-app--admin .section-heading > p:last-child {
+    font-size: 14px;
+  }
+
+  .dashboard-app--admin .form-card,
+  .dashboard-app--admin .filter-card,
+  .dashboard-app--admin .chart-card {
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .dashboard-app--admin .report-controls__row {
+    align-items: stretch;
+  }
+
+  .dashboard-app--admin .report-controls__group,
+  .dashboard-app--admin .report-export {
+    width: 100%;
+  }
+
+  .dashboard-app--admin .report-controls__group .arca-button,
+  .dashboard-app--admin .report-export .arca-button {
+    flex: 1 1 auto;
+  }
+
+  .dashboard-app--admin .table-card > .card-heading {
+    padding: 18px 16px 0;
+  }
+
+  .dashboard-app--admin .pagination-bar {
+    padding: 14px 16px 18px;
+  }
+
+  .dashboard-app--admin .enclosure-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* dashboard-011 · menú de escritorio y paginación de eventos */
+.desktop-menu-toggle {
+  display: none;
+}
+
+.desktop-menu-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+.pagination-hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+.dashboard-content .inline-alert > .arca-button {
+  margin: 8px 0 0 12px;
+}
+
+@media (min-width: 821px) {
+  .dashboard-app--admin .desktop-menu-toggle {
+    display: inline-flex;
+    min-width: 42px;
+    min-height: 42px;
+    flex: 0 0 auto;
+    padding: 10px;
+  }
+
+  .dashboard-app--admin .search-box {
+    margin-right: auto;
+  }
+
+  .dashboard-app--admin.dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) {
+    width: 76px;
+    padding-inline: 10px;
+  }
+
+  .dashboard-app--admin.dashboard-app--menu-collapsed .dashboard-main {
+    margin-left: 76px;
+  }
+
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-brand {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-brand__text,
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-label,
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link span,
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-account > span:last-child {
+    display: none;
+  }
+
+  .dashboard-app--admin.dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link,
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-account {
+    justify-content: center;
+  }
+
+  .dashboard-app--admin.dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link--active::before {
+    display: none;
+  }
+}
