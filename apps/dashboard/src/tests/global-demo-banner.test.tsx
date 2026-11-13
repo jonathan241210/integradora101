@@ -81,7 +81,7 @@ describe("CA-01 collapsible-menu-event-pagination", () => {
     expect(expanded.desktopMenuCollapsed).toBe(false);
     expect(dashboardShellReducer(expanded, { type: "toggle-desktop-menu" }).desktopMenuCollapsed).toBe(true);
     expect(render("administration", "dashboard", true)).toContain("dashboard-app--menu-collapsed");
-    expect(render("ticket", "tickets", true)).not.toContain("dashboard-app--menu-collapsed");
+    expect(render("ticket", "tickets", true)).toContain("dashboard-app--menu-collapsed");
   });
 });
 
@@ -95,7 +95,10 @@ describe("CA-02 collapsible-menu-event-pagination", () => {
     expect(collapsed).toContain('aria-label="Noticias"');
     expect(expanded).toContain('aria-label="Fijar menú de navegación abierto"');
     expect(expanded).toContain('aria-pressed="true"');
-    expect(render("ticket", "tickets")).not.toContain("desktop-menu-toggle");
+    const ticket = render("ticket", "tickets", true);
+    expect(ticket).toContain("desktop-menu-toggle");
+    expect(ticket).toContain('aria-label="Venta"');
+    expect(ticket).toContain('aria-label="Historial"');
   });
 });
 
