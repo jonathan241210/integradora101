@@ -80,9 +80,15 @@ export function TicketSaleView({
       {sold && state.sale ? (
         <Card className="ticket-sale-result">
           <div className="card-heading">
-            <div>
-              <h2>Venta registrada</h2>
-              <p>Pago en efectivo</p>
+            <div className="ticket-sale-result__heading">
+              <span className="ticket-sale-result__check" aria-hidden="true">
+                <Icon name="ticket" className="ticket-sale-result__ticket" />
+                <Icon name="check" className="ticket-sale-result__check-mark" />
+              </span>
+              <div>
+                <h2>Venta registrada</h2>
+                <p>Pago en efectivo</p>
+              </div>
             </div>
             <Badge tone="success">Registrada</Badge>
           </div>

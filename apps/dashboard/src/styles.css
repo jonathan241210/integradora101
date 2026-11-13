@@ -1289,7 +1289,7 @@ button:disabled {
     width: min(290px, calc(100vw - 52px));
     transform: translateX(-105%);
     visibility: hidden;
-    transition: transform 180ms ease;
+    transition: transform 520ms ease-in-out, visibility 520ms;
   }
 
   .sidebar--open {
@@ -2904,6 +2904,37 @@ ul.enclosure-grid {
 }
 
 @media screen and (min-width: 821px) {
+  .dashboard-app .sidebar {
+    overflow-x: hidden;
+    overflow-y: auto;
+    transition: width 520ms ease-in-out, padding 520ms ease-in-out;
+  }
+
+  .dashboard-app .dashboard-main {
+    transition: margin-left 520ms ease-in-out;
+  }
+
+  .sidebar-brand__text,
+  .sidebar-link span,
+  .sidebar-account > span:last-child {
+    max-width: 200px;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width 520ms ease-in-out, opacity 300ms ease, visibility 300ms;
+  }
+
+  .sidebar-label {
+    transition: opacity 300ms ease, visibility 300ms;
+  }
+
+  .sidebar-link svg {
+    flex: 0 0 17px;
+  }
+
+  .sidebar-link--active::before {
+    transition: width 520ms ease-in-out, opacity 300ms ease;
+  }
+
   .desktop-menu-toggle {
     display: inline-flex;
     min-width: 42px;
@@ -2931,23 +2962,159 @@ ul.enclosure-grid {
   }
 
   .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-brand__text,
-  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-label,
   .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link span,
   .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-account > span:last-child {
-    display: none;
+    max-width: 0;
+    opacity: 0;
+    visibility: hidden;
   }
 
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-label {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-brand,
   .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link,
   .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-account {
     justify-content: center;
+    gap: 0;
   }
 
   .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link--active::before {
-    display: none;
+    width: 0;
+    opacity: 0;
   }
 }
 
 @media screen {
+  .dashboard-app .sidebar {
+    border-radius: 0 20px 20px 0;
+  }
+
+  .ticket-sale-result {
+    animation: ticket-sale-success 420ms ease-out;
+  }
+
+  .ticket-sale-result__heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .ticket-sale-result__check {
+    display: grid;
+    width: 56px;
+    height: 56px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--success) 14%, var(--surface));
+    color: var(--success);
+    animation: ticket-sale-check-pop 650ms ease-out;
+  }
+
+  .ticket-sale-result__check::before {
+    grid-area: 1 / 1;
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--secondary);
+    border-radius: 50%;
+    content: "";
+    opacity: 0;
+    animation: ticket-sale-ring 2300ms ease-out;
+  }
+
+  .ticket-sale-result__check svg {
+    grid-area: 1 / 1;
+    width: 30px;
+    height: 30px;
+    stroke-width: 2.5;
+  }
+
+  .ticket-sale-result__ticket {
+    opacity: 0;
+    animation: ticket-sale-ticket 2300ms ease-in-out;
+  }
+
+  .ticket-sale-result__check-mark path {
+    stroke-dasharray: 24;
+    animation: ticket-sale-check 2300ms ease-out;
+  }
+
+  @keyframes ticket-sale-ticket {
+    0% {
+      opacity: 0;
+      transform: translateY(12px) rotate(-20deg) scale(.7);
+    }
+
+    20%, 55% {
+      opacity: 1;
+      transform: translateY(0) rotate(-8deg) scale(1);
+    }
+
+    75%, 100% {
+      opacity: 0;
+      transform: translateY(-14px) rotate(18deg) scale(.8);
+    }
+  }
+
+  @keyframes ticket-sale-ring {
+    0%, 15% {
+      opacity: 0;
+      transform: scale(.7);
+    }
+
+    35% {
+      opacity: .8;
+    }
+
+    75%, 100% {
+      opacity: 0;
+      transform: scale(1.35);
+    }
+  }
+
+  @keyframes ticket-sale-check-pop {
+    from {
+      opacity: .7;
+      transform: scale(.8);
+    }
+
+    65% {
+      opacity: 1;
+      transform: scale(1.06);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes ticket-sale-check {
+    0%, 65% {
+      stroke-dashoffset: 24;
+    }
+
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes ticket-sale-success {
+    from {
+      opacity: .7;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .dashboard-app--ticket .sidebar-brand {
     padding-bottom: 16px;
     border-bottom: 1px solid color-mix(in srgb, var(--sidebar-foreground) 18%, transparent);

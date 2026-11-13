@@ -39,6 +39,9 @@ El menú lateral ocupa espacio en pantallas grandes y la lista de eventos muestr
 - **CA-06:** A 360, 768 y 1366 px no hay desbordamiento horizontal de la página y los controles permanecen utilizables. Se mantienen los tokens semánticos, colores y tipografía existentes.
 - **CA-07:** Las pruebas automatizadas cubren menú contraído/expandido, límites de cuatro eventos, cambios de página, ajuste tras eliminación y confirmación pendiente; las pruebas existentes pasan.
 - **CA-08:** Taquilla presenta venta e historial con una apariencia más clara y destacada, conservando cantidades, precios, confirmación, filtros, cancelación e impresión.
+- **CA-09:** Los menús de administración y taquilla tienen bordes exteriores redondeados y se abren y cierran con una transición suave y pausada; al completarse una venta aparece una animación ligera en su resultado. Se respeta la preferencia de movimiento reducido y no se altera la impresión ni el flujo de venta.
+- **CA-10:** Al registrar cada venta correctamente aparece una palomita con una animación breve de entrada y trazado en el resultado; no aparece antes de la venta ni cambia la impresión. Con movimiento reducido se muestra sin movimiento apreciable.
+- **CA-11:** Cada venta exitosa muestra una animación de boleto y palomita de máximo tres segundos, sin bloquear acciones ni modificar los boletos impresos; respeta movimiento reducido.
 
 ## Reglas y datos
 
@@ -54,3 +57,11 @@ La persona solicitante aprobó este alcance el 2026-11-12: menú de iconos al co
 El 2026-11-12 la persona solicitante pidió que el menú muestre inicialmente solo iconos y se despliegue al acercar el cursor; se conserva el acceso por teclado y el botón para fijarlo abierto.
 
 El 2026-11-12 la persona solicitante pidió mejorar visualmente taquilla y aplicar el mismo menú; se conservan sus flujos y colores existentes.
+
+El 2026-11-12 la persona solicitante pidió una animación más pausada del menú en administración y taquilla y una animación ligera al hacer una venta.
+
+El 2026-11-12 la persona solicitante pidió una palomita animada cada vez que se complete una venta.
+
+El 2026-11-12 la persona solicitante pidió mejorar la animación, ralentizar un poco el menú y redondear sus bordes.
+
+El 2026-11-12 la persona solicitante pidió una animación de boletos más llamativa, de máximo tres segundos por venta.
