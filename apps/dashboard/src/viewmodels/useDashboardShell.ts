@@ -18,6 +18,7 @@ export function useDashboardShell() {
       dispatch({ type: "navigate", section, available }),
     toggleMenu: () => dispatch({ type: "toggle-menu" }),
     closeMenu: () => dispatch({ type: "close-menu" }),
+    toggleDesktopMenu: () => dispatch({ type: "toggle-desktop-menu" }),
     showNotice: (message: string) => dispatch({ type: "show-notice", message }),
   };
 }

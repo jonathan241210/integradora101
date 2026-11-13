@@ -166,7 +166,9 @@ function App() {
   const permissions = new Set(profile.permissions);
 
   return (
-    <div className="dashboard-app">
+    <div
+      className={`dashboard-app ${presentationProfile !== "ticket" ? "dashboard-app--admin" : ""} ${presentationProfile !== "ticket" && shell.state.desktopMenuCollapsed ? "dashboard-app--menu-collapsed" : ""}`}
+    >
       {shell.state.mobileMenuOpen && (
         <button
           className="mobile-nav-backdrop"
@@ -215,6 +217,8 @@ function App() {
               className={`sidebar-link ${activeSection === item.id ? "sidebar-link--active" : ""}`}
               type="button"
               key={item.id}
+              aria-label={item.label}
+              title={item.label}
               aria-current={activeSection === item.id ? "page" : undefined}
               onClick={() => navigate(item.id)}
             >
@@ -237,6 +241,18 @@ function App() {
 
       <div className="dashboard-main">
         <header className="topbar">
+          {presentationProfile !== "ticket" && (
+            <Button
+              className="desktop-menu-toggle"
+              variant="secondary"
+              aria-label="Fijar menú de navegación abierto"
+              aria-controls="dashboardNavigation"
+              aria-pressed={!shell.state.desktopMenuCollapsed}
+              onClick={shell.toggleDesktopMenu}
+            >
+              <Icon name="menu" />
+            </Button>
+          )}
           <div className="topbar__mobile">
             <Button
               ref={menuButtonRef}

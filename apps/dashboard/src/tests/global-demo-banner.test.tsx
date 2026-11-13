@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import App from "../App";
-import { initialDashboardShellState } from "../viewmodels/dashboard-shell";
+import { dashboardShellReducer, initialDashboardShellState } from "../viewmodels/dashboard-shell";
 
 const { useAuthSession, useDashboardShell } = vi.hoisted(() => ({
   useAuthSession: vi.fn(),
@@ -27,7 +27,7 @@ const adminPermissions = [
 ];
 const cashierPermissions = ["tickets.create", "tickets.view"];
 
-function render(home: "administration" | "ticket", activeSection: string) {
+function render(home: "administration" | "ticket", activeSection: string, collapsed = false) {
   useAuthSession.mockReturnValue({
     state: {
       status: "authenticated",
@@ -58,16 +58,46 @@ function render(home: "administration" | "ticket", activeSection: string) {
     logout: vi.fn(),
   });
   useDashboardShell.mockReturnValue({
-    state: { ...initialDashboardShellState, activeSection },
+    state: { ...initialDashboardShellState, activeSection, desktopMenuCollapsed: collapsed },
     reset: vi.fn(),
     navigate: vi.fn(),
     toggleMenu: vi.fn(),
     closeMenu: vi.fn(),
+    toggleDesktopMenu: vi.fn(),
     showNotice: vi.fn(),
   });
 
   return renderToStaticMarkup(<App />);
 }
+
+describe("CA-01 collapsible-menu-event-pagination", () => {
+  it("contrae y expande el menú sin cambiar la sección ni el estado móvil", () => {
+    const collapsed = initialDashboardShellState;
+    const expanded = dashboardShellReducer(collapsed, { type: "toggle-desktop-menu" });
+
+    expect(collapsed.desktopMenuCollapsed).toBe(true);
+    expect(collapsed.mobileMenuOpen).toBe(false);
+    expect(collapsed.activeSection).toBe("dashboard");
+    expect(expanded.desktopMenuCollapsed).toBe(false);
+    expect(dashboardShellReducer(expanded, { type: "toggle-desktop-menu" }).desktopMenuCollapsed).toBe(true);
+    expect(render("administration", "dashboard", true)).toContain("dashboard-app--menu-collapsed");
+    expect(render("ticket", "tickets", true)).not.toContain("dashboard-app--menu-collapsed");
+  });
+});
+
+describe("CA-02 collapsible-menu-event-pagination", () => {
+  it("expone un botón etiquetado y nombres accesibles para las opciones contraídas", () => {
+    const collapsed = render("administration", "dashboard", true);
+    const expanded = render("administration", "dashboard");
+
+    expect(collapsed).toContain('aria-label="Fijar menú de navegación abierto"');
+    expect(collapsed).toContain('aria-pressed="false"');
+    expect(collapsed).toContain('aria-label="Noticias"');
+    expect(expanded).toContain('aria-label="Fijar menú de navegación abierto"');
+    expect(expanded).toContain('aria-pressed="true"');
+    expect(render("ticket", "tickets")).not.toContain("desktop-menu-toggle");
+  });
+});
 
 const connectedSections = [
   "dashboard",
