@@ -83,3 +83,34 @@ Precondición, no tarea: DBR-005 aplicada en el ambiente (`deleted_at` en `news`
 - RN-09 (P2): T-04 (implementación); T-14 y T-18 (prueba).
 
 Orden por dependencias: T-01 → T-02 → T-03, T-04, T-05 → T-06, T-07, T-08 → T-10 (contrato cliente, en paralelo con T-11 a T-18) → T-11 a T-18 → T-19 → T-09, T-23 → T-20 → T-21 → T-22. Sin bloqueos externos de BD: solo DBR-005 aplicada en el ambiente.
+
+Trazabilidad añadida por la divergencia con api-013 (2026-11-12): CA-02 y CA-03 de api-013 → T-29; CA-07, CA-14, CA-18 y «no regresión» de api-013 → T-30; flujo 7 y D-04 de api-013, CA-17 → T-31 y T-32; P5 de este plan → T-33.
+
+## Divergencia con api-013 (registrada 2026-11-12; tareas nuevas sin marcar)
+
+Detalle en `apps/api/plan/008-event-news-images.md`, sección «Divergencia registrada con api-013». `apps/api/specs/013-object-storage-images.md` está Aprobada (2026-11-12); `apps/api/plan/013-object-storage-images.md` y `apps/api/tasks/013-object-storage-images.md` están en Borrador. Las tareas siguientes dependen de las de api-013 indicadas. Ninguna está marcada; no se marcan sin evidencia.
+
+- [ ] **T-29** (api-013 CA-02, CA-03; RN-02, RN-04): **sustituir el nombre literal del disco por el ámbito público** en `StoreContentImageAction`, `DeleteContentImageAction` y `ResolveContentImageUrlAction`, usando `ResolveMediaDiskAction->publicDisk()` (api-013 T-05). `DeleteContentImageAction` delega en `DeleteMediaFileAfterCommitAction` (api-013 T-06), conservando su contrato y la comprobación de ruta gestionada.
+  - Rutas: `app/Actions/Admin/Content/StoreContentImageAction.php`, `DeleteContentImageAction.php`, `ResolveContentImageUrlAction.php`.
+  - Bloqueada por: api-013 T-01, T-05 y T-06.
+  - **Criterio de hecho:** `CA-02` de api-013 en verde; T-02, T-03 y T-04 de esta spec siguen verdes sin cambios de test; `image_path` no cambia de formato.
+
+- [ ] **T-30** (api-013 CA-07, CA-14, CA-18; no regresión): **verificar que los tests de esta spec siguen verdes con el valor por defecto** (`PUBLIC_MEDIA_DISK` ausente o `public`). Si `ContentImageCoverageTest` deja de encontrar el literal `Storage::fake('public')`, se actualiza en el mismo cambio. Las pruebas con la carpeta compartida (`Storage::fake('media')`) están en api-013 T-16, no aquí.
+  - Rutas: `tests/Feature/Admin/ContentImageCoverageTest.php` (solo si cambia el literal).
+  - Bloqueada por: T-29.
+  - **Criterio de hecho:** la suite de imágenes de esta spec pasa sin cambios de criterio.
+
+- [ ] **T-31** (api-013 D-01, D-03, CA-17; RN-04): **actualizar `apps/api/docs/administracion.md`**, sección «Imágenes»: por defecto las imágenes van a `storage/app/public` con `/storage`; con la carpeta compartida (`PUBLIC_MEDIA_DISK=media`), van a `apps/api/src/media/` con `/media` (o `MEDIA_PUBLIC_URL`), y `storage:link` crea `public/media`. Sin secretos.
+  - Rutas: `apps/api/docs/administracion.md`.
+  - Bloqueada por: api-013 T-01 (configuración de ámbitos).
+  - **Criterio de hecho:** el documento coincide con api-013 y con el valor por defecto de esta spec.
+
+- [ ] **T-32** (api-013 flujo 7, D-04, flujo 8; CA-20): **documentar en `administracion.md`** la re-subida de todas las imágenes de noticias y eventos existentes antes de versionarlas, la fila sin archivo hasta el `pull` y la verificación manual de T-21 en la carpeta que use el `.env` del equipo (`media/` en modo compartido).
+  - Rutas: `apps/api/docs/administracion.md`.
+  - Bloqueada por: T-31 de esta spec.
+  - **Criterio de hecho:** la instrucción aparece en el documento y coincide con `infra/README.md` (api-013 T-11).
+
+- [ ] **T-33** (api-013 CA-17; pregunta P5): **registrar la decisión formal del equipo sobre P5** (URL pública de noticias y eventos en `/media` en la carpeta compartida). Si se aprueba, se anota en este plan; si no, se mantiene `/storage` y se documenta la carpeta compartida como excepción de pruebas.
+  - Rutas: `apps/api/plan/008-event-news-images.md` (sección de divergencia).
+  - Bloqueada por: aprobación del equipo.
+  - **Criterio de hecho:** decisión registrada con fecha y aprobador en el plan.

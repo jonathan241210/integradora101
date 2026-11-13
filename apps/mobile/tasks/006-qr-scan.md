@@ -27,5 +27,6 @@
 - [x] **T-10**: `npm test` en `apps/mobile` (suites qr + navegación relacionada).
 - [x] **T-11**: Actualizar roadmap y arquitectura; spec **Implementada** 2026-11-01.
 - [x] **T-12** (CA-02 de 005, enmienda 2026-11-01): Tras `discoveries` exitoso, invalidar el progreso compartido y refrescar colección, perfil y aventura al enfocar. Emparejar especies por id.
+- [x] **T-13** (CA-01): Enmienda visual 2026-11-11. La solicitud de permiso es una frase y «Permitir cámara». El marco `accent` y el fondo `primary` no cambian. Jest: `__tests__/qr/permissions.test.tsx` en verde el 2026-11-11.
 
 No hay tareas de API ni DBR.

@@ -4,6 +4,7 @@ import HomeRoute from '../src/app/(tabs)/index';
 
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
+  useLocalSearchParams: () => ({}),
 }));
 
 describe('Home route', () => {
@@ -12,7 +13,8 @@ describe('Home route', () => {
 
     await waitFor(() => {
       expect(getByText('Bienvenido al Zoológico')).toBeTruthy();
-      expect(getByText('Animales Destacados')).toBeTruthy();
+      expect(getByText('Animales favoritos')).toBeTruthy();
+      expect(getByText('Marca el corazón en la ficha de un animal para verlo aquí.')).toBeTruthy();
     });
   });
 });

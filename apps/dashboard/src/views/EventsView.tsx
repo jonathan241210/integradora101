@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { Alert, Badge, Card, Field, SelectField, TextAreaField } from "@arca/ui";
+import { Alert, Badge, Button, Card, Field, SelectField, TextAreaField } from "@arca/ui";
 import { ContentCardActions } from "@/components/ContentCardActions";
 import { ContentThumbnail } from "@/components/ContentThumbnail";
 import { fieldErrorProps } from "@/components/FieldErrors";
@@ -10,6 +10,7 @@ import { ImageUploadBox } from "@/components/ImageUploadBox";
 import { InlineFormFooter } from "@/components/InlineFormFooter";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
 import { NoticeBar } from "@/components/NoticeBar";
+import { PaginationBar } from "@/components/PaginationBar";
 import { SectionHeading } from "@/components/SectionHeading";
 import type { EventDto } from "@/viewmodels/admin-types";
 import {
@@ -19,6 +20,7 @@ import {
 } from "@/viewmodels/events-management";
 import { formatDate, formatTime } from "@/viewmodels/formatters";
 import { visibleImageUrl } from "@/viewmodels/inline-content";
+import { useEventsPagination } from "@/viewmodels/useEventsPagination";
 
 function schedule(item: EventDto): string {
   const dates = item.end_date && item.end_date !== item.start_date
@@ -33,6 +35,10 @@ function schedule(item: EventDto): string {
 
 export function EventsView({ state, actions }: EventsViewModel) {
   const { form, editing, fieldErrors: errors, pendingAction } = state;
+  const pagination = useEventsPagination(state.items, pendingAction, state.actionBusy);
+  const missingPending = pendingAction !== null
+    && (state.status === "ready" || state.status === "empty")
+    && !state.items.some((item) => item.id === pendingAction.id);
   const editingNow = editing !== null;
   const { registerTrigger, noticeRef } = useInlineFocus({
     pendingAction,
@@ -62,6 +68,14 @@ export function EventsView({ state, actions }: EventsViewModel) {
       {state.actionError && pendingAction === null && (
         <Alert className="inline-alert" role="alert" aria-live="assertive">
           {state.actionError}
+        </Alert>
+      )}
+      {missingPending && (
+        <Alert className="inline-alert" role="alert">
+          El evento ya no está en la lista. Cierra la confirmación para continuar.
+          <Button variant="secondary" disabled={state.actionBusy} onClick={actions.closeAction}>
+            Cerrar confirmación
+          </Button>
         </Alert>
       )}
 
@@ -187,7 +201,7 @@ export function EventsView({ state, actions }: EventsViewModel) {
             </div>
           </div>
           <div className="event-card-grid">
-            {state.items.map((item) => {
+            {pagination.items.map((item) => {
               const pending = pendingAction?.id === item.id ? pendingAction.type : null;
 
               return (
@@ -220,6 +234,16 @@ export function EventsView({ state, actions }: EventsViewModel) {
               );
             })}
           </div>
+          <PaginationBar
+            page={pagination.page}
+            lastPage={pagination.lastPage}
+            total={state.items.length}
+            busy={pendingAction !== null || state.actionBusy}
+            onPageChange={pagination.changePage}
+          />
+          {pendingAction && (
+            <p className="pagination-hint">Confirma o cancela la acción para cambiar de página.</p>
+          )}
         </section>
       )}
     </>

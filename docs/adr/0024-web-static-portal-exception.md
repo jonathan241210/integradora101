@@ -54,6 +54,11 @@ Para las páginas de contenido público de `apps/web` que define `web-009` (port
 - **Obligatoria** antes de aprobar la spec de pago con tarjeta en el portal, junto con su ADR y su proveedor (ADR 0009). Si esa spec exige sesión, estado de carrito o formularios con validación compleja, el portal migrará a SPA React con `@arca/api-client` o esta excepción se justificará de nuevo.
 - **También** si el portal crece más allá de las páginas de `web-009` (más páginas con estado o más lógica de cliente), o si se requieren cookies o autenticación del visitante.
 
+## Nota de alcance (2026-11-10)
+
+- La galería «Momentos para recordar» de la portada (`apps/web/specs/010-dynamic-memories.md`, Aprobada 2026-11-12) **no está cubierta por esta decisión**. Es un módulo nuevo y esta decisión se limita a `web-009`.
+- Su excepción de arquitectura se registra en `docs/adr/0027-dynamic-public-memories-gallery.md` (Aceptado 2026-11-12), que hereda las condiciones 1 a 6 de este ADR. Este ADR no se enmienda y su estado no cambia.
+
 ## Validación y revisión
 
 - Aprobación del equipo: **Aprobado el 2026-11-07 por el equipo de desarrollo (Víctor Adrián y Jonathan)**. Queda formalmente autorizada la implementación de web-009 conforme a los límites de este ADR.

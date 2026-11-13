@@ -60,12 +60,17 @@ La API entrega `home` y permisos; el dashboard solo muestra las secciones asocia
 - `ticket`: Venta e Historial reales (el cajero ve solo sus boletos).
 - `pwa`: la sesión veterinaria se dirige a `pwa_url`. Si la URL no está configurada, se informa que la aplicación no está disponible y no se redirige.
 
+En administración, el panel ejecutivo y taquilla, la navegación en computadora comienza contraída con sus iconos visibles y se despliega al acercar el cursor o al usar el teclado. El botón de la barra superior permite fijarla abierta o volver al despliegue automático. En celular se conserva el botón para abrir y cerrar el menú.
+
+El menú se despliega con una transición suave y, al registrar una venta, el resultado muestra una breve animación de boleto y palomita. Si el dispositivo prefiere reducir el movimiento, los efectos se minimizan.
+
 ### Secciones conectadas a la API
 
 Las secciones de administración usan datos reales de `arca_pruebas` mediante `api-007` y no muestran el aviso de demostración:
 
 - **Usuarios:** tabla paginada con búsqueda y filtros por rol, área y estado; formulario fijo (minimizable) de alta y edición; activar/desactivar, eliminar, restablecer contraseña y restablecer 2FA con confirmación en línea en la propia fila, sin ventanas emergentes. Solo `admin` (con `users.manage`) ve esta sección; `zoo-admin` no la ve desde el 2026-11-05.
 - **Noticias y Eventos:** listado de activos e inactivos, formulario fijo (minimizable) de alta y edición con caja de imagen (selector o arrastrar y soltar; JPG, PNG o WebP de hasta 5 MB; vista previa, «Quitar imagen» y miniatura en las tarjetas); activar/desactivar y eliminar con confirmación en línea en la tarjeta.
+- **Paginación de Eventos:** se muestran hasta cuatro eventos por página, en el orden entregado por la API. «Anterior» y «Siguiente» cambian la página; si hay una confirmación abierta, hay que confirmarla o cancelarla antes de cambiar. La paginación organiza la lista recibida en el navegador; no reduce la descarga de datos.
 - **Recintos:** lista con número de animales, alta y renombrado; no se eliminan.
 - **Panel principal:** totales de hoy y de los últimos 7 días y serie diaria de ingresos. Sin ventas se muestra un estado vacío.
 - **Reporte de boletos:** periodo semanal o mensual (rango personalizado como opción secundaria), navegación al periodo anterior/siguiente, totales, desglose diario, listado paginado y exportación.

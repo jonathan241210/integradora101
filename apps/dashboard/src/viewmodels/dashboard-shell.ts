@@ -17,6 +17,7 @@ export type DashboardSection =
 export type DashboardShellState = {
   activeSection: DashboardSection;
   mobileMenuOpen: boolean;
+  desktopMenuCollapsed: boolean;
   notice: string;
 };
 
@@ -25,11 +26,13 @@ export type DashboardShellAction =
   | { type: "navigate"; section: DashboardSection; available: DashboardSection[] }
   | { type: "toggle-menu" }
   | { type: "close-menu" }
+  | { type: "toggle-desktop-menu" }
   | { type: "show-notice"; message: string };
 
 export const initialDashboardShellState: DashboardShellState = {
   activeSection: "dashboard",
   mobileMenuOpen: false,
+  desktopMenuCollapsed: true,
   notice: "",
 };
 
@@ -53,6 +56,8 @@ export function dashboardShellReducer(
       return { ...state, mobileMenuOpen: !state.mobileMenuOpen };
     case "close-menu":
       return { ...state, mobileMenuOpen: false };
+    case "toggle-desktop-menu":
+      return { ...state, desktopMenuCollapsed: !state.desktopMenuCollapsed };
     case "show-notice":
       return { ...state, notice: action.message };
     default:

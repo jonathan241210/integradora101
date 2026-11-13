@@ -11,6 +11,7 @@ Esta carpeta reúne la referencia funcional y técnica compartida por todas las 
 - [06 · Convenciones](06-convenciones.md)
 - [07 · Glosario](07-glosario.md)
 - [08 · Patrones arquitectónicos](08-patrones-arquitectonicos.md)
+- [09 · Guía de ejecución local](09-guia-ejecucion-local.md)
 - [Vistas de arquitectura general](arquitectura/README.md)
 
 ## Decisiones y formatos

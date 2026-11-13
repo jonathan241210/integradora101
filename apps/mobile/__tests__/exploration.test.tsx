@@ -20,7 +20,7 @@ describe('Exploration Core Views', () => {
         appName="ARCA-NB" 
         featuredAnimals={[MOCK_ANIMALS[0]]} 
         events={MOCK_EVENTS} 
-        news={MOCK_NEWS} 
+        news={[MOCK_NEWS]} 
         onAnimalPress={onAnimalPress} 
       />
     );
@@ -51,6 +51,19 @@ describe('Exploration Core Views', () => {
     expect(view.getByTestId('animal-category-filters').props.horizontal).toBe(true);
     expect(view.getByTestId('animal-results').props.style).toEqual(expect.objectContaining({ flex: 1 }));
     expect(view.getByLabelText('Volver a inicio')).toBeTruthy();
+  });
+
+  it('CA-16: el corazón anuncia si el animal está marcado', async () => {
+    const onToggleFavorite = jest.fn();
+    const animal = MOCK_ANIMALS[0];
+    const off = await render(<AnimalDetailScreen animal={animal} onToggleFavorite={onToggleFavorite} />);
+    const mark = off.getByLabelText(`Marcar ${animal.commonName} como favorito`);
+    expect(mark.props.accessibilityState).toEqual({ selected: false });
+    await fireEvent.press(mark);
+    expect(onToggleFavorite).toHaveBeenCalledTimes(1);
+
+    const on = await render(<AnimalDetailScreen animal={animal} isFavorite onToggleFavorite={onToggleFavorite} />);
+    expect(on.getByLabelText(`Quitar ${animal.commonName} de favoritos`).props.accessibilityState).toEqual({ selected: true });
   });
 
   it('test-ca-04: AnimalDetailScreen should show "No encontrado" for null animal', async () => {
@@ -144,23 +157,24 @@ describe('Exploration Core Views', () => {
     );
     expect(view.getByText('Primer descubrimiento')).toBeTruthy();
     expect(view.queryByText('Observador de aves')).toBeNull();
+    expect(view.getByText('Ordenar: Más recientes')).toBeTruthy();
     expect(view.getByTestId('achievements-list').props.data.map((item: { id: string }) => item.id)).toEqual([
       'first-discovery',
       'habitat-explorer',
       'mission-starter',
     ]);
 
-    await fireEvent.press(view.getByText('Ordenar'));
     await fireEvent.press(view.getByText('Por obtener'));
     expect(view.getByText('Observador de aves')).toBeTruthy();
     expect(view.queryByText('Primer descubrimiento')).toBeNull();
+    expect(view.getByText('Ordenar: Nombre A–Z')).toBeTruthy();
     expect(view.getByTestId('achievements-list').props.data.map((item: { id: string }) => item.id)).toEqual([
       'mission-master',
       'zoo-photographer',
       'bird-watcher',
     ]);
 
-    await fireEvent.press(view.getByText('Nombre Z–A'));
+    await fireEvent.press(view.getByLabelText('Ordenar'));
     expect(view.getByTestId('achievements-list').props.data.map((item: { id: string }) => item.id)).toEqual([
       'bird-watcher',
       'zoo-photographer',
@@ -168,7 +182,8 @@ describe('Exploration Core Views', () => {
     ]);
 
     await fireEvent.press(view.getByText('Obtenidos'));
-    await fireEvent.press(view.getByText('Más antiguos'));
+    await fireEvent.press(view.getByLabelText('Ordenar'));
+    expect(view.getByText('Ordenar: Más antiguos')).toBeTruthy();
     expect(view.getByTestId('achievements-list').props.data.map((item: { id: string }) => item.id)).toEqual([
       'mission-starter',
       'habitat-explorer',

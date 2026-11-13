@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Image, ImageSourcePropType, StyleProp, ViewStyle } from 'react-native';
 import { colors, spacing, radius } from '../../theme/tokens';
 
@@ -9,15 +9,35 @@ interface ImageOrPlaceholderProps {
   blurRadius?: number;
 }
 
+function sourceIdentity(source: ImageSourcePropType | null): string | number | null {
+  if (!source || Array.isArray(source)) return null;
+  if (typeof source === 'number') return source;
+  return typeof source.uri === 'string' && source.uri.trim() ? source.uri.trim() : null;
+}
+
 export function ImageOrPlaceholder({ source, tint = colors.primary, style, blurRadius = 0 }: ImageOrPlaceholderProps) {
+  const identity = sourceIdentity(source);
+  const stableSource = useMemo(() => {
+    if (typeof identity === 'string') return { uri: identity };
+    if (typeof identity === 'number') return identity;
+    return null;
+  }, [identity]);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [identity]);
+
   return (
     <View style={[styles.container, style]}>
-      {source ? (
-        <Image 
-          source={source} 
-          style={styles.image} 
+      {stableSource && !failed ? (
+        <Image
+          source={stableSource}
+          style={styles.image}
           resizeMode="cover"
           blurRadius={blurRadius}
+          fadeDuration={0}
+          onError={() => setFailed(true)}
         />
       ) : (
         <View style={[styles.placeholder, { backgroundColor: tint }]}>

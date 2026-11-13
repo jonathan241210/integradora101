@@ -37,6 +37,9 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0024 · Excepción de arquitectura para el portal público: HTML y JavaScript estático en apps/web](0024-web-static-portal-exception.md) — Aceptado (2026-11-07)
 - [0023 · Checklist de despliegue en la Constitución](0023-deployment-checklist-constitution.md) — Propuesto (2026-11-05)
 - [0025 · Recorrido guiado 3D y realidad aumentada offline](0025-mobile-ar-3d-camera-threejs.md) — Propuesto
+- [0026 · Almacenamiento de imágenes: carpeta de medios versionada para pruebas compartidas](0026-object-storage-s3-images.md) — Aceptado (2026-11-12; enmienda de especies 2026-11-11; riesgos (a), (b), (c), (g) y (m) confirmados por Jonathan, 2026-11-12, válidos para pruebas)
+- [0027 · Galería dinámica de «Momentos para recordar» en el portal (excepción acotada a web-010)](0027-dynamic-public-memories-gallery.md) — Aceptado (2026-11-12; aprobado por Jonathan, responsable de backend)
+- [0028 · Catálogo dinámico de TulanPedia en el portal (excepción acotada a web-011)](0028-dynamic-tulanpedia-catalog.md) — Aceptado (2026-11-12)
 
 ## Plantilla
 

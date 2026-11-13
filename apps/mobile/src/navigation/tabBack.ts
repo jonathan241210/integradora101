@@ -19,6 +19,11 @@ export function isVisitorTabRoot(pathname: string): boolean {
   return ROOT_PATHS.has(normalizeTabPath(pathname));
 }
 
+export function shouldLetStackHandleBack(pathname: string): boolean {
+  const path = normalizeTabPath(pathname);
+  return path === '/discover' || path.startsWith('/animal');
+}
+
 export function notePathname(pathname: string): void {
   const path = normalizeTabPath(pathname);
   if (isVisitorTabRoot(path)) {

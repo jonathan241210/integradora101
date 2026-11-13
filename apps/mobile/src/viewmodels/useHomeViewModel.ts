@@ -23,13 +23,21 @@ export function useHomeViewModel(
     return await zooRepo.getEventById(id);
   }, [zooRepo]);
 
-  const getNews = useCallback(async (): Promise<News> => {
+  const getNews = useCallback(async (): Promise<News[]> => {
     return await zooRepo.getNews();
+  }, [zooRepo]);
+
+  const getNewsDetails = useCallback(async (id: string): Promise<News | null> => {
+    return await zooRepo.getNewsById(id);
+  }, [zooRepo]);
+
+  const refreshNewsAndEvents = useCallback(async () => {
+    return await zooRepo.refreshNewsAndEvents();
   }, [zooRepo]);
 
   const loadHomeData = useCallback(async () => {
     const [animals, zooEvents, zooNews] = await Promise.all([
-      animalRepo.getFeaturedAnimals(),
+      animalRepo.getAllAnimals(),
       zooRepo.getEvents(),
       zooRepo.getNews(),
     ]);
@@ -45,6 +53,8 @@ export function useHomeViewModel(
     getEvents,
     getEventDetails,
     getNews,
+    getNewsDetails,
+    refreshNewsAndEvents,
     loadHomeData,
   };
 }

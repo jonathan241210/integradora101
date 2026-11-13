@@ -13,6 +13,7 @@ import {
   toEventInput,
   type EventsViewModel,
 } from "../viewmodels/events-management";
+import { getEventsPage } from "../viewmodels/useEventsPagination";
 import {
   confirmNewsAction,
   emptyNewsForm,
@@ -54,6 +55,73 @@ const eventActions = { ...newsActions } as unknown as EventsViewModel["actions"]
 
 const readyNews = { ...initialNewsState, status: "ready" as const, items: [newsItem(), newsItem({ id: 12, title: "Borrador", is_active: false })] };
 const readyEvents = { ...initialEventsState, status: "ready" as const, items: [eventItem(), eventItem({ id: 22, name: "Taller", is_active: true })] };
+const pagedEvents = Array.from({ length: 9 }, (_, index) =>
+  eventItem({ id: index + 1, name: `Evento ${index + 1}` }),
+);
+
+describe("CA-03 collapsible-menu-event-pagination", () => {
+  it("divide eventos en grupos de cuatro sin cambiar el orden y contempla la lista vacía", () => {
+    expect(getEventsPage([], 1, null)).toEqual({ page: 1, lastPage: 1, items: [] });
+    expect(getEventsPage(pagedEvents.slice(0, 4), 1, null).lastPage).toBe(1);
+    expect(getEventsPage(pagedEvents.slice(0, 5), 2, null).items.map((item) => item.id)).toEqual([5]);
+    expect(getEventsPage(pagedEvents, 1, null).items.map((item) => item.id)).toEqual([1, 2, 3, 4]);
+    expect(getEventsPage(pagedEvents, 2, null).items.map((item) => item.id)).toEqual([5, 6, 7, 8]);
+    expect(getEventsPage(pagedEvents, 3, null).items.map((item) => item.id)).toEqual([9]);
+
+    const markup = renderToStaticMarkup(<EventsView state={{ ...readyEvents, items: pagedEvents }} actions={eventActions} />);
+    expect(markup).toContain("Evento 4");
+    expect(markup).not.toContain("Evento 5");
+    expect(markup).toContain("Página 1 de 3");
+  });
+});
+
+describe("CA-04 collapsible-menu-event-pagination", () => {
+  it("ajusta a la última página cuando se elimina el único evento de la última", () => {
+    const page = getEventsPage(pagedEvents.slice(0, 8), 3, null);
+
+    expect(page.page).toBe(2);
+    expect(page.lastPage).toBe(2);
+    expect(page.items.map((item) => item.id)).toEqual([5, 6, 7, 8]);
+  });
+});
+
+describe("CA-05 collapsible-menu-event-pagination", () => {
+  it("mantiene visible la confirmación aunque cambie el orden y deshabilita la paginación", () => {
+    const pendingAction = { type: "delete" as const, id: 5 };
+    const state = {
+      ...readyEvents,
+      items: pagedEvents,
+      pendingAction,
+      form: { ...readyEvents.form, name: "Borrador conservado" },
+    };
+    const markup = renderToStaticMarkup(<EventsView state={state} actions={eventActions} />);
+
+    expect(getEventsPage(pagedEvents, 1, pendingAction).page).toBe(2);
+    expect(markup).toContain("Confirmar eliminar el evento Evento 5");
+    expect(markup).toContain('value="Borrador conservado"');
+    expect(markup).toMatch(/<button[^>]*disabled[^>]*>Anterior<\/button>/);
+    expect(markup).toMatch(/<button[^>]*disabled[^>]*>Siguiente<\/button>/);
+    expect(markup).toContain("Confirma o cancela la acción para cambiar de página.");
+  });
+
+  it("permite cerrar la confirmación si el evento ya no está en la lista", () => {
+    const state = { ...readyEvents, pendingAction: { type: "delete" as const, id: 999 } };
+    const markup = renderToStaticMarkup(<EventsView state={state} actions={eventActions} />);
+
+    expect(markup).toContain("El evento ya no está en la lista.");
+    expect(markup).toContain("Cerrar confirmación");
+  });
+});
+
+describe("CA-07 collapsible-menu-event-pagination", () => {
+  it("conserva las acciones de edición y confirmación de los eventos visibles", () => {
+    const markup = renderToStaticMarkup(<EventsView state={{ ...readyEvents, items: pagedEvents }} actions={eventActions} />);
+
+    expect(markup).toContain("Editar el evento Evento 1");
+    expect(markup).toContain("Eliminar el evento Evento 1");
+    expect(markup).toContain("Crear evento");
+  });
+});
 
 describe("CA-08 administration-sections", () => {
   it("lista noticias activas e inactivas con su estado y acciones, y el formulario fijo con imagen", () => {
