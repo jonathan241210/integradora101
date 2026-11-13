@@ -76,7 +76,7 @@ php artisan storage:link
 
 Sin el enlace `public/storage`, las imágenes no se ven ([infra/README.md](../infra/README.md), sección de imágenes). Además, `php.ini` debe permitir subidas mayores de 5 MB (`upload_max_filesize` y `post_max_size`), según el mismo checklist.
 
-**Pendiente, no aplicar todavía:** la infra prevé `PUBLIC_MEDIA_DISK=media` y `PRIVATE_MEDIA_DISK=media` para los medios de prueba compartidos ([ADR 0026](adr/0026-object-storage-s3-images.md), aceptado el 2026-11-12; [api-013](../apps/api/specs/013-object-storage-images.md), en Borrador). Hoy estas variables no tienen efecto: no se leen en `apps/api/src/config/`. Las imágenes van a `storage/` y el enlace es `public/storage`. Cuando se aprueben, esta sección cambiará.
+**Pendiente, no aplicar todavía:** la infra prevé `PUBLIC_MEDIA_DISK=media` y `PRIVATE_MEDIA_DISK=media` para los medios de prueba compartidos ([ADR 0026](adr/0026-object-storage-s3-images.md), aceptado el 2026-11-12; [api-013](../apps/api/specs/013-object-storage-images.md), Aprobada el 2026-11-12). Hoy estas variables no tienen efecto: no se leen en `apps/api/src/config/`. Las imágenes van a `storage/` y el enlace es `public/storage`. Cuando se implementen, esta sección cambiará.
 
 ### Usuarios demo y seeders
 
@@ -197,7 +197,7 @@ Después de cambiar `.env` de la API, reinicia `php artisan serve`. Después de 
 | `PWA_URL` | `apps/api/src/.env` | `http://localhost:5173` | API (redirección del rol veterinario) |
 | `ARCA_API_PROXY_TARGET` | Entorno de Vite (PWA, dashboard) | PWA: `http://127.0.0.1:8000`; dashboard: `http://localhost:8000` (defaults) | Vite (proxy `/api` y `/sanctum`) |
 | `meta arca-api-base` | `apps/web/src/*.html` | `http://localhost:8000/api/v1` | Portal (`js/api.js`) |
-| `PUBLIC_MEDIA_DISK`, `PRIVATE_MEDIA_DISK` | `apps/api/src/.env` | `media` (**pendiente**, sin efecto hoy) | API (propuesto, api-013) |
+| `PUBLIC_MEDIA_DISK`, `PRIVATE_MEDIA_DISK` | `apps/api/src/.env` | `media` (**pendiente**, sin efecto hoy) | API (api-013, Aprobada 2026-11-12; sin implementar) |
 
 Orígenes de navegador (los que ve el usuario): `http://localhost:5173` (PWA), `http://localhost:5174` (dashboard), `http://localhost:8080` (portal). La API escucha en `http://127.0.0.1:8000`.
 

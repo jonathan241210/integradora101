@@ -1,9 +1,9 @@
 # 0027 · Galería dinámica de «Momentos para recordar» en el portal: excepción acotada a web-010
 
-- Estado: Propuesto (2026-11-10). No autoriza la implementación de `web-010` hasta su aprobación por el equipo.
+- Estado: Aceptado (2026-11-12; aprobado por Jonathan, responsable de backend). Propuesta original del 2026-11-10. Autoriza redactar plan y tasks de `web-010`. Desde la aprobación de su spec (2026-11-12), la implementación de `web-010` empieza cuando existan plan y tasks aprobados.
 - Fecha: 2026-11-10
-- Spec relacionada: `apps/web/specs/010-dynamic-memories.md` (Borrador; plan y tasks pendientes). Consumidor de `apps/api/specs/012-public-memories-read.md` (Borrador). Relacionada con `apps/web/specs/009-dynamic-news-events.md` y con `docs/adr/0024-web-static-portal-exception.md`.
-- Aprobado por: (pendiente, nombre del compañero)
+- Spec relacionada: `apps/web/specs/010-dynamic-memories.md` (Aprobada 2026-11-12; plan y tasks pendientes). Consumidor de `apps/api/specs/012-public-memories-read.md` (Aprobada 2026-11-12). Relacionada con `apps/web/specs/009-dynamic-news-events.md` y con `docs/adr/0024-web-static-portal-exception.md`.
+- Aprobado por: Jonathan (responsable de backend), 2026-11-12.
 
 ## Contexto
 
@@ -22,7 +22,7 @@ Para la galería «Momentos para recordar» de la portada (`web-010`), el portal
 4. **Texto seguro.** Todo dato de la API se escribe como texto (`textContent`). No se usan `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write` ni `eval` con datos de la API. Se verifica con una prueba estática (`web-010` CA-06).
 5. **URLs de imagen limitadas.** Solo `http:`, `https:` o rutas relativas del mismo origen. Cualquier otro esquema muestra el marcador decorativo (`web-010` RN-04, CA-07).
 6. **Sin estado en el navegador.** No hay cookies, `localStorage`, `sessionStorage` ni credenciales (`credentials: 'omit'`). Cada carga pide la galería a la API.
-7. **Alcance acotado.** La excepción cubre solo la galería de la portada, con `GET /api/v1/memories?limit=6` (`api-012`). No cubre una página propia de «Momentos», la paginación, los filtros, el carrusel, ni ninguna otra página o app. Cualquier extensión requiere un ADR nuevo.
+7. **Alcance acotado.** La excepción cubre solo la galería de la portada, con `GET /api/v1/memories?limit=6` (`api-012`), presentada como carrusel de hasta seis momentos, con un botón visible de pausa (`web-010` CA-15 a CA-23; enmienda de alcance del 2026-11-12, confirmada por Jonathan el mismo día). No cubre una página propia de «Momentos», la paginación, los filtros, el visor a pantalla completa, ni ninguna otra página o app. Cualquier extensión requiere un ADR nuevo.
 
 ## Justificación
 
@@ -62,7 +62,10 @@ Para la galería «Momentos para recordar» de la portada (`web-010`), el portal
 
 ## Validación y revisión
 
-- Aprobación del equipo: **pendiente.** Aprobado por: (pendiente, nombre del compañero). Hasta esa aprobación, `web-010` no puede pasar a Aprobada ni implementarse.
+- Estado: **Aceptado** (2026-11-12). Aprobado por Jonathan (responsable de backend), 2026-11-12.
+- Condiciones: el ADR no exige confirmaciones adicionales del equipo. Sus condiciones 1 a 7 y su alcance acotado siguen vigentes.
+- Pendiente para `web-010`: su spec está Aprobada (2026-11-12). La implementación empieza cuando existan plan y tasks aprobados, con sus dependencias (`api-012` y `api-010`, Aprobadas el 2026-11-12; ver `apps/web/specs/010-dynamic-memories.md`).
 - Revisión obligatoria: al especificar el pago con tarjeta, al cambiar el alcance del portal o al pedir paginación o filtros para la galería.
+- Enmienda de alcance (2026-11-12, pedida por el usuario): el carrusel de hasta seis momentos de la galería entra en la excepción (punto 7), porque el punto 7 lo excluía de forma expresa. Incluye el botón visible de pausa de `web-010` CA-23. No cambia el resto de condiciones. Confirmada por Jonathan (responsable de backend), 2026-11-12. El estado del ADR no cambia por este texto.
 - Constitución: no cambia. Esta es una excepción por app, registrada según `AGENTS.md` raíz.
 - Enlaces: `apps/web/specs/010-dynamic-memories.md` (RN-03 a RN-06, CA-06, CA-09, CA-13, CA-14), `apps/web/specs/009-dynamic-news-events.md` (RN-05, RN-06, RN-08), `apps/api/specs/012-public-memories-read.md`, `apps/api/specs/010-visitor-memory-requests.md`, `docs/adr/0024-web-static-portal-exception.md`, `docs/adr/0009-pagos-electronicos-futuros.md`.

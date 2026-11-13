@@ -7,7 +7,7 @@
 - Aprobación funcional: Jonathan (responsable de backend), 2026-11-12.
 - Aprobado por: Jonathan (responsable de backend), 2026-11-12.
 - Integra: `dashboard-009` (solicitudes de especie), que queda con la nota «Integrada en dashboard-010» y sin borrar su contenido. Esta spec es la referencia de la sección de publicación de especies de la navegación.
-- Dependencias de contrato: `api-014` (Aprobada 2026-11-12; publicación, actualización, edición `PATCH`, selector, lista de publicadas y acciones de publicación), `api-015` (Aprobada 2026-11-12; lectura pública de especies publicadas), `api-013` (Borrador), DBR-013 (aprobada por BD y backend el 2026-11-12; aplicada en `arca_pruebas`, lote 5, verificada el 2026-11-12; «Lista para backend»), ADR 0026 (Aceptado 2026-11-12; enmienda del 2026-11-11 con las carpetas de especies), ADR 0028 (Aceptado 2026-11-12), `web-011` (Aprobada 2026-11-12).
+- Dependencias de contrato: `api-014` (Aprobada 2026-11-12; publicación, actualización, edición `PATCH`, selector, lista de publicadas y acciones de publicación), `api-015` (Aprobada 2026-11-12; lectura pública de especies publicadas), `api-013` (Aprobada 2026-11-12), DBR-013 (aprobada por BD y backend el 2026-11-12; aplicada en `arca_pruebas`, lote 5, verificada el 2026-11-12; «Lista para backend»), ADR 0026 (Aceptado 2026-11-12; enmienda del 2026-11-11 con las carpetas de especies), ADR 0028 (Aceptado 2026-11-12), `web-011` (Aprobada 2026-11-12).
 
 ## Historial del cambio de modelo (2026-11-11 y 2026-11-12)
 
@@ -285,7 +285,7 @@ Su estado a 2026-11-12 es el de cada línea. Ninguna bloquea ya la aprobación d
 
 ## Dependencias, riesgos y preguntas
 
-- **Dependencias/ADR:** D-1 a D-5; `api-014` (Aprobada), `api-015` (Aprobada), `api-013` (Borrador), `dashboard-002` (sesión y 401), `dashboard-007` (imagen completa), `api-007` (2FA y rutas `/api/v1/admin`), `pwa-005` (origen de solicitudes). No hay dependencia nueva de npm: si se necesita un icono, se añade en `components/Icon.tsx` del dashboard.
+- **Dependencias/ADR:** D-1 a D-5; `api-014` (Aprobada), `api-015` (Aprobada), `api-013` (Aprobada 2026-11-12), `dashboard-002` (sesión y 401), `dashboard-007` (imagen completa), `api-007` (2FA y rutas `/api/v1/admin`), `pwa-005` (origen de solicitudes). No hay dependencia nueva de npm: si se necesita un icono, se añade en `components/Icon.tsx` del dashboard.
 - **Riesgos:**
   - Dos personas revisan a la vez: CA-12 resuelve la decisión tardía sin duplicar la acción.
   - Edición concurrente: si otra persona cambia la solicitud o la especie mientras se edita o se decide, la API responde `422` o `404` y la vista recarga (CA-09, CA-12, CA-58; `api-014` CA-41).

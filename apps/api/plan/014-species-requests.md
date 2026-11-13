@@ -14,8 +14,8 @@ Antes de la primera tarea de código (T-03 en adelante) deben cumplirse todas. L
 | # | Precondición | Responsable | Estado el 2026-11-12 | Evidencia requerida |
 |---|---|---|---|---|
 | P1 | Migración DBR-013 aplicada en `arca_pruebas` y DBR-013 en «Lista para backend» | BD (Víctor Adrián) | Cumplida el 2026-11-12: migración aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura. Pendiente de BD: EXPLAIN y registro de fecha y responsable de la aplicación | `php artisan migrate:status` (solo lectura) con la migración en estado «Ran» y tabla `species_publication_requests` existente |
-| P2 | Disco `media` definido (`config/filesystems.php`) y `.env` `PUBLIC_MEDIA_DISK=media` | Backend, según `api-013` | Pendiente. Hoy solo existe el disco `public` y `api-013` está en Borrador (D-01/D-02) | `api-013` aprobada y configuración del disco revisada en el PR |
-| P3 | ADR 0026: riesgos (a), (b), (c), (g) y (m) confirmados por el equipo | Equipo | Pendiente. Aceptado por Jonathan el 2026-11-12; confirmación formal del resto del equipo pendiente | Registro de confirmación en el ADR o en el PR |
+| P2 | Disco `media` definido (`config/filesystems.php`) y `.env` `PUBLIC_MEDIA_DISK=media` | Backend, según `api-013` | Pendiente. Hoy solo existe el disco `public`; `api-013` está Aprobada (2026-11-12; D-01/D-02), pero el disco aún no está configurado | `api-013` aprobada y configuración del disco revisada en el PR |
+| P3 | ADR 0026: riesgos (a), (b), (c), (g) y (m) confirmados por el equipo | Equipo | Cumplida. Confirmados por Jonathan (responsable de backend) el 2026-11-12, válido para pruebas; revisar antes de producción | Registro de confirmación en el ADR o en el PR |
 | P4 | Plan y tasks aprobados | Equipo / responsable de backend | Pendiente | Firma del plan y de tasks en el PR |
 | P5 | Brecha de Constitución V (`BaseModel`) resuelta o registrada como excepción | Equipo | Pendiente. Ver «Constitution Check», fila V | Acuerdo del equipo, o ADR, registrado en el PR |
 
@@ -277,14 +277,14 @@ Ninguna excepción se implementa sin acuerdo. La fila V bloquea el merge hasta r
 - **R8 Fixtures de imagen y `ext-gd`:** `UploadedFile::fake()->image()` depende de GD. Mitigación: fixtures binarios pequeños o confirmación de `ext-gd` en T-01.
 - **R9 Versionado en git** de `apps/api/src/media/species/` y `species-requests/`. `infra/README.md` indica versionar `media/` para noticias, eventos y momentos. Decisión pendiente (Q3). Las fotos pendientes no deberían quedar en el historial sin decisión.
 - **R10 Riesgos de privacidad y publicación de `media/`** (ADR 0026, riesgo m; spec «Recomendación antes de producción»). Aceptados solo para pruebas con datos de prueba.
-- **R11 Dependencia de `memories.review`** en T-SEED: el permiso pertenece a `api-010` (Borrador). La spec pide incluirlo en el mismo cambio del seeder. Si `api-010` no se aprueba, el permiso queda creado sin uso. Pregunta Q8.
+- **R11 Dependencia de `memories.review`** en T-SEED: el permiso pertenece a `api-010` (Aprobada 2026-11-12). La spec pide incluirlo en el mismo cambio del seeder. Si `api-010` no se implementa, el permiso queda creado sin uso. Pregunta Q8.
 - **R12 Lock y transacciones en MySQL 8.0 con Aiven:** `lockForUpdate` estándar; sin `SKIP LOCKED`. Riesgo de espera en la misma especie: aceptable para la carga de un zoológico.
 - **R13 Efecto en la app móvil:** publicar cambia la fila de `species` que lee `api-006`. Decisión registrada en la spec (RN-21, riesgos). Sin cambio de código de mobile.
 - **R14 Datos de prueba existentes en `arca_pruebas` (verificado 2026-11-12):** `arca_pruebas` ya contiene 5 filas de prueba en `species_publication_requests` y 6 en `species` (0 publicadas). Se conservan a propósito (decisión del usuario 2026-11-12). Los tests no deben asumir tablas vacías: usan fixtures propios, no modifican las filas existentes y limpian solo lo que crean dentro de `DatabaseTransactions`. Ojo con el índice único `uq_species_publication_requests_submitted_species`: si una fila existente está `submitted` para una especie, un test que cree otra solicitud `submitted` para esa especie fallará (1062); en ese caso el fixture debe usar otra especie.
 
 ### ADR
 
-- ADR requerido para v1: ninguno nuevo. Confirmaciones pendientes del ADR 0026 (P3). La excepción de la Constitución V (fila V) requiere acuerdo del equipo o ADR (P5).
+- ADR requerido para v1: ninguno nuevo. Riesgos del ADR 0026 confirmados por Jonathan el 2026-11-12 (P3 cumplida, válido para pruebas). La excepción de la Constitución V (fila V) requiere acuerdo del equipo o ADR (P5).
 
 ### Alternativas consideradas
 
@@ -315,7 +315,7 @@ Ver la lista ordenada de tareas en `apps/api/tasks/014-species-requests.md`. Res
 | Responsable técnico del plan | Jonathan (responsable de backend), por confirmar | Pendiente |
 | Equipo (solución técnica y Constitution Check) | Equipo | Pendiente (P4, P5) |
 | Responsable de BD (migración DBR-013 en `arca_pruebas`) | Víctor Adrián | Cumplida (P1, 2026-11-12); EXPLAIN y registro de fecha y responsable pendientes |
-| Confirmación de riesgos ADR 0026 (a), (b), (c), (g), (m) | Equipo | Pendiente (P3) |
+| Confirmación de riesgos ADR 0026 (a), (b), (c), (g), (m) | Equipo | Cumplida (P3): confirmado por Jonathan, 2026-11-12, válido para pruebas |
 | Dependencia `api-013` (disco `media`) | Responsable de la spec `api-013` | Pendiente (P2) |
 
 Evidencias requeridas al cerrar el plan: salida de `php artisan migrate:status` (solo lectura), enlace a la aprobación de `api-013`, confirmación de ADR 0026 y enlace al PR con spec, plan y tasks.

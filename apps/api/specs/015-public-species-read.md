@@ -174,7 +174,7 @@ Una ampliación de `api-006` cambiaría el contrato que consume la app móvil. P
   - DBR-013 (aprobada por BD y backend el 2026-11-12; aplicada en `arca_pruebas`, lote 5, verificada el 2026-11-12; «Lista para backend»): `species.is_published`, `species.published_at`, `species.published_fields`, `species.image_path`, `species.deleted_at` y `species.distribution` (2a=A). Su condición de «Lista para backend» se cumple desde el 2026-11-12; no bloqueó la aprobación de esta spec. Queda pendiente el EXPLAIN de RN-03 (no ejecutado).
   - `api-014` (Aprobada 2026-11-12): la publicación actualiza `species` y copia la foto a `media/species/`.
   - ADR 0026 (Aceptado 2026-11-12; enmienda del 2026-11-11 con `species/` y `species-requests/`).
-  - `api-013` (Borrador): disco `media`, `MEDIA_PUBLIC_URL` y `APP_URL` más `/media`.
+  - `api-013` (Aprobada 2026-11-12; el disco `media` aún no está configurado): disco `media`, `MEDIA_PUBLIC_URL` y `APP_URL` más `/media`.
   - `api-011`: CORS por ambiente y formato de respuestas públicas.
   - `api-006` (Aprobada): referencia; no cambia.
   - `web-011` (consumidor, Aprobada 2026-11-12) y ADR 0028 (Aceptado 2026-11-12).

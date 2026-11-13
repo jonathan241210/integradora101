@@ -5,7 +5,7 @@
 > Esta guía **no es una fase del plan de implementación**. No tiene CA ni RN en ninguna spec, no requiere ADR ahora y no autoriza dependencias, proveedor, buckets ni llaves. Describe qué habría que hacer **si** se quiere usar un almacenamiento de objetos. Quien continúe el proyecto elegirá la alternativa que mejor le parezca.
 
 - Estado: opción futura (sin fecha). Decisión del responsable (Jonathan, 2026-11-10): sale del plan de implementación.
-- Decisión vigente: la carpeta de medios versionada `apps/api/src/media/` (`docs/adr/0026-object-storage-s3-images.md`, Propuesto; spec `apps/api/specs/013-object-storage-images.md`, Borrador).
+- Decisión vigente: la carpeta de medios versionada `apps/api/src/media/` (`docs/adr/0026-object-storage-s3-images.md`, Aceptado 2026-11-12; spec `apps/api/specs/013-object-storage-images.md`, Aprobada 2026-11-12).
 - Si alguien decide adoptarlo, se crea un ADR propio (servicio externo y dependencia), una spec nueva o enmienda de `api-013`, y su plan y tareas. Esta guía no sustituye a ninguno de esos documentos.
 - Relacionado: ADR 0013 (almacenamiento detrás de discos de Laravel Filesystem), Constitución I (stack portable) y V (la base de datos es la fuente de verdad).
 

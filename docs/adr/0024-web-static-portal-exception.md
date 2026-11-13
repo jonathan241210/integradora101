@@ -56,8 +56,8 @@ Para las páginas de contenido público de `apps/web` que define `web-009` (port
 
 ## Nota de alcance (2026-11-10)
 
-- La galería «Momentos para recordar» de la portada (`apps/web/specs/010-dynamic-memories.md`, Borrador) **no está cubierta por esta decisión**. Es un módulo nuevo y esta decisión se limita a `web-009`.
-- Su excepción de arquitectura se registra en `docs/adr/0027-dynamic-public-memories-gallery.md` (Propuesto), que hereda las condiciones 1 a 6 de este ADR. Este ADR no se enmienda y su estado no cambia.
+- La galería «Momentos para recordar» de la portada (`apps/web/specs/010-dynamic-memories.md`, Aprobada 2026-11-12) **no está cubierta por esta decisión**. Es un módulo nuevo y esta decisión se limita a `web-009`.
+- Su excepción de arquitectura se registra en `docs/adr/0027-dynamic-public-memories-gallery.md` (Aceptado 2026-11-12), que hereda las condiciones 1 a 6 de este ADR. Este ADR no se enmienda y su estado no cambia.
 
 ## Validación y revisión
 
