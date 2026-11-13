@@ -24,7 +24,7 @@ describe("CA-06 admin-dashboard-prototype", () => {
 
   describe("CA-06 collapsible-menu-event-pagination", () => {
     it("limita el menú contraído a escritorio y conserva las reglas móviles", () => {
-      expect(styles).toMatch(/@media \(min-width: 821px\)[\s\S]*dashboard-app--menu-collapsed/);
+      expect(styles).toMatch(/@media screen and \(min-width: 821px\)[\s\S]*dashboard-app--menu-collapsed/);
       expect(styles).toMatch(/@media \(max-width: 820px\)[\s\S]*\.sidebar--open/);
       expect(styles).toMatch(/\.desktop-menu-toggle\s*\{[^}]*display:\s*none/s);
     });
@@ -32,7 +32,7 @@ describe("CA-06 admin-dashboard-prototype", () => {
     it("muestra la barra compacta solo cuando no tiene cursor ni foco", () => {
       expect(styles).toMatch(/\.sidebar:not\(:hover\):not\(:focus-within\)\s*\{[^}]*width:\s*76px/s);
       expect(styles).toMatch(/\.sidebar:not\(:hover\):not\(:focus-within\) \.sidebar-link span/);
-      expect(styles).toMatch(/\.dashboard-app--admin\.dashboard-app--menu-collapsed \.dashboard-main\s*\{[^}]*margin-left:\s*76px/s);
+      expect(styles).toMatch(/\.dashboard-app--menu-collapsed \.dashboard-main\s*\{[^}]*margin-left:\s*76px/s);
     });
   });
 });

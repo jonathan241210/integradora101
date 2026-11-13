@@ -79,6 +79,9 @@ Como personal de taquilla, quiero iniciar sesión con una cuenta de muestra y ve
 - **CA-13:** Dado el selector de perfiles, cuando la persona elija Administración, entonces se muestra un formulario con usuario y contraseña ficticios; únicamente las credenciales `administrador@demo.local` / `demo1234` permiten entrar al panel de administración de muestra. Credenciales incorrectas muestran un error accesible y ninguna credencial se transmite ni persiste. *(Reemplazado por dashboard-002)*
 - **CA-14:** Dado cualquier perfil del dashboard, cuando se presente la interfaz, entonces el menú lateral, acciones principales, superficies y tipografía usan tokens semánticos mapeados a la paleta institucional de `docs/04-sistema-de-diseno.md` (`#661a2f`, `#87293a`, `#b79159`, `#DEC9A3`, blanco/negro, 16px y Lato 400), en lugar de los acentos azules/verdes actuales. Conserva colores semánticos para estados y foco accesible; no declara hex de marca en vistas, no consulta ni escribe `settings_colores`, y `index.html` continúa como entrada de la SPA React/Vite.
 - **CA-15:** Dado el perfil administrativo con sesión de demostración activa, cuando se muestre cualquier vista administrativa, entonces la shell presenta una sola advertencia general sobre el carácter ficticio y la falta de persistencia; las vistas administrativas no repiten ese banner.
+- **CA-16:** El icono de la pestaña del dashboard utiliza el mismo logotipo local que el portal de visitantes, tanto en desarrollo como en la compilación, sin cambiar la funcionalidad.
+
+La persona solicitante pidió el favicon del portal de visitantes para el dashboard el 2026-11-12.
 
 ## Reglas de negocio
 

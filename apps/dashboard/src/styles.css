@@ -2903,8 +2903,8 @@ ul.enclosure-grid {
   margin: 8px 0 0 12px;
 }
 
-@media (min-width: 821px) {
-  .dashboard-app--admin .desktop-menu-toggle {
+@media screen and (min-width: 821px) {
+  .desktop-menu-toggle {
     display: inline-flex;
     min-width: 42px;
     min-height: 42px;
@@ -2912,16 +2912,16 @@ ul.enclosure-grid {
     padding: 10px;
   }
 
-  .dashboard-app--admin .search-box {
+  .dashboard-app .search-box {
     margin-right: auto;
   }
 
-  .dashboard-app--admin.dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) {
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) {
     width: 76px;
     padding-inline: 10px;
   }
 
-  .dashboard-app--admin.dashboard-app--menu-collapsed .dashboard-main {
+  .dashboard-app--menu-collapsed .dashboard-main {
     margin-left: 76px;
   }
 
@@ -2937,12 +2937,137 @@ ul.enclosure-grid {
     display: none;
   }
 
-  .dashboard-app--admin.dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link,
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link,
   .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-account {
     justify-content: center;
   }
 
-  .dashboard-app--admin.dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link--active::before {
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link--active::before {
     display: none;
+  }
+}
+
+@media screen {
+  .dashboard-app--ticket .sidebar-brand {
+    padding-bottom: 16px;
+    border-bottom: 1px solid color-mix(in srgb, var(--sidebar-foreground) 18%, transparent);
+  }
+
+  .dashboard-app--ticket .sidebar-link {
+    min-height: 46px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+
+  .dashboard-app--ticket .sidebar-link--active svg {
+    display: block;
+  }
+
+  .dashboard-app--ticket .sidebar-link--active::before {
+    width: 3px;
+    height: 20px;
+    border-radius: 3px;
+  }
+
+  .dashboard-app--ticket .section-heading__eyebrow {
+    color: var(--primary);
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .dashboard-app--ticket .section-heading h1 {
+    font-size: clamp(28px, 2.4vw, 34px);
+    line-height: 1.15;
+  }
+
+  .dashboard-app--ticket .ticket-sale-screen {
+    gap: 24px;
+  }
+
+  .dashboard-app--ticket .ticket-sale-form {
+    gap: 20px;
+  }
+
+  .dashboard-app--ticket .ticket-sale-card,
+  .dashboard-app--ticket .ticket-sale-result,
+  .dashboard-app--ticket .filter-card,
+  .dashboard-app--ticket .table-card {
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+  }
+
+  .dashboard-app--ticket .ticket-sale-card {
+    gap: 24px;
+    padding: clamp(20px, 2.5vw, 30px);
+    border-top: 4px solid var(--primary);
+  }
+
+  .dashboard-app--ticket .ticket-price-card {
+    gap: 8px;
+  }
+
+  .dashboard-app--ticket .ticket-price-card__heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .dashboard-app--ticket .ticket-price-card__icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--surface-page);
+    color: var(--primary);
+  }
+
+  .dashboard-app--ticket .ticket-price-card__icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .dashboard-app--ticket .ticket-price-card h2 {
+    font-size: 17px;
+  }
+
+  .dashboard-app--ticket .ticket-price {
+    font-size: clamp(27px, 2.5vw, 34px);
+    line-height: 1.15;
+  }
+
+  .dashboard-app--ticket .ticket-price--missing {
+    font-size: 18px;
+  }
+
+  .dashboard-app--ticket .ticket-sale-form > .ticket-actions .arca-button {
+    min-height: 48px;
+    padding-inline: 24px;
+  }
+
+  .dashboard-app--ticket .ticket-actions .arca-button svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+  }
+
+  .dashboard-app--ticket .filter-card {
+    padding: 24px;
+  }
+
+  @media (max-width: 560px) {
+    .dashboard-app--ticket .ticket-sale-screen {
+      gap: 18px;
+    }
+
+    .dashboard-app--ticket .ticket-sale-form > .ticket-actions .arca-button {
+      width: 100%;
+    }
+
+    .dashboard-app--ticket .filter-card {
+      padding: 16px;
+    }
   }
 }

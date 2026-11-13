@@ -60,7 +60,7 @@ La API entrega `home` y permisos; el dashboard solo muestra las secciones asocia
 - `ticket`: Venta e Historial reales (el cajero ve solo sus boletos).
 - `pwa`: la sesión veterinaria se dirige a `pwa_url`. Si la URL no está configurada, se informa que la aplicación no está disponible y no se redirige.
 
-En administración y el panel ejecutivo, la navegación en computadora comienza contraída con sus iconos visibles y se despliega al acercar el cursor o al usar el teclado. El botón de la barra superior permite fijarla abierta o volver al despliegue automático. En celular se conserva el botón para abrir y cerrar el menú.
+En administración, el panel ejecutivo y taquilla, la navegación en computadora comienza contraída con sus iconos visibles y se despliega al acercar el cursor o al usar el teclado. El botón de la barra superior permite fijarla abierta o volver al despliegue automático. En celular se conserva el botón para abrir y cerrar el menú.
 
 ### Secciones conectadas a la API
 

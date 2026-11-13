@@ -12,20 +12,21 @@ El menú lateral ocupa espacio en pantallas grandes y la lista de eventos muestr
 
 ## Alcance
 
-- El menú de administración y del panel ejecutivo comienza contraído en pantallas grandes, con iconos visibles. Se despliega al pasar el cursor o al recibir foco; un botón identificado permite fijarlo abierto o volver al comportamiento automático.
+- El menú de administración, del panel ejecutivo y de taquilla comienza contraído en pantallas grandes, con iconos visibles. Se despliega al pasar el cursor o al recibir foco; un botón identificado permite fijarlo abierto o volver al comportamiento automático.
+- Las pantallas de venta e historial de taquilla reciben una mejora visual sin modificar sus operaciones ni la impresión.
 - En pantallas pequeñas se conserva el menú móvil existente, con su botón de apertura y cierre.
 - La lista administrativa de eventos se divide en páginas de hasta cuatro tarjetas, con controles anterior/siguiente y número de página.
 - Se conservan las acciones de eventos, los permisos, el orden entregado por la API, los formularios y los colores y tipografía actuales.
 
 ## Fuera de alcance
 
-- Cambios a la API, base de datos, permisos, dependencias o pantallas de taquilla.
+- Cambios a la API, base de datos, permisos, dependencias o flujos de taquilla.
 - Paginación de noticias u otras listas, búsqueda de eventos o cambio del orden de los datos.
 - Persistir el estado del menú o de la página después de salir de la sesión o de la sección.
 
 ## Actores
 
-- Personal con acceso a la navegación administrativa o ejecutiva: contrae y expande el menú.
+- Personal con acceso a la navegación administrativa, ejecutiva o de taquilla: contrae y expande el menú.
 - `admin` y `zoo-admin` con `events.manage`: consultan y gestionan eventos paginados.
 
 ## Criterios de aceptación
@@ -37,6 +38,7 @@ El menú lateral ocupa espacio en pantallas grandes y la lista de eventos muestr
 - **CA-05:** Una confirmación en línea no queda oculta por cambiar de página: mientras esté abierta se deshabilita el cambio de página hasta confirmarla o cancelarla. El formulario y sus valores no se descartan al paginar.
 - **CA-06:** A 360, 768 y 1366 px no hay desbordamiento horizontal de la página y los controles permanecen utilizables. Se mantienen los tokens semánticos, colores y tipografía existentes.
 - **CA-07:** Las pruebas automatizadas cubren menú contraído/expandido, límites de cuatro eventos, cambios de página, ajuste tras eliminación y confirmación pendiente; las pruebas existentes pasan.
+- **CA-08:** Taquilla presenta venta e historial con una apariencia más clara y destacada, conservando cantidades, precios, confirmación, filtros, cancelación e impresión.
 
 ## Reglas y datos
 
@@ -50,3 +52,5 @@ El menú lateral ocupa espacio en pantallas grandes y la lista de eventos muestr
 La persona solicitante aprobó este alcance el 2026-11-12: menú de iconos al contraer y cuatro eventos por página, con confirmaciones visibles y sin cambiar la API.
 
 El 2026-11-12 la persona solicitante pidió que el menú muestre inicialmente solo iconos y se despliegue al acercar el cursor; se conserva el acceso por teclado y el botón para fijarlo abierto.
+
+El 2026-11-12 la persona solicitante pidió mejorar visualmente taquilla y aplicar el mismo menú; se conservan sus flujos y colores existentes.

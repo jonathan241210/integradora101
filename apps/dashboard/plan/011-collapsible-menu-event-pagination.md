@@ -6,7 +6,8 @@
 
 ## Solución
 
-- Menú: iniciar contraído en escritorio y desplegar temporalmente la barra al pasar el cursor o al recibir foco, superponiéndola al contenido sin desplazarlo. El botón con icono fija o desfija la barra y comunica su estado con `aria-pressed`. En administración y ejecutivo, los botones conservan sus nombres accesibles aunque se oculten sus etiquetas visuales. Mantener el estado y comportamiento móvil separados, incluido Escape y devolución de foco. Taquilla conserva su shell actual.
+- Menú: iniciar contraído en escritorio y desplegar temporalmente la barra al pasar el cursor o al recibir foco, superponiéndola al contenido sin desplazarlo. El botón con icono fija o desfija la barra y comunica su estado con `aria-pressed`. En administración, ejecutivo y taquilla, los botones conservan sus nombres accesibles aunque se oculten sus etiquetas visuales. Mantener el estado y comportamiento móvil separados, incluido Escape y devolución de foco.
+- Taquilla: destacar tarjetas de precios, cantidades y acciones de venta, y mejorar la presentación del historial con los tokens existentes. Mantener los datos y operaciones de `dashboard-005`, así como los estilos y el flujo de impresión.
 - Eventos: el ViewModel de eventos calcula la página visible de la lista ya recibida, de cuatro elementos, sin alterar la API ni el orden. Reutilizar `PaginationBar`; ajustar la página al último valor válido si la lista se reduce. Deshabilitar sus controles mientras exista confirmación pendiente o una acción en curso y conservar formulario y edición.
 - Si una recarga reordena los eventos mientras hay una confirmación abierta, mantener visible la página que contiene ese evento; si el registro ya no está en la lista, la confirmación no debe permitir una operación sobre un elemento inexistente.
 - Mantener los componentes, mensajes, acciones, permisos, tokens, colores y tipografía actuales; sin cambios de contrato, datos ni persistencia. Los estilos se adaptan a los puntos de corte actuales.
@@ -22,6 +23,7 @@
 | CA-05 | Test de controles deshabilitados con confirmación y conservación del formulario. |
 | CA-06 | Revisión de estilos y navegador en 360, 768 y 1366 px, sin desbordamiento. |
 | CA-07 | Suite de Vitest, tipos y build del dashboard. |
+| CA-08 | Tests de presentación de venta y navegación de taquilla, suite existente de venta e historial y revisión en navegador con respuestas simuladas. |
 
 ## Constitution Check
 

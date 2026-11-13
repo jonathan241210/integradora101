@@ -29,7 +29,10 @@ function PriceCard({
 }) {
   return (
     <div className="ticket-price-card">
-      <h2>{title}</h2>
+      <div className="ticket-price-card__heading">
+        <span className="ticket-price-card__icon"><Icon name="ticket" /></span>
+        <h2>{title}</h2>
+      </div>
       {price?.amount ? (
         <strong className="ticket-price">{formatCurrency(price.amount)}</strong>
       ) : (

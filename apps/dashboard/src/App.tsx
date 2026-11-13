@@ -167,7 +167,7 @@ function App() {
 
   return (
     <div
-      className={`dashboard-app ${presentationProfile !== "ticket" ? "dashboard-app--admin" : ""} ${presentationProfile !== "ticket" && shell.state.desktopMenuCollapsed ? "dashboard-app--menu-collapsed" : ""}`}
+      className={`dashboard-app ${presentationProfile === "ticket" ? "dashboard-app--ticket" : "dashboard-app--admin"} ${shell.state.desktopMenuCollapsed ? "dashboard-app--menu-collapsed" : ""}`}
     >
       {shell.state.mobileMenuOpen && (
         <button
@@ -241,18 +241,16 @@ function App() {
 
       <div className="dashboard-main">
         <header className="topbar">
-          {presentationProfile !== "ticket" && (
-            <Button
-              className="desktop-menu-toggle"
-              variant="secondary"
-              aria-label="Fijar menú de navegación abierto"
-              aria-controls="dashboardNavigation"
-              aria-pressed={!shell.state.desktopMenuCollapsed}
-              onClick={shell.toggleDesktopMenu}
-            >
-              <Icon name="menu" />
-            </Button>
-          )}
+          <Button
+            className="desktop-menu-toggle"
+            variant="secondary"
+            aria-label="Fijar menú de navegación abierto"
+            aria-controls="dashboardNavigation"
+            aria-pressed={!shell.state.desktopMenuCollapsed}
+            onClick={shell.toggleDesktopMenu}
+          >
+            <Icon name="menu" />
+          </Button>
           <div className="topbar__mobile">
             <Button
               ref={menuButtonRef}

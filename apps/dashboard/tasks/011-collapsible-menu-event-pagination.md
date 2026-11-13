@@ -24,3 +24,10 @@
 - [x] **T-07** (CA-01, CA-02, CA-06): Verificar tipos, pruebas y compilación, además de cursor, foco y anchos adaptables en navegador.
 
 Se verificaron tipos, 309 pruebas, build y `git diff --check`. En navegador con datos simulados se comprobó el despliegue por cursor y foco a 900 y 1366 px, sin desplazar el contenido; también el estado del botón de fijación y la apertura y cierre móviles a 360 y 768 px. No hubo desbordamiento horizontal en esos anchos. La pestaña compartida estaba oculta: la activación del botón se comprobó con eventos simulados, no con una pulsación física de teclado.
+
+## Ajuste solicitado: taquilla
+
+- [x] **T-08** (CA-01, CA-02, CA-06, CA-08): Aplicar el menú de iconos y mejorar visualmente venta e historial de taquilla sin modificar sus operaciones ni impresión.
+- [x] **T-09** (CA-06, CA-08): Actualizar pruebas y manual; verificar tipos, suite, build y navegación y venta con datos simulados en navegador.
+
+Se verificaron tipos, 310 pruebas, build y `git diff --check`. Con respuestas simuladas se comprobó el menú por cursor y foco, la cotización, el resultado de venta, el historial y la presentación de tres boletos en modo impresión. Venta e historial no presentaron desbordamiento de página a 360, 768 y 1366 px; el menú móvil se abrió y cerró con eventos simulados. No se registraron ventas reales. La validación técnica del equipo sigue pendiente.

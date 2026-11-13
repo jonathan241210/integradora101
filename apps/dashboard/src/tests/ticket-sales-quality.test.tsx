@@ -323,7 +323,10 @@ describe("CA-24 ticket-sales", () => {
   });
 
   it("CA-37: el modo de impresión deja los boletos en flujo normal, sin position absolute ni salto forzado", () => {
-    const printBlock = ticketStyles.slice(ticketStyles.indexOf("@media print"));
+    const printBlock = ticketStyles.slice(
+      ticketStyles.indexOf("@media print"),
+      ticketStyles.indexOf("/* dashboard-004"),
+    );
 
     expect(printBlock).toMatch(/\.ticket-sale-screen--printable[^{]*\{[^}]*display:\s*none/s);
     // El ocultamiento solo aplica con área de impresión: sin venta no se imprime una hoja en blanco.
