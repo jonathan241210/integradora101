@@ -2,11 +2,11 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` (sección «Momentos», solo con `memories.review`); `packages/api-client` (métodos y tipos de revisión de peticiones, incluida la descarga de la imagen de revisión; sin lógica de negocio); `api` (dueña de reglas, estados, permisos, vigencia y auditoría: `api-010`; ruta de imagen de revisión: `api-013`); `packages/ui` (solo si falta un componente compartido).
-- Estado: Borrador
+- Estado: Aprobada (2026-11-12, Jonathan, responsable de backend). Aprobar no autoriza implementar: la implementación empieza cuando existan plan y tasks aprobados. ADR 0026 y ADR 0027 están Aceptados (2026-11-12).
 - Solicitante / responsable funcional: Aksel (decisión del 2026-11-10). Respuestas del responsable: Jonathan (2026-11-10).
-- Aprobación funcional: pendiente.
-- Aprobado por: (pendiente, nombre del compañero)
-- Dependencias de contrato: `api-010` (Borrador; validación técnica/BD aprobada el 2026-11-11) y DBR-012 (Aprobada y aplicada en `arca_pruebas` el 2026-11-11; Lista para backend). La sección no se implementa hasta que la API esté disponible en el ambiente de pruebas con el permiso asignado.
+- Aprobación funcional: Jonathan (responsable de backend), 2026-11-12.
+- Aprobado por: Jonathan (responsable de backend), 2026-11-12.
+- Dependencias de contrato: `api-010` (Aprobada 2026-11-12) y DBR-012 (Aprobada y aplicada en `arca_pruebas` el 2026-11-11; Lista para backend). La sección no se implementa hasta que la API esté disponible en el ambiente de pruebas con el permiso asignado.
 
 > **Separada de dashboard-010 (2026-11-12):** los momentos son un flujo distinto del de publicación de especies. Esta spec es propia y vigente; su contenido no cambia.
 
@@ -47,7 +47,7 @@ El dashboard solo presenta. Los estados, las transiciones, los plazos y la autor
 - Búsqueda por texto, exportación o estadísticas.
 - Notificaciones al visitante (correo o push).
 - Moderación automática.
-- Ver datos personales del visitante en la sección (pregunta 1).
+- Ver datos personales del visitante en la sección (pregunta 1, resuelta el 2026-11-12: no se muestran).
 - Cambios de estilo de marca: se usan tokens semánticos.
 - Descargar la imagen a disco o copiarla desde la sección.
 
@@ -71,7 +71,7 @@ El dashboard solo presenta. Los estados, las transiciones, los plazos y la autor
 - **CA-01 (visibilidad):** Dada una sesión con `memories.review` en sus permisos, cuando se muestra la navegación, entonces aparece la sección «Momentos». Sin ese permiso, la sección no aparece, y la vista de «Momentos» responde con «No tienes permiso para revisar momentos.» si se abre por otra vía. El dashboard no protege la sección por sí mismo: la autorización real es la de la API (RN-01).
 - **CA-02 (lista paginada):** Dada la sección «Momentos», cuando carga, entonces muestra la lista que devuelve `GET /api/v1/admin/memories`, con 10 peticiones por página, paginación con «Anterior» y «Siguiente» según `meta.has_more`, y estados de carga, vacío («No hay peticiones con este estado.») y error.
 - **CA-03 (filtro por estado):** Dado el filtro de estado (Todas, Enviada, En proceso, Aceptada, Rechazada), cuando cambia, entonces la vista vuelve a consultar la API con ese `status` y no filtra en el cliente. La etiqueta de Rechazada es «Rechazada» en el filtro y en la fila; el texto «espera la corrección del visitante» aparece solo en el detalle (CA-07).
-- **CA-04 (fila de la lista):** Dada una fila, cuando se muestra, entonces incluye la fecha de envío, la etiqueta del estado en español, un fragmento de la opinión como texto y un control accesible «Revisar» que abre el detalle. La lista no muestra datos personales del visitante (pregunta 1). Si la petición tiene reenvíos, muestra «Reenviada {n} veces».
+- **CA-04 (fila de la lista):** Dada una fila, cuando se muestra, entonces incluye la fecha de envío, la etiqueta del estado en español, un fragmento de la opinión como texto y un control accesible «Revisar» que abre el detalle. La lista no muestra datos personales del visitante (pregunta 1, resuelta el 2026-11-12). Si la petición tiene reenvíos, muestra «Reenviada {n} veces».
 - **CA-05 (detalle y En proceso):** Dada una petición en Enviada, cuando se abre el detalle, entonces la vista pide `GET /api/v1/admin/memories/{id}`, muestra la opinión y la imagen completa (CA-06), y la API la pasa a En proceso. Al volver a la lista, la fila muestra En proceso sin recargar la página completa.
 - **CA-06 (imagen y previsualización):** Dada la imagen de una petición, cuando se muestra el detalle, entonces se ve completa y centrada, sin recorte ni ampliación (criterio de `dashboard-007`), con `alt` que describe la petición como «Foto enviada por un visitante». La persona revisora ve la foto y la opinión antes de elegir «Aceptar» o «Rechazar». La opinión se muestra como texto, nunca como HTML. Si la imagen falla al cargar, se muestra un marcador con texto «No se pudo cargar la imagen.».
 - **CA-07 (acciones según estado):**
@@ -113,7 +113,7 @@ El dashboard solo presenta. Los estados, las transiciones, los plazos y la autor
 
 ## Datos, privacidad y auditoría
 
-- La sección muestra la opinión y la imagen de la petición. No muestra datos personales del visitante (pregunta 1).
+- La sección muestra la opinión y la imagen de la petición. No muestra datos personales del visitante (pregunta 1, resuelta el 2026-11-12: ni nombre ni correo).
 - La imagen y la opinión se muestran solo al personal con `memories.review`. La imagen llega por la ruta autenticada `admin.memories.image` (`api-010` CA-08), nunca por URL pública del almacenamiento. La carpeta `media/memories/` sí se publica por `/media` (`api-013` RN-16): esa es una limitación de la API y del almacenamiento que esta sección no resuelve.
 - Las acciones de revisión (En proceso, aceptar, rechazar) quedan en Activitylog por la API (`api-010` CA-19).
 - No se guarda nada en el navegador (RN-07).
@@ -132,8 +132,8 @@ El dashboard solo presenta. Los estados, las transiciones, los plazos y la autor
 ## Dependencias, riesgos y preguntas
 
 - **Dependencias/ADR:**
-  - `api-010` (endpoints `admin/memories*`, permiso, vigencia y auditoría; Borrador).
-  - `api-013` (Borrador) y ADR 0026 (Propuesto): la imagen de revisión llega por ruta autenticada sin URL en el JSON, con proxy de mismo origen (`api-013` D-06).
+  - `api-010` (endpoints `admin/memories*`, permiso, vigencia y auditoría; Aprobada 2026-11-12).
+  - `api-013` (Aprobada 2026-11-12) y ADR 0026 (Aceptado 2026-11-12): la imagen de revisión llega por ruta autenticada sin URL en el JSON, con proxy de mismo origen (`api-013` D-06).
   - DBR-012 (`docs/database/requests/DBR-012-visitor-memories.md`; Aprobada y aplicada en `arca_pruebas` el 2026-11-11; Lista para backend).
   - `dashboard-002` (sesión, `me` con permisos, 401).
   - `dashboard-007` (criterio de imagen completa y centrada).
@@ -149,13 +149,15 @@ El dashboard solo presenta. Los estados, las transiciones, los plazos y la autor
   - La imagen en memoria (blob) ocupa memoria mientras se ve; se libera al cerrar (CA-17).
   - La imagen pendiente es alcanzable por `/media` si se conoce su URL (`api-013` RN-16). La sección no lo evita.
 - **Preguntas pendientes:**
-  1. ¿La lista o el detalle deben mostrar el nombre o el correo del visitante para que `zoo-admin` pueda revisar? Propuesta: no (privacidad y RN del portal); la revisión se hace solo con la foto y la opinión.
-  2. ¿El tamaño de página es 10? Propuesta: sí, igual que el resto de listas de administración.
-  3. ¿Se añade el botón «Retirar de la galería» en esta sección? Propuesta: no. Retirar antes del vencimiento está fuera de alcance de esta versión (`api-010` pregunta 1).
+  1. ¿La lista o el detalle deben mostrar el nombre o el correo del visitante para que `zoo-admin` pueda revisar? Propuesta: no (privacidad y RN del portal); la revisión se hace solo con la foto y la opinión. **Resuelta, decisión del usuario 2026-11-12:** no se muestran nombre ni correo del visitante; la revisión se hace solo con la foto y la opinión.
+  2. ¿El tamaño de página es 10? Propuesta: sí, igual que el resto de listas de administración. **Resuelta, decisión del usuario 2026-11-12:** tamaño de página 10 (CA-02).
+  3. ¿Se añade el botón «Retirar de la galería» en esta sección? Propuesta: no. Retirar antes del vencimiento está fuera de alcance de esta versión (`api-010` pregunta 1). **Resuelta, decisión del usuario 2026-11-12:** sin botón «Retirar de la galería» en esta versión.
+
+Estado de las preguntas (2026-11-12): sin preguntas abiertas.
 
 ## Nota de almacenamiento (2026-11-10)
 
-Decisión del responsable pendiente de aprobación formal del equipo. Esta spec no cambia su estado (Borrador).
+Decisión del responsable, aprobada con esta spec por Jonathan el 2026-11-12.
 
 - **CA-06 (imagen):** por la decisión del responsable (`api-013` D-02), los momentos están en la carpeta versionada `media/memories/`. La imagen de revisión llega por la ruta autenticada `admin.memories.image` (`api-013` CA-10), sin URL en el JSON, y se usa por proxy de mismo origen como blob en memoria (CA-17). Si el archivo falta (flujo 8 de `api-013`), la vista muestra «No se pudo cargar la imagen.» (CA-18).
 - **Tipos:** si la respuesta de revisión añade un campo nuevo, `@arca/api-client` lo recoge en sus tipos. No hay lógica de negocio en el cliente (CA-14).
@@ -163,7 +165,8 @@ Decisión del responsable pendiente de aprobación formal del equipo. Esta spec 
 
 ## Revisión
 
-- Aprobadores y fecha: pendiente.
-- Aprobado por: (pendiente, nombre del compañero)
-- Historial: borrador del 2026-11-10 → revisión del 2026-11-10 con las respuestas del responsable (decisión final por revisión, rechazo con motivos marcados, previsualización, plazo de publicación visible, imagen por proxy de mismo origen y CA-17 a CA-19). 2026-11-12: separada de `dashboard-010` (la sección «Momentos» no se integra en la publicación de especies); sin cambios de contenido.
+- Aprobadores y fecha: Jonathan (responsable de backend), 2026-11-12.
+- Aprobado por: Jonathan (responsable de backend), 2026-11-12.
+- Estado: Aprobada (2026-11-12). Aprobar no autoriza implementar: la implementación empieza cuando existan plan y tasks aprobados. Sin preguntas abiertas (preguntas 1 a 3 resueltas el 2026-11-12). Separada de `dashboard-010`.
+- Historial: borrador del 2026-11-10 → revisión del 2026-11-10 con las respuestas del responsable (decisión final por revisión, rechazo con motivos marcados, previsualización, plazo de publicación visible, imagen por proxy de mismo origen y CA-17 a CA-19). 2026-11-12: separada de `dashboard-010` (la sección «Momentos» no se integra en la publicación de especies); sin cambios de contenido. Mismo día (2026-11-12): preguntas 1 a 3 resueltas por el usuario (sin nombre ni correo del visitante; página de 10; sin botón de retirar). Estado sin cambios en esa fecha (Borrador). 2026-11-12, aprobación (Jonathan, responsable de backend): spec Aprobada como flujo propio, sin cambio de contenido.
 - Evidencia/enlaces: `apps/api/specs/010-visitor-memory-requests.md`, `apps/api/specs/013-object-storage-images.md`, `apps/mobile/specs/010-visitor-memory-requests.md`, `apps/web/specs/010-dynamic-memories.md`, `apps/dashboard/specs/005-ticket-sales.md` (patrón de historial y diálogos), `apps/dashboard/specs/007-content-image-display.md` (imagen completa), `apps/dashboard/specs/002-real-staff-login.md` (sesión y 401), `apps/api/specs/007-administration-management.md` (permisos y 2FA de `/api/v1/admin`), `docs/database/requests/DBR-012-visitor-memories.md`.
