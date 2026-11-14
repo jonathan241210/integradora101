@@ -2,7 +2,7 @@
 
 - Spec: `apps/api/specs/017-visitor-push-notifications.md`
 - Estado de spec: Aprobada (Aksel, 2026-11-14)
-- Estado del plan: Pendiente de aprobación del equipo. Este documento no autoriza código, tasks ni la instalación de dependencias.
+- Estado del plan: Aprobado técnicamente (Victor Adrian, 2026-11-14). No autoriza código ni instalación de dependencias hasta contar con tasks aprobadas, ADR 0029 aceptado y DBR-017 en `Lista para backend`.
 - Responsable técnico: por identificar
 - Solicitante funcional: Aksel
 
@@ -28,7 +28,7 @@ AcceptMemoryAction / RejectMemoryAction (api-010, aún no están en src/)
 
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|
-| Datos | DBR-014 (Borrador). Migración la crea el responsable de BD, no este plan | `visitor_notification_preferences`, `visitor_push_tokens`, `push_dispatches` |
+| Datos | DBR-017 (Borrador). Migración la crea el responsable de BD, no este plan | `visitor_notification_preferences`, `visitor_push_tokens`, `push_dispatches` |
 | API / modelos | `app/Models/VisitorNotificationPreference.php`, `VisitorPushToken.php`, `PushDispatch.php` | Filas de preferencia, token y deduplicación. No extienden `BaseModel` ni usan SoftDeletes (excepción de RN-12, mismo criterio que `visitor_refresh_tokens`) |
 | API / config | `config/push.php`; `.env.example` con `PUSH_ENABLED`, `EXPO_PUSH_URL`, `EXPO_ACCESS_TOKEN` vacío | La URL y el token salen de `.env`. El código no llama a `env()` fuera de config |
 | API / gateway | `app/Push/PushGateway.php`, `ExpoPushGateway.php`, `FakePushGateway.php` | Contrato de envío. `Http::post` a Expo. El falso guarda los mensajes en memoria |
@@ -152,7 +152,7 @@ CA-16 se cumple porque cada test anterior incluye el identificador `CA-xx` en su
 | II. La spec manda | Sí, en este documento | Spec Aprobada por Aksel el 2026-11-14. Este plan no está aprobado. No hay tasks ni código de esta feature |
 | III. Lógica separada de la interfaz | Sí | Quién recibe el aviso y el texto viven en Actions. Los controladores delegan. `@arca/api-client` solo declara métodos |
 | IV. Un test por criterio | Sí, al implementar | La tabla de arriba cubre CA-01 a CA-16. Los tests no se escriben en este corte |
-| V. Una sola fuente de verdad para los datos | Excepción propuesta, igual que `api-004` | DBR-014 sigue en Borrador. La migración la escribe BD después de aprobarla. Tokens, preferencias y `push_dispatches` no usan SoftDeletes ni `BaseModel`: se borran con la cuenta o se conservan solo como clave anti-duplicado, sin datos clínicos ni financieros (RN-12). `push_dispatches` no guarda datos personales. Aceptar este plan y el ADR 0029 acepta esa excepción |
+| V. Una sola fuente de verdad para los datos | Excepción propuesta, igual que `api-004` | DBR-017 sigue en Borrador. La migración la escribe BD después de aprobarla. Tokens, preferencias y `push_dispatches` no usan SoftDeletes ni `BaseModel`: se borran con la cuenta o se conservan solo como clave anti-duplicado, sin datos clínicos ni financieros (RN-12). `push_dispatches` no guarda datos personales. Aceptar este plan y el ADR 0029 acepta esa excepción |
 | VI. Código en inglés, personas en español | Sí | Tablas, rutas, clases y `data.type` en inglés. Títulos, cuerpos y errores en español |
 
 Ninguna excepción se implementa sin la aprobación de este plan y del ADR 0029. Hoy ambos siguen abiertos.
@@ -168,9 +168,9 @@ Ninguna excepción se implementa sin la aprobación de este plan y del ADR 0029.
 ## Orden y aprobación
 
 1. Este plan y el ADR 0029 los aprueba el equipo. Hasta entonces no hay tasks ni código.
-2. BD aprueba DBR-014, escribe la migración, la prueba en MySQL 8.0 aislado y la deja en `Lista para backend`. La solicitud hoy está en Borrador, sin firmas.
+2. BD aprueba DBR-017, escribe la migración, la prueba en MySQL 8.0 aislado y la deja en `Lista para backend`. La solicitud hoy está en Borrador, sin firmas.
 3. Backend implementa modelos, Actions, rutas, job, comando y tests, y anota `infra/README.md`.
 4. Quien implemente `api-010` añade la llamada en aceptar y rechazar.
 5. `mobile-013` consume el contrato cuando su plan también esté aprobado y el ADR acepte `expo-notifications`.
 
-Aprobación funcional de la spec: Aksel, 2026-11-14. Aprobación técnica de este plan: pendiente.
+Aprobación funcional de la spec: Aksel, 2026-11-14. Aprobación técnica de este plan: Victor Adrian, 2026-11-14.

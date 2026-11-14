@@ -21,7 +21,7 @@ Hace falta un canal hasta FCM y una librería en el teléfono que obtenga el tok
 2. **API.** El envío usa `Illuminate\Support\Facades\Http` contra la API HTTP de Expo (`EXPO_PUSH_URL`, por defecto `https://exp.host/--/api/v2/push/send`). No se instala un SDK de Expo ni de Firebase en PHP. `EXPO_ACCESS_TOKEN` vive solo en `.env`.
 3. **FCM.** El proyecto de Firebase y la credencial de Android se configuran en el proyecto Expo (EAS), no dentro del repositorio. FCM entrega el mensaje al teléfono. Expo es el intermediario.
 4. **Pruebas.** Los tests de la API sustituyen el gateway. Ningún test llama a Expo ni a FCM.
-5. **Excepción de esquema.** `visitor_notification_preferences`, `visitor_push_tokens` y `push_dispatches` (DBR-014, Borrador) no usan SoftDeletes ni extienden `BaseModel`. Tokens y preferencias se borran físicamente con la cuenta, igual que `visitor_refresh_tokens` (`api-004` RN-08). `push_dispatches` solo guarda el tipo, el id y la clave de transición, para no repetir un aviso. Aceptar este ADR acepta esa excepción de la Constitución V para estas tres tablas. No son datos clínicos ni financieros.
+5. **Excepción de esquema.** `visitor_notification_preferences`, `visitor_push_tokens` y `push_dispatches` (DBR-017, Borrador) no usan SoftDeletes ni extienden `BaseModel`. Tokens y preferencias se borran físicamente con la cuenta, igual que `visitor_refresh_tokens` (`api-004` RN-08). `push_dispatches` solo guarda el tipo, el id y la clave de transición, para no repetir un aviso. Aceptar este ADR acepta esa excepción de la Constitución V para estas tres tablas. No son datos clínicos ni financieros.
 
 ## Alternativas consideradas
 
@@ -49,5 +49,5 @@ Hace falta un canal hasta FCM y una librería en el teléfono que obtenga el tok
 ## Validación y revisión
 
 - Aprobación del equipo: pendiente. Hasta entonces no se añade la dependencia en `apps/mobile` ni se configura FCM.
-- Revisión: al aceptar, el PR de implementación enlaza este ADR, las dos specs, los dos planes y DBR-014 en `Lista para backend`, y anota en `infra/README.md` el worker, el scheduler y `EXPO_ACCESS_TOKEN`.
+- Revisión: al aceptar, el PR de implementación enlaza este ADR, las dos specs, los dos planes y DBR-017 en `Lista para backend`, y anota en `infra/README.md` el worker, el scheduler y `EXPO_ACCESS_TOKEN`.
 - Constitución I: la dependencia móvil no entra al repositorio antes de esta aceptación.

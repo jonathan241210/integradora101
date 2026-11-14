@@ -5,7 +5,7 @@
 - Estado: Aprobada
 - Solicitante / responsable funcional: Aksel
 - Aprobación funcional: Aksel, 2026-11-14
-- Dependencias de contrato: `api-018` (aprobación funcional de Aksel, 2026-11-14; conformidad del equipo pendiente) y DBR-015 (Borrador). No se implementa hasta que `api-018` pase a Aprobada, con plan, tasks y DBR-015 en `Lista para backend`.
+- Dependencias de contrato: `api-018` (aprobación funcional de Aksel, 2026-11-14; conformidad del equipo pendiente) y DBR-018 (Borrador). No se implementa hasta que `api-018` pase a Aprobada, con plan, tasks y DBR-018 en `Lista para backend`.
 - Esta aprobación funcional no autoriza plan, tasks ni código.
 
 ## Problema y contexto
@@ -68,7 +68,7 @@ El id de la ficha es el de la especie publicada (`mapSpeciesToAnimalModel`). Est
 
 - La app envía el id de especie y `favorite`. No envía nombre ni correo en esa llamada.
 - La copia local son id de especie de la última respuesta, en el teléfono, y se borra al salir de la cuenta.
-- No requiere DBR propia. La DBR es `docs/database/requests/DBR-015-visitor-favorite-species.md`.
+- No requiere DBR propia. La DBR es `docs/database/requests/DBR-018-visitor-favorite-species.md`.
 - El aviso de privacidad oficial, antes del público, debe decir que los favoritos se guardan en la cuenta. Esta spec no redacta ese texto.
 
 ## Flujos y errores
@@ -83,9 +83,9 @@ El id de la ficha es el de la especie publicada (`mapSpeciesToAnimalModel`). Est
 
 - Dependencias: `api-018`. No hay dependencia nueva. La enmienda del ADR 0014 (los favoritos no salen del teléfono) sigue vigente hasta que `api-018` esté Aprobada y esta spec se implemente.
 - Riesgos: si la subida única falla a medias, el siguiente arranque con GET vacío vuelve a intentar los id que sigan en la clave antigua. Un id de demostración no se sube.
-- Preguntas pendientes: la de DBR-015 (tabla sin SoftDeletes) la responden BD y backend. La conformidad del equipo sobre `api-018` sigue pendiente.
+- Preguntas pendientes: la de DBR-018 (tabla sin SoftDeletes) la responden BD y backend. La conformidad del equipo sobre `api-018` sigue pendiente.
 
 ## Revisión
 
 - Aprobación funcional: Aksel, 2026-11-14. Alcance, CA y RN de la app.
-- Evidencia/enlaces: `apps/api/specs/018-visitor-favorite-species.md`, `docs/database/requests/DBR-015-visitor-favorite-species.md`, `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md` (CA-16), `apps/mobile/src/repositories/favoriteAnimals.ts`, `docs/adr/0014-mobile-offline-cache-and-connectivity.md`.
+- Evidencia/enlaces: `apps/api/specs/018-visitor-favorite-species.md`, `docs/database/requests/DBR-018-visitor-favorite-species.md`, `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md` (CA-16), `apps/mobile/src/repositories/favoriteAnimals.ts`, `docs/adr/0014-mobile-offline-cache-and-connectivity.md`.

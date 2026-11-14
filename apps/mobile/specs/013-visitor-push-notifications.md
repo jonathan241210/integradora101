@@ -6,7 +6,7 @@
 - Solicitante / responsable funcional: Aksel
 - Aprobación funcional: Aksel, 2026-11-14
 - Decisiones de alcance confirmadas el 2026-11-14: el aviso sale en la barra del sistema, también con la app cerrada; sin correo y sin bandeja dentro de la app; dos interruptores en Ajustes. «Noticias y eventos» nace apagado y «Estado de mis momentos» nace encendido.
-- Dependencias de contrato: `api-017` (Aprobada). No se implementa hasta que el plan técnico esté aprobado por el equipo, con tasks, DBR-014 en `Lista para backend` y el ADR 0029 aceptado.
+- Dependencias de contrato: `api-017` (Aprobada). No se implementa hasta que el plan técnico esté aprobado por el equipo, con tasks, DBR-017 en `Lista para backend` y el ADR 0029 aceptado.
 - Aprobar esta spec no autoriza implementar.
 
 ## Problema y contexto
@@ -73,7 +73,7 @@ Esta spec hace que el teléfono muestre el push de `api-017` en la barra del sis
 
 - La app envía el token push y las dos preferencias a la API. No envía la opinión, el motivo ni la foto en el aviso.
 - El token no se muestra en pantalla.
-- No requiere DBR propia. La DBR es `docs/database/requests/DBR-014-visitor-push-notifications.md`, abierta en Borrador.
+- No requiere DBR propia. La DBR es `docs/database/requests/DBR-017-visitor-push-notifications.md`, abierta en Borrador.
 - Antes del público, el aviso de privacidad debe mencionar el token. Esta spec no redacta ese texto (`api-017`).
 
 ## Flujos y errores

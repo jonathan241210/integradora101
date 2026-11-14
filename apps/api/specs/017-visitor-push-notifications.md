@@ -6,7 +6,7 @@
 - Solicitante / responsable funcional: Aksel
 - Aprobación funcional: Aksel, 2026-11-14
 - Decisiones de alcance confirmadas el 2026-11-14: solo push a la barra del sistema; sin correo; un momento se avisa al aceptarlo o al rechazarlo; noticias y eventos solo a cuentas con sesión que activaron ese aviso; dos preferencias distintas. `news_and_events` nace en `false` y `memory_status` nace en `true`.
-- Dependencias: `api-004` (sesión de visitante y borrado de cuenta), `api-010` (transiciones de un momento), `api-011` (cuándo una noticia es visible) y `api-006` (cuándo un evento es visible). El envío real espera plan y tasks aprobados, DBR-014 en `Lista para backend` y la aceptación del ADR 0029.
+- Dependencias: `api-004` (sesión de visitante y borrado de cuenta), `api-010` (transiciones de un momento), `api-011` (cuándo una noticia es visible) y `api-006` (cuándo un evento es visible). El envío real espera plan y tasks aprobados, DBR-017 en `Lista para backend` y la aceptación del ADR 0029.
 - Aprobar esta spec no autoriza implementar: faltan el plan técnico del equipo, las tasks y la DBR en `Lista para backend`.
 
 ## Problema y contexto
@@ -93,7 +93,7 @@ Afecta a quien tiene cuenta de visitante en la app Android. El portal, el dashbo
 - Se guardan las dos preferencias de la cuenta y, por teléfono, el token push, la plataforma `android` y la cuenta dueña. El token es un identificador del dispositivo: no se escribe en logs de aplicación ni en Activitylog.
 - El payload de un momento no lleva motivo, opinión ni imagen (CA-14). Esos datos siguen en «Mis momentos», con sesión.
 - No son datos clínicos ni financieros.
-- Requiere DBR: sí. La acompaña `docs/database/requests/DBR-014-visitor-push-notifications.md` (Borrador, abierta). Esta spec no incluye SQL ni migración. Hasta que esa DBR esté en `Lista para backend` no se implementan modelos ni endpoints.
+- Requiere DBR: sí. La acompaña `docs/database/requests/DBR-017-visitor-push-notifications.md` (Borrador, abierta). Esta spec no incluye SQL ni migración. Hasta que esa DBR esté en `Lista para backend` no se implementan modelos ni endpoints.
 - El borrado de cuenta de `api-004` CA-14 debe incluir estas filas. Esta spec no modifica el texto de `api-004`; el plan de implementación engancha `DeleteVisitorAccountAction`.
 - El aviso de privacidad oficial, antes del público, debe decir que la app registra el token del teléfono para estos avisos. Esta spec no cambia ese texto.
 
@@ -116,4 +116,4 @@ Afecta a quien tiene cuenta de visitante en la app Android. El portal, el dashbo
 ## Revisión
 
 - Aprobadores y fecha: Aksel, 2026-11-14 (aprobación funcional). La aprobación técnica del plan sigue pendiente.
-- Evidencia/enlaces: `apps/mobile/specs/013-visitor-push-notifications.md`, `apps/api/plan/017-visitor-push-notifications.md`, `docs/database/requests/DBR-014-visitor-push-notifications.md`, `docs/adr/0029-visitor-android-push.md`, `apps/api/specs/010-visitor-memory-requests.md`, `apps/api/specs/011-public-news-read.md`, `apps/api/specs/006-public-catalog-read.md`, `apps/api/specs/004-visitor-authentication.md`, `docs/adr/0004-mobile-react-native.md`, `docs/adr/0011-visitor-identity-and-mobile-session.md`, `docs/adr/0012-android-distribution-channel.md`.
+- Evidencia/enlaces: `apps/mobile/specs/013-visitor-push-notifications.md`, `apps/api/plan/017-visitor-push-notifications.md`, `docs/database/requests/DBR-017-visitor-push-notifications.md`, `docs/adr/0029-visitor-android-push.md`, `apps/api/specs/010-visitor-memory-requests.md`, `apps/api/specs/011-public-news-read.md`, `apps/api/specs/006-public-catalog-read.md`, `apps/api/specs/004-visitor-authentication.md`, `docs/adr/0004-mobile-react-native.md`, `docs/adr/0011-visitor-identity-and-mobile-session.md`, `docs/adr/0012-android-distribution-channel.md`.

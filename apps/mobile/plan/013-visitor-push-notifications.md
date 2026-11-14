@@ -2,10 +2,10 @@
 
 - Spec: `apps/mobile/specs/013-visitor-push-notifications.md`
 - Estado de spec: Aprobada (Aksel, 2026-11-14)
-- Estado del plan: Pendiente de aprobación del equipo. Este documento no autoriza código, tasks ni instalar `expo-notifications`.
+- Estado del plan: Aprobado técnicamente (Victor Adrian, 2026-11-14). No autoriza código ni instalar `expo-notifications` hasta contar con tasks aprobadas, ADR 0029 aceptado y DBR-017 en `Lista para backend`.
 - Responsable técnico: por identificar
 - Solicitante funcional: Aksel
-- Dependencias: `api-017` (spec Aprobada; su plan sigue pendiente), ADR 0029 (Propuesto), DBR-014 (Borrador)
+- Dependencias: `api-017` (spec Aprobada; plan aprobado), ADR 0029 (Propuesto), DBR-017 (aprobación de BD registrada, pendiente backend)
 
 ## Diseño de solución
 
@@ -13,7 +13,7 @@ La app registra el teléfono, muestra dos interruptores en Ajustes y abre la pan
 
 MVVM se mantiene: `SettingsScreen` recibe props; un hook lee y guarda preferencias y otro traduce el toque en una ruta. La red pasa por `@arca/api-client`. No hay lista de avisos.
 
-`expo-notifications` no se instala mientras el ADR 0029 siga en Propuesto. El plan deja el punto de integración; la implementación espera la aceptación del ADR, el plan de `api-017` y DBR-014 en `Lista para backend`.
+`expo-notifications` no se instala mientras el ADR 0029 siga en Propuesto. El plan deja el punto de integración; la implementación espera la aceptación del ADR, el plan de `api-017` y DBR-017 en `Lista para backend`.
 
 ```text
 Ajustes (View)
@@ -116,7 +116,7 @@ El flujo de `mobile-004` CA-11 y el de borrado de cuenta llaman antes a `DELETE 
 | II. La spec manda | Sí, en este documento | Spec Aprobada por Aksel el 2026-11-14. Este plan no está aprobado. No hay tasks ni código |
 | III. Lógica separada de la interfaz | Sí | La pantalla no decide envíos ni redacta el aviso. El hook llama a `@arca/api-client` |
 | IV. Un test por criterio | Sí, al implementar | La tabla cubre los CA automatizables. CA-08 en dispositivo cerrado queda manual, como dice la spec |
-| V. Una sola fuente de verdad para los datos | Sí | No hay DBR móvil. Preferencias y tokens viven en la API (DBR-014) |
+| V. Una sola fuente de verdad para los datos | Sí | No hay DBR móvil. Preferencias y tokens viven en la API (DBR-017) |
 | VI. Código en inglés, personas en español | Sí | Archivos, canales internos y tipos en inglés. Etiquetas de Ajustes y el texto de permiso denegado en español |
 
 ## Riesgos y decisiones
@@ -129,8 +129,8 @@ El flujo de `mobile-004` CA-11 y el de borrado de cuenta llaman antes a `DELETE 
 ## Orden y aprobación
 
 1. El equipo aprueba este plan y acepta el ADR 0029.
-2. `api-017` tiene su plan aprobado, DBR-014 en `Lista para backend` y los endpoints desplegados en el ambiente de pruebas.
+2. `api-017` tiene su plan aprobado, DBR-017 en `Lista para backend` y los endpoints desplegados en el ambiente de pruebas.
 3. Se instala `expo-notifications` en el corte de implementación, se escriben las tasks y los tests, y se actualiza la nota de permisos.
 4. La evidencia manual de la barra con la app cerrada se adjunta al PR, con un build de distribución.
 
-Aprobación funcional de la spec: Aksel, 2026-11-14. Aprobación técnica de este plan: pendiente.
+Aprobación funcional de la spec: Aksel, 2026-11-14. Aprobación técnica de este plan: Victor Adrian, 2026-11-14.

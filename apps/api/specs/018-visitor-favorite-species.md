@@ -6,7 +6,7 @@
 - Solicitante / responsable funcional: Aksel
 - Aprobación funcional: Aksel, 2026-11-14 (alcance, CA y RN)
 - Conformidad del equipo: pendiente
-- Dependencias: `api-004` (sesión y borrado físico de la cuenta), `api-015` (especie visible: `is_published = 1` y sin `deleted_at`). DBR-015 acompaña a esta spec y sigue en Borrador.
+- Dependencias: `api-004` (sesión y borrado físico de la cuenta), `api-015` (especie visible: `is_published = 1` y sin `deleted_at`). DBR-018 acompaña a esta spec y sigue en Borrador.
 - Ni esta firma ni la conformidad del equipo autorizan tasks ni código. El plan técnico se redacta cuando el estado pase a Aprobada.
 
 ## Problema y contexto
@@ -30,7 +30,7 @@ Esta spec pasa la lista a la cuenta. El teléfono puede guardar una copia para m
 - Lista pública o visible para otra cuenta.
 - Correo o push al marcar.
 - Reutilizar `visitor_collections`.
-- Plan técnico y tasks. Empiezan cuando esta spec esté Aprobada y DBR-015 esté en `Lista para backend`.
+- Plan técnico y tasks. Empiezan cuando esta spec esté Aprobada y DBR-018 esté en `Lista para backend`.
 
 ## Actores y permisos
 
@@ -66,7 +66,7 @@ Esta spec pasa la lista a la cuenta. El teléfono puede guardar una copia para m
 - **RN-04 (orden):** El GET ordena por `created_at` descendente y `id` descendente.
 - **RN-05 (quitar es borrado físico):** `favorite: false` borra la fila. No hay SoftDeletes.
 - **RN-06 (ocultar lo no visible):** El GET omite especies que ya no son visibles. No las borra por eso.
-- **RN-07 (borrado de cuenta):** Las filas se borran físicamente con la cuenta (`api-004` RN-08), por la clave `ON DELETE CASCADE` de DBR-015.
+- **RN-07 (borrado de cuenta):** Las filas se borran físicamente con la cuenta (`api-004` RN-08), por la clave `ON DELETE CASCADE` de DBR-018.
 - **RN-08 (arquitectura):** Controlador delgado → Form Request → Action → API Resource. La visibilidad se comprueba en la Action, con la misma regla que el catálogo público.
 - **RN-09 (rutas):** En inglés y con nombre, bajo `/api/v1/visitor`: `visitor.favorite-species.index` y `visitor.favorite-species.update`. Sin Inertia ni Wayfinder.
 
@@ -75,8 +75,8 @@ Esta spec pasa la lista a la cuenta. El teléfono puede guardar una copia para m
 - Se guarda la pareja cuenta–especie y `created_at`. No se guarda el nombre del animal ni una nota.
 - La lista no se expone a otras cuentas ni al portal.
 - No son datos clínicos ni financieros.
-- Sin SoftDeletes y sin `BaseModel`. Es una preferencia de la cuenta, igual que el borrado físico de `api-004`. DBR-015 deja esa excepción para que BD y backend la acepten o la cambien. Esta spec no da por aceptada la excepción.
-- Requiere DBR: sí. `docs/database/requests/DBR-015-visitor-favorite-species.md` (Borrador). Esta spec no incluye SQL ejecutable.
+- Sin SoftDeletes y sin `BaseModel`. Es una preferencia de la cuenta, igual que el borrado físico de `api-004`. DBR-018 deja esa excepción para que BD y backend la acepten o la cambien. Esta spec no da por aceptada la excepción.
+- Requiere DBR: sí. `docs/database/requests/DBR-018-visitor-favorite-species.md` (Borrador). Esta spec no incluye SQL ejecutable.
 
 ## Flujos y errores
 
@@ -87,10 +87,10 @@ Esta spec pasa la lista a la cuenta. El teléfono puede guardar una copia para m
 
 ## Dependencias, riesgos y preguntas
 
-- Dependencias: `api-004`, `api-015`, DBR-015. No hay paquete nuevo ni ADR nuevo. AsyncStorage sigue siendo la copia local (`mobile-014`); la enmienda del ADR 0014 que dice que los favoritos no salen del teléfono queda señalada como reemplazo propuesto, sin cambiar ese ADR hasta que esta spec se apruebe.
+- Dependencias: `api-004`, `api-015`, DBR-018. No hay paquete nuevo ni ADR nuevo. AsyncStorage sigue siendo la copia local (`mobile-014`); la enmienda del ADR 0014 que dice que los favoritos no salen del teléfono queda señalada como reemplazo propuesto, sin cambiar ese ADR hasta que esta spec se apruebe.
 - Riesgos: una especie despublicada desaparece del GET y el corazón deja de verla, aunque la fila siga. Volver a publicarla la muestra otra vez.
 - Preguntas pendientes:
-  1. ¿BD y backend aceptan la tabla sin SoftDeletes? La propuesta está en DBR-015. No se responde en esta spec.
+  1. ¿BD y backend aceptan la tabla sin SoftDeletes? La propuesta está en DBR-018. No se responde en esta spec.
 
 ## Revisión
 
@@ -100,4 +100,4 @@ Esta spec pasa la lista a la cuenta. El teléfono puede guardar una copia para m
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
 | Equipo | | | Pendiente |
-- Evidencia/enlaces: `apps/mobile/specs/014-visitor-favorite-species.md`, `docs/database/requests/DBR-015-visitor-favorite-species.md`, `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md` (CA-16), `apps/api/specs/015-public-species-read.md`, `apps/api/specs/004-visitor-authentication.md`, `docs/adr/0014-mobile-offline-cache-and-connectivity.md`.
+- Evidencia/enlaces: `apps/mobile/specs/014-visitor-favorite-species.md`, `docs/database/requests/DBR-018-visitor-favorite-species.md`, `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md` (CA-16), `apps/api/specs/015-public-species-read.md`, `apps/api/specs/004-visitor-authentication.md`, `docs/adr/0014-mobile-offline-cache-and-connectivity.md`.

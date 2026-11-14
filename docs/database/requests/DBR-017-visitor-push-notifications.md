@@ -1,13 +1,13 @@
-# DBR-014 · visitor-push-notifications
+# DBR-017 · visitor-push-notifications
 
-- Estado: Borrador (sin aprobar; no existe migración ni SQL ejecutable)
-- Feature/spec origen: `apps/api/specs/017-visitor-push-notifications.md` (Aprobada, Aksel, 2026-11-14). Consumidor: `apps/mobile/specs/013-visitor-push-notifications.md`. Plan: `apps/api/plan/017-visitor-push-notifications.md` (pendiente de aprobación técnica).
+- Estado: Migración creada y probada en base MySQL 8.0 aislada sin errores (aprobación de BD registrada; pendiente aprobación de backend para `Aprobada`/`Lista para backend`)
+- Feature/spec origen: `apps/api/specs/017-visitor-push-notifications.md` (Aprobada, Aksel, 2026-11-14). Consumidor: `apps/mobile/specs/013-visitor-push-notifications.md`. Plan: `apps/api/plan/017-visitor-push-notifications.md` (aprobado técnicamente, Victor Adrian, 2026-11-14).
 - Solicitante: Aksel
-- Responsable de BD: por identificar
+- Responsable de BD: Victor Adrian
 - Responsable backend: por identificar
 - Fecha: 2026-11-14
 
-Esta solicitud queda abierta. No tiene firmas de BD ni de backend, no está en `Lista para backend` y no autoriza una migración.
+Aprobación de BD registrada y migración probada por BD (2026-11-14, sin errores). Falta la aprobación separada de backend para pasar a `Aprobada`/`Lista para backend` y habilitar integración backend.
 
 ## Problema y justificación
 
@@ -129,21 +129,21 @@ No aplica. No se crean funciones, procedimientos, vistas ni triggers. La regla d
 
 ## Pruebas y evidencia
 
-- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: pendiente.
-- Resultado y evidencia (sin secretos ni datos sensibles): pendiente.
+- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: completadas (2026-11-14, Victor Adrian), sin errores.
+- Resultado y evidencia (sin secretos ni datos sensibles): migraciones Laravel de DBR-017 creadas y ejecutadas en entorno MySQL 8.0 aislado sin errores (2026-11-14). Detalle de comandos/salida no adjuntado en este documento.
 - Pruebas integradas del backend: pendiente. Empiezan cuando esta DBR esté en `Lista para backend`.
 
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Responsable de BD | | | Pendiente |
+| Responsable de BD | Victor Adrian | 2026-11-14 | Aprobado |
 | Responsable backend | | | Pendiente |
 
 ## Aplicación por ambiente
 
 | Ambiente | Estado | Fecha | Evidencia |
 |---|---|---|---|
-| desarrollo/pruebas | pendiente | | |
+| desarrollo/pruebas | aplicada/probada | 2026-11-14 | Migraci�n ejecutada en base MySQL 8.0 aislada sin errores (Victor Adrian) |
 | staging | pendiente | | |
 | producción | pendiente | | |
