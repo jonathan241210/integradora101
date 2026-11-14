@@ -2,7 +2,7 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña: selector de especies para el veterinario, envío de solicitudes de primera publicación y de actualización, lista «Mis solicitudes», revisión, edición previa, publicar, actualizar, rechazar, despublicar, republicar, editar una especie despublicada, eliminar la publicación, auditoría); `pwa` (`pwa-005`, consumidor del selector, del envío y de la lista propia; sin cambio de regla de rol); `dashboard` (`dashboard-010`, que absorbe `dashboard-009`); `api-015` (lectura pública de especies publicadas para `web-011`); `packages/api-client` (métodos y tipos); ADR 0026 (sin cambio de carpetas; la enmienda de 2026-11-11 sigue vigente).
-- Estado: Aprobada (2026-11-12, Jonathan, responsable de backend). Aprobar no autoriza implementar: la implementación espera a que DBR-013 esté en «Lista para backend» (condición cumplida el 2026-11-12: migración aplicada en `arca_pruebas`, lote 5, verificada).
+- Estado: En progreso (2026-11-13: implementación integrada en `integration/memories-species`; quedan las verificaciones manuales abiertas en tasks). Aprobada el 2026-11-12 por Jonathan, responsable de backend. Aprobar no autoriza implementar: la implementación espera a que DBR-013 esté en «Lista para backend» (condición cumplida el 2026-11-12: migración aplicada en `arca_pruebas`, lote 5, verificada).
 - Solicitante / responsable funcional: (por designar)
 - Responsable de BD: Víctor Adrián. DBR-013 aprobada por BD (2026-11-12) con las decisiones 2a=A, 2b, 2c=A, 7, 13, 14, 15, 16 y 17. Migración `2026_11_12_000013_species_publication_requests_schema` aplicada en `arca_pruebas` (lote 5), verificada el 2026-11-12 por consulta de solo lectura. Aprobación de backend: Jonathan, 2026-11-12 (`docs/database/requests/README.md`, regla 4). Estado de DBR-013: Lista para backend (desde el 2026-11-12). Pendiente de BD: EXPLAIN y registro de la fecha y del responsable de la aplicación.
 - Aprobación funcional: Jonathan (responsable de backend), 2026-11-12.
@@ -162,7 +162,7 @@ Una especie `unpublished` puede recibir una solicitud `update` (decisión del us
   - «La especie no existe.» (también si la especie tiene `deleted_at`, RN-22).
   - «Ya hay una solicitud pendiente para esta especie.» (CA-27, `pending`).
   - «Tipo de animal requerido.» o «Tipo de animal no válido.» (CA-25).
-  - «Nombre científico: máximo 150 caracteres.», «Hábitat: máximo 150 caracteres.» y «Origen: máximo 150 caracteres.».
+  - «Nombre científico: máximo 150 caracteres.», «Hábitat: máximo 150 caracteres.» y «Área de distribución natural: máximo 150 caracteres.».
   - «Elige una foto para la primera publicación.» (CA-04, solo en `publish`; texto propuesto).
   - «No se pudo procesar la foto. Intenta con otro archivo.» (CA-04).
   - «Campo no permitido: common_name.» o «species» (CA-29).
@@ -174,7 +174,7 @@ Una especie `unpublished` puede recibir una solicitud `update` (decisión del us
 
 ### Listado y detalle (administración)
 
-- **CA-05 (listado):** Dado `zoo-admin` con `species.review`, cuando llama `GET /api/v1/admin/species-publication-requests?status=submitted`, entonces responde las solicitudes paginadas (10 por página), ordenadas por `created_at` descendente, con `id`, `species_id`, `common_name` (de `species`), `scientific_name`, `category` efectivos (CA-06), `request_type`, `status`, `created_at` y `veterinarian_name` (de `created_by`). Sin foto en el JSON. `status` vacío lista todas. El listado no incluye solicitudes eliminadas (CA-38).
+- **CA-05 (listado):** Dado `zoo-admin` con `species.review`, cuando llama `GET /api/v1/admin/species-publication-requests?status=submitted`, entonces responde las solicitudes paginadas (10 por página), ordenadas por `created_at` descendente, con `id`, `species_id`, `common_name` (de `species`), `scientific_name`, `category` efectivos (CA-06), `request_type`, `status`, `created_at` y `veterinarian_name` (de `created_by`). Sin foto en el JSON. `status` vacío lista todas. El listado no incluye solicitudes eliminadas (CA-38). Cada fila incluye `publication_status` de su especie, calculado sin contar la propia solicitud: una especie despublicada con solicitud `submitted` devuelve `unpublished` (no `pending`); el detalle (CA-06) aplica la misma regla en `current.publication_status`. Valores: `published`, `unpublished`, `not_published` (RN-18 sin el criterio `pending` de la solicitud evaluada; `pending` sigue aplicando en `admin/published-species`).
   - Verificación: `test_ca05_admin_lists_requests_paginated_without_photo`.
 
 - **CA-06 (detalle: actual frente a propuesto):** Dado un `id` válido, cuando llama `GET /api/v1/admin/species-publication-requests/{id}`, entonces responde `200` con:
@@ -238,7 +238,7 @@ Una especie `unpublished` puede recibir una solicitud `update` (decisión del us
   - Verificación: `test_ca15_patch_saves_trimmed_values_and_keeps_status`.
 
 - **CA-16 (validación de la edición):** Dada una edición, cuando ocurre alguno de estos casos, entonces responde `422` con mensaje en español, no cambia nada y no escribe auditoría:
-  - `scientific_name`, `habitat` u `origin` de más de 150 caracteres: «Nombre científico: máximo 150 caracteres.», «Hábitat: máximo 150 caracteres.» u «Origen: máximo 150 caracteres.».
+  - `scientific_name`, `habitat` u `origin` de más de 150 caracteres: «Nombre científico: máximo 150 caracteres.», «Hábitat: máximo 150 caracteres.» u «Área de distribución natural: máximo 150 caracteres.».
   - `category` fuera de la lista cerrada de DBR-004: «Tipo de animal no válido.». Si el campo llega vacío: «Tipo de animal requerido.» (CA-25).
   - El cuerpo incluye un campo no editable (`common_name`, `species_id`, `status`, `created_by` u otro): «Campo no editable: {campo}.». `common_name` queda fuera por RN-15.
   - Verificación: `test_ca16_patch_validation_in_spanish`.
@@ -254,7 +254,7 @@ Una especie `unpublished` puede recibir una solicitud `update` (decisión del us
 
 ### Permisos por seeder
 
-- **CA-20 (permiso solo para `zoo-admin`):** Dado `RolesAndPermissionsSeeder` ejecutado, cuando se comprueba, entonces `species.review` existe en `permissions` (creado con `findOrCreate`), lo tiene solo `zoo-admin`, y `admin` lo tiene excluido de forma explícita. Test: un usuario con rol `admin` recibe `403` en las rutas de solicitudes (CA-07) y un `zoo-admin` con 2FA recibe `200` en el listado. Estado: pendiente de implementar en el seeder (tarea futura T-SEED). Hasta entonces, este CA no se cumple.
+- **CA-20 (permiso solo para `zoo-admin`):** Dado `RolesAndPermissionsSeeder` ejecutado, cuando se comprueba, entonces `species.review` existe en `permissions` (creado con `findOrCreate`), lo tiene solo `zoo-admin`, y `admin` lo tiene excluido de forma explícita. Test: un usuario con rol `admin` recibe `403` en las rutas de solicitudes (CA-07) y un `zoo-admin` con 2FA recibe `200` en el listado. Estado: implementado (T-07; `SeedersTest::test_ca20_species_review_only_zoo_admin`).
   - Verificación: `test_ca20_species_review_only_zoo_admin`.
 
 ### Ficha pública, foto, vínculo y tipo

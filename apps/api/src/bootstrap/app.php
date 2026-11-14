@@ -10,6 +10,7 @@ use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\Request;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'administrator.two-factor' => EnsureAdministratorTwoFactor::class,
             'permission' => PermissionMiddleware::class,
+            'role' => RoleMiddleware::class,
             'staff.user' => EnsureStaffUser::class,
             'visitor.token' => EnsureVisitorToken::class,
         ]);

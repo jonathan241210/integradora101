@@ -47,6 +47,14 @@ const navigationCandidates: NavigationCandidate[] = [
     permission: "users.manage",
   },
   {
+    item: { id: "memories", label: "Momentos", icon: "camera" },
+    permission: "memories.review",
+  },
+  {
+    item: { id: "tulanpedia", label: "TulanPedia", icon: "animals" },
+    permission: "species.review",
+  },
+  {
     item: { id: "tickets", label: "Venta", icon: "ticket" },
     permission: "tickets.create",
   },

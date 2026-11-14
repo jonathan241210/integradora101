@@ -5,6 +5,7 @@ export type IconName =
   | "bell"
   | "building"
   | "calendar"
+  | "camera"
   | "check"
   | "chevron"
   | "close"
@@ -25,6 +26,7 @@ const iconPaths: Record<IconName, ReactNode> = {
   bell: <><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></>,
   building: <><path d="M4 21V5l8-3 8 3v16" /><path d="M2 21h20M8 8h1m6 0h1M8 12h1m6 0h1M10 21v-5h4v5" /></>,
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
+  camera: <><path d="M4 8h3l1.5-2h7L17 8h3v11H4Z" /><circle cx="12" cy="13" r="3.5" /></>,
   check: <path d="m5 12 4 4L19 6" />,
   chevron: <path d="m7 10 5 5 5-5" />,
   close: <path d="m6 6 12 12M18 6 6 18" />,

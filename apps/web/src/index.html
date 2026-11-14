@@ -33,6 +33,8 @@
 <link rel="stylesheet" href="animations.css">
 <link rel="stylesheet" href="accessibility.css">
 <link rel="stylesheet" href="news-events.css">
+<link rel="stylesheet" href="animals.css">
+<link rel="stylesheet" href="memories.css">
 
 <!-- Mejoras de rendimiento y accesibilidad -->
 <style>
@@ -69,6 +71,9 @@
 <script src="accessibility.js" defer></script>
 <script src="js/api.js" defer></script>
 <script src="js/news-events.js" defer></script>
+<script src="js/animals.js" defer></script>
+<script src="js/memories-carousel.js" defer></script>
+<script src="js/memories.js" defer></script>
 </head>
 
 <body>
@@ -257,32 +262,27 @@
                 Encuentros inolvidables
             </span>
             <h2>TulanPedia</h2>
-            <p>Busca por nombre o filtra por especie y hábitat. En cada ficha encontrarás información general de la especie: dónde vive, qué come, cuánto puede vivir, tamaño, características y curiosidades.</p>
+            <p>Filtra las especies por tipo de animal, especie o hábitat. En cada ficha verás la información que el zoológico ha publicado para la especie.</p>
         </div>
 
-        <div class="animal-filters">
+        <div class="animal-filters" id="animalFilters" hidden>
 
-            <label>
-                <i class="bi bi-filter" aria-hidden="true"></i>
-                Especie
-                <select id="speciesFilter" aria-label="Filtrar animales por especie">
-                    <option value="">Todas las especies</option>
-                    <option value="mamífero">Mamíferos</option>
-                    <option value="ave">Aves</option>
-                    <option value="reptil">Reptiles</option>
-                </select>
+            <label id="categoryFilterField">
+                <i class="bi bi-tags" aria-hidden="true"></i>
+                Tipo de animal
+                <select id="categoryFilter" aria-label="Filtrar especies por tipo de animal"></select>
             </label>
 
-            <label>
+            <label id="speciesFilterField">
+                <i class="bi bi-filter" aria-hidden="true"></i>
+                Especie
+                <select id="speciesFilter" aria-label="Filtrar especies por nombre"></select>
+            </label>
+
+            <label id="habitatFilterField" hidden>
                 <i class="bi bi-map" aria-hidden="true"></i>
                 Hábitat
-                <select id="habitatFilter" aria-label="Filtrar animales por hábitat">
-                    <option value="">Todos los hábitats</option>
-                    <option value="sabana">Sabana</option>
-                    <option value="bosque">Bosque</option>
-                    <option value="aviario">Aviario</option>
-                    <option value="reptilario">Reptilario</option>
-                </select>
+                <select id="habitatFilter" aria-label="Filtrar especies por hábitat"></select>
             </label>
 
             <button class="btn btn-outline" id="clearFilters" type="button">
@@ -290,130 +290,17 @@
                 Limpiar filtros
             </button>
 
-            <p id="animalCount" class="results-count" aria-live="polite"></p>
+            <p id="animalCount" class="results-count" aria-live="polite" hidden></p>
 
         </div>
 
-        <div class="animal-grid" id="animalGrid">
+        <p class="tp-status" id="animalStatus" role="status" tabindex="-1">Cargando especies…</p>
 
-            <!-- LEÓN -->
-            <article class="animal-card" data-name="león" data-species="mamífero" data-habitat="sabana">
-                <img src="assets/lion-800.webp" srcset="assets/lion-480.webp 480w, assets/lion-800.webp 800w" sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" alt="León" loading="lazy" decoding="async">
-                <div class="animal-card-body">
-                    <span class="animal-label"><i class="bi bi-circle-fill" aria-hidden="true"></i> Mamífero · Felino</span>
-                    <h3><i class="bi bi-heart" aria-hidden="true"></i> León</h3>
-                    <p>Gran felino conocido por su fuerza, vida social y característico rugido.</p>
-                    <details>
-                        <summary><i class="bi bi-book" aria-hidden="true"></i> Conocer más sobre la especie</summary>
-                        <dl>
-                            <dt>Nombre científico</dt><dd>Panthera leo</dd>
-                            <dt>Tipo de animal</dt><dd>Mamífero · Felino</dd>
-                            <dt>Dónde vive</dt><dd>Sabanas, pastizales y zonas abiertas de África.</dd>
-                            <dt>Qué come</dt><dd>Es carnívoro y se alimenta principalmente de otros mamíferos.</dd>
-                            <dt>Esperanza de vida</dt><dd>Aproximadamente 10 a 15 años en estado silvestre; puede vivir más tiempo bajo cuidado humano.</dd>
-                            <dt>Tamaño</dt><dd>Los machos pueden superar los 2 metros de longitud corporal, sin contar la cola.</dd>
-                            <dt>Peso</dt><dd>Los machos adultos pueden superar los 150 kg.</dd>
-                            <dt>Reproducción</dt><dd>La gestación dura aproximadamente 110 días.</dd>
-                            <dt>Características</dt><dd>                            Los machos presentan una melena y ambos sexos tienen garras retráctiles y gran fuerza.</dd>
-                                                        <dt>Curiosidad</dt><dd>El rugido de un león puede escucharse a varios kilómetros.</dd>
-                                                        <dt>Conservación</dt><dd>La especie enfrenta amenazas relacionadas con la pérdida de hábitat y la reducción de sus presas.</dd>
-                                                    </dl>
-                    </details>
-                </div>
-            </article>
-
-            <!-- JIRAFA -->
-            <article class="animal-card" data-name="jirafa" data-species="mamífero" data-habitat="sabana" data-model="assets/nyilonelycompany-nature-51.glb" data-model-alt="Modelo 3D interactivo de una jirafa">
-                <img src="assets/giraffe-800.webp" srcset="assets/giraffe-480.webp 480w, assets/giraffe-800.webp 800w" sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" alt="Jirafa" loading="lazy" decoding="async">
-                <button type="button" class="model-toggle" aria-pressed="false" aria-label="Ver modelo 3D de la jirafa" title="Ver modelo 3D">
-                    <img src="assets/icon-3d-56.webp" alt="" width="28" height="28">
-                </button>
-                <div class="animal-card-body">
-                    <span class="animal-label"><i class="bi bi-circle-fill" aria-hidden="true"></i> Mamífero · Herbívoro</span>
-                    <h3><i class="bi bi-tree" aria-hidden="true"></i> Jirafa</h3>
-                    <p>El animal terrestre más alto del mundo, reconocible por su largo cuello y sus manchas.</p>
-                    <details>
-                        <summary><i class="bi bi-book" aria-hidden="true"></i> Conocer más sobre la especie</summary>
-                        <dl>
-                            <dt>Nombre científico</dt><dd>Giraffa camelopardalis</dd>
-                            <dt>Tipo de animal</dt><dd>Mamífero · Herbívoro</dd>
-                            <dt>Dónde vive</dt><dd>Sabanas, pastizales y zonas boscosas de África.</dd>
-                            <dt>Qué come</dt><dd>Hojas, brotes y ramas de árboles, especialmente de acacias.</dd>
-                            <dt>Esperanza de vida</dt><dd>Aproximadamente 20 a 25 años.</dd>
-                            <dt>Tamaño</dt><dd>Puede alcanzar aproximadamente entre 4.5 y 5.5 metros de altura.</dd>
-                            <dt>Peso</dt><dd>Los machos adultos pueden superar los 1,000 kg.</dd>
-                            <dt>Reproducción</dt><dd>La gestación dura aproximadamente 15 meses.</dd>
-                            <dt>Características</dt><dd>Posee cuello y patas largas, manchas características y una lengua adaptada para alcanzar hojas.</dd>
-                            <dt>Curiosidad</dt><dd>Su lengua puede medir alrededor de 45 centímetros.</dd>
-                            <dt>Conservación</dt><dd>Sus poblaciones están afectadas por la pérdida y fragmentación de hábitat.</dd>
-                        </dl>
-                    </details>
-                </div>
-            </article>
-
-            <!-- GUACAMAYA -->
-            <article class="animal-card" data-name="guacamaya" data-species="ave" data-habitat="aviario">
-                <img src="assets/macaw-800.webp" srcset="assets/macaw-480.webp 480w, assets/macaw-800.webp 800w" sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" alt="Guacamaya" loading="lazy" decoding="async">
-                <div class="animal-card-body">
-                    <span class="animal-label"><i class="bi bi-feather" aria-hidden="true"></i> Ave · Tropical</span>
-                    <h3><i class="bi bi-feather" aria-hidden="true"></i> Guacamaya</h3>
-                    <p>Ave de gran colorido, conocida por su inteligencia, fuerte pico y vocalizaciones.</p>
-                    <details>
-                        <summary><i class="bi bi-book" aria-hidden="true"></i> Conocer más sobre la especie</summary>
-                        <dl>
-                            <dt>Nombre científico</dt><dd>Ara spp. — depende de la especie.</dd>
-                            <dt>Tipo de animal</dt><dd>Ave · Psitaciforme</dd>
-                            <dt>Dónde vive</dt><dd>Bosques tropicales, selvas y otros ambientes cálidos de América.</dd>
-                            <dt>Qué come</dt><dd>Frutas, semillas, nueces, flores y otros alimentos vegetales según la especie.</dd>
-                            <dt>Esperanza de vida</dt><dd>Algunas especies pueden vivir aproximadamente entre 30 y 60 años.</dd>
-                            <dt>Tamaño</dt><dd>Dependiendo de la especie, puede medir aproximadamente entre 30 y 90 centímetros.</dd>
-                            <dt>Peso</dt><dd>Varía considerablemente según la especie.</dd>
-                            <dt>Reproducción</dt><dd>Generalmente anida en cavidades de árboles y pone varios huevos.</dd>
-                            <dt>Características</dt><dd>Tiene pico fuerte y curvado, patas adaptadas para sujetarse y plumaje de colores intensos.</dd>
-                            <dt>Curiosidad</dt><dd>Algunas guacamayas pueden imitar sonidos y aprender diferentes vocalizaciones.</dd>
-                            <dt>Conservación</dt><dd>Varias especies enfrentan amenazas por pérdida de hábitat y captura ilegal.</dd>
-                        </dl>
-                    </details>
-                </div>
-            </article>
-
-            <!-- TORTUGA -->
-            <article class="animal-card" data-name="tortuga" data-species="reptil" data-habitat="reptilario">
-                <img src="assets/turtle-800.webp" srcset="assets/turtle-480.webp 480w, assets/turtle-800.webp 800w" sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 25vw" alt="Tortuga" loading="lazy" decoding="async">
-                <div class="animal-card-body">
-                    <span class="animal-label"><i class="bi bi-bug" aria-hidden="true"></i> Reptil · Tortuga</span>
-                    <h3><i class="bi bi-bug" aria-hidden="true"></i> Tortuga</h3>
-                    <p>Reptil caracterizado por su caparazón, que protege gran parte de su cuerpo.</p>
-                    <details>
-                        <summary><i class="bi bi-book" aria-hidden="true"></i> Conocer más sobre la especie</summary>
-                        <dl>
-                            <dt>Nombre científico</dt><dd>Depende de la especie.</dd>
-                            <dt>Tipo de animal</dt><dd>Reptil · Tortuga</dd>
-                            <dt>Dónde vive</dt><dd>Existen especies terrestres, de agua dulce y marinas, con hábitats diferentes.</dd>
-                            <dt>Qué come</dt><dd>Depende de la especie: puede consumir plantas, frutas, vegetales, pequeños animales o una combinación.</dd>
-                            <dt>Esperanza de vida</dt><dd>Varía considerablemente; algunas especies pueden vivir varias décadas.</dd>
-                            <dt>Tamaño</dt><dd>Varía dependiendo de la especie.</dd>
-                            <dt>Peso</dt><dd>Varía dependiendo de la especie.</dd>
-                            <dt>Reproducción</dt><dd>Las tortugas son ovíparas y depositan sus huevos en lugares adecuados para la especie.</dd>
-                            <dt>Características</dt><dd>Su caparazón está unido a su estructura ósea y funciona como protección.</dd>
-                            <dt>Curiosidad</dt><dd>El caparazón no es una cubierta que puedan quitarse; forma parte de su cuerpo.</dd>
-                            <dt>Conservación</dt><dd>El estado de conservación depende de la especie específica.</dd>
-                        </dl>
-                        <p class="model-note"><i class="bi bi-info-circle" aria-hidden="true"></i> Para esta ficha se debe confirmar la especie exacta del ejemplar del zoológico.</p>
-                    </details>
-                </div>
-            </article>
-
-        </div>
+        <div class="animal-grid" id="animalGrid" aria-busy="true"></div>
 
         <p class="empty-state" id="noAnimals" hidden>
             <i class="bi bi-search" aria-hidden="true"></i>
-            No encontramos animales con esos filtros. Prueba con otra búsqueda.
-        </p>
-
-        <p class="demo-note">
-            <i class="bi bi-info-circle" aria-hidden="true"></i>
-            Fichas de muestra: confirma en el zoológico los datos de ejemplares, edades y recintos.
+            No encontramos especies con esos filtros. Prueba con otra búsqueda.
         </p>
 
     </section>
@@ -961,10 +848,17 @@
 
         </div>
 
-        <div class="fotos">
-            <button class="foto f1" type="button" aria-label="Ver foto de un león"></button>
-            <button class="foto f2" type="button" aria-label="Ver foto de un perro"></button>
-            <button class="foto f3" type="button" aria-label="Ver foto de un zorro"></button>
+        <div class="mem-gallery" id="memGallery" aria-busy="true" tabindex="-1">
+            <p class="mem-status" id="memStatus" role="status" aria-live="polite" tabindex="-1">Cargando momentos…</p>
+            <button class="mem-btn mem-retry" id="memRetry" type="button" hidden>Reintentar</button>
+            <div class="mem-carousel" id="memCarousel" role="region" aria-roledescription="carrusel" aria-label="Momentos para recordar" hidden>
+                <div class="mem-slides" id="memSlides"></div>
+                <div class="mem-arrows" id="memArrows">
+                    <button class="mem-arrow mem-arrow-prev" id="memPrev" type="button" aria-label="Momento anterior"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false"><path d="M15 4 7 12l8 8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button class="mem-arrow mem-arrow-next" id="memNext" type="button" aria-label="Momento siguiente"><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true" focusable="false"><path d="m9 4 8 8-8 8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                </div>
+                <p class="mem-announce mem-sr-only" id="memAnnounce" role="status"></p>
+            </div>
         </div>
 
     </section>
@@ -1109,37 +1003,7 @@
 (function () {
   'use strict';
 
-  /* 1. Modelo 3D: botón sobre la foto; solo las tarjetas con data-model lo tienen */
   var viewerLoaded = false;
-  document.querySelectorAll('.animal-card[data-model]').forEach(function (card) {
-    var btn = card.querySelector('.model-toggle');
-    var photo = card.querySelector(':scope > img');
-    if (!btn || !photo) return;
-    var viewer = null;
-    function fit() { if (viewer) viewer.style.height = photo.offsetHeight + 'px'; }
-    btn.addEventListener('click', function () {
-      var on = btn.getAttribute('aria-pressed') !== 'true';
-      btn.setAttribute('aria-pressed', String(on));
-      btn.title = on ? 'Ver foto' : 'Ver modelo 3D';
-      if (on && !viewerLoaded) {
-        viewerLoaded = true;
-        import('./assets/model-viewer.min.js').catch(function () {});
-      }
-      if (on && !viewer) {
-        viewer = document.createElement('model-viewer');
-        viewer.className = 'card-model';
-        viewer.setAttribute('src', card.dataset.model);
-        viewer.setAttribute('alt', card.dataset.modelAlt || 'Modelo 3D');
-        ['camera-controls', 'auto-rotate'].forEach(function (a) { viewer.setAttribute(a, ''); });
-        viewer.setAttribute('shadow-intensity', '1');
-        viewer.setAttribute('exposure', '1.1');
-        photo.after(viewer);
-        window.addEventListener('resize', fit);
-      }
-      if (viewer) { viewer.hidden = !on; fit(); }
-      photo.style.visibility = on ? 'hidden' : '';
-    });
-  });
 
   /* 1b. Mapa 3D: coloca tu archivo en assets/zoo-map.glb */
   var mapBtn = document.getElementById('mapModelToggle');

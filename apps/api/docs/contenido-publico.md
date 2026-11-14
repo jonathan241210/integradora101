@@ -59,14 +59,75 @@ El detalle devuelve `{"data": {...}}` con los mismos campos más `content`. No s
 
 ## Origen de `image_url`
 
-Vigente hoy: `image_url` sale del disco `public` de Laravel con `APP_URL` y `/storage`, y requiere `php artisan storage:link`. La imagen solo existe en la máquina o el servidor donde se subió (`api-008`).
+`image_url` se construye con el disco del ámbito público (`ResolveMediaDiskAction`, `api-013`), que se elige con `PUBLIC_MEDIA_DISK`. La base de datos guarda solo la ruta relativa (`news/<uuid>.<ext>`, `events/<uuid>.<ext>`), nunca la URL, un nombre de disco ni una ruta absoluta; si cambia la URL del disco, cambia `image_url` y no la fila.
 
-**Carpeta compartida de pruebas (decisión del responsable, pendiente de aprobación formal del equipo; ADR 0026 y `apps/api/specs/013-object-storage-images.md`, D-01 a D-04):** las imágenes de noticias y eventos se guardan en la carpeta versionada `apps/api/src/media/`, en `news/` y `events/` (disco `media`, con `PUBLIC_MEDIA_DISK=media` en el `.env` de cada equipo de pruebas). `image_url` sale de `MEDIA_PUBLIC_URL` o, si está vacía, de `APP_URL` más `/media`, y el enlace `public/media` lo crea `php artisan storage:link`. Con esa configuración, el mismo archivo aparece como `.../media/news/<uuid>.<ext>` en lugar de `.../storage/...`. Toda la carpeta `media/` se versiona, y eso incluye `memories/` (momentos); esta referencia cubre solo noticias y eventos. Un equipo ve la imagen si tiene el archivo (`git pull`) y la API que consulta responde desde una `APP_URL` alcanzable. Las imágenes de momentos (`api-010`) están en `media/memories/`; la API no les devuelve `image_url` mientras no estén aceptadas (`api-013` RN-16), pero el archivo es alcanzable por su URL si alguien la conoce (riesgo del ADR 0026). Solo se usan datos de prueba (`api-013` CA-22).
+- **Valor por defecto (`PUBLIC_MEDIA_DISK` ausente o vacía = `public`):** disco `public` de Laravel con `APP_URL` más `/storage`; requiere `php artisan storage:link`. La imagen solo existe en la máquina o el servidor donde se subió (`api-008`).
+- **Carpeta compartida de pruebas (`PUBLIC_MEDIA_DISK=media`; ADR 0026 y `apps/api/specs/013-object-storage-images.md`, D-01 a D-04):** las imágenes se guardan en la carpeta versionada `apps/api/src/media/`, en `news/` y `events/`. `image_url` empieza por `MEDIA_PUBLIC_URL` o, si está vacía, por `APP_URL` más `/media`; el enlace `public/media` lo crea `php artisan storage:link`. El mismo archivo aparece como `.../media/news/<uuid>.<ext>` en lugar de `.../storage/...`.
+- **`MEDIA_PUBLIC_URL`:** si tiene valor, sustituye la URL del disco público, sea `public` o `media`.
+- **Momentos (`api-010`):** sus imágenes están en `media/memories/`. La API no devuelve `image_url` de un momento pendiente o rechazado en ninguna respuesta (`api-013` RN-16); el archivo es alcanzable por su URL si alguien la conoce (riesgo del ADR 0026). Solo los momentos aceptados tienen `image_url`. Esta referencia detalla noticias y eventos.
+- **Visibilidad entre equipos:** un equipo ve la imagen si tiene el archivo (`git pull`) y la API que consulta responde desde una `APP_URL` alcanzable. La API no comprueba que el archivo exista en cada lectura. Solo se usan datos de prueba (`api-013` CA-22).
 
 Opción futura, no implementada ni aprobada: `docs/propuestas/almacenamiento-objetos-s3.md`.
 
 El formato de la respuesta no cambia: el campo sigue siendo una URL absoluta o `null`. La base de datos guarda solo la ruta relativa, nunca la URL.
 
+## Momentos publicados
+
+Endpoint de `api-012` (consumidor: `web-010`). Solo lectura, sin autenticación.
+
+- Ruta: `GET /api/v1/memories`; nombre `memories.index`.
+- Parámetros: `limit` (entero 1 a 50, por defecto 10) y `page` (entero desde 1, por defecto 1). `has_more` se calcula pidiendo un elemento más, sin `COUNT(*)`.
+- Errores `422`: «El límite debe ser un número entero entre 1 y 50.» (`errors.limit`) y «La página debe ser un número entero mayor o igual a 1.» (`errors.page`).
+- Visibilidad: `status` igual a `accepted`, sin `deleted_at` y `published_until` posterior a la hora actual. La vigencia se calcula al consultar; no se escribe nada. Con `published_until` nulo no se lista.
+- Orden: `published_at` descendente y `id` descendente.
+- Campos (lista blanca): `id`, `opinion` (texto plano, `null` si no hay), `image_url` y `published_at` (ISO 8601 en UTC). Nunca datos del visitante ni de revisión, ni rutas.
+- `image_url`: URL del disco público configurado (`filesystems.media_scopes.public`; `MEDIA_PUBLIC_URL` o `APP_URL` más `/media`). Es `null` si la ruta publicada no está bajo `memories/` o si el archivo no existe en el disco; la respuesta no falla.
+- CORS: igual que noticias y eventos (`CORS_ALLOWED_ORIGINS`).
+
+Ejemplo:
+
+```json
+{
+  "data": [
+    {
+      "id": 12,
+      "opinion": "Un día inolvidable",
+      "image_url": "http://localhost:8000/media/memories/0b9c....jpg",
+      "published_at": "2026-11-13T12:00:00+00:00"
+    }
+  ],
+  "meta": { "page": 1, "limit": 10, "has_more": false }
+}
+```
+
+`EXPLAIN` de la consulta en `arca_pruebas` (solo lectura, 2026-11-13, MySQL 8.4.11 con 5 filas en la tabla): `type=ref`, `possible_keys` con `idx_visitor_memories_status_publication` e `idx_visitor_memories_status_created`, `key=idx_visitor_memories_status_created`, `rows=2`, `Extra: Using where; Using filesort`. Con tan pocas filas el optimizador eligió el índice por `status`; el filtro usa `status` como prefijo y el orden requiere `filesort`, aceptable con el volumen previsto. Riesgo anotado: reevaluar con volumen real; no se crea ningún índice sin DBR.
+
 ## Precondición
 
 DBR-005 aplicada en el ambiente (`deleted_at` en `news` y `events`).
+
+## Especies publicadas (api-015)
+
+`GET /api/v1/published-species` (nombre `published-species.index`). Público, solo lectura, sin paginación. Lista solo las especies con `species.is_published = 1` y sin `deleted_at`; no lee `species_publication_requests`. No sustituye a `GET /api/v1/species` (`api-006`), que sigue para la app móvil.
+
+### Parámetros (opcionales)
+
+| Parámetro | Regla | Coincidencia | Mensaje 422 |
+|---|---|---|---|
+| `habitat` | 1 a 150 caracteres tras quitar espacios | igualdad, sin distinguir mayúsculas ni acentos distintos (`Sélva` no es `Selva`); solo entre especies que publican `habitat` | El hábitat debe tener de 1 a 150 caracteres. |
+| `name` | 1 a 150 caracteres tras quitar espacios | contiene el texto; `%` y `_` son literales | El nombre debe tener de 1 a 150 caracteres. |
+| `category` | `mammal`, `bird`, `reptile`, `amphibian`, `fish` o `invertebrate` | igualdad | Tipo de animal no válido. |
+
+Los filtros se combinan con «y». Un parámetro desconocido se ignora. El error 422 trae `message` y `errors.<parámetro>`. Orden: `common_name` y luego `id`. Sin resultados: `200` con `{"data": []}`.
+
+### Campos
+
+Siempre: `id`, `common_name`, `category` (`null` si no tiene) e `image_url`. Además, según `species.published_fields`: `scientific_name`, `origin` (se lee de `species.distribution`) y `habitat`, con `null` si no hay dato. Cualquier otra clave de `published_fields` se ignora. No se devuelven `image_path`, `is_published`, `published_fields` ni datos de personal.
+
+`image_url` es la URL pública del archivo en `species/` del disco público de medios (`ResolveMediaDiskAction`), o `null` si `image_path` es `null`, no está bajo `species/` o el archivo no existe.
+
+```json
+{"data": [{"id": 3, "common_name": "Jaguar", "category": "mammal", "image_url": "http://localhost:8000/media/species/<archivo>.jpg", "scientific_name": "Panthera onca", "origin": "Sureste de México", "habitat": "Selva tropical"}]}
+```
+
+Precondición: DBR-013 aplicada en el ambiente. CORS: el origen del portal debe estar en `CORS_ALLOWED_ORIGINS`.

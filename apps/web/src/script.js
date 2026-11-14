@@ -5,18 +5,6 @@
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const scrollBehavior = () => (reduceMotion.matches ? 'auto' : 'smooth');
 
-  const debounce = (fn, wait = 150) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn(...args), wait);
-    };
-  };
-
-  /* Quita acentos y pasa a minúsculas: "León" -> "leon" */
-  const normalize = text =>
-    text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLocaleLowerCase('es');
-
   const currency = new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
@@ -77,58 +65,14 @@
   mobileNavigation.addEventListener('change', syncNavigationForViewport);
   syncNavigationForViewport();
 
-  /* ---------- Filtros de animales ---------- */
+  /* ---------- Buscador de cabecera ---------- */
+  // Las fichas de TulanPedia las gestiona js/animals.js (web-011); aquí solo se lleva a la sección.
   const searchInput = $('searchInput');
-  const speciesFilter = $('speciesFilter');
-  const habitatFilter = $('habitatFilter');
-  const animalCount = $('animalCount');
-  const noAnimals = $('noAnimals');
-
-  // Se normaliza una sola vez, no en cada pulsación de tecla
-  const animalCards = [...document.querySelectorAll('.animal-card')].map(card => ({
-    card,
-    name: normalize(card.dataset.name),
-    species: card.dataset.species,
-    habitat: card.dataset.habitat
-  }));
-
-  function filterAnimals() {
-    const query = normalize(searchInput.value.trim());
-    const species = speciesFilter.value;
-    const habitat = habitatFilter.value;
-    let visibleCount = 0;
-
-    animalCards.forEach(item => {
-      const matches = item.name.includes(query)
-        && (!species || item.species === species)
-        && (!habitat || item.habitat === habitat);
-      item.card.hidden = !matches;
-      if (matches) visibleCount += 1;
-    });
-
-    animalCount.textContent = `${visibleCount} ${visibleCount === 1 ? 'animal encontrado' : 'animales encontrados'}`;
-    noAnimals.hidden = visibleCount !== 0;
-  }
-
-  searchInput.addEventListener('input', debounce(filterAnimals));
-  speciesFilter.addEventListener('change', filterAnimals);
-  habitatFilter.addEventListener('change', filterAnimals);
 
   $('searchForm').addEventListener('submit', event => {
     event.preventDefault();
-    filterAnimals();
     $('animales').scrollIntoView({ behavior: scrollBehavior() });
   });
-
-  $('clearFilters').addEventListener('click', () => {
-    searchInput.value = '';
-    speciesFilter.value = '';
-    habitatFilter.value = '';
-    filterAnimals();
-    searchInput.focus();
-  });
-
-  filterAnimals();
 
   /* ---------- Mapa: selección (delegación de eventos) ---------- */
   const mapSection = document.querySelector('.map-section');

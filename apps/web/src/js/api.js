@@ -79,6 +79,13 @@
       var text = String(id);
       if (!/^[1-9]\d*$/.test(text)) return Promise.resolve({ ok: false, reason: 'bad-id' });
       return request('/news/' + text, null, 'item');
+    },
+    getSpecies: function () {
+      return request('/published-species', null, 'list');
+    },
+    getMemories: function (options) {
+      var opts = options || {};
+      return request('/memories', { limit: opts.limit }, 'list');
     }
   };
 })(globalThis);

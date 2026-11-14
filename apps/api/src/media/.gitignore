@@ -1,0 +1,21 @@
+# api-013: shared test media. Not a privacy filter (ADR 0026).
+# Root: ignore everything except this file and the managed folders.
+/*
+!/.gitignore
+!/news/
+!/events/
+!/memories/
+!/species/
+!/species-requests/
+
+# Inside each folder: only .gitkeep and lowercase images.
+/news/*
+/events/*
+/memories/*
+/species/*
+/species-requests/*
+!/*/.gitkeep
+!/*/*.jpg
+!/*/*.jpeg
+!/*/*.png
+!/*/*.webp

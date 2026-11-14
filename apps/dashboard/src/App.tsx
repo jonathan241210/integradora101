@@ -4,7 +4,9 @@ import { Icon } from "@/components/Icon";
 import { DashboardSection } from "@/sections/DashboardSection";
 import { EnclosuresSection } from "@/sections/EnclosuresSection";
 import { EventsSection } from "@/sections/EventsSection";
+import { MemoriesSection } from "@/sections/MemoriesSection";
 import { NewsSection } from "@/sections/NewsSection";
+import { TulanpediaSection } from "@/sections/TulanpediaSection";
 import { TicketHistorySection } from "@/sections/TicketHistorySection";
 import { TicketPricesSection } from "@/sections/TicketPricesSection";
 import { TicketReportSection } from "@/sections/TicketReportSection";
@@ -18,6 +20,7 @@ import {
   getNavigationForProfile,
   getPresentationProfile,
 } from "@/viewmodels/navigation";
+import { isTulanpediaSearch } from "@/viewmodels/tulanpedia-tab";
 import { useAuthSession } from "@/viewmodels/useAuthSession";
 import { useDashboardShell } from "@/viewmodels/useDashboardShell";
 import type { DashboardSection as SectionId } from "@/viewmodels/dashboard-shell";
@@ -31,7 +34,9 @@ const sectionTitles: Record<SectionId, string> = {
   reports: "Reporte de boletos",
   enclosures: "Recintos",
   users: "Usuarios",
+  memories: "Momentos",
   "ticket-history": "Historial de boletos",
+  tulanpedia: "TulanPedia",
 };
 
 function App() {
@@ -50,9 +55,24 @@ function App() {
     : null;
   const navigation = profile ? getNavigationForProfile(profile) : [];
 
+  const deepLinkHandled = useRef(false);
+
   useEffect(() => {
     if (session.state.status !== "authenticated") shell.reset();
   }, [session.state.status]);
+
+  // CA-63: `?section=tulanpedia` abre TulanPedia solo si la navegación (permiso) la incluye.
+  useEffect(() => {
+    if (session.state.status !== "authenticated") {
+      deepLinkHandled.current = false;
+      return;
+    }
+    if (deepLinkHandled.current || !profile) return;
+    deepLinkHandled.current = true;
+    if (!isTulanpediaSearch(window.location.search)) return;
+    const ids = getNavigationForProfile(profile).map((item) => item.id);
+    if (ids.includes("tulanpedia")) shell.navigate("tulanpedia", ids);
+  }, [session.state.status, profile]);
 
   useEffect(() => {
     if (shell.state.mobileMenuOpen) {
@@ -338,8 +358,10 @@ function App() {
           {activeSection === "reports" && <TicketReportSection />}
           {activeSection === "enclosures" && <EnclosuresSection />}
           {activeSection === "users" && <UsersSection />}
+          {activeSection === "memories" && <MemoriesSection />}
           {activeSection === "ticket-history" && <TicketHistorySection />}
           {activeSection === "ticket-prices" && <TicketPricesSection />}
+          {activeSection === "tulanpedia" && <TulanpediaSection />}
         </main>
       </div>
     </div>

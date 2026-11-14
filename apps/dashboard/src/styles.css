@@ -3238,3 +3238,342 @@ ul.enclosure-grid {
     }
   }
 }
+
+/* dashboard-010: publicación de especies (solo tokens semánticos). */
+.species-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.species-row__sub {
+  display: block;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+.species-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  color: var(--foreground);
+  font-size: 12px;
+}
+
+.species-detail {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.species-detail__bar {
+  margin-bottom: 12px;
+}
+
+.species-detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.species-detail__facts,
+.species-compare dl {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.species-detail__facts dt,
+.species-compare dt {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+.species-detail__facts dd,
+.species-compare dd {
+  margin: 0;
+  color: var(--foreground);
+}
+
+.species-compare,
+.species-detail__photos,
+.species-form__photos {
+  display: grid;
+  gap: 16px;
+}
+
+.species-compare > section {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-subtle);
+}
+
+.species-compare h2,
+.species-detail h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.species-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-subtle);
+}
+
+.species-photo__image {
+  display: block;
+  max-width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+}
+
+.species-photo__message {
+  margin: 0;
+  padding: 16px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+.species-detail__actions,
+.species-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.species-detail__hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+.species-form {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.species-form__common {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+
+.species-form__common span {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+.species-form__fichas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.species-form__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.species-detail__remove {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+.species-detail__remove h3,
+.species-detail__remove p {
+  margin: 0;
+}
+
+.species-dialog__summary {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+
+.field-counter {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+@media (min-width: 768px) {
+  .species-compare,
+  .species-detail__photos,
+  .species-form__photos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* dashboard-008: moderación de momentos (solo tokens semánticos). */
+.memory-review__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.memory-review__excerpt {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.memory-review__resubmitted {
+  display: inline-block;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+.memory-review__detail {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+}
+
+.memory-review__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin: 0;
+}
+
+.memory-review__title {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.memory-review__opinion {
+  margin: 0;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.memory-review__figure {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-subtle);
+}
+
+.memory-review__image {
+  display: block;
+  max-width: 100%;
+  max-height: 480px;
+  object-fit: contain;
+}
+
+.memory-review__figure-message {
+  margin: 0;
+  padding: 16px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+.memory-review__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.memory-review__hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+.memory-review__decision {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface-subtle);
+}
+
+.memory-review__decision p {
+  margin: 0;
+}
+
+.memory-review__facts {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.memory-review__facts dt {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+.memory-review__facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.memory-review__fields {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+.memory-review__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tulanpedia-tabs__list {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.tulanpedia-tabs__tab {
+  padding: 0.625rem 1rem;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--muted-foreground);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tulanpedia-tabs__tab--active {
+  border-bottom-color: var(--primary);
+  color: var(--foreground);
+}
+
+.tulanpedia-tabs__tab:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

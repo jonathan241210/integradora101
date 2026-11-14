@@ -2,7 +2,7 @@
 
 - App dueña: `web`
 - Apps/paquetes afectados: `web` (dueña de la sección TulanPedia de `index.html` (`#animales`), sus estados de carga, error y vacío, sus filtros y su estilo); `api` (proveedor: lectura pública de especies publicadas, `api-015`, Aprobada 2026-11-12; `api-006` no cambia); `dashboard` (origen de la publicación, `dashboard-010`; sin cambios en esta spec); `pwa` (origen de las solicitudes, `pwa-005`; sin cambios); `docs/adr/0028-dynamic-tulanpedia-catalog.md` (excepción de arquitectura de esta sección, Aceptado 2026-11-12). ADR 0024 y ADR 0027 no se modifican.
-- Estado: Aprobada (2026-11-12, Jonathan, responsable de backend). Aprobar no autoriza implementar: la implementación sigue a `api-015` (aprobada) y a DBR-013, que está en «Lista para backend» desde el 2026-11-12 (migración aplicada en `arca_pruebas`, lote 5).
+- Estado: En progreso (2026-11-13: implementación integrada en `integration/memories-species`; quedan las verificaciones manuales abiertas en tasks). Aprobada el 2026-11-12 por Jonathan, responsable de backend. Aprobar no autoriza implementar: la implementación sigue a `api-015` (aprobada) y a DBR-013, que está en «Lista para backend» desde el 2026-11-12 (migración aplicada en `arca_pruebas`, lote 5).
 - Solicitante / responsable funcional: veterinario (solicitud de publicar especies, 2026-11-11); responsable funcional del catálogo: por designar.
 - Aprobación funcional: Jonathan (responsable de backend), 2026-11-12.
 - Aprobado por: Jonathan (responsable de backend), 2026-11-12.

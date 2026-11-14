@@ -1,0 +1,51 @@
+/* TulanPedia dinámica (web-011). Solo clases con prefijo tp-; usa los tokens de styles.css. */
+
+.tp-status { margin: 0 0 20px; display: grid; justify-items: center; gap: 14px; padding: 24px 16px; text-align: center; color: var(--muted-foreground); font-size: 17px; }
+.tp-status[hidden] { display: none; }
+
+/* Caja de imagen: completa, centrada y sin ampliar (CA-09, RN-09) */
+.tp-media {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--surface-subtle);
+}
+.tp-media img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+/* Guarda contra el zoom de animations.css (CA-09) */
+.animal-card:hover .tp-media img { transform: none; transition: none; }
+.tp-placeholder { display: grid; place-items: center; color: var(--muted-foreground); font-size: 2.6rem; }
+
+.tp-details { margin-top: 12px; min-width: 0; overflow-wrap: anywhere; }
+.tp-details-title { margin: 0 0 6px; font-weight: 700; color: var(--primary); }
+.tp-details dl { margin: 0; }
+.tp-details dt { font-weight: 600; margin-top: 6px; }
+.tp-details dd { margin: 0; color: var(--muted-foreground); }
+
+.animal-card { min-width: 0; }
+
+#animalRetry:focus-visible,
+#clearFilters:focus-visible,
+#speciesFilter:focus-visible,
+#habitatFilter:focus-visible,
+#categoryFilter:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+
+#animalStatus:focus:not(:focus-visible),
+#animalGrid:focus:not(:focus-visible) { outline: none; }
+
+@media (max-width: 480px) {
+  .animal-filters select,
+  #clearFilters,
+  #animalRetry { width: 100%; min-width: 0; }
+  .tp-media { max-width: 100%; }
+}

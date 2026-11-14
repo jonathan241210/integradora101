@@ -2,7 +2,7 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` (sección «Momentos», solo con `memories.review`); `packages/api-client` (métodos y tipos de revisión de peticiones, incluida la descarga de la imagen de revisión; sin lógica de negocio); `api` (dueña de reglas, estados, permisos, vigencia y auditoría: `api-010`; ruta de imagen de revisión: `api-013`); `packages/ui` (solo si falta un componente compartido).
-- Estado: Aprobada (2026-11-12, Jonathan, responsable de backend). Aprobar no autoriza implementar: la implementación empieza cuando existan plan y tasks aprobados. ADR 0026 y ADR 0027 están Aceptados (2026-11-12).
+- Estado: En progreso (2026-11-13: implementación integrada en `integration/memories-species`; quedan las verificaciones manuales abiertas en tasks). Aprobada el 2026-11-12 por Jonathan, responsable de backend. Aprobar no autoriza implementar: la implementación empieza cuando existan plan y tasks aprobados. ADR 0026 y ADR 0027 están Aceptados (2026-11-12).
 - Solicitante / responsable funcional: Aksel (decisión del 2026-11-10). Respuestas del responsable: Jonathan (2026-11-10).
 - Aprobación funcional: Jonathan (responsable de backend), 2026-11-12.
 - Aprobado por: Jonathan (responsable de backend), 2026-11-12.

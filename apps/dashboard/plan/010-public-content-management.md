@@ -1,9 +1,9 @@
 # Plan técnico · 010 · public-content-management
 
 - Spec: `apps/dashboard/specs/010-public-content-management.md`
-- Estado de spec: Aprobada (2026-11-12, Jonathan, responsable de backend).
-- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
-  - Aviso vigente: no se marca ninguna tarea de `apps/dashboard/tasks/010-public-content-management.md` sin evidencia. La integración contra la API real depende de `api-014` y `api-015` implementadas. Preguntas 1 a 8 resueltas el 2026-11-13 (la 7, con tests automatizados en lugar de evidencia manual).
+- Estado de spec: En progreso. Aprobada el 2026-11-12 (Jonathan, responsable de backend) y enmendada el 2026-11-13 (misma persona, «andale si mejor unifícalo»): navegación «TulanPedia» con pestañas y aviso con enlace.
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`. Enmienda de navegación (TulanPedia unificada, CA-63 a CA-65) aprobada por Jonathan el 2026-11-13: ver «Enmienda de navegación (2026-11-13)». Las tareas T-05, T-17, T-19, T-25 y T-26 quedan reabiertas por esa enmienda.
+  - Aviso vigente: no se marca ninguna tarea de `apps/dashboard/tasks/010-public-content-management.md` sin evidencia. La integración contra la API real depende de `api-014` y `api-015` implementadas. Preguntas 1 a 8 resueltas el 2026-11-13 (la 7, con tests automatizados en lugar de evidencia manual). Preguntas 9 (A1) y 10 (A2) resueltas el 2026-11-14 por Jonathan, responsable de backend: T-37 retirada; T-30 y T-32 desbloqueadas.
 - Responsable técnico: Jonathan (coordina las sesiones de Claude Code), 2026-11-13.
 - Fecha del borrador: 2026-11-12.
 - Dependencias de contrato (aprobadas, **sin implementar**): `api-014` (solicitudes y publicación de especie), `api-015` (lectura pública de especies publicadas). `api-013` no se usa directamente desde el dashboard.
@@ -11,10 +11,10 @@
 
 ## Diseño de solución
 
-Se añaden dos secciones a la shell del dashboard, ambas con permiso de navegación `species.review`:
+Se añade una entrada de navegación «TulanPedia» con permiso `species.review` y dos pestañas (enmienda del 2026-11-13, ver «Enmienda de navegación»). Sustituye a las dos entradas separadas de la versión anterior:
 
-- **Solicitudes de especies** (`species-requests`): bandeja de solicitudes de publicación enviadas por el veterinario, con lista por estado, detalle con comparación «Datos actuales» frente a «Datos propuestos», edición previa a la decisión, aceptar (con o sin publicar cuando la especie está despublicada) y rechazar con motivo.
-- **Especies publicadas** (`published-species`): gestión de la publicación de especies existentes: lista de publicadas y despublicadas, despublicar, republicar, editar la ficha de una especie despublicada y eliminar la publicación.
+- **Pestaña «Solicitudes»** (`species-requests`, dentro de TulanPedia): bandeja de solicitudes de publicación enviadas por el veterinario, con lista por estado, detalle con comparación «Datos actuales» frente a «Datos propuestos», edición previa a la decisión, aceptar (con o sin publicar cuando la especie está despublicada) y rechazar con motivo.
+- **Pestaña «Publicadas»** (`published-species`, dentro de TulanPedia): gestión de la publicación de especies existentes: lista de publicadas y despublicadas, despublicar, republicar, editar la ficha de una especie despublicada y eliminar la publicación.
 
 La API es la única autoridad de permisos, estados, transiciones, elegibilidad, publicación y auditoría (RN-01). La UI presenta lo que la API devuelve y solo calcula lo que la spec define como estado de formulario o validación de presentación (ver «Límites de cálculo en la UI»).
 
@@ -51,10 +51,11 @@ No hay React Router (ADR 0002 sin aprobar). La navegación es el estado de `useD
 
 | Pantalla | Id de shell | Permiso de navegación | Contenido | CA principales |
 |---|---|---|---|---|
-| Solicitudes de especies, lista | `species-requests` | `species.review` | Filtro de estado (Todas, Pendiente, Publicada, Rechazada), tabla o tarjetas, paginación «Anterior»/«Siguiente» | CA-01 a CA-04 |
-| Solicitudes de especies, detalle | `species-requests` (vista detalle) | `species.review` | Comparación actual/propuesto, foto, acciones según estado, edición, diálogos | CA-05 a CA-16, CA-61, CA-62 |
-| Especies publicadas, lista | `published-species` | `species.review` | Filtros de estado (Todas, Publicadas, Despublicadas) y tipo, miniatura, paginación | CA-50 a CA-52 |
-| Especies publicadas, detalle | `published-species` (vista detalle) | `species.review` | Ficha, acciones (despublicar, republicar, editar), bloque «Eliminar publicación», diálogos | CA-53 a CA-59 |
+| TulanPedia (entrada única y pestañas) | `tulanpedia` | `species.review` | Dos pestañas «Solicitudes» y «Publicadas» con `role="tablist"`; la pestaña activa se refleja en la URL (CA-63) | CA-01, CA-50, CA-63, CA-65 |
+| Pestaña «Solicitudes», lista | `species-requests` | `species.review` | Filtro de estado (Todas, Pendiente, Publicada, Rechazada), tabla o tarjetas, paginación «Anterior»/«Siguiente» | CA-01 a CA-04 |
+| Pestaña «Solicitudes», detalle | `species-requests` (vista detalle) | `species.review` | Comparación actual/propuesto, foto, acciones según estado, edición, diálogos | CA-05 a CA-16, CA-61, CA-62 |
+| Pestaña «Publicadas», lista | `published-species` | `species.review` | Filtros de estado (Todas, Publicadas, Despublicadas) y tipo, miniatura, paginación | CA-50 a CA-52, CA-64 |
+| Pestaña «Publicadas», detalle | `published-species` (vista detalle) | `species.review` | Ficha, acciones (despublicar, republicar, editar), bloque «Eliminar publicación», diálogos | CA-53 a CA-59 |
 
 Estados de carga, error y vacío (por lista y por detalle):
 
@@ -90,7 +91,7 @@ En la lista: `submitted` y `accepted` muestran «Revisar»; `rejected` muestra �
 |---|---|---|
 | API | Ninguno | Este plan no cambia `apps/api`. Ver «Contrato y datos» para las enmiendas que se piden a `api-014` (G-1 a G-3). |
 | `packages/api-client` | `admin-types.ts` (DTO y entradas), `admin.ts` (namespaces `speciesPublicationRequests` y `publishedSpecies`), `index.ts` (exports), `README.md` (documentación de métodos) | Métodos y tipos de los endpoints de `api-014`. Sin lógica de negocio. `http.ts` no cambia: la subida se hace con `FormData` y `_method=PATCH`; la foto se descarga con `http.download`. |
-| Dashboard, shell | `viewmodels/dashboard-shell.ts` (`DashboardSection` + `species-requests`, `published-species`), `viewmodels/navigation.ts` (dos candidatos con `species.review`), `App.tsx` (títulos y render) | Navegación y composición. |
+| Dashboard, shell | `viewmodels/dashboard-shell.ts` (`DashboardSection` + `tulanpedia`, en lugar de `species-requests` y `published-species`), `viewmodels/navigation.ts` (un candidato «TulanPedia» con `species.review`), `App.tsx` (título y render de TulanPedia) | Navegación y composición. |
 | Dashboard, icono | `components/Icon.tsx` (solo si falta un icono) | Icono de navegación y de estado (sin dependencia nueva). |
 | Dashboard, ViewModels | `viewmodels/species-publication-shared.ts` (etiquetas, validadores de foto y texto, mapeo de errores por sección, contador de generación), `viewmodels/species-requests.ts` (reducer y funciones), `viewmodels/useSpeciesRequests.ts`, `viewmodels/published-species.ts`, `viewmodels/usePublishedSpecies.ts`, `viewmodels/admin-types.ts` (reexport de los DTO nuevos) | Estado, validación de presentación y llamadas vía `adminApi`. |
 | Dashboard, secciones | `sections/SpeciesRequestsSection.tsx`, `sections/PublishedSpeciesSection.tsx` | Contenedores delgados: llaman a su hook solo al abrir la sección. |
@@ -99,6 +100,43 @@ En la lista: `submitted` y `accepted` muestran «Revisar»; `rejected` muestra �
 | Dashboard, estilos | `styles.css` (bloque nuevo `dashboard-010`, con tokens semánticos y sin hex de marca) | Diseño adaptable: lista en tabla desde 768 px y en tarjetas por debajo; detalle en dos columnas desde 768 px. Se revisan los breakpoints existentes para reutilizarlos. |
 | Dashboard, pruebas | `src/tests/species-*.test.tsx` (ver «Mapeo de criterios a pruebas») | Vitest, un test por CA. |
 | Documentación | `apps/dashboard/docs/arquitectura.md` (secciones, endpoints y ViewModels nuevos), `packages/api-client/README.md` | Referencia duradera, actualizada en el mismo PR. |
+
+## Enmienda de navegación (2026-11-13): TulanPedia unificada
+
+Aprobada por Jonathan (responsable de backend), 2026-11-13. Spec: enmienda del mismo día. API, lógica de estados y comportamiento de las acciones no cambian.
+
+### Decisiones de diseño
+
+- **Una entrada:** `navigation.ts` ofrece una sola entrada «TulanPedia» con `species.review`. En `dashboard-shell.ts`, `tulanpedia` sustituye a `species-requests` y `published-species` como `DashboardSection`. Las pestañas son estado de la sección, no rutas (ADR 0002 sin aprobar).
+- **Pestaña en la URL (pregunta A2):** la pestaña es `requests` (por defecto) o `published`. Se refleja con `?section=tulanpedia&tab=…` mediante `history.replaceState`: sin recarga y sin entradas nuevas en el historial. Al montar la sección, `tulanpedia-tab.ts` lee `location.search` y elige la pestaña inicial; un valor ausente o no válido da `requests`. Al salir de la sección se quitan los parámetros. No se guarda nada en el navegador (RN-10).
+- **Sin rutas de detalle:** el detalle sigue siendo `view: "list" | "detail"` con `selectedId` en el ViewModel. Al recargar se vuelve a la lista de la pestaña (CA-65). No hay redirecciones porque no hay rutas de detalle que mantener.
+- **Los parámetros no conceden acceso:** la sección solo se monta si `navigation.ts` la ofrece (`species.review`). La API decide cada llamada (RN-01).
+- **Pestañas accesibles:** `role="tablist"`, `role="tab"` con `aria-selected` y `role="tabpanel"`. Los controles son botones nativos (Intro y Espacio). La navegación con flechas entre pestañas no está en la spec y no se añade.
+- **Aviso de solicitud viva (CA-64):** `has_pending_request` llega de la API; la vista no lo calcula. El enlace cambia a la pestaña «Solicitudes» y fija el filtro `submitted` con el mismo cambio de filtro que ya consulta a la API (sin filtrado en cliente). Enlace directo al detalle: mejora futura, fuera de esta versión (requiere enmendar `api-014`; T-37 retirada el 2026-11-14).
+- **403 por pestaña:** cada pestaña muestra su propio mensaje de CA-17 o CA-58. Un 403 en una pestaña no altera la otra.
+
+### Archivos previstos
+
+| Área | Archivos | Cambio |
+|---|---|---|
+| Dashboard, shell | `viewmodels/dashboard-shell.ts`, `viewmodels/navigation.ts`, `App.tsx` | Una entrada y una sección `tulanpedia` (T-31). |
+| Dashboard, URL y pestañas | `viewmodels/tulanpedia-tab.ts` (nuevo, funciones puras), `components/TulanpediaTabs.tsx` (nuevo), `sections/TulanpediaSection.tsx` (nuevo) | Pestaña inicial, sincronización de URL y pestañas (T-30, T-32). |
+| Dashboard, aviso | `components/PendingRequestNotice.tsx` (nuevo); `views/PublishedSpeciesView.tsx`, `views/PublishedSpeciesDetailView.tsx`; `viewmodels/species-requests.ts` (filtro inicial desde el enlace) | CA-64 y CA-57 (T-33). |
+| Dashboard, MVVM | `tests/species-publication-mvvm.test.tsx` | CA-60 extendido a los componentes nuevos (T-34). |
+| Dashboard, pruebas | `tests/tulanpedia-tab.test.tsx`, `tests/tulanpedia-tabs.test.tsx`, `tests/published-species-pending-notice.test.tsx` (nuevos); `tests/species-navigation.test.tsx` (reescrito); `tests/species-publication-coverage.test.tsx` (ampliado) | Un test por CA nuevo o enmendado (T-30 a T-35). |
+| Dashboard, docs | `apps/dashboard/docs/arquitectura.md` | Entrada TulanPedia, pestañas, URL y aviso (T-36). |
+| API, `packages/api-client`, ADR | Sin cambios | `api-014` no cambia. T-37 retirada (2026-11-14): A1 se resolvió sin identificador; una mejora futura requeriría enmienda de `api-014`. |
+
+### Mapeo de los criterios de la enmienda
+
+| Criterio | Prueba automatizada | Archivo |
+|---|---|---|
+| CA-01 (enmendado) | `CA-01 species-navigation: «TulanPedia» solo con species.review; sin permiso, la entrada no aparece` | `species-navigation.test.tsx` |
+| CA-50 (enmendado) | `CA-50 species-navigation: pestaña «Publicadas» solo con species.review` | `species-navigation.test.tsx` |
+| CA-63 | `CA-63 tulanpedia-tab: tab ausente o no válido abre Solicitudes; published abre Publicadas; al salir se quitan los parámetros`; `CA-63 tulanpedia-tabs: dos pestañas con tablist, tab y aria-selected; cambiar de pestaña usa replaceState` | `tulanpedia-tab.test.tsx` y `tulanpedia-tabs.test.tsx` |
+| CA-64 | `CA-64 published-species-pending-notice: aviso y enlace con has_pending_request true; sin aviso con false`; `CA-64 published-species-pending-notice: el enlace fija el filtro submitted y pide la API` | `published-species-pending-notice.test.tsx` |
+| CA-65 | `CA-65 tulanpedia-tabs: sin rutas de detalle; recargar vuelve a la lista de la pestaña` | `tulanpedia-tabs.test.tsx` |
+| CA-52 y CA-57 (enmendados) | `CA-57 published-species-pending-notice: Editar y Republicar deshabilitados con el aviso de CA-64` | `published-species-pending-notice.test.tsx` |
 
 ## Contrato y datos
 
@@ -300,12 +338,15 @@ Todas las pruebas están en `apps/dashboard/src/tests/` con Vitest (`npm test` =
 | CA-54 | `CA-54 published-species-actions: diálogo de republicar; 422 por foto o datos ausentes con pista a «Editar»` | `published-species-actions.test.tsx` |
 | CA-55 | `CA-55 published-species-edit: PATCH sin publicar; Republicar deshabilitado con cambios; 422 junto al campo; Cancelar sin llamada` | `published-species-edit.test.tsx` |
 | CA-56 | `CA-56 published-species-actions: bloque propio; diálogo con título, texto y dos botones exactos; sin casilla` | `published-species-actions.test.tsx` |
-| CA-57 | `CA-57 published-species-list: Editar y Republicar deshabilitados con aviso y enlace; Despublicar y Eliminar disponibles` | `published-species-list.test.tsx` y `published-species-actions.test.tsx` |
+| CA-57 | `CA-57 published-species-list: Editar y Republicar deshabilitados con el aviso y enlace de CA-64; Despublicar y Eliminar disponibles` | `published-species-list.test.tsx` y `published-species-actions.test.tsx` |
 | CA-58 | `CA-58 species-errors: errores de la sección de publicadas por estado` | `species-errors.test.tsx` |
 | CA-59 | `CA-59 published-species-actions: diálogos con role dialog y nombre accesible` (foco y Escape: T-27) | `published-species-actions.test.tsx` |
 | CA-60 | `CA-60 species-publication-mvvm: views, components y sections sin fetch ni axios; sin cálculo de estados` | `species-publication-mvvm.test.tsx` |
 | CA-61 | `CA-61 species-request-detail: etiqueta «Especie despublicada» y aviso de catálogo` | `species-request-detail.test.tsx` |
 | CA-62 | `CA-62 species-request-decisions: dos acciones en despublicada con publish true o false; una en publicada o sin publicar` | `species-request-decisions.test.tsx` |
+| CA-63 (nuevo, enmienda 2026-11-13) | `CA-63 tulanpedia-tab` y `CA-63 tulanpedia-tabs` (ver «Enmienda de navegación») | `tulanpedia-tab.test.tsx`, `tulanpedia-tabs.test.tsx` |
+| CA-64 (nuevo, enmienda 2026-11-13) | `CA-64 published-species-pending-notice` | `published-species-pending-notice.test.tsx` |
+| CA-65 (nuevo, enmienda 2026-11-13) | `CA-65 tulanpedia-tabs: sin rutas de detalle` | `tulanpedia-tabs.test.tsx` |
 
 **Enmienda 2026-11-13 (CA-40, CA-41, CA-42 y CA-48):** se cubren con tests automatizados, no con evidencia manual. Comportamiento de la API: PHPUnit en `api-014` y `api-015`, y en `web-011` lo que le corresponda. UI: Vitest con respuestas simuladas en `apps/dashboard/src/tests/` (nombres `CA-40`, `CA-41`, `CA-42` y `CA-48` en los archivos `species-*.test.tsx` que correspondan). La comprobación contra la API real la hace la sesión principal en la integración.
 
@@ -324,6 +365,8 @@ Pruebas de regla visual: no se añaden. Las reglas de tamaño y de adaptación s
 - **R-7 (decisiones de la spec aplicadas a pruebas).** Eliminar la publicación no revierte correcciones (RN-16). Las decisiones válidas para pruebas (A, G1, G2 y G3 de `api-014`) se mantienen y se anotan en `arquitectura.md`.
 - **R-8 (fotos públicas en pruebas).** `media/species-requests/` y `media/species/` son alcanzables por `/media` en pruebas (ADR 0026, riesgo m). La sección no lo evita y no lo muestra. Riesgo aceptado para pruebas, sin cambio aquí.
 - **R-9 (etiquetas propuestas).** Las etiquetas de tipo de animal (Mamífero, Ave, Reptil, Anfibio, Pez, Invertebrado) y «Área de distribución natural» son propuestas de este plan. Pendiente de confirmación de producto (ver T-27).
+- **R-10 (enlace sin identificador, 2026-11-13).** `api-014` no expone el identificador de la solicitud viva en `published-species`. El aviso de CA-64 enlaza a la pestaña «Solicitudes» con el filtro «Pendiente» de forma definitiva en esta versión (pregunta A1 resuelta el 2026-11-14; ver `spec`). Mitigación: el aviso nombra la especie; no se inventa un identificador.
+- **R-11 (URL de la pestaña, 2026-11-13).** Los parámetros `section` y `tab` no conceden permisos: la entrada solo aparece con `species.review` y la API responde `403` si no corresponde. Pregunta A2 resuelta el 2026-11-14 (se confirma la pestaña en la URL).
 
 ## Alternativas consideradas
 
@@ -365,6 +408,7 @@ Sin excepciones aprobadas. No requiere ADR.
 | Responsable funcional | Spec 010 | Aprobada (2026-11-12, Jonathan) |
 | Equipo técnico | Este plan, su Constitution Check y las preguntas 1 a 8 | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
 | Backend | Enmiendas G-1 a G-3 a `api-014` | Aprobado: Jonathan, responsable de backend, 2026-11-13 (las tres enmiendas incorporadas en `api-014` el 2026-11-13) |
+| Responsable funcional y backend | Enmienda de navegación (TulanPedia; CA-01, CA-46, CA-50, CA-52, CA-57 enmendados; CA-63 a CA-65 nuevos; RN-17) | Aprobada: Jonathan, responsable de backend, 2026-11-13 («andale si mejor unifícalo»). Preguntas A1 y A2 resueltas el 2026-11-14 |
 | Responsable de BD | Aplicación de DBR-013 en `arca_pruebas` con evidencia | **Aplicada** (lote 5, verificada el 2026-11-12). Pendiente de BD: EXPLAIN y registro de fecha y responsable |
 
 ## Preguntas (resueltas el 2026-11-13, salvo la 7)
@@ -379,5 +423,8 @@ Máximo 8 por ronda (`AGENTS.md`).
 6. **2FA sin confirmar.** ¿Qué respuesta devuelve la API a un usuario con `species.review` sin 2FA confirmado (estado y código)? Propuesta: 403 y el mensaje de la sección, sin mensaje específico. **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.** 403, igual que `api-007` CA-25.
 7. **Brecha en CA-40, CA-41, CA-42 y CA-48.** Son verificaciones de `api-015` y `web-011`, sin test en el dashboard. ¿Basta con la evidencia de esas specs para cumplir la Constitución IV en `dashboard-010`? **Resuelta (2026-11-13, Jonathan, en nombre del equipo): los CA cruzados se cubren con tests automatizados, no con evidencia manual.** PHPUnit en `api-014` cubre el comportamiento de la API; Vitest con respuestas simuladas cubre la UI en `apps/dashboard`. La comprobación contra la API real la hace la sesión principal en la fase de integración.
 8. **Texto «Petición no encontrada.» (CA-17).** No corresponde a ninguna acción de estas secciones. Propuesta: sustituirlo por «Solicitud no encontrada.» o «Especie no encontrada.» según la sección, o confirmar a qué recurso se refiere. **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.** La spec de `dashboard-010` (CA-17) admite «Solicitud no encontrada.», «Especie no encontrada.» o «Petición no encontrada.»; el plan usa los dos primeros según la sección.
+
+9. (A1 de la spec, 2026-11-13) **Enlace a la solicitud viva.** ¿Se acepta el enlace a la pestaña «Solicitudes» con el filtro «Pendiente» hasta que `api-014` exponga el identificador de la solicitud viva? **Resuelta (2026-11-14, Jonathan): sí.** Se mantiene el enlace por filtro; T-37 queda retirada y fuera de alcance (mejora futura que requeriría enmendar `api-014`).
+10. (A2 de la spec, 2026-11-13) **Mecanismo de la URL.** ¿Se confirma `?section=tulanpedia&tab=requests|published` con `history.replaceState` y sin router (CA-63, CA-65)? **Resuelta (2026-11-14, Jonathan): sí.** Desbloquea T-30 y T-32.
 
 Decisiones tomadas en el plan, no preguntas: etiquetas de tipo de animal propuestas (R-9); accesibilidad y diseño adaptable verificados por T-27 sin CA propio; `http.ts` sin cambios; la foto se descarga con `http.download`.
