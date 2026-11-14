@@ -24,12 +24,14 @@ type AppShellProps = {
   onLogout: () => void;
   sessionError?: string;
   signingOut?: boolean;
+  mvzName?: string;
 };
 
 type ActiveViewProps = {
   animalId: number | null;
   onNavigate: (section: PwaSection) => void;
   onOpenAnimal: (animalId: number) => void;
+  mvzName?: string;
 };
 
 const sectionViews: Record<PwaSection, ComponentType<ActiveViewProps>> = {
@@ -40,9 +42,9 @@ const sectionViews: Record<PwaSection, ComponentType<ActiveViewProps>> = {
   ),
   'animal-form': AnimalFormView,
   'diagnosis-form': DiagnosisChooserView,
-  'diagnosis-intense': DiagnosisIntenseView,
-  'diagnosis-quick': DiagnosisQuickView,
-  'review-form': ReviewFormView,
+  'diagnosis-intense': ({ mvzName }) => <DiagnosisIntenseView mvzName={mvzName} />,
+  'diagnosis-quick': ({ mvzName }) => <DiagnosisQuickView mvzName={mvzName} />,
+  'review-form': ({ onNavigate }) => <ReviewFormView onNavigate={onNavigate} />,
 };
 
 export function AppShell({
@@ -52,6 +54,7 @@ export function AppShell({
   onLogout,
   sessionError,
   signingOut,
+  mvzName,
 }: AppShellProps) {
   const ActiveView = sectionViews[activeSection];
   const currentLabel = getSectionLabel(activeSection);
@@ -117,6 +120,7 @@ export function AppShell({
               setAnimalId(id);
               onNavigate('animal-profile');
             }}
+            mvzName={mvzName}
           />
         </main>
 

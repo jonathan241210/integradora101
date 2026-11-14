@@ -171,8 +171,8 @@ export function IntensePrintSheet({ values }: { values: SheetValues }) {
         <h3>Anamnesis:</h3>
         <p className="sheet-inline">
           <b>Tipo de movilización:</b>
-          <Line label="Física:" value={get('intense-mobilization-physical')} />
-          <Line label="Química:" value={get('intense-mobilization-chemical')} />
+          <span><b>Física</b> <Box checked={'intense-mobilization-type-physical' in values} /></span>
+          <span><b>Química</b> <Box checked={'intense-mobilization-type-chemical' in values} /></span>
         </p>
 
         <p className="sheet-italic">*Contención Química:</p>
@@ -198,7 +198,11 @@ export function IntensePrintSheet({ values }: { values: SheetValues }) {
         <p className="sheet-italic">*Contención física:</p>
         <p className="sheet-inline sheet-wrap">
           {physicalRestraints.map((item) => (
-            <Line key={item.name} label={`${item.label}:`} value={get(`intense-physical-${item.name}`)} />
+            <span key={item.name}>
+              <b>{item.label}:</b>{' '}
+              <Box checked={`intense-physical-${item.name}` in values} /> Sí{' '}
+              <Box checked={!(`intense-physical-${item.name}` in values)} /> No
+            </span>
           ))}
         </p>
         <p className="sheet-bullet">

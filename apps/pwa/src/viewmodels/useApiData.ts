@@ -3,9 +3,11 @@ import {
   getAnimal,
   listAnimals,
   listEnclosures,
+  listSpecies,
   type AnimalProfile,
   type AnimalSummary,
   type EnclosureOption,
+  type SpeciesOption,
 } from '@/services/apiClient';
 
 export function formToRecord(form: HTMLFormElement): Record<string, string> {
@@ -146,4 +148,37 @@ export function useEnclosures() {
   const reload = useCallback(() => setVersion((current) => current + 1), []);
 
   return { enclosures, loading, error, reload };
+}
+
+export function useSpeciesOptions() {
+  const [species, setSpecies] = useState<SpeciesOption[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [version, setVersion] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    listSpecies()
+      .then((result) => {
+        if (cancelled) return;
+        setSpecies(result);
+        setError('');
+      })
+      .catch((reason: unknown) => {
+        if (cancelled) return;
+        setError(reason instanceof Error ? reason.message : 'No se pudieron cargar las especies.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [version]);
+
+  const reload = useCallback(() => setVersion((current) => current + 1), []);
+
+  return { species, loading, error, reload };
 }

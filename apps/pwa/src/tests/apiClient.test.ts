@@ -30,7 +30,7 @@ describe('PWA API client', () => {
       name: 'Jaguar de prueba',
       species: 'Jaguar',
       sex: 'F',
-      age: null,
+      birth_date: '2024-05-10',
       stay_status: 'Cuarentena_Ingreso',
     };
     const fetchMock = stubFetch(201, { data: animal });
@@ -42,6 +42,7 @@ describe('PWA API client', () => {
       tag_number: 'JAG-TEST-12',
       enclosure_id: 1,
       sex: 'hembra',
+      birth_date: '2024-05-10',
     })).resolves.toEqual(animal);
 
     const [url, init] = fetchMock.mock.calls[0];
@@ -55,6 +56,7 @@ describe('PWA API client', () => {
       tag_number: 'JAG-TEST-12',
       enclosure_id: 1,
       sex: 'hembra',
+      birth_date: '2024-05-10',
     });
   });
 
@@ -90,7 +92,7 @@ describe('PWA API client', () => {
       species: 'Jaguar',
       tag_number: 'JAG-TEST',
       enclosure_id: 1,
-      sex: 'unknown',
+      sex: 'hembra',
     })).rejects.toMatchObject({
       message: 'Datos inválidos.',
       status: 422,
@@ -109,21 +111,29 @@ describe('PWA API client', () => {
       species: 'Jaguar',
       tag_number: 'JAG-TEST',
       enclosure_id: 1,
-      sex: 'unknown',
+      sex: 'hembra',
     })).rejects.toBeInstanceOf(ApiError);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][1].method).toBe('POST');
   });
 
-  it('mantiene deshabilitado el guardado de registros clínicos', async () => {
-    const fetchMock = stubFetch(201, { data: { id: 1 } });
+  it('envía evaluaciones clínicas al endpoint de staff', async () => {
+    const created = { id: 1, evaluation_type: 'Historia_Clinica_Completa', animal_id: 7, evaluation_date: '2026-11-13' };
+    const fetchMock = stubFetch(201, { data: created });
+    vi.stubGlobal('document', { cookie: 'XSRF-TOKEN=csrf%2Dtoken' });
 
     await expect(
-      createEvaluation('quick', 7, { 'quick-reason': 'Control' }),
-    ).rejects.toMatchObject({
-      message: expect.stringContaining('no está habilitado'),
-      status: 0,
+      createEvaluation('intense', 7, { 'intense-date': '2026-11-13' }),
+    ).resolves.toEqual(created);
+
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(String(url)).toMatch(/\/api\/v1\/staff\/clinical-evaluations$/);
+    expect(init.method).toBe('POST');
+    expect(init.credentials).toBe('include');
+    expect(JSON.parse(String(init.body))).toEqual({
+      kind: 'intense',
+      animal_id: 7,
+      data: { 'intense-date': '2026-11-13' },
     });
-    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

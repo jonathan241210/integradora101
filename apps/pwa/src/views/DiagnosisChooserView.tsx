@@ -32,7 +32,10 @@ export function DiagnosisChooserView({
       <div className="page-intro">
         <p className="eyebrow">Atención veterinaria</p>
         <h2>Elige el tipo de diagnóstico</h2>
-        <p>Cada diagnóstico se puede descargar como PDF.</p>
+        <p>
+          Completa el formato clínico y, al guardar, se te pedirá confirmar el seguimiento del
+          animal (motivo, estado y próxima revisión).
+        </p>
       </div>
       <div className="shortcut-grid">
         {modes.map((mode) => (

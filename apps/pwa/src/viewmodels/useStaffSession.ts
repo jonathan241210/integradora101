@@ -1,11 +1,12 @@
 import { createAuthApi, createHttpClient, type AuthApi } from '@arca/api-client';
+import type { StaffProfile } from '@arca/api-client/types';
 import { useEffect, useState } from 'react';
 
 type SessionApi = Pick<AuthApi, 'login' | 'me' | 'logout'>;
-type SessionResult = { session: 'anonymous' | 'authenticated'; error: string };
+type SessionResult = { session: 'anonymous' | 'authenticated'; error: string; profile: StaffProfile | null };
 
 const api = createAuthApi(createHttpClient({ baseUrl: '' }));
-const anonymous: SessionResult = { session: 'anonymous', error: '' };
+const anonymous: SessionResult = { session: 'anonymous', error: '', profile: null };
 const denied = 'Esta cuenta no tiene acceso al módulo veterinario.';
 
 function hasStatus(error: unknown, status: number) {
@@ -18,10 +19,22 @@ function requestError(error: unknown) {
   return 'No se pudo completar la solicitud. Inténtalo de nuevo.';
 }
 
+function staffName(profile: StaffProfile): string {
+  return [profile.first_name, profile.last_name, profile.second_last_name]
+    .filter((part): part is string => Boolean(part && part.trim()))
+    .join(' ')
+    .trim() || profile.full_name;
+}
+
+export function getStaffDisplayName(profile: StaffProfile | null): string {
+  return profile ? staffName(profile) : '';
+}
+
 export async function restoreStaffSession(auth: SessionApi): Promise<SessionResult> {
   try {
-    return (await auth.me()).home === 'pwa'
-      ? { session: 'authenticated', error: '' }
+    const profile = await auth.me();
+    return profile.home === 'pwa'
+      ? { session: 'authenticated', error: '', profile }
       : { ...anonymous, error: denied };
   } catch (error) {
     return hasStatus(error, 401) ? anonymous : { ...anonymous, error: requestError(error) };
@@ -39,7 +52,7 @@ export async function signInStaff(auth: SessionApi, email: string, password: str
       return { ...anonymous, error: denied };
     }
 
-    return { session: 'authenticated', error: '' };
+    return { session: 'authenticated', error: '', profile };
   } catch (error) {
     if (hasStatus(error, 422)) return { ...anonymous, error: 'Correo o contraseña incorrectos.' };
     return {
@@ -55,14 +68,15 @@ export async function signOutStaff(auth: SessionApi): Promise<SessionResult> {
     return anonymous;
   } catch (error) {
     if (hasStatus(error, 401)) return anonymous;
-    return { session: 'authenticated', error: 'No se pudo confirmar el cierre de sesión. Inténtalo de nuevo.' };
+    return { session: 'authenticated', error: 'No se pudo confirmar el cierre de sesión. Inténtalo de nuevo.', profile: null };
   }
 }
 
 export function useStaffSession() {
-  const [state, setState] = useState<SessionResult | { session: 'restoring'; error: '' }>({
+  const [state, setState] = useState<SessionResult | { session: 'restoring'; error: ''; profile: null }>({
     session: 'restoring',
     error: '',
+    profile: null,
   });
   const [busy, setBusy] = useState(false);
 

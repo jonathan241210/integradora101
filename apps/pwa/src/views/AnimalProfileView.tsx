@@ -1,6 +1,6 @@
 import { Alert, Badge, Button, Card } from '@arca/ui';
+import { Fragment, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useState } from 'react';
 import { exportSheetPdf } from '@/viewmodels/pdfExport';
 import type { AnimalEvaluation, AnimalProfile } from '@/services/apiClient';
 import { institution, usePrintDocument, physicalRestraints } from '@/viewmodels/diagnosisForms';
@@ -51,6 +51,29 @@ function formatDate(value: string | null | undefined): string {
   return Number.isNaN(date.getTime())
     ? value
     : date.toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+function ageFromBirthDate(birthDate: string | null | undefined): string {
+  if (!birthDate) return '—';
+  const birth = new Date(`${birthDate.slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(birth.getTime())) return '—';
+  const today = new Date();
+  let years = today.getFullYear() - birth.getFullYear();
+  let months = today.getMonth() - birth.getMonth();
+  if (today.getDate() < birth.getDate()) months -= 1;
+  if (months < 0) {
+    years -= 1;
+    months += 12;
+  }
+  if (years < 0) return '—';
+  if (years === 0) return `${months} mes${months === 1 ? '' : 'es'}`;
+  if (months === 0) return `${years} año${years === 1 ? '' : 's'}`;
+  return `${years} año${years === 1 ? '' : 's'} ${months} mes${months === 1 ? '' : 'es'}`;
+}
+
+function displayAnimalAge(animal: AnimalProfile): string {
+  const latestAge = animal.evaluations.find((evaluation) => evaluation.patient_age?.trim())?.patient_age?.trim();
+  return latestAge || ageFromBirthDate(animal.birth_date);
 }
 
 function DataList({ items }: { items: Row[] }) {
@@ -197,12 +220,14 @@ function EvaluationItem({ evaluation }: { evaluation: AnimalEvaluation }) {
   const shownVitals = vitals.filter(([, value]) => value !== null);
   const conclusions = (
     [
+      ['Estado de seguimiento', followUpStatusLabel(evaluation.follow_up_status)],
+      ['Próxima revisión', evaluation.next_review_date ? formatDate(evaluation.next_review_date) : null],
       ['Motivo / notas', evaluation.assessment_reason],
       ['Diagnóstico presuntivo', evaluation.presumptive_diagnosis],
       ['Diagnóstico definitivo', evaluation.definitive_diagnosis],
       ['Recomendaciones', evaluation.recommendations],
     ] as Row[]
-  ).filter(([, value]) => value);
+  ).filter(([, value]) => value && value !== '—');
 
   return (
     <article className="profile-evaluation">
@@ -267,7 +292,7 @@ function ProfileHeroStats({ animal }: { animal: AnimalProfile }) {
   return (
     <div className="profile-vitals">
       <Stat label="Identificación" value={animal.tag_number || '—'} />
-      <Stat label="Edad" value={animal.age || '—'} />
+      <Stat label="Edad" value={displayAnimalAge(animal)} />
       <Stat label="Ingreso" value={formatDate(animal.entry_date)} />
       <Stat label="Última revisión" value={last ? formatDate(last.evaluation_date) : 'Sin registros'} />
     </div>
@@ -280,6 +305,18 @@ function shortDate(value: string | null | undefined): string {
   return year && month && day ? `${day}/${month}/${year}` : value;
 }
 
+const followUpStatusLabels: Record<string, string> = {
+  stable: 'Estable',
+  monitoring: 'En observación',
+  follow_up: 'Requiere seguimiento',
+  'follow-up': 'Requiere seguimiento',
+};
+
+function followUpStatusLabel(value: string | null | undefined): string {
+  if (!value) return '—';
+  return followUpStatusLabels[value] ?? value.replace(/_/g, ' ');
+}
+
 function SheetLine({ label, value }: { label: string; value?: string | number | null }) {
   return (
     <span className="sheet-line">
@@ -289,9 +326,116 @@ function SheetLine({ label, value }: { label: string; value?: string | number | 
   );
 }
 
-function ProfilePrintSheet({ animal }: { animal: AnimalProfile }) {
+function EvaluationPrintSection({ evaluation }: { evaluation: AnimalEvaluation }) {
+  const kind = evaluationLabels[evaluation.evaluation_type]?.label ?? evaluation.evaluation_type.replace(/_/g, ' ');
+  const chemical = evaluation.restraints.filter((item) => item.mobilization_type === 'chemical');
+  const physical = evaluation.restraints.filter((item) => item.mobilization_type !== 'chemical');
+  const methods = physical.flatMap((item) => splitPhysicalNotes(item.notes).methods);
+  const remarks = physical.flatMap((item) => splitPhysicalNotes(item.notes).remarks);
+  const vitals: [string, string | number | null][] = [
+    ['Temp.', evaluation.temperature_c],
+    ['FR.', evaluation.respiratory_rate],
+    ['FC.', evaluation.heart_rate],
+    ['TLC.', evaluation.capillary_refill_time],
+    ['C.C.', evaluation.body_condition_score],
+    ['Peso.', evaluation.weight_kg],
+  ];
+  const conclusions: [string, string | null][] = [
+    ['Motivo / notas:', evaluation.assessment_reason],
+    ['Diagnóstico presuntivo:', evaluation.presumptive_diagnosis],
+    ['Diagnóstico definitivo:', evaluation.definitive_diagnosis],
+    ['Recomendaciones:', evaluation.recommendations],
+  ];
+
   return (
-    <div className="print-sheet intense-sheet profile-sheet">
+    <section className="sheet-evaluation">
+      <h3 className="sheet-eval-title">
+        {kind} — {shortDate(evaluation.evaluation_date)}
+        {evaluation.veterinarian ? ` — MVZ ${evaluation.veterinarian}` : ''}
+      </h3>
+      <p className="sheet-inline sheet-wrap">
+        {vitals.map(([label, value]) => (
+          <SheetLine key={label} label={label} value={value} />
+        ))}
+      </p>
+
+      {evaluation.findings.map((finding) => (
+        <p className="sheet-inline" key={finding.id}>
+          <SheetLine
+            label={`${systemLabels[finding.organ_system] ?? finding.organ_system}:`}
+            value={finding.description ?? finding.status}
+          />
+        </p>
+      ))}
+
+      {chemical.length > 0 && (
+        <>
+          <p className="sheet-italic">*Contención Química:</p>
+          <table className="sheet-table">
+            <thead>
+              <tr>
+                <th>Medicamento</th>
+                <th>Dosis mg/kg</th>
+                <th>Dosis en ml</th>
+                <th>Hora de aplicación</th>
+                <th>Observaciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {chemical.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.drug}</td>
+                  <td>{item.dose_mg_per_kg}</td>
+                  <td>{item.dose_ml}</td>
+                  <td>{item.administered_time?.slice(0, 5)}</td>
+                  <td>{item.notes}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+
+      {physical.length > 0 && (
+        <>
+          <p className="sheet-italic">*Contención física:</p>
+          <p className="sheet-inline sheet-wrap">
+            {methods.length > 0
+              ? methods.map(([label, value]) => <SheetLine key={label} label={`${label}:`} value={yesNo(value)} />)
+              : physical.map((item) => item.physical_method).filter(Boolean).join(', ')}
+          </p>
+          {remarks.map((remark) => (
+            <p key={remark}>{remark}</p>
+          ))}
+        </>
+      )}
+
+      {evaluation.lab_samples.length > 0 && (
+        <p className="sheet-inline sheet-wrap">
+          <b>Muestras:</b>
+          {evaluation.lab_samples.map((sample) => (
+            <span key={sample.id}>
+              {sampleLabels[sample.sample_type] ?? sample.sample_type}
+              {sample.result_notes ? ` (${sample.result_notes})` : ''}
+            </span>
+          ))}
+        </p>
+      )}
+
+      {conclusions
+        .filter(([, value]) => value)
+        .map(([label, value]) => (
+          <p className="sheet-inline" key={label}>
+            <SheetLine label={label} value={value} />
+          </p>
+        ))}
+    </section>
+  );
+}
+
+function PatientSheetHeader({ animal, title, subtitle }: { animal: AnimalProfile; title: string; subtitle?: string }) {
+  return (
+    <>
       <header className="sheet-letterhead">
         <img
           alt=""
@@ -306,7 +450,12 @@ function ProfilePrintSheet({ animal }: { animal: AnimalProfile }) {
           <p>{institution.title}</p>
         </div>
       </header>
-      <h2 className="sheet-heading">HISTORIA CLINICA DEL EJEMPLAR</h2>
+      <h2 className="sheet-heading">{title}</h2>
+      {subtitle && (
+        <p className="sheet-inline">
+          <SheetLine label="Detalle:" value={subtitle} />
+        </p>
+      )}
       <p className="sheet-inline">
         <SheetLine label="Fecha de emisión:" value={shortDate(new Date().toISOString())} />
       </p>
@@ -319,126 +468,46 @@ function ProfilePrintSheet({ animal }: { animal: AnimalProfile }) {
           <SheetLine label="Identificación:" value={animal.tag_number} />
         </p>
         <p className="sheet-inline">
-          <SheetLine label="Edad:" value={animal.age} />
+          <SheetLine label="Edad:" value={displayAnimalAge(animal)} />
           <SheetLine label="Sexo:" value={animal.sex ? (sexLabels[animal.sex] ?? animal.sex) : ''} />
           <SheetLine label="Recinto:" value={animal.enclosure} />
         </p>
         <p className="sheet-inline">
           <SheetLine label="Origen:" value={animal.origin} />
           <SheetLine label="Ingreso:" value={shortDate(animal.entry_date)} />
-          <SheetLine label="Alimentación:" value={animal.diet} />
+          <SheetLine label="Alimentación:" value={animal.species?.feeding} />
         </p>
       </div>
+    </>
+  );
+}
+
+function ProfilePrintSheet({ animal }: { animal: AnimalProfile }) {
+  return (
+    <div id="profile-full-sheet" className="print-sheet intense-sheet profile-sheet">
+      <PatientSheetHeader animal={animal} title="HISTORIA CLINICA DEL EJEMPLAR" subtitle="Historial clínico completo" />
 
       {animal.evaluations.length === 0 && <p className="sheet-italic">Sin diagnósticos ni revisiones registrados.</p>}
 
-      {animal.evaluations.map((evaluation) => {
-        const kind = evaluationLabels[evaluation.evaluation_type]?.label ?? evaluation.evaluation_type.replace(/_/g, ' ');
-        const chemical = evaluation.restraints.filter((item) => item.mobilization_type === 'chemical');
-        const physical = evaluation.restraints.filter((item) => item.mobilization_type !== 'chemical');
-        const methods = physical.flatMap((item) => splitPhysicalNotes(item.notes).methods);
-        const remarks = physical.flatMap((item) => splitPhysicalNotes(item.notes).remarks);
-        const vitals: [string, string | number | null][] = [
-          ['Temp.', evaluation.temperature_c],
-          ['FR.', evaluation.respiratory_rate],
-          ['FC.', evaluation.heart_rate],
-          ['TLC.', evaluation.capillary_refill_time],
-          ['C.C.', evaluation.body_condition_score],
-          ['Peso.', evaluation.weight_kg],
-        ];
-        const conclusions: [string, string | null][] = [
-          ['Motivo / notas:', evaluation.assessment_reason],
-          ['Diagnóstico presuntivo:', evaluation.presumptive_diagnosis],
-          ['Diagnóstico definitivo:', evaluation.definitive_diagnosis],
-          ['Recomendaciones:', evaluation.recommendations],
-        ];
+      {animal.evaluations.map((evaluation) => (
+        <EvaluationPrintSection evaluation={evaluation} key={evaluation.id} />
+      ))}
 
-        return (
-          <section className="sheet-evaluation" key={evaluation.id}>
-            <h3 className="sheet-eval-title">
-              {kind} — {shortDate(evaluation.evaluation_date)}
-              {evaluation.veterinarian ? ` — MVZ ${evaluation.veterinarian}` : ''}
-            </h3>
-            <p className="sheet-inline sheet-wrap">
-              {vitals.map(([label, value]) => (
-                <SheetLine key={label} label={label} value={value} />
-              ))}
-            </p>
+      <footer className="sheet-address">{institution.address}</footer>
+    </div>
+  );
+}
 
-            {evaluation.findings.map((finding) => (
-              <p className="sheet-inline" key={finding.id}>
-                <SheetLine
-                  label={`${systemLabels[finding.organ_system] ?? finding.organ_system}:`}
-                  value={finding.description ?? finding.status}
-                />
-              </p>
-            ))}
-
-            {chemical.length > 0 && (
-              <>
-                <p className="sheet-italic">*Contención Química:</p>
-                <table className="sheet-table">
-                  <thead>
-                    <tr>
-                      <th>Medicamento</th>
-                      <th>Dosis mg/kg</th>
-                      <th>Dosis en ml</th>
-                      <th>Hora de aplicación</th>
-                      <th>Observaciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {chemical.map((item) => (
-                      <tr key={item.id}>
-                        <td>{item.drug}</td>
-                        <td>{item.dose_mg_per_kg}</td>
-                        <td>{item.dose_ml}</td>
-                        <td>{item.administered_time?.slice(0, 5)}</td>
-                        <td>{item.notes}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </>
-            )}
-
-            {physical.length > 0 && (
-              <>
-                <p className="sheet-italic">*Contención física:</p>
-                <p className="sheet-inline sheet-wrap">
-                  {methods.length > 0
-                    ? methods.map(([label, value]) => <SheetLine key={label} label={`${label}:`} value={yesNo(value)} />)
-                    : physical.map((item) => item.physical_method).filter(Boolean).join(', ')}
-                </p>
-                {remarks.map((remark) => (
-                  <p key={remark}>{remark}</p>
-                ))}
-              </>
-            )}
-
-            {evaluation.lab_samples.length > 0 && (
-              <p className="sheet-inline sheet-wrap">
-                <b>Muestras:</b>
-                {evaluation.lab_samples.map((sample) => (
-                  <span key={sample.id}>
-                    {sampleLabels[sample.sample_type] ?? sample.sample_type}
-                    {sample.result_notes ? ` (${sample.result_notes})` : ''}
-                  </span>
-                ))}
-              </p>
-            )}
-
-            {conclusions
-              .filter(([, value]) => value)
-              .map(([label, value]) => (
-                <p className="sheet-inline" key={label}>
-                  <SheetLine label={label} value={value} />
-                </p>
-              ))}
-          </section>
-        );
-      })}
-
+function SingleEvaluationPrintSheet({ animal, evaluation }: { animal: AnimalProfile; evaluation: AnimalEvaluation }) {
+  const kind = evaluationLabels[evaluation.evaluation_type]?.label ?? evaluation.evaluation_type.replace(/_/g, ' ');
+  return (
+    <div id="profile-single-sheet" className="print-sheet intense-sheet profile-sheet">
+      <PatientSheetHeader
+        animal={animal}
+        title="HISTORIA CLINICA DEL EJEMPLAR"
+        subtitle={`${kind} — ${shortDate(evaluation.evaluation_date)}`}
+      />
+      <EvaluationPrintSection evaluation={evaluation} />
       <footer className="sheet-address">{institution.address}</footer>
     </div>
   );
@@ -455,18 +524,43 @@ export function AnimalProfileView({
   const { error: printError } = usePrintDocument();
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState('');
+  const [openEvaluationId, setOpenEvaluationId] = useState<number | null>(null);
+  const [singlePdfEvaluation, setSinglePdfEvaluation] = useState<AnimalEvaluation | null>(null);
 
-  const downloadPdf = async () => {
-    const sheet = document.querySelector<HTMLElement>('body > .print-sheet');
+  const downloadFullPdf = async () => {
+    const sheet = document.getElementById('profile-full-sheet');
     if (!sheet || !animal) return;
     setPdfBusy(true);
     setPdfError('');
     try {
-      await exportSheetPdf(sheet, `perfil-${animal.name.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+      await exportSheetPdf(sheet, `historial-completo-${animal.name.toLowerCase().replace(/\s+/g, '-')}.pdf`);
     } catch {
       setPdfError('No se pudo generar el PDF. Inténtalo de nuevo.');
     } finally {
       setPdfBusy(false);
+    }
+  };
+
+  const downloadSinglePdf = async (evaluation: AnimalEvaluation) => {
+    if (!animal) return;
+    setSinglePdfEvaluation(evaluation);
+    setPdfBusy(true);
+    setPdfError('');
+    try {
+      // esperar a que el portal renderice la hoja del historial seleccionado
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const sheet = document.getElementById('profile-single-sheet');
+      if (!sheet) throw new Error('sheet missing');
+      const kind = evaluationLabels[evaluation.evaluation_type]?.label ?? 'historial';
+      await exportSheetPdf(
+        sheet,
+        `${kind.toLowerCase().replace(/\s+/g, '-')}-${shortDate(evaluation.evaluation_date).replace(/\//g, '-')}-${animal.name.toLowerCase().replace(/\s+/g, '-')}.pdf`,
+      );
+    } catch {
+      setPdfError('No se pudo generar el PDF del historial seleccionado. Inténtalo de nuevo.');
+    } finally {
+      setPdfBusy(false);
+      setSinglePdfEvaluation(null);
     }
   };
 
@@ -488,12 +582,13 @@ export function AnimalProfileView({
     <section className="page-section printable-document profile-page">
       <div className="profile-toolbar no-print">
         <Button onClick={onBack} variant="ghost">← Volver a animales</Button>
-        <Button disabled={pdfBusy} onClick={downloadPdf} variant="secondary">
-          {pdfBusy ? <Spinner label="Cargando…" /> : 'Descargar PDF'}
+        <Button disabled={pdfBusy} onClick={downloadFullPdf} variant="secondary">
+          {pdfBusy ? <Spinner label="Cargando…" /> : 'Descargar historial completo (PDF)'}
         </Button>
       </div>
       {(printError || pdfError) && <Alert className="no-print" role="alert">{printError || pdfError}</Alert>}
       {createPortal(<ProfilePrintSheet animal={animal} />, document.body)}
+      {singlePdfEvaluation && createPortal(<SingleEvaluationPrintSheet animal={animal} evaluation={singlePdfEvaluation} />, document.body)}
 
       <Card className="profile-hero">
         <span className="profile-avatar" aria-hidden="true">{animal.name.slice(0, 1)}</span>
@@ -518,11 +613,9 @@ export function AnimalProfileView({
         <h3>Datos generales</h3>
         <DataList
           items={[
+            ['Fecha de nacimiento', formatDate(animal.birth_date)],
             ['Origen', animal.origin],
             ['Recinto', animal.enclosure],
-            ['Longevidad', animal.longevity],
-            ['Reproducción', animal.reproduction],
-            ['Alimentación', animal.diet],
             ['Características', animal.characteristics],
           ]}
         />
@@ -538,6 +631,9 @@ export function AnimalProfileView({
               ['Categoría', animal.species.category],
               ['Estado de conservación', animal.species.conservation_status],
               ['Hábitat', animal.species.habitat],
+              ['Alimentación', animal.species.feeding],
+              ['Longevidad', animal.species.longevity],
+              ['Reproducción', animal.species.reproduction],
             ]}
           />
         </Card>
@@ -548,10 +644,73 @@ export function AnimalProfileView({
         {animal.evaluations.length === 0 ? (
           <p className="profile-muted">Este animal aún no tiene diagnósticos ni revisiones registrados.</p>
         ) : (
-          <div className="profile-timeline">
-            {animal.evaluations.map((evaluation) => (
-              <EvaluationItem evaluation={evaluation} key={evaluation.id} />
-            ))}
+          <div className="table-scroll">
+            <table className="profile-table">
+              <thead>
+                <tr>
+                  <th scope="col">Fecha</th>
+                  <th scope="col">Tipo</th>
+                  <th scope="col">Motivo / diagnóstico</th>
+                  <th scope="col">Estado</th>
+                  <th scope="col">Próxima revisión</th>
+                  <th scope="col">MVZ</th>
+                  <th scope="col">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {animal.evaluations.map((evaluation) => {
+                  const kind = evaluationLabels[evaluation.evaluation_type] ?? {
+                    label: evaluation.evaluation_type.replace(/_/g, ' '),
+                    tone: 'info' as const,
+                  };
+                  const summary =
+                    evaluation.definitive_diagnosis ||
+                    evaluation.presumptive_diagnosis ||
+                    evaluation.assessment_reason ||
+                    evaluation.evaluation_reason ||
+                    '—';
+                  const open = openEvaluationId === evaluation.id;
+                  return (
+                    <Fragment key={evaluation.id}>
+                      <tr>
+                        <td>{formatDate(evaluation.evaluation_date)}</td>
+                        <td><Badge tone={kind.tone}>{kind.label}</Badge></td>
+                        <td>{summary.length > 80 ? `${summary.slice(0, 80)}…` : summary}</td>
+                        <td>{followUpStatusLabel(evaluation.follow_up_status)}</td>
+                        <td>{evaluation.next_review_date ? shortDate(evaluation.next_review_date) : '—'}</td>
+                        <td>{evaluation.veterinarian ?? '—'}</td>
+                        <td>
+                          <div className="form-actions" style={{ gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              onClick={() => setOpenEvaluationId(open ? null : evaluation.id)}
+                            >
+                              {open ? 'Ocultar' : 'Ver'}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              disabled={pdfBusy}
+                              onClick={() => void downloadSinglePdf(evaluation)}
+                            >
+                              PDF
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                      {open && (
+                        <tr>
+                          <td colSpan={7}>
+                            <EvaluationItem evaluation={evaluation} />
+                          </td>
+                        </tr>
+                      )}
+                    </Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </Card>
