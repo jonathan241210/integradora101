@@ -31,7 +31,7 @@ Rutas bajo el prefijo ya existente `api/v1`, grupo `visitor`, middleware `auth:s
 
 | Método y ruta | Nombre | Notas |
 |---|---|---|
-| `POST /api/v1/visitor/discoveries` | `visitor.discoveries.store` | `throttle:visitor-discoveries` (30/minuto por visitante). 201 `discovered`, 200 `already_discovered`, 422 con `code` |
+| `POST /api/v1/visitor/discoveries` | `visitor.discoveries.store` | `throttle:visitor-discoveries` (30/minuto por visitante). 201 `discovered`, 200 `already_discovered` o `empty_enclosure`, 422 con `code` |
 | `GET /api/v1/visitor/progress` | `visitor.progress.show` | Puntos, nivel, rango, siguiente umbral, descubiertas / total |
 | `GET /api/v1/visitor/collection` | `visitor.collection.show` | Especies con `discovered` y `discovered_at` |
 | `GET /api/v1/visitor/achievements` | `visitor.achievements.index` | Estado y progreso calculados |

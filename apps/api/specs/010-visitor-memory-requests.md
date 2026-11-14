@@ -74,7 +74,7 @@ Estas decisiones actualizan CA-01, CA-03, RN-06 y «Datos, privacidad y auditor�
 - Cola offline: sin red no se guarda ni se encola nada.
 - Retirar de la galería una foto ya publicada antes de su vencimiento (pregunta 1). Si se necesita, se trata en una spec posterior, que debe resolverse antes de publicar en producción.
 - Límite de número de reenvíos por petición (ver pregunta 2).
-- Avisar al visitante por correo o notificación push. La app consulta su lista. La «notificación» de aceptación es el estado y el texto de la app.
+- Avisar al visitante por correo. La app consulta su lista. La «notificación» de aceptación dentro de la app es el estado y el texto de la lista. El push a la barra del sistema, al aceptar o al rechazar, vive en `api-017` y no forma parte de esta spec.
 - Moderación automática de imágenes o de texto.
 - Captura con cámara dentro de la app (lo decide `mobile-010`).
 - Lectura pública de las aceptadas: `api-012`.

@@ -51,6 +51,7 @@ export interface ProgressRepository {
 const RESULT_MESSAGES: Record<VisitorDiscoveryDto['result'], string> = {
   discovered: 'Descubriste especies nuevas.',
   already_discovered: 'Esas especies ya estaban en tu colección.',
+  empty_enclosure: 'Este recinto no tiene animales en exhibición.',
   invalid_code: 'Ese código no corresponde a un recinto.',
   inactive_code: 'Ese código ya no está activo.',
   expired_scan: 'El escaneo venció. Vuelve a leer el código.',
