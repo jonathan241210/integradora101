@@ -57,7 +57,7 @@ http://localhost:5173/
 
 En modo desarrollo, Vite proporciona:
 - Recarga en vivo (HMR) cuando cambias archivos
-- Reenrutamiento automático de `/api` y `/sanctum` a la API Laravel
+- Reenrutamiento automático de `/api`, `/sanctum` y `/storage` a la API Laravel
 - Soporte TypeScript sin necesidad de compilación previa
 
 ### 2. Compilación para producción
@@ -139,6 +139,7 @@ Si necesitas cambiar el puerto, edita `vite.config.ts` en las secciones `server.
 Vite reenvía automáticamente:
 - `/api` → API Laravel
 - `/sanctum` → Endpoints de autenticación
+- `/storage` → Fotos públicas guardadas por Laravel
 
 **Si la API escucha en otro puerto**, inicia Vite especificando el destino:
 
@@ -146,7 +147,7 @@ Vite reenvía automáticamente:
 ARCA_API_PROXY_TARGET=http://127.0.0.1:9000 npm run dev -- --host 0.0.0.0
 ```
 
-**En producción**, el servidor debe reenviar `/api` y `/sanctum` hacia la API bajo el mismo origen de la PWA.
+**En producción**, el servidor debe reenviar `/api`, `/sanctum` y `/storage` hacia la API bajo el mismo origen de la PWA. Ejecuta `php artisan storage:link` en Laravel para publicar las fotos.
 
 ### Autenticación y sesión
 
@@ -166,7 +167,7 @@ Despliega la app en un sitio con HTTPS y ábrelo desde el navegador del teléfon
 
 ### En navegadores compatibles con PWA
 
-Usa **Instalar app** para abrir la confirmación nativa de tu navegador.
+Usa la opción de instalación del menú del navegador para abrir la confirmación nativa.
 
 ### En iPhone/iPad (Safari)
 

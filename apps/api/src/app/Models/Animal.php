@@ -27,4 +27,18 @@ class Animal extends Model
     {
         return $this->belongsTo(Enclosure::class);
     }
+
+    /**
+     * Obtener la URL pública de la foto del animal.
+     * Si no hay foto, retorna null.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (! $this->photo_path) {
+            return null;
+        }
+
+        return asset('storage/' . $this->photo_path);
+    }
 }
+

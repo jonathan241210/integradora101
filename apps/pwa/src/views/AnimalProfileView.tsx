@@ -513,6 +513,31 @@ function SingleEvaluationPrintSheet({ animal, evaluation }: { animal: AnimalProf
   );
 }
 
+function ProfilePhoto({ name, path }: { name: string; path: string | null }) {
+  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
+
+  if (!path) {
+    return <span className="profile-avatar" aria-label="Sin fotografía">{name.slice(0, 1)}</span>;
+  }
+
+  return (
+    <>
+      {status === 'loading' && <span className="profile-photo-status" role="status">Cargando foto…</span>}
+      {status === 'error' && <span className="profile-photo-status" role="alert">No se pudo cargar la foto</span>}
+      {status !== 'error' && (
+        <img
+          src={/^https?:\/\//i.test(path) ? path : `/storage/${path.replace(/^\/?(?:storage\/)?/, '')}`}
+          alt={`Foto de ${name}`}
+          className="profile-avatar-image"
+          hidden={status !== 'loaded'}
+          onLoad={() => setStatus('loaded')}
+          onError={() => setStatus('error')}
+        />
+      )}
+    </>
+  );
+}
+
 export function AnimalProfileView({
   animalId,
   onBack,
@@ -591,7 +616,9 @@ export function AnimalProfileView({
       {singlePdfEvaluation && createPortal(<SingleEvaluationPrintSheet animal={animal} evaluation={singlePdfEvaluation} />, document.body)}
 
       <Card className="profile-hero">
-        <span className="profile-avatar" aria-hidden="true">{animal.name.slice(0, 1)}</span>
+        <div className="profile-avatar-container">
+          <ProfilePhoto key={`${animal.id}:${animal.photo_path ?? ''}`} name={animal.name} path={animal.photo_path} />
+        </div>
         <div className="profile-hero-text">
           <p className="eyebrow">Perfil del animal</p>
           <h2>{animal.name}</h2>
