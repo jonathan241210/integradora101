@@ -212,12 +212,57 @@ class ProgressTest extends VisitorFeatureTestCase
         $this->assertNotNull(EnclosureQrCode::query()->where('code', $code)->where('is_active', true)->first());
     }
 
+    /** CA-14 visitor-progress */
+    public function test_ca14_visitor_progress_empty_enclosure_is_not_already_discovered(): void
+    {
+        [$token, $visitor] = $this->visitor();
+        $enclosure = Model::unguarded(fn () => Enclosure::query()->create(['name' => 'Recinto vacío '.Str::random(6)]));
+        $code = 'ARCA-'.Str::upper(Str::random(8));
+        EnclosureQrCode::query()->create([
+            'enclosure_id' => $enclosure->id,
+            'code' => $code,
+            'is_active' => true,
+        ]);
+
+        $this->withVisitorToken($token)->postJson('/api/v1/visitor/discoveries', $this->scan($code))
+            ->assertOk()
+            ->assertJsonPath('data.result', 'empty_enclosure')
+            ->assertJsonPath('data.message', 'Este recinto no tiene animales en exhibición.')
+            ->assertJsonPath('data.points_awarded', 0);
+
+        $this->assertSame(0, DB::table('visitor_collections')->where('visitor_id', $visitor->id)->count());
+        $this->assertSame(0, DB::table('visitor_point_entries')->where('visitor_id', $visitor->id)->count());
+
+        $species = Model::unguarded(fn () => Species::query()->create([
+            'common_name' => 'Especie '.Str::random(6),
+            'scientific_name' => 'Scientificus test',
+            'category' => 'mammal',
+            'distribution' => 'México',
+            'conservation_status' => 'Preocupación menor',
+            'habitat' => 'Selva',
+            'gestation_period' => '90 días',
+            'size_cm' => '120',
+            'model_3d_path' => 'models/test.glb',
+        ]));
+        Model::unguarded(fn () => Animal::query()->create([
+            'species_id' => $species->id,
+            'enclosure_id' => $enclosure->id,
+            'entry_date' => now()->toDateString(),
+            'stay_status' => 'Permanente',
+            'can_receive_visits' => 1,
+        ]));
+
+        $this->withVisitorToken($token)->postJson('/api/v1/visitor/discoveries', $this->scan($code))
+            ->assertCreated()
+            ->assertJsonPath('data.result', 'discovered');
+    }
+
     /** CA-13 visitor-progress */
     public function test_ca13_visitor_progress_suite_names_every_criterion(): void
     {
         $this->assertSame('arca_pruebas', DB::getDatabaseName());
         $contents = file_get_contents(__FILE__);
-        foreach (range(1, 13) as $number) {
+        foreach (range(1, 14) as $number) {
             $this->assertStringContainsString(sprintf('CA-%02d visitor-progress', $number), $contents);
         }
     }
