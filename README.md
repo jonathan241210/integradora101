@@ -38,7 +38,7 @@ flowchart LR
   API --> MySQL[(MySQL 8.0.x<br/>Aiven administrado)]
   API -.solo lectura.-> ThemeDB[(MySQL externo<br/>settings_colores / mysql2)]
   API -.disco intercambiable.-> Storage[Almacenamiento por definir<br/>detrás de Laravel Filesystem]
-  Local[MySQL Server local] -.migración portable<br/>solo cambia .env.-> API
+  Local[MySQL Server local] -->|Migración portable; solo cambia .env| API
 ```
 
 La API centraliza autenticación, permisos y lógica; las SPAs usan Sanctum con cookie y la app móvil usa tokens. `settings_colores` se consulta con la conexión `mysql2` en solo lectura. La BD principal usa MySQL 8.0.x, con configuración exclusiva por `.env`; no se incorporan SDK de proveedores cloud a la lógica de negocio. La BD administrada es Aiven MySQL (ADR 0013); el hosting de la API queda por definir. Almacenamiento cloud, si se añade, queda detrás de un disco de Laravel intercambiable.
