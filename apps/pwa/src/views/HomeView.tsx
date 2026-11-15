@@ -27,7 +27,7 @@ const shortcuts: {
   },
   {
     title: 'Registrar revisión',
-    description: 'Capturar control y seguimiento',
+    description: 'Registrar seguimiento desde los formatos de diagnóstico',
     section: 'review-form',
     symbol: '◷',
   },

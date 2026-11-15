@@ -1,4 +1,5 @@
 import { SelectField } from '@arca/ui';
+import type { AnimalSummary } from '@/services/apiClient';
 import { useAnimals } from '@/viewmodels/useApiData';
 import { Spinner } from '@/views/Spinner';
 
@@ -6,18 +7,30 @@ type AnimalPickerProps = {
   className?: string;
   label?: string;
   name?: string;
+  onSelect?: (animal: AnimalSummary | null) => void;
 };
 
 export function AnimalPicker({
   className,
   label = 'Animal',
   name = 'animal_id',
+  onSelect,
 }: AnimalPickerProps) {
   const { animals, loading, error } = useAnimals();
 
   return (
     <div className={className}>
-      <SelectField defaultValue="" label={label} name={name} required>
+      <SelectField
+        defaultValue=""
+        label={label}
+        name={name}
+        required
+        onChange={(event) => {
+          const id = Number(event.target.value);
+          const selected = Number.isFinite(id) ? animals.find((animal) => animal.id === id) ?? null : null;
+          onSelect?.(selected);
+        }}
+      >
         <option disabled value="">
           {loading ? 'Cargando animales…' : 'Seleccionar animal'}
         </option>

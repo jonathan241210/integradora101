@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import type { PwaSection } from '@/viewmodels/pwaDemo';
 import { usePwaInstall, type PwaInstallController } from '@/viewmodels/usePwaInstall';
-import { useStaffSession } from '@/viewmodels/useStaffSession';
+import { getStaffDisplayName, useStaffSession } from '@/viewmodels/useStaffSession';
 import { AppShell } from '@/views/AppShell';
 import { LoginView } from '@/views/LoginView';
 import { LoadingScreen } from '@/views/Spinner';
 
 function App() {
   const installController = usePwaInstall();
-  const { session, error, busy, login, logout } = useStaffSession();
+  const { session, error, busy, login, logout, profile } = useStaffSession();
 
   if (session === 'restoring') {
     return <LoadingScreen label="Cargando…" />;
@@ -31,6 +31,7 @@ function App() {
       error={error}
       busy={busy}
       logout={logout}
+      mvzName={getStaffDisplayName(profile)}
     />
   );
 }
@@ -40,11 +41,13 @@ function StaffWorkspace({
   error,
   busy,
   logout,
+  mvzName,
 }: {
   installController: PwaInstallController;
   error: string;
   busy: boolean;
   logout: () => Promise<void>;
+  mvzName: string;
 }) {
   const [activeSection, setActiveSection] = useState<PwaSection>('home');
 
@@ -54,6 +57,7 @@ function StaffWorkspace({
       installController={installController}
       sessionError={error}
       signingOut={busy}
+      mvzName={mvzName}
       onLogout={logout}
       onNavigate={setActiveSection}
     />

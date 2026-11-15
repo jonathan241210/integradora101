@@ -9,13 +9,13 @@ use App\Models\Species;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class AnimalController extends Controller
 {
     private const SEX = [
         'hembra' => 'F',
         'macho' => 'M',
-        'unknown' => 'I',
     ];
 
     public function index(Request $request): JsonResponse
@@ -29,7 +29,7 @@ class AnimalController extends Controller
                 'animals.tag_number',
                 'animals.name',
                 'animals.sex',
-                'animals.age',
+                'animals.birth_date',
                 'animals.stay_status',
                 'species.common_name as species',
             ])
@@ -50,7 +50,7 @@ class AnimalController extends Controller
     public function show(Animal $animal): JsonResponse
     {
         $animal->load([
-            'species:id,common_name,scientific_name,category,conservation_status,habitat',
+            'species:id,common_name,scientific_name,category,conservation_status,habitat,feeding,longevity,reproduction,gestation_period,size_cm,model_3d_path',
             'enclosure:id,name',
         ]);
 
@@ -68,13 +68,10 @@ class AnimalController extends Controller
             'tag_number' => $animal->tag_number,
             'name' => $animal->name,
             'sex' => $animal->sex,
-            'age' => $animal->age,
+            'birth_date' => $animal->birth_date?->format('Y-m-d'),
             'origin' => $animal->origin,
-            'longevity' => $animal->longevity,
-            'reproduction' => $animal->reproduction,
-            'diet' => $animal->diet,
             'characteristics' => $animal->characteristics,
-            'entry_date' => $animal->entry_date,
+            'entry_date' => $animal->entry_date?->format('Y-m-d'),
             'stay_status' => $animal->stay_status,
             'species' => $animal->species,
             'enclosure' => $animal->enclosure?->name,
@@ -86,17 +83,30 @@ class AnimalController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:100'],
-            'species' => ['required', 'string', 'max:100'],
+            'species_id' => ['nullable', 'integer', 'exists:species,id'],
+            'species' => ['nullable', 'string', 'max:100'],
             'tag_number' => ['required', 'string', 'max:50', 'unique:animals,tag_number'],
             'enclosure_id' => ['required', 'integer', 'exists:enclosures,id'],
-            'sex' => ['required', 'in:hembra,macho,unknown'],
+            'sex' => ['required', Rule::in(['hembra', 'macho'])],
             'birth_date' => ['nullable', 'date'],
             'origin' => ['nullable', 'in:rescue,birth,transfer'],
             'notes' => ['nullable', 'string', 'max:5000'],
         ], [
             'enclosure_id.required' => 'Selecciona un recinto.',
             'enclosure_id.exists' => 'El recinto seleccionado no existe.',
+            'sex.in' => 'Selecciona un sexo válido.',
         ]);
+
+        $speciesName = isset($data['species']) ? trim($data['species']) : '';
+        $hasSpeciesId = ! empty($data['species_id']);
+        $hasSpeciesName = $speciesName !== '';
+
+        if (! $hasSpeciesId && ! $hasSpeciesName) {
+            return response()->json([
+                'message' => 'Selecciona una especie existente o ingresa el nombre de una nueva.',
+                'errors' => ['species' => ['Selecciona una especie existente o ingresa el nombre de una nueva.']],
+            ], 422);
+        }
 
         $origins = [
             'rescue' => 'Rescate',
@@ -104,18 +114,22 @@ class AnimalController extends Controller
             'transfer' => 'Traslado',
         ];
 
-        $animal = DB::transaction(function () use ($data, $request, $origins) {
-            $species = Species::firstOrCreate(
-                ['common_name' => $data['species']],
-                ['scientific_name' => $data['species']],
-            );
+        $animal = DB::transaction(function () use ($data, $request, $origins, $hasSpeciesId, $speciesName) {
+            if ($hasSpeciesId) {
+                $species = Species::query()->findOrFail((int) $data['species_id']);
+            } else {
+                $species = Species::firstOrCreate(
+                    ['common_name' => $speciesName],
+                    ['scientific_name' => $speciesName],
+                );
+            }
 
             return Animal::create([
                 'tag_number' => $data['tag_number'],
                 'responsible_id' => $request->user()->id,
                 'name' => $data['name'],
                 'sex' => self::SEX[$data['sex']],
-                'age' => isset($data['birth_date']) ? 'Nacimiento: '.$data['birth_date'] : null,
+                'birth_date' => $data['birth_date'] ?? null,
                 'origin' => isset($data['origin']) ? $origins[$data['origin']] : null,
                 'characteristics' => $data['notes'] ?? null,
                 'entry_date' => now()->toDateString(),
@@ -125,13 +139,15 @@ class AnimalController extends Controller
             ]);
         });
 
+        $animal->load('species:id,common_name');
+
         return response()->json(['data' => [
             'id' => $animal->id,
             'tag_number' => $animal->tag_number,
             'name' => $animal->name,
-            'species' => $data['species'],
+            'species' => $animal->species?->common_name,
             'sex' => $animal->sex,
-            'age' => $animal->age,
+            'birth_date' => $animal->birth_date?->format('Y-m-d'),
             'stay_status' => $animal->stay_status,
         ]], 201);
     }

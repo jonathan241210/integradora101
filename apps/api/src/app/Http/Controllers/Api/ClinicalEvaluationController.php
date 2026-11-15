@@ -29,6 +29,13 @@ class ClinicalEvaluationController extends Controller
             'kind' => ['required', 'in:intense,quick,review'],
             'animal_id' => ['required', 'integer', 'exists:animals,id'],
             'data' => ['required', 'array'],
+        ], [
+            'kind.required' => 'Selecciona un tipo de evaluación.',
+            'kind.in' => 'El tipo de evaluación no es válido.',
+            'animal_id.required' => 'Selecciona un animal.',
+            'animal_id.exists' => 'El animal seleccionado no existe.',
+            'data.required' => 'Los datos de la evaluación son obligatorios.',
+            'data.array' => 'Los datos de la evaluación no son válidos.',
         ]);
 
         $data = array_map(
@@ -36,38 +43,102 @@ class ClinicalEvaluationController extends Controller
             $payload['data'],
         );
 
-        $evaluation = DB::transaction(function () use ($payload, $data, $request) {
+        $followUp = $this->validateFollowUp($data);
+
+        $evaluation = DB::transaction(function () use ($payload, $data, $followUp, $request) {
             $base = [
                 'animal_id' => $payload['animal_id'],
                 'veterinarian_id' => $request->user()->id,
+                'is_follow_up' => 1,
+                'follow_up_status' => $followUp['status'],
+                'next_review_date' => $followUp['next_review_date'],
             ];
 
             return match ($payload['kind']) {
-                'intense' => $this->storeIntense($base, $data),
-                'quick' => $this->storeQuick($base, $data),
-                'review' => $this->storeReview($base, $data),
+                'intense' => $this->storeIntense($base, $data, $followUp),
+                'quick' => $this->storeQuick($base, $data, $followUp),
+                'review' => $this->storeReview($base, $data, $followUp),
             };
         });
+
+        $nextReviewDate = $evaluation->next_review_date;
+        if ($nextReviewDate instanceof \DateTimeInterface) {
+            $nextReviewDate = $nextReviewDate->format('Y-m-d');
+        }
 
         return response()->json(['data' => [
             'id' => $evaluation->id,
             'evaluation_type' => $evaluation->evaluation_type,
             'animal_id' => $evaluation->animal_id,
             'evaluation_date' => $evaluation->evaluation_date,
+            'follow_up_status' => $evaluation->follow_up_status,
+            'next_review_date' => $nextReviewDate,
+            'is_follow_up' => (bool) $evaluation->is_follow_up,
         ]], 201);
     }
 
-    private function storeIntense(array $base, array $d): ClinicalEvaluation
+    /**
+     * @return array{status: string, next_review_date: string, reason: string}
+     */
+    private function validateFollowUp(array $d): array
     {
+        $status = $this->text($d, 'follow_up_status') ?? $this->text($d, 'review-status') ?? $this->text($d, 'status');
+        $allowed = ['stable', 'monitoring', 'follow_up', 'follow-up'];
+        $messages = [];
+
+        if ($status === null || $status === '') {
+            $messages['data.follow_up_status'] = ['El estado de seguimiento es obligatorio.'];
+        } elseif (! in_array($status, $allowed, true)) {
+            $messages['data.follow_up_status'] = ['El estado de seguimiento no es válido.'];
+        }
+
+        $nextDateRaw = $this->text($d, 'next_review_date') ?? $this->text($d, 'review-next-date') ?? $this->text($d, 'next_date');
+        $parsedDate = $nextDateRaw ? date_create($nextDateRaw) : false;
+        if ($nextDateRaw === null || $nextDateRaw === '') {
+            $messages['data.next_review_date'] = ['La próxima revisión es obligatoria.'];
+        } elseif ($parsedDate === false) {
+            $messages['data.next_review_date'] = ['La fecha de próxima revisión no es válida.'];
+        }
+
+        $reason = $this->text($d, 'follow_up_reason') ?? $this->text($d, 'review-reason') ?? $this->text($d, 'reason');
+        if ($reason === null || $reason === '') {
+            $messages['data.follow_up_reason'] = ['El motivo de seguimiento es obligatorio.'];
+        }
+
+        if ($messages) {
+            abort(response()->json([
+                'message' => 'Completa los datos de seguimiento obligatorios.',
+                'errors' => $messages,
+            ], 422));
+        }
+
+        $normalizedStatus = $status === 'follow-up' ? 'follow_up' : $status;
+
+        return [
+            'status' => $normalizedStatus,
+            'next_review_date' => $parsedDate->format('Y-m-d'),
+            'reason' => $reason,
+        ];
+    }
+
+    private function storeIntense(array $base, array $d, array $followUp): ClinicalEvaluation
+    {
+        $mobilizationTypes = array_values(array_filter([
+            ! empty($d['intense-mobilization-type-physical']) ? 'física' : null,
+            ! empty($d['intense-mobilization-type-chemical']) ? 'química' : null,
+        ]));
+
         $notes = array_filter([
+            $this->labelled('Seguimiento', $this->followUpReasonLabel($followUp['reason'])),
             $this->text($d, 'intense-general-notes'),
             $this->labelled('Animales afectados', $this->text($d, 'intense-affected')),
             $this->labelled('MVZ', $this->text($d, 'intense-mvz')),
+            $mobilizationTypes ? 'Tipo de movilización: '.implode(', ', $mobilizationTypes) : null,
         ]);
 
         $evaluation = ClinicalEvaluation::create($base + [
             'evaluation_type' => 'Historia_Clinica_Completa',
-            'evaluation_reason' => 'clinical_history',
+            'evaluation_reason' => $this->normalizeFollowUpReason($followUp['reason']),
             'assessment_reason' => $notes ? implode("\n", $notes) : null,
             'evaluation_date' => $this->date($d['intense-date'] ?? null),
             'temperature_c' => $this->number($d['intense-vital-temp'] ?? null),
@@ -76,6 +147,7 @@ class ClinicalEvaluationController extends Controller
             'capillary_refill_time' => $this->integer($d['intense-vital-tlc'] ?? null),
             'weight_kg' => $this->number($d['intense-weight'] ?? null),
             'body_condition_score' => $this->score($d['intense-vital-cc'] ?? null),
+            'patient_age' => $this->text($d, 'intense-age'),
             'presumptive_diagnosis' => $this->text($d, 'intense-presumptive'),
             'definitive_diagnosis' => $this->text($d, 'intense-definitive'),
         ]);
@@ -117,27 +189,30 @@ class ClinicalEvaluationController extends Controller
         foreach ($d as $key => $value) {
             if (str_starts_with($key, 'intense-physical-') && $value !== '' && $value !== null) {
                 $method = substr($key, strlen('intense-physical-'));
-                $physicalDetail[] = $method.': '.$value;
+                $applied = ! in_array(mb_strtolower(trim((string) $value)), ['no', 'false', '0'], true);
+                $physicalDetail[] = $method.': '.($applied ? 'si' : 'no');
 
-                if (! in_array(mb_strtolower(trim((string) $value)), ['no', 'false', '0'], true)) {
+                if ($applied) {
                     $physical[] = $method;
                 }
             }
         }
         $mobilizationPhysical = $this->text($d, 'intense-mobilization-physical');
-        if ($physicalDetail || $mobilizationPhysical) {
+        $physicalTypeChecked = ! empty($d['intense-mobilization-type-physical']);
+        if ($physicalDetail || $mobilizationPhysical || $physicalTypeChecked) {
             $evaluation->restraints()->create([
                 'mobilization_type' => 'physical',
                 'physical_method' => $physical ? mb_substr(implode(', ', $physical), 0, 50) : null,
-                'notes' => implode("\n", array_filter([$mobilizationPhysical, implode('; ', $physicalDetail)])) ?: null,
+                'notes' => implode("\n", array_filter([$mobilizationPhysical, implode('; ', $physicalDetail)])) ?: ($physicalTypeChecked ? 'Movilización física' : null),
             ]);
         }
 
         $mobilizationChemical = $this->text($d, 'intense-mobilization-chemical');
-        if ($mobilizationChemical && ! $evaluation->restraints()->where('mobilization_type', 'chemical')->exists()) {
+        $chemicalTypeChecked = ! empty($d['intense-mobilization-type-chemical']);
+        if (($mobilizationChemical || $chemicalTypeChecked) && ! $evaluation->restraints()->where('mobilization_type', 'chemical')->exists()) {
             $evaluation->restraints()->create([
                 'mobilization_type' => 'chemical',
-                'notes' => $mobilizationChemical,
+                'notes' => $mobilizationChemical ?: ($chemicalTypeChecked ? 'Movilización química' : null),
             ]);
         }
 
@@ -160,16 +235,23 @@ class ClinicalEvaluationController extends Controller
         return $evaluation;
     }
 
-    private function storeQuick(array $base, array $d): ClinicalEvaluation
+    private function storeQuick(array $base, array $d, array $followUp): ClinicalEvaluation
     {
+        $notes = array_filter([
+            $this->labelled('Seguimiento', $this->followUpReasonLabel($followUp['reason'])),
+            $this->labelled('MVZ', $this->text($d, 'quick-mvz')),
+        ]);
+
         $evaluation = ClinicalEvaluation::create($base + [
             'evaluation_type' => 'Revision_Rapida',
-            'evaluation_reason' => mb_substr($this->text($d, 'quick-reason') ?? 'quick_check', 0, 100),
+            'evaluation_reason' => $this->normalizeFollowUpReason($followUp['reason']),
+            'assessment_reason' => $notes ? implode("\n", $notes) : null,
             'evaluation_date' => $this->date($d['quick-date'] ?? null),
             'temperature_c' => $this->number($d['quick-temperature'] ?? null),
             'heart_rate' => $this->integer($d['quick-heart-rate'] ?? null),
             'respiratory_rate' => $this->integer($d['quick-respiratory-rate'] ?? null),
             'weight_kg' => $this->number($d['quick-weight'] ?? null),
+            'patient_age' => $this->text($d, 'quick-age'),
             'attitude' => $this->checked($d, 'attitude'),
             'body_condition_score' => $this->score($d['quick-body-score'] ?? null),
             'presumptive_diagnosis' => $this->text($d, 'quick-diagnosis'),
@@ -194,19 +276,19 @@ class ClinicalEvaluationController extends Controller
         return $evaluation;
     }
 
-    private function storeReview(array $base, array $d): ClinicalEvaluation
+    private function storeReview(array $base, array $d, array $followUp): ClinicalEvaluation
     {
         $notes = array_filter([
+            $this->labelled('Seguimiento', $this->followUpReasonLabel($followUp['reason'])),
             $this->text($d, 'notes'),
-            $this->labelled('Próxima revisión', $this->text($d, 'next_date')),
         ]);
 
         return ClinicalEvaluation::create($base + [
             'evaluation_type' => 'Revision_Rapida',
-            'evaluation_reason' => 'Seguimiento: '.($this->text($d, 'reason') ?? 'routine'),
-            'destination_ruling' => $this->text($d, 'status'),
+            'evaluation_reason' => $this->normalizeFollowUpReason($followUp['reason']),
             'assessment_reason' => $notes ? implode("\n", $notes) : null,
-            'evaluation_date' => now()->toDateString(),
+            'evaluation_date' => $this->date($d['evaluation_date'] ?? $d['review-date'] ?? null),
+            'patient_age' => $this->text($d, 'patient_age') ?? $this->text($d, 'review-age'),
         ]);
     }
 
@@ -271,5 +353,32 @@ class ClinicalEvaluationController extends Controller
         return $value !== null && preg_match('/^(\d{1,2}):(\d{2})/', $value, $m)
             ? sprintf('%02d:%02d:00', min((int) $m[1], 23), min((int) $m[2], 59))
             : null;
+    }
+
+    private function normalizeFollowUpReason(string $reason): string
+    {
+        $map = [
+            'routine' => 'routine',
+            'treatment' => 'treatment',
+            'observation' => 'observation',
+            'seguimiento rutinario' => 'routine',
+            'control de tratamiento' => 'treatment',
+            'observación' => 'observation',
+            'observacion' => 'observation',
+        ];
+
+        $key = mb_strtolower(trim($reason));
+
+        return mb_substr($map[$key] ?? $reason, 0, 100);
+    }
+
+    private function followUpReasonLabel(string $reason): string
+    {
+        return match ($this->normalizeFollowUpReason($reason)) {
+            'routine' => 'Seguimiento rutinario',
+            'treatment' => 'Control de tratamiento',
+            'observation' => 'Observación',
+            default => $reason,
+        };
     }
 }

@@ -13,6 +13,11 @@ class Animal extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'birth_date' => 'date:Y-m-d',
+        'entry_date' => 'date:Y-m-d',
+    ];
+
     public function species(): BelongsTo
     {
         return $this->belongsTo(Species::class, 'species_id');
