@@ -9,7 +9,7 @@
 
 ## Problema y contexto
 
-La pestaña «Escanear» del prototipo (`mobile-002`) simula resultados con botones de demostración y rutas mock. Con `mobile-005` implementada, la cola (`submitScan`), la API (`api-005` → `POST /api/v1/visitor/discoveries`) y las pantallas de resultado ya existen; falta leer el QR físico del recinto con la cámara y entregar el código opaco (`enclosure_qr_codes.code`, p. ej. `ARCA-7F3K9Q2M`) a esa cola.
+La pestaña «Escanear» del prototipo (`mobile-002`) simula resultados con botones de demostración y rutas mock. Con `mobile-005` implementada, la cola (`submitScan`), la API (`api-005` → `POST /api/v1/visitor/discoveries`) y las pantallas de resultado ya existen; falta leer el QR físico del recinto con la cámara y entregar el código opaco del recinto (`enclosure_qr_codes.code`) a esa cola.
 
 La validación de puntos, especies y estados de resultado la hace el servidor; esta spec no añade endpoints ni migraciones.
 
@@ -46,7 +46,7 @@ Sin sesión autenticada, la pestaña redirige al flujo de inicio de sesión (ADR
 ## Criterios de aceptación
 
 - **CA-01:** Dada la pestaña Escanear con sesión activa, cuando el visitante la abre por primera vez en el dispositivo, entonces la app solicita permiso de cámara con una sola frase en español y el botón «Permitir cámara» antes de mostrar la vista en vivo. El campo para escribir el código sigue en la misma pantalla. Enmienda visual, 2026-11-11.
-- **CA-02:** Dado permiso concedido, cuando la cámara decodifica un QR, entonces la app normaliza el contenido a código opaco: acepta texto plano que coincida con el patrón del zoológico (`ARCA-` + alfanumérico); si el QR es una URL, extrae el último segmento de ruta o el parámetro `code` cuando contenga ese patrón; ignora lecturas duplicadas del mismo código durante ~2 s (debounce).
+- **CA-02:** Dado permiso concedido, cuando la cámara decodifica un QR, entonces la app normaliza el contenido a código opaco del zoológico: acepta texto plano con el formato vigente o extrae el código desde una URL (último segmento de ruta o parámetro `code`) cuando corresponda; ignora lecturas duplicadas del mismo código durante ~2 s (debounce). Si el contenido no es válido, la app muestra un mensaje genérico sin revelar el formato esperado.
 - **CA-03:** Dado permiso denegado o revocado, cuando el visitante usa Escanear, entonces muestra mensaje accesible en español, opción de abrir ajustes del sistema si está disponible, y un formulario de **entrada manual** (campo + botón «Registrar código») que usa el mismo flujo que CA-02.
 - **CA-04:** Dado un código normalizado, cuando se envía, entonces la app llama `submitScan(code)` una sola vez por intento de usuario (indicador de carga mientras procesa); al resolver, navega a `scan-result` con los datos de `ScanPresentation` (`discovered`, `already_discovered`, `empty_enclosure`, `invalid_code`, `inactive_code`, `expired_scan`, `pending`, `rate_limited`). `empty_enclosure` es el aviso de `mobile-005` CA-07 cuando el recinto no tiene animales en exhibición (Aksel, 2026-11-14).
 - **CA-05:** Dado el código de la app, cuando se revise, entonces cumple MVVM: ruta/pantalla → ViewModel de escaneo → `submitScan`; la pantalla no llama a la API ni escribe en la cola directamente.

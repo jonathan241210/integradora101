@@ -35,7 +35,7 @@ export function useQrScanViewModel(router: Router, deps?: Partial<QrScanViewMode
     async (raw: string) => {
       const code = resolved.normalize(raw);
       if (!code) {
-        setValidationError('Ese texto no es un código válido del zoológico. Debe empezar por ARCA-.');
+        setValidationError('El código no es válido. Verifica e inténtalo de nuevo.');
         return;
       }
       const now = Date.now();

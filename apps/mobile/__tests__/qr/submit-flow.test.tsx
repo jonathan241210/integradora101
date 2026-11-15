@@ -93,7 +93,7 @@ describe('mobile-006 flujo submitScan', () => {
       await latest!.onManualSubmit({ nativeEvent: {} } as never);
     });
 
-    expect(latest!.validationError).toBe('Ese texto no es un código válido del zoológico. Debe empezar por ARCA-.');
+    expect(latest!.validationError).toBe('El código no es válido. Verifica e inténtalo de nuevo.');
   });
 
   it('test-ca-04-present-scan-result: mapea ScanPresentation a la ruta scan-result', () => {

@@ -1,7 +1,7 @@
 import { normalizeQrCode } from '../../src/utils/normalizeQrCode';
 
 describe('mobile-006 normalizeQrCode', () => {
-  it('test-ca-02-normalize-qr-payload: acepta código plano ARCA', () => {
+  it('test-ca-02-normalize-qr-payload: acepta código plano válido', () => {
     expect(normalizeQrCode('  arca-abc123  ')).toBe('ARCA-ABC123');
   });
 
