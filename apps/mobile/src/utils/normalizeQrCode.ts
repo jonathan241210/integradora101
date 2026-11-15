@@ -12,7 +12,7 @@ export function normalizeQrCode(raw: string): string | null {
     const segment = url.pathname.split('/').filter(Boolean).pop();
     if (segment && ARCA_CODE.test(segment)) return segment.toUpperCase();
   } catch {
-    // Not a URL; only plain ARCA codes are accepted.
+    // Not a URL; only plain zoo codes are accepted.
   }
 
   return null;

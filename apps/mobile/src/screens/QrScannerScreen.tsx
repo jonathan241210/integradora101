@@ -122,7 +122,7 @@ export function QrScannerScreen({
           <TextInput
             value={manualCode}
             onChangeText={onManualCodeChange}
-            placeholder="ARCA-XXXXXXXX"
+            placeholder="Código del recinto"
             placeholderTextColor={colors.textMuted}
             autoCapitalize="characters"
             autoCorrect={false}
