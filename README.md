@@ -30,7 +30,7 @@ flowchart LR
   Visitor --> Web[apps/web<br/>React 19 + Vite]
   Staff[Personal del zoológico] --> Dashboard[apps/dashboard<br/>React 19 + Vite]
   Vet[Personal veterinario] --> PWA[apps/pwa<br/>React 19 + Vite + offline]
-  Mobile --> Client[@arca/api-client]
+  Mobile --> Client["@arca/api-client"]
   Web --> Client
   Dashboard --> Client
   PWA --> Client
