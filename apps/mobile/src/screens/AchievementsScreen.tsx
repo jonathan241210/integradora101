@@ -15,30 +15,37 @@ interface AchievementsScreenProps {
   onBackPress: () => void;
 }
 
-const sortOptions: { key: AchievementSort; label: string; earnedOnly?: boolean }[] = [
-  { key: 'newest', label: 'Más recientes', earnedOnly: true },
-  { key: 'oldest', label: 'Más antiguos', earnedOnly: true },
-  { key: 'name-asc', label: 'Nombre A–Z' },
-  { key: 'name-desc', label: 'Nombre Z–A' },
-];
+const SORT_LABEL: Record<AchievementSort, string> = {
+  newest: 'Más recientes',
+  oldest: 'Más antiguos',
+  'name-asc': 'Nombre A–Z',
+  'name-desc': 'Nombre Z–A',
+};
+
+function sortChoices(filter: AchievementFilter): AchievementSort[] {
+  return filter === 'unlocked'
+    ? ['newest', 'oldest', 'name-asc', 'name-desc']
+    : ['name-asc', 'name-desc'];
+}
 
 export function AchievementsScreen({ achievements, loading = false, source, onAchievementPress, onBackPress }: AchievementsScreenProps) {
   const [filter, setFilter] = useState<AchievementFilter>('unlocked');
   const [sort, setSort] = useState<AchievementSort>('newest');
-  const [sortOpen, setSortOpen] = useState(false);
   const [filterTouched, setFilterTouched] = useState(false);
   const hasUnlocked = achievements.some((achievement) => achievement.unlocked);
   const activeFilter: AchievementFilter = filterTouched ? filter : (hasUnlocked ? 'unlocked' : 'locked');
+  const choices = sortChoices(activeFilter);
+  const activeSort = choices.includes(sort) ? sort : choices[0];
   const filteredAchievements = useMemo(() => {
     const filtered = achievements.filter((achievement) => achievement.unlocked === (activeFilter === 'unlocked'));
     return [...filtered].sort((a, b) => {
-      if (sort === 'name-asc') return a.title.localeCompare(b.title, 'es');
-      if (sort === 'name-desc') return b.title.localeCompare(a.title, 'es');
+      if (activeSort === 'name-asc') return a.title.localeCompare(b.title, 'es');
+      if (activeSort === 'name-desc') return b.title.localeCompare(a.title, 'es');
       const aDate = a.earnedAt ? new Date(a.earnedAt).getTime() : 0;
       const bDate = b.earnedAt ? new Date(b.earnedAt).getTime() : 0;
-      return sort === 'newest' ? bDate - aDate : aDate - bDate;
+      return activeSort === 'newest' ? bDate - aDate : aDate - bDate;
     });
-  }, [achievements, activeFilter, sort]);
+  }, [achievements, activeFilter, activeSort]);
 
   const selectFilter = (nextFilter: AchievementFilter) => {
     setFilterTouched(true);
@@ -64,23 +71,17 @@ export function AchievementsScreen({ achievements, loading = false, source, onAc
           <Chip label="Obtenidos" selected={activeFilter === 'unlocked'} onPress={() => selectFilter('unlocked')} />
           <Chip label="Por obtener" selected={activeFilter === 'locked'} onPress={() => selectFilter('locked')} />
         </View>
-        <Pressable accessibilityRole="button" accessibilityLabel="Ordenar" onPress={() => setSortOpen((open) => !open)} style={styles.sortToggle}>
-          <AppText variant="body" bold style={styles.sortToggleText}>Ordenar</AppText>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Ordenar"
+          onPress={() => {
+            const index = choices.indexOf(activeSort);
+            setSort(choices[(index + 1) % choices.length]);
+          }}
+          style={styles.sortToggle}
+        >
+          <AppText variant="body" bold style={styles.sortToggleText}>{`Ordenar: ${SORT_LABEL[activeSort]}`}</AppText>
         </Pressable>
-        {sortOpen ? (
-          <View style={styles.sortRow}>
-            {sortOptions
-              .filter((option) => !option.earnedOnly || activeFilter === 'unlocked')
-              .map((option) => (
-                <Chip
-                  key={option.key}
-                  label={option.label}
-                  selected={sort === option.key}
-                  onPress={() => setSort(option.key)}
-                />
-              ))}
-          </View>
-        ) : null}
         <FlatList
           testID="achievements-list"
           data={filteredAchievements}
@@ -125,7 +126,6 @@ const styles = StyleSheet.create({
   filterRow: { flexDirection: 'row', gap: spacing.sm },
   sortToggle: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
   sortToggleText: { color: colors.primary },
-  sortRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   list: { paddingVertical: spacing.sm },
   separator: { height: spacing.sm },
   achievementCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },

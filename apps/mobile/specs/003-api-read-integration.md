@@ -4,8 +4,12 @@
 - Apps/paquetes afectados: `mobile`, `packages/api-client`
 - Estado: Aprobada
 - Solicitante / responsable funcional: Víctor Adrián (redacción spec / responsable BD); Aksel (revisión móvil)
-- Aprobación funcional: Víctor Adrián (2026-10-20)
+- Aprobación funcional: Víctor Adrián (2026-10-20). Enmienda de inicio (noticias, eventos e imágenes) confirmada con el plan el 2026-11-10.
 - Equivalencia en el documento de decisiones previas: 003
+
+## Enmienda 2026-11-10
+
+El inicio deja de volcar la lista completa de eventos y pasa a mostrar una noticia y un evento, con despliegue hasta tres y salida avisada al portal. No hay spec nueva: esta enmienda reescribe el CA-03 y agrega CA-08, CA-09 y CA-10. La API no cambia. Las noticias salen de `GET /api/v1/news?limit=3` y `GET /api/v1/news/{id}`; los eventos, de `GET /api/v1/events?limit=3` y `GET /api/v1/events/{id}`. El orden lo decide la API: la noticia más nueva primero y el evento de inicio más próximo primero. La app no reordena.
 
 ## Problema y contexto
 
@@ -42,15 +46,21 @@ Esta especificación define la integración de lectura entre las pantallas de ca
 
 - **HU-01 (Catálogo de animales):** Como visitante del zoológico, quiero ver el listado de especies y animales con sus fotos y nombres comunes para identificar los animales que puedo conocer durante mi recorrido.
 - **HU-02 (Detalle del animal):** Como visitante, quiero abrir la ficha individual de un animal o especie para conocer su nombre científico, categoría, zona, dieta, curiosidades y datos de interés.
-- **HU-03 (Agenda de eventos):** Como visitante, quiero ver la lista de eventos y actividades programadas (con fecha, horario y ubicación) para organizar mi itinerario en el zoológico.
+- **HU-03 (Agenda de eventos):** Como visitante, quiero ver en el inicio el próximo evento y, si quiero, hasta tres, para organizar la visita sin salir de la app; y quiero un aviso claro antes de abrir el listado completo en el portal.
 - **HU-04 (Detalle de evento):** Como visitante, quiero tocar un evento para ver su descripción extendida, horario exacto y fotografías del evento.
+- **HU-06 (Noticias actuales):** Como visitante, quiero ver en el inicio la noticia más reciente, abrir su detalle en la app y, si lo pido, salir avisado hacia el portal para ver todas.
 - **HU-05 (Consulta sin conexión):** Como visitante en una zona del zoológico sin cobertura móvil, quiero que la app siga mostrándome el catálogo y los eventos previamente consultados para no perder acceso a la guía del parque.
 
 ## Criterios de aceptación
 
 - **CA-01 (Listado de animales desde API):** Dado que la app móvil cuenta con conexión a red, cuando el visitante accede a la pantalla de catálogo de animales, entonces la app consulta `GET /species` mediante `AnimalRepository` y `@arca/api-client`, mapea los datos de `snake_case` a `camelCase` y muestra las especies con sus fotografías por URL y nombres correspondientes.
 - **CA-02 (Detalle de animal desde API):** Dado un animal o especie seleccionado con identificador válido, cuando el visitante entra a su vista de detalle, entonces la app consulta `GET /species/{id}` mostrando la ficha completa (nombre común, nombre científico, zona, categoría, estadísticas, dieta y curiosidades) o un estado de recurso no encontrado si el ID no existe.
-- **CA-03 (Listado y detalle de eventos desde API):** Dado que el visitante accede a la sección de eventos, cuando la pantalla carga, entonces consulta `GET /events` mostrando las actividades programadas; y al pulsar sobre un evento, se consulta `GET /events/{id}` para mostrar su detalle completo (título, descripción, fecha, horario, ubicación e imágenes).
+- **CA-03 (Eventos del inicio):** Dado el inicio con la API disponible, cuando carga la sección «Próximos eventos», entonces consulta `GET /events?limit=3` y muestra solo el primero, en el orden de la API, con su imagen si hay una URL usable (CA-10). Si hay más de uno, «Ver más» despliega hasta tres en la misma pantalla y no vuelve a pedir la lista. «Ver menos» vuelve a dejar solo el primero. «En el portal» muestra el aviso de que se va a salir de la app hacia el portal del zoológico; al aceptar, abre `{EXPO_PUBLIC_PORTAL_URL}/eventos.html`. Sin esa variable, en desarrollo el respaldo es `http://localhost:8080`; fuera de desarrollo el aviso dice que no hay dirección configurada y no abre nada. Al pulsar un evento se consulta `GET /events/{id}` y se muestra su detalle (título, descripción, fecha, horario, ubicación e imágenes) dentro de la app.
+- **CA-08 (Noticias actuales):** Dado el inicio, cuando carga, entonces la sección se titula «Noticias actuales», consulta `GET /news?limit=3` y muestra solo la primera, con su imagen si hay una URL usable (CA-10). «Ver más» y «Ver todos» se comportan como en CA-03, y «Ver todos» abre `{portal}/noticias.html`. Si la lista llega vacía, no hay tarjetas. El orden de la pantalla es: animales favoritos, noticias actuales y próximos eventos.
+- **CA-09 (Detalle de noticia):** Dada una noticia del inicio, cuando el visitante la toca, entonces la app consulta `GET /news/{id}` y muestra en una pantalla propia el título, la fecha, la imagen y el `content`. No abre el portal. Si la noticia no existe, muestra que no se encontró.
+- **CA-10 (Imagen usable):** Dada una noticia o un evento, cuando se pinta su foto, entonces se usa `image_url` si es `http` o `https`; si no lo es y `image_path` es `http` o `https`, se usa esa. Una ruta `news/…` o `events/…` (por ejemplo `events/archivo.jpg`) se abre como `{origen}/storage/` más esa ruta, con el origen de `EXPO_PUBLIC_API_URL`. Si el host es `localhost` o `127.0.0.1`, se sustituye por ese mismo origen. Sin origen no se inventa una dirección y se muestra el respaldo de CA-06. No se altera la API para publicar un enlace externo dentro de `image_url`. Al volver al inicio, las fotos ya mostradas no se desmontan para volver a pedirlas.
+- **CA-12 (Misiones en el inicio):** Dado el inicio, cuando el visitante toca «Misiones», entonces en la misma pantalla aparecen las misiones y deja de verse el zoológico del inicio. No hace falta deslizar. Al tocar «Inicio», vuelven los animales, las noticias y los eventos. El título activo lleva una línea del color primario. La frase «Completa misiones y acumula puntos de exploración.» usa el mismo margen lateral que las tarjetas. La tarjeta «Tu próxima aventura te espera» no se muestra entre las noticias y los eventos.
+- **CA-11 (Actualizar noticias y eventos):** Dado el inicio ya cargado, cuando el visitante desliza la pantalla hacia abajo, entonces la app vuelve a pedir `GET /news?limit=3` y `GET /events?limit=3` aunque la caché tenga menos de 5 minutos, y sustituye solo esas dos listas. No vuelve a pedir animales ni el progreso. Si la petición falla, siguen visibles las listas anteriores. El indicador usa el color primario del tema.
 - **CA-04 (Gestión de los 5 estados de UI):** Dada cualquier pantalla de catálogo o eventos, cuando se realiza la consulta de datos:
   - Mientras la promesa esté pendiente, muestra esqueletos o indicadores de carga (`loading`).
   - Si la API responde con una lista vacía, muestra el mensaje amigable en español correspondiente (`empty`).
@@ -64,24 +74,28 @@ Esta especificación define la integración de lectura entre las pantallas de ca
 - **CA-06 (Imágenes con respaldo y tolerancia a fallos):** Dada una imagen de animal o evento cargada por URL remota, cuando la imagen está descargando o si la URL es inválida/inaccesible, entonces el componente visual muestra un placeholder accesible o tinte de respaldo predeterminado sin romper el layout.
 - **CA-07 (Arquitectura MVVM y cobertura de pruebas Jest):** Dado el repositorio de pruebas en `apps/mobile`, cuando se ejecute la suite de Jest (`npm test -- --runInBand`), entonces:
   - Ninguna vista (`screens/`) ni componente (`components/`) importa directamente `fetch`, `axios` o `@arca/api-client`.
-  - Existe al menos una prueba unitaria automatizada que cita explícitamente cada criterio (`CA-01`, `CA-02`, `CA-03`, `CA-04`, `CA-05`, `CA-06`).
+  - Existe al menos una prueba unitaria automatizada que cita explícitamente cada criterio (`CA-01`, `CA-02`, `CA-03`, `CA-04`, `CA-05`, `CA-06`, `CA-08`, `CA-09`, `CA-10`, `CA-11`, `CA-12`).
 
 ## Reglas de negocio
 
 - **RN-01 (Patrón arquitectónico estricto):** Toda interacción con la API se realiza a través de `AnimalRepository` y `ZooRepository` utilizando instancias configuradas con `createHttpClient` de `@arca/api-client`. Está prohibido el uso directo de APIs de red en componentes visuales.
 - **RN-02 (Transformación de atributos):** Los datos devueltos por la API en formato `snake_case` (ej. `scientific_name`, `image_url`, `fun_fact`) deben ser transformados en la capa del repositorio a `camelCase` (ej. `scientificName`, `imageUrl`, `funFact`) antes de exponerse a los ViewModels.
-- **RN-03 (Política de frescura de caché):** La caché en `AsyncStorage` tiene una ventana de frescura de 5 minutos (300 segundos). El almacenamiento guarda la estampa de tiempo (`timestamp`) junto al payload. Pasado este tiempo, se aplica revalidación en segundo plano.
+- **RN-03 (Política de frescura de caché):** La caché en `AsyncStorage` tiene una ventana de frescura de 5 minutos (300 segundos). El almacenamiento guarda la estampa de tiempo (`timestamp`) junto al payload. Pasado este tiempo, se aplica revalidación en segundo plano. En el inicio, deslizar hacia abajo vuelve a pedir noticias y eventos aunque esa ventana no haya vencido (CA-11).
 - **RN-04 (Degradación elegante ante fallos):** Si la API no está disponible o el dispositivo no tiene red:
   - Con caché existente: Se muestran los datos locales acompañados del estado `offline`.
   - Sin caché existente: Se muestra el estado `error` con acción de reintento. Bajo ninguna circunstancia la aplicación debe quedar en pantalla blanca o crashear.
 - **RN-05 (Exclusión de progreso de visitante):** Las propiedades asociadas al progreso personal (tales como `isDiscovered` o puntos) no se consultan ni se alteran en esta spec. El modelo de UI de catálogo presenta los datos puramente zoológicos y educativos de la especie.
 - **RN-06 (Textos y localización):** Todos los mensajes informativos, estados vacíos, alertas de error y etiquetas de accesibilidad deben estar redactados en español claro.
+- **RN-07 (Inicio acotado):** El inicio no muestra más de tres noticias ni más de tres eventos. «Ver todos» no lista el resto dentro de la app: advierte y abre el portal. El detalle de una noticia o un evento sí permanece en la app.
+- **RN-08 (Foto usable):** Al componente de imagen solo llega una URL `http` o `https`. Una ruta `news/` o `events/` se convierte en la URL pública de almacenamiento. El host local se reescribe al origen de la API configurada en la app. Un enlace externo que la API deja solo en `image_path` sí se muestra. Una recarga del inicio no vuelve a montar las fotos que ya están en pantalla.
+- **RN-09 (Actualización del inicio):** Deslizar el inicio hacia abajo solo sustituye noticias y eventos. No vuelve a consultar animales ni el progreso del visitante. Si esa petición falla, se quedan las listas que ya estaban en pantalla. El indicador y las secciones usan los colores del tema (`primary`, `secondary`, `accent`, `surface`); no se introducen colores nuevos.
 
 ## Datos, privacidad y auditoría
 
 - **Datos consultados:**
   - Especies / Animales: identificador (`id`), nombre común (`name`), nombre científico (`scientific_name`), categoría (`category`), zona de recinto (`zone`), URL de imagen (`image_url`), estadísticas (`stats`), dieta (`diet`), curiosidades (`curiosities`), dato curioso (`fun_fact`).
-  - Eventos: identificador (`id`), título (`title`), descripción (`description`), fecha (`date`), horario (`time`), ubicación (`location`), arreglo de URLs de fotos (`image_urls`).
+  - Eventos: identificador (`id`), título (`title`), descripción (`description`), fecha (`date`), horario (`time`), ubicación (`location`), foto usable tomada de `image_url` o, si esa no es `http`/`https`, de `image_path` cuando sí lo es.
+  - Noticias: identificador (`id`), título (`title`), descripción (`description`), fecha (`published_date`), categoría (`category`), foto usable (`image_url`) y, solo en el detalle, contenido (`content`).
 - **Privacidad y datos personales:** Esta spec maneja exclusivamente información pública institucional del zoológico. No recopila, almacena ni transmite identificadores de dispositivo, cookies de rastreo ni datos personales de los visitantes.
 - **Seguridad y tokens:** Los endpoints consumidos son de acceso público; no se envían tokens de autenticación Bearer para estas consultas.
 - **Impacto en base de datos:** Ninguno del lado del cliente móvil. No requiere solicitud DBR en esta spec (las tablas `species`, `animals`, `enclosures` y `events` ya existen y fueron estandarizadas en DBR-001 y DBR-004).
@@ -122,8 +136,10 @@ flowchart TD
   - Contrato de API pública asumido según `apps/mobile/docs/estandares-integracion-api.md`:
     - `GET /api/v1/species`
     - `GET /api/v1/species/{id}`
-    - `GET /api/v1/events`
+    - `GET /api/v1/events?limit=3`
     - `GET /api/v1/events/{id}`
+    - `GET /api/v1/news?limit=3`
+    - `GET /api/v1/news/{id}`
   - Persistencia local: `@react-native-async-storage/async-storage`.
   - Pantallas base de UI de la spec `mobile-002`.
 - **Riesgos:**
@@ -137,7 +153,7 @@ flowchart TD
 
 ## Revisión
 
-- **Aprobadores y fecha:** Aprobada por Víctor Adrián (2026-10-20). Revisión móvil técnica coordinada con Aksel.
+- **Aprobadores y fecha:** Aprobada por Víctor Adrián (2026-10-20). Revisión móvil técnica coordinada con Aksel. Enmienda de inicio confirmada con el plan el 2026-11-10: reescribe CA-03 y agrega CA-08, CA-09 y CA-10. El 2026-11-10 se agrega CA-11: deslizar el inicio actualiza solo noticias y eventos. No cubre la petición de fotos del visitante (`mobile-010`).
 - **Evidencia/enlaces:**
   - `apps/mobile/docs/estandares-integracion-api.md`
   - `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md`

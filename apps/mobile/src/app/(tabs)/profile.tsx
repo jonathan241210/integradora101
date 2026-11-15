@@ -4,11 +4,11 @@ import { avatarLabel } from '../../constants/avatarCatalog';
 import { ProfileScreen } from '../../screens/ProfileScreen';
 import { useUserViewModel } from '../../viewmodels/useUserViewModel';
 import { useVisitorProfile } from '../../viewmodels/useVisitorProfile';
-import { useVisitorProgress } from '../../viewmodels/useVisitorProgress';
+import { useVisitorProgress, profileDiscoveryCounts } from '../../viewmodels/useVisitorProgress';
 
 export default function ProfileRoute() {
   const router = useRouter();
-  const { user, achievements, milestones, loading, error } = useUserViewModel();
+  const { user, achievements, loading, error } = useUserViewModel();
   const progress = useVisitorProgress();
   const { profile } = useVisitorProfile();
   const identity = profile
@@ -36,14 +36,15 @@ export default function ProfileRoute() {
     );
   }
   const live = progress.snapshot;
+  const species = profileDiscoveryCounts(live);
   const shownUser = live
     ? {
         ...user,
         points: live.progress.points,
         level: live.progress.level,
         rank: live.progress.rank,
-        discoveredCount: live.progress.discoveredSpecies,
-        totalAnimals: live.progress.totalSpecies,
+        discoveredCount: species?.discovered ?? live.progress.discoveredSpecies,
+        totalAnimals: species?.total ?? live.progress.totalSpecies,
       }
     : user;
   return (
@@ -53,7 +54,6 @@ export default function ProfileRoute() {
       avatarLabel={identity?.avatarLabel}
       nextThreshold={live?.progress.nextThreshold}
       achievements={live?.achievements ?? achievements}
-      milestones={milestones}
       onAchievementPress={(id) => router.push({
         pathname: '/achievement-detail',
         params: { id, source: 'profile', returnTo: 'profile' },

@@ -10,6 +10,7 @@ Sistema del Zoológico Municipal Nicolás Bravo (Tulancingo). Monorepo con Spec-
 - `apps/web` — React SPA del portal institucional público.
 - `apps/mobile` — React Native para visitantes: mapa, QR y 3D.
 - `packages/` — `@arca/{ui,tokens,api-client,config}`; `docs/` — documentación y ADRs; `docs/database/` — gobierno de BD y solicitudes DBR; `infra/` — infraestructura planeada.
+- `docs/propuestas/` — propuestas opcionales no aprobadas (por ejemplo `almacenamiento-objetos-s3.md`, opción futura de almacenamiento de objetos). No son fases del plan de implementación y no tienen CA ni RN.
 
 ## Estructura de cada app
 | Carpeta | Contenido |

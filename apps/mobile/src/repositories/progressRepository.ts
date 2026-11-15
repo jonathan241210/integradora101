@@ -51,10 +51,34 @@ export interface ProgressRepository {
 const RESULT_MESSAGES: Record<VisitorDiscoveryDto['result'], string> = {
   discovered: 'Descubriste especies nuevas.',
   already_discovered: 'Esas especies ya estaban en tu colección.',
+  empty_enclosure: 'Este recinto no tiene animales en exhibición.',
   invalid_code: 'Ese código no corresponde a un recinto.',
   inactive_code: 'Ese código ya no está activo.',
   expired_scan: 'El escaneo venció. Vuelve a leer el código.',
 };
+
+export function countsFromCollection(snapshot: ProgressSnapshot | null): { discovered: number; total: number } | null {
+  if (!snapshot) return null;
+  if (snapshot.collection.length > 0) {
+    return {
+      discovered: snapshot.collection.filter((item) => item.discovered).length,
+      total: snapshot.collection.length,
+    };
+  }
+  return {
+    discovered: snapshot.progress.discoveredSpecies,
+    total: snapshot.progress.totalSpecies,
+  };
+}
+
+export function profileDiscoveryCounts(snapshot: ProgressSnapshot | null): { discovered: number; total: number } | null {
+  if (!snapshot) return null;
+  const listed = countsFromCollection(snapshot);
+  return {
+    discovered: snapshot.progress.discoveredSpecies,
+    total: listed?.total ?? snapshot.progress.totalSpecies,
+  };
+}
 
 export function mapProgress(dto: VisitorProgressDto): VisitorProgress {
   return {

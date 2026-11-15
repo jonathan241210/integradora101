@@ -17,7 +17,9 @@ export interface UserRepository {
 export interface ZooRepository {
   getEvents(): Promise<ZooEvent[]>;
   getEventById(id: string): Promise<ZooEvent | null>;
-  getNews(): Promise<News>;
+  getNews(): Promise<News[]>;
+  getNewsById(id: string): Promise<News | null>;
+  refreshNewsAndEvents(): Promise<{ news: News[]; events: ZooEvent[] }>;
 }
 
 export interface MapRepository {
@@ -68,8 +70,17 @@ export class ZooRepositoryImpl implements ZooRepository {
     return Promise.resolve(event !== undefined ? event : null);
   }
 
-  async getNews(): Promise<News> {
-    return Promise.resolve(MOCK_NEWS);
+  async getNews(): Promise<News[]> {
+    return Promise.resolve([MOCK_NEWS]);
+  }
+
+  async getNewsById(id: string): Promise<News | null> {
+    return Promise.resolve(MOCK_NEWS.id === id ? MOCK_NEWS : null);
+  }
+
+  async refreshNewsAndEvents(): Promise<{ news: News[]; events: ZooEvent[] }> {
+    const [news, events] = await Promise.all([this.getNews(), this.getEvents()]);
+    return { news, events };
   }
 }
 

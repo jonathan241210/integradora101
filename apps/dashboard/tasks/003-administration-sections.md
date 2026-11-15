@@ -93,6 +93,10 @@ Fuente: `apps/dashboard/specs/003-administration-sections.md`, «Revisión 2026-
 - [x] **T-38** (CA-01, CA-04; control) `[verificación]`: desde `apps/dashboard`, `npm run types`, `npm test` y `npm run build`. Recorrido manual contra `arca_pruebas` con `presidencia@arca.local` y `direccion_zoo@arca.local` (sin contraseñas en el repositorio ni en la evidencia). Depende de `api-007` T-42 a T-44.
   - Evidencia (2026-11-06): `types`, `npm test` (290/290) y `build` en verde; Jonathan informó que probó el recorrido y está correcto.
 
+## Revisión visual 2026-11-12 (CA-20, RN-09)
+
+- [x] **T-39** (CA-20, RN-09) `[frontend, pruebas, verificación]`: delimitar los estilos visuales en `App.tsx` y `styles.css` al administrador/ejecutivo; mejorar jerarquía, espaciado y legibilidad de encabezados, tarjetas, formularios, filtros, tablas y controles del reporte; conservar tokens, colores y tipografía; no cambiar flujos ni afectar taquilla. Añadir prueba de alcance y revisar visualmente las seis secciones a 360, 768 y 1366 px; ejecutar `npm run types`, `npm test` y `npm run build`. Evidencia: sin desbordamiento de página en las seis secciones; tabla de Usuarios apilada y buscador ancho completo en móvil; `types`, 300 tests y `build` en verde.
+
 ## Trazabilidad
 
 - CA-01, CA-02 → T-06, T-07, T-14 (implementación) y T-16, T-17 (pruebas).
@@ -104,6 +108,7 @@ Fuente: `apps/dashboard/specs/003-administration-sections.md`, «Revisión 2026-
 - CA-14..CA-17 → T-01 a T-05 (implementación) y T-23, T-25, T-26 (pruebas).
 - CA-18 → T-24 (cubre CA-01 a CA-19).
 - CA-19 → T-31 (implementación) y T-32 (prueba).
+- CA-20 → T-39 (presentación, prueba de alcance y revisión visual).
 - RN-01..RN-11 aparecen en la tarea que las implementa (RN-11 en T-31). Ninguna tarea instala dependencias ni cambia esquema.
 
 Orden por dependencias: T-01 a T-05 → T-06, T-07 → T-08, T-09 → T-10 a T-13 → T-14, T-15 → T-16 a T-25 (cada prueba junto a su tarea) → T-26 a T-30 → T-31 → T-32. T-28 espera a que `api-007` exista.

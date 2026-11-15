@@ -1,6 +1,6 @@
 # DBR-011 · nullable-columns-restore
 
-- Estado: Borrador (sin aprobar; no existe migración ni SQL ejecutable)
+- Estado: Aprobada (Lista para backend, 2026-11-10)
 - Feature/spec origen: restauración de `arca_pruebas` en la nueva instancia de Aiven; relacionada con DBR-010. Consumidores: api-003 a api-011 (suite PHPUnit completa).
 - Solicitante: Jonathan (responsable funcional y backend)
 - Responsable de BD: Víctor Adrián
@@ -35,6 +35,9 @@ Las cinco columnas pasan a aceptar `NULL` (`DEFAULT NULL`), manteniendo tipo, lo
 | columna | `events.author_id` | `INT NULL` (conserva FK) |
 | columna | `visitors.last_name` | `VARCHAR(100) NULL` |
 | columna | `animals.tag_number` | `VARCHAR(50) NULL` (conserva UNIQUE; MySQL permite varios NULL) |
+| columna | `animals.responsible_id` | `INT NULL` (conserva FK a `users.id`) |
+| columna | `animals.name` | `VARCHAR(100) NULL` |
+| columna | `animals.sex` | `VARCHAR(20) NULL` |
 | columna | `species.scientific_name` | `VARCHAR(150) NULL` |
 
 ## SQL de referencia (MySQL 8.0)
@@ -79,8 +82,8 @@ Aplicar después de DBR-010, en `arca_pruebas`. Luego volver a correr la suite d
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Responsable de BD | | | |
-| Responsable backend | | | |
+| Responsable de BD | Víctor Adrián | 2026-11-10 | Aprobada |
+| Responsable backend | Jonathan | 2026-11-10 | Aprobada (solicitante) |
 
 ## Aplicación por ambiente
 

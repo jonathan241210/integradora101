@@ -65,7 +65,7 @@ export type VisitorDiscoveryInput = {
 };
 
 export type VisitorDiscoveryDto = {
-  result: "discovered" | "already_discovered" | "invalid_code" | "inactive_code" | "expired_scan";
+  result: "discovered" | "already_discovered" | "empty_enclosure" | "invalid_code" | "inactive_code" | "expired_scan";
   new_species: { id: number; common_name: string }[];
   already_known_species: { id: number; common_name: string }[];
   points_awarded: number;

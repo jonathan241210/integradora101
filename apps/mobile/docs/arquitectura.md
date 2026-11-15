@@ -129,7 +129,7 @@ sequenceDiagram
 | Pendiente | Tratamiento |
 |---|---|
 | Iconos de launcher Android/iOS | Agregar recursos PNG finales antes de builds distribuibles |
-| Persistencia y favoritos | Definir en una spec futura; no inferir estado persistente de UI temporal |
+| Favoritos del visitante | La ficha guarda identificadores en el teléfono (`mobile-002` CA-16). El favorito de cuenta y el filtro de Colección siguen pendientes |
 | Cámara/QR real, GPS/mapa y 3D | Requieren alcance aprobado, permisos, dependencias y validación de dispositivos |
 | Retirar referencia visual temporal | `arca-ui-reference` no es una dependencia y se mantiene fuera de Git |
 | Confundir enmienda 002 con spec 004 | La cuenta de 004 vive en `src/session`. Sin `EXPO_PUBLIC_API_URL` sigue el mock. Con esa variable, el teléfono usa la API de pruebas y `expo-secure-store`. |

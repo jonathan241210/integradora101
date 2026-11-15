@@ -38,7 +38,7 @@ describe('HomeScreen (CA-04)', () => {
         appName="ARCA-NB"
         featuredAnimals={[mockAnimal]}
         events={[mockEvent]}
-        news={mockNews}
+        news={[mockNews]}
       />
     );
 

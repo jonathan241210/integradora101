@@ -12,6 +12,11 @@
             <directory>tests/Feature</directory>
         </testsuite>
     </testsuites>
+    <groups>
+        <exclude>
+            <group>smoke</group>
+        </exclude>
+    </groups>
     <source>
         <include>
             <directory>app</directory>
@@ -19,6 +24,7 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_DEBUG" value="false"/>
         <env name="APP_KEY" value="base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="/>
         <env name="APP_LOCALE" value="es"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

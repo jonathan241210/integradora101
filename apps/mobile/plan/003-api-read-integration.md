@@ -213,3 +213,64 @@ Los campos que `api-006` no expone (`avg_weight`, `fun_fact`, `placeholder_tint`
 - **Aprobador funcional y técnico:** Víctor Adrián (2026-10-20)
 - **ADR 0014 (caché y conectividad):** aceptado por Víctor Adrián (2026-10-22)
 - **Coordinación móvil:** Aksel
+
+---
+
+## Enmienda 2026-11-10 · inicio de noticias y eventos
+
+La spec sigue Aprobada. Esta sección sustituye, para el inicio, el listado completo de `GET /events` descrito arriba. El detalle por id no cambia de pantalla.
+
+### Diseño
+
+`ApiZooRepository.getEvents()` pide `GET /events?limit=3`. `getNews()` pide `GET /news?limit=3` y devuelve `News[]`. `getNewsById(id)` pide `GET /news/{id}`. La caché SWR de 5 minutos se conserva, con la llave nueva `@arca:cache:news_list` y `@arca:cache:news:{id}`. Si la noticia falla y no hay caché, el inicio queda vacío en esa sección: no se muestra `MOCK_NEWS`.
+
+`resolveUsableImageUrl` vive en `mappers.ts`. Orden: `image_url` http(s); si no, entradas http(s) de `image_urls`; si no, `image_path` http(s). Una ruta relativa se descarta. `localhost` y `127.0.0.1` se reescriben al origen de `EXPO_PUBLIC_API_URL`. No se modifica `ResolveContentImageUrlAction`.
+
+`HomeScreen` muestra, en este orden, animales, «Noticias actuales» y «Próximos eventos». Cada bloque de noticias y de eventos pinta uno. «Ver más» enseña hasta tres sin otra petición. «Ver todos» no abre el enlace desde la vista: llama al callback del route. El route muestra el aviso y, al aceptar, `Linking.openURL` hacia `resolvePortalPage`. En desarrollo, sin `EXPO_PUBLIC_PORTAL_URL`, la base es `http://localhost:8080`. Fuera de desarrollo, sin variable, el aviso dice que no hay dirección y no abre nada.
+
+Tocar una noticia navega a `news-detail`. Tocar un evento sigue en `event-detail`. `EventCard` y `HighlightNewsCard` muestran la foto usable o el respaldo.
+
+La pantalla de detalle de noticia no llama a la red: el route usa `useHomeViewModel`.
+
+### Archivos
+
+| Área | Archivo | Propósito |
+|---|---|---|
+| Mapeo | `apps/mobile/src/repositories/mappers.ts` | Foto usable y `mapNewsToModel` |
+| Repositorio | `apps/mobile/src/repositories/apiZooRepository.ts`, `index.ts` | `limit=3`, lista de noticias y detalle |
+| Portal | `apps/mobile/src/navigation/portal.ts` | Arma la URL y no abre nada si falta la base |
+| UI | `HomeScreen.tsx`, `EventCard.tsx`, `HighlightNewsCard.tsx`, `NewsDetailScreen.tsx` | Títulos, uno o tres, imagen y detalle |
+| Rutas | `app/(tabs)/index.tsx`, `app/(tabs)/news-detail.tsx`, `_layout.tsx` | Aviso, navegación y pestaña oculta |
+| Pruebas | `__tests__/homeNewsEvents.test.tsx` y ajustes de las suites que citan `/events` o `getNews()` | CA-03, CA-08, CA-09 y CA-10 |
+
+### Mapeo de criterios de la enmienda
+
+| Criterio | Prueba | Ubicación |
+|---|---|---|
+| CA-03 | El inicio muestra un evento, «Ver más» llega a tres y «Ver todos» avisa; el repositorio pide `/events?limit=3` | `homeNewsEvents.test.tsx`, `apiZooRepository.test.ts` |
+| CA-08 | Título «Noticias actuales», una noticia, «Ver más» y «Ver todos» hacia noticias | `homeNewsEvents.test.tsx` |
+| CA-09 | El detalle pinta título, fecha, imagen y contenido sin salir al portal | `homeNewsEvents.test.tsx` |
+| CA-10 | URL http, enlace externo en `image_path`, ruta relativa descartada y host local reescrito | `homeNewsEvents.test.tsx` |
+
+### Constitution Check de la enmienda
+
+| Principio | Cumple | Evidencia |
+|---|---|---|
+| I | Sí | No hay dependencia nueva. El portal se abre con `Linking`, ya presente en React Native. |
+| II | Sí | La enmienda está en la spec 003 Aprobada. No se abre otra spec. |
+| III | Sí | La vista no llama a la API. El aviso y `Linking` viven en el route. |
+| IV | Sí | CA-03, CA-08, CA-09 y CA-10 tienen prueba que los nombra. |
+| V | Sí | La API sigue siendo la fuente. No hay migración ni DBR. |
+| VI | Sí | Identificadores en inglés. Textos de la interfaz en español. |
+
+## Enmienda 2026-11-10 · deslizar para actualizar
+
+`ZooRepository.refreshNewsAndEvents()` llama a la red de noticias y de eventos aunque la caché tenga menos de 5 minutos, y vuelve a guardarla. El route del inicio sustituye solo `events` y `news`. Animales y progreso no se vuelven a pedir. Si la llamada falla, la pantalla conserva lo que ya mostraba.
+
+El gesto vive en `ScreenContainer` cuando el inicio pasa `onRefresh`. El indicador usa `colors.primary`. Las tarjetas de noticia y evento y los botones «Ver más» y «Ver todos» usan `surface`, `border`, `accent` y `secondary` del tema, sin colores nuevos.
+
+| Criterio | Prueba | Ubicación |
+|---|---|---|
+| CA-11 | Con caché vigente, el gesto vuelve a pedir `/news?limit=3` y `/events?limit=3` | `apiZooRepository.test.ts`, `homeNewsEvents.test.tsx` |
+
+Tocar «Misiones» en el título del inicio cambia el contenido de esa misma pantalla. «Inicio» lo devuelve. No hay deslizamiento horizontal. La tarjeta de aventura deja de intercalarse entre noticias y eventos. El detalle de una misión abierta desde ahí regresa al inicio con el panel de misiones.

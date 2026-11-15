@@ -89,7 +89,7 @@ Taxonomic and biological catalog of zoo species.
 |---|---|---|---|
 | `id` | INT AUTO_INCREMENT | Species identifier | PRIMARY KEY |
 | `common_name` | VARCHAR(100) | Common vernacular name | NOT NULL |
-| `scientific_name` | VARCHAR(150) | Latin scientific taxonomic name | NOT NULL |
+| `scientific_name` | VARCHAR(150) | Latin scientific taxonomic name | NULL (DBR-011) |
 | `distribution` | VARCHAR(255) | Natural geographic range | NULL |
 | `conservation_status`| VARCHAR(100) | IUCN conservation red list category | NULL |
 | `habitat` | VARCHAR(255) | Natural biome / habitat type | NULL |
@@ -105,10 +105,10 @@ Individual animals sheltered in the zoo.
 | Column | Type | Description | Key / Constraint |
 |---|---|---|---|
 | `id` | INT AUTO_INCREMENT | Specimen unique identifier | PRIMARY KEY |
-| `tag_number` | VARCHAR(50) | Unique tag / microchip / ring number | UNIQUE, NOT NULL |
-| `responsible_id` | INT | Responsible keeper/staff member | FOREIGN KEY → `users(id)` |
-| `name` | VARCHAR(100) | Animal individual name | NOT NULL |
-| `sex` | VARCHAR(20) | Biological sex (Male / Female / Undetermined)| NOT NULL |
+| `tag_number` | VARCHAR(50) | Unique tag / microchip / ring number | UNIQUE, NULL (DBR-011) |
+| `responsible_id` | INT | Responsible keeper/staff member | FOREIGN KEY → `users(id)`, NULL (DBR-011) |
+| `name` | VARCHAR(100) | Animal individual name | NULL (DBR-011) |
+| `sex` | VARCHAR(20) | Biological sex (Male / Female / Undetermined)| NULL (DBR-011) |
 | `age` | VARCHAR(50) | Estimated or exact age | NULL |
 | `origin` | VARCHAR(100) | Provenance (donation, confiscation, rescue) | NULL |
 | `longevity` | VARCHAR(50) | Estimated life expectancy | NULL |
@@ -225,7 +225,7 @@ News and announcements published on the public web portal.
 | `end_date` | DATE | Effective end display date | NULL |
 | `category` | VARCHAR(100) | Editorial category | NOT NULL |
 | `is_active` | TINYINT(1) | Publication status (1=active, 0=draft/inactive) | NOT NULL, DEFAULT 1 |
-| `author_id` | INT | Author staff member | FOREIGN KEY → `users(id)` |
+| `author_id` | INT | Author staff member | FOREIGN KEY → `users(id)`, NULL (DBR-011) |
 
 ---
 
@@ -244,7 +244,7 @@ Public events, workshops, and seasonal activities at the park.
 | `end_time` | TIME | Daily closing time | NULL |
 | `location` | VARCHAR(255) | Specific venue location inside the zoo | NULL |
 | `is_active` | TINYINT(1) | Status (1=active, 0=canceled/inactive) | NOT NULL, DEFAULT 1 |
-| `author_id` | INT | Event coordinator staff member | FOREIGN KEY → `users(id)` |
+| `author_id` | INT | Event coordinator staff member | FOREIGN KEY → `users(id)`, NULL (DBR-011) |
 
 ---
 
@@ -310,3 +310,61 @@ Notices addressed to one staff user, one row per recipient. Created by DBR-006 a
 | `acknowledged_at` | DATETIME | Moment the cashier acknowledged it | NULL |
 | `created_at` | TIMESTAMP | Creation timestamp | NULL |
 | `updated_at` | TIMESTAMP | Last update timestamp | NULL |
+
+---
+
+## 19. Table: `visitor_memories` (Visitor Memory Requests)
+Visitor-submitted photos and opinions for the public "Momentos para recordar" gallery, with review, rejection, resubmission and publication window. Created by DBR-012 (migration `2026_11_11_000012_visitor_memories_schema`).
+
+| Column | Type | Description | Key / Constraint |
+|---|---|---|---|
+| `id` | BIGINT UNSIGNED AUTO_INCREMENT | Memory request identifier | PRIMARY KEY |
+| `visitor_id` | INT | Visitor who submitted the request; set to NULL when the account is deleted | FOREIGN KEY → `visitors(id)` `ON DELETE SET NULL`, NULL |
+| `status` | VARCHAR(20) | `submitted`, `in_review`, `accepted` or `rejected` (validated by the API) | NOT NULL, DEFAULT `submitted`; INDEX (`status`, `published_until`, `published_at`, `id`) and (`status`, `created_at`) |
+| `opinion` | VARCHAR(300) | Plain-text opinion; optional (NULL when the visitor submits only the photo) | NULL |
+| `image_path` | VARCHAR(255) | Original image path in the `media/memories/` folder | NULL |
+| `image_sha256` | CHAR(64) | SHA-256 of the cleaned image, used to reject the same photo on resubmission | NULL |
+| `published_image_path` | VARCHAR(255) | Image path exposed to the public read API while the request is accepted and current | NULL |
+| `consent_at` | TIMESTAMP | Moment the visitor accepted the terms and conditions | NOT NULL |
+| `terms_version` | VARCHAR(20) | Accepted terms version (`MEMORIES_TERMS_VERSION`) | NOT NULL |
+| `rejection_reason` | VARCHAR(500) | Reason of the last rejection; NULL unless `status` is `rejected` | NULL |
+| `rejected_image` | TINYINT(1) | 1 if the last rejection marked the image; cleared to 0 on resubmission | NOT NULL, DEFAULT 0 |
+| `rejected_content` | TINYINT(1) | 1 if the last rejection marked the opinion; cleared to 0 on resubmission | NOT NULL, DEFAULT 0 |
+| `resubmitted_count` | INT | Number of resubmissions of this request | NOT NULL, DEFAULT 0 |
+| `reviewed_by` | INT | `zoo-admin` user who made the last decision | FOREIGN KEY → `users(id)` `ON DELETE RESTRICT`, NULL |
+| `reviewed_at` | TIMESTAMP | Moment of the last decision | NULL |
+| `published_at` | TIMESTAMP | Moment the request was accepted and published | NULL |
+| `published_until` | TIMESTAMP | End of the publication window (`published_at` + `MEMORIES_PUBLICATION_DAYS`) | NULL |
+| `deleted_at` | TIMESTAMP | Logical deletion (SoftDeletes) | NULL |
+| `created_at` | TIMESTAMP | Creation timestamp | NULL |
+| `updated_at` | TIMESTAMP | Last update timestamp | NULL |
+
+Notas de la tabla `visitor_memories`:
+
+- La API expone `rejected_fields` como lista (`["image"]`, `["content"]` o ambos); el Resource la construye desde `rejected_image` y `rejected_content` (decisión BD 2026-11-11).
+- Índices: `idx_visitor_memories_status_publication`, `idx_visitor_memories_status_created`, `idx_visitor_memories_visitor_created` (`visitor_id`, `created_at`) e `idx_visitor_memories_visitor_status`.
+- No se agregan `created_by`/`updated_by`: el creador es `visitor_id` y el actor de la revisión es `reviewed_by`.
+
+---
+
+## 20. Table: `visitor_memory_reviews` (Visitor Memory Review History)
+One row per review decision, preserving the rejection marks and reason after a resubmission. Created by DBR-012.
+
+| Column | Type | Description | Key / Constraint |
+|---|---|---|---|
+| `id` | BIGINT UNSIGNED AUTO_INCREMENT | Review identifier | PRIMARY KEY |
+| `visitor_memory_id` | BIGINT UNSIGNED | Reviewed memory request | FOREIGN KEY → `visitor_memories(id)` `ON DELETE RESTRICT`, NOT NULL |
+| `decision` | VARCHAR(20) | `accepted` or `rejected` | NOT NULL |
+| `rejection_reason` | VARCHAR(500) | Rejection reason; only with `decision = 'rejected'` | NULL |
+| `rejected_image` | TINYINT(1) | 1 if the decision rejected the image | NOT NULL, DEFAULT 0 |
+| `rejected_content` | TINYINT(1) | 1 if the decision rejected the opinion | NOT NULL, DEFAULT 0 |
+| `reviewed_by` | INT | `zoo-admin` user who made the decision | FOREIGN KEY → `users(id)` `ON DELETE RESTRICT`, NOT NULL |
+| `reviewed_at` | TIMESTAMP | Moment of the decision | NOT NULL |
+| `deleted_at` | TIMESTAMP | Logical deletion (SoftDeletes) | NULL |
+| `created_at` | TIMESTAMP | Creation timestamp | NULL |
+| `updated_at` | TIMESTAMP | Last update timestamp | NULL |
+
+Notas de la tabla `visitor_memory_reviews`:
+
+- Índice `idx_visitor_memory_reviews_memory_reviewed` (`visitor_memory_id`, `reviewed_at`).
+- El historial conserva la decisión anterior aunque la petición se reenvíe; las filas no se borran físicamente (Constitución V).

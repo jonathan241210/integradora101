@@ -26,6 +26,13 @@
 | CA-12 | T-25, T-28, T-34 (alta/lista y documentación vigentes; login reemplazado por `dashboard-002`) |
 | CA-13 | Reemplazado por `dashboard-002`; T-38 y T-40 quedan como historial |
 | CA-15 | T-44 |
+| CA-16 | T-45 |
+
+## Favicon del portal
+
+- [x] **T-45** (CA-16): Reutilizar el logo del portal de visitantes como favicon local del dashboard, comprobar que coincide con el original y verificar su inclusión en el build.
+
+Verificación: prueba de diseño aprobada, build correcto, imagen generada idéntica al original y respuesta HTTP 200 con tipo `image/jpeg` en desarrollo.
 
 ## Implementación
 

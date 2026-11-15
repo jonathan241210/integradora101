@@ -8,6 +8,7 @@ import {
   type DiscoveryOutcome,
   type ProgressRepository,
 } from '../repositories/progressRepository';
+import { safeVisitorMessage } from '../repositories/safeMessage';
 
 const STORAGE_KEY = 'visitor.scan-queue';
 
@@ -31,6 +32,7 @@ export type ScanPresentation = {
 const TITLES: Record<ScanPresentation['kind'], string> = {
   discovered: 'Nuevo descubrimiento',
   already_discovered: 'Ya descubierto',
+  empty_enclosure: 'Sin animales',
   invalid_code: 'Código inválido',
   inactive_code: 'Código inválido',
   expired_scan: 'Escaneo vencido',
@@ -86,7 +88,7 @@ export function createScanQueue(storage: KeyValueStorage, discover?: Sender, onR
         return presentation('pending', 'Sin conexión. El escaneo sigue pendiente.');
       }
       if (isRateLimitError(error)) {
-        return presentation('rate_limited', (error as ApiError).message);
+        return presentation('rate_limited', safeVisitorMessage((error as ApiError).message, (error as ApiError).status));
       }
       throw error;
     }

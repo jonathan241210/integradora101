@@ -5,7 +5,7 @@ import { CollectionScreen } from '../../screens/CollectionScreen';
 import { Animal } from '../../models';
 import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
 import { useUserViewModel } from '../../viewmodels/useUserViewModel';
-import { useVisitorProgress, mergeDiscoveredSpecies } from '../../viewmodels/useVisitorProgress';
+import { useVisitorProgress, mergeDiscoveredSpecies, countsFromCollection } from '../../viewmodels/useVisitorProgress';
 import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 
 export default function CollectionRoute() {
@@ -50,9 +50,8 @@ export default function CollectionRoute() {
   return (
     <CollectionScreen
       animals={shownAnimals}
-      progress={live
-        ? { discovered: live.progress.discoveredSpecies, total: live.progress.totalSpecies }
-        : { discovered: user?.discoveredCount ?? 0, total: user?.totalAnimals ?? 0 }}
+      progress={countsFromCollection(live)
+        ?? { discovered: user?.discoveredCount ?? 0, total: user?.totalAnimals ?? 0 }}
       isOffline={isOffline}
       onAnimalPress={(id) => router.push({ pathname: '/animal/[id]', params: { id } })}
     />

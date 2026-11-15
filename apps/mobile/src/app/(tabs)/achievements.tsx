@@ -6,7 +6,7 @@ import { useVisitorProgress } from '../../viewmodels/useVisitorProgress';
 
 export default function AchievementsRoute() {
   const router = useRouter();
-  const { source: routeSource } = useLocalSearchParams<{ source?: string }>();
+  const { source: routeSource, returnTo } = useLocalSearchParams<{ source?: string; returnTo?: string }>();
   const source = routeSource === 'profile' ? 'profile' : 'game';
   const { achievements, loading } = useUserViewModel();
   const progress = useVisitorProgress();
@@ -19,7 +19,13 @@ export default function AchievementsRoute() {
         pathname: '/achievement-detail',
         params: { id, source, returnTo: 'achievements' },
       })}
-      onBackPress={() => router.replace(source === 'profile' ? '/profile' : '/game')}
+      onBackPress={() => {
+        if (returnTo === 'home') {
+          router.replace({ pathname: '/', params: { panel: 'missions' } });
+          return;
+        }
+        router.replace(source === 'profile' ? '/profile' : '/game');
+      }}
     />
   );
 }

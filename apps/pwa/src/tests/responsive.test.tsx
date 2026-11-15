@@ -12,7 +12,7 @@ describe('CA-04 PWA responsive demo screens', () => {
     expect(styles).toMatch(/@media \(max-width: 1040px\)/);
     expect(styles).toMatch(/@media \(max-width: 760px\)/);
     expect(styles).toMatch(/@media \(max-width: 520px\)/);
-    expect(styles).toMatch(/\.app-shell\s*\{[^}]*grid-template-columns:\s*248px/s);
+    expect(styles).toMatch(/\.app-shell\s*\{[^}]*grid-template-columns:\s*76px/s);
     expect(styles).toMatch(
       /@media \(max-width: 760px\)[\s\S]*?\.mobile-navigation\s*\{[^}]*position:\s*fixed/s,
     );

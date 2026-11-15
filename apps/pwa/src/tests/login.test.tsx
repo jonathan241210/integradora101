@@ -19,6 +19,8 @@ describe('CA-01 PWA login', () => {
     expect(markup).toContain('Correo electrónico');
     expect(markup).toContain('Contraseña');
     expect(markup).not.toContain('Modo demostración');
+    expect(markup).not.toContain('Instalar app');
+    expect(markup).not.toContain('Instalar en teléfono');
     expect(markup).toContain('type="password"');
   });
 });

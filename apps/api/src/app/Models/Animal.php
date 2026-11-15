@@ -13,6 +13,11 @@ class Animal extends Model
 
     protected $guarded = [];
 
+    protected $casts = [
+        'birth_date' => 'date:Y-m-d',
+        'entry_date' => 'date:Y-m-d',
+    ];
+
     public function species(): BelongsTo
     {
         return $this->belongsTo(Species::class, 'species_id');
@@ -22,4 +27,18 @@ class Animal extends Model
     {
         return $this->belongsTo(Enclosure::class);
     }
+
+    /**
+     * Obtener la URL pública de la foto del animal.
+     * Si no hay foto, retorna null.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        if (! $this->photo_path) {
+            return null;
+        }
+
+        return asset('storage/' . $this->photo_path);
+    }
 }
+

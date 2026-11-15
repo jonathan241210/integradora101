@@ -7,6 +7,17 @@ import { Alert, Badge, Button, Card, Field, SelectField } from "@arca/ui";
 const repositoryRoot = fileURLToPath(new URL("../../../../", import.meta.url));
 const dashboardRoot = `${repositoryRoot}/apps/dashboard`;
 
+describe("CA-16 admin-dashboard-prototype", () => {
+  it("usa como favicon el mismo logo local del portal de visitantes", () => {
+    const index = readFileSync(`${dashboardRoot}/index.html`, "utf8");
+    const dashboardLogo = readFileSync(`${dashboardRoot}/src/assets/zoo-logo.jpeg`);
+    const visitorLogo = readFileSync(`${repositoryRoot}/apps/web/src/assets/zoo-logo.jpeg`);
+
+    expect(index).toContain('<link rel="icon" type="image/jpeg" href="/src/assets/zoo-logo.jpeg" />');
+    expect(dashboardLogo.equals(visitorLogo)).toBe(true);
+  });
+});
+
 describe("CA-08 admin-dashboard-prototype", () => {
   it("expone los componentes compartidos y aplica estados semánticos", () => {
     const markup = renderToStaticMarkup(

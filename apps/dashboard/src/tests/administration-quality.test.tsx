@@ -40,6 +40,9 @@ const presentationFiles = [
 ];
 const styles = readFileSync(`${srcDirectory}styles.css`, "utf8");
 const sectionStyles = styles.slice(styles.indexOf("dashboard-003"));
+const adminVisualStyles = styles.slice(
+  styles.indexOf("dashboard-003 · mejora visual del administrador"),
+);
 
 const actions: StaffAccountsViewModel["actions"] = {
   changeQuery: vi.fn(),
@@ -228,6 +231,24 @@ describe("CA-17 administration-sections", () => {
     expect(sectionStyles).not.toMatch(/#[\da-f]{3,8}\b/i);
     expect(sectionStyles).toContain("var(--danger)");
     expect(sectionStyles).toContain("var(--border)");
+  });
+});
+
+describe("CA-20 administration-sections", () => {
+  it("limita la mejora visual al administrador y conserva los tokens semánticos", () => {
+    const app = readFileSync(`${srcDirectory}App.tsx`, "utf8");
+
+    expect(app).toContain("dashboard-app--admin");
+    expect(adminVisualStyles).toContain(".dashboard-app--admin");
+    expect(adminVisualStyles).toContain("var(--primary)");
+    expect(adminVisualStyles).toContain("var(--surface)");
+    expect(adminVisualStyles).not.toMatch(/#[\da-f]{3,8}\b/i);
+    expect(adminVisualStyles).toMatch(
+      /@media \(max-width: 640px\)[\s\S]*\.dashboard-app--admin \.search-box\s*\{[^}]*width:\s*100%/s,
+    );
+    expect(adminVisualStyles).toMatch(
+      /@media \(max-width: 640px\)[\s\S]*\.dashboard-app--admin \.table-scroll table\s*\{[^}]*min-width:\s*0/s,
+    );
   });
 });
 

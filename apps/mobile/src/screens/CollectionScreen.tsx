@@ -35,9 +35,6 @@ export function CollectionScreen({ animals, progress, isOffline = false, onAnima
             label="Progreso de la colección"
             labelColor="textOnPrimary"
           />
-          <AppText variant="caption" color="textOnPrimary">
-            ¡Buen trabajo! Te faltan {progress.total - progress.discovered} animales para completar el zoológico.
-          </AppText>
         </View>
         <View style={styles.filterRow}>
           {['all', 'discovered', 'undiscovered'].map(f => (
@@ -95,12 +92,12 @@ const styles = StyleSheet.create({
   list: { padding: spacing.lg, gap: spacing.md },
   gridRow: { justifyContent: 'space-between' },
   animalCardSlot: { width: '48%' },
-  animalCard: { width: '100%', padding: spacing.sm, alignItems: 'center', gap: spacing.xs },
+  animalCard: { width: '100%', padding: spacing.sm, alignItems: 'center', gap: spacing.xs, borderColor: colors.border },
   animalName: { width: '100%', minHeight: 36 },
   imagePlaceholder: { width: '100%', height: 128, borderRadius: radius.md, marginBottom: spacing.sm },
   statusPill: { borderRadius: radius.pill, paddingHorizontal: spacing.sm, paddingVertical: 4 },
   statusOn: { backgroundColor: colors.accent },
   statusOff: { backgroundColor: colors.border },
-  statusOnText: { color: colors.secondary },
+  statusOnText: { color: colors.text },
   statusOffText: { color: colors.textMuted },
 });

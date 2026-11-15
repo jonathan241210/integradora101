@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ARCA-NB · Mapeador GPS</title>
+  <meta name="theme-color" content="#1b4d24">
+  <meta name="description" content="Levantamiento de coordenadas GPS de los recintos del Zoológico Municipal Nicolás Bravo">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ZooMapper">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">📍</div>
+        <div>
+          <div class="brand-title">ARCA-NB Zoo Mapper</div>
+          <div class="brand-sub">Zoológico Nicolás Bravo</div>
+        </div>
+      </div>
+      <div id="counterBadge" class="badge-count">0 guardados</div>
+    </header>
+
+    <!-- Semáforo GPS en vivo -->
+    <section id="semaphoreCard" class="semaphore-card state-poor">
+      <div class="semaphore-indicator"></div>
+      <div class="semaphore-info">
+        <div class="semaphore-title">
+          <span id="semaphoreLabel">Iniciando GPS satelital...</span>
+          <span id="accuracyLabel">±-- m</span>
+        </div>
+        <div id="semaphoreDesc" class="semaphore-desc">Esperando señal del chip GPS...</div>
+      </div>
+    </section>
+
+    <!-- Telemetría GPS en Vivo (Estilo Reloj Digital / Odómetro) -->
+    <section class="card telemetry-card">
+      <div class="telemetry-header">
+        <span class="telemetry-title">📡 Posición GPS en Tiempo Real</span>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span id="motionStatus" style="font-size: 11px; color: #38bdf8; font-weight: 600;">🚶 Detectando pasos...</span>
+          <span id="gpsPulseDot" class="gps-live-dot"></span>
+        </div>
+      </div>
+      <div class="coords-telemetry">
+        <div class="coord-box">
+          <span class="coord-tag">LATITUD (N)</span>
+          <div id="latDisplay" class="coord-value">--.--------</div>
+        </div>
+        <div class="coord-box">
+          <span class="coord-tag">LONGITUD (W)</span>
+          <div id="lonDisplay" class="coord-value">--.--------</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Formulario de Captura -->
+    <section class="card">
+      <div class="section-title">Capturar Nuevo Recinto</div>
+      
+      <div class="form-group">
+        <label for="enclosureName">Nombre del recinto / punto:</label>
+        <input 
+          type="text" 
+          id="enclosureName" 
+          placeholder="Ej: Hábitat del Tigre"
+          autocomplete="off"
+          list="enclosuresDatalist"
+        />
+        <datalist id="enclosuresDatalist">
+          <option value="Hábitat del Tigre">
+          <option value="Zona del León">
+          <option value="Cala de Pingüinos">
+          <option value="Bosque de Monos">
+          <option value="Zona de Elefantes">
+          <option value="Aviario">
+          <option value="Herpetario">
+          <option value="Baños">
+          <option value="Comida">
+          <option value="Entrada Principal">
+        </datalist>
+
+        <!-- Chips rápidos para no escribir tanto bajo el sol -->
+        <div class="quick-chips">
+          <button type="button" class="chip" onclick="setChip('Hábitat del Tigre')">🐅 Tigre</button>
+          <button type="button" class="chip" onclick="setChip('Zona del León')">🦁 León</button>
+          <button type="button" class="chip" onclick="setChip('Bosque de Monos')">🐒 Monos</button>
+          <button type="button" class="chip" onclick="setChip('Aviario')">🦜 Aviario</button>
+          <button type="button" class="chip" onclick="setChip('Herpetario')">🐍 Herpetario</button>
+          <button type="button" class="chip" onclick="setChip('Entrada Principal')">🚪 Entrada</button>
+          <button type="button" class="chip" onclick="setChip('Baños')">🚻 Baños</button>
+        </div>
+      </div>
+
+      <!-- Botón de Pegar Coords -->
+      <button type="button" id="btnPasteCoords" class="btn-paste">
+        <span>📍</span> Pegar Coordenadas Actuales
+      </button>
+
+      <!-- Borrador tipo Árbol (Oculto hasta que se presione Pegar) -->
+      <div id="draftCard" class="draft-card" style="display: none;">
+        <div class="tree-preview">
+          <div class="tree-node-parent" id="draftTreeName">📍 Nombre del Recinto</div>
+          <div class="tree-node-child" id="draftTreeCoords">└── 🌐 Coords: Lat, Lon (±X.X m)</div>
+        </div>
+        <div class="draft-actions">
+          <button type="button" id="btnConfirm" class="btn-action btn-confirm">
+            ✔️ Guardar
+          </button>
+          <button type="button" id="btnCancel" class="btn-action btn-cancel">
+            ❌ Cancelar
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lista de Recintos Guardados -->
+    <section class="card">
+      <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>Recintos Guardados</span>
+        <span id="savedCountLabel" style="font-size: 13px; font-weight: normal; color: var(--text-muted);">(0)</span>
+      </div>
+
+      <div id="enclosuresList" class="enclosures-list">
+        <div class="empty-state">Aún no has registrado ningún recinto.</div>
+      </div>
+    </section>
+
+    <!-- Exportación -->
+    <section class="card export-card">
+      <button type="button" id="btnExportJson" class="btn-export-json" disabled>
+        📥 Descargar JSON (0)
+      </button>
+      <button type="button" id="btnExportCsv" class="btn-export-csv" disabled>
+        📄 Descargar CSV
+      </button>
+      <p id="exportHint" class="export-hint" style="display: none;">
+        ⚠️ Los datos viven solo en este teléfono. Descarga el JSON antes de cerrar la app o de borrar los datos del navegador.
+      </p>
+      <button type="button" id="btnClearAll" class="btn-clear-all" style="display: none;">
+        Borrar todos los registros
+      </button>
+      <button type="button" id="btnSimulateWalk" class="btn-clear-all" style="color: #0284c7; text-decoration: none; margin-top: 8px;">
+        🚶 Probar animación de coordenadas en vivo
+      </button>
+    </section>
+
+    <footer class="app-footer">
+      <span>ARCA-NB · Zoo Mapper v2</span>
+      <span>Funciona sin internet después de la primera carga</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

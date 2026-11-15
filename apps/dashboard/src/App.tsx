@@ -4,7 +4,9 @@ import { Icon } from "@/components/Icon";
 import { DashboardSection } from "@/sections/DashboardSection";
 import { EnclosuresSection } from "@/sections/EnclosuresSection";
 import { EventsSection } from "@/sections/EventsSection";
+import { MemoriesSection } from "@/sections/MemoriesSection";
 import { NewsSection } from "@/sections/NewsSection";
+import { TulanpediaSection } from "@/sections/TulanpediaSection";
 import { TicketHistorySection } from "@/sections/TicketHistorySection";
 import { TicketPricesSection } from "@/sections/TicketPricesSection";
 import { TicketReportSection } from "@/sections/TicketReportSection";
@@ -18,6 +20,7 @@ import {
   getNavigationForProfile,
   getPresentationProfile,
 } from "@/viewmodels/navigation";
+import { isTulanpediaSearch } from "@/viewmodels/tulanpedia-tab";
 import { useAuthSession } from "@/viewmodels/useAuthSession";
 import { useDashboardShell } from "@/viewmodels/useDashboardShell";
 import type { DashboardSection as SectionId } from "@/viewmodels/dashboard-shell";
@@ -31,7 +34,9 @@ const sectionTitles: Record<SectionId, string> = {
   reports: "Reporte de boletos",
   enclosures: "Recintos",
   users: "Usuarios",
+  memories: "Momentos",
   "ticket-history": "Historial de boletos",
+  tulanpedia: "TulanPedia",
 };
 
 function App() {
@@ -50,9 +55,24 @@ function App() {
     : null;
   const navigation = profile ? getNavigationForProfile(profile) : [];
 
+  const deepLinkHandled = useRef(false);
+
   useEffect(() => {
     if (session.state.status !== "authenticated") shell.reset();
   }, [session.state.status]);
+
+  // CA-63: `?section=tulanpedia` abre TulanPedia solo si la navegación (permiso) la incluye.
+  useEffect(() => {
+    if (session.state.status !== "authenticated") {
+      deepLinkHandled.current = false;
+      return;
+    }
+    if (deepLinkHandled.current || !profile) return;
+    deepLinkHandled.current = true;
+    if (!isTulanpediaSearch(window.location.search)) return;
+    const ids = getNavigationForProfile(profile).map((item) => item.id);
+    if (ids.includes("tulanpedia")) shell.navigate("tulanpedia", ids);
+  }, [session.state.status, profile]);
 
   useEffect(() => {
     if (shell.state.mobileMenuOpen) {
@@ -166,7 +186,9 @@ function App() {
   const permissions = new Set(profile.permissions);
 
   return (
-    <div className="dashboard-app">
+    <div
+      className={`dashboard-app ${presentationProfile === "ticket" ? "dashboard-app--ticket" : "dashboard-app--admin"} ${shell.state.desktopMenuCollapsed ? "dashboard-app--menu-collapsed" : ""}`}
+    >
       {shell.state.mobileMenuOpen && (
         <button
           className="mobile-nav-backdrop"
@@ -215,6 +237,8 @@ function App() {
               className={`sidebar-link ${activeSection === item.id ? "sidebar-link--active" : ""}`}
               type="button"
               key={item.id}
+              aria-label={item.label}
+              title={item.label}
               aria-current={activeSection === item.id ? "page" : undefined}
               onClick={() => navigate(item.id)}
             >
@@ -237,6 +261,16 @@ function App() {
 
       <div className="dashboard-main">
         <header className="topbar">
+          <Button
+            className="desktop-menu-toggle"
+            variant="secondary"
+            aria-label="Fijar menú de navegación abierto"
+            aria-controls="dashboardNavigation"
+            aria-pressed={!shell.state.desktopMenuCollapsed}
+            onClick={shell.toggleDesktopMenu}
+          >
+            <Icon name="menu" />
+          </Button>
           <div className="topbar__mobile">
             <Button
               ref={menuButtonRef}
@@ -324,8 +358,10 @@ function App() {
           {activeSection === "reports" && <TicketReportSection />}
           {activeSection === "enclosures" && <EnclosuresSection />}
           {activeSection === "users" && <UsersSection />}
+          {activeSection === "memories" && <MemoriesSection />}
           {activeSection === "ticket-history" && <TicketHistorySection />}
           {activeSection === "ticket-prices" && <TicketPricesSection />}
+          {activeSection === "tulanpedia" && <TulanpediaSection />}
         </main>
       </div>
     </div>

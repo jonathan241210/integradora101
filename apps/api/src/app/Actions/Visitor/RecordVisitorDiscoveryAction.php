@@ -66,6 +66,24 @@ class RecordVisitorDiscoveryAction
                 ->distinct()
                 ->pluck('species_id');
 
+            if ($speciesIds->isEmpty()) {
+                $this->storeScan($visitor, $input, $qr->id, 'empty_enclosure', $scannedAt, $receivedAt);
+
+                return [
+                    'status' => 200,
+                    'body' => $this->payload(
+                        $visitor,
+                        'empty_enclosure',
+                        [],
+                        [],
+                        0,
+                        [],
+                        [],
+                        'Este recinto no tiene animales en exhibición.',
+                    ),
+                ];
+            }
+
             $known = DB::table('visitor_collections')->where('visitor_id', $visitor->id)->pluck('species_id');
             $newIds = $speciesIds->diff($known)->values();
             $alreadyIds = $speciesIds->intersect($known)->values();
@@ -160,9 +178,12 @@ class RecordVisitorDiscoveryAction
 
         $status = match ($scan->result) {
             'discovered' => 201,
-            'already_discovered' => 200,
+            'already_discovered', 'empty_enclosure' => 200,
             default => 422,
         };
+        $message = $scan->result === 'empty_enclosure'
+            ? 'Este recinto no tiene animales en exhibición.'
+            : ($status === 422 ? 'El escaneo no se pudo registrar.' : null);
 
         return [
             'status' => $status,
@@ -174,7 +195,7 @@ class RecordVisitorDiscoveryAction
                 $newIds->isEmpty() ? 0 : $points,
                 $achievements->map(fn ($row) => ['code' => $row->code, 'title' => $row->title, 'points' => (int) $row->points])->all(),
                 $missions->map(fn ($row) => ['code' => $row->code, 'title' => $row->title, 'points' => (int) $row->points])->all(),
-                $status === 422 ? 'El escaneo no se pudo registrar.' : null,
+                $message,
             ),
         ];
     }

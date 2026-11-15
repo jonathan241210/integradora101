@@ -65,6 +65,53 @@ const readyToConfirm: TicketSaleAction[] = [
   { type: "quote-loaded", requestId: 1, quote: quoteDto() },
 ];
 
+describe("CA-08 collapsible-menu-event-pagination", () => {
+  it("destaca ambas tarjetas sin alterar los precios ni los campos de venta", () => {
+    const markup = render(withPrices(initialTicketSaleState));
+
+    expect(markup.match(/class="ticket-price-card__icon"/g)).toHaveLength(2);
+    expect(markup).toContain("$25.00");
+    expect(markup).toContain("$16.00");
+    expect(markup).toContain('id="sale-adults"');
+    expect(markup).toContain('id="sale-children"');
+    expect(markup).toContain("Registrar venta");
+  });
+});
+
+describe("CA-11 collapsible-menu-event-pagination", () => {
+  it("muestra la celebración del boleto solo después de completar la venta", () => {
+    expect(render(initialTicketSaleState)).not.toContain("ticket-sale-result__ticket");
+    const markup = render({ ...initialTicketSaleState, step: "done", sale: saleDto() });
+
+    expect(markup).toContain('class="ticket-sale-result__ticket"');
+    expect(markup).toContain('class="ticket-sale-result__check-mark"');
+    expect(markup).toContain("Venta registrada");
+    expect(markup).toContain("Imprimir boletos");
+  });
+});
+
+describe("CA-09 collapsible-menu-event-pagination", () => {
+  it("muestra el resultado animable solo después de una venta exitosa", () => {
+    expect(render(initialTicketSaleState)).not.toContain("ticket-sale-result");
+    const markup = render({ ...initialTicketSaleState, step: "done", sale: saleDto() });
+    expect(markup).toContain("ticket-sale-result");
+    expect(markup).toContain("Venta registrada");
+    expect(markup).toContain("Imprimir boletos");
+  });
+});
+
+describe("CA-10 collapsible-menu-event-pagination", () => {
+  it("muestra la palomita decorativa solo cuando la venta fue registrada", () => {
+    expect(render(initialTicketSaleState)).not.toContain("ticket-sale-result__check");
+    const markup = render({ ...initialTicketSaleState, step: "done", sale: saleDto() });
+
+    expect(markup).toMatch(/class="ticket-sale-result__check" aria-hidden="true"><svg/);
+    expect(markup).toContain('d="m5 12 4 4L19 6"');
+    expect(markup).toContain("Venta registrada");
+    expect(markup).toContain("Imprimir boletos");
+  });
+});
+
 describe("CA-03 ticket-sales", () => {
   it("ofrece campos «Adultos» y «Niños» numéricos con etiqueta y teclado", () => {
     const markup = render(initialTicketSaleState);

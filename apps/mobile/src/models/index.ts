@@ -50,8 +50,13 @@ export interface ZooEvent {
 }
 
 export interface News {
+  id?: string;
   title: string;
   body: string;
+  date?: string;
+  category?: string;
+  imageUrl?: string;
+  content?: string;
 }
 
 export interface Achievement {

@@ -31,3 +31,12 @@
 - Plan aprobado por el usuario el 2026-10-26.
 - Implementación solicitada directamente por el usuario el 2026-10-26.
 - El workflow demostrativo de fallo fue solicitado directamente por el usuario el 2026-10-26; queda aislado a ejecución manual.
+
+## Consolidación en un único workflow — 2026-11-10
+
+Solicitud directa del usuario: conservar `ci.yml` y borrar los demás YAML de workflows. Sustituye el requisito anterior de conservar el demostrativo; T-07 y T-08 quedan como historial.
+
+- [x] **T-13** (CA-06, RN-04): eliminar `main.yml`, `laravel.yml` y `prueba-fallo-controlado.yml` de `.github/workflows/`.
+- [x] **T-14** (CA-01..CA-06): comprobar que solo queda `ci.yml`, validar YAML, confirmar que su contenido coincide con la versión publicada y ejecutar `git diff --check`.
+
+Evidencia: inventario automatizado de YAML igual a `['ci.yml']`; parseo sin errores ni claves duplicadas; siete jobs y `contents: read` conservados; comparación binaria con `HEAD` mediante `cmp`: exit 0; `git diff --check`: exit 0. `/verify` no requiere repetir suites funcionales: no cambia código de aplicaciones ni el contenido del workflow conservado. No se instalaron dependencias.

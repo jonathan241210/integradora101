@@ -184,6 +184,23 @@ Ninguna excepción se propone. No se requiere ADR de dependencia ni de excepció
 5. **Actions adicionales.** Se añadieron `ResolveContentImageUrlAction` (decide si una ruta es gestionada y construye `image_url`; la expresión de ruta gestionada usa el modificador `D` para rechazar saltos de línea finales) y `ResolveContentImageChangeAction` (decide la ruta final y la acción `set`, `replaced` o `removed` para el log). No estaban en el plan aprobado; evitan duplicar la regla de ruta gestionada (CA-08) y la lógica de cambio en las cuatro Actions de contenido.
 6. **Mensajes de validación.** Los mensajes fijos de `mimes` y `max` de archivo («JPG, PNG o WebP», «5 MB») viven en `messages()` de `SaveNewsRequest` y `SaveEventRequest`, no en `lang/es/validation.php` global.
 
+## Divergencia registrada con api-013 (2026-11-12)
+
+Registrada según `docs/05-flujo-sdd.md` (paso 7). `apps/api/specs/013-object-storage-images.md` está Aprobada (2026-11-12) y cambia el disco de medios de noticias y eventos. Esta sección no cambia el estado de este plan ni de la spec, y no marca ninguna casilla de `apps/api/tasks/008-event-news-images.md`. Las tareas nuevas (T-29 a T-33) están en ese archivo, sin marcar.
+
+| # | Este plan (aprobado 2026-11-02) | api-013 (Aprobada 2026-11-12) | Resolución |
+|---|---|---|---|
+| D8-1 | Las Actions `StoreContentImageAction`, `DeleteContentImageAction` y `ResolveContentImageUrlAction` usan `Storage::disk('public')` por nombre. | CA-02 y D-01: ninguna Action nombra el disco; el nombre sale de configuración (`PUBLIC_MEDIA_DISK`). | T-29 (api-008), con `ResolveMediaDiskAction` de api-013 (T-05). Valor por defecto sin cambio. |
+| D8-2 | URL de las imágenes: `APP_URL` + `/storage` (RN-03 y P5). | RN-04 y CA-17: en la carpeta compartida, `MEDIA_PUBLIC_URL` o `APP_URL` + `/media`; `public/media` por `storage:link`. | Sin cambio en la URL por defecto. El cambio de P5 requiere aprobación formal del equipo (T-33). Pregunta 1 de api-013. |
+| D8-3 | Archivos en `storage/app/public/{news,events}`; `storage:link` crea `public/storage`. | D-03: en la carpeta compartida no se usa `storage/`; la carpeta es `apps/api/src/media/`. | Sin cambio por defecto. Documentación en T-31 y T-32 (api-008). |
+| D8-4 | Pruebas con `Storage::fake('public')`; `ContentImageCoverageTest` busca ese literal en los tests. | CA-14 y CA-07 de api-013: pruebas con `Storage::fake` del nombre resuelto por configuración. | Los tests actuales siguen válidos con el valor por defecto. Pruebas nuevas en api-013 (T-16). Si cambia el literal, se actualiza `ContentImageCoverageTest` en el mismo cambio (T-30 de api-008). |
+| D8-5 | Verificación manual T-21: comprobar `storage/app/public/{news,events}`. | Carpeta compartida: `apps/api/src/media/{news,events}`. | La comprobación se hace en la carpeta que use el `.env` del equipo (T-32 de api-008). |
+| D8-6 | Sin lógica de re-subida ni de copia. | D-04: volver a subir todas las imágenes existentes antes de versionarlas; sin comando de copia. | Instrucción en la documentación de `administracion.md` (T-32 de api-008) y en `infra/README.md` (T-11 de api-013). |
+
+Consecuencia operativa: al activar `PUBLIC_MEDIA_DISK=media`, las filas anteriores que apuntan a `news/...` o `events/...` del disco `public` de otro equipo no cargan hasta que se vuelvan a subir (flujo 8 de api-013).
+
+Sin cambio en las decisiones de este plan: el borrado sigue después del commit de base de datos (RN-10 de api-013 coincide con la regla de este plan), y la eliminación lógica sigue igual.
+
 ## Preguntas pendientes
 
 Sobre la subida: ninguna. P1 a P8 quedan decididas en la spec («Decisiones tomadas (2026-11-01)»).

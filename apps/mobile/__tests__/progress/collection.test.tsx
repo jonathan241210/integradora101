@@ -40,6 +40,8 @@ describe('test-ca-02-progress-collection', () => {
     );
     expect(view.getByText('Descubierto')).toBeTruthy();
     expect(view.getByText('Por descubrir')).toBeTruthy();
+    expect(view.queryByText(/Te faltan/)).toBeNull();
+    expect(view.getByText('1 de 2 descubiertos')).toBeTruthy();
     expect(view.getByLabelText('Vista previa de Guacamaya, por descubrir')).toBeTruthy();
   });
 

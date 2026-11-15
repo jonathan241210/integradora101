@@ -8,7 +8,7 @@
 
 ## Diseño de solución
 
-La pestaña `scan` comprueba sesión visitante, gestiona permiso de cámara y muestra `CameraView` de `expo-camera`. Al leer un barcode, normaliza el payload y llama `submitScan` (`mobile-005`). La respuesta se presenta con `presentScanResult` → ruta `scan-result`. Si no hay permiso, la misma pantalla ofrece entrada manual.
+La pestaña `scan` comprueba sesión visitante, gestiona permiso de cámara y muestra `CameraView` de `expo-camera`. Al leer un barcode, normaliza el payload y llama `submitScan` (`mobile-005`). La respuesta se presenta con `presentScanResult` → ruta `scan-result`. Si no hay permiso, la misma pantalla ofrece entrada manual. La solicitud de permiso es una frase y el botón «Permitir cámara»; el marco de la cámara sigue en `accent` sobre el fondo `primary`. Enmienda visual, 2026-11-11.
 
 No hay cambios en Laravel ni en `@arca/api-client`.
 

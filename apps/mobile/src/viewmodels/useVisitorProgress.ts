@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   applySpeciesDiscovery,
+  countsFromCollection,
+  profileDiscoveryCounts,
   progressRepository,
   type ProgressRepository,
   type ProgressSnapshot,
@@ -12,6 +14,7 @@ import {
   subscribeSharedProgress,
 } from '../repositories/sharedProgress';
 import { Animal } from '../models';
+import { safeVisitorMessage } from '../repositories/safeMessage';
 import { accountSession } from '../session/accountSession';
 
 export function useVisitorProgress(repository: ProgressRepository | null = progressRepository) {
@@ -64,7 +67,7 @@ export function useVisitorProgress(repository: ProgressRepository | null = progr
     } catch (cause) {
       if (generationAtStart !== sharedProgressGeneration()) return;
       if (accountSession.getStatus() !== 'authenticated') return;
-      setError(cause instanceof Error ? cause.message : 'No se pudo cargar el progreso.');
+      setError(cause instanceof Error ? safeVisitorMessage(cause.message) : 'No se pudo cargar el progreso.');
     } finally {
       if (generationAtStart !== sharedProgressGeneration()) return;
       if (accountSession.getStatus() === 'authenticated') setLoading(false);
@@ -99,3 +102,5 @@ export function mergeDiscoveredSpecies(animals: Animal[], snapshot: ProgressSnap
   if (!snapshot) return animals;
   return applySpeciesDiscovery(animals, snapshot.collection);
 }
+
+export { countsFromCollection, profileDiscoveryCounts };

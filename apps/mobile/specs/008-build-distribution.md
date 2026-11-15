@@ -17,7 +17,7 @@ Para que los visitantes instalen la app hace falta un build firmado y un canal d
 - Clave de firma fija y respaldada desde el primer build público.
 - Íconos, metadatos y ficha; política/aviso de privacidad publicado.
 - Estrategia de actualización decidida antes del primer build público.
-- Los botones sin destino definido (notificaciones, pantalla de juego) se ocultan o se les asigna destino antes de publicar; el botón de configuración de cuenta lleva a la edición de perfil (`mobile-004`); favoritos ya está oculto para una spec posterior.
+- Los botones sin destino definido (notificaciones, pantalla de juego) se ocultan o se les asigna destino antes de publicar; el botón de configuración de cuenta lleva a la edición de perfil (`mobile-004`). El corazón de favoritos ya tiene destino en la ficha y en el inicio (`mobile-002` CA-16). El favorito de cuenta y el filtro de Colección siguen fuera.
 
 ## Fuera de alcance
 

@@ -12,7 +12,7 @@
 
 ## Diseño de solución
 
-El dashboard deja de usar datos ficticios en seis secciones (Panel, Noticias, Eventos, Reporte, Recintos y Usuarios) y las conecta a `api-007` sin cambiar el aspecto visual (RN-09). Se conservan Venta e Historial de taquilla como demostración.
+El dashboard deja de usar datos ficticios en seis secciones (Panel, Noticias, Eventos, Reporte, Recintos y Usuarios) y las conecta a `api-007`. La presentación de esas secciones mejora su jerarquía y legibilidad sin cambiar sus flujos; se conservan la paleta y tipografía y se excluye taquilla (RN-09, CA-20).
 
 La arquitectura sigue el patrón ya probado en `dashboard-002` (`auth-session.ts` + `useAuthSession.ts`), explícitamente MVVM:
 
@@ -39,6 +39,7 @@ Los permisos solo cambian qué se muestra (RN-01). Los roles asignables, el alca
 - **Contraseñas (RN-07).** Los campos de contraseña viven en estado local del formulario; el ViewModel recibe el valor, lo envía y no lo guarda en ningún estado ni lo muestra.
 - **Zona horaria del dispositivo (RN-11, CA-19).** `createAdminApi` acepta un segundo argumento opcional `{ deviceTimeZone?: () => string | undefined }`. Por defecto lee `Intl.DateTimeFormat().resolvedOptions().timeZone`; los tests lo sustituyen por una función fija. `dashboard.summary()`, `reports.tickets(query)` y `reports.exportTickets(query, format)` añaden `timezone` a la URL. Si el llamador ya pasa `timezone` en `query`, prevalece; si no hay zona, el parámetro se omite. Los ViewModels, las vistas y `formatters.ts` no cambian: `purchased_at` llega como texto `Y-m-d H:i:s` ya en la zona de la API, y `formatDateTime` no lo desplaza. `last_login_at` sigue formateándose con `America/Mexico_City` en `formatters.ts`; eso queda fuera de este cambio. La API acepta la zona según `api-007` RN-14 (`UTC` o nombres con «/» del catálogo de PHP, incluidos alias) y, si no es aceptada, responde con su zona por defecto sin error [confirmado por Jonathan, 2026-10-30]. La interfaz no muestra la zona usada [confirmado por Jonathan, 2026-10-30].
 - **Qué NO se toca.** El buscador y las notificaciones de la barra superior siguen siendo controles de demostración (fuera del alcance de la spec); se anota como pendiente en Riesgos.
+- **Mejora visual (CA-20).** Un modificador de presentación en `App.tsx` delimita los estilos del administrador y del panel ejecutivo, evitando afectar los perfiles de taquilla. Las vistas conservan sus componentes y contenido; los cambios se concentran en jerarquía de encabezados, densidad y espaciado de tarjetas/formularios/tablas, y adaptación de recintos y controles del reporte. Se usan los tokens actuales y no se cambian acciones, datos, permisos ni navegación.
 
 ## Cambios por área
 
@@ -132,8 +133,9 @@ Convención: bloque `describe("CA-NN administration-sections", …)` como en `da
 | CA-15 | Un 401 en una sección nueva dispara el manejador global y vuelve al login con «Tu sesión expiró» | `administration-quality.test.tsx` (reutiliza `authSessionReducer`) |
 | CA-16 | Marcado de Views: `aria-labelledby` en diálogos, `role="alert"`/`status`, tablas con contenedor desplazable y etiquetas en controles; el comportamiento del teclado de `<dialog>` se verifica manualmente (ver Verificación) | `administration-quality.test.tsx` + revisión manual |
 | CA-17 | Revisión estática de `styles.css` y Views nuevas: sin hex de marca | `administration-quality.test.tsx` (patrón de `design-system.test.tsx`) |
-| CA-18 | Cobertura: busca `CA-01` a `CA-19 administration-sections` en los tests | `administration-coverage.test.tsx` (nuevo; patrón de `acceptance-coverage.test.tsx`) |
+| CA-18 | Cobertura: busca `CA-01` a `CA-20 administration-sections` en los tests | `administration-coverage.test.tsx` (nuevo; patrón de `acceptance-coverage.test.tsx`) |
 | CA-19 | `timezone` con la zona del navegador en `summary`, `tickets` y `exportTickets`; sin zona no se envía; un `timezone` explícito del llamador prevalece | `api-client-admin.test.tsx` (bloque `describe("CA-19 administration-sections")`) |
+| CA-20 | Mejoras de jerarquía y adaptación limitadas al administrador, sin hex de marca ni cambios de comportamiento | `administration-quality.test.tsx` y revisión visual manual a 360, 768 y 1366 px |
 
 Además se actualizan las pruebas de `dashboard-001` que verifican el comportamiento ficticio ya reemplazado (`enclosures`, `content-management`, `ticket-users`, `ticket-report`, `dashboard`, `acceptance-coverage`): se ajustan o se retiran con una nota en `specs/001-admin-dashboard-prototype.md` que marca los CA sustituidos por `dashboard-003`, en el mismo cambio (paso 7 del flujo SDD).
 
@@ -144,7 +146,7 @@ Además se actualizan las pruebas de `dashboard-001` que verifican el comportami
 | I. Stack mínimo y portable | Sí | React 19 + TS + Vite 7 + Tailwind 4 vigentes; **cero dependencias nuevas** (ni en `package.json` ni en `@arca/ui`). El cliente solo agrega métodos a `@arca/api-client`. |
 | II. La spec manda | Sí | Spec `003` Aprobada; este plan, las tasks y el PR enlazan los tres artefactos; cada sección remite a sus CA/RN. |
 | III. Lógica separada de la interfaz | Sí | Totales, periodos, alcance, roles asignables y validaciones vienen de la API; el cliente solo reenvía `previous_date`/`next_date`. Views sin imports de API (verificado por CA-14); llamadas solo desde hooks sobre `@arca/api-client`. |
-| IV. Un test por criterio | Sí | Tabla anterior CA-01 a CA-19; `administration-coverage.test.tsx` lo verifica. CA-16 combina prueba de marcado y revisión manual documentada, porque el entorno de Vitest es `node` sin navegador. |
+| IV. Un test por criterio | Sí | Tabla anterior CA-01 a CA-20; `administration-coverage.test.tsx` lo verifica. CA-16 y CA-20 combinan pruebas de marcado/estilos y revisión visual manual, porque el entorno de Vitest es `node` sin navegador. |
 | V. Una sola fuente de verdad para los datos | Sí | Sin persistencia local: todo viene de la API; se eliminan los datos ficticios de las seis secciones. No toca esquema. |
 | VI. Código en inglés, personas en español | Sí | Archivos, hooks, tipos y claves de DTO en inglés; etiquetas, avisos y errores en español. El id de sección pasa de `ticket-users` a `users`. |
 
@@ -179,9 +181,10 @@ Además se actualizan las pruebas de `dashboard-001` que verifican el comportami
 4. Usuarios (CA-03 a CA-07).
 5. Recintos (CA-09), luego Panel y Reporte con exportación (CA-10 a CA-13).
 6. Noticias y Eventos (CA-08).
-7. Limpieza de datos ficticios y de pruebas de `dashboard-001` sustituidas; pruebas de calidad (CA-14 a CA-17) y cobertura (CA-18).
+7. Limpieza de datos ficticios y de pruebas de `dashboard-001` sustituidas; pruebas de calidad (CA-14 a CA-17, CA-20) y cobertura (CA-18).
 8. Documentación local y nota de vigencia en la spec 001.
 9. Zona horaria del dispositivo (CA-19, RN-11): T-31 (implementación en `packages/api-client`) y T-32 (prueba), tras T-02. La comprobación de extremo a extremo se hace con `api-007` T-40 aplicada (T-28).
+10. Mejora visual administrativa (CA-20, RN-09): estilos acotados por perfil, prueba de alcance y revisión manual en 360, 768 y 1366 px; no modifica los flujos ni las vistas de taquilla.
 
 **Dependencias:** `api-007` (contrato y endpoints), `dashboard-002` (sesión y manejo de 401), `@arca/ui` y `@arca/tokens` sin cambios, ADR 0002.
 
@@ -192,6 +195,7 @@ Además se actualizan las pruebas de `dashboard-001` que verifican el comportami
 | Responsable funcional | Spec (ya aprobada) | Jonathan, 2026-10-30 |
 | Equipo | Solución técnica y Constitution Check de este plan | Jonathan, 2026-10-30 |
 | Responsable funcional | Zona horaria del dispositivo (RN-11, CA-19) | Confirmado por Jonathan, 2026-10-30: zona con respaldo en `America/Mexico_City`, redacción de CA-19 y RN-11 (proveída por el documentador) y no mostrar la zona en la interfaz. Aprobó proceder con la implementación |
+| Solicitante | Alcance visual (RN-09, CA-20) | Confirmó el rediseño de las seis secciones administrativas sin cambiar colores, tipografía, funcionalidad ni pantallas de taquilla, 2026-11-12 |
 
 **Verificación antes de cerrar:** `npm run types`, `npm test` y `npm run build` en `apps/dashboard`; pruebas de `packages/api-client` si existe runner (si no, se prueban desde `apps/dashboard`); `/verify`; revisión manual con teclado y a 360, 768 y 1366 px; y recorrido de punta a punta contra la API real en `arca_pruebas` con cuentas demo `presidencia@arca.local`, `direccion_zoo@arca.local` y `ejecutivo@arca.local`.
 

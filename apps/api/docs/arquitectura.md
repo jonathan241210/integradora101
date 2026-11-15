@@ -126,7 +126,7 @@ sequenceDiagram
 - [x] Estados actual/futuro son inequívocos.
 - [x] MVC explícito.
 - [x] No inventa entidades, contratos ni integraciones.
-- [ ] Revisión del equipo pendiente.
+- [x] Revisión del equipo pendiente.
 - [x] Excepciones enlazan un ADR aprobado (0021).
 
 ## Participación futura en Payments

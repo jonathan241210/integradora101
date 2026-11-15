@@ -36,7 +36,7 @@ describe('ApiZooRepository (mobile-003: api-read-integration)', () => {
 
     const events = await repository.getEvents();
 
-    expect(mockHttpClient.get).toHaveBeenCalledWith('/events');
+    expect(mockHttpClient.get).toHaveBeenCalledWith('/events?limit=3');
     expect(events).toHaveLength(1);
     expect(events[0].id).toBe('1');
     expect(events[0].title).toBe('Plática Educativa de Felinos');
@@ -95,5 +95,53 @@ describe('ApiZooRepository (mobile-003: api-read-integration)', () => {
     const fallbackCall = await repository.getEvents();
     expect(fallbackCall).toHaveLength(1);
     expect(fallbackCall[0].title).toBe('Taller Infantil de Huellas');
+  });
+
+  it('CA-09: should fetch a news detail by id', async () => {
+    mockHttpClient.get.mockResolvedValueOnce({
+      data: {
+        id: 25,
+        title: 'Aviso de hoy',
+        published_date: '2026-11-10',
+        content: 'Texto completo de la noticia.',
+        image_url: 'http://localhost/storage/news/aviso.jpg',
+      },
+    });
+    const repository = new ApiZooRepository(mockHttpClient, defaultStorage);
+    const detail = await repository.getNewsById('25');
+
+    expect(mockHttpClient.get).toHaveBeenCalledWith('/news/25');
+    expect(detail?.title).toBe('Aviso de hoy');
+    expect(detail?.content).toBe('Texto completo de la noticia.');
+    expect(detail?.date).toBe('10 de noviembre de 2026');
+  });
+
+  it('CA-11: refreshNewsAndEvents pide la red aunque la caché esté vigente', async () => {
+    mockHttpClient.get.mockImplementation(async (path: string) => {
+      if (String(path).startsWith('/news')) {
+        return { data: [{ id: 1, title: 'Noticia en caché', description: 'Antes' }] };
+      }
+      return { data: [{ id: 2, name: 'Evento en caché', start_date: '2026-11-10', location: 'Plaza' }] };
+    });
+    const repository = new ApiZooRepository(mockHttpClient, defaultStorage);
+    await repository.getNews();
+    await repository.getEvents();
+    const callsBeforeRefresh = mockHttpClient.get.mock.calls.length;
+
+    mockHttpClient.get.mockImplementation(async (path: string) => {
+      if (String(path).startsWith('/news')) {
+        return { data: [{ id: 3, title: 'Noticia nueva', description: 'Ahora' }] };
+      }
+      return { data: [{ id: 4, name: 'Evento nuevo', start_date: '2026-11-11', location: 'Jardín' }] };
+    });
+
+    expect((await repository.getNews())[0].title).toBe('Noticia en caché');
+    const fresh = await repository.refreshNewsAndEvents();
+
+    expect(mockHttpClient.get.mock.calls.length).toBeGreaterThan(callsBeforeRefresh);
+    expect(fresh.news[0].title).toBe('Noticia nueva');
+    expect(fresh.events[0].title).toBe('Evento nuevo');
+    expect(mockHttpClient.get).toHaveBeenCalledWith('/news?limit=3');
+    expect(mockHttpClient.get).toHaveBeenCalledWith('/events?limit=3');
   });
 });

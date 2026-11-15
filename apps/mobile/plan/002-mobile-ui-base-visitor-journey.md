@@ -136,3 +136,9 @@ La compuerta vive en memoria (`signedOut` / `entered`). No usa almacenamiento se
 ## Enmienda 2026-11-01 · Pestañas, mapa y títulos
 
 El círculo de la pestaña activa se desliza hacia la elegida; en Escanear es dorado y un poco mayor. En la ficha de un animal descubierto, el mapa se abre con un icono de ubicación arriba a la derecha. En el mapa y en el recorrido, «Buscar animales» es un enlace de texto. El título de cada pantalla usa el mismo tamaño que «Mi Colección». Mientras carga, ese título permanece en su sitio y el indicador queda centrado debajo. Enmienda de Aksel, 2026-11-01.
+
+## Enmienda 2026-11-11 · Corazón de favorito
+
+El corazón de la ficha usa los iconos ya registrados. En reposo se ve el contorno. Al marcarlo, el relleno crece por encima del contorno y se queda lleno, en `primary`, con el borde del botón en el mismo color. Al quitarlo, el relleno se reduce y queda otra vez solo el contorno. La animación vive en la vista.
+
+La lista de identificadores vive en el teléfono (`visitor.favorite-animal-ids`). Las frases anteriores de este plan que dicen que no hay persistencia local no cubren esta lista. No hay favorito de cuenta ni filtro en Colección. Pruebas: `CA-16 favoritos en el teléfono` en `__tests__/favorites.test.ts` y el anuncio del corazón en `__tests__/exploration.test.tsx`. El movimiento del relleno no tiene aserción de fotogramas.

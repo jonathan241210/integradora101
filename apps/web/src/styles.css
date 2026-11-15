@@ -37,6 +37,95 @@ a { color: inherit; text-decoration: none; }
 h1, h2, h3 { color: var(--primary); font-family: var(--serif); line-height: 1.2; }
 [hidden] { display: none !important; }
 
+/* Página no encontrada */
+.not-found-body {
+  min-height: 100vh;
+  background: var(--surface-page);
+}
+.not-found-shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+.topbar.not-found-header {
+  position: relative;
+}
+.not-found-main {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  padding: clamp(40px, 8vw, 96px) max(20px, calc((100% - 1120px) / 2));
+  background: var(--surface-subtle);
+}
+.not-found-panel {
+  width: min(100%, 760px);
+  padding: clamp(32px, 7vw, 72px);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background: var(--surface);
+  box-shadow: 0 24px 60px rgba(var(--sidebar-rgb), .12);
+  text-align: center;
+}
+.not-found-eyebrow {
+  margin-bottom: 14px;
+  color: var(--muted-foreground);
+  font-size: .875rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.not-found-panel h1 {
+  display: grid;
+  gap: 8px;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+}
+.not-found-code {
+  color: var(--primary);
+  font-family: var(--sans);
+  font-size: clamp(4.5rem, 15vw, 9rem);
+  font-weight: 800;
+  letter-spacing: -.06em;
+  line-height: .85;
+}
+.not-found-message {
+  max-width: 590px;
+  margin: 24px auto 0;
+  color: var(--muted-foreground);
+  font-size: clamp(1rem, 2vw, 1.125rem);
+}
+.not-found-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+.not-found-actions .btn {
+  min-width: 160px;
+}
+.not-found-footer {
+  padding: 22px max(24px, calc((100% - 1120px) / 2));
+  border-top: 1px solid var(--border);
+  background: var(--footer-background);
+  color: var(--footer-foreground);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .topbar.not-found-header {
+    justify-content: center;
+  }
+  .not-found-panel {
+    border-radius: 20px;
+  }
+  .not-found-actions {
+    flex-direction: column;
+  }
+  .not-found-actions .btn {
+    width: 100%;
+  }
+}
+
 .page-shell {
   width: 100%;
   max-width: 1680px;

@@ -56,7 +56,7 @@
 - [x] **T-38** (CA-10): Eliminar FlatList anidada dentro del scroll de Aventura y preservar el origen Game/Perfil al regresar desde lista y detalle de logros o misión.
 - [x] **T-39** (CA-10): Evitar la lista virtualizada anidada en Logros y usar el historial de navegación para el gesto de regreso de Android.
 - [x] **T-40** (CA-06): Unificar las acciones de regreso de pantallas secundarias en un botón reutilizable de flecha con etiqueta accesible contextual.
-- [x] **T-41** (CA-06): Ocultar el control de favorito sin persistencia; posponer favoritos compartidos y su filtro en Colección a la siguiente etapa.
+- [x] **T-41** (CA-06): Ocultar el control de favorito sin persistencia; posponer favoritos compartidos y su filtro en Colección a la siguiente etapa. CA-16 (T-59) muestra después el corazón con marca local. Siguen pospuestos el favorito de cuenta y el filtro de Colección.
 - [x] **T-42** (CA-06): Alinear a la izquierda los botones de regreso de detalle de logro y Aventura en el Zoo; añadir regreso contextual a Game.
 - [x] **T-43**: Documentar instalación y arquitectura local, sincronizar el estado ADR 0004, retirar la ruta móvil duplicada fuera de su app y excluir artefactos generados.
 
@@ -79,3 +79,9 @@
 - [x] **T-55** (CA-02, CA-06): `backBehavior="none"` en `(tabs)`. El historial propio de rutas secundarias hace que Volver y el gesto de Android regresen a la pantalla que las abrió (Ajustes → Perfil) sin deshacer pestañas principales. `ScreenContainer` ajusta el teclado y `app.json` usa `softwareKeyboardLayoutMode: resize`. Pruebas `test-ca-02-tabs-back` y `test-ca-06-keyboard-insets`.
 - [ ] **T-56** (CA-06): Verificación manual en dispositivo o emulador Android. Checklist: (1) con el teclado abierto, el campo de contraseña de login, registro, olvido, restablecer, cambiar contraseña y borrar cuenta sigue visible; (2) Perfil → Colección → Mapa y el gesto atrás no recorre esas pestañas al revés; (3) desde Ajustes, atrás vuelve a Perfil, y desde Editar cuenta, atrás vuelve a Ajustes. No se ejecutó en esta sesión: no hay dispositivo Android conectado. La evidencia automática está en T-55.
 - [x] **T-57** (CA-02, CA-06): Enmienda UX 2026-11-01. El círculo de la pestaña se desliza y en Escanear es dorado y mayor. El animal descubierto abre el mapa con un icono de ubicación. «Buscar animales» es un enlace. El título de cada pantalla usa el tamaño de «Mi Colección» y, mientras carga, permanece fijo con el indicador centrado debajo.
+- [x] **T-58** (CA-10): La pestaña de misiones no muestra logros. «Escanear QR para descubrir» abre `/discover` y el atrás de la ficha no vuelve a esa pantalla.
+  - 2026-11-11: `navigation`, `tab-back`, `homeNewsEvents`, `scan-queue` y `exploration` en verde.
+- [x] **T-59** (CA-16): El corazón de la ficha guarda el favorito en el teléfono. El inicio se titula «Animales favoritos» y lista solo esas marcas.
+  - 2026-11-11: `favorites`, `home-route`, `navigation` y `exploration` en verde. `tsc --noEmit` en verde.
+- [x] **T-60** (CA-16): Al marcar, el corazón se llena y queda relleno; al quitar, vuelve al contorno.
+  - 2026-11-11: `exploration` cubre el anuncio de marcado y de no marcado. El movimiento del relleno no se grabó en un dispositivo.

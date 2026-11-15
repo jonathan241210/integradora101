@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ARCA-NB Zoo Mapper">
+  <rect width="512" height="512" rx="92" fill="#1b4d24"/>
+  <path d="M256 380c40-58 78-104 78-150a78 78 0 1 0-156 0c0 46 38 92 78 150z" fill="#ffffff"/>
+  <circle cx="256" cy="230" r="34" fill="#22c55e"/>
+</svg>

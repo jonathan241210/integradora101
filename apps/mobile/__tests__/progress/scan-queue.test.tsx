@@ -61,11 +61,9 @@ describe('progreso de la cola de escaneos', () => {
     const view = await render(
       <GameScreen
         missions={[]}
-        achievements={[]}
         pendingScans={pending}
         onBackPress={() => undefined}
         onMissionPress={() => undefined}
-        onAchievementPress={() => undefined}
       />,
     );
     expect(view.getByText('Pendiente')).toBeTruthy();

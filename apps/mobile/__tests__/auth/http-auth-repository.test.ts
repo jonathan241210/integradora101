@@ -59,6 +59,25 @@ describe('Repositorio HTTP de la cuenta', () => {
     expect(failed).toMatchObject({ ok: false, status: 0, message: 'Sin conexión' });
   });
 
+  it('CA-04: el login no muestra un error SQL del servidor', async () => {
+    const fetchImpl = jest.fn(async () => jsonResponse(500, {
+      message: 'SQLSTATE[22007]: Invalid datetime format: 1292 Incorrect datetime value',
+    }));
+    const repository = createHttpAuthRepository({
+      baseUrl: 'https://api.pruebas.invalid',
+      storage: createMemoryTokenStorage(),
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    const result = await repository.login('ana@ejemplo.com', 'secreta12');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.message).toBe('No pudimos completar la acción. Intenta de nuevo.');
+      expect(result.message).not.toMatch(/SQLSTATE/);
+    }
+  });
+
   it('test-ca-08-http-profile-and-notice: CA-08 traduce perfil y aviso', async () => {
     const storage = createMemoryTokenStorage();
     await storage.write({ accessToken: 'access-http', refreshToken: 'refresh-http' });

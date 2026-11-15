@@ -1,4 +1,4 @@
-import { goBackWithinTabs, isVisitorTabRoot, notePathname, resetTabHistoryForTests } from '../../src/navigation/tabBack';
+import { goBackWithinTabs, isVisitorTabRoot, notePathname, resetTabHistoryForTests, shouldLetStackHandleBack } from '../../src/navigation/tabBack';
 
 declare const __dirname: string;
 
@@ -35,6 +35,9 @@ describe('retroceso de pestañas', () => {
     expect(back).not.toHaveBeenCalled();
     expect(isVisitorTabRoot('/profile')).toBe(true);
     expect(isVisitorTabRoot('/settings')).toBe(false);
+    expect(shouldLetStackHandleBack('/animal/5')).toBe(true);
+    expect(shouldLetStackHandleBack('/discover')).toBe(true);
+    expect(shouldLetStackHandleBack('/scan')).toBe(false);
   });
 
   it('test-ca-02-tabs-back-layout: el navegador de pestañas no acumula historial', () => {
