@@ -24,7 +24,7 @@ export function useSaveRequest() {
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [message, setMessage] = useState('');
 
-  const run = useCallback(async (action: () => Promise<void>, successMessage: string) => {
+  const run = useCallback(async (action: () => Promise<unknown>, successMessage: string) => {
     setStatus('saving');
     setMessage('');
     try {

@@ -77,7 +77,7 @@ export function AnimalFormView() {
               placeholder="Ej. Jaguar"
               list="species-options"
               required
-              helperText="Elige una especie del catálogo o escribe el nombre de una nueva."
+              hint="Elige una especie del catálogo o escribe el nombre de una nueva."
             />
             <datalist id="species-options">
               {species.map((item) => (

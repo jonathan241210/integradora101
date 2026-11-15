@@ -133,7 +133,7 @@ describe('PWA API client', () => {
     expect(JSON.parse(String(init.body))).toEqual({
       kind: 'intense',
       animal_id: 7,
-      data: { 'intense-date': '2026-11-13' },
+      data: { 'intense-date': '2026-11-13', is_follow_up: '1' },
     });
   });
 });

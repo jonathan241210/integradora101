@@ -1,5 +1,4 @@
-import { createAuthApi, createHttpClient, type AuthApi } from '@arca/api-client';
-import type { StaffProfile } from '@arca/api-client/types';
+import { createAuthApi, createHttpClient, type AuthApi, type StaffProfile } from '@arca/api-client';
 import { useEffect, useState } from 'react';
 
 type SessionApi = Pick<AuthApi, 'login' | 'me' | 'logout'>;

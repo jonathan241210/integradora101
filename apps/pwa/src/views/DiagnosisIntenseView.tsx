@@ -227,8 +227,8 @@ export function DiagnosisIntenseView({ mvzName = '' }: { mvzName?: string }) {
             <h4>Anamnesis</h4>
             <fieldset className="check-group form-full-width">
               <legend>Tipo de movilización</legend>
-              <label><input name="intense-mobilization-type-physical" type="checkbox" value="si" /> Física</label>
-              <label><input name="intense-mobilization-type-chemical" type="checkbox" value="si" /> Química</label>
+              <label><input name="intense-mobilization-type-physical" type="checkbox" value="si" /> Movilización física</label>
+              <label><input name="intense-mobilization-type-chemical" type="checkbox" value="si" /> Movilización química</label>
             </fieldset>
             <h4>Contención química</h4>
             <div className="table-scroll">
