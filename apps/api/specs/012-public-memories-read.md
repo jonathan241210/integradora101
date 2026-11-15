@@ -2,7 +2,7 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña: ruta pública, Action, Resource, visibilidad por estado y vigencia, y CORS por ambiente); `web` (consumidor: galería «Momentos para recordar», spec `web-010`); `packages/api-client` (sin cambios en esta spec; el portal no usa el paquete, ver ADR 0027)
-- Estado: Aprobada (2026-11-12, Jonathan, responsable de backend). Aprobar no autoriza implementar: la implementación empieza cuando existan plan y tasks aprobados. DBR-012 está Lista para backend (aplicada en `arca_pruebas` el 2026-11-11). ADR 0026 y ADR 0027 están Aceptados (2026-11-12).
+- Estado: En progreso (2026-11-13: implementación integrada en `integration/memories-species`; quedan las verificaciones manuales abiertas en tasks). Aprobada el 2026-11-12 por Jonathan, responsable de backend. Aprobar no autoriza implementar: la implementación empieza cuando existan plan y tasks aprobados. DBR-012 está Lista para backend (aplicada en `arca_pruebas` el 2026-11-11). ADR 0026 y ADR 0027 están Aceptados (2026-11-12).
 - Solicitante / responsable funcional: Aksel (decisión del 2026-11-10 de incluir la lectura pública). Respuestas del responsable: Jonathan (2026-11-10).
 - Responsable de BD: no aplica como DBR propia. Usa la tabla de `api-010`, cuya DBR es `docs/database/requests/DBR-012-visitor-memories.md` (Aprobada el 2026-11-11; aplicada en `arca_pruebas` el 2026-11-11; Lista para backend). Esta spec no crea esquema.
 - Responsable backend: Jonathan.

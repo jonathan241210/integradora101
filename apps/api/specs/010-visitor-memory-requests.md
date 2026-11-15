@@ -2,7 +2,7 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña de envío, corrección y reenvío, estados, archivo, revisión, publicación, vigencia, borrado de cuenta y auditoría); `mobile` (envío, corrección y «Mis momentos», spec `mobile-010`); `dashboard` (revisión para `zoo-admin`, spec `dashboard-008`); `web` (galería pública, spec `web-010`, a través de `api-012`); `packages/api-client` (métodos y tipos, sin lógica de negocio). Dependencia con divergencia pendiente: `api-004` (borrado de cuenta) y `mobile-004` (pantalla de borrado de cuenta); no se modifican desde esta spec.
-- Estado: Aprobada (2026-11-12, Jonathan, responsable de backend). Aprobar no autoriza implementar: la implementación empieza cuando existan plan y tasks aprobados. Incluye la fase 2 (envío y listado del visitante), que implementará después quien lleve la app móvil (`mobile-010`, sigue en Borrador). DBR-012 está Lista para backend (aplicada en `arca_pruebas` el 2026-11-11). ADR 0026 y ADR 0027 están Aceptados (2026-11-12).
+- Estado: En progreso (2026-11-13: implementación integrada en `integration/memories-species`; quedan las verificaciones manuales abiertas en tasks). Aprobada el 2026-11-12 por Jonathan, responsable de backend. Aprobar no autoriza implementar: la implementación empieza cuando existan plan y tasks aprobados. Incluye la fase 2 (envío y listado del visitante), que implementará después quien lleve la app móvil (`mobile-010`, sigue en Borrador). DBR-012 está Lista para backend (aplicada en `arca_pruebas` el 2026-11-11). ADR 0026 y ADR 0027 están Aceptados (2026-11-12).
 - Solicitante / responsable funcional: Aksel (borrador original del 2026-11-05). Respuestas del responsable: Jonathan (2026-11-10). Validación técnica/BD: Víctor Adrián (2026-11-11).
 - Responsable de BD: Víctor Adrián. Requiere la DBR `docs/database/requests/DBR-012-visitor-memories.md` (Aprobada el 2026-11-11; aplicada en `arca_pruebas` el 2026-11-11; Lista para backend), que acompaña a esta spec y no la sustituye.
 - Responsable backend: Jonathan.
@@ -74,7 +74,7 @@ Estas decisiones actualizan CA-01, CA-03, RN-06 y «Datos, privacidad y auditor�
 - Cola offline: sin red no se guarda ni se encola nada.
 - Retirar de la galería una foto ya publicada antes de su vencimiento (pregunta 1). Si se necesita, se trata en una spec posterior, que debe resolverse antes de publicar en producción.
 - Límite de número de reenvíos por petición (ver pregunta 2).
-- Avisar al visitante por correo o notificación push. La app consulta su lista. La «notificación» de aceptación es el estado y el texto de la app.
+- Avisar al visitante por correo. La app consulta su lista. La «notificación» de aceptación dentro de la app es el estado y el texto de la lista. El push a la barra del sistema, al aceptar o al rechazar, vive en `api-017` y no forma parte de esta spec.
 - Moderación automática de imágenes o de texto.
 - Captura con cámara dentro de la app (lo decide `mobile-010`).
 - Lectura pública de las aceptadas: `api-012`.

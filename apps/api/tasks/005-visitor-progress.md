@@ -20,11 +20,11 @@
 
 ## Pruebas
 
-- [x] **T-09** (CA-01 a CA-13): `tests/Feature/Visitor/ProgressTest.php`. Cada método nombra su CA. `DatabaseTransactions` sobre `arca_pruebas`. Sin `RefreshDatabase`.
+- [x] **T-09** (CA-01 a CA-14): `tests/Feature/Visitor/ProgressTest.php`. Cada método nombra su CA. `DatabaseTransactions` sobre `arca_pruebas`. Sin `RefreshDatabase`. CA-14 (2026-11-14): recinto sin animales en exhibición responde `empty_enclosure` y no suma puntos.
 
 ## Calidad y entrega
 
 - [x] **T-10**: `php artisan test --filter=ProgressTest` desde `apps/api/src`.
 - [x] **T-11**: Nota breve en `apps/api/docs/visitante-autenticacion.md` o un doc de progreso, sin secretos. El PR enlaza spec, plan y tasks.
 
-Cada CA-01 a CA-13 tiene una prueba que lo nombra. Ninguna tarea crea una migración.
+Cada CA-01 a CA-14 tiene una prueba que lo nombra. Ninguna tarea crea una migración. CA-14 no cambia el esquema: `visitor_scans.result` ya es `varchar(30)`.

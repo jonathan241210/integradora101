@@ -69,3 +69,10 @@ Para la galería «Momentos para recordar» de la portada (`web-010`), el portal
 - Enmienda de alcance (2026-11-12, pedida por el usuario): el carrusel de hasta seis momentos de la galería entra en la excepción (punto 7), porque el punto 7 lo excluía de forma expresa. Incluye el botón visible de pausa de `web-010` CA-23. No cambia el resto de condiciones. Confirmada por Jonathan (responsable de backend), 2026-11-12. El estado del ADR no cambia por este texto.
 - Constitución: no cambia. Esta es una excepción por app, registrada según `AGENTS.md` raíz.
 - Enlaces: `apps/web/specs/010-dynamic-memories.md` (RN-03 a RN-06, CA-06, CA-09, CA-13, CA-14), `apps/web/specs/009-dynamic-news-events.md` (RN-05, RN-06, RN-08), `apps/api/specs/012-public-memories-read.md`, `apps/api/specs/010-visitor-memory-requests.md`, `docs/adr/0024-web-static-portal-exception.md`, `docs/adr/0009-pagos-electronicos-futuros.md`.
+
+## Nota de enmienda (2026-11-14)
+
+- **Aceptada por:** Jonathan (responsable de backend), 2026-11-14, al adoptar las recomendaciones de la revisión de `web-010` (preguntas 5 y 6 de la spec).
+- **Qué cambia:** el punto 7 de este ADR y su enmienda del 2026-11-12 describen el carrusel «con un botón visible de pausa» (`web-010` CA-23). Esa parte queda **retirada**: no hay botón visible «Pausar carrusel» / «Reanudar carrusel» ni anuncios de pausa.
+- **Sustituto:** pausa del avance automático por cursor o foco (`web-010` CA-21); movimiento reducido sin avance automático ni animaciones (CA-20); flechas «Momento anterior» y «Momento siguiente», con teclado de flechas cuando el foco está dentro del carrusel (CA-18, CA-25).
+- **Qué no cambia:** las condiciones 1 a 7, el alcance acotado y el estado del ADR. El texto original no se reescribe; esta nota es la referencia vigente sobre el control de pausa.

@@ -48,7 +48,7 @@ Esta spec describe lo que el visitante ve y hace en la app: elegir una imagen, e
 - La galería del portal: `web-010`.
 - Elegir la entrada de navegación: delegado al encargado de móvil (P8).
 - Un selector de imágenes nuevo mientras no exista un ADR que lo autorice: delegado al encargado de móvil (P9).
-- Notificaciones push de aceptación o de vencimiento. La app muestra el estado cuando se abre.
+- El push de aceptación o de rechazo en la barra del sistema: `mobile-013` y `api-017`. Esta spec no lo envía. El vencimiento no genera push. La app muestra el estado cuando se abre.
 - La pantalla de borrado de cuenta y su elección: `mobile-004` (divergencia pendiente).
 
 ## Actores y permisos

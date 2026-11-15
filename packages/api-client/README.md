@@ -30,6 +30,40 @@ El paquete no guarda credenciales, perfiles ni códigos de recuperación. Cada c
 
 `NewsDto` y `EventDto` incluyen `image_url` (`string | null`). `NewsInput` y `EventInput` aceptan `image?: File | null` y `remove_image?: boolean`. `news` y `events` mantienen JSON cuando no hay archivo (el campo `image` nulo o ausente se omite y `remove_image` viaja en el JSON). Con archivo, `create` envía `multipart/form-data` por `POST` y `update` usa `POST /{id}` con `_method=PATCH` (PHP no entrega multipart en `PATCH`); `null` se envía como cadena vacía, los booleanos como `1`/`0` y, con archivo, `remove_image` se omite porque gana el archivo. `createHttpClient` acepta `FormData` como cuerpo: no fija `Content-Type` para que el navegador añada el `boundary`. `HttpClient` conserva su firma. La validación de tipo y tamaño la aplica la API.
 
+## Publicación de especies (`api-014`, consumida por `dashboard-010`)
+
+`createAdminApi(http)` añade dos espacios de nombres bajo `/api/v1/admin`. Los DTO viven en `admin-types.ts` (`snake_case`, sin URL de imagen: la foto se descarga con `image(id)` y el cliente la muestra como blob). No hay lógica de negocio: estados, transiciones y permisos los decide la API.
+
+`speciesPublicationRequests`:
+- `list({ status?, page? })`: `GET /species-publication-requests`; `status` es `submitted`, `accepted` o `rejected` y se omite en «Todas». Devuelve `{ data, meta: { has_more } }` (`SpeciesRequestSummaryDto`, con `species_id` y `publication_status`).
+- `get(id)`: `GET /species-publication-requests/{id}` (`SpeciesRequestDetailDto`, con `current`, `proposed` y `species_id`).
+- `update(id, input)`: `PATCH` con solo los campos cambiados (`scientific_name`, `habitat`, `origin`, `category`, `published_fields`, `image`). `published_fields` viaja como cadena JSON. Con `image`, `POST` con `_method=PATCH` y `multipart/form-data`.
+- `accept(id, { publish })`: `POST .../accept`; responde con la ficha de la especie (`SpeciesPublicationDetailDto`), no con la solicitud.
+- `reject(id, { rejection_reason })`: `POST .../reject`; responde con la solicitud.
+- `image(id)`: `GET .../image`; devuelve `{ blob, filename }`.
+
+`publishedSpecies`:
+- `list({ status?, category?, page? })`: `GET /published-species`; `status` es `published` o `unpublished`; nunca devuelve especies sin publicar. Cada fila trae `has_image` y `has_pending_request`.
+- `get(id)`: `GET /species/{id}/publication` (`SpeciesPublicationDetailDto`). `publication_status` es `pending` si hay solicitud pendiente, aunque la especie esté publicada; para saber si está publicada usar `is_published`.
+- `update(id, input)`: `PATCH /species/{id}/publication`, mismo cuerpo que `speciesPublicationRequests.update`; solo vale para especies despublicadas sin solicitud pendiente.
+- `unpublish(id)`, `republish(id)`: `POST /species/{id}/unpublish` y `/republish`, sin cuerpo.
+- `removePublication(id)`: `DELETE /species/{id}/publication`.
+- `image(id)`: `GET /species/{id}/image`; devuelve `{ blob, filename }`.
+
+Los `422` de estado de estas rutas llegan como `ApiError` con `errors.species` (o `errors.status` en las solicitudes) y el mensaje en español de la API; los `422` por campo llegan bajo el nombre del campo. Los listados se normalizan a `{ data, meta }`.
+
+## Revisión de momentos (`api-010`, consumida por `dashboard-008`)
+
+`createAdminApi(http)` añade el espacio de nombres `memoryReview` bajo `/api/v1/admin`. Los DTO viven en `admin-types.ts` (`MemoryReviewSummaryDto`, `MemoryReviewDetailDto`, `MemoryRejectInput`; sin URL de imagen y sin datos del visitante). No hay lógica de negocio: estados, transiciones, plazos y permisos los decide la API. El contrato se implementó con respuestas simuladas; `api-010` fase 1 aún no está integrada.
+
+- `list({ status?, page? })`: `GET /memories`; `status` es `submitted`, `in_review`, `accepted` o `rejected` y se omite en «Todas». No envía `limit` (la API usa 10). Devuelve `{ data, meta: { has_more } }` (`HasMorePage`, el mismo tipo de las listas de `dashboard-010`; `page` y `limit` de `meta` no se exponen).
+- `get(id)`: `GET /memories/{id}`. Abrir una petición `submitted` la pasa a `in_review` en la API. Incluye `published_at`, `published_until`, `is_published` y `publication_days`.
+- `image(id)`: `GET /memories/{id}/image`; ruta relativa del mismo origen (proxy de `/api`, sin CORS). Devuelve `{ blob, filename }`; el cliente la muestra con una URL `blob:` que revoca al cerrar.
+- `accept(id)`: `POST /memories/{id}/accept`, sin cuerpo. No usa el cuerpo de la respuesta: el cliente vuelve a pedir el detalle.
+- `reject(id, { rejection_reason, rejected_fields })`: `POST /memories/{id}/reject`; `rejected_fields` es un arreglo con `image`, `content` o ambos. No usa el cuerpo de la respuesta.
+
+Los `422` por campo llegan en `ApiError.errors.rejection_reason`, `errors.rejected_fields` o `errors.image`; las decisiones tardías llegan con el mensaje de la API («Esta petición ya fue revisada.»).
+
 ## Venta de boletos (`api-009`)
 
 `createTicketSalesApi(http, { deviceTimeZone })` entrega el contrato tipado de la venta, el historial y los precios de `/api/v1/admin`. Solo usa `http.get` y `http.post`; `http.ts`, `createAdminApi` y `createAuthApi` no cambian, así que la PWA y mobile no se ven afectados. Los DTO viven en `ticket-sales-types.ts`, en `snake_case`; los importes son cadenas y no se suman ni se multiplican en el cliente.

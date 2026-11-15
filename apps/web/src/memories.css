@@ -1,0 +1,136 @@
+/* Momentos para recordar (web-010). Solo clases con prefijo mem-; usa los tokens de styles.css. */
+
+.mem-gallery { min-width: 0; }
+.mem-status { margin: 0 0 16px; display: grid; justify-items: center; gap: 14px; padding: 24px 16px; text-align: center; color: var(--muted-foreground); font-size: 17px; }
+.mem-status[hidden] { display: none; }
+.mem-retry { justify-self: center; display: block; margin: 0 auto 16px; }
+.mem-retry[hidden] { display: none; }
+
+.mem-carousel { position: relative; min-width: 0; max-width: 720px; margin: 0 auto; }
+.mem-carousel[hidden] { display: none; }
+/* Todos los momentos comparten la misma celda y se funden entre sí (CA-24) */
+.mem-slides { display: grid; min-width: 0; }
+.mem-slide {
+  grid-area: 1 / 1;
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  align-content: start;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 600ms ease, visibility 0s linear 600ms;
+}
+.mem-slide-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 600ms ease, visibility 0s;
+}
+
+/* Caja de imagen: completa, centrada y sin ampliar por encima de su tamaño (CA-08) */
+.mem-media {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--surface-subtle);
+}
+.mem-media img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+/* Acercamiento sutil de 0,96 a 1,00 durante el ciclo de 5 s; nunca recorta ni supera el tamaño contenido (CA-26) */
+.mem-slide-active .mem-media img { animation: mem-zoom 5s linear both; }
+.mem-carousel:hover .mem-slide-active .mem-media img,
+.mem-carousel:focus-within .mem-slide-active .mem-media img { animation-play-state: paused; }
+@keyframes mem-zoom {
+  from { transform: scale(0.96); }
+  to { transform: scale(1); }
+}
+.mem-placeholder { display: grid; place-items: center; color: var(--muted-foreground); font-size: 2.6rem; }
+.mem-opinion { margin: 0; text-align: center; overflow-wrap: anywhere; min-width: 0; }
+
+/* Flechas grandes superpuestas a los lados de la caja de la foto (CA-25) */
+.mem-arrows {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  pointer-events: none;
+}
+.mem-arrows[hidden] { display: none; }
+.mem-arrow {
+  pointer-events: auto;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 2px solid var(--foreground-light);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--sidebar) 80%, transparent);
+  color: var(--foreground-light);
+  cursor: pointer;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--foreground) 40%, transparent);
+  transition: background-color 200ms ease;
+}
+.mem-arrow[hidden] { display: none; }
+.mem-arrow:hover { background: var(--sidebar); }
+.mem-btn {
+  min-width: 0;
+  padding: 8px 14px;
+  border: 2px solid var(--primary);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--primary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.mem-btn:hover { background: var(--surface-accent); }
+/* Texto solo para lectores de pantalla (anuncio de cambios del visitante, CA-27) */
+.mem-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mem-btn:focus-visible,
+.mem-retry:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.mem-arrow:focus-visible { outline: 3px solid var(--foreground-light); outline-offset: 2px; box-shadow: 0 0 0 6px var(--primary); }
+#memGallery:focus:not(:focus-visible),
+#memStatus:focus:not(:focus-visible) { outline: none; }
+
+@media (max-width: 480px) {
+  .mem-carousel { max-width: 100%; }
+  .mem-arrows { padding: 0 6px; }
+  .mem-arrow { width: 48px; height: 48px; }
+}
+
+/* Movimiento reducido: sin fundido, sin acercamiento (CA-20, RN-15) */
+@media (prefers-reduced-motion: reduce) {
+  .mem-slide, .mem-slide-active, .mem-arrow { transition: none; }
+  .mem-slide-active .mem-media img { animation: none; transform: none; }
+}

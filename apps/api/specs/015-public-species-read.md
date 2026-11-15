@@ -2,7 +2,7 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña: ruta pública, filtros, Action, Resource, regla de visibilidad y URL pública de la imagen); `web` (consumidor: TulanPedia, `web-011`; sin `packages/api-client`, según ADR 0028); `dashboard` (origen de la publicación, `dashboard-010`; sin cambios en esta spec); `packages/api-client` (sin cambios).
-- Estado: Aprobada (2026-11-12, Jonathan, responsable de backend). Aprobar no autoriza implementar: la implementación espera a que DBR-013 esté en «Lista para backend» (condición cumplida el 2026-11-12: migración aplicada en `arca_pruebas`, lote 5, verificada).
+- Estado: En progreso (2026-11-13: implementación integrada en `integration/memories-species`; quedan las verificaciones manuales abiertas en tasks). Aprobada el 2026-11-12 por Jonathan, responsable de backend. Aprobar no autoriza implementar: la implementación espera a que DBR-013 esté en «Lista para backend» (condición cumplida el 2026-11-12: migración aplicada en `arca_pruebas`, lote 5, verificada).
 - Solicitante / responsable funcional: sesión principal, solicitud del 2026-11-11 (lectura pública para `web-011`); responsable funcional: por designar.
 - Responsable de BD: no aplica como DBR propia. Usa las columnas de `species` de `docs/database/requests/DBR-013-species-requests.md`, aprobada por BD y backend el 2026-11-12 (migración aplicada en `arca_pruebas`, lote 5, verificada el 2026-11-12; estado «Lista para backend»).
 - Responsable backend: Jonathan (aprobación de backend de DBR-013, 2026-11-12).
