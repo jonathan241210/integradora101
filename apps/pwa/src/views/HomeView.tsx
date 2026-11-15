@@ -1,35 +1,36 @@
 import { Button, Card } from '@arca/ui';
+import { Icon } from '@/components/Icon';
 import type { PwaSection } from '@/viewmodels/pwaDemo';
 
 const shortcuts: {
   title: string;
   description: string;
   section: PwaSection;
-  symbol: string;
+  icon: string;
 }[] = [
   {
     title: 'Registrar animal',
     description: 'Dar de alta un nuevo ejemplar',
     section: 'animal-form',
-    symbol: '+',
+    icon: 'camera',
   },
   {
     title: 'Diagnóstico intenso',
     description: 'Historia y evaluación clínica completas',
     section: 'diagnosis-intense',
-    symbol: '✚',
+    icon: 'intense',
   },
   {
     title: 'Diagnóstico rápido',
     description: 'Formato con casillas por sistema',
     section: 'diagnosis-quick',
-    symbol: '⚡',
+    icon: 'quick',
   },
   {
     title: 'Registrar revisión',
     description: 'Registrar seguimiento desde los formatos de diagnóstico',
     section: 'review-form',
-    symbol: '◷',
+    icon: 'review',
   },
 ];
 
@@ -46,7 +47,9 @@ export function HomeView({
           <h2>¡Hola, equipo veterinario!</h2>
           <p>Consulta y recorre las herramientas del módulo veterinario.</p>
         </div>
-        <span className="welcome-icon" aria-hidden="true">🐾</span>
+        <span className="welcome-icon" aria-hidden="true">
+          <Icon name="paw" size={40} />
+        </span>
       </section>
 
       <section className="quick-actions" aria-labelledby="quick-actions-title">
@@ -60,7 +63,7 @@ export function HomeView({
           {shortcuts.map((shortcut) => (
             <Card className="shortcut-card" key={shortcut.section}>
               <span className="shortcut-icon" aria-hidden="true">
-                {shortcut.symbol}
+                <Icon name={shortcut.icon} size={32} />
               </span>
               <h3>{shortcut.title}</h3>
               <p>{shortcut.description}</p>

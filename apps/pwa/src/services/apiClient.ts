@@ -69,6 +69,7 @@ export type AnimalProfile = {
   entry_date: string | null;
   stay_status: string | null;
   enclosure: string | null;
+  photo_path: string | null;
   species: {
     id?: number;
     common_name: string;
@@ -164,6 +165,32 @@ export async function createAnimal(animal: NewAnimal): Promise<AnimalSummary> {
     method: 'POST',
     body: animal,
   })).data;
+}
+
+export async function createAnimalWithPhoto(formData: FormData): Promise<AnimalSummary> {
+  try {
+    const response = await globalThis.fetch('/api/v1/staff/animals', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new ApiError(
+        errorData.message || 'No se pudo guardar el animal con foto.',
+        response.status,
+      );
+    }
+
+    const data = await response.json();
+    return data.data;
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError('No se pudo guardar el animal con foto.', 0);
+  }
 }
 
 export async function createEvaluation(

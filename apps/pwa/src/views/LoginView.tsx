@@ -1,20 +1,16 @@
 import type { FormEvent } from 'react';
 import { Alert, Button, Card, Field } from '@arca/ui';
 import { Spinner } from '@/views/Spinner';
-import type { PwaInstallController } from '@/viewmodels/usePwaInstall';
-import { InstallAppAction } from '@/views/InstallAppAction';
 
 type LoginViewProps = {
   busy?: boolean;
   error: string;
-  installController?: PwaInstallController;
   onLogin: (username: string, password: string) => void;
 };
 
 export function LoginView({
   busy = false,
   error,
-  installController,
   onLogin,
 }: LoginViewProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -30,9 +26,6 @@ export function LoginView({
 
   return (
     <main className="login-page">
-      {installController && (
-        <InstallAppAction controller={installController} />
-      )}
       <Card className="login-card">
         <div className="login-brand" aria-label="ZooHealth">
           <span className="brand-mark" aria-hidden="true">

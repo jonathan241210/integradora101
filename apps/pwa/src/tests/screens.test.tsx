@@ -46,6 +46,8 @@ describe('CA-03 PWA responsive demo screens', () => {
     );
 
     expect(markup).toContain('aria-label="Navegación principal"');
+    expect(markup).not.toContain('topbar-toggle');
+    expect(markup).not.toContain('Instalar app');
     for (const section of pwaSections) {
       expect(markup).toContain(`aria-label="${section.label}"`);
     }

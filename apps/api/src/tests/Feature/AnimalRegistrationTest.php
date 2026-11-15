@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Enclosure;
+use App\Models\Animal;
 use App\Models\Species;
 use Tests\Concerns\CreatesStaffUsers;
 use Tests\FeatureTestCase;
@@ -143,9 +144,16 @@ class AnimalRegistrationTest extends FeatureTestCase
             ->getJson("/api/v1/staff/animals/{$animalId}")
             ->assertOk()
             ->assertJsonPath('data.birth_date', '2020-01-15')
+            ->assertJsonPath('data.photo_path', null)
             ->assertJsonPath('data.species.common_name', $species->common_name)
             ->assertJsonPath('data.species.feeding', 'Frutas y hojas')
             ->assertJsonPath('data.species.longevity', '20 años')
             ->assertJsonPath('data.species.reproduction', '1 cría por camada');
+
+        Animal::query()->findOrFail($animalId)->update(['photo_path' => "animals/{$animalId}/foto.jpg"]);
+        $this->actingAs($staff, 'web')
+            ->getJson("/api/v1/staff/animals/{$animalId}")
+            ->assertOk()
+            ->assertJsonPath('data.photo_path', "animals/{$animalId}/foto.jpg");
     }
 }

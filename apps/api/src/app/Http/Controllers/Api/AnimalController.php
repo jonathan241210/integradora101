@@ -73,6 +73,7 @@ class AnimalController extends Controller
             'characteristics' => $animal->characteristics,
             'entry_date' => $animal->entry_date?->format('Y-m-d'),
             'stay_status' => $animal->stay_status,
+            'photo_path' => $animal->photo_path,
             'species' => $animal->species,
             'enclosure' => $animal->enclosure?->name,
             'evaluations' => $evaluations,
@@ -91,10 +92,14 @@ class AnimalController extends Controller
             'birth_date' => ['nullable', 'date'],
             'origin' => ['nullable', 'in:rescue,birth,transfer'],
             'notes' => ['nullable', 'string', 'max:5000'],
+            'photo' => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png'], // Foto del animal
         ], [
             'enclosure_id.required' => 'Selecciona un recinto.',
             'enclosure_id.exists' => 'El recinto seleccionado no existe.',
             'sex.in' => 'Selecciona un sexo válido.',
+            'photo.image' => 'El archivo debe ser una imagen válida.',
+            'photo.max' => 'La imagen no debe superar 5 MB.',
+            'photo.mimes' => 'La imagen debe ser JPG, JPEG o PNG.',
         ]);
 
         $speciesName = isset($data['species']) ? trim($data['species']) : '';
@@ -124,7 +129,7 @@ class AnimalController extends Controller
                 );
             }
 
-            return Animal::create([
+            $animal = Animal::create([
                 'tag_number' => $data['tag_number'],
                 'responsible_id' => $request->user()->id,
                 'name' => $data['name'],
@@ -137,6 +142,15 @@ class AnimalController extends Controller
                 'species_id' => $species->id,
                 'stay_status' => 'Cuarentena_Ingreso',
             ]);
+
+            // Guardar foto si viene
+            if ($request->hasFile('photo')) {
+                $photo = $request->file('photo');
+                $path = $photo->store("animals/{$animal->id}", 'public');
+                $animal->update(['photo_path' => $path]);
+            }
+
+            return $animal;
         });
 
         $animal->load('species:id,common_name');
@@ -149,6 +163,7 @@ class AnimalController extends Controller
             'sex' => $animal->sex,
             'birth_date' => $animal->birth_date?->format('Y-m-d'),
             'stay_status' => $animal->stay_status,
+            'photo_path' => $animal->photo_path,
         ]], 201);
     }
 }
