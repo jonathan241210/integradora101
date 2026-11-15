@@ -41,7 +41,16 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('MEDIA_PUBLIC_URL') ?: env('APP_URL').'/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'media' => [
+            'driver' => 'local',
+            'root' => base_path('media'),
+            'url' => env('MEDIA_PUBLIC_URL') ?: env('APP_URL').'/media',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -64,6 +73,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Media Scopes
+    |--------------------------------------------------------------------------
+    |
+    | Disk name used by each media scope (api-013). Empty or absent values fall
+    | back to the defaults. The shared test folder sets both to "media".
+    |
+    */
+
+    'media_scopes' => [
+        'public' => env('PUBLIC_MEDIA_DISK') ?: 'public',
+        'private' => env('PRIVATE_MEDIA_DISK') ?: 'local',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Symbolic Links
     |--------------------------------------------------------------------------
     |
@@ -75,6 +99,7 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        public_path('media') => base_path('media'),
     ],
 
 ];

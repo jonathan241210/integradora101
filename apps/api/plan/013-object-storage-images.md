@@ -2,9 +2,10 @@
 
 - Spec: `apps/api/specs/013-object-storage-images.md`
 - Estado de spec: Aprobada (2026-11-12, Jonathan, responsable de backend). Aprobar la spec no autoriza implementar.
-- Estado del plan: **Borrador (2026-11-12)**. Pendiente de aprobación técnica del equipo y del Constitution Check (sección «Constitution Check»). No se programa hasta aprobarlo.
-- Responsable técnico: `Jonathan (responsable de backend), por confirmar en el PR`.
-- Tasks: `apps/api/tasks/013-object-storage-images.md` (Borrador, sin casillas marcadas).
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: las precondiciones que sigan «Pendiente» en la tabla bloquean sus tareas. La excepción de la Constitución V (P6) quedó aceptada el 2026-11-13 solo para datos de prueba en `arca_pruebas`. Las preguntas 1 a 8 quedaron resueltas el 2026-11-13 (sección «Preguntas»).
+- Responsable técnico: Jonathan (responsable de backend), aprobación del 2026-11-13 en nombre del equipo.
+- Tasks: `apps/api/tasks/013-object-storage-images.md` (Aprobado, Jonathan, 2026-11-13; sin casillas marcadas).
 - ADR: `docs/adr/0026-object-storage-s3-images.md` (Aceptado 2026-11-12). Relacionado: `docs/adr/0027-dynamic-public-memories-gallery.md` (galería pública de momentos).
 - Desbloqueo: esta spec desbloquea **P2 de `api-014`** (disco `media` configurado y `PUBLIC_MEDIA_DISK=media` disponible) y **T-09 y T-22 de `api-015`** (resolución de `image_url` con el disco de medios y pruebas con `Storage::fake('media')`). El desbloqueo se produce al cerrar T-01, T-02 y T-04 de este plan (ver «Orden y aprobación»).
 - Divergencia registrada en esta misma entrega: `apps/api/plan/008-event-news-images.md` y `apps/api/tasks/008-event-news-images.md` (ver «Divergencias registradas»).
@@ -17,11 +18,11 @@ Antes de la primera tarea de código (T-01 en adelante) deben cumplirse P4 y P1 
 |---|---|---|---|---|
 | P1 | DBR-012 en «Lista para backend» y migración aplicada en `arca_pruebas` | BD (responsable de la DBR) y backend | Cumplida: DBR-012 aplicada en `arca_pruebas` el 2026-11-11. Esta spec no crea esquema (RN-08). | T-00: salida de solo lectura de `migrate:status` y de las columnas usadas |
 | P2 | ADR 0026 Aceptado | Equipo | Cumplida: Aceptado el 2026-11-12 (Jonathan, responsable de backend) | Enlace al ADR en el PR |
-| P3 | Riesgos (a), (b), (c), (g) y (m) del ADR 0026 confirmados para pruebas | Equipo | Cumplida para Jonathan (2026-11-12, válido para pruebas). Si el equipo exige la confirmación de los demás integrantes, queda pendiente antes de la primera subida de un momento. Bloquea la subida de momentos; no bloquea la configuración de noticias, eventos ni especies. | Registro de confirmación en el ADR o en el PR |
-| P4 | Plan y tasks aprobados | Equipo / responsable de backend | Pendiente | Aprobación de plan y tasks en el PR |
-| P5 | Pregunta 3 de la spec (definición de dato de prueba y tope de CA-22) | Responsable funcional | Resuelta el 2026-11-12. Queda abierta la unidad exacta de «100 MB» (pregunta 5 de este plan). | Spec, «Preguntas pendientes» |
-| P6 | Excepción a la Constitución V (datos personales de momentos versionados en git) | Equipo | Registrada como excepción de pruebas en el ADR 0026. El ADR pide acuerdo del equipo. Bloquea solo los momentos. | Acuerdo en el PR |
-| P7 | Plan y tasks de `api-010` aprobados (Actions, permisos `memories.review` y rutas de momentos) | Responsable de backend | **Pendiente y bloqueante para T-08 a T-10 y T-24 a T-26.** `apps/api/plan/010-visitor-memory-requests.md` y `apps/api/tasks/010-visitor-memory-requests.md` no existen en el repositorio; `api-010` solo tiene la spec Aprobada. | Plan y tasks de `api-010` aprobados |
+| P3 | Riesgos (a), (b), (c), (g) y (m) del ADR 0026 confirmados para pruebas | Equipo | Cumplida (2026-11-12 y 2026-11-13, válido para pruebas): la aceptación de Jonathan en nombre del equipo basta; no se exige confirmación adicional ni se crea ADR nuevo. Bloquea la subida de momentos; no bloquea la configuración de noticias, eventos ni especies. | Registro de confirmación en el ADR o en el PR |
+| P4 | Plan y tasks aprobados | Equipo / responsable de backend | Cumplida el 2026-11-13 (Jonathan, responsable de backend) | Aprobación de plan y tasks en el PR |
+| P5 | Pregunta 3 de la spec (definición de dato de prueba y tope de CA-22) | Responsable funcional | Resuelta el 2026-11-12. La unidad de «100 MB» quedó resuelta el 2026-11-13 (pregunta 5 de este plan: 104 857 600 bytes). | Spec, «Preguntas pendientes» |
+| P6 | Excepción a la Constitución V (datos personales de momentos versionados en git) | Equipo | **Cumplida el 2026-11-13:** aceptada por Jonathan (responsable de backend), en nombre del equipo, solo para datos de prueba en `arca_pruebas`; revisar antes de producción. Registrada en el ADR 0026 (sección «Constitución») y en este plan. Bloquea solo la subida real de momentos. | Acuerdo registrado en este plan y en el ADR 0026; no se crea ADR nuevo |
+| P7 | Plan y tasks de `api-010` aprobados (Actions, permisos `memories.review` y rutas de momentos) | Responsable de backend | Cumplida el 2026-11-13 (Jonathan, responsable de backend): plan y tasks de `api-010` aprobados. `api-010` sigue sin implementar; T-08 a T-10 y T-24 a T-26 dependen además de su implementación. | Plan y tasks de `api-010` aprobados |
 
 Notas:
 - Las tareas de noticias, eventos y especies (T-01 a T-07, T-11 a T-22) no dependen de P7.
@@ -60,7 +61,7 @@ Principios de diseño:
 - **Terminología de commit.** En este plan y en la spec, «commit» tiene dos sentidos. «Commit de base de datos» es el cierre de la transacción de la aplicación. «Commit de git» es el que sube los archivos de `media/` al repositorio. Los comentarios de código y la documentación deben decir cuál de los dos se refiere.
 - **La API no devuelve rutas ni URL de lo no aceptado** (RN-05, RN-16). La barrera del ámbito privado es solo de la API (riesgo g del ADR 0026).
 
-## Decisiones de diseño (propuestas, pendientes de aprobación técnica)
+## Decisiones de diseño (aprobadas con el plan, 2026-11-13)
 
 - **D-P1 Valores vacíos.** `PUBLIC_MEDIA_DISK`, `PRIVATE_MEDIA_DISK` y `MEDIA_PUBLIC_URL` se leen con la regla de «valor no vacío o valor por defecto». Motivo: `env()` devuelve cadena vacía si la variable existe sin valor (por ejemplo `PUBLIC_MEDIA_DISK=` en `.env`), y una cadena vacía no sería un nombre de disco válido. CA-01 («variables ausentes») se cumple con la misma regla.
 - **D-P2 Ámbitos en `config/filesystems.php`.** Los nombres de disco de cada ámbito se declaran en una clave de configuración de ámbitos dentro de `config/filesystems.php` (nombre propuesto: `media_scopes`, con las claves `public` y `private`). Ninguna otra parte del código lee `env()`.
@@ -69,7 +70,7 @@ Principios de diseño:
 - **D-P5 Lista de nombres prohibidos (CA-04).** Las pruebas estáticas de `app/Actions`, `app/Http` y `app/Models` fallan si aparece alguno de estos nombres: `Aws`, `AWS`, `S3`, `Amazon`, `Cloudinary`, `Azure`, `GoogleCloud`, `Google\Cloud`, `Backblaze`, `Wasabi`, `DigitalOcean`, `Flysystem`, `temporaryUploadUrl`, `temporaryUrl`, la cadena `'s3'`, y cualquier `env(` fuera de `config/`.
 - **D-P6 Imagen de revisión por ruta autenticada.** La respuesta es un flujo de lectura del archivo, sin ruta ni nombre original en cabeceras ni cuerpo. Cabeceras: `Content-Type` derivado de la extensión almacenada (`jpg` → `image/jpeg`, `png` → `image/png`, `webp` → `image/webp`), `Cache-Control: no-store` y `X-Content-Type-Options: nosniff`. La ruta no toma ninguna ruta del cliente: solo el identificador numérico.
 - **D-P7 Enlace y versionado.** `public/media` se añade a `apps/api/src/.gitignore` (el enlace no se versiona). No se añade `.gitattributes`: la spec no lo exige.
-- **D-P8 Carpetas de especies.** `species/` y `species-requests/` se crean y se versionan en la carpeta compartida por la enmienda de 2026-11-11 (ADR 0026). La spec no las menciona en CA-15, RN-14 ni CA-20. Pregunta 3 de este plan.
+- **D-P8 Carpetas de especies.** `species/` y `species-requests/` se crean y se versionan en la carpeta compartida por la enmienda de 2026-11-11 (ADR 0026). La spec no las menciona en CA-15, RN-14 ni CA-20. Pregunta 3 resuelta el 2026-11-13: se versionan también para pruebas.
 
 ## Cambios por área
 
@@ -102,7 +103,7 @@ Principios de diseño:
 | `MEDIA_PUBLIC_URL` | Vacía: URL del disco (`APP_URL` + `/storage` para `public`; `APP_URL` + `/media` para `media`) | Vacía (`APP_URL` + `/media`) o URL alcanzable | RN-04, CA-03, CA-17 |
 | `FILESYSTEM_DISK` | `local` (sin cambio) | sin cambio | CA-01 |
 
-La URL de `MEDIA_PUBLIC_URL` aplica al ámbito público. Pregunta 1 de este plan confirma la regla exacta cuando el disco público es `public`.
+La URL de `MEDIA_PUBLIC_URL` aplica al ámbito público. Regla resuelta el 2026-11-13 (pregunta 1): sustituye la URL de cualquier disco de ese ámbito; si está vacía, cada disco usa su URL.
 
 ### Discos y enlaces
 
@@ -142,7 +143,7 @@ Reglas de `apps/api/src/media/.gitignore` (intención, verificada con `git check
 
 | Método y ruta | Nombre | Middleware y permiso | CA | Respuesta |
 |---|---|---|---|---|
-| `GET /api/v1/admin/memories/{id}/image` | `admin.memories.image` | `auth:sanctum`, `staff.user`, `administrator.two-factor`, `permission:memories.review` (grupo de `api-010`) | CA-10, RN-06 | 200 binario `image/*`; 403 sin cuerpo; 404 «Petición no encontrada.» (`api-010`) o «Imagen no encontrada.» (propuesto, pregunta 6) |
+| `GET /api/v1/admin/memories/{id}/image` | `admin.memories.image` | `auth:sanctum`, `staff.user`, `administrator.two-factor`, `permission:memories.review` (grupo de `api-010`) | CA-10, RN-06 | 200 binario `image/*`; 403 sin cuerpo; 404 «Petición no encontrada.» (`api-010`) o «La imagen ya no está disponible.» (`api-010` CA-08; pregunta 6 resuelta) |
 
 No se crean otras rutas. `admin.news.*`, `admin.events.*` y `api-010` mantienen sus contratos.
 
@@ -217,13 +218,13 @@ Convención: PHPUnit, carpeta `apps/api/src/tests/Feature/Media/`. Todas las pru
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas (CA-19; el test verifica `composer.json`). Disco local de Laravel, configurable por `.env`. Sin servicio propietario de nube. Sin cambio de base de datos: funciona igual con Aiven y con MySQL local (ADR 0013). La ubicación `apps/api/src/media/` queda cubierta por el ADR 0026. |
-| II. La spec manda | Parcial, condicionado | Spec Aprobada (2026-11-12). Plan y tasks en Borrador: sin código hasta su aprobación (P4). El PR enlazará los tres artefactos con el mismo NNN-slug. |
+| II. La spec manda | Sí | Spec Aprobada (2026-11-12). Plan y tasks aprobados por Jonathan, responsable de backend, en nombre del equipo, el 2026-11-13 (P4), con el mismo NNN-slug. El PR enlazará los tres artefactos. |
 | III. Lógica separada de la interfaz | Sí (propuesto) | Resolución de disco, borrado y lectura de la imagen de revisión en Actions. Controlador delgado. Sin lógica en el dashboard: solo presenta lo que devuelve la API (`dashboard-008`). |
-| IV. Un test por criterio | Parcial, condicionado | Tabla de mapeo con los 25 CA. Los CA de momentos (CA-05, CA-08 parte momentos, CA-09 a CA-13) dependen de `api-010` (P7). CA-21 tiene prueba automatizada en grupo `smoke` pendiente de la pregunta 2. CA-20, CA-22 y CA-24 llevan además prueba automatizada propuesta. CA-25 verifica la cobertura. CI en verde: pendiente de evidencia. |
-| V. Una sola fuente de verdad para los datos | Excepción registrada (ADR 0026) | No se crean tablas ni migraciones (RN-08). La base guarda rutas relativas; los archivos viven fuera de ella. **Excepción:** los momentos (datos personales) se versionan en git solo para pruebas (ADR 0026, riesgo a); requiere acuerdo del equipo (P6). Las imágenes de noticias, eventos y especies no son datos clínicos ni financieros. Esta spec no crea modelos; los de `api-010` y `api-014` se rigen por sus propios planes (`api-014` tiene la brecha de `BaseModel` registrada en su plan). |
-| VI. Código en inglés, personas en español | Sí (propuesto) | Identificadores en inglés (`ResolveMediaDiskAction`, `media`, `memories/`, `admin.memories.image`). Mensajes al personal en español («Imagen no encontrada.», propuesto). |
+| IV. Un test por criterio | Sí (pendiente la evidencia de CI) | Tabla de mapeo con los 25 CA. Los CA de momentos (CA-05, CA-08 parte momentos, CA-09 a CA-13) dependen de `api-010` (P7). CA-21 tiene prueba automatizada en grupo `smoke` (pregunta 2 resuelta el 2026-11-13). CA-20, CA-22 y CA-24 llevan además prueba automatizada propuesta. CA-25 verifica la cobertura. CI en verde: pendiente de evidencia. |
+| V. Una sola fuente de verdad para los datos | Excepción aceptada (ADR 0026, solo pruebas) | No se crean tablas ni migraciones (RN-08). La base guarda rutas relativas; los archivos viven fuera de ella. **Excepción:** los momentos (datos personales) se versionan en git solo para pruebas (ADR 0026, riesgo a); aceptada por Jonathan, en nombre del equipo, el 2026-11-13 (P6), solo para datos de prueba en `arca_pruebas`; revisar antes de producción. Las imágenes de noticias, eventos y especies no son datos clínicos ni financieros. Esta spec no crea modelos; los de `api-010` y `api-014` se rigen por sus propios planes (`api-014` tiene la brecha de `BaseModel` registrada en su plan). |
+| VI. Código en inglés, personas en español | Sí (propuesto) | Identificadores en inglés (`ResolveMediaDiskAction`, `media`, `memories/`, `admin.memories.image`). Mensajes al personal en español («La imagen ya no está disponible.», de la spec de `api-010`). |
 
-Ninguna excepción se implementa sin acuerdo del equipo (P6). La excepción de la Constitución V requiere acuerdo; si no se obtiene, los momentos no se suben a `media/` y solo se implementa lo de noticias, eventos y especies.
+Ninguna excepción se implementa sin acuerdo. La excepción de la Constitución V (P6) está aceptada desde el 2026-11-13 (Jonathan, en nombre del equipo) solo para datos de prueba en `arca_pruebas`. Si se retira, los momentos no se suben a `media/` y solo se implementa lo de noticias, eventos y especies.
 
 ## Riesgos y decisiones
 
@@ -239,14 +240,14 @@ Ninguna excepción se implementa sin acuerdo del equipo (P6). La excepción de l
 - **R-08 Conflictos binarios en git.** Dos equipos que suben a la vez con nombres UUID no colisionan; un conflicto de binario se resuelve eligiendo uno (riesgo h del ADR 0026).
 - **R-09 Historial de git.** Lo versionado y después borrado queda en el historial y en los clones (RN-17). Retirada del historial: pregunta 4 de la spec (pendiente de producción).
 - **R-10 Acceso por URL a pendientes y rechazados.** Riesgo b del ADR 0026. La API no revela la URL, pero el archivo no tiene control de acceso. La ruta de revisión no lo protege (CA-10).
-- **R-11 Dependencia de `api-010` sin plan.** Las tareas de momentos quedan bloqueadas (P7). Mitigación: el resto del plan (noticias, eventos y especies) no depende de ellas.
-- **R-12 Ausencia de la clave de `smoke`.** `phpunit.xml` no define el grupo `smoke`. Ver pregunta 2.
-- **R-13 Tope de peso.** 100 imágenes o 100 MB en `media/` (pregunta 3 resuelta, unidad pendiente: pregunta 5). La prueba de T-21 hace el conteo; el control humano está en T-29.
+- **R-11 Dependencia de `api-010`.** Plan y tasks aprobados el 2026-11-13. Las tareas de momentos siguen bloqueadas hasta implementar `api-010` (P7). Mitigación: el resto del plan (noticias, eventos y especies) no depende de ellas.
+- **R-12 Ausencia de la clave de `smoke`.** `phpunit.xml` no define el grupo `smoke`. Ver pregunta 2 (resuelta: el grupo se define al implementar T-22).
+- **R-13 Tope de peso.** 100 imágenes o 100 MB en `media/` (pregunta 3 resuelta; unidad resuelta el 2026-11-13: pregunta 5, 104 857 600 bytes). La prueba de T-21 hace el conteo; el control humano está en T-29.
 
-### Decisiones propuestas (pendientes)
+### Decisiones aprobadas con el plan (2026-11-13)
 
 - D-P1 a D-P8 (sección «Decisiones de diseño»).
-- Cambio de la URL pública de noticias y eventos a `/media` en la carpeta compartida (P5 de `api-008`): pendiente de aprobación formal del equipo (`api-013` «Decisiones»; tarea T-33 de `api-008`).
+- Cambio de la URL pública de noticias y eventos a `/media` en la carpeta compartida (P5 de `api-008`): aprobado con el plan por Jonathan, responsable de backend, en nombre del equipo, el 2026-11-13 (`api-013` «Decisiones»; tarea T-33 de `api-008`).
 
 ### ADR
 
@@ -263,27 +264,35 @@ Ninguna excepción se implementa sin acuerdo del equipo (P6). La excepción de l
 
 ### Suposiciones
 
-- **S-01 D-04 pendiente de confirmación expresa.** Volver a subir las imágenes existentes antes de versionarlas consta como confirmado por Jonathan el 2026-11-10, pero no figura en la aprobación del 2026-11-12. Este plan lo trata como procedimiento operativo; no bloquea T-01 a T-07, y se confirma antes de la primera subida de imágenes existentes.
-- **S-02 D-06 pendiente de confirmación expresa.** La ruta autenticada con proxy de mismo origen consta como confirmada el 2026-11-10, pero no figura en la aprobación del 2026-11-12. Este plan implementa la ruta de la API (T-09) según D-06 y deja la parte de dashboard a `dashboard-008`. Si cambia la forma de la ruta, se reabre T-09.
+- **S-01 D-04 confirmado.** Volver a subir las imágenes existentes antes de versionarlas lo confirmó Jonathan el 2026-11-10 (ADR 0026) y lo acepta el plan aprobado el 2026-11-13. Este plan lo trata como procedimiento operativo; no bloquea T-01 a T-07, y se confirma antes de la primera subida de imágenes existentes.
+- **S-02 D-06 confirmado.** La ruta autenticada con proxy de mismo origen la confirmó Jonathan el 2026-11-10 y la acepta el plan aprobado el 2026-11-13. Este plan implementa la ruta de la API (T-09) según D-06 y deja la parte de dashboard a `dashboard-008`. Si cambia la forma de la ruta, se reabre T-09.
 - **S-03 Unidad del tope.** «100 MB» se toma como 100 × 1024 × 1024 bytes (104 857 600). Pregunta 5.
 - **S-04 Extensiones contadas.** El conteo del tope incluye `.jpg`, `.jpeg`, `.png` y `.webp`; no incluye `.gitkeep` ni `.gitignore`.
 - **S-05 Git disponible.** Las pruebas de CA-15 necesitan `git` y un repositorio completo en el entorno donde se ejecutan. Si no están disponibles, la prueba falla (no se omite).
-- **S-06 Mensajes.** El texto «Imagen no encontrada.» es propuesto; la spec no lo fija.
+- **S-06 Mensajes.** El texto del 404 de la imagen es «La imagen ya no está disponible.», el que fija la spec de `api-010` (CA-08).
 - **S-07 Almacenamiento de `storage/app/private`.** El ejemplo de CA-15 `storage/app/private/x.jpg` no está en `media/`; se evalúa con las reglas de `storage/` de Laravel, no con `media/.gitignore`.
 - **S-08 Nombres de test.** La spec no fija nombres de test; los de este plan son propuestos.
 - **S-09 `.gitattributes`.** No se añade (la spec no lo exige).
 - **S-10 Imagen de revisión en estados distintos de «En proceso».** Se asume que la ruta sirve la imagen de cualquier petición con archivo presente y estado visible para el personal; ver pregunta 6.
 
-### Preguntas abiertas (máximo 8)
+### Preguntas (resueltas el 2026-11-13)
 
 1. **Regla de `MEDIA_PUBLIC_URL` con el disco público por defecto (RN-04 frente a CA-01).** RN-04 dice que `image_url` sale de `MEDIA_PUBLIC_URL` o, si está vacía, de `APP_URL` + `/media`. Con `PUBLIC_MEDIA_DISK=public` (valor por defecto), eso cambiaría la URL de `api-008` (`APP_URL` + `/storage`) y contradiría CA-01. Propuesta: `MEDIA_PUBLIC_URL` sustituye la URL del ámbito público en cualquier disco; si está vacía, cada disco usa su URL (`/storage` para `public`, `/media` para `media`). ¿Se aprueba?
+   **Resuelta (2026-11-13, Jonathan): se adopta la recomendación.** `MEDIA_PUBLIC_URL` sustituye la URL del ámbito público en cualquier disco; si está vacía, cada disco usa su URL (`/storage` para `public`, `/media` para `media`). Afecta a T-01 y T-14.
 2. **Prueba automatizada de CA-21 (grupo `smoke`).** La spec pide un test de humo en el grupo `smoke`, pero `phpunit.xml` no define ese grupo. Además, CA-21 solo tiene evidencia manual en CA-25, lo que no cumple la Constitución IV («al menos un test automatizado por CA»). Propuesta: grupo `smoke` que lee la URL de una variable de entorno local (no versionada), se ejecuta a demanda y no en el CI por defecto, con la evidencia manual en el PR. ¿Se aprueba, o se cambia el CA-25?
+   **Resuelta (2026-11-13, Jonathan): se adopta la recomendación.** Grupo `smoke` que lee la URL de una variable de entorno local no versionada, se ejecuta a demanda y no en el CI por defecto; la evidencia manual queda en el PR. CA-25 no cambia. Afecta a T-22.
 3. **Carpetas de especies en la spec.** `species/` y `species-requests/` están en el ADR 0026 (enmienda 2026-11-11) y en D-02, pero CA-15, RN-14 y CA-20 de la spec solo mencionan `news/`, `events/` y `memories/`. `api-014` (R9) deja pendiente si `species-requests/` se versiona. ¿Se confirma que ambas carpetas se versionan en pruebas y que sus reglas de `.gitignore` se prueban igual que las demás?
+   **Resuelta (2026-11-13, Jonathan): se adopta la recomendación.** Sí: `species/` y `species-requests/` se versionan en pruebas (enmienda del 2026-11-11 del ADR 0026, aceptada el 2026-11-12), y sus reglas de `.gitignore` se prueban como las demás. Afecta a T-04, T-11 y T-18.
 4. **Orden de implementación con `api-010` sin plan.** Las tareas de momentos (T-08 a T-10, T-24 a T-26) dependen de un plan y unas tareas de `api-010` que no existen. ¿Se implementa primero noticias, eventos y especies con su disco, y los momentos después de aprobar el plan de `api-010`?
+   **Resuelta (2026-11-13, Jonathan): se adopta la recomendación.** Orden: primero `api-013` (disco, `.gitignore`, noticias, eventos y especies) y después los momentos. El plan y las tasks de `api-010` ya están aprobados (2026-11-13); la implementación de los momentos sigue esperando a `api-010`.
 5. **Unidad y alcance del tope de CA-22.** ¿«100 MB» son 104 857 600 bytes (MiB) o 100 000 000 bytes? ¿El tope cuenta solo imágenes (`.jpg`, `.jpeg`, `.png`, `.webp`) y solo el árbol de trabajo, no el historial de git?
+   **Resuelta (2026-11-13, Jonathan): se adopta la recomendación (S-03 y S-04).** «100 MB» = 104 857 600 bytes (100 MiB). El tope cuenta solo las imágenes `.jpg`, `.jpeg`, `.png` y `.webp` del árbol de trabajo de `apps/api/src/media/` (no el historial de git), medidas con el tamaño en disco de esa carpeta. Afecta a T-21 y T-29.
 6. **Imagen de revisión (`admin.memories.image`).** ¿La ruta sirve la imagen en cualquier estado, o solo en «En proceso» y en «Enviada»? ¿Qué mensaje 404 se usa si el archivo falta («Imagen no encontrada.» es propuesta)?
+   **Resuelta (2026-11-13, Jonathan): se adopta la recomendación (S-10 y la spec de `api-010`).** La ruta sirve la imagen en cualquier estado mientras el archivo exista; el dashboard la pide en todos los estados. Si el archivo falta, 404 «La imagen ya no está disponible.», el texto que fija la spec de `api-010` (CA-08); se descarta «Imagen no encontrada.». Afecta a T-09 y T-25.
 7. **Borrado de archivos al eliminar la cuenta (`api-010` RN-22, `keep` o `delete`).** CA-18 incluye «se elimina el registro» como motivo de borrado de archivo, pero `api-010` no dice si la opción `delete` de la cuenta borra también el archivo del momento, ni en qué orden. ¿Se borra el archivo al eliminar el momento con `delete`?
+   **Resuelta (2026-11-13, Jonathan): se adopta la recomendación (plan de `api-010`, T-25).** Sí: con `delete` el archivo se borra después del commit de base de datos; con `keep` no se borra ningún archivo. Su ejecución depende de P9 de `api-010`. Afecta a T-26.
 8. **Existencia del archivo al leer (`api-013` flujo 8 frente a `api-015` T-09).** Esta spec dice que la API no comprueba la existencia del archivo en cada lectura; `api-015` T-09 sí la comprueba y devuelve `null` si falta. ¿Cuál regla aplica a las especies? Esta spec no la cambia; la decisión se registra en `api-015`.
+   **Resuelta (2026-11-13, Jonathan): se adopta la recomendación de `api-015`.** Para especies, la API comprueba que el archivo existe y devuelve `null` si falta (`api-015` CA-08 y su plan, T-09). Noticias y eventos siguen el flujo 8 de esta spec, sin comprobación en cada lectura. Esta spec no cambia.
 
 ## Divergencias registradas
 
@@ -296,12 +305,12 @@ Registradas en esta entrega y pendientes de resolver por el equipo o por la spec
    - Pruebas: `ContentImageCoverageTest` de `api-008` busca el literal `Storage::fake('public')` en sus tests. Sigue válido con el valor por defecto; si cambia, se actualiza en el mismo cambio. Resolución: `api-008` T-30.
    - Verificación manual: `api-008` T-21 comprueba `storage/app/public/{news,events}`; en la carpeta compartida la comprobación se hace en `media/`. Resolución: `api-008` T-32.
    - Estado: no cambia (`api-008` sigue «en ejecución» y sus casillas no se tocan).
-2. **Espacio de medios de especies.** Ver pregunta 3.
-3. **`api-013` RN-04 frente a CA-01.** Ver pregunta 1.
-4. **Constitución IV frente a CA-21 y CA-25 de la spec.** Ver pregunta 2.
-5. **`api-013` flujo 8 frente a `api-015` T-09.** Ver pregunta 8.
+2. **Espacio de medios de especies.** Resuelta (pregunta 3).
+3. **`api-013` RN-04 frente a CA-01.** Resuelta (pregunta 1).
+4. **Constitución IV frente a CA-21 y CA-25 de la spec.** Resuelta (pregunta 2).
+5. **`api-013` flujo 8 frente a `api-015` T-09.** Resuelta (pregunta 8).
 6. **`api-014` R9 frente al ADR 0026 (enmienda 2026-11-11).** `api-014` deja pendiente la versión de `species-requests/`; el ADR la acepta para pruebas. Ver pregunta 3.
-7. **`api-010` sin plan ni tasks.** Spec Aprobada; plan y tasks ausentes. Bloquea las tareas de momentos (P7). Ver pregunta 4.
+7. **`api-010` con plan y tasks aprobados (2026-11-13).** Spec Aprobada; implementación pendiente. P7 cumplida. Ver pregunta 4 (resuelta).
 8. **`infra/README.md`.** La spec pide quitar la etiqueta de fase y el bloque de almacenamiento de objetos. El árbol de trabajo ya contiene el bloque «Medios de prueba compartidos» (sin commit). T-11 lo verifica y lo completa.
 9. **`DBR-012` y `api-010` RN-10/CA-17.** La descripción de discos de DBR-012 ya se alineó (aplicada el 2026-11-11). La excepción de `api-010` RN-10 y CA-17 consta en su nota; no se edita aquí.
 
@@ -323,10 +332,10 @@ Registradas en esta entrega y pendientes de resolver por el equipo o por la spec
 | Rol | Quién | Estado |
 |---|---|---|
 | Responsable funcional de la spec | Jonathan (aprobación de la spec, 2026-11-12) | Aprobada |
-| Responsable técnico del plan | Jonathan (responsable de backend), por confirmar en el PR | Pendiente |
-| Equipo (solución técnica y Constitution Check) | Equipo | Pendiente (P4, P6) |
+| Responsable técnico del plan | Jonathan (responsable de backend) | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
+| Equipo (solución técnica y Constitution Check) | Equipo | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 (P4). P6 aceptada en el mismo acto, solo para datos de prueba |
 | Responsable de BD | No requerido por esta spec (RN-08); verificación de solo lectura en T-00 | No aplica |
-| Confirmación de riesgos del ADR 0026 | Jonathan, 2026-11-12, válido para pruebas | Cumplida (P3); pendiente la confirmación del resto del equipo si se exige |
-| Plan y tasks de `api-010` | Responsable de backend | Pendiente (P7) |
+| Confirmación de riesgos del ADR 0026 | Jonathan, 2026-11-12, válido para pruebas | Cumplida (P3, 2026-11-13): aceptación de Jonathan en nombre del equipo; no se exige más |
+| Plan y tasks de `api-010` | Responsable de backend | Cumplida el 2026-11-13 (P7) |
 
 Evidencias requeridas al cerrar el plan: salida de solo lectura de T-00, enlace a la aprobación de la spec, confirmación del ADR 0026, respuesta a las preguntas 1 a 8 y enlace al PR con spec, plan y tasks.

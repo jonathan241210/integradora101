@@ -4,11 +4,26 @@ import type {
   EnclosureDto,
   EventDto,
   EventInput,
+  HasMorePage,
+  MemoryRejectInput,
+  MemoryReviewDetailDto,
+  MemoryReviewListQuery,
+  MemoryReviewSummaryDto,
   NewsDto,
   NewsInput,
   PageMeta,
   Paginated,
+  PublishedSpeciesListQuery,
+  PublishedSpeciesRowDto,
   ReportExportFormat,
+  SpeciesPublicationDetailDto,
+  SpeciesPublicationUpdateInput,
+  SpeciesRequestAcceptInput,
+  SpeciesRequestDetailDto,
+  SpeciesRequestListQuery,
+  SpeciesRequestRejectInput,
+  SpeciesRequestSummaryDto,
+  SpeciesRequestUpdateInput,
   StaffAccountDto,
   StaffCreateInput,
   StaffListQuery,
@@ -133,6 +148,46 @@ function contentJson<Input extends ContentImageInput>(input: Input) {
   const { image: _image, ...rest } = input;
 
   return rest;
+}
+
+function normalizeHasMore<T>(
+  response: Partial<HasMorePage<T>> | T[],
+): HasMorePage<T> {
+  if (Array.isArray(response)) return { data: response, meta: { has_more: false } };
+
+  return {
+    data: Array.isArray(response.data) ? response.data : [],
+    meta: { has_more: response.meta?.has_more === true },
+  };
+}
+
+/**
+ * Cuerpo de edición de ficha (api-014 CA-15, CA-21, CA-37). `published_fields`
+ * viaja como cadena JSON, en JSON y en multipart (plan, pregunta 4).
+ */
+function speciesSheetBody(input: SpeciesRequestUpdateInput) {
+  const { image: _image, published_fields: fields, ...rest } = input;
+
+  return fields === undefined
+    ? rest
+    : { ...rest, published_fields: JSON.stringify(fields) };
+}
+
+function speciesSheetUpdate<Dto>(
+  http: ExtendedHttpClient,
+  path: string,
+  input: SpeciesRequestUpdateInput,
+): Promise<Dto> {
+  const body = speciesSheetBody(input);
+
+  // PHP no entrega multipart en PATCH: con archivo, POST + `_method=PATCH`.
+  if (hasImageFile(input)) {
+    return http
+      .post<Enveloped<Dto>>(path, contentFormData({ ...body, image: input.image }, "PATCH"))
+      .then(unwrap);
+  }
+
+  return http.patch<Enveloped<Dto>>(path, body).then(unwrap);
 }
 
 export type CreateAdminApiOptions = {
@@ -264,6 +319,141 @@ export function createAdminApi(
             input,
           ),
         );
+      },
+    },
+    /** Revisión de momentos de visitantes (api-010, consumida por dashboard-008). */
+    memoryReview: {
+      async list(
+        query: MemoryReviewListQuery = {},
+      ): Promise<HasMorePage<MemoryReviewSummaryDto>> {
+        return normalizeHasMore(
+          await http.get<HasMorePage<MemoryReviewSummaryDto>>(
+            `${base}/memories${queryString({ ...query })}`,
+          ),
+        );
+      },
+      /** Abrir una petición enviada la pasa a «En proceso» en la API. */
+      async get(id: number): Promise<MemoryReviewDetailDto> {
+        return unwrap(
+          await http.get<Enveloped<MemoryReviewDetailDto>>(`${base}/memories/${id}`),
+        );
+      },
+      /** Ruta relativa del mismo origen; devuelve el binario como blob (api-013 D-06). */
+      image(id: number): Promise<DownloadedFile> {
+        return http.download(`${base}/memories/${id}/image`);
+      },
+      /** Sin cuerpo; el cuerpo de la respuesta no se usa (api-010 CA-11). */
+      async accept(id: number): Promise<void> {
+        await http.post<unknown>(`${base}/memories/${id}/accept`);
+      },
+      async reject(id: number, input: MemoryRejectInput): Promise<void> {
+        await http.post<unknown>(`${base}/memories/${id}/reject`, {
+          rejection_reason: input.rejection_reason,
+          rejected_fields: input.rejected_fields,
+        });
+      },
+    },
+    speciesPublicationRequests: {
+      async list(
+        query: SpeciesRequestListQuery = {},
+      ): Promise<HasMorePage<SpeciesRequestSummaryDto>> {
+        return normalizeHasMore(
+          await http.get<HasMorePage<SpeciesRequestSummaryDto>>(
+            `${base}/species-publication-requests${queryString({ ...query })}`,
+          ),
+        );
+      },
+      async get(id: number): Promise<SpeciesRequestDetailDto> {
+        return unwrap(
+          await http.get<Enveloped<SpeciesRequestDetailDto>>(
+            `${base}/species-publication-requests/${id}`,
+          ),
+        );
+      },
+      update(
+        id: number,
+        input: SpeciesRequestUpdateInput,
+      ): Promise<SpeciesRequestDetailDto> {
+        return speciesSheetUpdate(
+          http,
+          `${base}/species-publication-requests/${id}`,
+          input,
+        );
+      },
+      /** La API responde con la ficha de la especie, no con la solicitud. */
+      async accept(
+        id: number,
+        input: SpeciesRequestAcceptInput,
+      ): Promise<SpeciesPublicationDetailDto> {
+        return unwrap(
+          await http.post<Enveloped<SpeciesPublicationDetailDto>>(
+            `${base}/species-publication-requests/${id}/accept`,
+            { publish: input.publish },
+          ),
+        );
+      },
+      /** La API responde con el detalle de la solicitud ya rechazada. */
+      async reject(
+        id: number,
+        input: SpeciesRequestRejectInput,
+      ): Promise<SpeciesRequestDetailDto> {
+        return unwrap(
+          await http.post<Enveloped<SpeciesRequestDetailDto>>(
+            `${base}/species-publication-requests/${id}/reject`,
+            { rejection_reason: input.rejection_reason },
+          ),
+        );
+      },
+      image(id: number): Promise<DownloadedFile> {
+        return http.download(`${base}/species-publication-requests/${id}/image`);
+      },
+    },
+    publishedSpecies: {
+      async list(
+        query: PublishedSpeciesListQuery = {},
+      ): Promise<HasMorePage<PublishedSpeciesRowDto>> {
+        return normalizeHasMore(
+          await http.get<HasMorePage<PublishedSpeciesRowDto>>(
+            `${base}/published-species${queryString({ ...query })}`,
+          ),
+        );
+      },
+      async get(id: number): Promise<SpeciesPublicationDetailDto> {
+        return unwrap(
+          await http.get<Enveloped<SpeciesPublicationDetailDto>>(
+            `${base}/species/${id}/publication`,
+          ),
+        );
+      },
+      update(
+        id: number,
+        input: SpeciesPublicationUpdateInput,
+      ): Promise<SpeciesPublicationDetailDto> {
+        return speciesSheetUpdate(http, `${base}/species/${id}/publication`, input);
+      },
+      async unpublish(id: number): Promise<SpeciesPublicationDetailDto> {
+        return unwrap(
+          await http.post<Enveloped<SpeciesPublicationDetailDto>>(
+            `${base}/species/${id}/unpublish`,
+          ),
+        );
+      },
+      async republish(id: number): Promise<SpeciesPublicationDetailDto> {
+        return unwrap(
+          await http.post<Enveloped<SpeciesPublicationDetailDto>>(
+            `${base}/species/${id}/republish`,
+          ),
+        );
+      },
+      async removePublication(id: number): Promise<SpeciesPublicationDetailDto> {
+        return unwrap(
+          await http.delete<Enveloped<SpeciesPublicationDetailDto>>(
+            `${base}/species/${id}/publication`,
+          ),
+        );
+      },
+      image(id: number): Promise<DownloadedFile> {
+        return http.download(`${base}/species/${id}/image`);
       },
     },
     dashboard: {

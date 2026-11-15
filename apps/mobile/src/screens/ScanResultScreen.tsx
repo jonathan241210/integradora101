@@ -16,6 +16,7 @@ type ResultMood = 'party' | 'known' | 'soft';
 const MOOD: Record<ScanPresentation['kind'], ResultMood> = {
   discovered: 'party',
   already_discovered: 'known',
+  empty_enclosure: 'soft',
   invalid_code: 'soft',
   inactive_code: 'soft',
   expired_scan: 'soft',
@@ -26,6 +27,7 @@ const MOOD: Record<ScanPresentation['kind'], ResultMood> = {
 const ICON: Record<ScanPresentation['kind'], string> = {
   discovered: 'stars',
   already_discovered: 'bookmark',
+  empty_enclosure: 'information-circle-outline',
   invalid_code: 'help-outline',
   inactive_code: 'help-outline',
   expired_scan: 'information-circle-outline',
@@ -36,6 +38,7 @@ const ICON: Record<ScanPresentation['kind'], string> = {
 const CHEER: Record<ScanPresentation['kind'], string> = {
   discovered: '¡Lo lograste!',
   already_discovered: '¡Este ya es tuyo!',
+  empty_enclosure: 'Aquí no hay',
   invalid_code: 'Probemos otro',
   inactive_code: 'Probemos otro',
   expired_scan: 'Vuelve a intentarlo',

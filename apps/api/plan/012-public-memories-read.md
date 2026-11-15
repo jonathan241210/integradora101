@@ -2,12 +2,13 @@
 
 - Spec: `apps/api/specs/012-public-memories-read.md`
 - Estado de spec: Aprobada (Jonathan, responsable de backend, 2026-11-12). Aprobar no autoriza implementar.
-- Estado de este plan: **Borrador**, pendiente de aprobación técnica. Lo redacta la sesión de documentación; no lo aprueba quien lo redacta.
-- Responsable técnico: Jonathan (responsable de backend). Aprobación técnica pendiente.
+- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: lo redactó la sesión de documentación; la aprobación es de Jonathan (2026-11-13). Las preguntas 1 a 5 quedan resueltas el 2026-11-13 (la 4: sin tope de `page`). Las precondiciones de ejecución siguen abiertas según la lista de abajo.
+- Responsable técnico: Jonathan (responsable de backend). Aprobación técnica cumplida el 2026-11-13.
 - Precondiciones de ejecución (ninguna cumplida como condición de código):
   - DBR-012 en «Lista para backend» (aplicada en `arca_pruebas` el 2026-11-11, migración `2026_11_11_000012_visitor_memories_schema`). Cumplida.
-  - Modelo `VisitorMemory` de `api-010`. **No existe hoy** en `apps/api/src/app/Models/` (comprobado el 2026-11-12). Bloquea T-01 y T-02 (pregunta 1).
-  - Disco público de `api-013` (carpeta `media/`, clave de configuración y `MEDIA_PUBLIC_URL`). **No configurado hoy** en `apps/api/src/config/filesystems.php`. Bloquea T-05 (pregunta 2).
+  - Modelo `VisitorMemory` de `api-010`. **No existe hoy** en `apps/api/src/app/Models/` (comprobado el 2026-11-12). Plan y tasks de `api-010` aprobados el 2026-11-13, sin implementar. Bloquea T-01 y T-02 hasta que `api-010` T-04 esté implementada (pregunta 1 resuelta).
+  - Disco público de `api-013` (carpeta `media/`, clave de configuración y `MEDIA_PUBLIC_URL`). **No configurado hoy** en `apps/api/src/config/filesystems.php`. Plan y tasks de `api-013` aprobados el 2026-11-13. Bloquea T-05 hasta que `api-013` T-01 esté implementada (pregunta 2: clave resuelta el 2026-11-13, `filesystems.media_scopes.public`).
 - Consumidor: `web-010` (`apps/web`, galería «Momentos para recordar», ADR 0027). Sin cambios en `packages/api-client` ni en `apps/mobile`.
 
 ## Diseño de solución
@@ -200,10 +201,10 @@ Reglas de diseño de los tests:
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Laravel 12, PHP 8.4, Eloquent y MySQL 8.0.x. Sin dependencias nuevas, sin SDK de nube, sin ADR nuevo. Configuración solo por `.env`. |
-| II. La spec manda | Sí, con condición | Spec 012 Aprobada (2026-11-12). Este plan y sus tasks están en Borrador. La implementación queda bloqueada hasta su aprobación, T-00 con evidencia y la resolución de las preguntas 1 y 2. |
+| II. La spec manda | Sí, con condición | Spec 012 Aprobada (2026-11-12). Plan y tasks aprobados el 2026-11-13. La implementación queda bloqueada hasta T-00 con evidencia y hasta que `api-010` y `api-013` estén implementados. |
 | III. Lógica separada de la interfaz | Sí | Controlador delgado; validación en Form Request; visibilidad en el scope del modelo y en la Action; serialización en Resource; imagen en su propia Action. `web-010` solo presenta. |
 | IV. Un test por criterio | Sí | CA-01 a CA-12 con un método nombrado cada uno (tabla de mapeo). CA-11 se comprueba con su propio test. |
-| V. Una sola fuente de verdad para los datos | Sí, con brecha registrada | Solo lectura de `visitor_memories`. Sin migraciones, sin escrituras, sin borrado físico. **Brecha:** `BaseModel` no existe en `apps/api/src/app` (la divergencia 1 de `api-010`). `VisitorMemory` debe extender `BaseModel` y usar SoftDeletes (Constitución V, `api-010` CA-20). Se resuelve antes de T-01 (pregunta 1). No es una excepción. |
+| V. Una sola fuente de verdad para los datos | Sí, con excepción D-M1 registrada | Solo lectura de `visitor_memories`. Sin migraciones, sin escrituras, sin borrado físico. **Excepción D-M1 (decisión del 2026-11-13):** `BaseModel` no existe; `VisitorMemory` usa SoftDeletes sobre `Model`, como decidió `api-010`, y esta spec solo ajusta ese modelo (pregunta 1). Queda como excepción registrada, no como base nueva. No existe ninguna clase `BaseModel` en `apps/api/src/app` (verificado 2026-11-13). |
 | VI. Código en inglés, personas en español | Sí | Rutas, clases y campos en inglés (`memories.index`, `ListPublishedMemoriesAction`, `PublicMemoryResource`, `opinion`, `published_at`). Mensajes 422 y documentación en español. |
 
 No hay excepciones que requieran ADR.
@@ -211,11 +212,11 @@ No hay excepciones que requieran ADR.
 ## Riesgos y decisiones
 
 - **ADR/DBR:** no se requiere ADR nuevo ni DBR propia. Se apoyan ADR 0010 (gobierno de BD), ADR 0013 (Aiven y portabilidad), ADR 0026 (medios, Aceptado con enmiendas de `species/`) y ADR 0027 (galería dinámica, Aceptado).
-- **Bloqueo 1, modelo `VisitorMemory` y `BaseModel`.** No existen hoy. Se resuelve con la pregunta 1. Mientras tanto no se escribe código de la Action.
-- **Bloqueo 2, disco público de `api-013`.** No está configurado y `api-013` no tiene plan ni tasks. Bloquea T-05, T-15 y el tramo de imagen de T-16.
+- **Bloqueo 1, modelo `VisitorMemory`.** No existe hoy. Se resuelve con la pregunta 1 (resuelta el 2026-11-13). Mientras `api-010` no esté implementada no se escribe código de la Action.
+- **Bloqueo 2, disco público de `api-013`.** No está configurado; `api-013` tiene plan y tasks aprobados (2026-11-13), pero su implementación está pendiente. Bloquea T-05, T-15 y el tramo de imagen de T-16.
 - **Divergencia 3, `image_url` de un archivo ausente.** `api-012` CA-06 dice que la imagen ausente da `null`. `api-013` CA-11 y su flujo 8 dicen que la API no comprueba la existencia del archivo y que la imagen no carga hasta el `pull`. Son dos decisiones aprobadas que no coinciden. Pregunta 3. Mientras no se resuelva, este plan sigue el texto literal de CA-06.
 - **Riesgo: plazo corto.** Con 7 días de vigencia (`api-010`, decisión del 2026-11-12), la lista estará vacía o casi vacía con frecuencia. Es el comportamiento esperado: `web-010` muestra el estado vacío y no rellena la galería. CA-02 cubre la respuesta vacía.
-- **Riesgo: `page` sin máximo.** Un `page` muy grande produce un desplazamiento enorme, que puede terminar en error de base de datos (`500`) por desbordamiento. La spec no fija un máximo. Pregunta 4.
+- **Riesgo: `page` sin máximo.** Un `page` muy grande produce un desplazamiento enorme, que puede terminar en error de base de datos (`500`) por desbordamiento. La spec no fija un máximo. Pregunta 4 resuelta: sin tope; riesgo aceptado el 2026-11-13.
 - **Riesgo: `filesort`.** El orden no sale del índice de DBR-012. Aceptable con el volumen previsto. T-22 lo mide.
 - **Riesgo: comprobación de archivo por fila.** `exists()` se hace por cada fila, como máximo 50. Con disco local es barato. Con almacenamiento de objetos futuro (`docs/propuestas/almacenamiento-objetos-s3.md`, no aprobado) sería una llamada remota por fila. Si cambia el disco, se revisa con una spec nueva.
 - **Riesgo: imagen vencida accesible por URL.** La vigencia oculta la foto en la API, pero el archivo queda en `media/memories/` (`api-010` pregunta 3; `api-013` RN-16). Riesgo aceptado y documentado.
@@ -238,10 +239,10 @@ No hay excepciones que requieran ADR.
 
 | Dependencia | Estado | Qué aporta | Efecto en este plan |
 |---|---|---|---|
-| `api-010` (Aprobada 2026-11-12) | Sin plan, tasks ni código. Modelo `VisitorMemory` y `BaseModel` inexistentes | Datos, estados, plazo `published_until` y publicación al aceptar | Bloquea T-01 y T-02 (pregunta 1). Fixtures con `DB::table` mientras tanto |
+| `api-010` (Aprobada 2026-11-12; plan y tasks aprobados 2026-11-13) | Sin código aún. Modelo `VisitorMemory` inexistente; `BaseModel` no se crea | Datos, estados, plazo `published_until` y publicación al aceptar | Bloquea T-01 y T-02 (pregunta 1). Fixtures con `DB::table` mientras tanto |
 | DBR-012 (Lista para backend; aplicada en `arca_pruebas` 2026-11-11) | Cumplida | Tabla, columnas e índices | T-00 verifica en solo lectura |
 | `api-011` (implementada) | Código existente | Patrón de paginación, mensajes, CORS y forma de respuesta | Se replica el patrón |
-| `api-013` (Aprobada 2026-11-12) | Sin plan, tasks ni disco configurado | Disco `media`, clave de configuración, `MEDIA_PUBLIC_URL` y `storage:link` | Bloquea T-05, T-15 y T-25 (pregunta 2) |
+| `api-013` (Aprobada 2026-11-12; plan y tasks aprobados 2026-11-13) | Disco sin configurar | Disco `media`, clave de configuración, `MEDIA_PUBLIC_URL` y `storage:link` | Bloquea T-05, T-15 y T-25 (pregunta 2) |
 | ADR 0026 y ADR 0027 | Aceptados (2026-11-12) | Carpeta compartida y galería dinámica | Marco de riesgo y de consumidor |
 | `web-010` | Consumidor | Galería del portal | Sin cambio en esta API |
 
@@ -260,21 +261,24 @@ No hay excepciones que requieran ADR.
 | Rol | Aprueba | Estado |
 |---|---|---|
 | Responsable funcional | Spec 012 | Aprobada (Jonathan, 2026-11-12) |
-| Equipo técnico | Este plan y su Constitution Check | Pendiente |
+| Equipo técnico | Este plan y su Constitution Check | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
 | Responsable de BD | Confirmación de que DBR-012 está aplicada en `arca_pruebas` | Aplicada el 2026-11-11 (confirmada por el responsable de BD en la DBR). Confirmación de T-00 pendiente |
-| Responsable de `api-010` | Modelo `VisitorMemory` y `BaseModel` (pregunta 1) | Pendiente |
-| Responsable de `api-013` | Disco público y clave de configuración (pregunta 2) | Pendiente |
+| Responsable de `api-010` | Modelo `VisitorMemory` y base de modelo (pregunta 1) | Aprobado: Jonathan, responsable de backend, 2026-11-13 (SoftDeletes sobre `Model`, D-M1). `api-010` implementa el modelo |
+| Responsable de `api-013` | Disco público y clave de configuración (pregunta 2) | Clave aprobada: Jonathan, responsable de backend, 2026-11-13 (`filesystems.media_scopes.public`). Configuración pendiente de implementar |
 
-## Preguntas abiertas (máximo 8)
+## Preguntas (resueltas el 2026-11-13)
 
 1. **Modelo `VisitorMemory` y `BaseModel`.** ¿Los crea `api-010` antes de implementar `api-012` (propuesta de este plan), o los crea `api-012` como parte de su T-01? Si los crea `api-012`, ¿se decide ya la base de modelo (`BaseModel` con SoftDeletes) o se acepta otra base?
+   **Resuelta (2026-11-13, Jonathan): se adopta la propuesta y la decisión de `api-010`.** `api-010` crea `VisitorMemory` y `VisitorMemoryReview` (su T-04) con SoftDeletes sobre `Model` (D-M1). No se crea `BaseModel`: es la decisión ya tomada en `api-010`. Esta decisión sustituye la frase «No es una excepción» de la fila V.
 2. **Disco público de `api-013`.** ¿Qué clave de configuración se usa para el disco público (sin el literal `'media'` ni `'public'` en las Actions)? ¿Cuándo se aprueba el plan de `api-013` y se configura `MEDIA_PUBLIC_URL`? Bloquea T-05, T-15 y T-25.
-3. **`image_url` con archivo ausente.** `api-012` CA-06 dice `null` si el archivo no existe. `api-013` CA-11 y su flujo 8 dicen que la API no comprueba la existencia y que la imagen no carga hasta el `pull`. ¿Qué regla se aplica? Propuesta de este plan: comprobación `exists()` por fila (texto literal de CA-06), con un máximo de 50 comprobaciones por respuesta.
+   **Resuelta en cuanto a la clave (2026-11-13):** `filesystems.media_scopes.public`, leída solo por `ResolveMediaDiskAction::publicDisk()` (`api-013` D-P2 y D-P3). Plan de `api-013` aprobado el 2026-11-13. La configuración sigue pendiente en `api-013`; T-05, T-15 y T-25 siguen bloqueadas hasta entonces.
+3. **`image_url` con archivo ausente.** `api-012` CA-06 dice `null` si el archivo no existe. `api-013` CA-11 y su flujo 8 dicen que la API no comprueba la existencia y que la imagen no carga hasta el `pull`. ¿Qué regla se aplica? Propuesta de este plan: comprobación `exists()` por fila (texto literal de CA-06), con un máximo de 50 comprobaciones por respuesta. **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.**
 4. **Máximo de `page`.** La spec no fija un tope. Un valor muy grande puede provocar un desbordamiento del desplazamiento y un error `500`. ¿Se fija un máximo de `page` que responda `422`, o se acepta el riesgo? Si se fija, ¿con qué valor?
-5. **`opinion` nula.** Una aceptada sin opinión (`api-010`, opinión opcional) ¿se devuelve con la clave `opinion` en `null` (propuesta de este plan, igual que `image_url`) o se omite la clave? CA-05 enumera las claves; la propuesta mantiene siempre las cuatro.
+   **Resuelta (2026-11-13, Jonathan): sin tope de `page`.** No se añade requisito ni 422 nuevo; una página fuera de rango devuelve lista vacía con la forma normal.
+5. **`opinion` nula.** Una aceptada sin opinión (`api-010`, opinión opcional) ¿se devuelve con la clave `opinion` en `null` (propuesta de este plan, igual que `image_url`) o se omite la clave? CA-05 enumera las claves; la propuesta mantiene siempre las cuatro. **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.** `opinion` siempre presente, en `null` si no hay opinión.
 
 ## Revisión
 
 - Redactado: 2026-11-12, a partir de la spec 012 Aprobada, de DBR-012 (Lista para backend) y de los patrones de `api-011` y `api-015`.
-- Aprobación técnica: pendiente.
+- Aprobación técnica: Jonathan, responsable de backend, 2026-11-13.
 - Evidencia de precondiciones: pendiente (T-00).

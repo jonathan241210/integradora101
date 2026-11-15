@@ -48,7 +48,7 @@ Unicidad: UNIQUE `(visitor_id, species_id)` **en lugar de** `(visitor_id, enclos
 | `enclosure_qr_code_id` | FK `enclosure_qr_codes.id` | NULL, ON DELETE SET NULL |
 | `scanned_at` | timestamp | declarado por el cliente |
 | `received_at` | timestamp | hora del servidor |
-| `result` | varchar(30) | `discovered` \| `already_discovered` \| `invalid_code` \| `expired_scan` \| `inactive_code` |
+| `result` | varchar(30) | `discovered` \| `already_discovered` \| `empty_enclosure` \| `invalid_code` \| `expired_scan` \| `inactive_code`. `empty_enclosure` (2026-11-14, `api-005` CA-14) cabe en el varchar ya creado; no hay migración nueva. |
 
 Unicidad: UNIQUE `(visitor_id, client_scan_id)`.
 

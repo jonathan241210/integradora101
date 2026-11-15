@@ -32,6 +32,7 @@ export type ScanPresentation = {
 const TITLES: Record<ScanPresentation['kind'], string> = {
   discovered: 'Nuevo descubrimiento',
   already_discovered: 'Ya descubierto',
+  empty_enclosure: 'Sin animales',
   invalid_code: 'Código inválido',
   inactive_code: 'Código inválido',
   expired_scan: 'Escaneo vencido',

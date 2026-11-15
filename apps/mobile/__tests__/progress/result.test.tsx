@@ -6,6 +6,7 @@ import type { ScanPresentation } from '../../src/services/scanQueue';
 const cases: ScanPresentation[] = [
   { kind: 'discovered', title: 'Nuevo descubrimiento', message: 'Descubriste especies nuevas.', pointsAwarded: 100, newSpecies: ['Tigre'] },
   { kind: 'already_discovered', title: 'Ya descubierto', message: 'Esas especies ya estaban en tu colección.' },
+  { kind: 'empty_enclosure', title: 'Sin animales', message: 'Este recinto no tiene animales en exhibición.' },
   { kind: 'invalid_code', title: 'Código inválido', message: 'Ese código no corresponde a un recinto.' },
   { kind: 'inactive_code', title: 'Código inválido', message: 'Ese código ya no está activo.' },
   { kind: 'expired_scan', title: 'Escaneo vencido', message: 'El escaneo venció. Vuelve a leer el código.' },
@@ -21,6 +22,11 @@ describe('test-ca-07-progress-result-screens', () => {
       expect(view.getByText('¡Lo lograste!')).toBeTruthy();
       expect(view.queryByText('Tigre')).toBeNull();
       expect(view.queryByText(/Se desbloqueó/)).toBeNull();
+    }
+    if (result.kind === 'empty_enclosure') {
+      expect(view.getByText('Aquí no hay')).toBeTruthy();
+      expect(view.queryByText('¡Este ya es tuyo!')).toBeNull();
+      expect(view.queryByText('+100 puntos')).toBeNull();
     }
   });
 

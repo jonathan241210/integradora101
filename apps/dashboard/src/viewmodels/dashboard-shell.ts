@@ -12,7 +12,9 @@ export type DashboardSection =
   | "ticket-prices"
   | "reports"
   | "enclosures"
-  | "users";
+  | "users"
+  | "memories"
+  | "tulanpedia";
 
 export type DashboardShellState = {
   activeSection: DashboardSection;

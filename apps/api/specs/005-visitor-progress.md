@@ -48,7 +48,7 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 - **CA-02:** Dado un escaneo, cuando `scanned_at` tiene más de 24 h de antigüedad o más de 5 minutos en el futuro, entonces la API lo rechaza con `expired_scan` y lo registra en `visitor_scans`.
 - **CA-03:** Dado un visitante, cuando supera 30 escaneos por minuto, entonces la API responde 429 con mensaje en español.
 - **CA-04:** Dado un código QR válido y activo, cuando se procesa el descubrimiento, entonces la API registra en la colección las especies de los animales con `can_receive_visits=1` de ese recinto y otorga puntos por cada especie nueva (cantidad configurable, 100 por defecto) en `visitor_point_entries`.
-- **CA-05:** Dada una respuesta de `discoveries`, cuando el cliente la consume, entonces tiene la forma `{ result, new_species[], already_known_species[], points_awarded, unlocked_achievements[], completed_missions[], progress }` con `201` para `discovered`, `200` para `already_discovered` y `422` para `invalid_code`, `expired_scan` o `inactive_code`.
+- **CA-05:** Dada una respuesta de `discoveries`, cuando el cliente la consume, entonces tiene la forma `{ result, new_species[], already_known_species[], points_awarded, unlocked_achievements[], completed_missions[], progress }` con `201` para `discovered`, `200` para `already_discovered` y para `empty_enclosure`, y `422` para `invalid_code`, `expired_scan` o `inactive_code`.
 - **CA-06:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/progress`, entonces recibe puntos totales (suma del libro mayor), nivel, rango, siguiente umbral y especies descubiertas / total disponibles (especies con al menos un animal en exhibición, aunque su recinto aún no tenga QR).
 - **CA-07:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/collection`, entonces recibe las especies con `discovered` y `discovered_at`.
 - **CA-08:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/achievements` y `GET /api/v1/visitor/missions`, entonces recibe los catálogos con estado (desbloqueado/completado o pendiente), progreso calculado por el servidor y `rule_param` cuando la regla depende de una categoría. Enmienda de Aksel, 2026-11-01.
@@ -56,7 +56,8 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 - **CA-10:** Dada la configuración de niveles en `config/visitor_progress.php`, cuando se calcula el nivel, entonces aplica los umbrales: 1 Explorador novato (0), 2 Explorador (500), 3 Explorador avanzado (1500), 4 Explorador experto (3000), 5 Guardián de la fauna (6000).
 - **CA-11:** Dados los seeders, cuando se ejecutan `AchievementSeeder` y `MissionSeeder`, entonces cargan los catálogos de forma idempotente por `code`, basados en los mocks actuales de la app; las recompensas tipo «Certificado» se convierten en puntos o logros porque no hay premios.
 - **CA-12:** Dado el comando `php artisan arca:generate-qr-codes {enclosure}`, cuando el personal lo ejecuta, entonces genera códigos opacos aleatorios para los QR del recinto. La impresión no forma parte de este comando.
-- **CA-13:** Dada la suite de PHPUnit, cuando se ejecuta `php artisan test`, entonces corre contra `arca_pruebas` (nunca `arca_zoo`) y existe al menos un test que nombra cada CA-xx.
+- **CA-13:** Dada la suite de PHPUnit, cuando se ejecuta `php artisan test`, entonces corre contra `arca_pruebas` (nunca `arca_zoo`) y existe al menos un test que nombra cada CA-xx, incluido CA-14.
+- **CA-14 (recinto sin animales en exhibición, Aksel, 2026-11-14):** Dado un código QR válido y activo cuyo recinto no tiene animales con `can_receive_visits = 1`, cuando se escanea, entonces responde `200` con `result` `empty_enclosure`, `points_awarded` `0`, listas vacías y `message` «Este recinto no tiene animales en exhibición.». No crea filas en `visitor_collections` ni en `visitor_point_entries`. Un escaneo posterior del mismo recinto, ya con un animal en exhibición, responde `discovered`. No es `already_discovered`.
 
 ## Reglas de negocio
 
@@ -91,6 +92,7 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 - Código inexistente → 422 `invalid_code`; código desactivado → 422 `inactive_code`.
 - Escaneo >24 h o >5 min en el futuro → 422 `expired_scan`.
 - Ya descubierto → 200 `already_discovered` (sin puntos nuevos).
+- Recinto sin animales en exhibición (`can_receive_visits = 1`) → 200 `empty_enclosure`, mensaje «Este recinto no tiene animales en exhibición.», sin puntos (CA-14, Aksel, 2026-11-14).
 - >30 escaneos/minuto → 429; sin sesión → 401.
 
 ## Dependencias, riesgos y preguntas
