@@ -3,6 +3,8 @@
 namespace App\Actions\Visitor;
 
 use App\Models\Visitor;
+use App\Models\VisitorNotificationPreference;
+use App\Models\VisitorPushToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -17,6 +19,8 @@ class DeleteVisitorAccountAction
         }
 
         $this->log->execute('deleted', $visitor->email, $visitor, $request);
+        VisitorPushToken::query()->where('visitor_id', $visitor->id)->delete();
+        VisitorNotificationPreference::query()->where('visitor_id', $visitor->id)->delete();
         $visitor->tokens()->delete();
         $visitor->delete();
 

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { ScreenContainer, AppText, BackButton, Card, Icon, ProgressBar, LoadingView } from '../components/ui';
+import { ScreenContainer, AppText, BackButton, Card, Chip, Icon, ProgressBar, LoadingView } from '../components/ui';
 import { colors, radius, spacing } from '../theme/tokens';
 import { Mission } from '../models';
 
@@ -10,22 +10,50 @@ interface GameScreenProps {
   onBackPress: () => void;
   onMissionPress: (id: string) => void;
   onRetryPress?: () => void;
+  onAchievementsPress?: () => void;
   loading?: boolean;
   embedded?: boolean;
 }
 
-function missionPace(missions: Mission[]): string | null {
-  if (missions.length === 0) return null;
-  const inProgress = missions.filter((mission) => mission.progress > 0 && mission.progress < mission.total).length;
-  const notStarted = missions.filter((mission) => mission.progress <= 0).length;
-  const parts = [
-    inProgress > 0 ? `${inProgress} en curso` : null,
-    notStarted > 0 ? `${notStarted} por empezar` : null,
-  ].filter((part): part is string => part !== null);
-  return parts.length > 0 ? parts.join(' · ') : 'Todas las misiones de esta visita están en marcha.';
+type MissionFilter = 'inProgress' | 'notStarted';
+
+function isComplete(mission: Mission): boolean {
+  return mission.total > 0 && mission.progress >= mission.total;
 }
 
-export function GameScreen({ missions, pendingScans = [], onBackPress, onMissionPress, onRetryPress, loading = false, embedded = false }: GameScreenProps) {
+function MissionCard({ mission, done = false, onPress }: { mission: Mission; done?: boolean; onPress: () => void }) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`Ver detalles de la misión ${mission.title}`}
+    >
+      <Card style={[styles.missionCard, done ? styles.missionCardDone : null]}>
+        <View style={styles.missionTitleRow}>
+          <AppText variant="subheading" bold style={styles.missionTitle}>{mission.title}</AppText>
+          <Icon name="chevron-forward" size={20} color={done ? colors.primary : colors.secondary} />
+        </View>
+        {mission.objective ? <AppText variant="small" color="textMuted">{mission.objective}</AppText> : null}
+        <ProgressBar
+          value={mission.total > 0 ? mission.progress / mission.total : 0}
+          label={`${mission.progress} de ${mission.total}`}
+          fill="wine"
+        />
+        <View style={styles.rewardPill}>
+          <AppText variant="caption" bold>{mission.reward}</AppText>
+        </View>
+      </Card>
+    </TouchableOpacity>
+  );
+}
+
+export function GameScreen({ missions, pendingScans = [], onBackPress, onMissionPress, onRetryPress, onAchievementsPress, loading = false, embedded = false }: GameScreenProps) {
+  const [filter, setFilter] = useState<MissionFilter | null>(null);
+  const active = missions.filter((mission) => !isComplete(mission));
+  const completed = missions.filter(isComplete);
+  const inProgress = active.filter((mission) => mission.progress > 0);
+  const notStarted = active.filter((mission) => mission.progress <= 0);
+  const shown = filter === 'inProgress' ? inProgress : filter === 'notStarted' ? notStarted : active;
   const body = (
       <View style={loading && !embedded ? styles.loadingPage : undefined}>
       <View testID={embedded ? 'missions-intro' : undefined} style={[styles.header, embedded ? styles.headerEmbedded : null]}>
@@ -56,38 +84,55 @@ export function GameScreen({ missions, pendingScans = [], onBackPress, onMission
           </View>
         ) : null}
         <AppText variant="title">Misiones activas</AppText>
-        {missionPace(missions) ? <AppText variant="small" color="textMuted">{missionPace(missions)}</AppText> : null}
         {missions.length === 0 ? (
           <AppText variant="body" color="textMuted">Aún no hay misiones para esta visita.</AppText>
-        ) : null}
+        ) : (
+          <View style={styles.filters}>
+            {inProgress.length > 0 ? (
+              <Chip
+                label={`${inProgress.length} en curso`}
+                selected={filter === 'inProgress'}
+                onPress={() => setFilter((current) => current === 'inProgress' ? null : 'inProgress')}
+              />
+            ) : null}
+            {notStarted.length > 0 ? (
+              <Chip
+                label={`${notStarted.length} por empezar`}
+                selected={filter === 'notStarted'}
+                onPress={() => setFilter((current) => current === 'notStarted' ? null : 'notStarted')}
+              />
+            ) : null}
+          </View>
+        )}
         <View style={styles.missionList}>
-          {missions.map(m => (
-            <TouchableOpacity
-              key={m.id}
-              onPress={() => onMissionPress(m.id)}
-              accessibilityRole="button"
-              accessibilityLabel={`Ver detalles de la misión ${m.title}`}
-            >
-              <Card style={styles.missionCard}>
-                <View style={styles.missionTitleRow}>
-                  <AppText variant="subheading" bold style={styles.missionTitle}>{m.title}</AppText>
-                  <Icon name="chevron-forward" size={20} color={colors.secondary} />
-                </View>
-                {m.objective ? <AppText variant="small" color="textMuted">{m.objective}</AppText> : null}
-                <ProgressBar
-                  value={m.total > 0 ? m.progress / m.total : 0}
-                  label={`${m.progress} de ${m.total}`}
-                  fill="wine"
-                />
-                <View style={styles.rewardPill}>
-                  <AppText variant="caption" bold>{m.reward}</AppText>
-                </View>
-              </Card>
-            </TouchableOpacity>
+          {shown.map((mission) => (
+            <MissionCard key={mission.id} mission={mission} onPress={() => onMissionPress(mission.id)} />
           ))}
+          {missions.length > 0 && shown.length === 0 ? (
+            <AppText variant="body" color="textMuted">No hay misiones en este filtro.</AppText>
+          ) : null}
         </View>
 
-        <AppText variant="small" color="textMuted">Cuando termines una misión, el logro queda en tu perfil.</AppText>
+        {completed.length > 0 ? (
+          <View style={styles.missionList}>
+            <AppText variant="title">Misiones completadas</AppText>
+            {completed.map((mission) => (
+              <MissionCard key={mission.id} mission={mission} done onPress={() => onMissionPress(mission.id)} />
+            ))}
+          </View>
+        ) : null}
+
+        {onAchievementsPress ? (
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Ver salón de logros"
+            onPress={onAchievementsPress}
+            style={styles.hallButton}
+          >
+            <Icon name="emoji-events" size={22} color={colors.textOnPrimary} />
+            <AppText variant="body" bold color="textOnPrimary">Ver salón de logros</AppText>
+          </TouchableOpacity>
+        ) : null}
       </View>
       )}
       </View>
@@ -107,6 +152,7 @@ const styles = StyleSheet.create({
   loadingPage: { flex: 1 },
   loadingFill: { flex: 1, justifyContent: 'center' },
   content: { padding: spacing.lg, gap: spacing.lg },
+  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   missionList: { gap: spacing.md, marginBottom: spacing.lg },
   missionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   missionTitle: { flex: 1 },
@@ -116,8 +162,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderColor: colors.border,
     borderLeftWidth: 4,
-    borderLeftColor: colors.secondary,
+    borderLeftColor: colors.primary,
     borderRadius: radius.lg,
+  },
+  missionCardDone: { borderLeftColor: colors.accent, backgroundColor: colors.background },
+  hallButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   rewardPill: {
     alignSelf: 'flex-start',

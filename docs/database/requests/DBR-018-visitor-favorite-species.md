@@ -1,13 +1,13 @@
 # DBR-018 · visitor-favorite-species
 
-- Estado: Migración creada y probada en base MySQL 8.0 aislada sin errores (aprobación de BD registrada; pendiente aprobación de backend para `Aprobada`/`Lista para backend`)
-- Feature/spec origen: `apps/api/specs/018-visitor-favorite-species.md` (Borrador). Consumidor: `apps/mobile/specs/014-visitor-favorite-species.md` (Aprobada).
+- Estado: Aprobada y Lista para backend (BD Victor Adrian y backend Aksel, 2026-11-14). Migración probada en MySQL 8.0 aislado.
+- Feature/spec origen: `apps/api/specs/018-visitor-favorite-species.md` (Aprobada). Consumidor: `apps/mobile/specs/014-visitor-favorite-species.md` (Aprobada).
 - Solicitante: Aksel
 - Responsable de BD: Victor Adrian
-- Responsable backend: por identificar
+- Responsable backend: Aksel
 - Fecha: 2026-11-14
 
-Aprobación de BD registrada y migración probada por BD (2026-11-14, sin errores). Falta la aprobación separada de backend para pasar a `Aprobada`/`Lista para backend` y habilitar integración backend.
+Aprobación de BD (Victor Adrian) y de backend (Aksel), 2026-11-14. La migración ya estaba probada en MySQL 8.0 aislado. Con las dos firmas queda Aprobada y Lista para backend. La evidencia sigue siendo ese MySQL aislado: esta firma no aplica la migración en `arca_pruebas` ni en `arca_zoo`.
 
 ## Problema y justificación
 
@@ -101,7 +101,7 @@ No aplica. No se crean funciones, procedimientos, vistas ni triggers. La regla d
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
 | Responsable de BD | Victor Adrian | 2026-11-14 | Aprobado |
-| Responsable backend | | | Pendiente |
+| Responsable backend | Aksel | 2026-11-14 | Aprobado |
 
 ## Aplicación por ambiente
 

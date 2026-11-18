@@ -3,6 +3,7 @@ import { ZooEvent, News } from '../models';
 import { ZooRepository } from './index';
 import { ApiEventResponse, ApiNewsResponse, mapEventToZooEventModel, mapNewsToModel } from './mappers';
 import { KeyValueStorage, defaultStorage } from './storage';
+import { retainMediaUri } from '../services/mediaImageCache';
 
 interface CacheEnvelope<T> {
   data: T;
@@ -45,13 +46,13 @@ export class ApiZooRepository implements ZooRepository {
     if (cached) {
       const isFresh = Date.now() - cached.cachedAt < cached.ttlMs;
       if (isFresh) {
-        return cached.data;
+        return this.presentEvents(cached.data);
       }
       this.revalidateEvents().catch(() => {});
-      return cached.data;
+      return this.presentEvents(cached.data);
     }
 
-    return await this.fetchAndCacheEvents();
+    return this.presentEvents(await this.fetchAndCacheEvents());
   }
 
   /**
@@ -65,13 +66,13 @@ export class ApiZooRepository implements ZooRepository {
     if (cached) {
       const isFresh = Date.now() - cached.cachedAt < cached.ttlMs;
       if (isFresh) {
-        return cached.data;
+        return this.presentEvent(cached.data);
       }
       this.revalidateEventById(id, cacheKey).catch(() => {});
-      return cached.data;
+      return this.presentEvent(cached.data);
     }
 
-    return await this.fetchAndCacheEventById(id, cacheKey);
+    return this.presentEvent(await this.fetchAndCacheEventById(id, cacheKey));
   }
 
   /**
@@ -83,13 +84,13 @@ export class ApiZooRepository implements ZooRepository {
     if (cached) {
       const isFresh = Date.now() - cached.cachedAt < cached.ttlMs;
       if (isFresh) {
-        return cached.data;
+        return this.presentNewsList(cached.data);
       }
       this.revalidateNews().catch(() => {});
-      return cached.data;
+      return this.presentNewsList(cached.data);
     }
 
-    return await this.fetchAndCacheNews();
+    return this.presentNewsList(await this.fetchAndCacheNews());
   }
 
   async refreshNewsAndEvents(): Promise<{ news: News[]; events: ZooEvent[] }> {
@@ -97,7 +98,10 @@ export class ApiZooRepository implements ZooRepository {
       this.fetchAndCacheNews(),
       this.fetchAndCacheEvents(),
     ]);
-    return { news, events };
+    return {
+      news: await this.presentNewsList(news, true),
+      events: await this.presentEvents(events, true),
+    };
   }
 
   async getNewsById(id: string): Promise<News | null> {
@@ -107,13 +111,17 @@ export class ApiZooRepository implements ZooRepository {
     if (cached) {
       const isFresh = Date.now() - cached.cachedAt < cached.ttlMs;
       if (isFresh) {
-        return cached.data;
+        return this.presentNews(cached.data);
       }
       this.revalidateNewsById(id, cacheKey).catch(() => {});
-      return cached.data;
+      return this.presentNews(cached.data);
     }
 
-    return await this.fetchAndCacheNewsById(id, cacheKey);
+    return this.presentNews(await this.fetchAndCacheNewsById(id, cacheKey));
+  }
+
+  async reloadNewsById(id: string): Promise<News | null> {
+    return this.presentNews(await this.fetchAndCacheNewsById(id, `${CACHE_KEY_NEWS_PREFIX}${id}`), true);
   }
 
   private async fetchAndCacheEvents(): Promise<ZooEvent[]> {
@@ -214,6 +222,26 @@ export class ApiZooRepository implements ZooRepository {
     } catch {
       // Ignorar fallo en background
     }
+  }
+
+  private async presentNewsList(list: News[], force = false): Promise<News[]> {
+    return Promise.all(list.map((item) => this.presentNews(item, force)));
+  }
+
+  private async presentNews(item: News | null, force = false): Promise<News | null> {
+    if (!item?.imageUrl || process.env.JEST_WORKER_ID) return item;
+    const imageUrl = await retainMediaUri(item.imageUrl, force);
+    return imageUrl === item.imageUrl ? item : { ...item, imageUrl };
+  }
+
+  private async presentEvents(list: ZooEvent[], force = false): Promise<ZooEvent[]> {
+    return Promise.all(list.map((item) => this.presentEvent(item, force)));
+  }
+
+  private async presentEvent(item: ZooEvent | null, force = false): Promise<ZooEvent | null> {
+    if (!item?.imageUrls?.length || process.env.JEST_WORKER_ID) return item;
+    const imageUrls = await Promise.all(item.imageUrls.map((uri) => retainMediaUri(uri, force)));
+    return { ...item, imageUrls };
   }
 
   private async readCache<T>(key: string): Promise<CacheEnvelope<T> | null> {

@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Listeners\RecordAuthenticationEvent;
+use App\Push\ExpoPushGateway;
+use App\Push\PushGateway;
 use Closure;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
@@ -25,6 +27,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(PushGateway::class, ExpoPushGateway::class);
+
         $this->app->bind('visitor.password', function () {
             $rule = Password::min(8)->letters()->numbers();
 

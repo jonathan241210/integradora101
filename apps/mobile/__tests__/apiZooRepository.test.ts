@@ -114,6 +114,19 @@ describe('ApiZooRepository (mobile-003: api-read-integration)', () => {
     expect(detail?.title).toBe('Aviso de hoy');
     expect(detail?.content).toBe('Texto completo de la noticia.');
     expect(detail?.date).toBe('10 de noviembre de 2026');
+
+    mockHttpClient.get.mockResolvedValueOnce({
+      data: {
+        id: 25,
+        title: 'Aviso actualizado',
+        published_date: '2026-11-10',
+        content: 'Texto nuevo.',
+        image_url: 'http://localhost:8000/media/news/aviso.jpg',
+      },
+    });
+    const reloaded = await repository.reloadNewsById('25');
+    expect(reloaded?.title).toBe('Aviso actualizado');
+    expect(reloaded?.imageUrl).toContain('/media/news/aviso.jpg');
   });
 
   it('CA-11: refreshNewsAndEvents pide la red aunque la caché esté vigente', async () => {

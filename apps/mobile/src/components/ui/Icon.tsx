@@ -27,6 +27,7 @@ const symbols: Record<string, SymbolViewProps['name']> = {
   'heart-outline': { android: 'favorite_border', ios: 'heart' },
   home: { android: 'home', ios: 'house.fill' },
   'home-outline': { android: 'home', ios: 'house' },
+  images: { android: 'photo_library', ios: 'photo.on.rectangle' },
   'information-circle-outline': { android: 'info_outline', ios: 'info.circle' },
   'location-outline': { android: 'location_on', ios: 'location' },
   location: { android: 'location_on', ios: 'location.fill' },

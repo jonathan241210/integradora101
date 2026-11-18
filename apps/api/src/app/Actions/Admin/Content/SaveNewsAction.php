@@ -3,6 +3,7 @@
 namespace App\Actions\Admin\Content;
 
 use App\Actions\Admin\LogAdminActivityAction;
+use App\Actions\Push\QueueVisibleContentPushAction;
 use App\Models\News;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -67,6 +68,10 @@ class SaveNewsAction
                 'image_changed' => true,
                 'action' => $imageAction,
             ]);
+        }
+
+        if (News::query()->publicVisible()->whereKey($news->id)->exists()) {
+            app(QueueVisibleContentPushAction::class)->execute('news', (int) $news->id);
         }
 
         return $news;

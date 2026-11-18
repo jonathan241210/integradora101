@@ -6,7 +6,7 @@ import { peekScanResult, scanResultParams } from '../../navigation/presentScanRe
 import { accountSession } from '../../session/accountSession';
 import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
 import { mergeDiscoveredSpecies, useVisitorProgress } from '../../viewmodels/useVisitorProgress';
-import { useFavoriteAnimals } from '../../viewmodels/useFavoriteAnimals';
+import { useVisitorFavorites } from '../../viewmodels/useFavoriteAnimals';
 import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 
 export default function AnimalDetailRoute() {
@@ -15,7 +15,7 @@ export default function AnimalDetailRoute() {
   const { getAnimalDetails } = useAnimalViewModel();
   const progress = useVisitorProgress();
   const { isOffline } = useNetworkStatus();
-  const { ids: favoriteIds, toggle } = useFavoriteAnimals();
+  const { ids: favoriteIds, toggle, error: favoriteMessage } = useVisitorFavorites();
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -57,6 +57,7 @@ export default function AnimalDetailRoute() {
       }}
       onNavigatePress={() => router.push(shown?.isDiscovered ? { pathname: '/map', params: { animalId: id } } : '/discover')}
       isFavorite={typeof id === 'string' && favoriteIds.includes(id)}
+      favoriteMessage={favoriteMessage}
       onToggleFavorite={typeof id === 'string' ? () => { void toggle(id); } : undefined}
     />
   );

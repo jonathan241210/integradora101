@@ -26,7 +26,7 @@ ADR 0011 está aceptado (Aksel, 2026-10-21). `expo-secure-store` entra en T-31, 
 
 ## Corte 1 · Sesión, login y logout
 
-- [x] **T-01** (RN-02): Crear `src/constants/avatarCatalog.ts` con los códigos `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer` y `wolf`, y placeholders en `src/assets/avatars/`.
+- [x] **T-01** (RN-02): Crear `src/constants/avatarCatalog.ts` con los códigos `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer` y `wolf`, y placeholders en `src/assets/avatars/`. Enmienda 2026-11-18: esos SVG se sustituyeron por `src/assets/avatars/<código>.png`.
 - [x] **T-02** (CA-05, RN-04): Crear `src/services/tokenStorage.ts` con la interfaz de lectura, escritura y borrado del par de tokens, más un doble en memoria para pruebas. No agregar la dependencia `expo-secure-store`.
 - [x] **T-03** (CA-05, CA-06, CA-11, CA-12): Crear `src/repositories/authRepository.ts` y `src/repositories/mockAuthRepository.ts` (login, logout y refresh de una sola petición en vuelo). La sesión de cuenta deja de usar `visitorAccessRepository`. Sin red.
 - [x] **T-04** (CA-01, CA-05, CA-11): Crear `src/session/SessionProvider.tsx` y `src/viewmodels/useSessionViewModel.ts` con estados `bootstrapping`, `guest` y `authenticated`.

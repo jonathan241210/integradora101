@@ -64,7 +64,7 @@ La web, el dashboard y el login de personal no son fuente de código. El visitan
 ## Reglas de negocio
 
 - **RN-01:** Solo adultos (18+) crean cuenta: la casilla de mayoría de edad y la aceptación del aviso son obligatorias para registrarse; la versión del aviso aceptada se envía a la API.
-- **RN-02:** El avatar se elige solo del catálogo incluido en la app. Los códigos aceptados son `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer` y `wolf`. No se admiten fotos. El arte final del zoológico puede sustituir los placeholders sin cambiar los códigos.
+- **RN-02:** El avatar se elige solo del catálogo incluido en la app. Los códigos aceptados son `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer` y `wolf`. No se admiten fotos. El arte vigente es `src/assets/avatars/<código>.png`, expuesto en `AVATAR_IMAGES`. Perfil, la edición de cuenta y el selector muestran esa imagen. Los códigos no cambian. Enmienda 2026-11-18.
 - **RN-03:** El perfil visible del menor (cuenta del tutor) muestra solo apodo y avatar.
 - **RN-04:** Los tokens viven solo en `expo-secure-store`; la cola de escaneos y el caché no sensible usan `@react-native-async-storage/async-storage` (spec `mobile-005`). ADR 0011 aceptó ambas dependencias el 2026-10-21. `expo-secure-store` se instala con el checklist HTTP de esta spec, cuando ese checklist esté aprobado. AsyncStorage se instala en `mobile-005`.
 - **RN-05:** La app no lleva claves ni secretos con privilegios: todo lo que va dentro del paquete puede extraerse.

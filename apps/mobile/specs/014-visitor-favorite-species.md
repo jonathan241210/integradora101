@@ -2,11 +2,11 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile` (corazón, inicio «Animales favoritos», copia local y cierre de sesión); `packages/api-client` (métodos y tipos, sin lógica de negocio); `api` (lista y reglas, spec `api-018`).
-- Estado: Aprobada
+- Estado: En progreso
 - Solicitante / responsable funcional: Aksel
 - Aprobación funcional: Aksel, 2026-11-14
-- Dependencias de contrato: `api-018` (aprobación funcional de Aksel, 2026-11-14; conformidad del equipo pendiente) y DBR-018 (Borrador). No se implementa hasta que `api-018` pase a Aprobada, con plan, tasks y DBR-018 en `Lista para backend`.
-- Esta aprobación funcional no autoriza plan, tasks ni código.
+- Dependencias de contrato: `api-018` (En progreso) y DBR-018 (Lista para backend). El plan y las tasks están aprobados (Aksel, 2026-11-16). El código de esta spec está en curso. El PR de T-16 sigue abierto.
+- El plan y las tasks están aprobados (Aksel, 2026-11-16). El código está en curso. Esta spec pasa a Implementada cuando cierren el PR y la definición de hecho.
 
 ## Problema y contexto
 
@@ -81,9 +81,9 @@ El id de la ficha es el de la especie publicada (`mapSpeciesToAnimalModel`). Est
 
 ## Dependencias, riesgos y preguntas
 
-- Dependencias: `api-018`. No hay dependencia nueva. La enmienda del ADR 0014 (los favoritos no salen del teléfono) sigue vigente hasta que `api-018` esté Aprobada y esta spec se implemente.
+- Dependencias: `api-018`. No hay dependencia nueva. El ADR 0014 conserva el cache de catálogo y deja la lista de favoritos en la cuenta, con la última respuesta en el teléfono para mostrarla sin red. El plan y las tasks están aprobados. La implementación está en curso.
 - Riesgos: si la subida única falla a medias, el siguiente arranque con GET vacío vuelve a intentar los id que sigan en la clave antigua. Un id de demostración no se sube.
-- Preguntas pendientes: la de DBR-018 (tabla sin SoftDeletes) la responden BD y backend. La conformidad del equipo sobre `api-018` sigue pendiente.
+- Preguntas pendientes: ninguna. BD y backend aceptaron la tabla sin SoftDeletes en DBR-018 el 2026-11-14. El plan y las tasks están aprobados (Aksel, 2026-11-16). La implementación está en curso.
 
 ## Revisión
 

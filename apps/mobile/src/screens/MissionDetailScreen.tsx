@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { AppText, BackButton, Card, ProgressBar, ScreenContainer } from '../components/ui';
 import { Mission } from '../models';
-import { spacing } from '../theme/tokens';
+import { colors, radius, spacing } from '../theme/tokens';
 
 interface MissionDetailScreenProps {
   mission: Mission | null;
@@ -50,24 +50,27 @@ export function MissionDetailScreen({ mission, loading = false, error, onBackPre
     <ScreenContainer>
       <View style={styles.content}>
         <BackButton onPress={onBackPress} />
-        <AppText variant="title">{mission.title}</AppText>
+        <View style={styles.hero}>
+          <AppText variant="overline" color="textOnPrimary">Misión</AppText>
+          <AppText variant="title" color="textOnPrimary">{mission.title}</AppText>
+          <View style={styles.rewardPill}>
+            <AppText variant="caption" bold>{mission.reward}</AppText>
+          </View>
+        </View>
         <Card style={styles.card}>
-          <AppText variant="subheading" bold>Objetivo</AppText>
-          <AppText variant="body" color="textMuted">{mission.objective}</AppText>
+          <AppText variant="subheading" bold color="primary">Objetivo</AppText>
+          <AppText variant="body">{mission.objective}</AppText>
         </Card>
-        <Card style={styles.card}>
-          <AppText variant="subheading" bold>Tu progreso</AppText>
+        <Card style={styles.progressCard}>
+          <AppText variant="subheading" bold color="primary">Tu progreso</AppText>
           <ProgressBar
             value={mission.total > 0 ? mission.progress / mission.total : 0}
             label={`${mission.progress} de ${mission.total} completados`}
+            fill="wine"
           />
           <AppText variant="small" color="textMuted">
             {remaining === 0 ? '¡Misión completada!' : `Te ${remaining === 1 ? 'falta' : 'faltan'} ${remaining} ${remaining === 1 ? 'paso' : 'pasos'} para completar la misión.`}
           </AppText>
-        </Card>
-        <Card style={styles.card}>
-          <AppText variant="subheading" bold>Premio</AppText>
-          <AppText variant="body" color="textMuted">{mission.reward}</AppText>
         </Card>
       </View>
     </ScreenContainer>
@@ -77,5 +80,28 @@ export function MissionDetailScreen({ mission, loading = false, error, onBackPre
 const styles = StyleSheet.create({
   content: { padding: spacing.lg, gap: spacing.md },
   message: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: spacing.md, padding: spacing.lg },
-  card: { gap: spacing.sm },
+  hero: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    gap: spacing.sm,
+  },
+  rewardPill: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.accent,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+  },
+  card: {
+    gap: spacing.sm,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.accent,
+  },
+  progressCard: {
+    gap: spacing.sm,
+    backgroundColor: colors.surface,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
 });

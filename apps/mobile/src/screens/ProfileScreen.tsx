@@ -1,23 +1,27 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Pressable, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Pressable, ScrollView, Image } from 'react-native';
 import { ScreenContainer, AppText, Card, Icon, ProgressBar } from '../components/ui';
+import { AVATAR_IMAGES, avatarLabel, isAvatarCode } from '../constants/avatarCatalog';
 import { colors, spacing, radius } from '../theme/tokens';
 import { Achievement, User } from '../models';
 
 interface ProfileScreenProps {
   user: User;
   displayName?: string;
-  avatarLabel?: string;
+  avatarCode?: string | null;
   nextThreshold?: number | null;
   achievements: Achievement[];
   onAchievementPress: (id: string) => void;
   onSeeAllAchievementsPress: () => void;
+  onMemoriesPress: () => void;
   onSettingsPress: () => void;
 }
 
 const RECENT_LIMIT = 5;
 
-export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, achievements, onAchievementPress, onSeeAllAchievementsPress, onSettingsPress }: ProfileScreenProps) {
+export function ProfileScreen({ user, displayName, avatarCode, nextThreshold, achievements, onAchievementPress, onSeeAllAchievementsPress, onMemoriesPress, onSettingsPress }: ProfileScreenProps) {
+  const knownAvatar = avatarCode && isAvatarCode(avatarCode) ? avatarCode : null;
+  const shownAvatar = knownAvatar ? avatarLabel(knownAvatar) : null;
   const recent = achievements
     .filter((achievement) => achievement.unlocked)
     .sort((left, right) => {
@@ -43,8 +47,8 @@ export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, a
         </View>
         <Card style={styles.profileCard}>
           <View style={styles.identity}>
-            <View style={styles.avatarPlaceholder} accessibilityLabel={avatarLabel ? `Avatar ${avatarLabel}` : 'Avatar'}>
-              {avatarLabel ? <AppText variant="small" center bold>{avatarLabel}</AppText> : null}
+            <View style={styles.avatarPlaceholder} accessibilityLabel={shownAvatar ? `Avatar ${shownAvatar}` : 'Avatar'}>
+              {knownAvatar ? <Image source={AVATAR_IMAGES[knownAvatar]} accessible={false} style={styles.avatarImage} /> : null}
             </View>
             <View style={styles.identityText}>
               <AppText variant="title">{displayName ?? user.name}</AppText>
@@ -69,6 +73,18 @@ export function ProfileScreen({ user, displayName, avatarLabel, nextThreshold, a
             />
           ) : null}
         </Card>
+
+        <Pressable
+          onPress={onMemoriesPress}
+          accessibilityRole="button"
+          accessibilityLabel="Mis memorias"
+        >
+          <Card style={styles.memoriesCard}>
+            <Icon name="images" size={22} color={colors.primary} />
+            <AppText variant="subheading" bold style={styles.memoriesLabel}>Mis memorias</AppText>
+            <Icon name="chevron-forward" size={20} color={colors.textMuted} />
+          </Card>
+        </Pressable>
 
         <View style={styles.achievementHeader}>
           <AppText variant="title">Logros Recientes</AppText>
@@ -145,8 +161,9 @@ const styles = StyleSheet.create({
     borderColor: colors.secondary,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.sm,
+    overflow: 'hidden',
   },
+  avatarImage: { width: 72, height: 72 },
   rankPill: {
     alignSelf: 'flex-start',
     backgroundColor: colors.accent,
@@ -169,6 +186,17 @@ const styles = StyleSheet.create({
   achievementsList: { marginTop: spacing.sm },
   recentScroll: { maxHeight: 232 },
   achievementHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.sm },
+  memoriesCard: {
+    padding: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.primary,
+  },
+  memoriesLabel: { flex: 1 },
   achievementCard: { padding: spacing.md, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   achievementName: { flex: 1 },
 });

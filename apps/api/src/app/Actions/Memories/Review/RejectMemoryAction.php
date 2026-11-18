@@ -4,6 +4,7 @@ namespace App\Actions\Memories\Review;
 
 use App\Actions\Admin\LogAdminActivityAction;
 use App\Actions\Memories\Media\DeleteMemoryImageAction;
+use App\Actions\Push\QueueMemoryPushAction;
 use App\Enums\MemoryRejectedField;
 use App\Enums\MemoryReviewDecision;
 use App\Enums\MemoryStatus;
@@ -56,7 +57,7 @@ class RejectMemoryAction
 
             $memory->save();
 
-            VisitorMemoryReview::query()->create([
+            $review = VisitorMemoryReview::query()->create([
                 'visitor_memory_id' => $memory->id,
                 'decision' => MemoryReviewDecision::Rejected->value,
                 'rejection_reason' => $reason,
@@ -70,6 +71,8 @@ class RejectMemoryAction
                 'memory_id' => $memory->id,
                 'rejected_fields' => array_values($fields),
             ]);
+
+            app(QueueMemoryPushAction::class)->execute($memory, 'rejected', (int) $review->id);
 
             if ($rejectImage && $oldPath !== null) {
                 DB::afterCommit(fn () => $this->deleteImage->execute($oldPath));

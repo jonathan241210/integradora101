@@ -64,9 +64,15 @@ export function resetLocationMock() {
 
 // Mock del módulo expo-location
 jest.mock('expo-location', () => ({
+  getForegroundPermissionsAsync: jest.fn(async () => ({
+    status: mockPermissionStatus,
+    granted: mockPermissionStatus === 'granted',
+    canAskAgain: true,
+  })),
   requestForegroundPermissionsAsync: jest.fn(async () => ({
     status: mockPermissionStatus,
     granted: mockPermissionStatus === 'granted',
+    canAskAgain: true,
   })),
   watchPositionAsync: jest.fn(async (options: unknown, callback: WatchCallback) => {
     mockCallback = callback;

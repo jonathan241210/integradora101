@@ -38,6 +38,8 @@ const activeTabByRoute: Record<string, TabKey> = {
   'achievement-detail': 'index',
   'tour-3d': 'map',
   'scan-result': 'scan',
+  memories: 'profile',
+  'memory-form': 'profile',
   settings: 'profile',
   account: 'profile',
   'account-settings': 'profile',

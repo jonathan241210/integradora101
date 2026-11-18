@@ -60,12 +60,16 @@ La verificación manual de Android con Expo Go fue confirmada por la persona sol
 
 ## Límites de esta etapa
 
-- Los datos de animales, perfil, eventos, mapa y escaneo son mocks accesibles mediante Repositories y ViewModels.
-- El mapa y el recorrido 3D son placeholders. No se solicita ubicación, cámara, linterna ni renderizado 3D real.
+Esta guía describe la validación de la spec 002. Lo que sigue ya no es el estado de la app:
+
+- El catálogo, la cuenta, el progreso, los favoritos y las memorias usan la API cuando existe `EXPO_PUBLIC_API_URL`.
+- El QR pide la cámara. En Ajustes, cámara y ubicación piden el permiso del teléfono.
+- El listado de logros se llama «Salón de logros». La sección de Perfil se llama «Mis memorias».
+- El círculo del perfil muestra el PNG del avatar (`src/assets/avatars/<código>.png`), no el nombre del animal.
+- El mapa y el recorrido 3D no están cerrados. Los avisos push no se revalidan en esta nota.
 - Los botones para simular resultados QR solo aparecen en builds de desarrollo.
 - Las fotos no vienen incluidas en la referencia; las tarjetas muestran placeholders si falta una URL. La app no carga recursos desde `arca-ui-reference`.
-- No hay favoritos en el servidor. El corazón de la ficha guarda la marca en el teléfono y el inicio lista solo esos animales, bajo «Animales favoritos». Al marcarlo se llena y queda relleno; al quitarlo vuelve al contorno. Colección no tiene filtro de favoritos.
-- Login, registro, recuperación y Ajustes son interfaz de demostración. No hay sesión, correo ni preferencias guardadas. Los interruptores no activan notificaciones ni ubicación. No hay modo oscuro. El aviso de privacidad de esta versión no sustituye el que publicará el zoológico.
+- El aviso de privacidad de esta versión no sustituye el que publicará el zoológico. No hay modo oscuro.
 
 ## Verificación manual (Android)
 

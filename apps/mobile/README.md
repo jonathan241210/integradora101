@@ -1,6 +1,6 @@
 # Aplicación móvil ARCA-NB
 
-Prototipo móvil de la etapa **002** (spec implementada) construido con React Native y Expo Router. El mapa, el escáner QR y el recorrido 3D son pantallas visuales con datos simulados; no usan cámara, GPS, mapas reales ni renderizado 3D.
+Aplicación móvil del visitante, en React Native y Expo Router. Con `EXPO_PUBLIC_API_URL` usa la API de pruebas para catálogo, cuenta, progreso, favoritos y memorias. El escáner QR usa la cámara del teléfono. El mapa y el recorrido 3D no están cerrados. Los avisos push no se validan en Expo Go.
 
 ## Requisitos
 
@@ -16,7 +16,7 @@ Con Expo Go no necesitas instalar Android Studio, Android SDK, Java/JDK, Android
 
 ### Solo para emulador o compilación nativa local (opcional)
 
-Instala Android Studio, Android SDK, un Android Emulator y el JDK requerido por la versión de React Native/Expo del proyecto. Esta configuración no es necesaria para abrir el prototipo con Expo Go. Una compilación de distribución requiere además preparar la configuración de aplicación —incluidos iconos finales— y seguir el flujo de entrega aprobado.
+Instala Android Studio, Android SDK, un Android Emulator y el JDK requerido por la versión de React Native/Expo del proyecto. Esta configuración no es necesaria para abrir el prototipo con Expo Go. El icono de launcher y la silueta del aviso ya están en `src/assets/icon/`. Una compilación de distribución sigue el flujo de entrega aprobado; la spec 008 permanece en borrador.
 
 La app usa Expo SDK **57**, Expo Router **57** y React Native **0.86.3**. La versión de Expo Go debe ser compatible con SDK 57. Si la aplicación Expo Go instalada no admite ese SDK, no cambies las dependencias por tu cuenta: revisa con el equipo si corresponde usar un development build o actualizar el SDK de forma coordinada.
 
@@ -64,6 +64,10 @@ npx expo start --tunnel
 
 El modo túnel necesita Internet en ambos dispositivos y puede ser más lento.
 
+## Avisos push
+
+Expo Go no muestra estos avisos. Hace falta el APK del perfil `preview`, `google-services.json` fuera del repositorio y la API con la cola encendida. Ese APK no usa el `.env` local: la URL se guarda en el entorno `preview` de EAS. Los comandos están en [docs/013-permiso-notificaciones.md](docs/013-permiso-notificaciones.md). La cola está en [apps/api/docs/visitante-push.md](../api/docs/visitante-push.md).
+
 ## Emulador Android (opcional)
 
 Después de instalar Android Studio, Android SDK, JDK y crear/iniciar un emulador, ejecuta desde `apps\mobile`:
@@ -100,7 +104,7 @@ Si `EXPO_PUBLIC_API_URL` no existe o está vacía, la app usa el repositorio sim
 
 ### Con la API de pruebas, en cada máquina
 
-Con la variable definida, los tokens se guardan con `expo-secure-store` y las llamadas salen por el módulo visitante de `@arca/api-client`. `usesCleartextTraffic` sigue en `false` en el build de Android. Expo Go, en desarrollo y en la misma red, usa el `http://` de abajo. Un APK compilado sigue exigiendo HTTPS.
+Con la variable definida, los tokens se guardan con `expo-secure-store` y las llamadas salen por el módulo visitante de `@arca/api-client`. `usesCleartextTraffic` sigue en `false` salvo en el APK del perfil `preview`, que lo enciende para probar por HTTP en la red local. Expo Go usa el `.env` de abajo. El APK de prueba usa el entorno `preview` de EAS, no ese archivo. Un build que no sea `preview` exige HTTPS.
 
 1. En una terminal, desde `apps/api/src`, deja la API escuchando en la red. Si Windows pregunta, permite el puerto 8000 en redes privadas.
 
@@ -127,7 +131,12 @@ Ese `/api/v1` es el de la variable, el mismo que usa el catálogo. La cuenta no 
 - Roadmap 003–008, estado de specs y asignación (Aksel / Víctor): [docs/003-008-roadmap-y-asignacion.md](docs/003-008-roadmap-y-asignacion.md).
 - Consulta la [arquitectura local](docs/arquitectura.md) y el [ADR 0004](../../docs/adr/0004-mobile-react-native.md).
 - Estándares de conexión y arquitectura con la API: [docs/estandares-integracion-api.md](docs/estandares-integracion-api.md).
-- La identidad móvil usa los valores institucionales centralizados en `@arca/tokens` (`base`, `primary`, `secondary` y `accent`); los textos y controles conservan contraste con sus tokens de foreground. `danger` es un color semántico de estado. Los tintes `placeholderTint` de animales solo se usan como ilustración cuando falta una foto y no son colores de marca. Mobile no consulta directamente `settings_colores` ni obtiene el tema de `GET /api/theme` en esta etapa.
-- Los iconos de launcher/adaptive icon aún no están definidos. `app.json` no referencia imágenes ficticias; agrega recursos PNG reales antes de preparar distribución nativa.
-- Favoritos persistentes, cámara/QR real, geolocalización y 3D real quedan fuera de la etapa 002.
+- La identidad móvil usa los valores institucionales centralizados en `@arca/tokens` (`base`, `primary`, `secondary` y `accent`); los textos y controles conservan contraste con sus tokens de foreground. `danger` es un color semántico de estado. Los tintes `placeholderTint` de animales solo se usan como ilustración cuando falta una foto y no son colores de marca. Mobile no consulta directamente `settings_colores` ni obtiene el tema de `GET /api/theme`.
+- El icono de la app es `src/assets/icon/iconZoo.png`. El aviso usa la misma figura en blanco (`src/assets/icon/notification.png`), porque Android solo dibuja una silueta en la barra. El nombre visible es ARCA-NB.
+- El avatar del perfil es uno de los ocho PNG de `src/assets/avatars/`, nombrados con el código (`jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`). Perfil, edición de cuenta y el selector muestran esa imagen. No se sube una foto propia.
+- El catálogo del visitante muestra una especie solo si está publicada y algún animal de un recinto puede recibir visitas. Inicio, Colección y Perfil cuentan esa lista, no el total crudo de `GET /species`.
+- Favoritos: el corazón y «Animales favoritos» salen de la cuenta. Sin red se muestra la última copia.
+- Memorias: la entrada en Perfil se llama «Mis memorias». Con una petición abierta no hay alta nueva; al tocarla se ve lo enviado y el estado, sin editar. El límite semanal dice «otra memoria».
+- Ajustes: cámara y ubicación piden el permiso del teléfono. Para quitarlos se abren los ajustes del sistema.
+- El mapa (007) y el recorrido 3D (009) siguen abiertos. Esta nota no los cierra. La distribución (008) sigue en borrador.
 - Si la instalación o el arranque falla, comparte con el equipo el comando ejecutado, las versiones de `node --version` y `npm --version`, y el mensaje completo de error; no borres el lockfile ni cambies versiones para intentar resolverlo.

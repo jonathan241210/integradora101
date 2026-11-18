@@ -12,6 +12,9 @@ interface SettingsScreenProps {
   cameraGranted: boolean;
   cameraReady: boolean;
   onCameraToggle: (enabled: boolean) => void;
+  locationGranted?: boolean;
+  locationReady?: boolean;
+  onLocationToggle?: (enabled: boolean) => void;
   onAccountPress: () => void;
   onPrivacyPress: () => void;
   onHelpPress: () => void;
@@ -20,20 +23,22 @@ interface SettingsScreenProps {
   onBackPress: () => void;
   busy?: boolean;
   accountBusy?: boolean;
+  newsAndEvents?: boolean;
+  memoryStatus?: boolean;
+  onNotificationToggle?: (key: 'news_and_events' | 'memory_status', value: boolean) => void;
+  notificationError?: string | null;
+  notificationDenied?: string | null;
 }
-
-const preferenceRows: { key: VisitorPreferenceKey; label: string; icon: string; hint: string }[] = [
-  { key: 'location', label: 'Ubicación', icon: 'location-outline', hint: 'No solicita la ubicación del teléfono' },
-];
 
 export function SettingsScreen({
   accountName,
   accountEmail,
-  preferences,
-  onToggle,
   cameraGranted,
   cameraReady,
   onCameraToggle,
+  locationGranted = false,
+  locationReady = true,
+  onLocationToggle,
   onAccountPress,
   onPrivacyPress,
   onHelpPress,
@@ -42,6 +47,11 @@ export function SettingsScreen({
   onBackPress,
   busy = false,
   accountBusy = false,
+  newsAndEvents = false,
+  memoryStatus = true,
+  onNotificationToggle,
+  notificationError = null,
+  notificationDenied = null,
 }: SettingsScreenProps) {
   const accountLabel = accountBusy
     ? 'Cargando cuenta'
@@ -94,20 +104,36 @@ export function SettingsScreen({
               Al activarla se pide el permiso del teléfono. Para quitarla, confirma el cambio en Ajustes del sistema.
             </AppText>
           </View>
-          {preferenceRows.map((row) => (
-            <View key={row.key} style={styles.row}>
-              <Icon name={row.icon} size={20} color={colors.primary} />
-              <AppText variant="body" style={styles.rowLabel}>{row.label}</AppText>
+          <NotificationSwitch
+            label="Noticias y eventos"
+            value={newsAndEvents}
+            onChange={(value) => onNotificationToggle?.('news_and_events', value)}
+          />
+          <NotificationSwitch
+            label="Estado de mis momentos"
+            value={memoryStatus}
+            onChange={(value) => onNotificationToggle?.('memory_status', value)}
+          />
+          {notificationDenied ? <AppText variant="caption" color="textMuted">{notificationDenied}</AppText> : null}
+          {notificationError ? <AppText variant="caption" color="textMuted">{notificationError}</AppText> : null}
+          <View style={styles.preference}>
+            <View style={styles.row}>
+              <Icon name="location" size={20} color={colors.primary} />
+              <AppText variant="body" style={styles.rowLabel}>Ubicación</AppText>
               <Switch
-                accessibilityLabel={row.label}
-                accessibilityHint={row.hint}
-                value={preferences[row.key]}
-                onValueChange={(value) => onToggle(row.key, value)}
+                accessibilityLabel="Ubicación"
+                accessibilityHint="Activa el permiso de ubicación. Para desactivarlo, el teléfono abre Ajustes."
+                value={locationGranted}
+                disabled={!locationReady}
+                onValueChange={(value) => { void onLocationToggle?.(value); }}
                 trackColor={{ false: colors.border, true: colors.secondary }}
                 thumbColor={colors.surface}
               />
             </View>
-          ))}
+            <AppText variant="caption" color="textMuted">
+              Al activarla se pide el permiso del teléfono. Para quitarla, confirma el cambio en Ajustes del sistema.
+            </AppText>
+          </View>
         </Card>
 
         <AppText variant="overline" color="textMuted">Ayuda y privacidad</AppText>
@@ -119,6 +145,22 @@ export function SettingsScreen({
         <Button label="Cerrar sesión" variant="outline" onPress={onLogout} disabled={busy} />
       </View>
     </ScreenContainer>
+  );
+}
+
+function NotificationSwitch({ label, value, onChange }: { label: string; value: boolean; onChange: (value: boolean) => void }) {
+  return (
+    <View style={styles.row}>
+      <Icon name="notifications" size={20} color={colors.primary} />
+      <AppText variant="body" style={styles.rowLabel}>{label}</AppText>
+      <Switch
+        accessibilityLabel={label}
+        value={value}
+        onValueChange={onChange}
+        trackColor={{ false: colors.border, true: colors.secondary }}
+        thumbColor={colors.surface}
+      />
+    </View>
   );
 }
 

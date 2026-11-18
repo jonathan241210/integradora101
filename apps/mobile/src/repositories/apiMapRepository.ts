@@ -13,6 +13,7 @@ interface CacheEnvelope<T> {
 
 const DEFAULT_CACHE_TTL_MS = 30 * 1000; // 30 segundos para reflejar cambios rápidos en pruebas piloto
 export const CACHE_KEY_MAP_PLACES = '@arca:map_places_cache';
+const placeFlights = new Map<string, Promise<MapPlace[]>>();
 
 export class ApiMapRepository implements MapRepository {
   private readonly httpClient: HttpClient;
@@ -64,6 +65,16 @@ export class ApiMapRepository implements MapRepository {
   }
 
   async fetchAndCachePlaces(): Promise<MapPlace[]> {
+    const pending = placeFlights.get(CACHE_KEY_MAP_PLACES);
+    if (pending) return pending;
+    const flight = this.loadPlaces().finally(() => {
+      if (placeFlights.get(CACHE_KEY_MAP_PLACES) === flight) placeFlights.delete(CACHE_KEY_MAP_PLACES);
+    });
+    placeFlights.set(CACHE_KEY_MAP_PLACES, flight);
+    return flight;
+  }
+
+  private async loadPlaces(): Promise<MapPlace[]> {
     const response = await this.httpClient.get<{ data: ApiEnclosureResponse[] } | ApiEnclosureResponse[]>('/enclosures');
     const enclosures = Array.isArray((response as { data?: ApiEnclosureResponse[] })?.data)
       ? (response as { data: ApiEnclosureResponse[] }).data

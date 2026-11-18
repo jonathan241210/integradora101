@@ -41,6 +41,8 @@ export default function VisitorTabsLayout() {
       <Tabs.Screen name="achievements" options={{ href: null }} />
       <Tabs.Screen name="achievement-detail" options={{ href: null }} />
       <Tabs.Screen name="scan-result" options={{ href: null }} />
+      <Tabs.Screen name="memories" options={{ href: null }} />
+      <Tabs.Screen name="memory-form" options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
       <Tabs.Screen name="account" options={{ href: null }} />
       <Tabs.Screen name="account-settings" options={{ href: null }} />

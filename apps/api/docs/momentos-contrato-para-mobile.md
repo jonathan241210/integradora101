@@ -340,12 +340,15 @@ Documentos de referencia (rutas relativas a `apps/api/docs/`):
 - Cliente: [packages/api-client/visitor.ts](../../../packages/api-client/visitor.ts).
 - Consumidores que no son la app: [dashboard-008](../../dashboard/specs/008-memory-moderation.md), [web-010](../../web/specs/010-dynamic-memories.md).
 
-Por crear (no existen todavía):
+Ya escritos:
 
-- `apps/api/plan/010-visitor-memory-requests.md` y `apps/api/tasks/010-visitor-memory-requests.md` (por crear).
-- `apps/mobile/plan/010-visitor-memory-requests.md` y `apps/mobile/tasks/010-visitor-memory-requests.md` (por crear).
-- Enmiendas de `api-004` y `mobile-004` (por crear).
-- ADR de selector de imágenes (por crear, si se elige una librería).
+- `apps/api/plan/010-visitor-memory-requests.md` y `apps/api/tasks/010-visitor-memory-requests.md`.
+- `apps/mobile/plan/010-visitor-memory-requests.md` y `apps/mobile/tasks/010-visitor-memory-requests.md` (aprobados, Aksel, 2026-11-14).
+- ADR de selector de imágenes: `docs/adr/0030-expo-image-picker-visitor-memories.md` (Aceptado, Aksel, 2026-11-14).
+
+Por crear:
+
+- Enmiendas de `api-004` y `mobile-004`.
 
 ## 10. Pendiente / por confirmar con backend
 

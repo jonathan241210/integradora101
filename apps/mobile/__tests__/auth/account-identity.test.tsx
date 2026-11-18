@@ -19,7 +19,7 @@ describe('Identidad visible de la cuenta', () => {
     const profile = await render(<ProfileRoute />);
     await waitFor(() => {
       expect(profile.getByText('Anita')).toBeTruthy();
-      expect(profile.getByText('Jaguar')).toBeTruthy();
+      expect(profile.getByLabelText('Avatar Jaguar')).toBeTruthy();
     });
     expect(profile.queryByText('María García')).toBeNull();
     expect(profile.queryByText('correo@ejemplo.com')).toBeNull();

@@ -1,13 +1,13 @@
 # 0029 · Push de Android para el visitante (Expo sobre FCM)
 
-- Estado: Propuesto
+- Estado: Aceptado
 - Fecha: 2026-11-14
 - Spec relacionada: `apps/api/specs/017-visitor-push-notifications.md`, `apps/mobile/specs/013-visitor-push-notifications.md`
-- Planes: `apps/api/plan/017-visitor-push-notifications.md`, `apps/mobile/plan/013-visitor-push-notifications.md` (pendientes de aprobación técnica)
+- Planes: `apps/api/plan/017-visitor-push-notifications.md`, `apps/mobile/plan/013-visitor-push-notifications.md` (aprobados técnicamente, Victor Adrian, 2026-11-14)
 - Solicitante: Aksel
-- Aprobado por: pendiente
+- Aprobado por: Aksel, 2026-11-14
 
-Este ADR no autoriza instalar `expo-notifications`, crear un proyecto FCM ni enviar avisos reales. La aprobación del equipo es aparte de la aprobación funcional de las specs.
+Aceptado, este ADR autoriza instalar `expo-notifications` en `apps/mobile` cuando se implemente el push. No autoriza código por sí solo: faltan las tasks. No crea el proyecto FCM ni envía avisos reales.
 
 ## Contexto
 
@@ -21,7 +21,7 @@ Hace falta un canal hasta FCM y una librería en el teléfono que obtenga el tok
 2. **API.** El envío usa `Illuminate\Support\Facades\Http` contra la API HTTP de Expo (`EXPO_PUSH_URL`, por defecto `https://exp.host/--/api/v2/push/send`). No se instala un SDK de Expo ni de Firebase en PHP. `EXPO_ACCESS_TOKEN` vive solo en `.env`.
 3. **FCM.** El proyecto de Firebase y la credencial de Android se configuran en el proyecto Expo (EAS), no dentro del repositorio. FCM entrega el mensaje al teléfono. Expo es el intermediario.
 4. **Pruebas.** Los tests de la API sustituyen el gateway. Ningún test llama a Expo ni a FCM.
-5. **Excepción de esquema.** `visitor_notification_preferences`, `visitor_push_tokens` y `push_dispatches` (DBR-017, Borrador) no usan SoftDeletes ni extienden `BaseModel`. Tokens y preferencias se borran físicamente con la cuenta, igual que `visitor_refresh_tokens` (`api-004` RN-08). `push_dispatches` solo guarda el tipo, el id y la clave de transición, para no repetir un aviso. Aceptar este ADR acepta esa excepción de la Constitución V para estas tres tablas. No son datos clínicos ni financieros.
+5. **Excepción de esquema.** `visitor_notification_preferences`, `visitor_push_tokens` y `push_dispatches` (DBR-017, Aprobada y Lista para backend) no usan SoftDeletes ni extienden `BaseModel`. Tokens y preferencias se borran físicamente con la cuenta, igual que `visitor_refresh_tokens` (`api-004` RN-08). `push_dispatches` solo guarda el tipo, el id y la clave de transición, para no repetir un aviso. Aceptar este ADR acepta esa excepción de la Constitución V para estas tres tablas. No son datos clínicos ni financieros.
 
 ## Alternativas consideradas
 
@@ -48,6 +48,6 @@ Hace falta un canal hasta FCM y una librería en el teléfono que obtenga el tok
 
 ## Validación y revisión
 
-- Aprobación del equipo: pendiente. Hasta entonces no se añade la dependencia en `apps/mobile` ni se configura FCM.
+- Aprobación del equipo: Aksel, 2026-11-14. La dependencia se instala con las tasks. FCM sigue fuera del repositorio.
 - Revisión: al aceptar, el PR de implementación enlaza este ADR, las dos specs, los dos planes y DBR-017 en `Lista para backend`, y anota en `infra/README.md` el worker, el scheduler y `EXPO_ACCESS_TOKEN`.
 - Constitución I: la dependencia móvil no entra al repositorio antes de esta aceptación.

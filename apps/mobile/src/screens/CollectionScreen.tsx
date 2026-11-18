@@ -31,7 +31,7 @@ export function CollectionScreen({ animals, progress, isOffline = false, onAnima
             {progress.discovered} de {progress.total} descubiertos
           </AppText>
           <ProgressBar
-            value={progress.discovered / progress.total}
+            value={progress.total > 0 ? progress.discovered / progress.total : 0}
             label="Progreso de la colección"
             labelColor="textOnPrimary"
           />

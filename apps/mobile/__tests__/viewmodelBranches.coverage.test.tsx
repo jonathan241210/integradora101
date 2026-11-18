@@ -1,6 +1,8 @@
 import { act, renderHook, waitFor } from '@testing-library/react-native';
-import { Linking } from 'react-native';
+import { AppState, Linking } from 'react-native';
 import { useCameraPermissions } from 'expo-camera';
+import * as Location from 'expo-location';
+import { useLocationPermissionSetting } from '../src/viewmodels/useLocationPermissionSetting';
 import { useCameraPermissionSetting } from '../src/viewmodels/useCameraPermissionSetting';
 import { useVisitorProfile } from '../src/viewmodels/useVisitorProfile';
 import { useVisitorProgress } from '../src/viewmodels/useVisitorProgress';
@@ -66,6 +68,70 @@ describe('mobile-011 CA-05: permiso de cámara', () => {
     const { result } = await renderHook(() => useCameraPermissionSetting());
     await act(async () => { await result.current.onToggle(true); });
     expect(open).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('permiso de ubicación en Ajustes', () => {
+  it('pide el permiso al activar y abre Ajustes al desactivar', async () => {
+    const request = jest.spyOn(Location, 'requestForegroundPermissionsAsync').mockResolvedValue({
+      status: 'granted',
+      granted: true,
+      canAskAgain: true,
+    } as Location.LocationPermissionResponse);
+    jest.spyOn(Location, 'getForegroundPermissionsAsync').mockResolvedValue({
+      status: 'undetermined',
+      granted: false,
+      canAskAgain: true,
+    } as Location.LocationPermissionResponse);
+    const open = jest.spyOn(Linking, 'openSettings').mockResolvedValue();
+    const { result } = await renderHook(() => useLocationPermissionSetting());
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    await act(async () => { await result.current.onToggle(true); });
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(open).not.toHaveBeenCalled();
+    await act(async () => { await result.current.onToggle(false); });
+    expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  it('relee el permiso al volver a primer plano y abre Ajustes si ya no se puede preguntar', async () => {
+    const listeners = new Set<(state: string) => void>();
+    jest.spyOn(AppState, 'addEventListener').mockImplementation((_type, listener) => {
+      listeners.add(listener as (state: string) => void);
+      return { remove: jest.fn() };
+    });
+    const read = jest.spyOn(Location, 'getForegroundPermissionsAsync')
+      .mockRejectedValueOnce(new Error('read'))
+      .mockResolvedValue({ status: 'granted', granted: false, canAskAgain: false } as Location.LocationPermissionResponse);
+    const request = jest.spyOn(Location, 'requestForegroundPermissionsAsync');
+    const open = jest.spyOn(Linking, 'openSettings').mockResolvedValue();
+    const { result } = await renderHook(() => useLocationPermissionSetting());
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    expect(result.current.granted).toBe(false);
+    await act(async () => { listeners.forEach((listener) => listener('background')); });
+    await act(async () => { listeners.forEach((listener) => listener('active')); });
+    await waitFor(() => expect(result.current.granted).toBe(true));
+    expect(read).toHaveBeenCalledTimes(2);
+    await act(async () => { await result.current.onToggle(true); });
+    expect(request).not.toHaveBeenCalled();
+    expect(open).toHaveBeenCalledTimes(1);
+  });
+
+  it('abre Ajustes si el permiso no se concede o la petición falla', async () => {
+    jest.spyOn(Location, 'getForegroundPermissionsAsync').mockResolvedValue({
+      status: 'undetermined',
+      granted: false,
+      canAskAgain: true,
+    } as Location.LocationPermissionResponse);
+    jest.spyOn(Location, 'requestForegroundPermissionsAsync')
+      .mockResolvedValueOnce({ status: 'denied', granted: false, canAskAgain: true } as Location.LocationPermissionResponse)
+      .mockRejectedValueOnce(new Error('unavailable'));
+    const open = jest.spyOn(Linking, 'openSettings').mockResolvedValue();
+    const { result } = await renderHook(() => useLocationPermissionSetting());
+    await waitFor(() => expect(result.current.ready).toBe(true));
+    await act(async () => { await result.current.onToggle(true); });
+    expect(result.current.granted).toBe(false);
+    await act(async () => { await result.current.onToggle(true); });
+    expect(open).toHaveBeenCalledTimes(2);
   });
 });
 

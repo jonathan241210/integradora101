@@ -5,6 +5,9 @@ import { clearSharedProgress } from '../repositories/sharedProgress';
 import { createSecureTokenStorage, tokenStorage, type TokenStorage } from '../services/tokenStorage';
 import { clearScanQueue } from '../services/scanQueue';
 import { syncZooData } from '../services/zooSyncService';
+import { clearNotificationPreferences } from '../push/notificationPreferences';
+import { unregisterPushToken } from '../push/pushRegistration';
+import { clearFavoriteCopies } from '../repositories/favoriteAnimals';
 
 export type AccountSessionStatus = 'bootstrapping' | 'guest' | 'authenticated';
 
@@ -24,10 +27,16 @@ function emit() {
   listeners.forEach((listener) => listener());
 }
 
+function scheduleVisitorPush(): void {
+  if (process.env.JEST_WORKER_ID !== undefined || !httpMode) return;
+  void import('../push/syncVisitorPush').then((mod) => mod.syncVisitorPush());
+}
+
 function clearProfileCache() {
   profileGeneration += 1;
   cachedProfile = null;
   profileFlight = null;
+  clearNotificationPreferences();
 }
 
 function setStatus(next: AccountSessionStatus) {
@@ -131,6 +140,7 @@ export const accountSession = {
       }
       setStatus('authenticated');
       void syncZooData();
+      scheduleVisitorPush();
     } catch {
       setStatus('guest');
     }
@@ -142,11 +152,17 @@ export const accountSession = {
       await warmProfile();
       setStatus('authenticated');
       void syncZooData();
+      scheduleVisitorPush();
     }
     return result;
   },
   async logout() {
-    await repository.logout();
+    try {
+      await unregisterPushToken();
+      await repository.logout();
+    } finally {
+      await clearFavoriteCopies();
+    }
     await activeStorage.clear();
     setStatus('guest');
   },
@@ -160,6 +176,7 @@ export const accountSession = {
       await warmProfile();
       setStatus('authenticated');
       void syncZooData();
+      scheduleVisitorPush();
     }
     return result;
   },
@@ -202,8 +219,10 @@ export const accountSession = {
     return repository.changePassword(currentPassword, password);
   },
   async deleteAccount(password: string) {
+    await unregisterPushToken();
     const result = await repository.deleteAccount(password);
     if (result.ok) {
+      await clearFavoriteCopies();
       await clearScanQueue();
       await activeStorage.clear();
       setStatus('guest');
@@ -234,6 +253,7 @@ export const accountSession = {
     listeners.clear();
     clearProfileCache();
     clearSharedProgress();
+    await clearFavoriteCopies();
     await activeStorage.clear();
     useMock();
     authRepository.reset();

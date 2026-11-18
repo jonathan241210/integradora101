@@ -1,13 +1,13 @@
 # DBR-017 · visitor-push-notifications
 
-- Estado: Migración creada y probada en base MySQL 8.0 aislada sin errores (aprobación de BD registrada; pendiente aprobación de backend para `Aprobada`/`Lista para backend`)
+- Estado: Aprobada y Lista para backend (BD Victor Adrian y backend Aksel, 2026-11-14). Migración probada en MySQL 8.0 aislado.
 - Feature/spec origen: `apps/api/specs/017-visitor-push-notifications.md` (Aprobada, Aksel, 2026-11-14). Consumidor: `apps/mobile/specs/013-visitor-push-notifications.md`. Plan: `apps/api/plan/017-visitor-push-notifications.md` (aprobado técnicamente, Victor Adrian, 2026-11-14).
 - Solicitante: Aksel
 - Responsable de BD: Victor Adrian
-- Responsable backend: por identificar
+- Responsable backend: Aksel
 - Fecha: 2026-11-14
 
-Aprobación de BD registrada y migración probada por BD (2026-11-14, sin errores). Falta la aprobación separada de backend para pasar a `Aprobada`/`Lista para backend` y habilitar integración backend.
+Aprobación de BD (Victor Adrian) y de backend (Aksel), 2026-11-14. La migración ya estaba probada en MySQL 8.0 aislado. Con las dos firmas queda Aprobada y Lista para backend. La evidencia sigue siendo ese MySQL aislado: esta firma no aplica la migración en `arca_pruebas` ni en `arca_zoo`.
 
 ## Problema y justificación
 
@@ -23,7 +23,7 @@ No existen `visitor_notification_preferences`, `visitor_push_tokens` ni `push_di
 - Varios tokens por visitante, uno por teléfono. El token es único en toda la tabla. `platform` solo admite `android` en la API; la columna guarda ese valor.
 - Una fila de dispatch por noticia, por evento o por transición de momento. La clave única es `(subject_type, subject_id, transition_key)`. No guarda `visitor_id`, nombre, correo, opinión ni motivo.
 - Al borrar el visitante, sus preferencias y sus tokens desaparecen en cascada. Las filas de `push_dispatches` se conservan.
-- Sin SoftDeletes, sin `created_by` y sin `updated_by`. No son datos clínicos ni financieros (`api-017` RN-12). La excepción queda propuesta en el plan de `api-017` y en el ADR 0029, ambos sin aprobar.
+- Sin SoftDeletes, sin `created_by` y sin `updated_by`. No son datos clínicos ni financieros (`api-017` RN-12). La excepción queda aceptada en el plan de `api-017` y en el ADR 0029.
 
 ## Elementos afectados
 
@@ -138,7 +138,7 @@ No aplica. No se crean funciones, procedimientos, vistas ni triggers. La regla d
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
 | Responsable de BD | Victor Adrian | 2026-11-14 | Aprobado |
-| Responsable backend | | | Pendiente |
+| Responsable backend | Aksel | 2026-11-14 | Aprobado |
 
 ## Aplicación por ambiente
 
