@@ -1,0 +1,1063 @@
+﻿{
+    "meta":  {
+                 "source":  "recintos_zoologico_20261113 (1).json",
+                 "total":  105,
+                 "note":  "Propuesta corregida: 4 puntos reclasificados como nodos_ruta segun solicitud."
+             },
+    "recintos":  [
+                     {
+                         "suggested_id":  "recinto-recinto-lemur",
+                         "name_original":  "Recinto Lémur",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0808517,
+                         "gps_lon":  -98.3614585,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-lemur-2",
+                         "name_original":  "Recinto Lémur 2",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0808687,
+                         "gps_lon":  -98.3615316,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-capichino",
+                         "name_original":  "Recinto Capichino",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0808625,
+                         "gps_lon":  -98.3615508,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-halcon",
+                         "name_original":  "Recinto halcón",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.080965,
+                         "gps_lon":  -98.3616146,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-aguila",
+                         "name_original":  "Recinto Águila",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0809758,
+                         "gps_lon":  -98.3615425,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-leones",
+                         "name_original":  "Recinto Leones",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0810017,
+                         "gps_lon":  -98.3616103,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-buitres",
+                         "name_original":  "Recinto buitres",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0810589,
+                         "gps_lon":  -98.3616938,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-tortugas",
+                         "name_original":  "Recinto tortugas",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0810712,
+                         "gps_lon":  -98.3617532,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-hipopotamo",
+                         "name_original":  "Recinto hipopótamo",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0810878,
+                         "gps_lon":  -98.361824,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-patos",
+                         "name_original":  "Recinto patos",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0810617,
+                         "gps_lon":  -98.3618443,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-coyote",
+                         "name_original":  "Recinto coyote",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0810265,
+                         "gps_lon":  -98.3618824,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-codorniz",
+                         "name_original":  "Recinto codorniz",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0809939,
+                         "gps_lon":  -98.3619236,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-codorniz-2",
+                         "name_original":  "Recinto codorniz 2",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0809606,
+                         "gps_lon":  -98.3619419,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-codorniz-3",
+                         "name_original":  "Recinto codorniz 3",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0809018,
+                         "gps_lon":  -98.3619591,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-codorniz-4",
+                         "name_original":  "Recinto codorniz 4",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0808747,
+                         "gps_lon":  -98.3619892,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-mapache",
+                         "name_original":  "Recinto mapache",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0808335,
+                         "gps_lon":  -98.3620143,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-codorniz-4-2",
+                         "name_original":  "Recinto codorniz 4",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0808181,
+                         "gps_lon":  -98.362017,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-aviario",
+                         "name_original":  "Aviario",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0808133,
+                         "gps_lon":  -98.3620288,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-cocodrilo",
+                         "name_original":  "Recinto cocodrilo",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0808839,
+                         "gps_lon":  -98.3618813,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-tigre",
+                         "name_original":  "Recinto tigre",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0808826,
+                         "gps_lon":  -98.361763,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-tigre-2",
+                         "name_original":  "Recinto tigre 2",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0808277,
+                         "gps_lon":  -98.3618789,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-mono-arana",
+                         "name_original":  "Recinto mono araña",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0808476,
+                         "gps_lon":  -98.3616277,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-oso",
+                         "name_original":  "Recinto oso",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0807876,
+                         "gps_lon":  -98.361751,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-reinto-tigre-2-arriba",
+                         "name_original":  "Reinto tigre 2 arriba",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0807637,
+                         "gps_lon":  -98.3619215,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-iguanas",
+                         "name_original":  "Recinto iguanas",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0807346,
+                         "gps_lon":  -98.3619755,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-desconocido",
+                         "name_original":  "Recinto desconocido",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0807181,
+                         "gps_lon":  -98.3620028,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-jaguar",
+                         "name_original":  "Recinto jaguar",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0806987,
+                         "gps_lon":  -98.3620589,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-halcon-2",
+                         "name_original":  "Recinto halcón 2",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0806131,
+                         "gps_lon":  -98.3620644,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-halcon-3",
+                         "name_original":  "Recinto halcon 3",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0806103,
+                         "gps_lon":  -98.3620338,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-martucha",
+                         "name_original":  "Recinto martucha",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0806006,
+                         "gps_lon":  -98.3620127,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-aguililla-negra",
+                         "name_original":  "Recinto águililla negra",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0805951,
+                         "gps_lon":  -98.3619873,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-tigre-3",
+                         "name_original":  "Recinto tigre 3",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0805808,
+                         "gps_lon":  -98.3619094,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-chester",
+                         "name_original":  "Recinto Chester",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0805762,
+                         "gps_lon":  -98.3618428,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-tigre-blanco",
+                         "name_original":  "Recinto tigre blanco",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0805824,
+                         "gps_lon":  -98.3616823,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-coyote-2",
+                         "name_original":  "Recinto coyote 2",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0805116,
+                         "gps_lon":  -98.3616541,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-coati",
+                         "name_original":  "Recinto coati",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0804755,
+                         "gps_lon":  -98.3616658,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-coati-2",
+                         "name_original":  "Recinto coati 2",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.080427,
+                         "gps_lon":  -98.3616757,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-zorro-gris",
+                         "name_original":  "Recinto zorro gris",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0803806,
+                         "gps_lon":  -98.3616869,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-buhos",
+                         "name_original":  "Recinto búhos",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0803208,
+                         "gps_lon":  -98.3617588,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-animales-hervivoros",
+                         "name_original":  "Recinto animales hervivoros",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0803258,
+                         "gps_lon":  -98.3617916,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-hervivoros-2",
+                         "name_original":  "Recinto hervivoros 2",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0803278,
+                         "gps_lon":  -98.361897,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-hervivoro-3",
+                         "name_original":  "Recinto hervivoro 3",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0803233,
+                         "gps_lon":  -98.3619743,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-hervivora-4",
+                         "name_original":  "Recinto hervivora 4",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.080335,
+                         "gps_lon":  -98.3620918,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-hervovoros-4-vista-lateral",
+                         "name_original":  "Recinto hervovoros 4 vista lateral",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0802205,
+                         "gps_lon":  -98.3622334,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-avestruz",
+                         "name_original":  "Recinto avestruz",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0801783,
+                         "gps_lon":  -98.3621843,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-chivos",
+                         "name_original":  "Recinto chivos",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0801175,
+                         "gps_lon":  -98.3620689,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-emu",
+                         "name_original":  "Recinto emu",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0800995,
+                         "gps_lon":  -98.3620344,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-camello",
+                         "name_original":  "Recinto camello",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0801079,
+                         "gps_lon":  -98.3620242,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-desconocido-zig-zag",
+                         "name_original":  "Recinto desconocido zig zag",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0801167,
+                         "gps_lon":  -98.3619344,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-venadito",
+                         "name_original":  "Recinto venadito",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0801099,
+                         "gps_lon":  -98.3619049,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-jabali",
+                         "name_original":  "Recinto jabali",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0801944,
+                         "gps_lon":  -98.3616743,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-tucaneta",
+                         "name_original":  "Recinto tucaneta",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.08058,
+                         "gps_lon":  -98.3615761,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-serpentario",
+                         "name_original":  "Recinto serpentario",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0805669,
+                         "gps_lon":  -98.3613675,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-ardillon",
+                         "name_original":  "Recinto ardillon",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0805696,
+                         "gps_lon":  -98.3614484,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-loro-corona-azul",
+                         "name_original":  "Recinto loro corona azul",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0806256,
+                         "gps_lon":  -98.3614888,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-halcon-caracara",
+                         "name_original":  "Recinto halcón caracara",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0806824,
+                         "gps_lon":  -98.3615273,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-de-tucan",
+                         "name_original":  "Recinto de tucan",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0807713,
+                         "gps_lon":  -98.3613986,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-aves-pequenas",
+                         "name_original":  "Recinto aves pequeñas",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0807912,
+                         "gps_lon":  -98.3613538,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-tortuga",
+                         "name_original":  "Recinto tortuga",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0807196,
+                         "gps_lon":  -98.3613908,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-sapos",
+                         "name_original":  "Recinto sapos",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0807055,
+                         "gps_lon":  -98.3614187,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-loro-cachetes",
+                         "name_original":  "Recinto loro cachetes",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0806465,
+                         "gps_lon":  -98.361316,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-guacamayo",
+                         "name_original":  "Recinto guacamayo",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0806257,
+                         "gps_lon":  -98.3613136,
+                         "map_x":  null,
+                         "map_y":  null
+                     },
+                     {
+                         "suggested_id":  "recinto-recinto-pericos",
+                         "name_original":  "Recinto pericos",
+                         "type":  "recinto",
+                         "subtype":  "enclosure",
+                         "gps_lat":  20.0805985,
+                         "gps_lon":  -98.3613151,
+                         "map_x":  null,
+                         "map_y":  null
+                     }
+                 ],
+    "lugares":  [
+                    {
+                        "suggested_id":  "lugar-inicio",
+                        "name_original":  "Inicio",
+                        "type":  "lugar",
+                        "subtype":  "landmark",
+                        "gps_lat":  20.0808334,
+                        "gps_lon":  -98.3614225,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-banos",
+                        "name_original":  "Baños",
+                        "type":  "lugar",
+                        "subtype":  "restroom",
+                        "gps_lat":  20.0809622,
+                        "gps_lon":  -98.3616045,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-entrada-tortugas",
+                        "name_original":  "Entrada tortugas",
+                        "type":  "lugar",
+                        "subtype":  "landmark",
+                        "gps_lat":  20.0810765,
+                        "gps_lon":  -98.3617544,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-area-fotos-oso",
+                        "name_original":  "Area fotos oso",
+                        "type":  "lugar",
+                        "subtype":  "common_area",
+                        "gps_lat":  20.0808044,
+                        "gps_lon":  -98.3617164,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-zona-comun",
+                        "name_original":  "Zona comun",
+                        "type":  "lugar",
+                        "subtype":  "common_area",
+                        "gps_lat":  20.0807948,
+                        "gps_lon":  -98.3618062,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-vista-aviario-arriba",
+                        "name_original":  "Vista aviario arriba",
+                        "type":  "lugar",
+                        "subtype":  "viewpoint",
+                        "gps_lat":  20.0807125,
+                        "gps_lon":  -98.3620295,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-zona-huertos",
+                        "name_original":  "Zona  huertos",
+                        "type":  "lugar",
+                        "subtype":  "common_area",
+                        "gps_lat":  20.0800843,
+                        "gps_lon":  -98.3618132,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-zona-comun-2",
+                        "name_original":  "Zona  comun",
+                        "type":  "lugar",
+                        "subtype":  "common_area",
+                        "gps_lat":  20.080057,
+                        "gps_lon":  -98.3617529,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-fuente",
+                        "name_original":  "Fuente",
+                        "type":  "lugar",
+                        "subtype":  "amenity",
+                        "gps_lat":  20.0800991,
+                        "gps_lon":  -98.3617297,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-establecimientos-de-comida",
+                        "name_original":  "Establecimientos de comida",
+                        "type":  "lugar",
+                        "subtype":  "food",
+                        "gps_lat":  20.0805418,
+                        "gps_lon":  -98.3615372,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-zona-ninos",
+                        "name_original":  "Zona niños",
+                        "type":  "lugar",
+                        "subtype":  "common_area",
+                        "gps_lat":  20.0804764,
+                        "gps_lon":  -98.361555,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-escaleras-para-serpientes",
+                        "name_original":  "Escaleras para serpientes",
+                        "type":  "lugar",
+                        "subtype":  "access",
+                        "gps_lat":  20.0805084,
+                        "gps_lon":  -98.3613438,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-cafeteria",
+                        "name_original":  "Cafeteria",
+                        "type":  "lugar",
+                        "subtype":  "food",
+                        "gps_lat":  20.0806012,
+                        "gps_lon":  -98.3614244,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-area-comun-lemur",
+                        "name_original":  "Area comun lemur",
+                        "type":  "lugar",
+                        "subtype":  "common_area",
+                        "gps_lat":  20.0807689,
+                        "gps_lon":  -98.3614634,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-fuente-2",
+                        "name_original":  "Fuente",
+                        "type":  "lugar",
+                        "subtype":  "amenity",
+                        "gps_lat":  20.0807085,
+                        "gps_lon":  -98.361343,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-cafeteria-entrada-2",
+                        "name_original":  "Cafeteria entrada 2",
+                        "type":  "lugar",
+                        "subtype":  "food",
+                        "gps_lat":  20.080684,
+                        "gps_lon":  -98.3613629,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-area-comun-2",
+                        "name_original":  "Area comun 2",
+                        "type":  "lugar",
+                        "subtype":  "common_area",
+                        "gps_lat":  20.080695,
+                        "gps_lon":  -98.3614691,
+                        "map_x":  null,
+                        "map_y":  null
+                    },
+                    {
+                        "suggested_id":  "lugar-boletaje",
+                        "name_original":  "Boletaje",
+                        "type":  "lugar",
+                        "subtype":  "ticketing",
+                        "gps_lat":  20.0807552,
+                        "gps_lon":  -98.3612907,
+                        "map_x":  null,
+                        "map_y":  null
+                    }
+                ],
+    "nodos_ruta":  [
+                       {
+                           "suggested_id":  "ruta-intercesion",
+                           "name_original":  "Intercesión",
+                           "type":  "ruta",
+                           "subtype":  "intersection",
+                           "gps_lat":  20.0808686,
+                           "gps_lon":  -98.3615952,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-cruce",
+                           "name_original":  "Cruce",
+                           "type":  "ruta",
+                           "subtype":  "intersection",
+                           "gps_lat":  20.0809358,
+                           "gps_lon":  -98.361629,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-camino-cocodrilo",
+                           "name_original":  "Camino cocodrilo",
+                           "type":  "ruta",
+                           "subtype":  "path",
+                           "gps_lat":  20.0808665,
+                           "gps_lon":  -98.3619473,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-camino-cocodrilo-salida",
+                           "name_original":  "Camino cocodrilo salida",
+                           "type":  "ruta",
+                           "subtype":  "path",
+                           "gps_lat":  20.0809158,
+                           "gps_lon":  -98.3616983,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-camino-tigres",
+                           "name_original":  "Camino  tigres",
+                           "type":  "ruta",
+                           "subtype":  "path",
+                           "gps_lat":  20.0808056,
+                           "gps_lon":  -98.3619715,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-intercesciones-final",
+                           "name_original":  "Intercesciones final",
+                           "type":  "ruta",
+                           "subtype":  "intersection",
+                           "gps_lat":  20.0809167,
+                           "gps_lon":  -98.3616647,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-vuelta",
+                           "name_original":  "Vuelta",
+                           "type":  "ruta",
+                           "subtype":  "turn",
+                           "gps_lat":  20.0806716,
+                           "gps_lon":  -98.3621198,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-vuelta1",
+                           "name_original":  "Vuelta1",
+                           "type":  "ruta",
+                           "subtype":  "turn",
+                           "gps_lat":  20.0805906,
+                           "gps_lon":  -98.3621288,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-camino",
+                           "name_original":  "Camino",
+                           "type":  "ruta",
+                           "subtype":  "path",
+                           "gps_lat":  20.080572,
+                           "gps_lon":  -98.3617442,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-intercesion-2",
+                           "name_original":  "Intercesión 2",
+                           "type":  "ruta",
+                           "subtype":  "intersection",
+                           "gps_lat":  20.0805671,
+                           "gps_lon":  -98.3616505,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-interseccion-3",
+                           "name_original":  "Interseccion 3",
+                           "type":  "ruta",
+                           "subtype":  "intersection",
+                           "gps_lat":  20.0803045,
+                           "gps_lon":  -98.3616799,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-vuelta-3",
+                           "name_original":  "Vuelta 3",
+                           "type":  "ruta",
+                           "subtype":  "turn",
+                           "gps_lat":  20.0803595,
+                           "gps_lon":  -98.3622305,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-fin-vuelta-3",
+                           "name_original":  "Fin vuelta 3",
+                           "type":  "ruta",
+                           "subtype":  "turn",
+                           "gps_lat":  20.0802612,
+                           "gps_lon":  -98.3622336,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-interseccion-4",
+                           "name_original":  "Interseccion 4",
+                           "type":  "ruta",
+                           "subtype":  "intersection",
+                           "gps_lat":  20.0801942,
+                           "gps_lon":  -98.3622394,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-vuelta-derecha",
+                           "name_original":  "Vuelta derecha",
+                           "type":  "ruta",
+                           "subtype":  "turn",
+                           "gps_lat":  20.0801683,
+                           "gps_lon":  -98.3620789,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-vuelta-rampa",
+                           "name_original":  "Vuelta rampa",
+                           "type":  "ruta",
+                           "subtype":  "turn",
+                           "gps_lat":  20.0801298,
+                           "gps_lon":  -98.3620821,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-camino-zig-zag",
+                           "name_original":  "Camino zig zag",
+                           "type":  "ruta",
+                           "subtype":  "path",
+                           "gps_lat":  20.0801026,
+                           "gps_lon":  -98.3619955,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-fin-zona-comun",
+                           "name_original":  "Fin zona comun",
+                           "type":  "ruta",
+                           "subtype":  "path_node",
+                           "gps_lat":  20.0801725,
+                           "gps_lon":  -98.361668,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-pasillo",
+                           "name_original":  "Pasillo",
+                           "type":  "ruta",
+                           "subtype":  "path",
+                           "gps_lat":  20.0802518,
+                           "gps_lon":  -98.3616576,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-fin-de-la-intercesion-4",
+                           "name_original":  "Fin de la intercesión 4",
+                           "type":  "ruta",
+                           "subtype":  "intersection",
+                           "gps_lat":  20.0802952,
+                           "gps_lon":  -98.3616909,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-fin-establecimientos-de-comida",
+                           "name_original":  "Fin establecimientos de comida",
+                           "type":  "ruta",
+                           "subtype":  "path_node",
+                           "gps_lat":  20.0804794,
+                           "gps_lon":  -98.3614377,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-imterccion-6",
+                           "name_original":  "Imterccion 6",
+                           "type":  "ruta",
+                           "subtype":  "intersection",
+                           "gps_lat":  20.0806534,
+                           "gps_lon":  -98.3615418,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-entrada-fuente",
+                           "name_original":  "Entrada fuente",
+                           "type":  "ruta",
+                           "subtype":  "path_node",
+                           "gps_lat":  20.0807362,
+                           "gps_lon":  -98.3613171,
+                           "map_x":  null,
+                           "map_y":  null
+                       },
+                       {
+                           "suggested_id":  "ruta-vuelta-serpientes-loros",
+                           "name_original":  "Vuelta serpientes loros",
+                           "type":  "ruta",
+                           "subtype":  "turn",
+                           "gps_lat":  20.080572,
+                           "gps_lon":  -98.3613132,
+                           "map_x":  null,
+                           "map_y":  null
+                       }
+                   ]
+}
