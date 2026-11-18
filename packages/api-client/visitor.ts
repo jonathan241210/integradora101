@@ -259,15 +259,23 @@ export function createVisitorApi({
   ): Promise<Response> => {
     const method = (options.method ?? "GET").toUpperCase();
     const headers = new Headers({ Accept: "application/json" });
-    const formData = isFormData(options.body);
-    if (options.body !== undefined && !formData) headers.set("Content-Type", "application/json");
+    const hasBody = options.body !== undefined;
+    // `isFormData` no estrecha `options.body`: es una propiedad mutable.
+    const formData = hasBody && isFormData(options.body);
+    if (hasBody && !formData) headers.set("Content-Type", "application/json");
     if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
+
+    const body = !hasBody
+      ? undefined
+      : formData
+        ? (options.body as FormData)
+        : JSON.stringify(options.body);
 
     try {
       return await fetchImpl(requestUrl(baseUrl, path), {
         method,
         headers,
-        body: formData ? options.body : options.body !== undefined ? JSON.stringify(options.body) : undefined,
+        body,
       });
     } catch {
       throw visitorError(0, { message: "Sin conexión" }, null);
