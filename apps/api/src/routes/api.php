@@ -36,9 +36,12 @@ use App\Http\Controllers\Veterinarian\SpeciesController as VeterinarianSpeciesCo
 use App\Http\Controllers\Veterinarian\SpeciesPublicationRequestController as VeterinarianSpeciesPublicationRequestController;
 use App\Http\Controllers\Visitor\PrivacyNoticeController;
 use App\Http\Controllers\Visitor\VisitorAuthenticationController;
+use App\Http\Controllers\Visitor\VisitorFavoriteSpeciesController;
 use App\Http\Controllers\Visitor\VisitorMemoryController;
+use App\Http\Controllers\Visitor\VisitorNotificationPreferenceController;
 use App\Http\Controllers\Visitor\VisitorProfileController;
 use App\Http\Controllers\Visitor\VisitorProgressController;
+use App\Http\Controllers\Visitor\VisitorPushTokenController;
 use App\Http\Middleware\EnsureVisitorEmailVerified;
 use Illuminate\Support\Facades\Route;
 
@@ -129,6 +132,17 @@ Route::prefix('visitor')->name('visitor.')->group(function () {
         Route::post('memories/{id}/resubmit', [VisitorMemoryController::class, 'resubmit'])
             ->whereNumber('id')
             ->name('memories.resubmit');
+        Route::put('push-tokens', [VisitorPushTokenController::class, 'store'])->name('push-tokens.store');
+        Route::delete('push-tokens', [VisitorPushTokenController::class, 'destroy'])->name('push-tokens.destroy');
+        Route::get('notification-preferences', [VisitorNotificationPreferenceController::class, 'show'])
+            ->name('notification-preferences.show');
+        Route::patch('notification-preferences', [VisitorNotificationPreferenceController::class, 'update'])
+            ->name('notification-preferences.update');
+        Route::get('favorite-species', [VisitorFavoriteSpeciesController::class, 'index'])
+            ->name('favorite-species.index');
+        Route::put('favorite-species/{species}', [VisitorFavoriteSpeciesController::class, 'update'])
+            ->whereNumber('species')
+            ->name('favorite-species.update');
     });
 });
 

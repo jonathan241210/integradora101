@@ -7,6 +7,10 @@
 - Aprobación funcional: Víctor Adrián (2026-10-20). Enmienda de inicio (noticias, eventos e imágenes) confirmada con el plan el 2026-11-10.
 - Equivalencia en el documento de decisiones previas: 003
 
+## Enmienda 2026-11-17
+
+El catálogo que ve el visitante no es la lista cruda de `GET /species`. La app cruza `GET /published-species` con los animales de `GET /enclosures` cuyo `can_receive_visits` está activo. Solo esa intersección se muestra en Inicio, Colección, Perfil y ficha. Si las tres lecturas responden y la especie queda fuera, el detalle no se abre. Los conteos usan esa lista. La API de `GET /species` no cambia. Si falla la lectura de visibilidad, se conserva el comportamiento anterior de caché.
+
 ## Enmienda 2026-11-10
 
 El inicio deja de volcar la lista completa de eventos y pasa a mostrar una noticia y un evento, con despliegue hasta tres y salida avisada al portal. No hay spec nueva: esta enmienda reescribe el CA-03 y agrega CA-08, CA-09 y CA-10. La API no cambia. Las noticias salen de `GET /api/v1/news?limit=3` y `GET /api/v1/news/{id}`; los eventos, de `GET /api/v1/events?limit=3` y `GET /api/v1/events/{id}`. El orden lo decide la API: la noticia más nueva primero y el evento de inicio más próximo primero. La app no reordena.
@@ -87,7 +91,7 @@ Esta especificación define la integración de lectura entre las pantallas de ca
 - **RN-05 (Exclusión de progreso de visitante):** Las propiedades asociadas al progreso personal (tales como `isDiscovered` o puntos) no se consultan ni se alteran en esta spec. El modelo de UI de catálogo presenta los datos puramente zoológicos y educativos de la especie.
 - **RN-06 (Textos y localización):** Todos los mensajes informativos, estados vacíos, alertas de error y etiquetas de accesibilidad deben estar redactados en español claro.
 - **RN-07 (Inicio acotado):** El inicio no muestra más de tres noticias ni más de tres eventos. «Ver todos» no lista el resto dentro de la app: advierte y abre el portal. El detalle de una noticia o un evento sí permanece en la app.
-- **RN-08 (Foto usable):** Al componente de imagen solo llega una URL `http` o `https`. Una ruta `news/` o `events/` se convierte en la URL pública de almacenamiento. El host local se reescribe al origen de la API configurada en la app. Un enlace externo que la API deja solo en `image_path` sí se muestra. Una recarga del inicio no vuelve a montar las fotos que ya están en pantalla.
+- **RN-08 (Foto usable):** Al componente de imagen solo llega una URL `http` o `https`, o la copia local de esa foto. Una ruta `news/` o `events/` se convierte en la URL pública de almacenamiento. El host local se reescribe al origen de la API configurada en la app. Un enlace externo que la API deja solo en `image_path` sí se muestra. La foto de una noticia o un evento se descarga una vez y se reutiliza durante 5 minutos, aunque se vuelva a entrar al inicio o al detalle. Deslizar el inicio hacia abajo, o una recarga forzada del detalle, la vuelve a pedir. Una recarga del inicio no vuelve a montar las fotos que ya están en pantalla.
 - **RN-09 (Actualización del inicio):** Deslizar el inicio hacia abajo solo sustituye noticias y eventos. No vuelve a consultar animales ni el progreso del visitante. Si esa petición falla, se quedan las listas que ya estaban en pantalla. El indicador y las secciones usan los colores del tema (`primary`, `secondary`, `accent`, `surface`); no se introducen colores nuevos.
 
 ## Datos, privacidad y auditoría

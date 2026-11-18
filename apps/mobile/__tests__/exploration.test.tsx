@@ -161,7 +161,6 @@ describe('Exploration Core Views', () => {
     expect(view.getByTestId('achievements-list').props.data.map((item: { id: string }) => item.id)).toEqual([
       'first-discovery',
       'habitat-explorer',
-      'mission-starter',
     ]);
 
     await fireEvent.press(view.getByText('Por obtener'));
@@ -169,7 +168,6 @@ describe('Exploration Core Views', () => {
     expect(view.queryByText('Primer descubrimiento')).toBeNull();
     expect(view.getByText('Ordenar: Nombre A–Z')).toBeTruthy();
     expect(view.getByTestId('achievements-list').props.data.map((item: { id: string }) => item.id)).toEqual([
-      'mission-master',
       'zoo-photographer',
       'bird-watcher',
     ]);
@@ -178,14 +176,12 @@ describe('Exploration Core Views', () => {
     expect(view.getByTestId('achievements-list').props.data.map((item: { id: string }) => item.id)).toEqual([
       'bird-watcher',
       'zoo-photographer',
-      'mission-master',
     ]);
 
     await fireEvent.press(view.getByText('Obtenidos'));
     await fireEvent.press(view.getByLabelText('Ordenar'));
     expect(view.getByText('Ordenar: Más antiguos')).toBeTruthy();
     expect(view.getByTestId('achievements-list').props.data.map((item: { id: string }) => item.id)).toEqual([
-      'mission-starter',
       'habitat-explorer',
       'first-discovery',
     ]);
@@ -199,8 +195,10 @@ describe('Exploration Core Views', () => {
     expect(obtained.getByText('Descubriste al Tigre de Bengala.')).toBeTruthy();
     await obtained.unmount();
 
+    const pendingAchievement = MOCK_ACHIEVEMENTS.find((item) => item.id === 'bird-watcher');
+    expect(pendingAchievement).toBeDefined();
     const pending = await render(
-      <AchievementDetailScreen achievement={MOCK_ACHIEVEMENTS[3]} onBackPress={jest.fn()} />
+      <AchievementDetailScreen achievement={pendingAchievement ?? null} onBackPress={jest.fn()} />
     );
     expect(pending.getByText('200 puntos al obtenerlo')).toBeTruthy();
     expect(pending.getByText('Descubre tres especies de aves.')).toBeTruthy();

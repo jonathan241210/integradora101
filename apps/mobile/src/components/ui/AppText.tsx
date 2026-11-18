@@ -14,6 +14,7 @@ interface AppTextProps {
   numberOfLines?: number;
   accessibilityRole?: 'header' | 'text';
   accessibilityLiveRegion?: 'none' | 'polite' | 'assertive';
+  accessibilityLabel?: string;
 }
 
 const variantStyles: Record<TextVariant, any> = {
@@ -45,12 +46,14 @@ export function AppText({
   numberOfLines,
   accessibilityRole,
   accessibilityLiveRegion,
+  accessibilityLabel,
 }: AppTextProps) {
   return (
     <Text
       numberOfLines={numberOfLines}
       accessibilityRole={accessibilityRole}
       accessibilityLiveRegion={accessibilityLiveRegion}
+      accessibilityLabel={accessibilityLabel}
       style={[
         variantStyles[variant],
         { color: colorMap[color] },

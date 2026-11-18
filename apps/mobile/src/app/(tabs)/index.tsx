@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, AppState, Linking } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
@@ -13,8 +13,8 @@ import { useHomeViewModel } from '../../viewmodels/useHomeViewModel';
 import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 import { useVisitorProfile } from '../../viewmodels/useVisitorProfile';
 import { useUserViewModel } from '../../viewmodels/useUserViewModel';
-import { useFavoriteAnimals } from '../../viewmodels/useFavoriteAnimals';
-import { useVisitorProgress, countsFromCollection } from '../../viewmodels/useVisitorProgress';
+import { animalsInFavoriteOrder, useVisitorFavorites } from '../../viewmodels/useFavoriteAnimals';
+import { mergeDiscoveredSpecies, useVisitorProgress } from '../../viewmodels/useVisitorProgress';
 import { scanQueue, type QueuedScan } from '../../services/scanQueue';
 import { Animal, News, ZooEvent } from '../../models';
 
@@ -43,7 +43,7 @@ export default function HomeRoute() {
   const { loadHomeData, refreshNewsAndEvents } = useHomeViewModel();
   const { isOffline } = useNetworkStatus();
   const { profile } = useVisitorProfile();
-  const { ids: favoriteIds } = useFavoriteAnimals();
+  const { ids: favoriteIds } = useVisitorFavorites();
   const progress = useVisitorProgress();
   const { missions } = useUserViewModel();
   const params = useLocalSearchParams<{ panel?: string }>();
@@ -108,12 +108,13 @@ export default function HomeRoute() {
   }, [reloadScans]);
 
   const missionSource = progress.snapshot?.missions ?? missions;
-  const pendingMissions = missionSource.filter((mission) => mission.progress < mission.total);
+  const catalog = mergeDiscoveredSpecies(featuredAnimals, progress.snapshot);
+  const discoveredInCatalog = catalog.filter((animal) => animal.isDiscovered).length;
 
   return (
     <HomeScreen
       appName="ARCA-NB"
-      featuredAnimals={featuredAnimals.filter((animal) => favoriteIds.includes(animal.id))}
+      featuredAnimals={animalsInFavoriteOrder(catalog, favoriteIds)}
       events={events}
       news={news}
       loading={loading}
@@ -127,16 +128,17 @@ export default function HomeRoute() {
       onSeeAllEventsPress={() => confirmPortal('eventos.html')}
       onSeeAllNewsPress={() => confirmPortal('noticias.html')}
       initialPanel={params.panel === 'missions' ? 'missions' : 'home'}
-      missions={pendingMissions.length > 0 ? pendingMissions : missionSource}
+      missions={missionSource}
       missionsLoading={progress.loading && !progress.snapshot && missionSource.length === 0}
       pendingScans={pendingScans}
       onMissionPress={(id) => router.push({ pathname: '/mission-detail', params: { id, returnTo: 'home' } })}
+      onAchievementsPress={() => router.push({ pathname: '/achievements', params: { source: 'game', returnTo: 'home' } })}
       onRetryScansPress={() => { void scanQueue.retry().finally(reloadScans); }}
       refreshing={refreshing}
       onRefresh={refreshLists}
       visitorName={profile?.nickname}
-      discoveredCount={countsFromCollection(progress.snapshot)?.discovered}
-      totalAnimals={countsFromCollection(progress.snapshot)?.total}
+      discoveredCount={loading ? undefined : discoveredInCatalog}
+      totalAnimals={loading ? undefined : catalog.length}
     />
   );
 }

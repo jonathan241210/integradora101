@@ -60,7 +60,7 @@ export function AchievementsScreen({ achievements, loading = false, source, onAc
           onPress={onBackPress}
           accessibilityLabel={source === 'profile' ? 'Volver al perfil' : 'Volver a Aventura en el Zoo'}
         />
-        <AppText variant="title">Todos los logros</AppText>
+        <AppText variant="title">Salón de logros</AppText>
         {loading ? (
           <View style={styles.loadingFill}>
             <LoadingView message="Cargando logros…" />

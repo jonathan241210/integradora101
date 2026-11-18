@@ -173,6 +173,7 @@ Requiere pasos propios; no participa en el flujo de especies. Resumen de [apps/m
 - Desde la raíz: `npm ci`. Después, en `apps/mobile`: `npm start` y escanear el QR con Expo Go (SDK 57).
 - Con API, la app necesita `apps/mobile/.env` con `EXPO_PUBLIC_API_URL=http://IP-LAN:8000/api/v1`, no `127.0.0.1`. La API debe escuchar en `--host=0.0.0.0`. El archivo `.env` no se versiona.
 - Sin `EXPO_PUBLIC_API_URL` la app usa datos simulados.
+- Los avisos push no salen con Expo Go. Hacen falta `PUSH_ENABLED=true`, `php artisan queue:work`, `php artisan schedule:run` cada minuto y un APK de distribución. El procedimiento, también con la API en un contenedor, está en [visitante-push.md](../apps/api/docs/visitante-push.md). El permiso del teléfono está en [013-permiso-notificaciones.md](../apps/mobile/docs/013-permiso-notificaciones.md).
 
 ## 6. Orden de arranque
 

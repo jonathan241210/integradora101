@@ -10,7 +10,7 @@ use Illuminate\Testing\TestResponse;
 
 trait RegistersVisitors
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 

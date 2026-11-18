@@ -2,7 +2,7 @@
 
 Documento de referencia para el equipo de `apps/mobile`. Resume el cumplimiento de las reglas en `AGENTS.md` (raíz y app), el estado de las ocho specs numeradas y quién redacta cada spec hasta su **aprobación funcional** (SDD: `/sdd-spec` → plan → tasks → implementación).
 
-**Última revisión:** 2026-11-01 (cierre mobile-006).
+**Última revisión:** 2026-11-18. Esta pasada alinea el texto con lo que ya hace la app: avatares PNG, toque de un aviso de memoria e icono. No cierra pull requests, no da por entregado el aviso con la app cerrada y no da por terminado el mapa ni el recorrido 3D.
 
 ## Reglas que aplican a todo el trabajo móvil
 
@@ -20,14 +20,18 @@ Documento de referencia para el equipo de `apps/mobile`. Resume el cumplimiento 
 | 001 | mobile-setup | **Implementada** | Sí | Completa | Base Expo, Router, Jest, workspaces. T-08 cerrada con entrega en rama principal (2026-10-14). |
 | 002 | mobile-ui-base-visitor-journey | **Implementada** | Sí | Completa (+ enmienda acceso visual) | Prototipo con mocks: sin API, cámara, GPS ni 3D real. **Enmienda 2026-10-15:** CA-11–CA-15 (Login, registro, recuperación, Ajustes, Privacidad demo); T-48–T-53; **no sustituye** spec `004`. Verificación automatizada 2026-10-16: 11 suites Jest, 70 tests, `tsc --noEmit` OK. |
 | 003 | api-read-integration | **Aprobada** | Sí | Completa | Catálogo de animales y eventos consumiendo API mediante `@arca/api-client`, mapeo snake_case a camelCase, caché SWR de 5 minutos en `AsyncStorage` y detección de conectividad con `expo-network` (ADR 0014), fallback de imágenes y vistas para 5 estados UI (loading, empty, error, offline, success). Tareas T-01 a T-22 completadas. Verificación tras el merge con 004: 23 suites Jest, 111 tests y `tsc --noEmit` OK. |
-| 004 | visitor-account | **Implementada** (2026-10-21; aprobación de Aksel, 2026-10-20) | Plan aprobado. T-01 a T-44 hechas. La fase HTTP la firmó Aksel el 2026-10-21 | Cuenta real con `EXPO_PUBLIC_API_URL`, `expo-secure-store` y el cliente visitante. Sin esa variable, y en Jest, sigue el mock | ADR 0011 aceptado el 2026-10-21. `api-004` Implementada el mismo día. Sin URL de API no hay cuentas ni código de prueba en la app. |
-| 005 | visitor-progress | **En progreso** (Aksel, 2026-10-22) | Plan y tareas aprobados. La implementación consume `api-005`; no está Implementada hasta el PR | Progreso, colección por especie, logros, misiones y cola de escaneos | AsyncStorage ya estaba por el ADR 0014. No se instala otra dependencia. La cámara sigue en `mobile-006`. |
-| 006 | qr-scan | Borrador | No | No iniciada | Cámara y lectura QR → entrega código a cola de 005. |
-| 007 | map-location | **Aprobada** (2026-10-22; Enmienda V2 2026-10-29; Enmienda V2.1 2026-11-01; Enmienda V2.2 y V3 2026-11-04) | Plan y tasks V2.2 y V3 aprobados; T-01 a T-63 completas | V1, V2, V2.1, V2.2 y V3 implementadas | Mapa 2D SVG esquemático con fixture local, filtros, detalle y foco desde búsqueda. V2 incorpora GPS en vivo con `expo-location` (ADR 0016) y punto azul. V2.1 incorpora fijación de destino, cálculo Haversine (≤ 10 m) y banner de llegada (`ArrivalBanner`). V2.2 incorpora controles interactivos de zoom (`1.0x`–`2.5x`), desplazamiento (`PanResponder`) y botón «Centrar en mi ubicación» (`MapViewportControls`). V3 incorpora grafo de senderos peatonales (`zooPaths.ts`), algoritmo Dijkstra (`pathfinding.ts`), polilínea por pasillos y estimación de distancia/tiempo a pie (`WalkEstimateBadge`). |
-| 005 | visitor-progress | **Implementada** (2026-11-01; aprobación funcional Aksel, 2026-10-22) | Plan aprobado. T-01 a T-10 hechas. Merge a `DevOps` | Progreso, colección por especie, logros, misiones y cola de escaneos con `api-005` | `api-005` Implementada el mismo día. La cámara sigue en `mobile-006` (`submitScan` es el puerto). Validación manual Android + Jest auth/progress en verde. |
-| 006 | qr-scan | **Implementada** (2026-11-01; aprobación funcional Aksel, 2026-11-01) | Plan aprobado. T-01 a T-11 hechas | Cámara `expo-camera`, entrada manual, `submitScan` → `scan-result` | ADR 0022. API sin cambios (`api-005`). Rutas mock `qr-*` retiradas. |
-| 007 | map-location | **Aprobada** (2026-10-22; Enmienda V2 2026-10-29) | Plan y tasks V2 aprobados; T-01 a T-36 completas | V1 y V2 (punto azul) implementadas | Mapa 2D SVG esquemático con fixture local, filtros, detalle y foco desde búsqueda. V2 incorpora GPS en vivo con `expo-location` (ADR 0016), transformación geográfica afín y punto azul con fallback a entrada. Próxima evolución: V2.1 (línea al destino y llegada). |
+| 004 | visitor-account | **Implementada** (2026-10-21; aprobación de Aksel, 2026-10-20) | Plan aprobado. T-01 a T-44 hechas. La fase HTTP la firmó Aksel el 2026-10-21 | Cuenta real con `EXPO_PUBLIC_API_URL`, `expo-secure-store` y el cliente visitante. Sin esa variable, y en Jest, sigue el mock | ADR 0011 aceptado el 2026-10-21. `api-004` Implementada el mismo día. Sin URL de API no hay cuentas ni código de prueba en la app. Enmienda 2026-11-18: el avatar vigente es `src/assets/avatars/<código>.png`. |
+| 005 | visitor-progress | **Implementada** (2026-11-01) | Plan aprobado. T-01 a T-10 hechas | Progreso, colección, salón de logros, misiones y cola de escaneos | Enmienda 2026-11-17: el listado se llama «Salón de logros». «Misión cumplida» y «Maestro de misiones» no se muestran. |
+| 006 | qr-scan | **Implementada** (2026-11-01) | Plan aprobado. T-01 a T-11 hechas | Cámara `expo-camera`, entrada manual, `submitScan` → `scan-result` | ADR 0022. API sin cambios (`api-005`). |
+| 007 | map-location | **En curso** | Plan y tasks existentes | No se cierra en esta revisión | El mapa no está terminado. No se actualiza aquí su alcance ni se marca como hecho. |
 | 008 | build-distribution | Borrador | No | No iniciada | Play Store pruebas + APK; ADR 0012. Redacción provisional: **Aksel**. |
+| 009 | ar-3d-map-guide | Borrador | Plan y tasks existentes | No se cierra en esta revisión | El recorrido 3D no está terminado. |
+| 009 | expo-sdk57-dependency-alignment | En progreso | Plan y tasks existentes | Alineación de SDK 57 | No cambia el alcance del mapa ni del 3D. |
+| 010 | visitor-memory-requests | En la app | Plan y tasks aprobados | «Mis memorias» en Perfil | Enmienda 2026-11-18: el título pasa de «Mis recuerdos» a «Mis memorias» y el límite semanal dice «otra memoria». Un aviso abre `/memory-form` y espera la lista antes de decir que falta. Sin foto devuelta por la API. Esta nota no cierra un PR. |
+| 011 | mobile-service-coverage-ci | **Implementada** | Plan y tasks | Jest con umbral en servicios, repositorios y viewmodels | El informe no cubre pantallas ni rutas. |
+| 012 | monorepo-ci-validation | **Implementada** | Plan y tasks | Validación de CI del monorepo | No sustituye la revisión visual del teléfono. |
+| 013 | visitor-push-notifications | En la app | Plan y tasks | Interruptores, token Android y toque del aviso | Enmienda 2026-11-18: el toque de un momento espera la lista. El icono del aviso es `notification.png` y el nombre visible es ARCA-NB. La barra con la app cerrada sigue en el APK `preview`. Esta nota no cierra un PR. |
+| 014 | visitor-favorite-species | En la app | Plan y tasks aprobados | Corazón y «Animales favoritos» contra la cuenta | Esta nota no cierra un PR. |
 
 ### Evidencia specs 001 y 002
 
@@ -87,11 +91,11 @@ Las specs **003** (2026-10-22) y **004** (2026-10-21) quedaron implementadas. La
 - `expo-secure-store` (ADR 0011) guarda solo el par de tokens de la cuenta.
 - `@react-native-async-storage/async-storage` y `expo-network` (ADR 0014) sirven para la caché de lectura, la conectividad del catálogo público y, desde `mobile-005`, la cola de escaneos. No se vuelve a instalar AsyncStorage.
 - `HttpAuthRepository` y el módulo visitante de `@arca/api-client` se usan cuando `EXPO_PUBLIC_API_URL` tiene valor.
-- Cámara, QR real y builds de distribución siguen sujetos a sus specs 006–008. El mapa V1 ya usa un SVG local sin GPS; la ubicación real queda para una fase posterior.
+- El QR con cámara está en la spec 006. La distribución sigue en la 008. El mapa (007) y el recorrido 3D (009) no se cierran aquí. Los avisos push (013) tampoco.
 
 ## Preguntas abiertas (para cerrar en spec o con arquitectura/API)
 
-1. **007:** V1 y V2 (GPS) implementadas en rama integrada; quedan la firma técnica de Aksel, el SVG final y la revisión visual en Android/Expo Go.
+1. **007:** el mapa sigue abierto. Esta revisión no describe ni cierra sus fases.
 2. **008:** Confirmación final de quién redacta/implementa distribución (Aksel provisional).
 3. **Contenido transversal:** ilustraciones finales de avatares y texto definitivo del aviso de privacidad los entrega el zoológico; no bloquean specs ya implementadas.
 4. **Operación QR en recintos:** impresión/colocación fuera de software; generación con `arca:generate-qr-codes` (`api-005`).

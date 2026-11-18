@@ -60,6 +60,7 @@ function Probe() {
       achievements={[]}
       onAchievementPress={() => undefined}
       onSeeAllAchievementsPress={() => undefined}
+      onMemoriesPress={() => undefined}
       onSettingsPress={() => undefined}
     />
   );
@@ -114,6 +115,7 @@ describe('test-ca-01-progress-profile', () => {
         achievements={achievements}
         onAchievementPress={() => undefined}
         onSeeAllAchievementsPress={() => undefined}
+        onMemoriesPress={() => undefined}
         onSettingsPress={() => undefined}
       />,
     );

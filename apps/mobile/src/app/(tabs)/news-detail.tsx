@@ -9,7 +9,7 @@ import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 export default function NewsDetailRoute() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { getNewsDetails } = useHomeViewModel();
+  const { reloadNewsDetails } = useHomeViewModel();
   const { isOffline } = useNetworkStatus();
   const [news, setNews] = useState<News | null>(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +24,7 @@ export default function NewsDetailRoute() {
     setLoading(true);
     setError(null);
     try {
-      const result = await getNewsDetails(id);
+      const result = await reloadNewsDetails(id);
       setNews(result);
       if (!result) setError('No se encontró la noticia.');
     } catch {
@@ -32,7 +32,7 @@ export default function NewsDetailRoute() {
     } finally {
       setLoading(false);
     }
-  }, [id, getNewsDetails]);
+  }, [id, reloadNewsDetails]);
 
   useEffect(() => {
     fetchDetail();

@@ -112,4 +112,81 @@ describe('Cliente HTTP del visitante', () => {
     expect(refreshCalls).toBe(1);
     expect(expired).toBeGreaterThan(0);
   });
+
+  it('CA-06 visitor-memories lista conserva data y meta sin reglas de plazo', async () => {
+    const fetchImpl = jest.fn(async () => jsonResponse(200, {
+      data: [{ id: 4, status: 'submitted', opinion: null, created_at: null, reviewed_at: null, resubmitted_count: 0 }],
+      meta: { can_submit: false, next_submission_at: '2026-11-21T18:00:00Z', open_request_id: 4 },
+    }));
+    const api = createVisitorApi({
+      baseUrl: 'https://api.pruebas.invalid',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      getAccessToken: async () => 'access',
+      getRefreshToken: async () => 'refresh',
+      onTokens: async () => undefined,
+      onSessionExpired: async () => undefined,
+    });
+
+    await expect(api.listVisitorMemories()).resolves.toEqual({
+      data: [{ id: 4, status: 'submitted', opinion: null, created_at: null, reviewed_at: null, resubmitted_count: 0 }],
+      meta: { can_submit: false, next_submission_at: '2026-11-21T18:00:00Z', open_request_id: 4 },
+    });
+  });
+
+  it('CA-04 visitor-memories envía multipart sin Content-Type json y omite la opinión vacía', async () => {
+    const bodies: Array<RequestInit['body']> = [];
+    const contentTypes: Array<string | null> = [];
+    const fetchImpl = jest.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      bodies.push(init?.body ?? null);
+      contentTypes.push(new Headers(init?.headers).get('Content-Type'));
+      return jsonResponse(201, {
+        data: { id: 8, status: 'submitted', opinion: null, created_at: null, reviewed_at: null, resubmitted_count: 0 },
+      });
+    });
+    const api = createVisitorApi({
+      baseUrl: 'https://api.pruebas.invalid',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      getAccessToken: async () => 'access',
+      getRefreshToken: async () => 'refresh',
+      onTokens: async () => undefined,
+      onSessionExpired: async () => undefined,
+    });
+
+    await api.submitVisitorMemory({
+      image: { uri: 'file:///foto.jpg', name: 'foto.jpg', mimeType: 'image/jpeg' },
+      opinion: '   ',
+      consent: true,
+    });
+
+    const form = bodies[0] as FormData;
+    expect(form).toBeInstanceOf(FormData);
+    expect(contentTypes[0]).toBeNull();
+    expect(String(form)).not.toMatch(/7 d[ií]as|published_until|can_submit/);
+    const entries = [...form.entries()].map(([key]) => key);
+    expect(entries).toEqual(['image', 'consent']);
+  });
+
+  it('CA-16 visitor-memories reenvía a la misma petición e incluye la opinión', async () => {
+    const urls: string[] = [];
+    const fetchImpl = jest.fn(async (input: RequestInfo | URL) => {
+      urls.push(String(input));
+      return jsonResponse(200, {
+        data: { id: 8, status: 'submitted', opinion: 'Otra', created_at: null, reviewed_at: null, resubmitted_count: 1 },
+      });
+    });
+    const api = createVisitorApi({
+      baseUrl: 'https://api.pruebas.invalid',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      getAccessToken: async () => 'access',
+      getRefreshToken: async () => 'refresh',
+      onTokens: async () => undefined,
+      onSessionExpired: async () => undefined,
+    });
+
+    await api.resubmitVisitorMemory(8, {
+      opinion: 'Otra',
+      consent: true,
+    });
+    expect(urls).toEqual(['https://api.pruebas.invalid/api/v1/visitor/memories/8/resubmit']);
+  });
 });

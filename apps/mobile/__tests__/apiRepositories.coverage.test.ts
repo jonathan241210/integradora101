@@ -16,6 +16,19 @@ function client(get: jest.Mock = jest.fn()): jest.Mocked<HttpClient> {
   } as unknown as jest.Mocked<HttpClient>;
 }
 
+function openCatalog(payload: unknown) {
+  return jest.fn(async (path: string) => {
+    if (path === '/published-species' || path === '/enclosures') {
+      const rows = payload && typeof payload === 'object' && 'data' in payload && Array.isArray(payload.data)
+        ? payload.data as { id?: number }[]
+        : [];
+      if (path === '/published-species') return { data: rows.map((row) => ({ id: row.id })) };
+      return { data: [{ animals: rows.map((row) => ({ species_id: row.id, can_receive_visits: true })) }] };
+    }
+    return payload;
+  });
+}
+
 function species(id = 1, name = 'Jaguar') {
   return {
     id,
@@ -43,13 +56,13 @@ describe('mobile-011 CA-05: cobertura de ApiAnimalRepository', () => {
   });
 
   it('usa la caché fresca, obtiene destacados y admite una respuesta sin arreglo data', async () => {
-    const http = client(jest.fn().mockResolvedValue({ data: [species()] }));
+    const http = client(openCatalog({ data: [species()] }));
     const repo = new ApiAnimalRepository(http, storage);
     const first = await repo.getAllAnimals();
     expect(first[0].commonName).toBe('Jaguar');
     expect(await repo.getAllAnimals()).toEqual(first);
     expect(await repo.getFeaturedAnimals()).toEqual(first.slice(0, 3));
-    expect(http.get).toHaveBeenCalledTimes(1);
+    expect(http.get).toHaveBeenCalledTimes(3);
 
     const empty = new ApiAnimalRepository(
       client(jest.fn().mockResolvedValue({ data: null })),
@@ -63,16 +76,28 @@ describe('mobile-011 CA-05: cobertura de ApiAnimalRepository', () => {
     const detail = { data: mapSpeciesToAnimalModel(species(2, 'Anterior')), cachedAt: Date.now() - 10, ttlMs: 0 };
     await storage.setItem('@arca:cache:species_list', JSON.stringify(stale));
     await storage.setItem('@arca:cache:species:2', JSON.stringify(detail));
-    const http = client(jest.fn()
-      .mockResolvedValueOnce({ data: [species(1, 'Actualizado')] })
-      .mockResolvedValueOnce({ data: { ...species(2, 'Actualizado'), id: 2 } }));
+    const http = client(jest.fn(async (path: string) => {
+      if (path === '/published-species') return { data: [{ id: 1 }, { id: 2 }] };
+      if (path === '/enclosures') {
+        return {
+          data: [{
+            animals: [
+              { species_id: 1, can_receive_visits: true },
+              { species_id: 2, can_receive_visits: true },
+            ],
+          }],
+        };
+      }
+      if (path === '/species/2') return { data: { ...species(2, 'Actualizado'), id: 2 } };
+      return { data: [species(1, 'Actualizado')] };
+    }));
     const repo = new ApiAnimalRepository(http, storage);
 
     expect((await repo.getAllAnimals())[0].commonName).toBe('Anterior');
     expect((await repo.getAnimalById('2'))?.commonName).toBe('Anterior');
     await tick();
 
-    expect(http.get).toHaveBeenCalledTimes(2);
+    expect(http.get).toHaveBeenCalledWith('/species');
     expect((await repo.getAllAnimals())[0].commonName).toBe('Actualizado');
     expect((await repo.getAnimalById('2'))?.commonName).toBe('Actualizado');
   });
@@ -90,7 +115,7 @@ describe('mobile-011 CA-05: cobertura de ApiAnimalRepository', () => {
       clear: async () => undefined,
     };
     const withBrokenStorage = new ApiAnimalRepository(
-      client(jest.fn().mockResolvedValue({ data: [species()] })),
+      client(openCatalog({ data: [species()] })),
       brokenStorage,
     );
     expect(await withBrokenStorage.getAllAnimals()).toHaveLength(1);

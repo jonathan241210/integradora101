@@ -7,7 +7,7 @@
 - Responsable técnico: Jonathan (responsable de backend). Aprobación del 2026-11-13 en nombre del equipo.
 - Base de datos: DBR-012 (`docs/database/requests/DBR-012-visitor-memories.md`), Lista para backend, aplicada en `arca_pruebas` el 2026-11-11. Este plan no crea DBR ni migraciones. Si el diseño necesita una columna o un índice nuevo, se abre DBR antes.
 - Mapeo de criterios a fases: **aprobado** el 2026-11-13 tal como se propuso (sección «Fases y mapeo CA→fase»). La spec no lo fija.
-- Consumidores: `dashboard-008` y `web-010` (Fase 1, a través de `api-012`); `mobile-010` (Fase 2, en Borrador).
+- Consumidores: `dashboard-008` y `web-010` (Fase 1, a través de `api-012`); `mobile-010` (Fase 2; spec y plan aprobados por Aksel el 2026-11-14).
 
 ## Precondiciones y bloqueos
 

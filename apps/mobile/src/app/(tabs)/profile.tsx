@@ -1,18 +1,36 @@
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { AppText, ScreenContainer, TitledLoading } from '../../components/ui';
-import { avatarLabel } from '../../constants/avatarCatalog';
+import { Animal } from '../../models';
 import { ProfileScreen } from '../../screens/ProfileScreen';
+import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
 import { useUserViewModel } from '../../viewmodels/useUserViewModel';
 import { useVisitorProfile } from '../../viewmodels/useVisitorProfile';
-import { useVisitorProgress, profileDiscoveryCounts } from '../../viewmodels/useVisitorProgress';
+import { mergeDiscoveredSpecies, profileDiscoveryCounts, useVisitorProgress } from '../../viewmodels/useVisitorProgress';
 
 export default function ProfileRoute() {
   const router = useRouter();
   const { user, achievements, loading, error } = useUserViewModel();
+  const { getAnimals } = useAnimalViewModel();
   const progress = useVisitorProgress();
   const { profile } = useVisitorProfile();
+  const [catalog, setCatalog] = useState<Animal[] | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getAnimals()
+      .then((rows) => {
+        if (active) setCatalog(rows);
+      })
+      .catch(() => {
+        if (active) setCatalog([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [getAnimals]);
   const identity = profile
-    ? { nickname: profile.nickname, avatarLabel: avatarLabel(profile.avatarCode) }
+    ? { nickname: profile.nickname, avatarCode: profile.avatarCode }
     : null;
   if (loading || (progress.loading && !progress.snapshot)) {
     return (
@@ -37,21 +55,26 @@ export default function ProfileRoute() {
   }
   const live = progress.snapshot;
   const species = profileDiscoveryCounts(live);
+  const shownCatalog = catalog ? mergeDiscoveredSpecies(catalog, live) : null;
   const shownUser = live
     ? {
         ...user,
         points: live.progress.points,
         level: live.progress.level,
         rank: live.progress.rank,
-        discoveredCount: species?.discovered ?? live.progress.discoveredSpecies,
-        totalAnimals: species?.total ?? live.progress.totalSpecies,
+        discoveredCount: shownCatalog
+          ? shownCatalog.filter((animal) => animal.isDiscovered).length
+          : (species?.discovered ?? live.progress.discoveredSpecies),
+        totalAnimals: shownCatalog
+          ? shownCatalog.length
+          : (species?.total ?? live.progress.totalSpecies),
       }
     : user;
   return (
     <ProfileScreen
       user={shownUser}
       displayName={identity?.nickname}
-      avatarLabel={identity?.avatarLabel}
+      avatarCode={identity?.avatarCode}
       nextThreshold={live?.progress.nextThreshold}
       achievements={live?.achievements ?? achievements}
       onAchievementPress={(id) => router.push({
@@ -59,6 +82,7 @@ export default function ProfileRoute() {
         params: { id, source: 'profile', returnTo: 'profile' },
       })}
       onSeeAllAchievementsPress={() => router.push({ pathname: '/achievements', params: { source: 'profile' } })}
+      onMemoriesPress={() => router.push('/memories')}
       onSettingsPress={() => router.push('/settings')}
     />
   );

@@ -12,7 +12,47 @@ interface CacheEnvelope<T> {
 
 const FIVE_MINUTES_MS = 5 * 60 * 1000;
 const CACHE_KEY_ALL = '@arca:cache:species_list';
+const CACHE_KEY_VISIBLE = '@arca:cache:visitor_species_ids';
 const CACHE_KEY_PREFIX = '@arca:cache:species:';
+const listFlights = new Map<string, Promise<Animal[]>>();
+
+function rowsOf(body: unknown): unknown[] {
+  if (Array.isArray(body)) return body;
+  if (body && typeof body === 'object' && 'data' in body) {
+    const data = (body as { data?: unknown }).data;
+    return Array.isArray(data) ? data : [];
+  }
+  return [];
+}
+
+/**
+ * Species the visitor may see: published, and at least one animal open to visits.
+ * Publication comes from GET /published-species. Visit access comes from GET /enclosures.
+ */
+export function visitorSpeciesIds(publishedBody: unknown, enclosuresBody: unknown): Set<string> {
+  const publishedIds = new Set<string>();
+  for (const row of rowsOf(publishedBody)) {
+    if (!row || typeof row !== 'object' || !('id' in row)) continue;
+    const id = String((row as { id?: unknown }).id ?? '');
+    if (/^\d+$/.test(id)) publishedIds.add(id);
+  }
+
+  const visible = new Set<string>();
+  for (const enclosure of rowsOf(enclosuresBody)) {
+    if (!enclosure || typeof enclosure !== 'object' || !('animals' in enclosure)) continue;
+    const animals = (enclosure as { animals?: unknown }).animals;
+    if (!Array.isArray(animals)) continue;
+    for (const animal of animals) {
+      if (!animal || typeof animal !== 'object') continue;
+      const record = animal as { species_id?: unknown; can_receive_visits?: unknown };
+      if (typeof record.species_id !== 'number') continue;
+      const id = String(record.species_id);
+      const open = record.can_receive_visits === true || record.can_receive_visits === 1;
+      if (open && publishedIds.has(id)) visible.add(id);
+    }
+  }
+  return visible;
+}
 
 export class ApiAnimalRepository implements AnimalRepository {
   private readonly httpClient: HttpClient;
@@ -62,6 +102,10 @@ export class ApiAnimalRepository implements AnimalRepository {
     if (cached) {
       const isFresh = Date.now() - cached.cachedAt < cached.ttlMs;
       if (isFresh) {
+        const visible = await this.readCache<string[]>(CACHE_KEY_VISIBLE);
+        if (visible && Date.now() - visible.cachedAt < visible.ttlMs && !visible.data.includes(id)) {
+          return null;
+        }
         return cached.data;
       }
       this.revalidateAnimalById(id, cacheKey).catch(() => {});
@@ -80,14 +124,18 @@ export class ApiAnimalRepository implements AnimalRepository {
   }
 
   async fetchAndCacheAllAnimals(): Promise<Animal[]> {
+    const pending = listFlights.get(CACHE_KEY_ALL);
+    if (pending) return pending;
+    const flight = this.loadAllAnimals().finally(() => {
+      if (listFlights.get(CACHE_KEY_ALL) === flight) listFlights.delete(CACHE_KEY_ALL);
+    });
+    listFlights.set(CACHE_KEY_ALL, flight);
+    return flight;
+  }
+
+  private async loadAllAnimals(): Promise<Animal[]> {
     try {
-      const response = await this.httpClient.get<{ data: ApiSpeciesResponse[] } | ApiSpeciesResponse[]>('/species');
-      const rawData = (response as { data?: unknown })?.data ?? response;
-      const list = Array.isArray(rawData)
-        ? rawData.map((item) => mapSpeciesToAnimalModel(item as ApiSpeciesResponse))
-        : [];
-      await this.writeCache(CACHE_KEY_ALL, list);
-      return list;
+      return await this.readVisitorCatalog();
     } catch (error) {
       const cached = await this.readCache<Animal[]>(CACHE_KEY_ALL);
       if (cached) return cached.data;
@@ -96,11 +144,25 @@ export class ApiAnimalRepository implements AnimalRepository {
   }
 
   private async revalidateAllAnimals(): Promise<void> {
-    const response = await this.httpClient.get<{ data: ApiSpeciesResponse[] }>('/species');
-    const list = Array.isArray(response?.data)
-      ? response.data.map(mapSpeciesToAnimalModel)
+    await this.readVisitorCatalog();
+  }
+
+  private async readVisitorCatalog(): Promise<Animal[]> {
+    const [speciesBody, publishedBody, enclosuresBody] = await Promise.all([
+      this.httpClient.get<{ data: ApiSpeciesResponse[] } | ApiSpeciesResponse[]>('/species'),
+      this.httpClient.get('/published-species'),
+      this.httpClient.get('/enclosures'),
+    ]);
+    const visible = visitorSpeciesIds(publishedBody, enclosuresBody);
+    const rawData = (speciesBody as { data?: unknown })?.data ?? speciesBody;
+    const list = Array.isArray(rawData)
+      ? rawData
+        .map((item) => mapSpeciesToAnimalModel(item as ApiSpeciesResponse))
+        .filter((animal) => visible.has(animal.id))
       : [];
     await this.writeCache(CACHE_KEY_ALL, list);
+    await this.writeCache(CACHE_KEY_VISIBLE, [...visible]);
+    return list;
   }
 
   private async fetchAndCacheAnimalById(id: string, cacheKey: string): Promise<Animal | null> {
@@ -108,6 +170,8 @@ export class ApiAnimalRepository implements AnimalRepository {
       const response = await this.httpClient.get<{ data: ApiSpeciesResponse }>(`/species/${id}`);
       if (!response?.data) return null;
       const animal = mapSpeciesToAnimalModel(response.data);
+      const visible = await this.currentVisibleIds();
+      if (!visible.has(animal.id)) return null;
       await this.writeCache(cacheKey, animal);
       return animal;
     } catch (error: any) {
@@ -123,13 +187,28 @@ export class ApiAnimalRepository implements AnimalRepository {
   private async revalidateAnimalById(id: string, cacheKey: string): Promise<void> {
     try {
       const response = await this.httpClient.get<{ data: ApiSpeciesResponse }>(`/species/${id}`);
-      if (response?.data) {
-        const animal = mapSpeciesToAnimalModel(response.data);
-        await this.writeCache(cacheKey, animal);
-      }
+      if (!response?.data) return;
+      const animal = mapSpeciesToAnimalModel(response.data);
+      const visible = await this.currentVisibleIds();
+      if (!visible.has(animal.id)) return;
+      await this.writeCache(cacheKey, animal);
     } catch {
       // Ignorar fallo en background
     }
+  }
+
+  private async currentVisibleIds(): Promise<Set<string>> {
+    const cached = await this.readCache<string[]>(CACHE_KEY_VISIBLE);
+    if (cached && Date.now() - cached.cachedAt < cached.ttlMs) {
+      return new Set(cached.data);
+    }
+    const [publishedBody, enclosuresBody] = await Promise.all([
+      this.httpClient.get('/published-species'),
+      this.httpClient.get('/enclosures'),
+    ]);
+    const visible = visitorSpeciesIds(publishedBody, enclosuresBody);
+    await this.writeCache(CACHE_KEY_VISIBLE, [...visible]);
+    return visible;
   }
 
   private async readCache<T>(key: string): Promise<CacheEnvelope<T> | null> {

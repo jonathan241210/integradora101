@@ -46,7 +46,7 @@ La cola no guarda tokens ni contraseñas. El UUID nace en el teléfono al acepta
 | CA-01 | `test-ca-01-progress-profile` | `__tests__/progress/profile.test.tsx`. Muestra «Cargando perfil…» hasta que llega el progreso y «Aún no tienes logros» si no hay desbloqueados. Enmienda 2026-10-23. |
 | CA-01 | `una sola lectura de progreso` | `__tests__/progress/single-load.test.tsx`. Dos pantallas disparan `load()` una vez y guardar el perfil no lo repite. `__tests__/auth/http-bootstrap.test.ts` comprueba que `bootstrap()` no vuelve a pedir el perfil si la sesión ya está autenticada. |
 | CA-02 | `test-ca-02-progress-collection` | `__tests__/progress/collection.test.tsx` |
-| CA-03 | `test-ca-03-progress-achievements-missions` | `__tests__/progress/catalogs.test.tsx`. Sin desbloqueados, «Todos los logros» abre en «Por obtener». Enmienda 2026-10-23. |
+| CA-03 | `test-ca-03-progress-achievements-missions` | `__tests__/progress/catalogs.test.tsx`. Sin desbloqueados, «Salón de logros» abre en «Por obtener». Enmienda 2026-10-23. |
 | CA-04 | `test-ca-04-progress-queue-offline` | `__tests__/progress/scan-queue.test.ts` |
 | CA-05 | `test-ca-05-progress-queue-flush` | `__tests__/progress/scan-queue.test.ts` |
 | CA-06 | `test-ca-06-progress-queue-result` | `__tests__/progress/scan-queue.test.ts` |

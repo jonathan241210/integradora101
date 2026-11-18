@@ -33,6 +33,11 @@ jest.mock('expo-router', () => ({
   useLocalSearchParams: () => mockParams,
 }));
 
+jest.mock('../src/viewmodels/useFavoriteAnimals', () => ({
+  ...jest.requireActual('../src/viewmodels/useFavoriteAnimals'),
+  useVisitorFavorites: () => ({ ids: ['juan'], toggle: jest.fn(), error: null }),
+}));
+
 describe('Navegación visitante', () => {
   beforeEach(() => {
     mockPush.mockClear();
@@ -96,7 +101,6 @@ describe('Navegación visitante', () => {
   });
 
   it('test-ca-04: Home navega a detalle, búsqueda y Game', async () => {
-    await favoriteAnimals.toggle('juan');
     const view = await render(<HomeRoute />);
     await waitFor(() => expect(view.getByText('Tigre de Bengala')).toBeTruthy());
 
@@ -237,14 +241,15 @@ describe('Navegación visitante', () => {
     const game = await render(<GameRoute />);
     await waitFor(() => expect(game.getByText('Safari Matutino')).toBeTruthy());
     expect(game.queryByText('Logros destacados')).toBeNull();
-    expect(game.getByText('Cuando termines una misión, el logro queda en tu perfil.')).toBeTruthy();
+    expect(game.getByText('Ver salón de logros')).toBeTruthy();
+    expect(game.queryByText('Primer descubrimiento')).toBeNull();
     await fireEvent.press(game.getByLabelText('Volver'));
     expect(mockBack).toHaveBeenCalledTimes(1);
     await game.unmount();
 
     mockParams.source = 'game';
     const list = await render(<AchievementsRoute />);
-    await waitFor(() => expect(list.getByText('Todos los logros')).toBeTruthy());
+    await waitFor(() => expect(list.getByText('Salón de logros')).toBeTruthy());
     await fireEvent.press(list.getByText('Primer descubrimiento'));
     expect(mockPush).toHaveBeenCalledWith({
       pathname: '/achievement-detail',

@@ -65,6 +65,7 @@ export interface HomeScreenProps {
   missionsLoading?: boolean;
   pendingScans?: { clientScanId: string; code: string }[];
   onMissionPress?: (id: string) => void;
+  onAchievementsPress?: () => void;
   onRetryScansPress?: () => void;
   visitorName?: string | null;
   discoveredCount?: number | null;
@@ -94,6 +95,7 @@ export function HomeScreen({
   missionsLoading = false,
   pendingScans = [],
   onMissionPress,
+  onAchievementsPress,
   onRetryScansPress,
   visitorName,
   discoveredCount,
@@ -121,6 +123,7 @@ export function HomeScreen({
           loading={missionsLoading}
           onBackPress={() => setPanel('home')}
           onMissionPress={(id) => onMissionPress?.(id)}
+          onAchievementsPress={onAchievementsPress}
           onRetryPress={onRetryScansPress}
         />
       </ScreenContainer>

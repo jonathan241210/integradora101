@@ -31,6 +31,10 @@ export function useHomeViewModel(
     return await zooRepo.getNewsById(id);
   }, [zooRepo]);
 
+  const reloadNewsDetails = useCallback(async (id: string): Promise<News | null> => {
+    return await zooRepo.reloadNewsById(id);
+  }, [zooRepo]);
+
   const refreshNewsAndEvents = useCallback(async () => {
     return await zooRepo.refreshNewsAndEvents();
   }, [zooRepo]);
@@ -54,6 +58,7 @@ export function useHomeViewModel(
     getEventDetails,
     getNews,
     getNewsDetails,
+    reloadNewsDetails,
     refreshNewsAndEvents,
     loadHomeData,
   };

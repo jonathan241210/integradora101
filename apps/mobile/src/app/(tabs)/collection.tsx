@@ -15,6 +15,7 @@ export default function CollectionRoute() {
   const progress = useVisitorProgress();
   const { isOffline } = useNetworkStatus();
   const [animals, setAnimals] = useState<Animal[]>([]);
+  const [catalogReady, setCatalogReady] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -22,7 +23,10 @@ export default function CollectionRoute() {
       .then((allAnimals) => {
         if (isActive) setAnimals(allAnimals);
       })
-      .catch((error: unknown) => console.error('Error loading collection:', error));
+      .catch((error: unknown) => console.error('Error loading collection:', error))
+      .finally(() => {
+        if (isActive) setCatalogReady(true);
+      });
     return () => {
       isActive = false;
     };
@@ -46,12 +50,18 @@ export default function CollectionRoute() {
 
   const live = progress.snapshot;
   const shownAnimals = mergeDiscoveredSpecies(animals, live);
+  const catalogProgress = {
+    discovered: shownAnimals.filter((animal) => animal.isDiscovered).length,
+    total: shownAnimals.length,
+  };
 
   return (
     <CollectionScreen
       animals={shownAnimals}
-      progress={countsFromCollection(live)
-        ?? { discovered: user?.discoveredCount ?? 0, total: user?.totalAnimals ?? 0 }}
+      progress={catalogReady
+        ? catalogProgress
+        : (countsFromCollection(live)
+          ?? { discovered: user?.discoveredCount ?? 0, total: user?.totalAnimals ?? 0 })}
       isOffline={isOffline}
       onAnimalPress={(id) => router.push({ pathname: '/animal/[id]', params: { id } })}
     />

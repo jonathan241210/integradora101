@@ -2,7 +2,7 @@
 
 - Spec: `apps/api/specs/017-visitor-push-notifications.md`
 - Estado de spec: Aprobada (Aksel, 2026-11-14)
-- Estado del plan: Aprobado técnicamente (Victor Adrian, 2026-11-14). No autoriza código ni instalación de dependencias hasta contar con tasks aprobadas, ADR 0029 aceptado y DBR-017 en `Lista para backend`.
+- Estado del plan: Aprobado técnicamente (Victor Adrian, 2026-11-14). No autoriza código hasta contar con tasks aprobadas. El ADR 0029 está Aceptado y DBR-017 está en `Lista para backend` (Aksel, 2026-11-14).
 - Responsable técnico: por identificar
 - Solicitante funcional: Aksel
 
@@ -10,7 +10,7 @@
 
 La API decide si un aviso corresponde, redacta el título y el cuerpo en español y los pone en el payload. El teléfono solo muestra la barra del sistema (`mobile-013`). No hay correo ni bandeja.
 
-El envío sale por la cola `database` (`jobs`, ya creada). Publicar una noticia, publicar un evento o aceptar o rechazar un momento responde como hoy. Un job posterior llama al servicio push de Expo con `Illuminate\Support\Facades\Http`, sin paquete nuevo. Expo entrega a FCM y FCM al Android. El ADR 0029 está Propuesto: mientras no se acepte, no hay envío real ni se instala `expo-notifications`.
+El envío sale por la cola `database` (`jobs`, ya creada). Publicar una noticia, publicar un evento o aceptar o rechazar un momento responde como hoy. Un job posterior llama al servicio push de Expo con `Illuminate\Support\Facades\Http`, sin paquete nuevo. Expo entrega a FCM y FCM al Android. El ADR 0029 está Aceptado (Aksel, 2026-11-14). El envío real y `expo-notifications` esperan las tasks.
 
 Los tests sustituyen el gateway. Ningún test llama a Expo.
 
@@ -28,10 +28,10 @@ AcceptMemoryAction / RejectMemoryAction (api-010, aún no están en src/)
 
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|
-| Datos | DBR-017 (Borrador). Migración la crea el responsable de BD, no este plan | `visitor_notification_preferences`, `visitor_push_tokens`, `push_dispatches` |
+| Datos | DBR-017 (Lista para backend). La migración `2026_11_14_000017_visitor_push_notifications_schema` ya existe; este plan no la aplica | `visitor_notification_preferences`, `visitor_push_tokens`, `push_dispatches` |
 | API / modelos | `app/Models/VisitorNotificationPreference.php`, `VisitorPushToken.php`, `PushDispatch.php` | Filas de preferencia, token y deduplicación. No extienden `BaseModel` ni usan SoftDeletes (excepción de RN-12, mismo criterio que `visitor_refresh_tokens`) |
-| API / config | `config/push.php`; `.env.example` con `PUSH_ENABLED`, `EXPO_PUSH_URL`, `EXPO_ACCESS_TOKEN` vacío | La URL y el token salen de `.env`. El código no llama a `env()` fuera de config |
-| API / gateway | `app/Push/PushGateway.php`, `ExpoPushGateway.php`, `FakePushGateway.php` | Contrato de envío. `Http::post` a Expo. El falso guarda los mensajes en memoria |
+| API / config | `config/push.php`; `.env.example` con `PUSH_ENABLED`, `EXPO_PUSH_URL`, `EXPO_ACCESS_TOKEN` vacío y `PUSH_CA_BUNDLE` vacío | La URL, el token y el paquete de CA salen de `.env`. El código no llama a `env()` fuera de config. `PUSH_CA_BUNDLE` solo hace falta si PHP no verifica HTTPS (cURL 60 en Windows) |
+| API / gateway | `app/Push/PushGateway.php`, `ExpoPushGateway.php`, `FakePushGateway.php` | Contrato de envío. `Http::post` a Expo, con `PUSH_CA_BUNDLE` si hace falta verificar TLS. Si Expo rechaza todos los tickets del lote, el job falla. El falso guarda los mensajes en memoria |
 | API / Actions | `app/Actions/Visitor/UpsertVisitorPushTokenAction.php`, `DeleteVisitorPushTokenAction.php`, `ShowNotificationPreferencesAction.php`, `UpdateNotificationPreferencesAction.php` | Registro, baja y preferencias de la cuenta de la sesión |
 | API / Actions | `app/Actions/Push/QueueVisibleContentPushAction.php`, `QueueMemoryPushAction.php` | Insertan `push_dispatches` si la clave única está libre y encolan el job |
 | API / job | `app/Jobs/SendPushJob.php` | Carga destinatarios, arma el payload y llama al gateway. Reintentos acotados (`tries` 3). No revierte contenido |
@@ -97,7 +97,7 @@ La Action inserta la fila en estado `pending` y encola `SendPushJob` con ese id.
 
 ### Momentos
 
-`AcceptMemoryAction` y `RejectMemoryAction` no existen todavía en `src/` (plan de `api-010`). Cuando se implementen, después del commit llaman:
+`AcceptMemoryAction` y `RejectMemoryAction` ya están en `apps/api/src/app/Actions/Memories/Review/`. Después del commit llaman:
 
 `QueueMemoryPushAction::execute($memory, $outcome, $reviewId)` con `$outcome` `accepted` o `rejected`.
 
@@ -148,29 +148,29 @@ CA-16 se cumple porque cada test anterior incluye el identificador `CA-xx` en su
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
-| I. Stack mínimo y portable | Pendiente del ADR | La API usa `Http` de Laravel, sin paquete nuevo. `expo-notifications` es dependencia móvil y el ADR 0029 está Propuesto: no se instala hasta aceptarlo. Secretos por `.env`. MySQL igual en Aiven y en local |
-| II. La spec manda | Sí, en este documento | Spec Aprobada por Aksel el 2026-11-14. Este plan no está aprobado. No hay tasks ni código de esta feature |
+| I. Stack mínimo y portable | Sí | La API usa `Http` de Laravel, sin paquete nuevo. El ADR 0029 está Aceptado (Aksel, 2026-11-14): `expo-notifications` se instala con las tasks. Secretos por `.env`. MySQL igual en Aiven y en local |
+| II. La spec manda | Sí, en este documento | Spec Aprobada por Aksel el 2026-11-14. Plan aprobado por Victor Adrian el mismo día. Las tasks quedan en borrador hasta su aprobación. No hay código de esta feature |
 | III. Lógica separada de la interfaz | Sí | Quién recibe el aviso y el texto viven en Actions. Los controladores delegan. `@arca/api-client` solo declara métodos |
 | IV. Un test por criterio | Sí, al implementar | La tabla de arriba cubre CA-01 a CA-16. Los tests no se escriben en este corte |
-| V. Una sola fuente de verdad para los datos | Excepción propuesta, igual que `api-004` | DBR-017 sigue en Borrador. La migración la escribe BD después de aprobarla. Tokens, preferencias y `push_dispatches` no usan SoftDeletes ni `BaseModel`: se borran con la cuenta o se conservan solo como clave anti-duplicado, sin datos clínicos ni financieros (RN-12). `push_dispatches` no guarda datos personales. Aceptar este plan y el ADR 0029 acepta esa excepción |
+| V. Una sola fuente de verdad para los datos | Excepción aceptada | DBR-017 está Lista para backend (Aksel, 2026-11-14). Tokens, preferencias y `push_dispatches` no usan SoftDeletes ni `BaseModel`: se borran con la cuenta o se conservan solo como clave anti-duplicado, sin datos clínicos ni financieros (RN-12). `push_dispatches` no guarda datos personales. El plan y el ADR 0029 aceptan esa excepción |
 | VI. Código en inglés, personas en español | Sí | Tablas, rutas, clases y `data.type` en inglés. Títulos, cuerpos y errores en español |
 
-Ninguna excepción se implementa sin la aprobación de este plan y del ADR 0029. Hoy ambos siguen abiertos.
+Ninguna excepción se implementa sin la aprobación de este plan y del ADR 0029. El plan y el ADR ya están aceptados. Faltan las tasks.
 
 ## Riesgos y decisiones
 
-- ADR 0029 (Propuesto): Expo Push API sobre FCM. Alternativa descartada en el ADR: SDK de Firebase en PHP y correo masivo.
-- `AcceptMemoryAction` / `RejectMemoryAction` aún no están en el repositorio. El enganche queda escrito aquí para no inventar la llamada dentro de una feature de momentos sin implementar. Hasta entonces, los tests de momentos llaman a `QueueMemoryPushAction`.
+- ADR 0029 (Aceptado, Aksel, 2026-11-14): Expo Push API sobre FCM. Alternativa descartada en el ADR: SDK de Firebase en PHP y correo masivo.
+- `AcceptMemoryAction` y `RejectMemoryAction` ya están en el repositorio. La task de momentos las llama al final del commit. Los tests de momentos también pueden invocar `QueueMemoryPushAction`.
 - Sin worker o sin scheduler el aviso no sale, y el contenido sí queda guardado. Es el comportamiento de CA-11.
 - Una edición posterior no cambia el texto ya enviado (RN-05).
 - El aviso de privacidad oficial debe mencionar el token antes del público. Esta feature no redacta ese texto.
 
 ## Orden y aprobación
 
-1. Este plan y el ADR 0029 los aprueba el equipo. Hasta entonces no hay tasks ni código.
-2. BD aprueba DBR-017, escribe la migración, la prueba en MySQL 8.0 aislado y la deja en `Lista para backend`. La solicitud hoy está en Borrador, sin firmas.
+1. El plan lo aprobó Victor Adrian y el ADR 0029 lo aceptó Aksel, ambos el 2026-11-14. Faltan las tasks. No hay código.
+2. DBR-017 está Lista para backend (BD Victor Adrian y backend Aksel, 2026-11-14). La migración ya fue probada en MySQL 8.0 aislado. La task de solo lectura comprueba si figura en `arca_pruebas` antes de programar.
 3. Backend implementa modelos, Actions, rutas, job, comando y tests, y anota `infra/README.md`.
-4. Quien implemente `api-010` añade la llamada en aceptar y rechazar.
-5. `mobile-013` consume el contrato cuando su plan también esté aprobado y el ADR acepte `expo-notifications`.
+4. La implementación de estas tasks añade la llamada en `AcceptMemoryAction` y `RejectMemoryAction`, que ya existen.
+5. `mobile-013` consume el contrato. Su plan ya está aprobado y el ADR 0029 ya acepta `expo-notifications`. Faltan sus tasks, que se redactan en el mismo corte y no se ejecutan todavía.
 
 Aprobación funcional de la spec: Aksel, 2026-11-14. Aprobación técnica de este plan: Victor Adrian, 2026-11-14.

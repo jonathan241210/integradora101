@@ -19,6 +19,7 @@ export interface ZooRepository {
   getEventById(id: string): Promise<ZooEvent | null>;
   getNews(): Promise<News[]>;
   getNewsById(id: string): Promise<News | null>;
+  reloadNewsById(id: string): Promise<News | null>;
   refreshNewsAndEvents(): Promise<{ news: News[]; events: ZooEvent[] }>;
 }
 
@@ -76,6 +77,10 @@ export class ZooRepositoryImpl implements ZooRepository {
 
   async getNewsById(id: string): Promise<News | null> {
     return Promise.resolve(MOCK_NEWS.id === id ? MOCK_NEWS : null);
+  }
+
+  async reloadNewsById(id: string): Promise<News | null> {
+    return this.getNewsById(id);
   }
 
   async refreshNewsAndEvents(): Promise<{ news: News[]; events: ZooEvent[] }> {

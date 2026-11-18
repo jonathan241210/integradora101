@@ -2,18 +2,23 @@
 
 ## 1. Control
 
-- **Estado:** Vigente. Cubre el prototipo de la spec **002**, la integración de lectura API y caché de la spec **003**, la cuenta visitante de la spec **004** (Implementada, 2026-10-21), el progreso visitante de la spec **005** (Implementada, 2026-11-01) y el escaneo QR de la spec **006** (Implementada, 2026-11-01).
-- **Capacidades descritas:** rutas, interfaz, mocks, catálogo/eventos con caché SWR y conectividad, cuenta visitante, progreso/colección/logros/misiones con cola de escaneos y lectura QR con cámara (`expo-camera`) o entrada manual: actuales. Mapa y 3D: según spec **007** y futuras.
-- **Specs de referencia:** [002](../specs/002-mobile-ui-base-visitor-journey.md), [003](../specs/003-api-read-integration.md), [004](../specs/004-visitor-account.md), [005](../specs/005-visitor-progress.md) y [006](../specs/006-qr-scan.md).
+- **Estado:** Vigente al 2026-11-18. Cubre las specs **002** a **006**, las memorias de la **010**, el filtro de catálogo del visitante, los favoritos de la **014** y el cliente de avisos de la **013** tal como están en el código. No cierra el mapa (**007**), el recorrido 3D (**009**) ni la distribución (**008**). La barra con la app cerrada sigue siendo evidencia manual del APK.
+- **Capacidades descritas:** rutas, catálogo filtrado, cuenta, progreso, salón de logros, misiones, QR con cámara, memorias y favoritos. El mapa y el 3D quedan fuera de este cierre.
+- **Specs de referencia:** [002](../specs/002-mobile-ui-base-visitor-journey.md), [003](../specs/003-api-read-integration.md), [004](../specs/004-visitor-account.md), [005](../specs/005-visitor-progress.md), [006](../specs/006-qr-scan.md), [010](../specs/010-visitor-memory-requests.md), [013](../specs/013-visitor-push-notifications.md) y [014](../specs/014-visitor-favorite-species.md).
 - **Decisiones tecnológicas:** [ADR 0004 · Mobile React Native](../../../docs/adr/0004-mobile-react-native.md), [ADR 0011 · Visitor identity and mobile session](../../../docs/adr/0011-visitor-identity-and-mobile-session.md) y [ADR 0014 · Mobile offline cache and connectivity](../../../docs/adr/0014-mobile-offline-cache-and-connectivity.md).
 
 ## 2. Propósito, alcance y exclusiones
 
 La aplicación presenta al visitante una experiencia móvil de exploración del zoológico y permite validar sus flujos y diseño.
 
-- **Actual:** cinco pestañas, búsqueda y detalle de animales, colección, perfil, eventos, misiones, logros, pantallas de resultado de escaneo, cola offline de códigos QR, consumo real/mock de catálogo y eventos con caché SWR, cuenta visitante (registro, sesión, perfil, etc.) y progreso (`api-005`) con lectura compartida entre pantallas. Con `EXPO_PUBLIC_API_URL` el catálogo, la cuenta y el progreso hablan con la API; sin ella, y en Jest, siguen los mocks de repositorio.
-- **Fuera del alcance actual:** renderizado 3D real y distribución en tienda (spec **008**). Evoluciones del mapa (**007**) pendientes de revisión visual.
-- **Futuro:** spec **008** y mejoras de mapa. Roadmap: [003-008-roadmap-y-asignacion.md](./003-008-roadmap-y-asignacion.md).
+- **Actual:** cinco pestañas, búsqueda y detalle, colección, perfil, eventos, misiones, salón de logros, QR con cámara o código manual, cola offline de escaneos, cuenta, favoritos, «Mis memorias» y catálogo con caché. Con `EXPO_PUBLIC_API_URL` esas lecturas y escrituras del visitante hablan con la API; sin ella, y en Jest, siguen los mocks de repositorio.
+- **Catálogo visible:** una especie entra en Inicio, Colección, Perfil y fichas solo si `GET /published-species` la incluye y algún animal de `GET /enclosures` tiene `can_receive_visits` activo. Si el detalle no pasa ese cruce, la ficha no se abre. Los conteos usan esa lista, no `total_species` de la API. `GET /species` no se modificó.
+- **Logros y misiones:** la lista completa se titula «Salón de logros» y se abre con «Ver salón de logros» al final de las misiones. La ficha de una misión no lleva ese botón. «Misión cumplida» y «Maestro de misiones» no se muestran: el seeder los deja con `is_active` falso.
+- **Memorias:** entrada «Mis memorias» en Perfil. Con petición abierta no se ofrece otra alta. Al tocarla se ve la opinión y el estado, sin campos. El límite semanal dice «otra memoria». La API no devuelve la foto al visitante. Un aviso abre `/memory-form` con el id: si esa petición no está en memoria, la ruta pide la lista antes de mostrar «Tu memoria».
+- **Avatar e icono:** el círculo de perfil, edición y selector usa `src/assets/avatars/<código>.png`. El launcher es `src/assets/icon/iconZoo.png` y el aviso usa la silueta blanca `notification.png`. El nombre visible es ARCA-NB.
+- **Ajustes:** los interruptores de cámara y de ubicación leen el permiso del teléfono. Encender pide el permiso; apagar, o un sistema que ya no pregunta, abre los ajustes del sistema.
+- **Fuera de este cierre:** mapa (**007**), recorrido 3D (**009**) y distribución (**008**). El cliente de avisos (**013**) está descrito; la entrega con la app cerrada no se da por cerrada.
+- **Futuro:** [003-008-roadmap-y-asignacion.md](./003-008-roadmap-y-asignacion.md).
 
 ## 3. Actores
 
@@ -38,9 +43,14 @@ La aplicación presenta al visitante una experiencia móvil de exploración del 
 ```text
 src/
   app/          # Expo Router y rutas
+  assets/       # Icono, silueta del aviso y PNG de avatares
   components/   # UI y componentes de dominio
+  constants/    # Catálogo de avatares y otras constantes
+  memories/     # Textos y copia en memoria de las peticiones
   mocks/        # Fixtures
   models/       # Tipos de la UI
+  navigation/   # Regreso dentro de las pestañas
+  push/         # Registro, canales y toque del aviso
   repositories/ # Contratos, mock de cuenta y HttpAuthRepository
   screens/      # Vistas
   services/     # Almacenamiento del par de tokens
@@ -53,7 +63,7 @@ src/
 
 ## 6. Patrón MVVM
 
-El flujo es `Route → Screen/View → ViewModel hook → Repository`. Las rutas coordinan navegación y datos de presentación; las pantallas reciben props y callbacks. La cuenta usa el mock o `HttpAuthRepository`; el resto de repositorios sigue en mocks hasta su spec.
+El flujo es `Route → Screen/View → ViewModel hook → Repository`. Las rutas coordinan navegación y datos de presentación; las pantallas reciben props y callbacks. Sin `EXPO_PUBLIC_API_URL` la cuenta, el catálogo y el progreso usan mock. Con esa variable usan `@arca/api-client`.
 
 ## 7. Componentes
 
@@ -62,10 +72,9 @@ Las pantallas en `src/screens/` componen controles de `src/components/ui/` y com
 ## 8. Dependencias
 
 - **Internas:** `@arca/tokens` y `@arca/api-client`, desde los workspaces `packages/`.
-- **Runtime móvil:** Expo SDK 57, Expo Router, React Native 0.86, `expo-symbols`, `expo-secure-store` (ADR 0011, solo el par de tokens de la cuenta), `@react-native-async-storage/async-storage` y `expo-network` (ADR 0014, caché y conectividad del catálogo).
+- **Runtime móvil:** Expo SDK 57, Expo Router, React Native 0.86, `expo-symbols`, `expo-secure-store` (ADR 0011, solo el par de tokens de la cuenta), `@react-native-async-storage/async-storage`, `expo-network` (ADR 0014), `expo-camera` (QR, spec 006), `expo-image-picker` (memorias, ADR 0030), `expo-notifications` (avisos, spec 013, ADR 0029) y `expo-location` (permiso de ubicación en Ajustes; el mapa que lo consume no está cerrado).
 - **Pruebas/desarrollo:** Jest, `jest-expo`, React Native Testing Library y TypeScript.
 - Metro resuelve workspaces desde la raíz del monorepo mediante `metro.config.js`.
-- No hay dependencias de cámara, geolocalización, mapas ni motor 3D en el alcance actual.
 
 ## 9. Contratos y endpoints
 
@@ -87,7 +96,7 @@ Los recorridos de exploración que aún no tienen sesión siguen en fixtures de 
 
 ## 11. Seguridad y privacidad
 
-El prototipo no solicita permisos de cámara ni ubicación y no debe contener secretos de servicio. El QR y el mapa son simulaciones visuales, no flujos de captura de datos. La cuenta de la spec 004 guarda solo el par de tokens, en almacenamiento seguro cuando hay API y en memoria cuando no la hay. No escribe contraseñas ni códigos.
+La app pide la cámara para leer el QR y la ubicación desde Ajustes. No guarda la foto de la memoria. No debe contener secretos de servicio. La cuenta de la spec 004 guarda solo el par de tokens, en almacenamiento seguro cuando hay API y en memoria cuando no la hay. No escribe contraseñas ni códigos.
 
 ## 12. Pruebas
 
@@ -128,9 +137,9 @@ sequenceDiagram
 
 | Pendiente | Tratamiento |
 |---|---|
-| Iconos de launcher Android/iOS | Agregar recursos PNG finales antes de builds distribuibles |
-| Favoritos del visitante | La ficha guarda identificadores en el teléfono (`mobile-002` CA-16). El favorito de cuenta y el filtro de Colección siguen pendientes |
-| Cámara/QR real, GPS/mapa y 3D | Requieren alcance aprobado, permisos, dependencias y validación de dispositivos |
+| Icono de launcher y aviso | El PNG a color y la silueta blanca ya están en `src/assets/icon/`. La publicación en tienda sigue en la spec 008, en borrador |
+| Favoritos del visitante | El corazón y «Animales favoritos» usan la cuenta (`mobile-014`). Colección no filtra favoritos. Esta nota no cierra un PR |
+| Mapa y recorrido 3D | Siguen abiertos (`mobile-007`, `mobile-009`). No se documentan aquí como terminados |
 | Retirar referencia visual temporal | `arca-ui-reference` no es una dependencia y se mantiene fuera de Git |
 | Confundir enmienda 002 con spec 004 | La cuenta de 004 vive en `src/session`. Sin `EXPO_PUBLIC_API_URL` sigue el mock. Con esa variable, el teléfono usa la API de pruebas y `expo-secure-store`. |
 

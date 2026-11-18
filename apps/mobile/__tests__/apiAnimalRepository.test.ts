@@ -36,7 +36,13 @@ describe('ApiAnimalRepository (mobile-003: api-read-integration)', () => {
       ],
     };
 
-    mockHttpClient.get.mockResolvedValueOnce(apiPayload);
+    mockHttpClient.get.mockImplementation(async (path: string) => {
+      if (path === '/published-species') return { data: [{ id: 1 }] };
+      if (path === '/enclosures') {
+        return { data: [{ animals: [{ species_id: 1, can_receive_visits: true }] }] };
+      }
+      return apiPayload;
+    });
     const repository = new ApiAnimalRepository(mockHttpClient, defaultStorage);
 
     const animals = await repository.getAllAnimals();
@@ -67,7 +73,18 @@ describe('ApiAnimalRepository (mobile-003: api-read-integration)', () => {
       },
     };
 
-    mockHttpClient.get.mockResolvedValueOnce(detailPayload);
+    mockHttpClient.get.mockImplementation(async (path: string) => {
+      if (path === '/published-species') return { data: [{ id: 2 }] };
+      if (path === '/enclosures') {
+        return { data: [{ animals: [{ species_id: 2, can_receive_visits: true }] }] };
+      }
+      if (path === '/species/999') {
+        const error404: Error & { status?: number } = new Error('Not found');
+        error404.status = 404;
+        throw error404;
+      }
+      return detailPayload;
+    });
     const repository = new ApiAnimalRepository(mockHttpClient, defaultStorage);
 
     const animal = await repository.getAnimalById('2');
@@ -77,11 +94,6 @@ describe('ApiAnimalRepository (mobile-003: api-read-integration)', () => {
     expect(animal?.id).toBe('2');
     expect(animal?.commonName).toBe('Guacamaya Verde');
     expect(animal?.category).toBe('birds');
-
-    // Caso 404: debe retornar null elegantemente sin lanzar excepción
-    const error404: any = new Error('Not found');
-    error404.status = 404;
-    mockHttpClient.get.mockRejectedValueOnce(error404);
 
     const missingAnimal = await repository.getAnimalById('999');
     expect(missingAnimal).toBeNull();
@@ -99,27 +111,6 @@ describe('ApiAnimalRepository (mobile-003: api-read-integration)', () => {
       ],
     };
 
-    mockHttpClient.get.mockResolvedValueOnce(initialPayload);
-    const repository = new ApiAnimalRepository(mockHttpClient, defaultStorage, 5 * 60 * 1000);
-
-    // 1. Primera consulta: puebla la caché
-    const firstCall = await repository.getAllAnimals();
-    expect(firstCall[0].commonName).toBe('León Africano');
-    expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
-
-    // 2. Segunda consulta inmediata: sirve desde caché fresca sin nueva llamada HTTP
-    const secondCall = await repository.getAllAnimals();
-    expect(secondCall[0].commonName).toBe('León Africano');
-    expect(mockHttpClient.get).toHaveBeenCalledTimes(1);
-
-    // 3. Simular datos stale (> 5 minutos)
-    const rawCache = await defaultStorage.getItem('@arca:cache:species_list');
-    if (rawCache) {
-      const parsed = JSON.parse(rawCache);
-      parsed.cachedAt = Date.now() - 6 * 60 * 1000; // 6 minutos atrás
-      await defaultStorage.setItem('@arca:cache:species_list', JSON.stringify(parsed));
-    }
-
     const updatedPayload = {
       data: [
         {
@@ -130,11 +121,90 @@ describe('ApiAnimalRepository (mobile-003: api-read-integration)', () => {
         },
       ],
     };
-    mockHttpClient.get.mockResolvedValueOnce(updatedPayload);
+    let speciesReads = 0;
+    mockHttpClient.get.mockImplementation(async (path: string) => {
+      if (path === '/published-species') return { data: [{ id: 1 }] };
+      if (path === '/enclosures') {
+        return { data: [{ animals: [{ species_id: 1, can_receive_visits: true }] }] };
+      }
+      speciesReads += 1;
+      return speciesReads === 1 ? initialPayload : updatedPayload;
+    });
+    const repository = new ApiAnimalRepository(mockHttpClient, defaultStorage, 5 * 60 * 1000);
 
-    // Debe retornar inmediatamente los datos stale y disparar revalidación en segundo plano
+    // 1. Primera consulta: puebla la caché
+    const firstCall = await repository.getAllAnimals();
+    expect(firstCall[0].commonName).toBe('León Africano');
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(3);
+
+    // 2. Segunda consulta inmediata: sirve desde caché fresca sin nueva llamada HTTP
+    const secondCall = await repository.getAllAnimals();
+    expect(secondCall[0].commonName).toBe('León Africano');
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(3);
+
+    // 3. Simular datos stale (> 5 minutos)
+    const rawCache = await defaultStorage.getItem('@arca:cache:species_list');
+    if (rawCache) {
+      const parsed = JSON.parse(rawCache);
+      parsed.cachedAt = Date.now() - 6 * 60 * 1000; // 6 minutos atrás
+      await defaultStorage.setItem('@arca:cache:species_list', JSON.stringify(parsed));
+    }
+
     const staleResult = await repository.getAllAnimals();
     expect(staleResult[0].commonName).toBe('León Africano');
-    expect(mockHttpClient.get).toHaveBeenCalledTimes(2);
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(6);
+  });
+
+  it('CA-05: dos lecturas a la vez comparten la misma petición de especies', async () => {
+    let release: (value: { data: Array<{ id: number; common_name: string; scientific_name: string; category: string }> }) => void = () => undefined;
+    mockHttpClient.get.mockImplementation((path: string) => {
+      if (path === '/published-species') return Promise.resolve({ data: [{ id: 2 }] });
+      if (path === '/enclosures') {
+        return Promise.resolve({ data: [{ animals: [{ species_id: 2, can_receive_visits: 1 }] }] });
+      }
+      return new Promise((resolve) => {
+        release = resolve;
+      });
+    });
+    const first = new ApiAnimalRepository(mockHttpClient, defaultStorage);
+    const second = new ApiAnimalRepository(mockHttpClient, defaultStorage);
+    const pending = Promise.all([first.getAllAnimals(), second.getAllAnimals()]);
+    await new Promise((done) => setImmediate(done));
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(3);
+    release({ data: [{ id: 2, common_name: 'Lobo', scientific_name: 'Canis lupus', category: 'mammal' }] });
+    const [a, b] = await pending;
+    expect(a[0].commonName).toBe('Lobo');
+    expect(b[0].commonName).toBe('Lobo');
+  });
+
+  it('deja fuera especies sin publicar o sin animal que reciba visitas', async () => {
+    const catalog = {
+      data: [
+        { id: 1, common_name: 'Jaguar', scientific_name: 'Panthera onca', category: 'mammal' },
+        { id: 2, common_name: 'León', scientific_name: 'Panthera leo', category: 'mammal' },
+        { id: 3, common_name: 'Borrador', scientific_name: 'Draftus', category: 'mammal' },
+      ],
+    };
+    mockHttpClient.get.mockImplementation(async (path: string) => {
+      if (path === '/published-species') return { data: [{ id: 1 }, { id: 2 }] };
+      if (path === '/enclosures') {
+        return {
+          data: [{
+            animals: [
+              { species_id: 1, can_receive_visits: true },
+              { species_id: 3, can_receive_visits: 1 },
+              { species_id: 2, can_receive_visits: false },
+            ],
+          }],
+        };
+      }
+      if (path === '/species/2') return { data: catalog.data[1] };
+      return catalog;
+    });
+    const repository = new ApiAnimalRepository(mockHttpClient, defaultStorage);
+
+    const animals = await repository.getAllAnimals();
+    expect(animals.map((animal) => animal.commonName)).toEqual(['Jaguar']);
+    expect(await repository.getAnimalById('2')).toBeNull();
   });
 });
