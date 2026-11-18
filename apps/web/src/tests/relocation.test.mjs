@@ -665,15 +665,14 @@ test('CA-03 visit-info-icons-and-favicon conserva las etiquetas y prueba todos l
   assert.ok([...source.matchAll(/from\s+['"]([^'"]+)['"]/g)].every((match) => match[1].startsWith('node:')));
 });
 
-test('CA-01 isometric-zoo-map dibuja una escena local con perspectiva y sin proveedor', () => {
+test('CA-01 isometric-zoo-map carga imagen 2D y configura el modelo 3D local sin proveedor', () => {
   const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
   const section = mapSection(html);
-  assert.match(section, /<svg[\s\S]*?class="map-art"[\s\S]*?viewBox="0 0 900 560"/);
-  assert.match(section, /<linearGradient[\s\S]*?id="map-ground"/);
-  assert.match(section, /fill="url\(#map-grass\)"/);
-  assert.match(section, /stroke-dasharray="5 13"/);
+  assert.match(section, /<img class="map-art" src="assets\/mapa-2d\.jpg"/);
   assert.match(section, /class="map-scene" id="mapScene"/);
   assert.match(section, /map-icon-(?:felinos|aviario|reptilario|primates|granja|lago|entrada)/);
+  assert.match(section, /data-model="assets\/mapacompleto_RESPALDO_2_sin_entorno\.glb"/);
+  assert.match(section, /id="mapModelStatus" role="status" aria-live="polite" hidden/);
   assert.match(section, /id="mapZoomReset"[^>]*aria-controls="mapScene"(?![^>]*\sdisabled)/);
   assert.doesNotMatch(section, /https?:|maps\.google|mapbox|openstreetmap/i);
 });

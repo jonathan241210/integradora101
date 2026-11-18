@@ -503,7 +503,7 @@ section {
 .map::before { position: absolute; z-index: -1; inset: 0; background: linear-gradient(135deg, rgba(255, 255, 255, .18), transparent 52%, rgba(32, 55, 34, .12)); content: ""; pointer-events: none; }
 .map-symbols { position: absolute; width: 0; height: 0; overflow: hidden; }
 .map-scene { position: absolute; inset: 0; transform: scale(var(--map-scale, 1)) rotateX(3deg); transform-origin: center; transform-style: preserve-3d; transition: transform .2s ease-out; }
-.map-art { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 18px 10px rgba(42, 64, 40, .3)); }
+.map-art { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; filter: saturate(.9) contrast(1.04); }
 .map-control { min-width: 0; }
 .map-marker {
   position: absolute;
@@ -638,9 +638,11 @@ section {
 .model-toggle img { width: 28px; height: 28px; object-fit: contain; mix-blend-mode: multiply; }
 .model-toggle[aria-pressed="true"] { background: var(--primary); box-shadow: 0 0 0 4px rgba(255, 255, 255, .85), 0 4px 14px rgba(0, 0, 0, .3); }
 .model-toggle[aria-pressed="true"] img { filter: invert(1); mix-blend-mode: screen; }
-.map-toggle { top: 14px; right: 14px; }
-.map-model { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; background: linear-gradient(180deg, var(--surface-page), var(--surface-accent)); --poster-color: transparent; --progress-bar-color: var(--primary); }
+.map-toggle { z-index: 5; top: 14px; right: 14px; }
+.map-model { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; background: linear-gradient(180deg, var(--surface-page), var(--surface-accent)); --poster-color: transparent; --progress-bar-color: var(--primary); }
 .map-model[hidden] { display: none; }
+.map-model-status { position: absolute; z-index: 4; top: 50%; left: 50%; width: min(88%, 440px); padding: 14px 18px; transform: translate(-50%, -50%); border: 1px solid rgba(var(--sidebar-rgb), .18); border-radius: 12px; background: rgba(255, 255, 255, .94); box-shadow: 0 10px 30px rgba(0, 0, 0, .2); color: var(--primary); font-weight: 700; text-align: center; }
+.map-model-status.is-error { color: #8a202f; }
 .card-model {
   position: absolute;
   top: 0;

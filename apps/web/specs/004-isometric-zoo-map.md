@@ -22,6 +22,7 @@ El 2026-10-08 la persona solicitante pidió mejorar el relieve visual 3D e incor
 - Conservar la selección de zonas y servicios y el anuncio de selección existente.
 - Permitir acercar, alejar y restablecer la escala visual con controles accesibles, conservando los marcadores y su selección.
 - Adaptar el mapa a móvil, mantener controles operables por teclado y evitar desbordamiento horizontal.
+- Mostrar como vista 2D la fotografía aérea suministrada y permitir alternarla por el modelo local `mapacompleto_RESPALDO_2_sin_entorno.glb`.
 - Dejar explícito que la ilustración es aproximada, no está a escala y no debe usarse para navegación precisa dentro del recinto.
 
 ## Fuera de alcance
@@ -45,7 +46,7 @@ Como visitante, quiero ver las zonas y servicios del zoológico en un mapa ilust
 
 ## Criterios de aceptación
 
-- **CA-01:** Dado el mapa del zoológico, cuando se renderice la sección, entonces mostrará una ilustración original hecha con HTML/SVG/CSS en perspectiva isométrica o visualmente elevada, con senderos y zonas del mapa actual; no cargará mosaicos, imágenes satelitales, mapas ni scripts de proveedores externos.
+- **CA-01:** Dado el mapa del zoológico, cuando se renderice la sección, entonces mostrará la imagen local `assets/mapa-2d.jpg` con sus controles y configurará la vista 3D para cargar `assets/mapacompleto_RESPALDO_2_sin_entorno.glb`; no cargará imágenes, mapas ni scripts de proveedores externos.
 - **CA-02:** Dadas las zonas y servicios ya presentes, cuando se inspeccionen el mapa y su leyenda, entonces Felinos, Aviario, Reptilario, Primates, Granja, Lago, Entrada, Baños, Alimentos, Bebederos, Áreas de descanso, Enfermería y Tiendas seguirán disponibles y cada elemento tendrá un icono SVG con nombre accesible o texto visible asociado.
 - **CA-03:** Dado que el mapa es aproximado, cuando una persona visitante lo consulte, entonces encontrará un aviso visible y accesible indicando que es ilustrativo, no está a escala y no sirve para orientación precisa dentro del recinto.
 - **CA-04:** Dado que el visitante activa una zona o servicio por clic, toque o teclado, cuando el mapa reciba la selección, entonces anunciará el elemento seleccionado mediante la región viva existente y resaltará su marcador correspondiente sin perder foco de forma inesperada.
@@ -86,4 +87,5 @@ No se crean, consultan ni modifican datos. No se utiliza ubicación del disposit
 ## Revisión
 
 - Aprobadores y fecha: Solicitante, 2026-10-08; aprobó el alcance ampliado en esta conversación.
+- Ampliación aprobada por el solicitante el 2026-11-18: sustituir el dibujo SVG por la fotografía aérea local y cargar un GLB exportado desde Blender.
 - Evidencia/enlaces: La persona solicitante confirmó el 2026-10-08 que prefiere conservar la ilustración, mejorar su aspecto 3D y añadir zoom/restablecimiento, no un mapa geográfico real. La spec `003-lion-hero-mobile-navigation` cubre separadamente el cambio del hero y menú adaptable.

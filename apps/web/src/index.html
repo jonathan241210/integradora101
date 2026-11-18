@@ -327,11 +327,12 @@
                     TU RECORRIDO
                 </div>
 
-                <div class="map" role="group" aria-label="Ilustración aproximada de las zonas del zoológico">
+                <div class="map" role="group" aria-label="Mapa aéreo aproximado de las zonas del zoológico">
 
-                                    <button type="button" class="model-toggle map-toggle" id="mapModelToggle" data-model="assets/Mapa.glb" aria-pressed="false" aria-label="Ver mapa en 3D" title="Ver mapa en 3D">
+                                    <button type="button" class="model-toggle map-toggle" id="mapModelToggle" data-model="assets/mapacompleto.glb" aria-pressed="false" aria-label="Ver mapa en 3D" aria-controls="mapScene" title="Ver mapa en 3D">
                                         <img src="assets/icon-3d-56.webp" alt="" width="28" height="28">
                                     </button>
+                    <p class="map-model-status" id="mapModelStatus" role="status" aria-live="polite" hidden></p>
                     <svg class="map-symbols" aria-hidden="true" focusable="false">
                         <symbol id="map-icon-felinos" viewBox="0 0 24 24"><path d="M12 21s-8-4.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.6-8 11-8 11Z" /></symbol>
                         <symbol id="map-icon-aviario" viewBox="0 0 24 24"><path d="M20 4C11 4 5 7 4 13c-.6 3.5 2.5 6.5 6 6 6-1 9-7 10-15ZM4 20l8-8m-4 4h5m-1-6v5" /></symbol>
@@ -349,26 +350,7 @@
                     </svg>
 
                     <div class="map-scene" id="mapScene">
-                        <svg class="map-art" viewBox="0 0 900 560" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-                            <defs>
-                                <linearGradient id="map-ground" x1="0" y1="0" x2="1" y2="1">
-                                    <stop offset="0" stop-color="#d3e1b0" />
-                                    <stop offset="1" stop-color="#93b778" />
-                                </linearGradient>
-                                <pattern id="map-grass" width="36" height="36" patternUnits="userSpaceOnUse">
-                                    <path d="M5 28q4-11 8-13m8 14q-1-8 4-13" fill="none" stroke="#7e9e65" stroke-width="2" opacity=".35" />
-                                </pattern>
-                            </defs>
-
-                            <path d="M105 78 746 36 844 399 202 520 54 289Z" fill="#667e58" opacity=".24" transform="translate(0 18)" />
-                            <path d="M105 59 746 17 844 380 202 501 54 270Z" fill="url(#map-ground)" stroke="#6f9362" stroke-width="10" stroke-linejoin="round" />
-                            <path d="M105 59 746 17 844 380 202 501 54 270Z" fill="url(#map-grass)" />
-                            <path d="m94 255 118 37 138-114 138 47 91-102 158 85 69-47M203 480l99-132 146 45 118-106 170 58M184 105l75 105-89 118m385-290 17 123 146 29" fill="none" stroke="#d7bd8c" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="m94 255 118 37 138-114 138 47 91-102 158 85 69-47M203 480l99-132 146 45 118-106 170 58M184 105l75 105-89 118m385-290 17 123 146 29" fill="none" stroke="#f5e8ca" stroke-width="5" stroke-dasharray="5 13" stroke-linecap="round" />
-                            <path d="m179 105 117-14 43 86-98 47-81-39Zm281 29 113-24 36 82-99 40-70-36Zm-203 191 111-26 42 86-111 35-65-44Zm252-43 117-38 53 78-112 47-73-43Z" fill="#b2c98d" stroke="#708a62" stroke-width="7" stroke-linejoin="round" />
-                            <path d="M605 302q47-44 102-20 28 13 22 43-8 37-57 44-53 6-76-24-14-22 9-43Z" fill="#77b8b1" stroke="#4d9694" stroke-width="8" />
-                            <path d="M619 326q34-17 72 0m-67 19q30-13 59 0" fill="none" stroke="#d9f0df" stroke-width="5" stroke-linecap="round" />
-                        </svg>
+                        <img class="map-art" src="assets/mapa-2d.jpg" alt="" width="1024" height="768" loading="lazy" decoding="async">
 
                         <!-- MAP MARKERS -->
                         <button class="map-control map-marker zone z1" data-name="Felinos" type="button" aria-label="Felinos" aria-pressed="false" style="--marker-x: 25%; --marker-y: 28%">
@@ -1003,30 +985,75 @@
 (function () {
   'use strict';
 
-  var viewerLoaded = false;
-
-  /* 1b. Mapa 3D: coloca tu archivo en assets/zoo-map.glb */
+  /* 1b. Mapa 3D: alterna entre la foto local y el modelo GLB */
   var mapBtn = document.getElementById('mapModelToggle');
   if (mapBtn) {
-    var mapBox = mapBtn.parentElement, mapViewer = null;
-    mapBtn.addEventListener('click', function () {
+    var mapScene = document.getElementById('mapScene');
+    var mapZoomControls = document.querySelector('.map-zoom-controls');
+    var mapModelStatus = document.getElementById('mapModelStatus');
+    var mapViewer = null;
+    var viewerLoading = null;
+
+    function showMap2D() {
+      mapBtn.setAttribute('aria-pressed', 'false');
+      mapBtn.setAttribute('aria-label', 'Ver mapa en 3D');
+      mapBtn.title = 'Ver mapa en 3D';
+      mapScene.hidden = false;
+      mapZoomControls.hidden = false;
+      if (mapModelStatus) mapModelStatus.hidden = true;
+      if (mapViewer) mapViewer.hidden = true;
+    }
+
+    function showMapError() {
+      showMap2D();
+      if (!mapModelStatus) return;
+      mapModelStatus.textContent = 'No se pudo cargar el mapa 3D. Verifica que assets/mapacompleto_RESPALDO_2_sin_entorno.glb esté disponible.';
+      mapModelStatus.classList.add('is-error');
+      mapModelStatus.hidden = false;
+    }
+
+    function createMapViewer() {
+      mapViewer = document.createElement('model-viewer');
+      mapViewer.className = 'map-model';
+      mapViewer.id = 'mapModel';
+      mapViewer.setAttribute('src', mapBtn.dataset.model);
+      mapViewer.setAttribute('alt', 'Mapa 3D del zoológico');
+      mapViewer.setAttribute('camera-controls', '');
+      mapViewer.setAttribute('touch-action', 'pan-y');
+      mapViewer.setAttribute('shadow-intensity', '1');
+      mapViewer.addEventListener('load', function () {
+        if (mapBtn.getAttribute('aria-pressed') !== 'true') return;
+        mapModelStatus.hidden = true;
+      });
+      mapViewer.addEventListener('error', showMapError);
+      mapBtn.after(mapViewer);
+    }
+
+    mapBtn.addEventListener('click', async function () {
       var on = mapBtn.getAttribute('aria-pressed') !== 'true';
-      mapBtn.setAttribute('aria-pressed', String(on));
-      mapBtn.title = on ? 'Ver mapa normal' : 'Ver mapa en 3D';
-      if (on && !viewerLoaded) {
-        viewerLoaded = true;
-        import('./assets/model-viewer.min.js').catch(function () {});
+      if (!on) {
+        showMap2D();
+        return;
       }
-      if (on && !mapViewer) {
-        mapViewer = document.createElement('model-viewer');
-        mapViewer.className = 'map-model';
-        mapViewer.setAttribute('src', mapBtn.dataset.model);
-        mapViewer.setAttribute('alt', 'Mapa 3D del zoológico');
-        ['camera-controls', 'touch-action'].forEach(function (a) { mapViewer.setAttribute(a, a === 'touch-action' ? 'pan-y' : ''); });
-        mapViewer.setAttribute('shadow-intensity', '1');
-        mapBtn.after(mapViewer);
+
+      mapBtn.setAttribute('aria-pressed', 'true');
+      mapBtn.setAttribute('aria-label', 'Ver mapa en 2D');
+      mapBtn.title = 'Ver mapa en 2D';
+      mapModelStatus.classList.remove('is-error');
+      mapModelStatus.textContent = 'Cargando mapa 3D…';
+      mapModelStatus.hidden = false;
+      mapScene.hidden = true;
+      mapZoomControls.hidden = true;
+
+      try {
+        if (!viewerLoading) viewerLoading = import('./assets/model-viewer.min.js');
+        await viewerLoading;
+        if (!mapViewer) createMapViewer();
+        mapViewer.hidden = false;
+        if (mapViewer.loaded) mapModelStatus.hidden = true;
+      } catch (error) {
+        showMapError();
       }
-      if (mapViewer) mapViewer.hidden = !on;
     });
   }
 
