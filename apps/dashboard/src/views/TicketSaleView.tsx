@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { Alert, Badge, Button, Card, Field } from "@arca/ui";
+import { useEffect, useState } from "react";
+import { Alert, Button, Card, Field } from "@arca/ui";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
+import { ActionError } from "@/components/DashboardNotifications";
 import { Icon } from "@/components/Icon";
 import { PrintSettingsDialog } from "@/components/PrintSettingsDialog";
 import { SectionHeading } from "@/components/SectionHeading";
@@ -49,6 +50,27 @@ function PriceCard({
   );
 }
 
+function SaleSuccessPopup() {
+  const [visible, setVisible] = useState(true);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setVisible(false), 2800);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div className="ticket-sale-success-popup" role="status">
+      <span className="ticket-sale-result__check" aria-hidden="true">
+        <Icon name="ticket" className="ticket-sale-result__ticket" />
+        <Icon name="check" className="ticket-sale-result__check-mark" />
+      </span>
+      <strong>Venta registrada</strong>
+    </div>
+  );
+}
+
 export function TicketSaleView({
   state,
   actions,
@@ -79,18 +101,11 @@ export function TicketSaleView({
 
       {sold && state.sale ? (
         <Card className="ticket-sale-result">
-          <div className="card-heading">
+          <div className="card-heading ticket-sale-result__banner">
             <div className="ticket-sale-result__heading">
-              <span className="ticket-sale-result__check" aria-hidden="true">
-                <Icon name="ticket" className="ticket-sale-result__ticket" />
-                <Icon name="check" className="ticket-sale-result__check-mark" />
-              </span>
-              <div>
-                <h2>Venta registrada</h2>
-                <p>Pago en efectivo</p>
-              </div>
+              <h2>Venta registrada</h2>
+              <p>Pago en efectivo</p>
             </div>
-            <Badge tone="success">Registrada</Badge>
           </div>
           <dl className="sale-summary">
             <div>
@@ -184,11 +199,7 @@ export function TicketSaleView({
               </Button>
             </Alert>
           )}
-          {state.error && (
-            <Alert className="inline-alert" role="alert" aria-live="assertive">
-              {state.error}
-            </Alert>
-          )}
+          <ActionError message={state.error} />
           <div className="ticket-actions">
             <Button type="submit" disabled={busy || !canRegisterSale(state)}>
               <Icon name="ticket" />
@@ -246,6 +257,7 @@ export function TicketSaleView({
         onReset={printSettings.reset}
         onClose={() => setSettingsOpen(false)}
       />
+      {sold && <SaleSuccessPopup />}
       </div>
 
       {sold && state.sale && (

@@ -150,9 +150,18 @@ export function qrDialogForCard(item: EnclosureDto): EnclosureDialog {
   return { kind: "qr", item, intent: hasActiveQr(item) ? "view" : "generate", focus: "view" };
 }
 
-/** Textos de los diálogos de desactivar y eliminar (dashboard-012 CA-02 y CA-03). */
+/** Textos de los diálogos de estado y eliminación (dashboard-012 CA-02 a CA-04). */
 export function getEnclosureConfirmation(dialog: EnclosureDialog | null): ConfirmationCopy | null {
   if (dialog?.kind === "status") {
+    if (!dialog.item.is_active) {
+      return {
+        title: "Activar recinto",
+        message: `¿Activar el recinto «${dialog.item.name}»? Volverá a mostrarse en el portal y la app de visitantes y podrá asignarse a animales.`,
+        confirmLabel: "Activar",
+        danger: false,
+      };
+    }
+
     return {
       title: "Desactivar recinto",
       message: `¿Desactivar el recinto «${dialog.item.name}»? Dejará de mostrarse en el portal y la app de visitantes y no podrá asignarse a animales. No se elimina y puedes reactivarlo cuando quieras.`,
@@ -177,7 +186,7 @@ export function getEnclosureConfirmation(dialog: EnclosureDialog | null): Confir
 
 /** Línea de advertencia del diálogo abierto (vacía si no hay animales). */
 export function getEnclosureWarning(dialog: EnclosureDialog | null): string {
-  return dialog?.kind === "status" || dialog?.kind === "delete"
+  return dialog?.kind === "delete" || (dialog?.kind === "status" && dialog.item.is_active)
     ? enclosureAnimalsWarning(dialog.item.animals_count)
     : "";
 }
@@ -254,7 +263,7 @@ export type EnclosuresViewModel = {
     closeDialog: () => void;
     dismissNotice: () => void;
     save: (name: string) => void;
-    /** «Desactivar» abre el diálogo; «Activar» llama directo a la API (CA-04). */
+    /** Abre la confirmación del cambio de estado (CA-02 y CA-04). */
     toggleStatus: (item: EnclosureDto) => void;
     requestDelete: (item: EnclosureDto) => void;
     /** «Ver QR» o «Generar QR» de la tarjeta (dashboard-013 CA-01, CA-04). */
@@ -271,7 +280,7 @@ export type EnclosuresViewModel = {
 /**
  * Diálogo por abrir para el recinto elegido en el buscador (dashboard-012
  * CA-37, CA-38). Solo abre la confirmación; no ejecuta nada. Un recinto
- * inactivo no abre «Desactivar» (activar no pide confirmación, CA-04).
+ * inactivo no abre «Desactivar» desde el buscador.
  */
 export function enclosureDialogForFocus(
   items: EnclosureDto[],

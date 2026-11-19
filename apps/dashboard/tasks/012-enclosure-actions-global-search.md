@@ -142,10 +142,10 @@ Reglas: sin `fetch` ni `axios` en `components/` ni en `views/`. Las pruebas son 
   - Test: `describe("CA-03")`: variante `danger`; texto exacto; misma línea de aviso; cancelar no llama a la API.
   - Hecho cuando: el test pasa.
 
-- [x] **T-20** (CA-04; RN-03): activar sin confirmación.
-  - Evidencia (2026-11-18): describe CA-04.
+- [x] **T-20** (CA-04; RN-03, enmendada): activar con confirmación centrada.
+  - Evidencia: `enclosure-actions-global-search.test.tsx`, CA-04.
   - Depende de: T-16.
-  - Test: `describe("CA-04")`: activar llama a `setStatus(id, true)` sin diálogo y muestra «Recinto activado.».
+  - Test: abrir o cancelar el diálogo no llama a la API. El cambio confirmado llama a `setStatus(id, true)` y muestra «Recinto activado.».
   - Hecho cuando: el test pasa.
 
 - [x] **T-21** (CA-06, CA-09 parte de eliminar): errores y ajuste de página.

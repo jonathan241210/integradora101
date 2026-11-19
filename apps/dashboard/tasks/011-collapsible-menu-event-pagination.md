@@ -57,5 +57,6 @@ Se verificaron tipos, 316 pruebas, build y `git diff --check`. En navegador se c
 
 - [x] **T-16** (CA-11): Mostrar una animación de boleto y palomita de hasta tres segundos solo al completar una venta, sin bloquear acciones.
 - [x] **T-17** (CA-11): Verificar duración, dos ventas simuladas, movimiento reducido, impresión y pruebas.
+- [x] **Ajuste de T-16** (CA-11): Presentar la animación en un aviso emergente centrado que se cierra en 2,8 segundos. Se verificaron el marcado posterior a la venta, los tipos y las 591 pruebas del dashboard.
 
 Se verificaron tipos, 318 pruebas, build y `git diff --check`. En dos ventas simuladas se comprobó que la animación se repite y dura 2,3 segundos, que las acciones permanecen habilitadas y que se respeta movimiento reducido e impresión; a 360 px no hubo desbordamiento. No se registraron ventas reales; la validación técnica del equipo sigue pendiente.

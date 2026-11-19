@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { EventsView } from "../views/EventsView";
 import { NewsView } from "../views/NewsView";
+import { getContentPage } from "../viewmodels/useEventsPagination";
 import { emptyImage, type ImagePreview } from "../viewmodels/image-field";
 import {
   confirmEventAction,
@@ -54,6 +55,40 @@ const newsActions: NewsViewModel["actions"] = {
 const eventActions = { ...newsActions } as unknown as EventsViewModel["actions"];
 
 const readyNews = { ...initialNewsState, status: "ready" as const, items: [newsItem(), newsItem({ id: 12, title: "Borrador", is_active: false })] };
+
+describe("news-pagination-and-feedback", () => {
+  const items = Array.from({ length: 7 }, (_, index) => newsItem({
+    id: index + 1,
+    title: `Noticia de prueba ${index + 1}`,
+  }));
+
+  it("CA-01 muestra seis noticias y habilita la página siguiente a partir de la séptima", () => {
+    const firstPage = renderToStaticMarkup(
+      <NewsView state={{ ...readyNews, items }} actions={newsActions} />,
+    );
+    const singlePage = renderToStaticMarkup(
+      <NewsView state={{ ...readyNews, items: items.slice(0, 6) }} actions={newsActions} />,
+    );
+
+    expect(firstPage.match(/data-search-id="news:/g)).toHaveLength(6);
+    expect(firstPage).toContain("Página 1 de 2");
+    expect(firstPage).toContain('aria-label="Ir a la página 1" aria-current="page"');
+    expect(firstPage).toContain('aria-label="Ir a la página 2"');
+    expect(firstPage).toContain("Siguiente");
+    expect(firstPage).not.toContain('data-search-id="news:7"');
+    expect(singlePage).not.toContain('aria-label="Paginación"');
+  });
+
+  it("CA-02 conserva el orden y ajusta la página cuando desaparece la última tarjeta", () => {
+    expect(getContentPage(items, 2, null, 6).items).toEqual(items.slice(6));
+    expect(getContentPage(items.slice(0, 6), 2, null, 6)).toMatchObject({
+      page: 1,
+      lastPage: 1,
+      items: items.slice(0, 6),
+    });
+    expect(getContentPage(items, 1, { id: 7, type: "delete" }, 6).page).toBe(2);
+  });
+});
 const readyEvents = { ...initialEventsState, status: "ready" as const, items: [eventItem(), eventItem({ id: 22, name: "Taller", is_active: true })] };
 const pagedEvents = Array.from({ length: 9 }, (_, index) =>
   eventItem({ id: index + 1, name: `Evento ${index + 1}` }),

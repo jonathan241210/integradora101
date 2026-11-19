@@ -238,13 +238,26 @@ describe("CA-03 enclosure-actions-global-search", () => {
 });
 
 describe("CA-04 enclosure-actions-global-search", () => {
-  it("activar llama a setStatus(id, true) sin diálogo y avisa «Recinto activado.»", async () => {
+  it("pide confirmación para activar y muestra el aviso tras el cambio", async () => {
     const api = createAdminApiMock();
     const h = createHarness(enclosuresReducer, withDialog(null));
+    const item = enclosure({ id: 2, is_active: false });
+    const dialog = { kind: "status", item } as const;
 
-    await setEnclosureStatus(api, h.dispatch, enclosure({ id: 2, is_active: false }), true);
+    h.dispatch({ type: "dialog-opened", dialog });
+    const markup = renderState(h.state);
+    expect(markup).toMatch(/<dialog[^>]*aria-modal="true"[\s\S]*¿Activar el recinto/);
+    expect(markup).toContain("Volverá a mostrarse en el portal y la app de visitantes");
+    expect(api.enclosures.setStatus).not.toHaveBeenCalled();
+
+    h.dispatch({ type: "dialog-closed" });
+    expect(h.state.dialog).toBeNull();
+    expect(api.enclosures.setStatus).not.toHaveBeenCalled();
+
+    h.dispatch({ type: "dialog-opened", dialog });
+    await setEnclosureStatus(api, h.dispatch, item, !item.is_active);
     expect(api.enclosures.setStatus).toHaveBeenCalledWith(2, true);
-    expect(h.actions.some((a) => a.type === "dialog-opened")).toBe(false);
+    expect(h.state.dialog).toBeNull();
     expect(h.state.notice).toBe("Recinto activado.");
   });
 });

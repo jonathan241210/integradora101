@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
-import { Alert, Button } from "@arca/ui";
+import { Button } from "@arca/ui";
 import type { InlineConfirmCopy } from "@/viewmodels/inline-list";
+import { ActionError } from "./DashboardNotifications";
 
 /**
  * Escape cancela la acción en línea (CA-12), salvo con una petición en curso:
@@ -48,11 +49,7 @@ export function InlineConfirm({
       onKeyDown={(event) => cancelOnEscape(event, onCancel, busy)}
     >
       <p className="inline-confirm__message">{copy.message}</p>
-      {error && (
-        <Alert className="inline-alert" role="alert" aria-live="assertive">
-          {error}
-        </Alert>
-      )}
+      <ActionError message={error ?? ""} />
       <div className="inline-confirm__actions">
         <Button ref={cancelRef} type="button" variant="secondary" disabled={busy} onClick={onCancel}>
           Cancelar

@@ -1,7 +1,9 @@
 import type { FormEvent } from "react";
-import { Alert, Badge, Card, Field, SelectField, TextAreaField } from "@arca/ui";
+import { Badge, Card, Field, SelectField, TextAreaField } from "@arca/ui";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ContentCardActions } from "@/components/ContentCardActions";
 import { ContentThumbnail } from "@/components/ContentThumbnail";
+import { ActionError } from "@/components/DashboardNotifications";
 import { fieldErrorProps } from "@/components/FieldErrors";
 import { FormField } from "@/components/FormField";
 import { FormPanel } from "@/components/FormPanel";
@@ -10,13 +12,23 @@ import { ImageUploadBox } from "@/components/ImageUploadBox";
 import { InlineFormFooter } from "@/components/InlineFormFooter";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
 import { NoticeBar } from "@/components/NoticeBar";
+import { PaginationBar } from "@/components/PaginationBar";
 import { SectionHeading } from "@/components/SectionHeading";
 import { formatDate } from "@/viewmodels/formatters";
 import { visibleImageUrl } from "@/viewmodels/inline-content";
 import { getNewsConfirmation, type NewsFormValues, type NewsViewModel } from "@/viewmodels/news-management";
+import { useContentPagination } from "@/viewmodels/useEventsPagination";
 
-export function NewsView({ state, actions }: NewsViewModel) {
+export function NewsView({ state, actions, focus = null }: NewsViewModel & {
+  focus?: { id: number; nonce: number } | null;
+}) {
   const { form, editing, fieldErrors: errors, pendingAction } = state;
+  const pagination = useContentPagination(state.items, pendingAction, state.actionBusy, 6, focus);
+  const confirmingVisibleItem = pendingAction !== null && pagination.items.some((item) => item.id === pendingAction.id);
+  const statusTarget = pendingAction?.type === "status"
+    ? state.items.find((item) => item.id === pendingAction.id)
+    : undefined;
+  const statusCopy = statusTarget ? getNewsConfirmation("status", statusTarget) : null;
   const editingNow = editing !== null;
   const { registerTrigger, noticeRef } = useInlineFocus({
     pendingAction,
@@ -43,11 +55,7 @@ export function NewsView({ state, actions }: NewsViewModel) {
         description="Crea, edita y retira las noticias del zoológico."
       />
       <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} focusRef={noticeRef} />
-      {state.actionError && pendingAction === null && (
-        <Alert className="inline-alert" role="alert" aria-live="assertive">
-          {state.actionError}
-        </Alert>
-      )}
+      <ActionError message={pendingAction === null ? state.actionError : ""} />
 
       <FormPanel
         id="news-form"
@@ -172,8 +180,10 @@ export function NewsView({ state, actions }: NewsViewModel) {
             </div>
           </div>
           <div className="content-card-grid">
-            {state.items.map((item) => {
-              const pending = pendingAction?.id === item.id ? pendingAction.type : null;
+            {pagination.items.map((item) => {
+              const pending = pendingAction?.type === "delete" && pendingAction.id === item.id
+                ? pendingAction.type
+                : null;
 
               return (
                 <Card className="content-card" key={item.id} data-search-id={`news:${item.id}`}>
@@ -205,7 +215,27 @@ export function NewsView({ state, actions }: NewsViewModel) {
               );
             })}
           </div>
+          {pagination.lastPage > 1 && (
+            <PaginationBar
+              page={pagination.page}
+              lastPage={pagination.lastPage}
+              total={state.items.length}
+              busy={confirmingVisibleItem || state.actionBusy}
+              showPageNumbers
+              onPageChange={pagination.changePage}
+            />
+          )}
         </section>
+      )}
+      {statusCopy && (
+        <ConfirmDialog
+          copy={{ ...statusCopy, title: "Confirmar cambio de estado" }}
+          idleTitle="Cambiar estado de noticia"
+          busy={state.actionBusy}
+          error={state.actionError}
+          onConfirm={actions.confirmAction}
+          onCancel={actions.closeAction}
+        />
       )}
     </>
   );

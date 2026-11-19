@@ -500,7 +500,12 @@ describe("CA-09 inline-content-forms", () => {
     events.dispatch({ type: "action-opened", action: { type: "status", id: 21 } });
     users.dispatch({ type: "action-opened", action: { type: "status", id: 8 } });
 
-    expect(renderNews(news.state)).toContain("¿Desactivar la noticia «Nace una cría de jaguar»?");
+    const deactivate = renderNews(news.state);
+    expect(deactivate).toMatch(/<dialog[^>]*aria-modal="true"[\s\S]*¿Desactivar la noticia «Nace una cría de jaguar»\? Dejará de mostrarse en el portal público\./);
+    const activate = renderNews({ ...news.state, items: [{ ...savedNews, is_active: false }] });
+    expect(activate).toMatch(/<dialog[^>]*aria-modal="true"[\s\S]*¿Activar la noticia «Nace una cría de jaguar»\? Volverá a mostrarse en el portal público\./);
+    const cancelled = newsReducer(news.state, { type: "action-closed" });
+    expect(renderNews(cancelled)).not.toContain("<dialog");
     expect(renderEvents(events.state)).toContain("¿Activar el evento «Noche de safari»?");
     expect(renderUsers(users.state)).toContain("¿Activar la cuenta de Luis Soto?");
     expect(getNewsConfirmation("status", savedNews)?.confirmLabel).toBe("Confirmar");
@@ -642,7 +647,9 @@ describe("CA-12 inline-content-forms", () => {
 
     expect(news.state.pendingAction).toEqual({ type: "status", id: 12 });
     expect(users.state.pendingAction).toEqual({ type: "reset-two-factor", id: 8 });
-    expect(renderNews(news.state).match(/role="group"/g)).toHaveLength(1);
+    const newsMarkup = renderNews(news.state);
+    expect(newsMarkup.match(/<dialog\b/g)).toHaveLength(1);
+    expect(newsMarkup).not.toContain('role="group"');
     expect(renderUsers(users.state).match(/role="group"/g)).toHaveLength(1);
   });
 });
