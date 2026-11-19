@@ -2,7 +2,7 @@
 
 - App dueña: `web`
 - Apps/paquetes afectados: `apps/web` (buscador, fuentes y navegación). La API y `packages/api-client` no cambian; se consumen los endpoints públicos existentes.
-- Estado: Implementada (2026-11-18; ajuste visual del panel solicitado por Jonathan completado y verificado).
+- Estado: Implementada (corrección de envíos concurrentes CA-07 autorizada y verificada el 2026-11-18).
 - Solicitante / responsable funcional: Jonathan
 - Aprobación funcional: aprobada por Jonathan en esta conversación, 2026-11-18. Alcance: todas las secciones públicas de la portada, especies publicadas, noticias y eventos publicados, incluyendo sus páginas de listado; panel bajo el buscador; resultados parciales con aviso por fuente si alguna carga falla.
 
@@ -84,4 +84,5 @@ Las fuentes dinámicas se consultan de forma independiente. Si alguna falla, el 
 - Corrección autorizada por Jonathan, 2026-11-18: cerrar al hacer clic fuera, retirar el desplazamiento automático a Animales y abrir el destino del resultado seleccionado (CA-04/CA-05).
 - Corrección adicional autorizada por Jonathan, 2026-11-18: hacer parpadear brevemente el destino y resolver el desplazamiento persistente a Animales en `http://localhost:8080/index.html`.
 - Ajuste visual autorizado por Jonathan, 2026-11-18: mejorar aviso, reintentos, tarjetas y posicionamiento del panel mostrado en la captura.
+- Corrección autorizada por Jonathan, 2026-11-18: mientras una carga sigue activa, respetar la última consulta válida y mantener el mensaje de validación para una consulta vacía (CA-07).
 - Evidencia/enlaces: `apps/web/src/js/search.js`, `apps/web/src/tests/search.test.mjs` y `apps/web/tasks/012-portal-search.md`; retirado el envío heredado de `script.js`. Las consultas muestran resultados sin desplazar a Animales y los enlaces conservan su destino.
