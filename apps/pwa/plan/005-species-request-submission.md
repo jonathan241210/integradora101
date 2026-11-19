@@ -38,7 +38,7 @@ Límites de responsabilidad:
 | Paquetes/api-client | `packages/api-client/veterinarian.ts` (nuevo), `packages/api-client/veterinarian-types.ts` (nuevo), `packages/api-client/index.ts` (exports) | `createVeterinarianApi(http)` con `species.list()`, `publicationRequests.list(page)` y `publicationRequests.submit(input)`. Construye el `FormData` del envío en una función exportada para poder probarla. Reutiliza tipos de `admin-types.ts` (`SpeciesCategory`, `SpeciesRequestType`, `SpeciesFichaField`, `SpeciesPublicationStatus`) sin moverlos. Sin dependencias nuevas |
 | Cliente PWA · servicios | `apps/pwa/src/services/veterinarianApi.ts` (nuevo) | Instancia de `createVeterinarianApi(createHttpClient({ baseUrl: '' }))` con manejador de 401 que lleva a inicio de sesión. No usa el wrapper `request` de `apiClient.ts` (ver B-3) |
 | Cliente PWA · ViewModels | `apps/pwa/src/viewmodels/speciesRequestForm.ts` (reglas puras y etiquetas), `speciesRequestSubmit.ts` (flujo puro de envío), `useSpeciesSelector.ts`, `useOwnSpeciesRequests.ts`, `useSpeciesRequestForm.ts` (hooks), `pwaDemo.ts` (nueva sección `species-request` en una lista propia, fuera de `pwaSections`), `useStaffSession.ts` (función para expulsar la sesión tras 401, CA-19) | Reglas, flujo y estado de la feature |
-| Cliente PWA · vistas | `apps/pwa/src/views/SpeciesRequestView.tsx` (contenedor con dos pestañas), `SpeciesRequestFormView.tsx` (contenedor), `SpeciesRequestFormPresenter.tsx` (presentación pura), `SpeciesSelectorField.tsx` (lista de opciones tipo radio, CA-13), `OwnSpeciesRequestsView.tsx`, `AppShell.tsx` (registro de la sección), `HomeView.tsx` (acceso por rol, RN-01 y única entrada, decisión 5; su estructura no se revisó en esta sesión) | Presentación de formulario, selector y «Mis solicitudes» |
+| Cliente PWA · vistas | `apps/pwa/src/views/SpeciesRequestView.tsx` (contenedor con dos pestañas), `SpeciesRequestFormView.tsx` (contenedor), `SpeciesRequestFormPresenter.tsx` (presentación pura), `SpeciesSelectorField.tsx` (lista de opciones tipo radio, CA-13), `OwnSpeciesRequestsView.tsx`, `AppShell.tsx` (registro de la sección y ítem de menú por rol, decisión 5 revisada el 2026-11-19), `HomeView.tsx` (acceso por rol, RN-01 y única entrada, decisión 5; su estructura no se revisó en esta sesión) | Presentación de formulario, selector y «Mis solicitudes» |
 | Cliente PWA · pruebas | `apps/pwa/src/tests/species-request-rules.test.ts`, `species-request-submit.test.ts`, `species-request-list.test.ts`, `species-request-presenters.test.tsx`, `species-request-api.test.ts` | Cobertura por CA-xx (sección de mapeo) |
 | Documentación | `apps/pwa/docs/` (nota de flujo, si el equipo la pide) | Referencia local de la pantalla |
 | Infra | Ninguna en código. Operación: verificar límites de subida del servidor (ver «Seguridad») | Cumplir el checklist de `infra/README.md` sin añadir requisitos nuevos |
@@ -93,7 +93,7 @@ Errores y compatibilidad: la PWA trata cada código como indica CA-03, CA-06, CA
 - **Offline:** **no aplica** (decisión 7 de Jonathan, 2026-11-19). No hay borradores ni cola de envío, ni IndexedDB, ni `idb`, ni `vite-plugin-pwa`, ni service worker nuevo. Ante error de red, muestra error genérico sin limpiar (CA-03); los datos viven solo en memoria hasta cambiar de sección o cerrar sesión. Un borrador sin conexión sería una spec nueva con su ADR (ADR 0003).
 - **Accesibilidad:**
   - Carga del selector y de la lista: texto con `role="status"` («Cargando especies…», «Cargando tus solicitudes…»).
-  - El selector es una lista de opciones tipo radio (`fieldset` con `legend`). Las especies no elegibles son radios deshabilitados con su estado en texto (no solo color) y el motivo de rechazo, si aplica, se lee bajo el nombre.
+  - El selector es un desplegable (`SelectField`, rediseño aprobado 2026-11-19). Las especies no elegibles son opciones `disabled` con su estado en texto («· Pendiente de revisión»); el estado de la especie elegida se repite en un badge con texto y el motivo de rechazo, si aplica, se lee en un bloque de alerta bajo el desplegable.
   - Errores de envío y de carga: `role="alert"`, y cada error de campo junto a su control con `aria-invalid="true"` y `aria-describedby` que apunta al hint y al error. `Field` de `@arca/ui` aplica `aria-describedby` antes de `{...props}`, así que el componente debe pasar los dos ids combinados. No hace falta cambiar `@arca/ui`.
   - Al recibir 422, el foco va al primer campo con error.
   - Pestañas «Solicitar» y «Mis solicitudes»: botones con `aria-pressed` (decidido en tasks, T-18).
@@ -123,7 +123,7 @@ Convención de nombres: cada `describe` empieza con `CA-xx PWA ...` para que la 
 | CA-10 envío de la selección | `describe('CA-10 PWA solicitud de publicación: selección de ficha')`: `published_fields` como cadena JSON (`[]` incluido); 422 de `published_fields` junto al bloque y conserva casillas | `src/tests/species-request-api.test.ts` y `species-request-submit.test.ts` |
 | CA-11 fuentes pendientes | `describe('CA-11 PWA solicitud de publicación: campos sin fuente')`: las seis casillas extra no aparecen; «Área de distribución natural» sí | `src/tests/species-request-rules.test.ts` |
 | CA-12 tipo de animal | `describe('CA-12 PWA solicitud de publicación: tipo de animal')`: seis opciones con etiquetas y claves; vacío no envía con «Tipo de animal requerido.»; 422 de `category` junto al selector | `src/tests/species-request-rules.test.ts` y `species-request-presenters.test.tsx` |
-| CA-13 selector de especie (lista tipo radio) | `describe('CA-13 PWA solicitud de publicación: selector')`: carga con `role="status"`; `fieldset` con `legend`; estados y elegibilidad por `next_request_type`; error con «Reintentar»; lista vacía | `src/tests/species-request-presenters.test.tsx` y `species-request-rules.test.ts` |
+| CA-13 selector de especie (desplegable) | `describe('CA-13 PWA solicitud de publicación: selector')`: carga con `role="status"`; `select` con placeholder y opciones «Nombre · Estado», `pending` deshabilitada; estados y elegibilidad por `next_request_type`; error con «Reintentar»; lista vacía | `src/tests/species-request-presenters.test.tsx` y `species-request-rules.test.ts` |
 | CA-14 precarga, correcciones y texto de ayuda | `describe('CA-14 PWA solicitud de publicación: precarga')`: precarga desde la especie; cambiar de especie reemplaza la precarga y pide confirmación si hay datos escritos; el texto de ayuda sobre correcciones aparece en el markup | `src/tests/species-request-rules.test.ts` y `species-request-presenters.test.tsx` |
 | CA-15 sin alta de especie | `describe('CA-15 PWA solicitud de publicación: sin alta')`: prueba estática del markup sin controles de alta ni nombre común editable; texto de ayuda con `pwa-004` | `src/tests/species-request-presenters.test.tsx` |
 | CA-16 lista «Mis solicitudes» | `describe('CA-16 PWA solicitud de publicación: mis solicitudes')`: campos mostrados, etiquetas de estado, «Despublicada» solo si `unpublished`, orden tal como lo entrega la API | `src/tests/species-request-list.test.ts` |
@@ -157,7 +157,7 @@ Ninguna excepción se propone. Si en tasks aparece alguna, se detiene y se resue
 - **Brechas y divergencias: estado tras las decisiones de 2026-11-19:**
   - **B-1 (resuelta):** el selector devuelve `published_fields`. Enmienda aditiva de `api-014` CA-26, tarea T-30 de `api-014`, antes de implementar CA-09 y CA-14 en actualizaciones y despublicadas.
   - **D-1 (resuelta):** manda la API. El motivo de rechazo en el selector solo para `not_published`. CA-18 de `pwa-005` alineado.
-  - **B-2 (resuelta):** selector como lista de radios (CA-13).
+  - **B-2 (resuelta, revisada 2026-11-19 con aprobación de Jonathan):** selector como desplegable (`SelectField`) con resumen de la especie elegida; sustituye la lista de radios de la primera decisión (poco práctica de usar).
   - **B-3 (abierta, fuera de alcance):** `apps/pwa/src/services/apiClient.ts` descarta `errors` del 422 y reescribe el mensaje de 401. Esta feature usa `createVeterinarianApi` directamente. No se corrige el wrapper en este cambio. Se anota como deuda previa (incluido el `fetch` directo de `createAnimalWithPhoto`) para un cambio aparte.
   - **B-4 (resuelta):** ante 401, llevar a inicio de sesión con el aviso «Tu sesión expiró.»; CA-03 y CA-19 alineados.
   - **B-5 (resuelta):** el texto de ayuda sobre correcciones está en CA-14; no hay CA nuevo.
@@ -171,8 +171,14 @@ Ninguna excepción se propone. Si en tasks aparece alguna, se detiene y se resue
   - Requisito de rol: `roles` viene en el perfil, pero la visibilidad se decide en el cliente. La autorización real está en la API.
 - **Alternativas y mitigaciones (cerradas):**
   - Para B-1: se eligió añadir el campo al selector (alternativa B, mostrar solo predeterminados, descartada porque incumple CA-09).
-  - Para B-2: se eligió radios frente a `<select>` nativo.
+  - Para B-2: primero radios; el 2026-11-19 se cambió a desplegable por usabilidad (Jonathan).
   - Para la prueba de interacción: se eligió la opción A (sin dependencias).
+
+## Rediseño de usabilidad (Jonathan, 2026-11-19)
+
+- Formulario con la maqueta de «Registrar animal» (`animal-form-card`, `animal-form-container`, `image-upload-area`, `form-grid`, `form-actions`): foto con vista previa local (`URL.createObjectURL`, sin URL de servidor, RN-03) a la izquierda y rejilla de dos columnas a la derecha; en móvil una columna con la foto arriba. Ficha pública como chips. Pie con «Limpiar» y «Enviar solicitud». Sección de datos deshabilitada con «Elige una especie para continuar.» hasta elegir especie.
+- Pestañas como control segmentado, botones con `aria-pressed`.
+- Menú lateral de escritorio: `:focus-within` se sustituye por `:has(:focus-visible)` y se suelta el foco (`blur`) tras navegar con ratón o toque (`event.detail > 0`); al cambiar de sección el contenido vuelve arriba (`scrollTo`). Ninguna spec previa de la PWA define el menú contraíble; se registra aquí como alcance aprobado por Jonathan (T-53).
 
 ## Orden y aprobación
 
@@ -180,9 +186,9 @@ Decisiones registradas (Jonathan, 2026-11-19):
 
 1. **B-1, `published_fields` en el selector:** sí. Enmienda aditiva de `api-014` CA-26 (tarea T-30), fuente `species.published_fields`, sin cambio de esquema.
 2. **D-1, motivo de rechazo en el selector:** manda la API (solo `not_published`). CA-18 de `pwa-005` alineado.
-3. **B-2, forma del selector:** lista de radios.
+3. **B-2, forma del selector:** desplegable (revisada el 2026-11-19, Jonathan; antes lista de radios).
 4. **B-4, 401:** llevar a inicio de sesión con el aviso «Tu sesión expiró.». CA-03 y CA-19 alineados.
-5. **Entrada de navegación:** la sección es accesible solo desde «Inicio», por rol. Se mantiene fuera de `pwaSections` (el test de cinco secciones de `screens.test.tsx` no cambia).
+5. **Entrada de navegación (revisada, Jonathan, 2026-11-19):** la sección es accesible desde la tarjeta de «Inicio» y también desde el menú lateral (y la barra móvil), con ícono `paw` y etiqueta accesible «Solicitar publicación de especie», solo para el rol `veterinarian` (`canRequestSpeciesPublication`). Sigue fuera de `pwaSections` (el test de cinco secciones no cambia): `pwaDemo.ts` expone `speciesRequestNavItem` y `getNavigationSections(roles)`, que `AppShell` usa para el menú. Sustituye la decisión original «solo desde Inicio».
 6. **Estrategia de pruebas:** opción A, sin dependencias nuevas. Lógica en funciones puras, markup con `renderToStaticMarkup` e interacción real como verificación manual.
 7. **Offline:** no aplica. Sin borradores ni cola sin conexión; los datos viven solo en memoria hasta cambiar de sección o cerrar sesión.
 8. **Consulta del esquema vivo y responsable técnico:** la consulta de solo lectura de 2026-11-19 está registrada en «Consulta previa del esquema vivo» (sin divergencias con DBR-013). Responsable técnico: Jonathan.

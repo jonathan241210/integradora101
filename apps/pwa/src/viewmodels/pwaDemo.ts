@@ -20,6 +20,20 @@ export const speciesRequestSections = [
   { id: 'species-request', label: 'Solicitar publicación de especie' },
 ] as const;
 
+/** Ítem del menú lateral, solo para `veterinarian` (decisión 5 revisada, 2026-11-19). */
+export const speciesRequestNavItem = {
+  id: 'species-request',
+  label: 'Solicitar publicación de especie',
+  shortLabel: 'Especies',
+  symbol: '+',
+} as const;
+
+export function getNavigationSections(roles: readonly string[] | undefined) {
+  return canRequestSpeciesPublication(roles)
+    ? [...pwaSections, speciesRequestNavItem]
+    : [...pwaSections];
+}
+
 export function canRequestSpeciesPublication(roles: readonly string[] | undefined): boolean {
   return Boolean(roles?.includes('veterinarian'));
 }

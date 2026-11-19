@@ -1,5 +1,5 @@
 import type { SelectableSpeciesDto, SpeciesFichaField } from '@arca/api-client';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { veterinarianApi } from '@/services/veterinarianApi';
 import {
   draftFromSpecies,
@@ -23,6 +23,19 @@ export function useSpeciesRequestForm(species: SelectableSpeciesDto[], reloadSel
   const [focusRequest, setFocusRequest] = useState<{ field: string; nonce: number } | null>(null);
   const [resets, setResets] = useState(0);
   const focusNonce = useRef(0);
+
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
+  // Vista previa local de la foto elegida; se libera al cambiar o desmontar.
+  useEffect(() => {
+    if (!draft.image) {
+      setPhotoPreview(null);
+      return;
+    }
+    const url = URL.createObjectURL(draft.image);
+    setPhotoPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [draft.image]);
 
   const selected = species.find((item) => item.id === draft.speciesId) ?? null;
   const pendingSpecies = species.find((item) => item.id === pendingSpeciesId) ?? null;
@@ -73,7 +86,19 @@ export function useSpeciesRequestForm(species: SelectableSpeciesDto[], reloadSel
     });
   }
 
+  function reset() {
+    setDraft(emptyDraft);
+    setBaseline(null);
+    setErrors({});
+    setGeneral('');
+    setNotice('');
+    setPendingSpeciesId(null);
+    setResets((count) => count + 1);
+  }
+
   function setImage(file: File | null) {
+    // Al quitar la foto se remonta el input para vaciar el archivo mostrado.
+    if (!file) setResets((count) => count + 1);
     setDraft((current) => ({ ...current, image: file }));
     setErrors((current) => ({
       ...current,
@@ -125,6 +150,8 @@ export function useSpeciesRequestForm(species: SelectableSpeciesDto[], reloadSel
     confirmChange,
     cancelChange,
     setField,
+    reset,
+    photoPreview,
     toggleField,
     setImage,
     submit,

@@ -1,10 +1,9 @@
-import { Button } from '@arca/ui';
+import { Button, SelectField } from '@arca/ui';
 import type { SelectableSpeciesDto } from '@arca/api-client';
 import {
   FORBIDDEN_MESSAGE,
   isSelectable,
-  lastRejectionNotice,
-  speciesStatusLabel,
+  speciesOptionLabel,
 } from '@/viewmodels/speciesRequestForm';
 import type { SelectorStatus } from '@/viewmodels/useSpeciesSelector';
 
@@ -17,7 +16,7 @@ export type SpeciesSelectorFieldProps = {
   onRetry: () => void;
 };
 
-/** Lista de opciones tipo radio (CA-13). La elegibilidad la decide la API (RN-07). */
+/** Desplegable de especies (CA-13). La elegibilidad la decide la API (RN-07). */
 export function SpeciesSelectorField({
   status,
   species,
@@ -45,39 +44,26 @@ export function SpeciesSelectorField({
   }
 
   return (
-    <fieldset
-      className="species-selector"
-      id="species_id"
-      tabIndex={-1}
-      aria-invalid={error ? 'true' : undefined}
-      aria-describedby={error ? 'species_id-error' : undefined}
-    >
-      <legend>Especie</legend>
-      {species.map((item) => {
-        const notice = lastRejectionNotice(item);
-        const selectable = isSelectable(item);
-        return (
-          <label
-            className={`species-option${selectable ? '' : ' species-option--disabled'}`}
-            key={item.id}
-          >
-            <input
-              type="radio"
-              name="species_id"
-              value={item.id}
-              checked={selectedId === item.id}
-              disabled={!selectable}
-              onChange={() => onSelect(item.id)}
-            />
-            <span className="species-option__body">
-              <span className="species-option__name">{item.common_name}</span>
-              <span className="species-option__status">{speciesStatusLabel(item.publication_status)}</span>
-              {notice && <span className="species-option__notice">{notice}</span>}
-            </span>
-          </label>
-        );
-      })}
+    <div className="species-selector">
+      <SelectField
+        label="Especie"
+        name="species_id"
+        id="species_id"
+        value={selectedId === null ? '' : String(selectedId)}
+        onChange={(event) => {
+          if (event.target.value) onSelect(Number(event.target.value));
+        }}
+        aria-invalid={error ? 'true' : undefined}
+        aria-describedby={error ? 'species_id-error' : undefined}
+      >
+        <option value="">Selecciona una especie</option>
+        {species.map((item) => (
+          <option key={item.id} value={item.id} disabled={!isSelectable(item)}>
+            {speciesOptionLabel(item)}
+          </option>
+        ))}
+      </SelectField>
       {error && <span className="field-error" id="species_id-error">{error}</span>}
-    </fieldset>
+    </div>
   );
 }
