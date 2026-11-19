@@ -1,7 +1,7 @@
 # Tareas · 012 · hide-installations-contact
 
-- Spec: `apps/web/specs/012-hide-installations-contact.md` (Aprobada, Jonathan, 2026-11-18)
-- Plan: `apps/web/plan/012-hide-installations-contact.md` (Borrador, 2026-11-18)
+- Spec: `apps/web/specs/013-hide-installations-contact.md` (Aprobada, Jonathan, 2026-11-18)
+- Plan: `apps/web/plan/013-hide-installations-contact.md` (Borrador, 2026-11-18)
 - Estado del checklist: **Aprobado** (Jonathan, 2026-11-18). En implementación; cada T-xx se marca solo con evidencia.
 
 Reglas: `node --test` con solo módulos `node:*`; sin `package.json`; cada prueba se llama `CA-NN hide-installations-contact: …`. No se modifican `script.js` ni `styles.css`.
@@ -94,7 +94,7 @@ Reglas: `node --test` con solo módulos `node:*`; sin `package.json`; cada prueb
 
 - [ ] **T-13**: commit local.
   - Depende de: T-12.
-  - Pasos: commit local que cite `web-012`. Jonathan hace el commit final y el push.
+  - Pasos: commit local que cite `web-013`. Jonathan hace el commit final y el push.
   - Hecho cuando: el commit local existe con el identificador.
 
 ## Orden de ejecución

@@ -1,4 +1,4 @@
-# 012 · hide-installations-contact
+# 013 · hide-installations-contact
 
 - App dueña: `web`
 - Apps/paquetes afectados: `web` (solo `apps/web/src/index.html`; `styles.css` y `script.js` no cambian). Sin cambios en `api`, `dashboard`, `pwa`, `mobile` ni paquetes.

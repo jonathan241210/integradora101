@@ -1,8 +1,8 @@
 # Plan técnico · 012 · hide-installations-contact
 
-- Spec: `apps/web/specs/012-hide-installations-contact.md` (Aprobada, Jonathan, 2026-11-18)
+- Spec: `apps/web/specs/013-hide-installations-contact.md` (Aprobada, Jonathan, 2026-11-18)
 - Estado del plan: **Aprobado** (Jonathan, 2026-11-18). Autoriza la implementación según sus tasks.
-- Tasks: `apps/web/tasks/012-hide-installations-contact.md` (Borrador, mismo NNN-slug).
+- Tasks: `apps/web/tasks/013-hide-installations-contact.md` (Borrador, mismo NNN-slug).
 - Responsable técnico: por confirmar. Aprobador funcional de la spec: Jonathan.
 - Dependencias: ninguna de API, de BD ni de otras apps. ADR 0024 (excepción del portal estático) sin cambios.
 

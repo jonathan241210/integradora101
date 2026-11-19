@@ -15,14 +15,24 @@ export const detailSections = [
   { id: 'animal-profile', label: 'Perfil del animal' },
 ] as const;
 
+/** Fuera de `pwaSections`: solo se abre desde Inicio, por rol (pwa-005, RN-01). */
+export const speciesRequestSections = [
+  { id: 'species-request', label: 'Solicitar publicación de especie' },
+] as const;
+
+export function canRequestSpeciesPublication(roles: readonly string[] | undefined): boolean {
+  return Boolean(roles?.includes('veterinarian'));
+}
+
 export type PwaSection =
   | (typeof pwaSections)[number]['id']
+  | (typeof speciesRequestSections)[number]['id']
   | (typeof diagnosisModeSections)[number]['id']
   | (typeof detailSections)[number]['id'];
 
 export function getSectionLabel(section: PwaSection): string {
   return (
-    [...pwaSections, ...diagnosisModeSections, ...detailSections].find(
+    [...pwaSections, ...diagnosisModeSections, ...detailSections, ...speciesRequestSections].find(
       (item) => item.id === section,
     )?.label ?? ''
   );

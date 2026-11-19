@@ -113,3 +113,11 @@ export type {
   TwoFactorChallenge,
   TwoFactorQrCode,
 } from "./types";
+export { buildSpeciesRequestFormData, createVeterinarianApi } from "./veterinarian";
+export type { VeterinarianApi } from "./veterinarian";
+export type {
+  OwnSpeciesRequestDto,
+  SelectableSpeciesDto,
+  SubmitSpeciesRequestInput,
+  SubmittedSpeciesRequestDto,
+} from "./veterinarian-types";
