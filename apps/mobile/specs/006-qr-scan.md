@@ -25,7 +25,7 @@ La validación de puntos, especies y estados de resultado la hace el servidor; e
 
 - Lógica de servidor, puntos y reglas (`api-005`).
 - Cola offline, reintentos y pantallas de resultado (`mobile-005`).
-- Impresión, colocación y reposición física de QR (operación del zoológico; generación con `arca:generate-qr-codes` en `api-005`).
+- Colocación y reposición física de QR (operación del zoológico; la hoja imprimible queda en `dashboard-013` y la gestión en `api-020`; generación con `arca:generate-qr-codes` en `api-005`).
 - iOS.
 - Nueva spec o endpoints API.
 

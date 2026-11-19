@@ -93,6 +93,7 @@ export function MemoriesView({
                   columns={columns}
                   rows={state.items}
                   rowKey={(row) => row.id}
+                  rowSearchId={(row) => `memories:${row.id}`}
                 />
                 <HasMorePaginationBar
                   page={state.page}

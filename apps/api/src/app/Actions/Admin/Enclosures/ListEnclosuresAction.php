@@ -14,6 +14,7 @@ class ListEnclosuresAction
     {
         return Enclosure::query()
             ->withCount('animals')
+            ->withExists(['qrCodes as has_active_qr' => fn ($query) => $query->where('is_active', true)])
             ->orderBy('name')
             ->orderBy('id')
             ->get();

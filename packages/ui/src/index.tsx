@@ -170,6 +170,7 @@ export function Dialog({
       ref={dialogRef}
       className={`arca-dialog ${className}`.trim()}
       aria-labelledby={titleId}
+      aria-modal="true"
       onCancel={(event) => {
         event.preventDefault();
         onClose();

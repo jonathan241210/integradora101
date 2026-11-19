@@ -1,4 +1,5 @@
 import { TulanpediaTabs } from "@/components/TulanpediaTabs";
+import type { TulanpediaTab } from "@/viewmodels/tulanpedia-tab";
 import { useTulanpediaTab } from "@/viewmodels/useTulanpediaTab";
 import { PublishedSpeciesSection } from "./PublishedSpeciesSection";
 import { SpeciesRequestsSection } from "./SpeciesRequestsSection";
@@ -8,8 +9,8 @@ import { SpeciesRequestsSection } from "./SpeciesRequestsSection";
  * «Solicitudes» abre con el filtro «Pendiente»; el aviso de «Publicadas»
  * cambia a ella (CA-64). El detalle no tiene URL propia (CA-65).
  */
-export function TulanpediaSection() {
-  const { tab, select } = useTulanpediaTab();
+export function TulanpediaSection({ focus = null }: { focus?: { tab: TulanpediaTab | null; nonce: number } | null }) {
+  const { tab, select } = useTulanpediaTab(focus?.tab ?? null, focus?.nonce ?? 0);
 
   return (
     <TulanpediaTabs active={tab} onSelect={select}>

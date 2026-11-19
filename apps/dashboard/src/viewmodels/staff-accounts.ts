@@ -373,3 +373,21 @@ export type StaffAccountsViewModel = {
     confirmAction: (password: string) => void;
   };
 };
+
+/**
+ * Confirmación por abrir para la cuenta elegida en el buscador (CA-38). Solo
+ * las acciones de cuenta; no ejecuta nada. `null` si la cuenta no está en la
+ * página cargada (CA-24) o la acción no es de Usuarios.
+ */
+export function pendingActionForFocus(
+  items: StaffAccountDto[],
+  focus: { id: number; action?: string },
+): PendingAction | null {
+  const type = focus.action;
+
+  if (type !== "status" && type !== "reset-password" && type !== "reset-two-factor" && type !== "delete") {
+    return null;
+  }
+
+  return items.some((account) => account.id === focus.id) ? { type, id: focus.id } : null;
+}

@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EnclosureController as AdminEnclosureController;
+use App\Http\Controllers\Admin\EnclosureQrController as AdminEnclosureQrController;
 use App\Http\Controllers\Admin\EventController as AdminEventController;
 use App\Http\Controllers\Admin\MemoryReviewController;
 use App\Http\Controllers\Admin\MemoryReviewImageController;
 use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\PublishedSpeciesController;
+use App\Http\Controllers\Admin\SearchController;
 use App\Http\Controllers\Admin\SpeciesImageController;
 use App\Http\Controllers\Admin\SpeciesPublicationController;
 use App\Http\Controllers\Admin\SpeciesPublicationRequestController;
@@ -150,6 +152,8 @@ Route::prefix('admin')
     ->name('admin.')
     ->middleware(['auth:sanctum', 'staff.user', 'administrator.two-factor'])
     ->group(function () {
+        Route::get('search', SearchController::class)->middleware('throttle:admin-search')->name('search');
+
         Route::middleware('permission:users.manage')->group(function () {
             Route::get('users', [StaffAccountController::class, 'index'])->name('users.index');
             Route::get('users/options', [StaffAccountController::class, 'options'])->name('users.options');
@@ -182,6 +186,11 @@ Route::prefix('admin')
             Route::get('enclosures', [AdminEnclosureController::class, 'index'])->name('enclosures.index');
             Route::post('enclosures', [AdminEnclosureController::class, 'store'])->name('enclosures.store');
             Route::patch('enclosures/{enclosure}', [AdminEnclosureController::class, 'update'])->name('enclosures.update');
+            Route::patch('enclosures/{enclosure}/status', [AdminEnclosureController::class, 'status'])->name('enclosures.status');
+            Route::delete('enclosures/{enclosure}', [AdminEnclosureController::class, 'destroy'])->name('enclosures.destroy');
+            Route::get('enclosures/{enclosure}/qr', [AdminEnclosureQrController::class, 'show'])->name('enclosures.qr.show');
+            Route::post('enclosures/{enclosure}/qr', [AdminEnclosureQrController::class, 'generate'])->name('enclosures.qr.generate');
+            Route::post('enclosures/{enclosure}/qr/regenerate', [AdminEnclosureQrController::class, 'regenerate'])->name('enclosures.qr.regenerate');
         });
 
         // api-010: revisión de momentos (solo zoo-admin con memories.review).

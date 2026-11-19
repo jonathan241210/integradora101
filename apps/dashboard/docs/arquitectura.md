@@ -4,7 +4,7 @@
 
 - La autenticación del personal es actual conforme a `dashboard-002-real-staff-login`.
 - Las secciones de administración (Panel principal, Noticias, Eventos, Reporte de boletos, Recintos y Usuarios) están conectadas a la API (`api-007`) conforme a `dashboard-003-administration-sections`.
-- Venta, Historial y Precios están conectados a la API (`api-009`) conforme a `dashboard-005-ticket-sales`; ya no hay datos ficticios ni `DemoBanner`. El buscador y el botón de notificaciones de la barra superior siguen siendo de demostración (el centro de notificaciones, el modal de acuse y el polling están diferidos).
+- Venta, Historial y Precios están conectados a la API (`api-009`) conforme a `dashboard-005-ticket-sales`; ya no hay datos ficticios ni `DemoBanner`. El buscador del encabezado es real (`dashboard-012`: `search-tolerance.ts`, `search-actions.ts`, `global-search.ts`, `focus-target.ts`); el botón de notificaciones sigue siendo de demostración (el centro de notificaciones, el modal de acuse y el polling están diferidos).
 - La publicación de especies en TulanPedia (`dashboard-010`: entrada única «TulanPedia» con las pestañas «Solicitudes» y «Publicadas», solo con `species.review`, esto es `zoo-admin`) está **en progreso**: las tareas de cliente T-02 a T-22, T-25 y T-26 están escritas y probadas con cliente simulado; la verificación manual (T-27), la verificación cruzada (T-23) y el cierre (T-28, T-29) siguen pendientes y la spec no pasa a «Implementada» sin esa evidencia.
 - La moderación de momentos (`dashboard-008`: sección «Momentos», solo con `memories.review`, esto es `zoo-admin`) está **en progreso**: las tareas de cliente T-02 a T-16 están escritas y probadas con respuestas simuladas del contrato de `api-010` (aún no implementado en esta rama); la integración con la API (T-17), la verificación (T-18) y el cierre (T-19) siguen pendientes y la spec no pasa a «Implementada» sin esa evidencia.
 - No hay React Router ni integración de pagos. La única persistencia local es la preferencia de impresión del boleto (`localStorage`, excepción acotada `dashboard-005` RN-12). La exportación del reporte la genera la API; CSV, Excel y PDF están habilitados en la API (ADR 0017 aceptado); el error «Formato de exportación no disponible.» queda para un formato fuera de la lista habilitada y el PDF responde 422 si el periodo supera el tope de boletos.
@@ -84,6 +84,11 @@ View (props)  ←  Section (contenedor)  ←  hook ViewModel  →  reducer/funci
 - Noticias, Eventos y Usuarios (`dashboard-004`) no usan diálogos: el formulario es fijo en la página dentro de un `FormPanel` minimizable y las confirmaciones (desactivar/activar, eliminar, restablecer contraseña o 2FA) se piden en línea dentro de la tarjeta o fila, una a la vez por sección. Noticias y Eventos suben la imagen con `multipart/form-data` (edición con archivo: `POST` + `_method=PATCH`) mediante `@arca/api-client`; el archivo y su vista previa viven solo en memoria. Las demás confirmaciones del dashboard (Venta y Precios) siguen con `ConfirmDialog` sobre el `Dialog` de `@arca/ui`.
 
 Endpoints consumidos (todos bajo `/api/v1/admin`, de `api-007`): `users` (lista, opciones, alta, edición, estado, baja, contraseña y 2FA), `news`, `events`, `enclosures`, `dashboard` y `reports/tickets` (con `/export`). Ver `packages/api-client/README.md`.
+
+## QR de recintos (`dashboard-013`)
+
+- `viewmodels/enclosure-qr.ts` (estado, reducer, textos y funciones asíncronas puras) y `viewmodels/useEnclosureQr.ts` (hook) consultan, generan y regeneran con `api.admin.enclosures.qr`, `generateQr` y `regenerateQr`. `components/EnclosureQrDialog.tsx` solo presenta: el SVG va como `<img>` con data URI (nunca `innerHTML`) y la hoja `#enclosure-qr-print` se imprime con `window.print()` y `@media print` de `styles.css`. El código vive solo en memoria mientras el diálogo está abierto.
+- El catálogo de acciones del buscador incluye «QR del recinto» (`opens: "qr"`); el término decide el foco (`qrFocusAction`).
 
 ## Publicación de especies (`dashboard-010`, en progreso)
 

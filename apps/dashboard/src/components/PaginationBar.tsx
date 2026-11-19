@@ -5,12 +5,14 @@ export function PaginationBar({
   lastPage,
   total,
   busy = false,
+  showPageNumbers = false,
   onPageChange,
 }: {
   page: number;
   lastPage: number;
   total: number;
   busy?: boolean;
+  showPageNumbers?: boolean;
   onPageChange: (page: number) => void;
 }) {
   return (
@@ -26,6 +28,19 @@ export function PaginationBar({
         >
           Anterior
         </Button>
+        {showPageNumbers &&
+          Array.from({ length: Math.max(lastPage, 1) }, (_, index) => index + 1).map((number) => (
+            <Button
+              key={number}
+              variant={number === page ? "primary" : "secondary"}
+              disabled={busy}
+              aria-label={`Ir a la página ${number}`}
+              aria-current={number === page ? "page" : undefined}
+              onClick={() => onPageChange(number)}
+            >
+              {number}
+            </Button>
+          ))}
         <Button
           variant="secondary"
           disabled={busy || page >= lastPage}

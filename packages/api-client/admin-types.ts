@@ -137,7 +137,60 @@ export type EventInput = {
 export type EnclosureDto = {
   id: number;
   name: string;
+  is_active: boolean;
   animals_count: number;
+  /** api-020 CA-14: verdadero si tiene al menos un código QR activo; nunca incluye el código. */
+  has_active_qr: boolean;
+};
+
+/** api-020: código QR de un recinto; `svg` es un documento SVG generado en el servidor. */
+export type EnclosureQr = {
+  code: string;
+  svg: string;
+};
+
+/** api-020: respuesta de consultar y generar el QR (`qr` es null si no hay código activo). */
+export type EnclosureQrResponse = {
+  enclosure: { id: number; name: string; is_active: boolean };
+  qr: EnclosureQr | null;
+};
+
+/** api-020: regenerar siempre devuelve `qr` y cuántos códigos activos se desactivaron. */
+export type EnclosureQrRegenerateResponse = EnclosureQrResponse & {
+  qr: EnclosureQr;
+  deactivated: number;
+};
+
+/**
+ * api-019: elemento de la búsqueda global; `kind` solo lo lleva el grupo `tulanpedia`.
+ * El 429 de `admin.search` llega como `ApiError` con `status === 429` y `retryAfterSeconds` (D-24 del plan).
+ */
+export type GlobalSearchItem = {
+  id: number;
+  title: string;
+  subtitle: string;
+  kind?: "published-species" | "species-request";
+  /** Solo cuando la coincidencia está en un campo distinto del título (api-019, CA-42). */
+  match?: GlobalSearchMatch;
+};
+
+/** `field` es la etiqueta en español del campo; `snippet` mide como máximo 120 caracteres. */
+export type GlobalSearchMatch = { field: string; snippet: string };
+
+export type GlobalSearchGroup = {
+  section: string;
+  label: string;
+  /**
+   * Relevancia del mejor elemento del grupo (api-019 CA-54); mayor = más relevante, comparable entre grupos.
+   * Entero de 9 dígitos `A B C DD EEE F`: A título literal, B frase en el título, C frase en otro campo,
+   * DD palabras que coinciden, EEE suma de niveles, F peor nivel.
+   */
+  best_score?: number;
+  items: GlobalSearchItem[];
+};
+
+export type GlobalSearchResponse = {
+  groups: GlobalSearchGroup[];
 };
 
 export type SalesTotalsDto = {

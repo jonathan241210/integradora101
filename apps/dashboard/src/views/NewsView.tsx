@@ -176,7 +176,7 @@ export function NewsView({ state, actions }: NewsViewModel) {
               const pending = pendingAction?.id === item.id ? pendingAction.type : null;
 
               return (
-                <Card className="content-card" key={item.id}>
+                <Card className="content-card" key={item.id} data-search-id={`news:${item.id}`}>
                   <ContentThumbnail url={item.image_url} name={item.title} />
                   <div className="content-card__body">
                     <div className="content-card__meta">

@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Button, Card } from "@arca/ui";
+import { GlobalSearch } from "@/components/GlobalSearch";
 import { Icon } from "@/components/Icon";
+import { SearchHitBanner } from "@/components/SearchHitBanner";
 import { DashboardSection } from "@/sections/DashboardSection";
 import { EnclosuresSection } from "@/sections/EnclosuresSection";
 import { EventsSection } from "@/sections/EventsSection";
@@ -20,7 +22,13 @@ import {
   getNavigationForProfile,
   getPresentationProfile,
 } from "@/viewmodels/navigation";
+import { resolveSelection, tabForKind, type FocusTarget } from "@/viewmodels/focus-target";
+import type { SearchResult, SearchSectionInfo } from "@/viewmodels/global-search";
+import { visibleSearchActions } from "@/viewmodels/search-actions";
+import type { TulanpediaTab } from "@/viewmodels/tulanpedia-tab";
 import { isTulanpediaSearch } from "@/viewmodels/tulanpedia-tab";
+import { useGlobalSearch } from "@/viewmodels/useGlobalSearch";
+import { useLocateHit } from "@/viewmodels/useLocateHit";
 import { useAuthSession } from "@/viewmodels/useAuthSession";
 import { useDashboardShell } from "@/viewmodels/useDashboardShell";
 import type { DashboardSection as SectionId } from "@/viewmodels/dashboard-shell";
@@ -45,7 +53,11 @@ function App() {
   }, []);
   const session = useAuthSession(redirectToPwa);
   const shell = useDashboardShell();
-  const [search, setSearch] = useState("");
+  const [focusTarget, setFocusTarget] = useState<FocusTarget | null>(null);
+  // Acción sin elemento: solo pide la pestaña de TulanPedia (CA-36).
+  const [tabRequest, setTabRequest] = useState<{ tab: TulanpediaTab; nonce: number } | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const focusNonce = useRef(0);
   const sidebarRef = useRef<HTMLElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const contentRef = useRef<HTMLElement>(null);
@@ -56,6 +68,56 @@ function App() {
   const navigation = profile ? getNavigationForProfile(profile) : [];
 
   const deepLinkHandled = useRef(false);
+  const searchSections = useMemo<SearchSectionInfo[]>(
+    () => navigation.map(({ id, label, icon }) => ({ id, label, icon })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [profile],
+  );
+  const searchActions = useMemo(
+    () => visibleSearchActions(profile?.permissions ?? [], navigation.map((item) => item.id)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [profile],
+  );
+  const locate = useLocateHit(
+    focusTarget,
+    contentRef,
+    focusTarget ? sectionTitles[focusTarget.section] : "",
+    () => setReloadKey((value) => value + 1),
+  );
+  const activeForSearch = navigation.some((item) => item.id === shell.state.activeSection)
+    ? shell.state.activeSection
+    : navigation[0]?.id ?? null;
+  const globalSearch = useGlobalSearch({
+    currentSection: activeForSearch,
+    sections: searchSections,
+    actions: searchActions,
+    onSelect: (result: SearchResult, text: string) => {
+      const ids = navigation.map((item) => item.id);
+      const plan = resolveSelection(result, {
+        text,
+        nonce: (focusNonce.current += 1),
+        currentSection: activeForSearch,
+        allowedSections: ids,
+      });
+
+      if (plan.type === "ignore") return;
+      if (plan.type === "section") {
+        setFocusTarget(null);
+        setTabRequest(plan.tab ? { tab: plan.tab, nonce: focusNonce.current } : null);
+        shell.navigate(plan.section, ids);
+
+        return;
+      }
+      setTabRequest(null);
+      if (plan.navigate) shell.navigate(plan.target.section, ids);
+      setFocusTarget(plan.target);
+    },
+  });
+
+  useEffect(() => {
+    if (locate.state.missing) shell.showNotice(locate.state.missing);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locate.state.missing]);
 
   useEffect(() => {
     if (session.state.status !== "authenticated") shell.reset();
@@ -163,6 +225,8 @@ function App() {
 
   const navigate = (section: SectionId) => {
     if (!navigation.some((item) => item.id === section)) return;
+    setFocusTarget(null);
+    setTabRequest(null);
     shell.navigate(section, navigation.map((item) => item.id));
     window.requestAnimationFrame(() => {
       const heading = contentRef.current?.querySelector("h1");
@@ -184,6 +248,10 @@ function App() {
     .map((part) => part[0]?.toLocaleUpperCase())
     .join("");
   const permissions = new Set(profile.permissions);
+  const focusFor = (section: SectionId) =>
+    focusTarget?.section === section
+      ? { id: focusTarget.id, nonce: focusTarget.nonce, action: focusTarget.action }
+      : null;
 
   return (
     <div
@@ -284,16 +352,7 @@ function App() {
             </Button>
             <strong>{activeSection ? sectionTitles[activeSection] : "Panel principal"}</strong>
           </div>
-          <label className="search-box">
-            <Icon name="search" />
-            <span className="visually-hidden">Buscar en el panel</span>
-            <input
-              aria-label="Buscar en el panel (demostración)"
-              placeholder="Buscar..."
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </label>
+          <GlobalSearch {...globalSearch} />
           <div className="topbar__actions">
             <Button
               variant="secondary"
@@ -343,6 +402,12 @@ function App() {
               Tu cuenta no tiene permisos para mostrar secciones del panel.
             </Alert>
           )}
+          <SearchHitBanner
+            banner={locate.state.banner}
+            announcement={locate.state.announcement}
+            onClear={locate.clear}
+          />
+          <Fragment key={reloadKey}>
           {activeSection === "dashboard" && (
             <DashboardSection
               onOpenReport={
@@ -353,15 +418,34 @@ function App() {
             />
           )}
           {activeSection === "news" && <NewsSection />}
-          {activeSection === "events" && <EventsSection />}
+          {activeSection === "events" && <EventsSection focus={focusFor("events")} />}
           {activeSection === "tickets" && <TicketSaleSection />}
           {activeSection === "reports" && <TicketReportSection />}
-          {activeSection === "enclosures" && <EnclosuresSection />}
-          {activeSection === "users" && <UsersSection />}
+          {activeSection === "enclosures" && (
+            <EnclosuresSection canManage={permissions.has("enclosures.manage")} focus={focusFor("enclosures")} />
+          )}
+          {activeSection === "users" && <UsersSection focus={focusFor("users")} />}
           {activeSection === "memories" && <MemoriesSection />}
-          {activeSection === "ticket-history" && <TicketHistorySection />}
+          {activeSection === "ticket-history" && (
+            <TicketHistorySection
+              focus={
+                focusTarget?.section === "ticket-history"
+                  ? { folio: String(focusTarget.id), nonce: focusTarget.nonce, action: focusTarget.action }
+                  : null
+              }
+            />
+          )}
           {activeSection === "ticket-prices" && <TicketPricesSection />}
-          {activeSection === "tulanpedia" && <TulanpediaSection />}
+          {activeSection === "tulanpedia" && (
+            <TulanpediaSection
+              focus={
+                focusTarget?.section === "tulanpedia"
+                  ? { tab: tabForKind(focusTarget.kind), nonce: focusTarget.nonce }
+                  : tabRequest
+              }
+            />
+          )}
+          </Fragment>
         </main>
       </div>
     </div>

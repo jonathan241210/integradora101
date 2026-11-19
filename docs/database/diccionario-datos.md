@@ -51,6 +51,7 @@ Referencia base: [esquema-ingles.md](esquema-ingles.md) (tablas 1–20). A conti
 ### 1.4 `enclosures` (recintos)
 - Base: `id`, `name`.
 - **DBR-008 / migración 000008:** `gps_lat` DECIMAL(10,8) NULL, `gps_lon` DECIMAL(11,8) NULL, `map_x` DECIMAL(5,4) NULL, `map_y` DECIMAL(5,4) NULL (coordenadas GPS y posición SVG normalizada).
+- **DBR-020 / migración 000020 (2026-11-18):** `is_active` TINYINT(1) NOT NULL DEFAULT 1 (recinto activo; `0` = desactivado, oculto al público y no asignable). `updated_at` TIMESTAMP NULL y `deleted_at` TIMESTAMP NULL (borrado lógico), con índices `idx_enclosures_updated_at` e `idx_enclosures_deleted_at`; ya existían en `arca_pruebas` sin migración y la 000020 los versiona solo si faltan.
 
 ### 1.5 `species` (especies)
 - Base: `id`, `common_name`, `scientific_name`, `distribution`, `conservation_status`, `habitat`, `gestation_period`, `size_cm`, `model_3d_path`, `category` (DBR-004, VARCHAR(30) NULL).
@@ -86,6 +87,7 @@ Referencia base: [esquema-ingles.md](esquema-ingles.md) (tablas 1–20). A conti
 
 ### 1.13 `visitor_collections`, `enclosure_qr_codes`
 - Base: tablas 4 y 6 de esquema-ingles. **DBR-004** puede agregar tablas de progreso/gamificación (`visitor_scans`, logros, misiones, libro mayor de puntos, etc.); **pendiente de documentar en detalle** desde `2026_10_15_000004_visitor_progress_schema.php` y DBR-004.
+- **`enclosure_qr_codes`** (DBR-021, aplicada en `arca_pruebas` el 2026-11-18): `id`, `code` VARCHAR(100) UNIQUE, `is_active` TINYINT(1) DEFAULT 1, `enclosure_id` INT NOT NULL (dos FK a `enclosures`: RESTRICT y CASCADE, ver DBR-020), y **`deleted_at` TIMESTAMP NULL DEFAULT NULL** con índice `idx_enclosure_qr_codes_deleted_at` (borrado lógico, SoftDeletes). Sin `created_at`, `created_by` ni `updated_by`. Regenerar desactiva (`is_active = 0`); eliminar un recinto marca `deleted_at` en sus códigos. Migración: `apps/api/src/database/migrations/2026_11_18_000021_enclosure_qr_codes_soft_deletes.php`.
 
 ---
 

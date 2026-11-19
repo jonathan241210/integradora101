@@ -83,7 +83,14 @@ Las secciones de administración usan datos reales de `arca_pruebas` mediante `a
 - **Historial:** `cashier` ve sus boletos y puede cancelar los marcados como cancelables indicando el motivo; `admin` y `zoo-admin` lo ven en solo lectura.
 - **Precios (`admin`):** precio vigente y próximo cambio, cambio inmediato o programado con confirmación; sin segundo factor confirmado la API responde 403 y se muestra un aviso.
 
-Ninguna de estas secciones muestra aviso de demostración. Siguen siendo de demostración el buscador y el botón de notificaciones de la barra superior; el centro de notificaciones y los avisos de precio están diferidos.
+Ninguna de estas secciones muestra aviso de demostración. Sigue siendo de demostración el botón de notificaciones de la barra superior. El buscador del encabezado es real (`dashboard-012`): tolera mayúsculas, acentos, prefijos y errores de escritura; muestra el fragmento de la coincidencia, un grupo «Acciones» (por ejemplo «contraseña juan» abre la confirmación de restablecer la contraseña de Juan, sin ejecutarla) y «Secciones». Solo Usuarios, Recintos e Historial de boletos abren el diálogo desde un resultado; el resto navega a la sección. «QR» lleva a «Nueva venta», donde se imprime el QR del boleto. Los términos no se guardan en el navegador; el centro de notificaciones y los avisos de precio están diferidos.
+
+### QR de recintos (`dashboard-013`)
+
+1. En Recintos, con `enclosures.manage`, cada tarjeta muestra «Ver QR» o «Generar QR» (y la insignia «Sin QR» si no hay código activo).
+2. «Ver QR» abre el diálogo con el QR, el código en texto y los botones «Imprimir», «Regenerar QR» y «Cerrar». «Generar QR» crea el código sin pedir confirmación.
+3. «Imprimir» abre la vista de impresión del navegador con solo el nombre del recinto, el QR (mínimo 70 mm) y el código. Verificación manual pendiente en Chrome y Edge.
+4. «Regenerar QR» pide confirmación: los QR impresos anteriormente dejan de funcionar. Desde el buscador, «qr», «imprimir qr» o «regenerar qr» más el nombre del recinto abren el diálogo sin ejecutar nada.
 
 ## Verificación local
 

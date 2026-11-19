@@ -22,7 +22,7 @@ Los permisos ya existen en `RolesAndPermissionsSeeder` (`users.manage`, `news.ma
 ## Objetivos
 
 - Gestionar cuentas del personal desde la API: listar, buscar, crear, editar, activar/desactivar, eliminar (baja lógica), restablecer contraseña y restablecer 2FA.
-- Gestionar noticias y eventos (crear, editar, activar/desactivar, eliminar lógicamente) y recintos (crear y renombrar).
+- Gestionar noticias y eventos (crear, editar, activar/desactivar, eliminar lógicamente) y recintos (crear y renombrar; desactivar, activar y eliminar según `api-019`).
 - Entregar métricas del panel principal y un reporte de boletos por periodo semanal o mensual, calculados en el servidor.
 - Exportar el reporte en CSV, Excel y PDF.
 - Aplicar autorización y alcance por rol solo en el servidor, con auditoría de cada acción administrativa.
@@ -85,7 +85,7 @@ Los permisos ya existen en `RolesAndPermissionsSeeder` (`users.manage`, `news.ma
 ### Recintos
 
 - **CA-17:** Dado `enclosures.manage`, cuando se llama `GET /api/v1/admin/enclosures`, entonces lista los recintos con su nombre y la cantidad de animales asignados.
-- **CA-18:** Dado un nombre válido y no vacío (máximo 100 caracteres, único sin distinguir mayúsculas), cuando se crea o renombra un recinto, entonces se guarda y responde 201/200; un nombre repetido responde 422 en español. No existe operación de eliminación.
+- **CA-18:** Dado un nombre válido y no vacío (máximo 100 caracteres, único sin distinguir mayúsculas), cuando se crea o renombra un recinto, entonces se guarda y responde 201/200; un nombre repetido responde 422 en español. *Enmienda `api-019` (2026-11-18):* los recintos se eliminan con borrado lógico (CA-05 y CA-06 de `api-019`); el renombrado y la creación no cambian.
 
 ### Panel y reporte
 

@@ -2,8 +2,11 @@ import type { DownloadedFile, ExtendedHttpClient } from "./http";
 import type {
   DashboardSummaryDto,
   EnclosureDto,
+  EnclosureQrRegenerateResponse,
+  EnclosureQrResponse,
   EventDto,
   EventInput,
+  GlobalSearchResponse,
   HasMorePage,
   MemoryRejectInput,
   MemoryReviewDetailDto,
@@ -320,6 +323,38 @@ export function createAdminApi(
           ),
         );
       },
+      /** api-019: activa o desactiva un recinto (booleano JSON estricto). */
+      async setStatus(id: number, isActive: boolean): Promise<EnclosureDto> {
+        return unwrap(
+          await http.patch<Enveloped<EnclosureDto>>(
+            `${base}/enclosures/${id}/status`,
+            { is_active: isActive },
+          ),
+        );
+      },
+      /** api-019: borrado lógico; los animales conservan su recinto. */
+      async remove(id: number): Promise<void> {
+        await http.delete<unknown>(`${base}/enclosures/${id}`);
+      },
+      /** api-020: código QR activo del recinto (solo lectura). */
+      async qr(id: number): Promise<EnclosureQrResponse> {
+        return http.get<EnclosureQrResponse>(`${base}/enclosures/${id}/qr`);
+      },
+      /** api-020: genera el QR si no hay uno activo; si lo hay, devuelve el mismo. */
+      async generateQr(id: number): Promise<EnclosureQrResponse> {
+        return http.post<EnclosureQrResponse>(`${base}/enclosures/${id}/qr`, {});
+      },
+      /** api-020: desactiva los códigos activos y crea uno nuevo. */
+      async regenerateQr(id: number): Promise<EnclosureQrRegenerateResponse> {
+        return http.post<EnclosureQrRegenerateResponse>(
+          `${base}/enclosures/${id}/qr/regenerate`,
+          {},
+        );
+      },
+    },
+    /** api-019: búsqueda global de solo lectura; el servidor decide los grupos visibles. */
+    async search(q: string): Promise<GlobalSearchResponse> {
+      return http.get<GlobalSearchResponse>(`${base}/search${queryString({ q })}`);
     },
     /** Revisión de momentos de visitantes (api-010, consumida por dashboard-008). */
     memoryReview: {

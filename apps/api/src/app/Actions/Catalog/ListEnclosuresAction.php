@@ -13,6 +13,7 @@ class ListEnclosuresAction
     public function execute(): Collection
     {
         return Enclosure::query()
+            ->where('is_active', 1)
             ->with(['animals.species'])
             ->withCount('animals')
             ->orderBy('id')

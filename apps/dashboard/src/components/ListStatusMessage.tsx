@@ -16,7 +16,7 @@ export function ListStatusMessage({
 }) {
   if (status === "loading") {
     return (
-      <p className="state-message" role="status" aria-live="polite">
+      <p className="state-message" role="status" aria-live="polite" data-list-loading="true">
         {loadingText}
       </p>
     );
