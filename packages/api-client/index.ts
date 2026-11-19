@@ -70,6 +70,9 @@ export type {
   TicketReportDto,
   TicketReportQuery,
   TicketRowDto,
+  GlobalSearchGroup,
+  GlobalSearchItem,
+  GlobalSearchResponse,
 } from "./admin-types";
 export { createTicketSalesApi } from "./ticket-sales";
 export type { CreateTicketSalesApiOptions, TicketSalesApi } from "./ticket-sales";

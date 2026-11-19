@@ -354,6 +354,7 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
             columns={columns}
             rows={items}
             rowKey={(account) => account.id}
+            rowSearchId={(account) => `users:${account.id}`}
             rowDetail={rowDetail}
           />
         )}

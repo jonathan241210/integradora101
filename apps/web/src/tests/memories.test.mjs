@@ -552,7 +552,7 @@ test('CA-25 dynamic-memories: dos flechas superpuestas con icono, sin texto visi
   assert.match(galeriaHtml, /<button class="mem-arrow mem-arrow-prev" id="memPrev" type="button" aria-label="Momento anterior"><svg[^>]*aria-hidden="true"/);
   assert.match(galeriaHtml, /<button class="mem-arrow mem-arrow-next" id="memNext" type="button" aria-label="Momento siguiente"><svg[^>]*aria-hidden="true"/);
   assert.ok(galeriaHtml.indexOf('id="memPrev"') < galeriaHtml.indexOf('id="memNext"'));
-  assert.match(memCss, /\.mem-arrows \{[^}]*position: absolute[^}]*aspect-ratio: 4 \/ 3/);
+  assert.match(memCss, /\.mem-arrows \{[^}]*position: absolute[^}]*height: var\(--mem-media-h, 100%\)/);
   assert.match(memCss, /\.mem-arrow \{[^}]*width: 56px[^}]*height: 56px[^}]*min-width: 44px[^}]*min-height: 44px/);
   assert.match(memCss, /\.mem-arrow \{[^}]*border-radius: 50%/);
   assert.match(memCss, /\.mem-arrow \{[^}]*background: color-mix\(in srgb, var\(--sidebar\)/);
@@ -634,7 +634,7 @@ test('CA-19 dynamic-memories: el contenedor se anuncia como «Momentos para reco
 test('CA-08 dynamic-memories: CSS de la caja de imagen con object-fit contain, sin cover ni fill, con var(--surface-subtle), con el marcador en la misma caja; el único transform es el acercamiento de CA-26 y no hay zoom en hover', () => {
   assert.match(memCss, /\.mem-media img \{[^}]*object-fit: contain;/);
   assert.match(memCss, /\.mem-media \{[^}]*background: var\(--surface-subtle\)/);
-  assert.match(memCss, /\.mem-media \{[^}]*aspect-ratio: 4 \/ 3/);
+  assert.match(memCss, /\.mem-media \{[^}]*width: fit-content/);
   assert.ok(!/object-fit:\s*(cover|fill)/.test(memCss));
   assert.ok(!/:hover[^{]*\.mem-media(?![^{]*animation-play-state)[^{]*\{[^}]*transform/.test(memCss));
   assert.deepEqual([...memCss.matchAll(/transform:\s*([^;}]+)/g)].map((x) => x[1].trim()), ['scale(0.96)', 'scale(1)', 'none']);

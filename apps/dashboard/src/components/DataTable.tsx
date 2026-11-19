@@ -16,6 +16,7 @@ export function DataTable<Row>({
   rows,
   rowKey,
   rowDetail,
+  rowSearchId,
 }: {
   caption: string;
   columns: DataTableColumn<Row>[];
@@ -23,6 +24,8 @@ export function DataTable<Row>({
   rowKey: (row: Row) => string | number;
   /** Contenido a ancho completo bajo la fila (p. ej. una confirmación en línea). */
   rowDetail?: (row: Row) => ReactNode;
+  /** Marca la fila para el buscador del encabezado (`data-search-id`). */
+  rowSearchId?: (row: Row) => string | undefined;
 }) {
   return (
     <div
@@ -48,7 +51,7 @@ export function DataTable<Row>({
 
             return (
               <Fragment key={rowKey(row)}>
-                <tr>
+                <tr data-search-id={rowSearchId?.(row)}>
                   {columns.map((column) => (
                     <td data-label={column.header} key={column.key}>
                       {column.render(row)}

@@ -16,7 +16,9 @@ class EnclosureResource extends JsonResource
             'gps_lon' => $this->gps_lon !== null ? (float) $this->gps_lon : null,
             'map_x' => $this->map_x !== null ? (float) $this->map_x : null,
             'map_y' => $this->map_y !== null ? (float) $this->map_y : null,
+            'is_active' => (bool) ($this->is_active ?? true),
             'animals_count' => (int) ($this->animals_count ?? 0),
+            'has_active_qr' => (bool) ($this->has_active_qr ?? false),
         ];
     }
 }

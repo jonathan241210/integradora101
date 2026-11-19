@@ -1,8 +1,8 @@
 import { TicketHistoryView } from "@/views/TicketHistoryView";
-import { useTicketHistory } from "@/viewmodels/useTicketHistory";
+import { useTicketHistory, type TicketHistoryFocus } from "@/viewmodels/useTicketHistory";
 
-export function TicketHistorySection() {
-  const viewModel = useTicketHistory();
+export function TicketHistorySection({ focus = null }: { focus?: TicketHistoryFocus }) {
+  const viewModel = useTicketHistory(focus);
 
   return <TicketHistoryView {...viewModel} />;
 }

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Actions\Admin\Enclosures\Qr\EnclosureQrCodeGenerator;
+use App\Actions\Admin\Enclosures\Qr\QrCodeValueGenerator;
 use App\Listeners\RecordAuthenticationEvent;
 use App\Push\ExpoPushGateway;
 use App\Push\PushGateway;
@@ -28,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(PushGateway::class, ExpoPushGateway::class);
+        $this->app->bind(QrCodeValueGenerator::class, EnclosureQrCodeGenerator::class);
 
         $this->app->bind('visitor.password', function () {
             $rule = Password::min(8)->letters()->numbers();
@@ -51,6 +54,7 @@ class AppServiceProvider extends ServiceProvider
         $this->forceHttps();
         $this->registerVisitorLimiters();
         $this->registerTicketLimiters();
+        $this->registerSearchLimiter();
 
         Event::listen(Login::class, RecordAuthenticationEvent::class);
         Event::listen(Failed::class, RecordAuthenticationEvent::class);
@@ -114,6 +118,16 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('ticket-cancel', fn (Request $request) => $request->user()?->can('tickets.cancel')
             ? Limit::perMinute(20)->by($key($request))->response($response)
             : Limit::none());
+    }
+
+    /** CA-47: 30 búsquedas por minuto y usuario; el 429 no consulta nada ni registra el término. */
+    private function registerSearchLimiter(): void
+    {
+        RateLimiter::for('admin-search', fn (Request $request) => Limit::perMinute(30)
+            ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip()))
+            ->response(fn (Request $request, array $headers) => response()->json([
+                'message' => 'Demasiadas búsquedas. Espera un minuto e inténtalo de nuevo.',
+            ], 429, $headers)));
     }
 
     private function visitorThrottleResponse(): Closure

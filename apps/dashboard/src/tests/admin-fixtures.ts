@@ -89,7 +89,19 @@ export function eventItem(overrides: Partial<EventDto> = {}): EventDto {
 }
 
 export function enclosure(overrides: Partial<EnclosureDto> = {}): EnclosureDto {
-  return { id: 5, name: "Zona de felinos", animals_count: 3, ...overrides };
+  return { id: 5, name: "Zona de felinos", animals_count: 3, is_active: true, has_active_qr: true, ...overrides };
+}
+
+export function enclosureQr(
+  qr: { code: string; svg: string } | null | { code: string } = {
+    code: "ARCA-ABCD2345",
+  },
+  enclosureOverrides: Partial<{ id: number; name: string; is_active: boolean }> = {},
+) {
+  return {
+    enclosure: { id: 5, name: "Zona de felinos", is_active: true, ...enclosureOverrides },
+    qr: qr === null ? null : { svg: '<svg xmlns="http://www.w3.org/2000/svg"><rect width="1" height="1"/></svg>', ...qr },
+  };
 }
 
 export const summary: DashboardSummaryDto = {
@@ -166,7 +178,13 @@ export function createAdminApiMock(overrides: Partial<Record<string, unknown>> =
       list: vi.fn(async (..._args: unknown[]) => [enclosure()]),
       create: vi.fn(async (..._args: unknown[]) => enclosure()),
       rename: vi.fn(async (..._args: unknown[]) => enclosure()),
+      setStatus: vi.fn(async (..._args: unknown[]) => enclosure()),
+      remove: vi.fn(async (..._args: unknown[]) => undefined),
+      qr: vi.fn(async (..._args: unknown[]) => enclosureQr()),
+      generateQr: vi.fn(async (..._args: unknown[]) => enclosureQr()),
+      regenerateQr: vi.fn(async (..._args: unknown[]) => ({ ...enclosureQr({ code: "ARCA-NEW23456" }), deactivated: 1 })),
     },
+    search: vi.fn(async (..._args: unknown[]) => ({ groups: [] })),
     dashboard: { summary: vi.fn(async (..._args: unknown[]) => summary) },
     reports: {
       tickets: vi.fn(async (..._args: unknown[]) => ticketReport()),

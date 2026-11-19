@@ -113,6 +113,7 @@ export function SpeciesRequestsView(viewModel: SpeciesRequestsViewModel) {
                   columns={columns}
                   rows={list.items}
                   rowKey={(row) => row.id}
+                  rowSearchId={(row) => `tulanpedia:species-request:${row.id}`}
                 />
                 <HasMorePaginationBar
                   page={state.page}

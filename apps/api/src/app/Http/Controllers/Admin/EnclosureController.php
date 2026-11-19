@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\Admin\Enclosures\DeleteEnclosureAction;
 use App\Actions\Admin\Enclosures\ListEnclosuresAction;
 use App\Actions\Admin\Enclosures\SaveEnclosureAction;
+use App\Actions\Admin\Enclosures\SetEnclosureStatusAction;
 use App\Actions\Admin\FindAdminResourceAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SaveEnclosureRequest;
+use App\Http\Requests\Admin\SetEnclosureStatusRequest;
 use App\Http\Resources\Admin\EnclosureResource;
 use App\Models\Enclosure;
 use Illuminate\Http\JsonResponse;
@@ -35,5 +38,27 @@ class EnclosureController extends Controller
         $model = $find->execute(Enclosure::class, $enclosure, 'Recinto no encontrado.');
 
         return new EnclosureResource($action->execute($model, $request->validated()));
+    }
+
+    public function status(
+        SetEnclosureStatusRequest $request,
+        string $enclosure,
+        FindAdminResourceAction $find,
+        SetEnclosureStatusAction $action,
+    ): EnclosureResource {
+        $model = $find->execute(Enclosure::class, $enclosure, 'Recinto no encontrado.');
+
+        return new EnclosureResource($action->execute($model, $request->boolean('is_active')));
+    }
+
+    public function destroy(
+        string $enclosure,
+        FindAdminResourceAction $find,
+        DeleteEnclosureAction $action,
+    ): JsonResponse {
+        $model = $find->execute(Enclosure::class, $enclosure, 'Recinto no encontrado.');
+        $action->execute($model);
+
+        return response()->json(['message' => 'Recinto eliminado.']);
     }
 }

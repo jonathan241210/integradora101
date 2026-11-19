@@ -33,9 +33,9 @@ function schedule(item: EventDto): string {
   return hours ? `${dates} · ${hours}` : dates;
 }
 
-export function EventsView({ state, actions }: EventsViewModel) {
+export function EventsView({ state, actions, focus = null }: EventsViewModel & { focus?: { id: number; nonce: number } | null }) {
   const { form, editing, fieldErrors: errors, pendingAction } = state;
-  const pagination = useEventsPagination(state.items, pendingAction, state.actionBusy);
+  const pagination = useEventsPagination(state.items, pendingAction, state.actionBusy, focus);
   const missingPending = pendingAction !== null
     && (state.status === "ready" || state.status === "empty")
     && !state.items.some((item) => item.id === pendingAction.id);
@@ -205,7 +205,7 @@ export function EventsView({ state, actions }: EventsViewModel) {
               const pending = pendingAction?.id === item.id ? pendingAction.type : null;
 
               return (
-                <Card className="content-card" key={item.id}>
+                <Card className="content-card" key={item.id} data-search-id={`events:${item.id}`}>
                   <ContentThumbnail url={item.image_url} name={item.name} />
                   <div className="content-card__body">
                     <div className="content-card__meta">

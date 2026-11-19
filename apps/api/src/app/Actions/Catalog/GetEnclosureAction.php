@@ -9,6 +9,7 @@ class GetEnclosureAction
     public function execute(int $id): ?Enclosure
     {
         return Enclosure::query()
+            ->where('is_active', 1)
             ->with(['animals.species'])
             ->withCount('animals')
             ->find($id);
