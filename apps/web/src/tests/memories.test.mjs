@@ -670,10 +670,10 @@ test('CA-11 dynamic-memories: index.html conserva los id y las secciones de la l
   assert.deepEqual(ids, SECTION_BASELINE);
   assert.match(galeriaHtml, /<a href="#animales" class="link">\s*Descubre los animales/);
   for (const file of ['script.js', 'animations.js', 'accessibility.js', 'js/api.js', 'js/memories-carousel.js', 'js/memories.js']) {
-    assert.ok(new RegExp(`<script src="${file.replace('.', '\\.')}" defer></script>`).test(indexHtml), file);
+    assert.ok(new RegExp(`<script src="${file.replace('.', '\\.')}(?:\\?[^"\\s]*)?" defer></script>`).test(indexHtml), file);
   }
   /* orden acordado con web-011: api -> news-events -> animals -> memories-carousel -> memories */
-  const order = ['js/api.js', 'js/news-events.js', 'js/animals.js', 'js/memories-carousel.js', 'js/memories.js'].map((f) => indexHtml.indexOf(`src="${f}"`));
+  const order = ['js/api.js', 'js/news-events.js', 'js/animals.js', 'js/memories-carousel.js', 'js/memories.js'].map((f) => indexHtml.indexOf(`src="${f}`));
   assert.deepEqual(order, [...order].sort((a, b) => a - b));
   assert.ok(order.every((i) => i > -1));
   const css = ['news-events.css', 'animals.css', 'memories.css'].map((f) => indexHtml.indexOf(`href="${f}"`));

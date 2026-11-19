@@ -436,7 +436,7 @@ test('CA-11 dynamic-news-events: index.html conserva identificadores, secciones 
     assert.match(index, new RegExp(`id="${id}"`), `falta id ${id}`);
   }
   for (const script of ['script.js', 'animations.js', 'accessibility.js', 'js/api.js', 'js/news-events.js']) {
-    assert.match(index, new RegExp(`<script src="${script.replace('.', '\\.')}" defer></script>`));
+    assert.match(index, new RegExp(`<script src="${script.replace('.', '\\.')}(?:\\?[^"\\s]*)?" defer></script>`));
   }
   assert.match(index, /href="news-events\.css"/);
   assert.match(index, /href="#noticias"/);

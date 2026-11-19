@@ -65,15 +65,6 @@
   mobileNavigation.addEventListener('change', syncNavigationForViewport);
   syncNavigationForViewport();
 
-  /* ---------- Buscador de cabecera ---------- */
-  // Las fichas de TulanPedia las gestiona js/animals.js (web-011); aquí solo se lleva a la sección.
-  const searchInput = $('searchInput');
-
-  $('searchForm').addEventListener('submit', event => {
-    event.preventDefault();
-    $('animales').scrollIntoView({ behavior: scrollBehavior() });
-  });
-
   /* ---------- Mapa: selección (delegación de eventos) ---------- */
   const mapSection = document.querySelector('.map-section');
   const mapControls = [...mapSection.querySelectorAll('.map-control')];

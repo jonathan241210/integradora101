@@ -85,7 +85,7 @@
     },
     getMemories: function (options) {
       var opts = options || {};
-      return request('/memories', { limit: opts.limit }, 'list');
+      return request('/memories', { page: opts.page, limit: opts.limit }, 'list');
     }
   };
 })(globalThis);

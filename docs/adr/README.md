@@ -42,6 +42,7 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0028 · Catálogo dinámico de TulanPedia en el portal (excepción acotada a web-011)](0028-dynamic-tulanpedia-catalog.md) — Aceptado (2026-11-12)
 - [0029 · Push de Android para el visitante (Expo sobre FCM)](0029-visitor-android-push.md) — Aceptado (Aksel, 2026-11-14; la dependencia entra con las tasks)
 - [0030 · Selector de galería para momentos del visitante (expo-image-picker)](0030-expo-image-picker-visitor-memories.md) — Aceptado (Aksel, 2026-11-14)
+- [0031 · Búsqueda global del portal con HTML y JavaScript estático](0031-global-portal-search-static-exception.md) — Aceptado (2026-11-18; autoriza `web-012` con spec, plan y tasks aprobados)
 
 ## Plantilla
 
