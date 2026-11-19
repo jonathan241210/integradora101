@@ -97,15 +97,18 @@ echo "[*] Se encontraron " . count($tables) . " tablas para respaldar.\n";
 $timestamp = date('Y-m-d_H-i-s');
 $fullBackupFile = "{$backupDir}/backup_{$database}_full_{$timestamp}.sql";
 $dataOnlyFile = "{$backupDir}/{$database}_data_only_{$timestamp}.sql";
+$schemaOnlyFile = "{$backupDir}/backup_{$database}_schema_only_{$timestamp}.sql";
 
 // También mantener nombres fijos para facilidad de uso
 $latestFullFile = "{$backupDir}/backup_{$database}_full_latest.sql";
 $latestDataFile = "{$backupDir}/{$database}_data_only_latest.sql";
+$latestSchemaFile = "{$backupDir}/backup_{$database}_schema_only_latest.sql";
 
 $fullHandle = fopen($fullBackupFile, 'w');
 $dataHandle = fopen($dataOnlyFile, 'w');
+$schemaHandle = fopen($schemaOnlyFile, 'w');
 
-if (!$fullHandle || !$dataHandle) {
+if (!$fullHandle || !$dataHandle || !$schemaHandle) {
     echo "[-] No se pudieron crear los archivos de respaldo en {$backupDir}\n";
     exit(1);
 }
@@ -122,13 +125,14 @@ $header .= "SET NAMES utf8mb4;\n\n";
 
 fwrite($fullHandle, $header);
 fwrite($dataHandle, $header);
+fwrite($schemaHandle, $header);
 
 $totalRowsBackedUp = 0;
 
 foreach ($tables as $table) {
     echo " -> Procesando tabla `{$table}`...";
 
-    // Estructura (solo para el dump completo)
+    // Estructura
     $createStmt = $pdo->query("SHOW CREATE TABLE `{$table}`");
     $createRow = $createStmt->fetch(PDO::FETCH_NUM);
     $createSql = $createRow[1] ?? '';
@@ -136,6 +140,10 @@ foreach ($tables as $table) {
     fwrite($fullHandle, "--\n-- Estructura de tabla para `{$table}`\n--\n");
     fwrite($fullHandle, "DROP TABLE IF EXISTS `{$table}`;\n");
     fwrite($fullHandle, $createSql . ";\n\n");
+
+    fwrite($schemaHandle, "--\n-- Estructura de tabla para `{$table}`\n--\n");
+    fwrite($schemaHandle, "DROP TABLE IF EXISTS `{$table}`;\n");
+    fwrite($schemaHandle, $createSql . ";\n\n");
 
     // Datos
     $dataStmt = $pdo->query("SELECT * FROM `{$table}`");
@@ -192,16 +200,20 @@ $footer .= "-- Fin del respaldo\n";
 
 fwrite($fullHandle, $footer);
 fwrite($dataHandle, $footer);
+fwrite($schemaHandle, $footer);
 
 fclose($fullHandle);
 fclose($dataHandle);
+fclose($schemaHandle);
 
 // Copiar a los archivos _latest para referencia rápida
 copy($fullBackupFile, $latestFullFile);
 copy($dataOnlyFile, $latestDataFile);
+copy($schemaOnlyFile, $latestSchemaFile);
 
 $fullSize = round(filesize($fullBackupFile) / 1024, 2);
 $dataSize = round(filesize($dataOnlyFile) / 1024, 2);
+$schemaSize = round(filesize($schemaOnlyFile) / 1024, 2);
 
 echo "\n========================================================\n";
 echo "[+] ¡RESPALDO COMPLETADO EXITOSAMENTE!\n";
@@ -214,4 +226,7 @@ echo "   -> {$latestFullFile}\n";
 echo "2. Respaldo Solo Datos (Para importar tras migrate):\n";
 echo "   -> {$dataOnlyFile} ({$dataSize} KB)\n";
 echo "   -> {$latestDataFile}\n";
+echo "3. Respaldo Solo Estructura (Sin datos):\n";
+echo "   -> {$schemaOnlyFile} ({$schemaSize} KB)\n";
+echo "   -> {$latestSchemaFile}\n";
 echo "========================================================\n";

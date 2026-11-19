@@ -3,6 +3,14 @@
 Esta carpeta contiene los scripts automatizados para respaldar los datos de desarrollo/pruebas de la base de datos de ARCA-NB y migrarlos hacia una nueva instancia sin depender de herramientas externas complejas.
 
 > **Seguridad:** Los archivos `.sql` generados están ignorados en `.gitignore` para prevenir que datos de prueba o credenciales se suban al repositorio.
+>
+> **Vigencia de los respaldos generados (2026-11-19):** Los respaldos creados en esta fecha (`backup_arca_pruebas_full_2026-11-19_23-09-49.sql`, `arca_pruebas_data_only_2026-11-19_23-09-49.sql`, `backup_arca_pruebas_schema_only_2026-11-19_23-09-49.sql` y sus copias `*_latest.sql`) corresponden al estado actual de `arca_pruebas` al momento de la exportación. Incluyen la estructura y/o datos vigentes hasta las últimas DBR y migraciones presentes en el repositorio en ese momento (p. ej. DBR-019 a DBR-021 y migraciones `2026_11_17_000019_*`, `2026_11_18_000020_*` y `2026_11_18_000021_*` en `apps/api/src/database/migrations/`). Futuros respaldos reflejarán el estado de la base en la fecha en que se generen.
+
+## Historial de respaldos
+
+| Fecha y hora (local) | Base de datos | Tipo(s) | Archivos (conjunto) | Alcance (DBR/migraciones) | Notas |
+|---|---|---|---|---|---|
+| 2026-11-19 23:09:49 | `arca_pruebas` | Completo, solo datos, solo estructura | `backup_arca_pruebas_full_2026-11-19_23-09-49.sql`, `arca_pruebas_data_only_2026-11-19_23-09-49.sql`, `backup_arca_pruebas_schema_only_2026-11-19_23-09-49.sql` (+ copias `*_latest.sql`) | Hasta las últimas DBR y migraciones presentes en el repo al momento (p. ej. DBR-019 a DBR-021; migraciones `2026_11_17_000019_*`, `2026_11_18_000020_*`, `2026_11_18_000021_*`) | 50 tablas, 1060 filas exportadas. Primer respaldo con dump de solo estructura. Respaldos intermedios del 2026-11-19 23:06:04 (sin esquema separado) eliminados por ser supersedidos. Los `.sql` están ignorados por Git. |
 
 ---
 
@@ -24,10 +32,11 @@ php docs/database/backups/backup.php
 ### ¿Qué hace automáticamente?
 1. Lee las credenciales y el certificado SSL directamente desde `apps/api/src/.env`.
 2. Se conecta a la base de datos actual (`arca_pruebas`) en Aiven.
-3. Extrae todas las tablas y genera dos archivos en esta misma carpeta:
-   - `backup_arca_pruebas_full_<fecha>.sql` (Estructura + Datos completos de seguridad).
+3. Extrae todas las tablas y genera tres archivos en esta misma carpeta:
+   - `backup_arca_pruebas_full_<fecha>.sql` (Estructura + datos completos de seguridad).
    - `arca_pruebas_data_only_<fecha>.sql` (Solo datos con sentencias `INSERT`, sin `CREATE TABLE`, ideal para inyectar tras las migraciones).
-   - Genera también accesos directos `_latest.sql` con la versión más reciente.
+   - `backup_arca_pruebas_schema_only_<fecha>.sql` (Solo estructura: `DROP TABLE` + `CREATE TABLE`, sin datos).
+   - Genera también accesos directos `_latest.sql` con la versión más reciente de cada tipo.
 
 ---
 
