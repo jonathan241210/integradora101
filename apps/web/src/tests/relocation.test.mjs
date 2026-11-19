@@ -18,7 +18,6 @@ const expectedHashes = new Map([
   ['assets/lion.jpg', 'e4e0935b6e6c64dcc1b8999f8920770e3da15c9f5bf22d021a012e75367414eb'],
   ['assets/macaw.jpg', '7b436a17df4be07c6cd93b794bc31784b9e98bd82afb241346b7011876075087'],
   ['assets/model-viewer.min.js', '774edda21e1be2a0934e460ca5943af1fe3f88da130a9f98bd6a9d611576cacf'],
-  ['assets/nyilonelycompany-nature-51.glb', 'dcf01e6dc9aea219a5dfd8d4654c4a2def141b533cc26f1c8e5c86da38d82fed'],
   ['assets/savanna.jpg', '14eb1c03bb6d98e4b4e587f5048eaab2c191a89e38abfb2f7d7ae2e27842f47e'],
   ['assets/turtle.jpg', 'c65d5b67d09b63a361ea3156546073e09c00abd0e7c86081deec39e9d38a7db8'],
 ]);
@@ -478,8 +477,8 @@ test('CA-05 brand-color-refresh verifica criterios sin dependencias nuevas', () 
   assert.equal(existsSync(path.join(webSource, 'package.json')), false);
 });
 
-test('CA-01 conserva los 11 assets fuera de alcance y sus hashes de Git', () => {
-  assert.equal(expectedHashes.size, 11);
+test('CA-01 conserva los 10 assets fuera de alcance y sus hashes de Git', () => {
+  assert.equal(expectedHashes.size, 10);
   for (const [relativePath, expectedHash] of expectedHashes) {
     assert.ok(existsSync(path.join(webSource, relativePath)), `Falta ${relativePath}`);
     assert.equal(gitContentHash(relativePath), expectedHash, `Hash distinto: ${relativePath}`);
@@ -665,15 +664,14 @@ test('CA-03 visit-info-icons-and-favicon conserva las etiquetas y prueba todos l
   assert.ok([...source.matchAll(/from\s+['"]([^'"]+)['"]/g)].every((match) => match[1].startsWith('node:')));
 });
 
-test('CA-01 isometric-zoo-map dibuja una escena local con perspectiva y sin proveedor', () => {
+test('CA-01 isometric-zoo-map carga imagen 2D y configura el modelo 3D local sin proveedor', () => {
   const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
   const section = mapSection(html);
-  assert.match(section, /<svg[\s\S]*?class="map-art"[\s\S]*?viewBox="0 0 900 560"/);
-  assert.match(section, /<linearGradient[\s\S]*?id="map-ground"/);
-  assert.match(section, /fill="url\(#map-grass\)"/);
-  assert.match(section, /stroke-dasharray="5 13"/);
+  assert.match(section, /<img class="map-art" src="assets\/mapa-2d\.jpg"/);
   assert.match(section, /class="map-scene" id="mapScene"/);
   assert.match(section, /map-icon-(?:felinos|aviario|reptilario|primates|granja|lago|entrada)/);
+  assert.match(section, /data-model="assets\/mapacompleto\.glb"/);
+  assert.match(section, /id="mapModelStatus" role="status" aria-live="polite" hidden/);
   assert.match(section, /id="mapZoomReset"[^>]*aria-controls="mapScene"(?![^>]*\sdisabled)/);
   assert.doesNotMatch(section, /https?:|maps\.google|mapbox|openstreetmap/i);
 });

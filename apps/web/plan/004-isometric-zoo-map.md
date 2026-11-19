@@ -8,6 +8,8 @@
 
 ## Diseño de solución
 
+**Enmienda aprobada 2026-11-18:** la superficie 2D pasa a usar la fotografía local `assets/mapa-2d.jpg`; el control alterna a `assets/mapacompleto.glb` mediante el `model-viewer` local existente. El estado de carga/error se anuncia en una región viva y, si falla el GLB, se restaura la vista 2D. Esta enmienda sustituye la ilustración dibujada descrita en el plan original, conserva los marcadores y controles de zoom, y no incorpora dependencias ni recursos externos.
+
 Mantener el portal estático aprobado en `apps/web/src/`; no migrar framework ni incorporar paquetes. Reemplazar el dibujo esquemático actual por una escena local compuesta por un SVG decorativo como superficie ilustrada y controles HTML semánticos superpuestos para las zonas. Dibujar una base en perspectiva elevada con caminos, vegetación y recintos de formas geométricas; usar sombras, niveles y proyección CSS moderada para sugerir profundidad, sin mapa, tiles, georreferenciación ni datos de otro proveedor.
 
 Representar Felinos, Aviario, Reptilario, Primates, Granja, Lago y Entrada en el mapa. Mantener también la leyenda actual de Entrada, Baños, Alimentos, Bebederos, Áreas de descanso, Enfermería y Tiendas. Cada control utiliza un SVG inline decorativo, con nombre visible asociado y `aria-pressed` sincronizado. Los SVG pueden reutilizar símbolos declarados en el mismo HTML; no cargar iconos desde CDN ni instalar Bootstrap Icons. El estilo será de trazos simples y consistentes, inspirado en iconografía de interfaz, no una copia de la biblioteca.
@@ -24,6 +26,8 @@ El dibujo y los controles se adaptan al ancho: la superficie conserva aspect rat
 |---|---|---|
 | Portal estático | `apps/web/src/index.html` | Mantener la escena SVG y marcadores existentes; agrupar arte y marcadores para zoom y añadir controles semánticos de acercar, alejar y restablecer. |
 | Portal estático | `apps/web/src/styles.css` | Profundizar relieves visuales existentes sin alterar paleta; escalar escena agrupada, mantener controles externos a la escala y ajustar responsive/accesibilidad. |
+| Portal / mapa actualizado | `apps/web/src/index.html`, `apps/web/src/styles.css` | Mostrar la fotografía 2D local, alternar el GLB local y anunciar carga/error con retorno a 2D; conservar marcadores y zoom. |
+| Recursos locales | `apps/web/src/assets/mapa-2d.jpg`, `mapacompleto.glb` | Suministrar la vista aérea 2D y el modelo 3D aprobado, sin servicios externos. |
 | Portal estático | `apps/web/src/script.js` | Conservar la selección sincronizada e implementar zoom acotado 100–150 %, estado accesible y restablecimiento sin modificar selección/foco. |
 | Pruebas | `apps/web/src/tests/relocation.test.mjs` | Añadir pruebas nombradas para CA-01..CA-07 y simulación de selección/zoom con builtins Node; conservar hashes de assets existentes y pruebas de 001..003. |
 | Artefactos SDD relacionados | `apps/web/specs/001-relocate-static-portal.md`, `apps/web/plan/001-relocate-static-portal.md`, `apps/web/tasks/001-relocate-static-portal.md` | Ampliar el registro de alcance posterior solo si se requiere una excepción de integridad estructural adicional para esta feature; no borrar evidencias históricas. |
@@ -50,7 +54,7 @@ El dibujo y los controles se adaptan al ancho: la superficie conserva aspect rat
 
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
-| CA-01 | `CA-01 isometric-zoo-map` verifica escena SVG local con relieve/capas mejorados, senderos y ausencia de referencias a proveedores. | Node `node:test`; `apps/web/src/tests/relocation.test.mjs`. |
+| CA-01 | `CA-01 isometric-zoo-map` verifica fotografía 2D y GLB locales, alternancia con estado de carga/error y ausencia de proveedores. | Node `node:test`; `apps/web/src/tests/relocation.test.mjs`. |
 | CA-02 | `CA-02 isometric-zoo-map` comprueba todas las 13 zonas/servicios conservadas, asociación de icono SVG local, nombre accesible y texto correspondiente. | Node `node:test`; `apps/web/src/tests/relocation.test.mjs`. |
 | CA-03 | `CA-03 isometric-zoo-map` comprueba texto visible de mapa demostrativo/no a escala/no preciso y estructura accesible. | Node `node:test`; `apps/web/src/tests/relocation.test.mjs`. |
 | CA-04 | `CA-04 isometric-zoo-map` ejecuta el controlador de selección en DOM simulado y comprueba anuncio, resaltado y `aria-pressed` para mapa/leyenda. | Node `node:test` con `node:vm`; `apps/web/src/tests/relocation.test.mjs`. |
