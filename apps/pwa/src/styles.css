@@ -2169,3 +2169,77 @@ select:focus-visible {
     flex: 1;
     height: 16mm;
   }
+
+/* pwa-005: solicitud de publicación de especie (tokens semánticos) */
+.species-request-tabs,
+.own-requests__pager {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.species-selector,
+.ficha-fields {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.species-option,
+.ficha-fields__option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.species-option--disabled {
+  color: var(--muted-foreground);
+}
+
+.species-option__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.species-option__status,
+.field-help {
+  color: var(--dashboard-muted-foreground);
+  font-size: 12px;
+}
+
+.species-option__notice,
+.own-request__reason {
+  overflow-wrap: anywhere;
+  color: var(--danger);
+}
+
+.field-error {
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.species-request-form__notice {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+.own-requests__list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.own-request__flag {
+  color: var(--warning);
+  font-size: 12px;
+  font-weight: 700;
+}

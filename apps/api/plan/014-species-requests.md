@@ -114,7 +114,7 @@ Los nombres marcados con `(propuesto)` no están fijados en la spec; siguen la c
 
 | Método y ruta | Nombre de ruta | Middleware y permiso | CA | Respuesta |
 |---|---|---|---|---|
-| `GET /api/v1/veterinarian/species` | `veterinarian.species.index` (propuesto) | `auth:sanctum`, `staff.user`, rol `veterinarian` | CA-26 | 200 `data` sin paginar |
+| `GET /api/v1/veterinarian/species` | `veterinarian.species.index` (propuesto) | `auth:sanctum`, `staff.user`, rol `veterinarian` | CA-26 | 200 `data` sin paginar; cada fila incluye `published_fields` (de `species.published_fields`, `null` si nunca se publicó; enmienda 2026-11-19) |
 | `POST /api/v1/veterinarian/species-publication-requests` | `veterinarian.species-publication-requests.store` (propuesto) | igual | CA-01, CA-02, CA-03, CA-04 | 201 (multipart) |
 | `GET /api/v1/veterinarian/species-publication-requests` | `veterinarian.species-publication-requests.index` | igual | CA-33 | 200 paginado de 10 |
 | `GET /api/v1/admin/species-publication-requests` | `admin.species-publication-requests.index` (propuesto) | `admin` + 2FA + `permission:species.review` | CA-05 | 200 paginado de 10 |
@@ -224,7 +224,7 @@ Los nombres son los de la spec. Cuando la spec no fija nombre (CA-19, CA-23, CA-
 | CA-23 | `test_ca23_patch_replaces_photo_and_deletes_previous_after_commit`; `test_ca23_failed_transaction_removes_new_photo_keeps_previous` (propuestos) | `UpdateSpeciesRequestPhotoTest.php` | T-16 |
 | CA-24 | `test_ca24_request_never_creates_or_deletes_species_rows` | `SpeciesPublicationInvariantsTest.php` | T-11 (submit), T-26 (todas) |
 | CA-25 | `test_ca25_store_requires_category`; `test_ca25_store_rejects_category_outside_closed_list` (T-10); `test_ca25_update_replaces_category_and_audits_change`; `test_ca25_update_rejects_empty_or_unknown_category` (T-15); `test_ca25_accept_writes_effective_category_to_species` (T-18) | varios | T-10, T-15, T-18 |
-| CA-26 | `test_ca26_veterinarian_lists_species_with_publication_status`; `test_ca26_last_rejection_reason_full_text` | `VeterinarianSelectorTest.php` | T-09 |
+| CA-26 | `test_ca26_veterinarian_lists_species_with_publication_status`; `test_ca26_last_rejection_reason_full_text`; `test_ca26_selector_exposes_published_fields` (enmienda 2026-11-19) | `VeterinarianSelectorTest.php` | T-09, T-30 |
 | CA-27 | `test_ca27_eligibility_by_publication_status` | `SubmitSpeciesRequestTest.php` | T-11 |
 | CA-28 | `test_ca28_rejected_species_accepts_new_publish_request` | `SubmitSpeciesRequestTest.php` | T-11 |
 | CA-29 | `test_ca29_submit_rejects_common_name_and_creates_no_species` | `SubmitSpeciesRequestValidationTest.php` | T-10 |

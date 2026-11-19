@@ -15,6 +15,7 @@ import { DiagnosisIntenseView } from '@/views/DiagnosisIntenseView';
 import { DiagnosisQuickView } from '@/views/DiagnosisQuickView';
 import { HomeView } from '@/views/HomeView';
 import { ReviewFormView } from '@/views/ReviewFormView';
+import { SpeciesRequestView } from '@/views/SpeciesRequestView';
 
 type AppShellProps = {
   activeSection: PwaSection;
@@ -23,6 +24,7 @@ type AppShellProps = {
   sessionError?: string;
   signingOut?: boolean;
   mvzName?: string;
+  roles?: readonly string[];
 };
 
 type ActiveViewProps = {
@@ -30,10 +32,11 @@ type ActiveViewProps = {
   onNavigate: (section: PwaSection) => void;
   onOpenAnimal: (animalId: number) => void;
   mvzName?: string;
+  roles?: readonly string[];
 };
 
 const sectionViews: Record<PwaSection, ComponentType<ActiveViewProps>> = {
-  home: HomeView,
+  home: ({ onNavigate, roles }) => <HomeView onNavigate={onNavigate} roles={roles} />,
   animals: AnimalsView,
   'animal-profile': ({ animalId, onNavigate }) => (
     <AnimalProfileView animalId={animalId} onBack={() => onNavigate('animals')} />
@@ -43,6 +46,7 @@ const sectionViews: Record<PwaSection, ComponentType<ActiveViewProps>> = {
   'diagnosis-intense': ({ mvzName }) => <DiagnosisIntenseView mvzName={mvzName} />,
   'diagnosis-quick': ({ mvzName }) => <DiagnosisQuickView mvzName={mvzName} />,
   'review-form': ({ onNavigate }) => <ReviewFormView onNavigate={onNavigate} />,
+  'species-request': () => <SpeciesRequestView />,
 };
 
 export function AppShell({
@@ -52,6 +56,7 @@ export function AppShell({
   sessionError,
   signingOut,
   mvzName,
+  roles,
 }: AppShellProps) {
   const ActiveView = sectionViews[activeSection];
   const currentLabel = getSectionLabel(activeSection);
@@ -114,6 +119,7 @@ export function AppShell({
               onNavigate('animal-profile');
             }}
             mvzName={mvzName}
+            roles={roles}
           />
         </main>
 
