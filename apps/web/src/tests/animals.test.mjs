@@ -100,11 +100,11 @@ const plain = (value) => JSON.parse(JSON.stringify(value));
 const flush = async () => { for (let i = 0; i < 12; i += 1) await new Promise((r) => setImmediate(r)); };
 const json = (body, ok = true) => Promise.resolve({ ok, status: ok ? 200 : 500, json: () => Promise.resolve(body) });
 
-function mount({ base = 'http://localhost:8000/api/v1', fetchImpl, timers, withApp = true } = {}) {
+function mount({ base = 'http://localhost:8000/api/v1', fetchImpl, timers, withApp = true, location, searchTarget } = {}) {
   const doc = makeDocument(base === null ? undefined : base);
   const calls = [];
   const sandbox = {
-    document: doc, URLSearchParams, AbortController, URL, console,
+    document: doc, URLSearchParams, AbortController, URL, console, location, ArcaSearchTarget: searchTarget,
     setTimeout: timers?.setTimeout ?? setTimeout, clearTimeout: timers?.clearTimeout ?? clearTimeout,
     fetch: (url, opts) => { calls.push({ url, opts }); return fetchImpl(url, opts); }
   };
@@ -209,7 +209,7 @@ test('CA-12 dynamic-tulanpedia: index.html conserva los IDs de la sección y las
     assert.ok(indexHtml.includes(`id="${id}"`), id);
   }
   for (const file of ['script.js', 'animations.js', 'accessibility.js', 'js/api.js', 'js/animals.js']) {
-    assert.ok(new RegExp(`<script src="${file.replace('.', '\\.')}" defer></script>`).test(indexHtml), file);
+    assert.ok(new RegExp(`<script src="${file.replace('.', '\\.')}(?:\\?[^"\\s]*)?" defer></script>`).test(indexHtml), file);
   }
   assert.ok(indexHtml.indexOf('js/api.js') < indexHtml.indexOf('js/animals.js'), 'animals.js va después de api.js');
   assert.ok(indexHtml.includes('href="animals.css"'));
@@ -221,8 +221,8 @@ test('CA-12 dynamic-tulanpedia: script.js no referencia .animal-card, speciesFil
   for (const name of ['.animal-card', 'speciesFilter', 'habitatFilter', 'clearFilters', 'animalCount', 'noAnimals', 'animalCards', 'filterAnimals']) {
     assert.ok(!scriptJs.includes(name), name);
   }
-  assert.ok(scriptJs.includes("const searchInput = $('searchInput');"), 'ancla de relocation.test.mjs');
-  assert.ok(scriptJs.includes('$(\'animales\').scrollIntoView'), 'el buscador lleva a #animales');
+  assert.ok(!scriptJs.includes("$('searchForm')"), 'el formulario lo controla js/search.js (web-012)');
+  assert.ok(!scriptJs.includes('$(\'animales\').scrollIntoView'), 'buscar no desplaza automáticamente a #animales');
 });
 
 const SECTION_BASELINE = ['porque-visitar', 'animales', 'mapa', 'ubicacion', 'instalaciones', 'noticias', 'eventos', 'boletos', 'preguntas', 'galeria', 'cognitivePanel'];
@@ -454,6 +454,59 @@ test('CA-03 dynamic-tulanpedia: filtros combinados sobre la lista en memoria; co
   pick('speciesFilter', 'Tortuga');
   assert.deepEqual(visible(m), ['Tortuga']);
   assert.equal(m.calls.length, 1, 'cero peticiones adicionales');
+});
+
+test('CA-04 portal-search: un resultado de especie oculto por filtros se revela, actualiza el contador y recibe foco', async () => {
+  const highlighted = [];
+  const m = mount({ fetchImpl: ok(catalog()), searchTarget: { highlight: (target) => highlighted.push(target) } });
+  await flush();
+  const pick = (id, value) => { m.$(id).value = value; m.$(id).dispatch('change'); };
+  pick('categoryFilter', 'bird');
+  pick('habitatFilter', 'sabana');
+  pick('speciesFilter', 'Guacamaya');
+  const target = m.$('animal-1');
+  assert.equal(target.hidden, true, 'la especie encontrada estaba excluida por los filtros');
+  assert.deepEqual(visible(m), ['Guacamaya']);
+  assert.equal(m.$('animalCount').textContent, '1 especie encontrada');
+  let scrollOptions;
+  target.scrollIntoView = (options) => { scrollOptions = options; };
+
+  assert.equal(m.app().focusCard(1), true);
+
+  assert.equal(target.hidden, false);
+  for (const filter of ['speciesFilter', 'habitatFilter', 'categoryFilter']) assert.equal(m.$(filter).value, '');
+  assert.equal(visible(m).length, 5);
+  assert.equal(m.$('animalCount').textContent, '5 especies encontradas');
+  assert.equal(m.$('noAnimals').hidden, true);
+  assert.equal(m.doc.activeElement, target);
+  assert.deepEqual(highlighted, [target]);
+  assert.equal(scrollOptions.block, 'center');
+  assert.equal(m.calls.length, 1, 'revelar el resultado reutiliza el catálogo en memoria');
+});
+
+test('CA-04 portal-search: buscar durante la carga cancela el enfoque de una especie anterior', async () => {
+  for (const cancel of [false, true]) {
+    let release;
+    const highlighted = [];
+    const m = mount({
+      location: { hash: '#animal-1' },
+      fetchImpl: () => new Promise((resolve) => { release = resolve; }),
+      searchTarget: { highlight: (target) => highlighted.push(target) }
+    });
+    if (cancel) m.app().cancelInitialFocus();
+    await flush();
+    release({ ok: true, json: () => Promise.resolve({ data: [sp(1)] }) });
+    await flush();
+    const target = m.$('animal-1');
+    assert.ok(target);
+    if (cancel) {
+      assert.equal(m.doc.activeElement, null, 'el catálogo no desplaza el foco de una búsqueda nueva');
+      assert.deepEqual(highlighted, []);
+      m.app().focusCard(1);
+    }
+    assert.equal(m.doc.activeElement, target, 'la navegación explícita a la especie sigue disponible');
+    assert.deepEqual(highlighted, [target]);
+  }
 });
 
 test('CA-04 dynamic-tulanpedia: opciones ordenadas con «Todas» primero; hábitats sin distinguir mayúsculas con la primera forma; null y vacíos descartados; sin valores fijos en el HTML; etiquetas de category en español', async () => {

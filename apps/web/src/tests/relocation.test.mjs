@@ -194,7 +194,7 @@ function mountMobileNavigation(initialWidth = 390) {
   const window = { matchMedia: () => mediaQuery };
   const script = readFileSync(path.join(webSource, 'script.js'), 'utf8');
   const start = script.indexOf('const menuToggle =');
-  const end = script.indexOf('const searchInput =');
+  const end = script.indexOf('const mapSection =');
   assert.ok(start >= 0 && end > start, 'No se encontró el controlador de navegación');
   runInNewContext(script.slice(start, end), { document, window });
 
