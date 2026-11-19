@@ -1,9 +1,9 @@
 import { Button } from '@arca/ui';
-import { useState, type ComponentType } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import {
+  getNavigationSections,
   getSectionLabel,
   isNavigationActive,
-  pwaSections,
   type PwaSection,
 } from '@/viewmodels/pwaDemo';
 import { Icon } from '@/components/Icon';
@@ -62,6 +62,11 @@ export function AppShell({
   const currentLabel = getSectionLabel(activeSection);
   const [animalId, setAnimalId] = useState<number | null>(null);
 
+  // Al cambiar de sección el contenido vuelve al inicio.
+  useEffect(() => {
+    window.scrollTo?.({ top: 0 });
+  }, [activeSection]);
+
   return (
     <div className="app-shell">
       <aside className="desktop-sidebar" aria-label="Navegación principal">
@@ -70,6 +75,7 @@ export function AppShell({
         href="#inicio"
         onClick={(event) => {
           event.preventDefault();
+          if (event.detail > 0) event.currentTarget.blur();
           onNavigate('home');
         }}
         >
@@ -84,6 +90,7 @@ export function AppShell({
           activeSection={activeSection}
           onNavigate={onNavigate}
           variant="desktop"
+          roles={roles}
         />
 
         <div className="sidebar-bottom">
@@ -135,6 +142,7 @@ export function AppShell({
           activeSection={activeSection}
           onNavigate={onNavigate}
           variant="mobile"
+          roles={roles}
         />
       </nav>
     </div>
@@ -145,10 +153,12 @@ function Navigation({
   activeSection,
   onNavigate,
   variant,
+  roles,
 }: {
   activeSection: PwaSection;
   onNavigate: (section: PwaSection) => void;
   variant: 'desktop' | 'mobile';
+  roles?: readonly string[];
 }) {
   const iconMap: Record<string, string> = {
     home: 'home',
@@ -159,11 +169,12 @@ function Navigation({
     'diagnosis-intense': 'intense',
     'diagnosis-quick': 'quick',
     'review-form': 'review',
+    'species-request': 'paw',
   };
 
   return (
     <div className={`navigation navigation-${variant}`}>
-      {pwaSections.map((section) => (
+      {getNavigationSections(roles).map((section) => (
         <button
           aria-current={isNavigationActive(section.id, activeSection) ? 'page' : undefined}
           aria-label={section.label}
@@ -171,7 +182,11 @@ function Navigation({
             isNavigationActive(section.id, activeSection) ? 'is-active' : ''
           }`}
           key={section.id}
-          onClick={() => onNavigate(section.id)}
+          onClick={(event) => {
+            // Con ratón o toque se suelta el foco para que el menú se contraiga.
+            if (event.detail > 0) event.currentTarget.blur();
+            onNavigate(section.id);
+          }}
           type="button"
         >
           <span className="navigation-symbol" aria-hidden="true">

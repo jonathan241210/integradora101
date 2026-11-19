@@ -8,6 +8,7 @@ import {
   useSaveRequest,
   useSpeciesOptions,
 } from '@/viewmodels/useApiData';
+import { Icon } from '@/components/Icon';
 import { SaveFeedback } from '@/views/SaveFeedback';
 import { Spinner } from '@/views/Spinner';
 
@@ -105,7 +106,7 @@ export function AnimalFormView() {
         <p>Completa los datos del ejemplar para registrarlo. Puedes elegir una especie existente o escribir una nueva.</p>
       </div>
 
-      <Card className="form-card animal-form-card">
+      <Card className="form-card">
         <form className="data-form animal-form" onSubmit={handleSubmit}>
           <SaveFeedback message={save.message} status={save.status} />
           
@@ -127,7 +128,7 @@ export function AnimalFormView() {
                   </div>
                 ) : (
                   <label className="image-upload-label">
-                    <div className="upload-icon">📷</div>
+                    <span className="upload-icon" aria-hidden="true"><Icon name="camera" size={40} /></span>
                     <span className="upload-text">Foto del animal</span>
                     <input
                       type="file"

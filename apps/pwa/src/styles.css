@@ -228,7 +228,7 @@ select:focus-visible {
 }
 
 .desktop-sidebar:hover,
-.desktop-sidebar:focus-within {
+.desktop-sidebar:has(:focus-visible) {
   width: 248px;
 }
 
@@ -248,11 +248,11 @@ select:focus-visible {
 .desktop-sidebar:hover .navigation-label,
 .desktop-sidebar:hover .demo-user > span:last-child,
 .desktop-sidebar:hover .sidebar-logout > span:last-child,
-.desktop-sidebar:focus-within .sidebar-brand-label,
-.desktop-sidebar:focus-within .sidebar-caption,
-.desktop-sidebar:focus-within .navigation-label,
-.desktop-sidebar:focus-within .demo-user > span:last-child,
-.desktop-sidebar:focus-within .sidebar-logout > span:last-child {
+.desktop-sidebar:has(:focus-visible) .sidebar-brand-label,
+.desktop-sidebar:has(:focus-visible) .sidebar-caption,
+.desktop-sidebar:has(:focus-visible) .navigation-label,
+.desktop-sidebar:has(:focus-visible) .demo-user > span:last-child,
+.desktop-sidebar:has(:focus-visible) .sidebar-logout > span:last-child {
   opacity: 1;
   visibility: visible;
 }
@@ -768,10 +768,6 @@ select:focus-visible {
   gap: 24px;
 }
 
-.animal-form-card {
-  max-width: 900px;
-}
-
 .animal-form-container {
   display: grid;
   grid-template-columns: 200px 1fr;
@@ -1037,6 +1033,11 @@ select:focus-visible {
     gap: 4px;
   }
 
+  /* Con el ítem de especies (rol veterinarian) el menú tiene seis opciones. */
+  .navigation-mobile:has(> :nth-child(6)) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
   .navigation-mobile .navigation-item {
     display: grid;
     min-height: 58px;
@@ -1292,7 +1293,8 @@ select:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
-
+
+
 .spinner {
   display: inline-flex;
   align-items: center;
@@ -1333,7 +1335,8 @@ select:focus-visible {
     animation-iteration-count: infinite !important;
   }
 }
-
+
+
 .animal-row {
   display: block;
   padding: 0;
@@ -2242,4 +2245,124 @@ select:focus-visible {
   color: var(--warning);
   font-size: 12px;
   font-weight: 700;
+}
+
+/* pwa-005 (rediseño 2026-11-19) */
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  margin: 12px 0;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-subtle);
+}
+
+.segmented__item {
+  min-height: 34px;
+  padding: 6px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dashboard-muted-foreground);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segmented__item[aria-pressed="true"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.visually-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.image-upload-area:has(.visually-hidden-input:focus-visible) {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.species-request-pick {
+  display: grid;
+  gap: 10px;
+}
+
+.species-summary {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+.species-summary__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.species-summary__notice {
+  overflow-wrap: anywhere;
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+.species-request-form__placeholder {
+  margin: 0;
+  color: var(--dashboard-muted-foreground);
+  font-weight: 600;
+}
+
+.species-request-data {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.species-request-data:disabled {
+  opacity: 0.55;
+}
+
+.ficha-fields__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+}
+
+.ficha-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.ficha-chip:has(input:checked) {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+}
+
+.ficha-chip:has(input:focus-visible) {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .species-request-data .image-upload-area {
+    width: 100%;
+  }
 }

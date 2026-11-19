@@ -1,4 +1,3 @@
-import { Button } from '@arca/ui';
 import { useState } from 'react';
 import { OwnSpeciesRequestsView } from '@/views/OwnSpeciesRequestsView';
 import { SpeciesRequestFormView } from '@/views/SpeciesRequestFormView';
@@ -15,23 +14,23 @@ export function SpeciesRequestView() {
         <h2>Solicitar publicación de especie</h2>
         <p>Elige una especie registrada y propón su publicación o su actualización. La Dirección la revisa antes de publicarla.</p>
       </div>
-      <div className="species-request-tabs" role="group" aria-label="Secciones de solicitudes">
-        <Button
+      <div className="segmented" role="group" aria-label="Secciones de solicitudes">
+        <button
           type="button"
-          variant={tab === 'form' ? 'primary' : 'secondary'}
+          className="segmented__item"
           aria-pressed={tab === 'form'}
           onClick={() => setTab('form')}
         >
           Solicitar publicación
-        </Button>
-        <Button
+        </button>
+        <button
           type="button"
-          variant={tab === 'mine' ? 'primary' : 'secondary'}
+          className="segmented__item"
           aria-pressed={tab === 'mine'}
           onClick={() => setTab('mine')}
         >
           Mis solicitudes
-        </Button>
+        </button>
       </div>
       {tab === 'form' ? <SpeciesRequestFormView /> : <OwnSpeciesRequestsView />}
     </section>

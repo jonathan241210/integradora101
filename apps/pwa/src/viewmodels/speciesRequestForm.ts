@@ -46,6 +46,24 @@ export function speciesStatusLabel(status: SpeciesPublicationStatus): string {
   return speciesStatusLabels[status] ?? status;
 }
 
+export type StatusTone = 'neutral' | 'success' | 'warning' | 'info';
+
+export function speciesStatusTone(status: SpeciesPublicationStatus): StatusTone {
+  if (status === 'published') return 'success';
+  if (status === 'unpublished') return 'warning';
+  if (status === 'not_published') return 'info';
+  return 'neutral';
+}
+
+export const NO_SPECIES_SELECTED_MESSAGE = 'Elige una especie para continuar.';
+
+/** Texto de cada opción del desplegable: «Nombre común · Estado». */
+export function speciesOptionLabel(
+  species: Pick<SelectableSpeciesDto, 'common_name' | 'publication_status'>,
+): string {
+  return `${species.common_name} · ${speciesStatusLabel(species.publication_status)}`;
+}
+
 export function requestTypeLabel(type: SpeciesRequestType | null): string {
   if (type === 'publish') return 'Primera publicación';
   if (type === 'update') return 'Actualización';

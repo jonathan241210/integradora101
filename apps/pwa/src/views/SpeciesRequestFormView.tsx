@@ -36,6 +36,8 @@ export function SpeciesRequestFormView() {
         notice={form.notice}
         busy={form.busy}
         photoKey={form.photoKey}
+        photoPreview={form.photoPreview}
+        onReset={form.reset}
         onChange={form.setField}
         onToggleField={form.toggleField}
         onImage={form.setImage}

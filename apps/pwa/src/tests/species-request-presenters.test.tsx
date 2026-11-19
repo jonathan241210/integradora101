@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { draftFromSpecies, emptyDraft } from '@/viewmodels/speciesRequestForm';
 import { createdNotice } from '@/viewmodels/speciesRequestSubmit';
+import { SpeciesRequestView } from '@/views/SpeciesRequestView';
 import { HomeView } from '@/views/HomeView';
 import { SpeciesRequestFormPresenter, type SpeciesRequestFormPresenterProps } from '@/views/SpeciesRequestFormPresenter';
 import { SpeciesSelectorField } from '@/views/SpeciesSelectorField';
@@ -116,8 +117,13 @@ describe('CA-06 PWA solicitud de publicación: especie no elegible', () => {
     expect(eligible).not.toMatch(/<button[^>]*disabled=""[^>]*>Enviar solicitud/);
   });
 
-  it('deshabilita las correcciones hasta elegir una especie', () => {
-    expect(renderForm({ selected: null })).toMatch(/<input[^>]*name="scientific_name"[^>]*disabled=""|<input[^>]*disabled=""[^>]*name="scientific_name"/);
+  it('deshabilita la sección de datos y pide elegir una especie hasta que haya una', () => {
+    const markup = renderForm({ selected: null });
+    expect(markup).toMatch(/<fieldset[^>]*species-request-data[^>]*disabled=""|<fieldset[^>]*disabled=""[^>]*species-request-data/);
+    expect(markup).toContain('Elige una especie para continuar.');
+    const withSpecies = renderForm({ selected: makeSpecies() });
+    expect(withSpecies).not.toContain('Elige una especie para continuar.');
+    expect(withSpecies).not.toMatch(/<fieldset[^>]*disabled=""[^>]*species-request-data/);
   });
 });
 
@@ -140,17 +146,26 @@ describe('CA-13 PWA solicitud de publicación: selector', () => {
     expect(markup).toContain('Cargando especies…');
   });
 
-  it('usa fieldset con legend y radios; pending queda deshabilitada con su estado', () => {
+  it('es un desplegable con placeholder y opciones «Nombre · Estado»; pending va deshabilitada', () => {
     const markup = renderSelector('ready', [
-      makeSpecies({ id: 1, common_name: 'Jaguar' }),
+      makeSpecies({ id: 1, common_name: 'Jaguar', publication_status: 'published', next_request_type: 'update' }),
       makeSpecies({ id: 2, common_name: 'Lobo', publication_status: 'pending', next_request_type: null }),
     ]);
-    expect(markup).toContain('<fieldset');
-    expect(markup).toContain('<legend>Especie</legend>');
-    expect(markup.match(/type="radio"/g)).toHaveLength(2);
-    expect(markup.match(/disabled=""/g)).toHaveLength(1);
-    expect(markup).toContain('Disponible');
-    expect(markup).toContain('Pendiente de revisión');
+    expect(markup).toContain('<select');
+    expect(markup).not.toContain('type="radio"');
+    expect(markup).toContain('Selecciona una especie');
+    expect(markup).toContain('Jaguar · Publicada');
+    expect(markup).toMatch(/<option[^>]*disabled=""[^>]*>Lobo · Pendiente de revisión<\/option>/);
+    expect(markup.match(/<option[^>]*disabled=""/g)).toHaveLength(1);
+  });
+
+  it('muestra bajo el desplegable el resumen de la especie elegida con su estado y tipo de envío', () => {
+    const selected = makeSpecies({ publication_status: 'published', next_request_type: 'update' });
+    const markup = renderForm({ selected }, [selected]);
+    expect(markup).toContain('species-summary');
+    expect(markup).toContain('arca-badge');
+    expect(markup).toContain('Publicada');
+    expect(markup).toContain('Actualización');
   });
 
   it('muestra error con Reintentar y lista vacía', () => {
@@ -189,16 +204,17 @@ describe('CA-13 PWA solicitud de publicación: selector con error', () => {
 });
 
 describe('CA-18 PWA solicitud de publicación: motivo completo', () => {
-  it('muestra íntegro el motivo de 500 caracteres en el selector', () => {
+  it('muestra íntegro el motivo de 500 caracteres bajo el desplegable, en un bloque de alerta suave', () => {
     const reason = 'c'.repeat(500);
-    const markup = renderSelector('ready', [makeSpecies({ last_rejection_reason: reason })]);
+    const selected = makeSpecies({ last_rejection_reason: reason });
+    const markup = renderForm({ selected }, [selected]);
     expect(markup).toContain(`Última solicitud rechazada: ${reason}`);
+    expect(markup).toContain('arca-alert');
   });
 
   it('sin motivo no muestra el aviso', () => {
-    expect(renderSelector('ready', [makeSpecies({ publication_status: 'published', next_request_type: 'update' })])).not.toContain(
-      'Última solicitud rechazada',
-    );
+    const selected = makeSpecies({ publication_status: 'published', next_request_type: 'update' });
+    expect(renderForm({ selected }, [selected])).not.toContain('Última solicitud rechazada');
   });
 });
 
@@ -234,5 +250,31 @@ describe('RN-03 PWA solicitud de publicación: foto sin URL', () => {
   it('el markup no contiene URL de la foto ni rutas de media', () => {
     const markup = renderForm({ selected: makeSpecies() });
     expect(markup).not.toMatch(/media\/|species-requests|<img/);
+  });
+});
+
+describe('CA-01 PWA solicitud de publicación: maqueta del formulario', () => {
+  it('tiene área de foto, rejilla de correcciones y pie con «Limpiar» y «Enviar solicitud»', () => {
+    const markup = renderForm({ selected: makeSpecies() });
+    expect(markup).toContain('image-upload-area');
+    expect(markup).toContain('form-grid');
+    expect(markup).toContain('ficha-chip');
+    expect(markup).toMatch(/form-actions[\s\S]*Limpiar[\s\S]*Enviar solicitud/);
+  });
+
+  it('muestra vista previa con botón para quitar la foto solo cuando hay una', () => {
+    expect(renderForm({ selected: makeSpecies() })).not.toContain('<img');
+    const markup = renderForm({ selected: makeSpecies(), photoPreview: 'blob:local' });
+    expect(markup).toContain('src="blob:local"');
+    expect(markup).toContain('aria-label="Quitar foto"');
+  });
+});
+
+describe('CA-13 PWA solicitud de publicación: pestañas', () => {
+  it('las pestañas son un control segmentado con aria-pressed', () => {
+    const markup = renderToStaticMarkup(<SpeciesRequestView />);
+    expect(markup).toContain('segmented');
+    expect(markup).toContain('aria-pressed="true"');
+    expect(markup).toContain('Mis solicitudes');
   });
 });
