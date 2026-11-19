@@ -89,14 +89,14 @@ describe("CA-34 enclosure-actions-global-search", () => {
   const groups = [{ section: "users", label: "Usuarios", items: [{ id: 1, title: "Juan", subtitle: "j@x" }] }];
 
   it("«Acciones» va después de los grupos de la API y antes de «Secciones»", () => {
-    const split = splitSearchQuery("usuario", admin);
-    const ordered = orderSearchGroups(groups, null, sections, "usuario", { actions: split.actions, pairing: split.pairing });
+    const split = splitSearchQuery("reporte", admin);
+    const ordered = orderSearchGroups(groups, null, sections, "reporte", { actions: split.actions, pairing: split.pairing });
 
     expect(ordered.map((group) => group.heading)).toEqual(["En Usuarios", "Acciones", "Secciones"]);
     const action = ordered[1].results[0];
 
     expect(action.isAction).toBe(true);
-    expect(action.subtitle).toBe("Usuarios");
+    expect(action.subtitle).toBe("Reporte de boletos");
   });
 
   it("sin acciones coincidentes no hay grupo", () => {

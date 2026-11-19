@@ -294,11 +294,17 @@ Reglas: T-27 a T-37 y T-39 hechas con evidencia; T-38 (revisión manual) y T-40 
   - Evidencia (2026-11-18): `orderSearchGroups` en `global-search.ts`; describe CA-42.
   - Archivos: `src/viewmodels/global-search.ts`, `src/tests/global-search-tolerance.test.tsx`.
   - Hecho cuando: sección actual, grupos por `best_score` (empate: navegación), «Acciones», «Secciones».
-- [x] **T-42** (CA-43): paridad de relevancia y coincidencia parcial ceil(n/2).
-  - Evidencia (2026-11-18): `search-tolerance.ts` (`relevanceOf`, `compareRelevance`, `requiredWordCount`), `search-actions.ts` (`rankActions`); describe CA-43.
+- [x] **T-42** (CA-43): paridad de relevancia y coincidencia parcial vigente.
+  - Evidencia (2026-11-19): `search-tolerance.ts` (`relevanceOf`, `compareRelevance`, `requiredWordCount`), `search-actions.ts` (`rankActions`) y expectativas actualizadas para la enmienda (e); describe CA-43.
   - Archivos: `src/viewmodels/search-tolerance.ts`, `src/viewmodels/search-actions.ts`, `src/viewmodels/global-search.ts`, `src/tests/global-search-tolerance.test.tsx`.
   - Hecho cuando: «Acciones» (basta una palabra; «borrar usuario» muestra «Eliminar cuenta») y «Secciones» se ordenan por relevancia y la tabla de CA-31 sigue igual.
 - [x] **T-43** (CA-44, CA-28): resaltado de todas las palabras y cobertura.
   - Evidencia (2026-11-18): describe CA-44; `administration-coverage.test.tsx` comprueba CA-01 a CA-44. apps/dashboard: npm test 60 archivos / 554 pruebas; npm run types y npm run build correctos.
   - Archivos: `src/tests/global-search-tolerance.test.tsx`, `src/tests/administration-coverage.test.tsx`.
   - Hecho cuando: los tres comandos pasan.
+
+## Enmienda 2026-11-19 (e), aprobada por Jonathan · Corrección de pruebas
+
+- [x] **T-44** (CA-34, CA-42, CA-43; `dashboard-013` CA-18): alinear las expectativas de Vitest con la coincidencia estricta, la supresión contextual de «Acciones» y la eliminación de palabras de sección en `apiQuery`.
+  - Evidencia (2026-11-19): `global-search-actions.test.tsx`, `global-search-tolerance.test.tsx` y `enclosure-qr-printing.test.tsx`; `npm test` = 61 archivos y 586 pruebas aprobadas; `npm run types` y `npm run build` correctos.
+  - Hecho cuando: no se relaja la regla vigente, las pruebas específicas pasan y la verificación completa del Dashboard queda verde.

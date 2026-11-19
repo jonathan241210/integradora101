@@ -486,7 +486,8 @@ describe("CA-18 enclosure-qr-printing · flujo del buscador", () => {
     const ordered = orderSearchGroups(groups, null, [], query, { actions: split.actions, pairing: split.pairing });
     const hit = ordered[0].results[0];
 
-    expect(split.rest).toBe("lobos");
+    expect(split.rest).toBe("recinto lobos");
+    expect(split.apiQuery).toBe("lobos");
     expect(hit.action).toMatchObject({ label: "QR del recinto", opens: "qr" });
     const plan = resolveSelection(hit, { text: query, nonce: 1, currentSection: "enclosures", allowedSections: ["enclosures"] });
 

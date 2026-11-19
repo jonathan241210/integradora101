@@ -80,8 +80,8 @@ export function bestWordLevel(word: string, fieldWords: string[]): number {
 }
 
 /**
- * Palabras que deben coincidir (enmienda (d), paridad con `api-019` CA-36 a
- * CA-44): con 1 o 2 palabras, todas; con más, al menos ceil(n/2).
+ * Palabras que deben coincidir (enmienda (e), paridad con `api-019`):
+ * con 1 a 3 palabras, todas; con 4 o más, al menos 3 y el 75 %.
  */
 export function requiredWordCount(total: number): number {
   return total <= 3 ? total : Math.max(3, Math.ceil(total * 0.75));

@@ -141,6 +141,7 @@ describe("CA-42 enclosure-actions-global-search", () => {
     { id: "enclosures", label: "Recintos", icon: "building" },
     { id: "news", label: "Noticias", icon: "search" },
     { id: "events", label: "Eventos", icon: "search" },
+    { id: "reports", label: "Reporte de boletos", icon: "search" },
   ];
   const group = (section: string, label: string, best_score?: number) => ({
     section,
@@ -168,21 +169,22 @@ describe("CA-42 enclosure-actions-global-search", () => {
   });
 
   it("«Acciones» y «Secciones» van al final, en ese orden", () => {
-    const actions = [{ id: "users.create", label: "Crear usuario", section: "users", sectionLabel: "Usuarios", permission: "users.manage", opens: null, tab: null, synonyms: [], evidence: { file: "", text: "" } }] as Parameters<typeof orderSearchGroups>[4] extends infer O ? O extends { actions?: infer A } ? A : never : never;
-    const result = orderSearchGroups([group("news", "Noticias", 1)], "users", allowed, "usuario", { actions });
+    const actions = [{ id: "reports.export", label: "Exportar reporte", section: "reports", sectionLabel: "Reporte de boletos", permission: "reports.view", opens: null, tab: null, synonyms: ["reporte"], evidence: { file: "", text: "" } }] as Parameters<typeof orderSearchGroups>[4] extends infer O ? O extends { actions?: infer A } ? A : never : never;
+    const result = orderSearchGroups([group("news", "Noticias", 1)], "users", allowed, "reporte", { actions });
 
     expect(result.map((item) => item.heading)).toEqual(["En Noticias", "Acciones", "Secciones"]);
   });
 });
 
 describe("CA-43 enclosure-actions-global-search", () => {
-  it("exige ceil(n/2) palabras: todas con 1 o 2, la mitad redondeada hacia arriba con más", () => {
+  it("exige todas con 1 a 3 palabras y al menos 3 y 75 % con 4 o más", () => {
     expect(matchesTerm("juan zebra", "Juan López")).toBe(false);
-    expect(matchesTerm("juan lopez zebra", "Juan López")).toBe(true);
+    expect(matchesTerm("juan lopez zebra", "Juan López")).toBe(false);
+    expect(matchesTerm("juan lopez zebra", "Juan López Zebra")).toBe(true);
     expect(matchesTerm("juan zebra tigre leon", "Juan López")).toBe(false);
-    expect(matchesTerm("juan lopez tigre leon", "Juan López")).toBe(true);
+    expect(matchesTerm("juan lopez tigre leon", "Juan López Tigre")).toBe(true);
     expect(matchesTerm("juan lopez tigre leon cebra", "Juan")).toBe(false);
-    expect(matchesTerm("juan lopez tigre leon cebra", "Juan López Tigre")).toBe(true);
+    expect(matchesTerm("juan lopez tigre leon cebra", "Juan López Tigre León")).toBe(true);
   });
 
   it("ordena por frase literal, frase en título, otro campo, palabras y nivel", () => {
@@ -191,7 +193,7 @@ describe("CA-43 enclosure-actions-global-search", () => {
     expect(compareRelevance(rel("oso pardo", "Oso pardo"), rel("oso pardo", "Oso pardo andino"))).toBeLessThan(0);
     expect(compareRelevance(rel("oso pardo", "Oso pardo andino"), rel("oso pardo", "Zoo", ["Oso pardo"]))).toBeLessThan(0);
     expect(compareRelevance(rel("oso pardo", "Zoo", ["Oso pardo"]), rel("oso pardo", "Pardo y oso"))).toBeLessThan(0);
-    expect(compareRelevance(rel("oso pardo tigre", "Oso pardo", ["Tigre"]), rel("oso pardo tigre", "Oso pardo"))).toBeLessThan(0);
+    expect(compareRelevance(rel("oso pardo tigre leon", "Oso pardo", ["Tigre", "León"]), rel("oso pardo tigre leon", "Oso pardo", ["Tigre"]))).toBeLessThan(0);
     expect(compareRelevance(rel("lobo", "Lobo"), rel("lobo", "Lobos"))).toBeLessThan(0);
   });
 
