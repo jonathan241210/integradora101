@@ -1,5 +1,7 @@
 import { createAuthApi, createHttpClient, type AuthApi, type StaffProfile } from '@arca/api-client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { clearToasts } from '@/offline/notifications';
+import { getUserScope } from '@/offline/scope';
 
 type SessionApi = Pick<AuthApi, 'login' | 'me' | 'logout'>;
 type SessionResult = { session: 'anonymous' | 'authenticated'; error: string; profile: StaffProfile | null };
@@ -28,6 +30,10 @@ function staffName(profile: StaffProfile): string {
 
 export function getStaffDisplayName(profile: StaffProfile | null): string {
   return profile ? staffName(profile) : '';
+}
+
+export function getStaffUserScope(profile: StaffProfile | null): string {
+  return profile ? getUserScope(profile.id) : 'user:anonymous';
 }
 
 export async function restoreStaffSession(auth: SessionApi): Promise<SessionResult> {
@@ -79,6 +85,16 @@ export function useStaffSession() {
     profile: null,
   });
   const [busy, setBusy] = useState(false);
+  const previousScopeRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const nextScope = state.profile ? getUserScope(state.profile.id) : null;
+    if (previousScopeRef.current !== nextScope) {
+      // Cambio de usuario o cierre de sesión: eliminar avisos/estado efímero del usuario anterior.
+      clearToasts();
+      previousScopeRef.current = nextScope;
+    }
+  }, [state.profile]);
 
   useEffect(() => {
     let active = true;

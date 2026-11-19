@@ -4,18 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Animal extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'animals';
 
-    public $timestamps = false;
+    public $timestamps = true;
+
+    const CREATED_AT = null;
+    const UPDATED_AT = 'updated_at';
 
     protected $guarded = [];
 
     protected $casts = [
         'birth_date' => 'date:Y-m-d',
         'entry_date' => 'date:Y-m-d',
+        'deleted_at' => 'datetime',
     ];
 
     public function species(): BelongsTo

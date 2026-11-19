@@ -9,10 +9,12 @@ import {
   useSpeciesOptions,
 } from '@/viewmodels/useApiData';
 import { Icon } from '@/components/Icon';
+import { queueAnimal } from '@/offline/sync-manager';
+import { isOnline, isTemporarySyncFailure } from '@/offline/utils';
 import { SaveFeedback } from '@/views/SaveFeedback';
 import { Spinner } from '@/views/Spinner';
 
-export function AnimalFormView() {
+export function AnimalFormView({ userScope }: { userScope?: string } = {}) {
   const save = useSaveRequest();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -21,13 +23,13 @@ export function AnimalFormView() {
     loading: enclosuresLoading,
     error: enclosuresError,
     reload: reloadEnclosures,
-  } = useEnclosures();
+  } = useEnclosures(userScope);
   const {
     species,
     loading: speciesLoading,
     error: speciesError,
     reload: reloadSpecies,
-  } = useSpeciesOptions();
+  } = useSpeciesOptions(userScope);
 
   function handleImageChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.currentTarget.files?.[0];
@@ -65,6 +67,13 @@ export function AnimalFormView() {
       (item) => item.common_name.toLowerCase() === speciesInput.toLowerCase(),
     );
 
+    if (!isOnline() && !userScope) {
+      await save.run(async () => {
+        throw new Error('No hay conexión y no se pudo preparar el registro offline. Inicia sesión nuevamente.');
+      }, '');
+      return;
+    }
+
     const saved = await save.run(async () => {
       const animalData = {
         name: values['animal-name'],
@@ -77,20 +86,54 @@ export function AnimalFormView() {
         notes: values['animal-notes'] || undefined,
       };
 
-      // Si hay foto, usar FormData para enviarla
-      if (selectedFile) {
-        const formData = new FormData();
-        Object.entries(animalData).forEach(([key, value]) => {
-          if (value !== undefined) {
-            formData.append(key, String(value));
-          }
+      // Si no hay conexión, encolar sin foto (la foto se agrega después)
+      if (!isOnline()) {
+        await queueAnimal(userScope!, {
+          name: animalData.name,
+          tagNumber: animalData.tag_number,
+          speciesId: matched?.id,
+          speciesName: matched ? matched.common_name : speciesInput,
+          enclosureId: animalData.enclosure_id,
+          sex: animalData.sex,
+          birthDate: animalData.birth_date,
+          origin: animalData.origin,
+          notes: animalData.notes,
         });
-        formData.append('photo', selectedFile);
-        return await createAnimalWithPhoto(formData);
+        return { queued: true };
       }
 
-      return await createAnimal(animalData);
-    }, 'Animal registrado correctamente.');
+      try {
+        if (selectedFile) {
+          const formData = new FormData();
+          Object.entries(animalData).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+              formData.append(key, String(value));
+            }
+          });
+          formData.append('photo', selectedFile);
+          return await createAnimalWithPhoto(formData);
+        }
+        return await createAnimal(animalData as any);
+      } catch (error) {
+        if (userScope && isTemporarySyncFailure(error)) {
+          await queueAnimal(userScope, {
+            name: animalData.name,
+            tagNumber: animalData.tag_number,
+            speciesId: matched?.id,
+            speciesName: matched ? matched.common_name : speciesInput,
+            enclosureId: animalData.enclosure_id,
+            sex: animalData.sex,
+            birthDate: animalData.birth_date,
+            origin: animalData.origin,
+            notes: animalData.notes,
+          });
+          return { queued: true };
+        }
+        throw error;
+      }
+    }, (result) => (result && typeof result === 'object' && 'queued' in (result as object) && (result as { queued?: boolean }).queued)
+      ? 'Animal guardado localmente (pendiente de sincronización).'
+      : (selectedFile ? 'Animal registrado correctamente.' : 'Animal registrado correctamente. Puedes agregar la foto desde el perfil del animal.'));
 
     if (saved) {
       form.reset();
@@ -221,7 +264,7 @@ export function AnimalFormView() {
           </div>
 
           <div className="form-actions">
-            <Button type="reset" variant="secondary" onClick={() => clearImage()}>Limpiar</Button>
+            <Button type="reset" variant="secondary">Limpiar</Button>
             <Button
               disabled={save.saving || enclosuresLoading || Boolean(enclosuresError) || enclosures.length === 0}
               type="submit"

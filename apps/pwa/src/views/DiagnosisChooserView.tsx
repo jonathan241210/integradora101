@@ -26,6 +26,10 @@ export function DiagnosisChooserView({
   onNavigate,
 }: {
   onNavigate: (section: PwaSection) => void;
+  animalId?: number | null;
+  onOpenAnimal?: unknown;
+  mvzName?: string;
+  userScope?: string;
 }) {
   return (
     <section className="page-section">

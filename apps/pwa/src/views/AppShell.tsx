@@ -16,6 +16,7 @@ import { DiagnosisQuickView } from '@/views/DiagnosisQuickView';
 import { HomeView } from '@/views/HomeView';
 import { ReviewFormView } from '@/views/ReviewFormView';
 import { SpeciesRequestView } from '@/views/SpeciesRequestView';
+import { SyncStatusView } from '@/views/SyncStatusView';
 
 type AppShellProps = {
   activeSection: PwaSection;
@@ -24,6 +25,7 @@ type AppShellProps = {
   sessionError?: string;
   signingOut?: boolean;
   mvzName?: string;
+  userScope: string;
   roles?: readonly string[];
 };
 
@@ -32,21 +34,23 @@ type ActiveViewProps = {
   onNavigate: (section: PwaSection) => void;
   onOpenAnimal: (animalId: number) => void;
   mvzName?: string;
+  userScope: string;
   roles?: readonly string[];
 };
 
 const sectionViews: Record<PwaSection, ComponentType<ActiveViewProps>> = {
   home: ({ onNavigate, roles }) => <HomeView onNavigate={onNavigate} roles={roles} />,
   animals: AnimalsView,
-  'animal-profile': ({ animalId, onNavigate }) => (
-    <AnimalProfileView animalId={animalId} onBack={() => onNavigate('animals')} />
+  'animal-profile': ({ animalId, onNavigate, userScope }) => (
+    <AnimalProfileView animalId={animalId} onBack={() => onNavigate('animals')} userScope={userScope} />
   ),
-  'animal-form': AnimalFormView,
+  'animal-form': ({ userScope }) => <AnimalFormView userScope={userScope} />,
   'diagnosis-form': DiagnosisChooserView,
-  'diagnosis-intense': ({ mvzName }) => <DiagnosisIntenseView mvzName={mvzName} />,
-  'diagnosis-quick': ({ mvzName }) => <DiagnosisQuickView mvzName={mvzName} />,
+  'diagnosis-intense': ({ mvzName, userScope }) => <DiagnosisIntenseView mvzName={mvzName} userScope={userScope} />,
+  'diagnosis-quick': ({ mvzName, userScope }) => <DiagnosisQuickView mvzName={mvzName} userScope={userScope} />,
   'review-form': ({ onNavigate }) => <ReviewFormView onNavigate={onNavigate} />,
   'species-request': () => <SpeciesRequestView />,
+  sync: ({ userScope }) => <SyncStatusView userScope={userScope} />,
 };
 
 export function AppShell({
@@ -56,6 +60,7 @@ export function AppShell({
   sessionError,
   signingOut,
   mvzName,
+  userScope,
   roles,
 }: AppShellProps) {
   const ActiveView = sectionViews[activeSection];
@@ -126,6 +131,7 @@ export function AppShell({
               onNavigate('animal-profile');
             }}
             mvzName={mvzName}
+            userScope={userScope}
             roles={roles}
           />
         </main>
@@ -170,6 +176,7 @@ function Navigation({
     'diagnosis-quick': 'quick',
     'review-form': 'review',
     'species-request': 'paw',
+    sync: 'sync',
   };
 
   return (

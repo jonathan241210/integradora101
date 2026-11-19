@@ -25,16 +25,18 @@ describe('CA-03 PWA responsive demo screens', () => {
           activeSection={state.activeSection}
           onLogout={() => undefined}
           onNavigate={() => undefined}
+          userScope="user:test"
         />,
       );
     });
 
-    expect(markupBySection).toHaveLength(5);
+    expect(markupBySection).toHaveLength(6);
     expect(markupBySection[0]).toContain('Resumen de hoy');
     expect(markupBySection[1]).toContain('Ejemplares registrados');
     expect(markupBySection[2]).toContain('Nuevo ejemplar');
     expect(markupBySection[3]).toContain('Elige el tipo de diagnóstico');
     expect(markupBySection[4]).toContain('Seguimiento');
+    expect(markupBySection[5]).toContain('Sincronización');
     expect(markupBySection[2]).not.toContain('Síntomas observados');
     expect(markupBySection[3]).not.toContain('Descargar PDF');
   });
@@ -45,6 +47,7 @@ describe('CA-03 PWA responsive demo screens', () => {
         activeSection="home"
         onLogout={() => undefined}
         onNavigate={() => undefined}
+        userScope="user:test"
       />,
     );
 

@@ -27,6 +27,7 @@ use App\Http\Controllers\Admin\TicketSaleController;
 use App\Http\Controllers\Api\AnimalController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ClinicalEvaluationController;
+use App\Http\Controllers\Api\StaffSyncController;
 use App\Http\Controllers\Auth\MeController;
 use App\Http\Controllers\Catalog\EnclosureController;
 use App\Http\Controllers\Catalog\EventController;
@@ -60,7 +61,12 @@ Route::prefix('staff')->name('staff.')->group(function () {
         Route::get('animals', [AnimalController::class, 'index'])->name('animals.index');
         Route::post('animals', [AnimalController::class, 'store'])->name('animals.store');
         Route::get('animals/{animal}', [AnimalController::class, 'show'])->whereNumber('animal')->name('animals.show');
+        Route::post('animals/{animal}/photo', [AnimalController::class, 'updatePhoto'])->whereNumber('animal')->name('animals.photo.update');
         Route::post('clinical-evaluations', [ClinicalEvaluationController::class, 'store'])->name('clinical-evaluations.store');
+
+        Route::get('sync/bootstrap', [StaffSyncController::class, 'bootstrap'])->name('sync.bootstrap');
+        Route::get('sync/changes', [StaffSyncController::class, 'changes'])->name('sync.changes');
+        Route::post('sync/operations', [StaffSyncController::class, 'operations'])->name('sync.operations');
     });
 });
 
