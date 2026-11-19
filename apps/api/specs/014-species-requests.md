@@ -28,6 +28,11 @@
 - **Purga de rechazadas:** no se purgan; se conservan (cierra la pregunta 1).
 - **Historial de edición:** Activitylog, sin tabla propia (cierra la pregunta 5 y DBR-013 pregunta 1).
 
+### Quinta ronda (2026-11-19, alineación con `pwa-005`, decisión de Jonathan)
+
+- **Selector con `published_fields` (B-1 de `pwa-005`):** `GET /api/v1/veterinarian/species` (CA-26) añade `published_fields` a cada especie. Fuente: la columna `species.published_fields` (JSON NULL, añadida por la migración `2026_11_12_000013_species_publication_requests_schema` según DBR-013; el modelo `Species` la castea como `array`). Valor `null` si la especie nunca se ha publicado. Cambio aditivo: sin migración ni cambio de esquema. Tarea nueva T-30.
+- **Motivo del último rechazo solo para `not_published` (D-1 de `pwa-005`):** se mantiene lo que ya dice CA-26. La API manda; `pwa-005` CA-18 se alinea con ella.
+
 ### Cuarta ronda (2026-11-12, decisiones del usuario)
 
 Cierra las preguntas funcionales 15 (c) y 17 a 21. Sin cambio de columnas ni de la lista de endpoints.
@@ -292,10 +297,10 @@ Una especie `unpublished` puede recibir una solicitud `update` (decisión del us
 
 ### Selector, elegibilidad y actualizaciones
 
-- **CA-26 (selector de especies para el veterinario):** Dado un usuario con rol `veterinarian`, cuando llama `GET /api/v1/veterinarian/species`, entonces responde `200` con `data`: cada especie no borrada (RN-22) trae `id`, `common_name`, `scientific_name`, `habitat`, `origin` (de `species.distribution`, DBR-013 2a=A), `category` (NULL si no tiene), `publication_status` (RN-18: `not_published`, `pending`, `published` o `unpublished`), `next_request_type` (`publish` si `not_published`; `update` si `published` o `unpublished`; `null` si `pending`) y `last_rejection_reason`.
+- **CA-26 (selector de especies para el veterinario):** Dado un usuario con rol `veterinarian`, cuando llama `GET /api/v1/veterinarian/species`, entonces responde `200` con `data`: cada especie no borrada (RN-22) trae `id`, `common_name`, `scientific_name`, `habitat`, `origin` (de `species.distribution`, DBR-013 2a=A), `category` (NULL si no tiene), `publication_status` (RN-18: `not_published`, `pending`, `published` o `unpublished`), `next_request_type` (`publish` si `not_published`; `update` si `published` o `unpublished`; `null` si `pending`), `last_rejection_reason` y `published_fields` (enmienda 2026-11-19: lista de claves de RN-13 leída de `species.published_fields`, o `null` si la especie nunca se ha publicado).
   - `last_rejection_reason` trae el motivo de la última solicitud **propia** de esa especie si esa solicitud está `rejected` y `publication_status` es `not_published`; en otro caso, `null`. El motivo va completo, máximo 500 caracteres, sin truncar (resuelta, decisión del usuario 2026-11-12; pregunta 17). No muestra motivos de otros veterinarios.
   - Orden `common_name` ascendente y, a igual nombre, `id` ascendente. Sin paginación (propuesta, como `api-006` RN-07). No incluye datos de revisión ni de otros veterinarios. Sin rol `veterinarian`, `403`.
-  - Verificación: `test_ca26_veterinarian_lists_species_with_publication_status` y `test_ca26_last_rejection_reason_full_text`.
+  - Verificación: `test_ca26_veterinarian_lists_species_with_publication_status`, `test_ca26_last_rejection_reason_full_text` y `test_ca26_selector_exposes_published_fields` (enmienda 2026-11-19, T-30).
 
 - **CA-27 (elegibilidad al enviar):** Dado un envío con `species_id`, cuando se valida dentro de la transacción con bloqueo de la fila de `species` (RN-11), entonces:
   - Si `publication_status` es `not_published`, crea una solicitud `publish`.

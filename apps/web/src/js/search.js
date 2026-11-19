@@ -322,17 +322,21 @@
         updatePanel([], { status: valid.reason === 'long' ? 'La búsqueda admite hasta 120 caracteres.' : 'Escribe una palabra o frase para buscar.' });
         return Promise.resolve(null);
       }
-      if (busy) return Promise.resolve(null);
       currentQuery = valid.value;
+      if (busy) {
+        updatePanel([], { status: 'Buscando en el portal…' });
+        return Promise.resolve(null);
+      }
       busy = true;
       updatePanel([], { status: 'Buscando en el portal…' });
       return loadSources(root.ArcaApi, staticRecords, cache).then(function (loaded) {
+        if (!currentQuery) return loaded;
         var results = matching(loaded.records, currentQuery);
         var message = loaded.errors.length ? sourceErrorText(loaded.errors) : loaded.partial.length ? 'Algunos contenidos no se pudieron consultar; los resultados pueden estar incompletos.' : '';
         updatePanel(results, { status: message || undefined, errors: loaded.errors });
         return loaded;
       }).catch(function () {
-        updatePanel([], { status: 'No pudimos buscar en el portal. Inténtalo de nuevo.' });
+        if (currentQuery) updatePanel([], { status: 'No pudimos buscar en el portal. Inténtalo de nuevo.' });
         return null;
       }).then(function (value) { busy = false; return value; });
     }
@@ -372,6 +376,7 @@
       updatePanel([], { status: 'Actualizando ' + label + '…' });
       delete cache[name];
       loadSources(root.ArcaApi, staticRecords, cache, [name]).then(function (loaded) {
+        if (!currentQuery) return;
         updatePanel(matching(loaded.records, currentQuery), {
           status: loaded.errors.length ? sourceErrorText(loaded.errors) : loaded.partial.length ? 'Algunos contenidos no se pudieron consultar; los resultados pueden estar incompletos.' : undefined,
           errors: loaded.errors

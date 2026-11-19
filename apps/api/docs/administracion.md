@@ -155,12 +155,23 @@ Permiso: `enclosures.manage`.
 | `GET /api/v1/admin/enclosures` | `admin.enclosures.index` | 200, sin paginar, ordenado por nombre. |
 | `POST /api/v1/admin/enclosures` | `admin.enclosures.store` | 201. |
 | `PATCH /api/v1/admin/enclosures/{enclosure}` | `admin.enclosures.update` | 200. |
+| `PATCH /api/v1/admin/enclosures/{enclosure}/status` | `admin.enclosures.status` | 200 con el recurso. Cuerpo `{"is_active": true\|false}` con booleano JSON estricto; otro valor responde 422. Sin cambio de estado no escribe ni registra (api-019). |
+| `DELETE /api/v1/admin/enclosures/{enclosure}` | `admin.enclosures.destroy` | 200 `{"message": "Recinto eliminado."}`. Borrado lógico; los animales conservan su recinto (api-019). También marca `deleted_at` en todos sus códigos QR en la misma transacción (api-020). |
+| `GET /api/v1/admin/enclosures/{enclosure}/qr` | `admin.enclosures.qr.show` | 200 `{"enclosure": {id, name, is_active}, "qr": {"code", "svg"} \| null}`. Solo lectura; con varios activos muestra el de `id` mayor (api-020). |
+| `POST /api/v1/admin/enclosures/{enclosure}/qr` | `admin.enclosures.qr.generate` | 201 si crea el código; 200 con el mismo cuerpo si ya había uno activo. Registra «Código QR generado» sin el valor. |
+| `POST /api/v1/admin/enclosures/{enclosure}/qr/regenerate` | `admin.enclosures.qr.regenerate` | 200 con el mismo cuerpo y `deactivated` (N). Desactiva los activos (no los elimina) y crea uno nuevo; registra «Código QR regenerado». |
 
-Recurso: `id`, `name`, `animals_count`.
+Recurso: `id`, `name`, `gps_lat`, `gps_lon`, `map_x`, `map_y`, `is_active`, `animals_count`. El listado incluye activos e inactivos y excluye eliminados.
 
 Nombre: obligatorio, máximo 100, sin espacios sobrantes, único sin distinguir mayúsculas. Un nombre repetido responde 422 «Ya existe un recinto con ese nombre.» en `errors.name`. Al renombrar, el propio recinto no cuenta como duplicado.
 
-No existe ruta de eliminación. Error de recurso: 404 «Recinto no encontrado.».
+Los recintos eliminados no cuentan para la unicidad; los inactivos sí. Un recinto inactivo o eliminado no aparece en el catálogo público ni en el escaneo QR, y no recibe animales nuevos (api-019). Error de recurso: 404 «Recinto no encontrado.».
+
+## Búsqueda global
+
+`GET /api/v1/admin/search?q=` (`admin.search`), solo lectura, en el grupo admin sin permiso propio. `q` de 2 a 100 caracteres tras recortar espacios (422 en `q` si no). Límite de 30 peticiones por minuto y usuario (limitador `admin-search`); la 31 responde 429 «Demasiadas búsquedas. Espera un minuto e inténtalo de nuevo.». Devuelve `{"groups": [{"section", "label", "items": [{"id", "title", "subtitle", "kind"?, "match"?: {"field", "snippet"}}]}]}` con los grupos que el rol puede ver, en el orden `users`, `news`, `events`, `enclosures`, `memories`, `tulanpedia`, `ticket-history`; máximo 5 por grupo. `kind` solo aparece en `tulanpedia`; `match` solo cuando la coincidencia está en un campo distinto del título (fragmento de hasta 120 caracteres). Sin permisos de grupo: `{"groups": []}` (api-019).
+
+Coincidencia (enmienda (b), `app/Actions/Admin/Search/Matching/`): sin mayúsculas ni acentos (tabla fija, sin `ext-intl`); la consulta se divide por espacios y cada palabra debe coincidir con algún campo del elemento, en cualquier orden. Niveles: exacta (4), prefijo (3), contiene (2, solo palabras de 4 o más letras) y aproximada (1, Levenshtein: una edición con 4 a 6 letras, dos con 7 o más). La puntuación del elemento es el peor nivel de sus palabras; orden por puntuación, título normalizado, `kind` e `id`. `%` y `_` son literales. Se comparan en PHP, sin `LIKE`, como máximo 2000 candidatos por grupo (`SearchGroup::CANDIDATE_LIMIT`), los más recientes por `id` descendente; los registros más antiguos no aparecen (revisar si una tabla supera 2000 filas). `memories` y `ticket-history` además aceptan el identificador exacto cuando `q` es solo un número (consulta directa, fuera del tope). Campos buscables por grupo: usuarios (nombre, apellidos, correo, área, rol en español e identificador interno), noticias (título, descripción, contenido, categoría), eventos (nombre, descripción, ubicación), recintos (nombre), momentos (opinión, motivo de rechazo, estado), TulanPedia (nombre común, científico, categoría, hábitat, distribución, estado de conservación) y boletos (estado, forma de pago, motivo de cancelación, fecha dd/mm/aaaa). Nunca se consultan contraseñas, secretos de 2FA, tokens, `qr_code`, rutas de imagen ni datos de visitantes o de compradores, y el término no se registra en logs ni en Activitylog.
 
 ## Panel y reporte
 
@@ -320,3 +331,9 @@ Spec: `apps/api/specs/008-event-news-images.md`. Plan: `apps/api/plan/008-event-
 - Auditoría (log `admin`): además de `created`/`updated`/`deleted`, el evento `image-changed` con `action` (`set`, `replaced`, `removed`) e `image_changed`; sin binario ni ruta absoluta.
 - Operación: ejecutar `php artisan storage:link` en cada ambiente; sin él las URLs no resuelven. Los límites `upload_max_filesize` y `post_max_size` de PHP/servidor web pueden rechazar archivos antes de llegar a Laravel. Pasos completos para desplegar: «Checklist obligatorio de despliegue de la API» en `infra/README.md`.
 - Sin migraciones ni DBR: `image_path` y `deleted_at` ya existen.
+
+### Códigos QR de recintos (api-020)
+
+Códigos nuevos: `ARCA-` más 8 caracteres de `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (sin `0`, `O`, `1`, `I`, `L`), con `random_int`; hasta 5 intentos ante colisión y, si fallan, 500 «No pudimos generar el código QR. Inténtalo de nuevo.». El SVG se genera en memoria en cada respuesta (ADR 0019) y nunca se guarda. Generar, regenerar y eliminar un recinto bloquean la fila del recinto (`lockForUpdate`). Activitylog guarda `qr_code_id` y `deactivated_ids`, nunca el código. El listado admin incluye `has_active_qr`.
+
+Comando: `php artisan arca:generate-qr-codes {enclosure}` imprime el código activo (lo crea si no hay); con `--regenerate` desactiva los activos y crea uno nuevo. Recinto inexistente o eliminado: «El recinto no existe.» y código de fallo. Desde consola el registro de actividad no tiene usuario y guarda `source: console`.

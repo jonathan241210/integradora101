@@ -2,6 +2,7 @@
 
 namespace App\Actions\Visitor;
 
+use App\Models\Enclosure;
 use App\Models\EnclosureQrCode;
 use App\Models\Species;
 use App\Models\Visitor;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class RecordVisitorDiscoveryAction
 {
+    private const UNAVAILABLE_ENCLOSURE_MESSAGE = 'Este recinto no está disponible en este momento.';
+
     public function __construct(
         private readonly VisitorProgressQuery $progress,
         private readonly EvaluateVisitorProgressAction $evaluate,
@@ -58,6 +61,10 @@ class RecordVisitorDiscoveryAction
 
             if (! $qr->is_active) {
                 return $this->reject($visitor, $input, $qr->id, 'inactive_code', 'El código no está activo.', $scannedAt, $receivedAt);
+            }
+
+            if ($qr->enclosure_id !== null && ! $this->enclosureIsAvailable((int) $qr->enclosure_id)) {
+                return $this->reject($visitor, $input, $qr->id, 'inactive_enclosure', self::UNAVAILABLE_ENCLOSURE_MESSAGE, $scannedAt, $receivedAt);
             }
 
             $speciesIds = DB::table('animals')
@@ -181,9 +188,12 @@ class RecordVisitorDiscoveryAction
             'already_discovered', 'empty_enclosure' => 200,
             default => 422,
         };
-        $message = $scan->result === 'empty_enclosure'
-            ? 'Este recinto no tiene animales en exhibición.'
-            : ($status === 422 ? 'El escaneo no se pudo registrar.' : null);
+        $message = match (true) {
+            $scan->result === 'empty_enclosure' => 'Este recinto no tiene animales en exhibición.',
+            $scan->result === 'inactive_enclosure' => self::UNAVAILABLE_ENCLOSURE_MESSAGE,
+            $status === 422 => 'El escaneo no se pudo registrar.',
+            default => null,
+        };
 
         return [
             'status' => $status,
@@ -198,6 +208,12 @@ class RecordVisitorDiscoveryAction
                 $message,
             ),
         ];
+    }
+
+    /** RN-05 (api-019): visible solo si está activo y no eliminado (SoftDeletes excluye eliminados). */
+    private function enclosureIsAvailable(int $enclosureId): bool
+    {
+        return Enclosure::query()->whereKey($enclosureId)->where('is_active', 1)->exists();
     }
 
     /**

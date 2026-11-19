@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { onVeterinarianUnauthorized } from '@/services/veterinarianApi';
 import type { PwaSection } from '@/viewmodels/pwaDemo';
 import { getStaffDisplayName, getStaffUserScope, useStaffSession } from '@/viewmodels/useStaffSession';
 import { AppShell } from '@/views/AppShell';
@@ -7,7 +8,12 @@ import { LoadingScreen } from '@/views/Spinner';
 import { ensureBootstrap, notifyPendingSummary, startSyncListeners } from '@/offline/sync-manager';
 
 function App() {
-  const { session, error, busy, login, logout, profile } = useStaffSession();
+  const { session, error, busy, login, logout, profile, expireSession } = useStaffSession();
+
+  useEffect(() => {
+    onVeterinarianUnauthorized(expireSession);
+    return () => onVeterinarianUnauthorized(undefined);
+  }, [expireSession]);
 
   if (session === 'restoring') {
     return <LoadingScreen label="Cargando…" />;
@@ -30,6 +36,7 @@ function App() {
       logout={logout}
       mvzName={getStaffDisplayName(profile)}
       userScope={getStaffUserScope(profile)}
+      roles={profile?.roles ?? []}
     />
   );
 }
@@ -40,12 +47,14 @@ function StaffWorkspace({
   logout,
   mvzName,
   userScope,
+  roles,
 }: {
   error: string;
   busy: boolean;
   logout: () => Promise<void>;
   mvzName: string;
   userScope: string;
+  roles: string[];
 }) {
   const [activeSection, setActiveSection] = useState<PwaSection>('home');
 
@@ -64,6 +73,7 @@ function StaffWorkspace({
       signingOut={busy}
       mvzName={mvzName}
       userScope={userScope}
+      roles={roles}
       onLogout={logout}
       onNavigate={setActiveSection}
     />

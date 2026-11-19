@@ -206,6 +206,14 @@
     - Portal: confirmar si `CORS_ALLOWED_ORIGINS` debe cubrir `published-species` (la ruta pública es de `api-015`, pregunta Q7 del plan).
   - Hecho cuando: el checklist de `infra/README.md` menciona cada requisito nuevo, sin valores de secretos, y el PR lo incluye.
 
+- [x] **T-30** (CA-26; RN-18; enmienda 2026-11-19 de `pwa-005` B-1): `published_fields` en el selector del veterinario. Ejecutar antes de T-29.
+  - Archivos: `apps/api/src/app/Http/Resources/Veterinarian/SelectableSpeciesResource.php` (modificar: añadir `published_fields`); tests del selector en `VeterinarianSelectorTest.php` (ampliar, sin archivo nuevo).
+  - Fuente: `species.published_fields` (columna JSON NULL añadida por la migración `2026_11_12_000013_species_publication_requests_schema`, DBR-013; el modelo `Species` la castea como `array`). Sin migración, sin DBR y sin cambio de esquema.
+  - Cambios: `published_fields` en cada especie del selector; `null` si la especie nunca se ha publicado. No cambia `ListSelectableSpeciesAction` ni `last_rejection_reason` (D-1: se mantiene el criterio de CA-26).
+  - Tests: `test_ca26_selector_exposes_published_fields`: una especie publicada devuelve sus claves guardadas; una especie que nunca se publicó devuelve `null`; la respuesta no añade claves que no estén guardadas.
+  - Hecho cuando: el test nuevo y los de T-09 pasan en `arca_pruebas` con `DatabaseTransactions`; el PR cita `api-014` y enlaza spec, plan y tasks.
+  - Pendiente: la PWA (`pwa-005` CA-09 y CA-14 en actualizaciones) depende de esta tarea.
+
 - [ ] **T-29** (todos los CA; DoD de la spec): verificación, CI y entrega.
   - Ejecutar desde `apps/api/src`: `composer lint` y `composer test` (o los comandos exactos del `composer.json`), con `DB_DATABASE=arca_pruebas`. Registrar comandos, códigos de salida, tests omitidos y fallidos.
   - Ejecutar `/verify` para `apps/api`.
@@ -258,7 +266,7 @@
 | CA-23 | T-16 | `test_ca23_patch_replaces_photo_and_deletes_previous_after_commit`; `test_ca23_failed_transaction_removes_new_photo_keeps_previous` (nombres propuestos) |
 | CA-24 | T-03, T-11, T-26 | `test_ca24_request_never_creates_or_deletes_species_rows` |
 | CA-25 | T-10, T-15, T-18 | `test_ca25_store_requires_category`; `test_ca25_store_rejects_category_outside_closed_list`; `test_ca25_update_replaces_category_and_audits_change`; `test_ca25_update_rejects_empty_or_unknown_category`; `test_ca25_accept_writes_effective_category_to_species` |
-| CA-26 | T-09 | `test_ca26_veterinarian_lists_species_with_publication_status`; `test_ca26_last_rejection_reason_full_text` |
+| CA-26 | T-09, T-30 | `test_ca26_veterinarian_lists_species_with_publication_status`; `test_ca26_last_rejection_reason_full_text`; `test_ca26_selector_exposes_published_fields` |
 | CA-27 | T-11 | `test_ca27_eligibility_by_publication_status` |
 | CA-28 | T-11 | `test_ca28_rejected_species_accepts_new_publish_request` |
 | CA-29 | T-10 | `test_ca29_submit_rejects_common_name_and_creates_no_species` |
@@ -304,7 +312,7 @@
 
 ### Resumen de cobertura
 
-- Tareas: 29 (T-01 a T-29): 2 de precondición y BD (T-01, T-02), 25 de implementación, calidad y verificación (T-03 a T-27) y 2 documentales y de entrega (T-28, T-29). T-SEED es T-07.
+- Tareas: 30 (T-01 a T-30; T-30 añadida el 2026-11-19 por la enmienda de `pwa-005`): 2 de precondición y BD (T-01, T-02), 26 de implementación, calidad y verificación (T-03 a T-27 y T-30) y 2 documentales y de entrega (T-28, T-29). T-SEED es T-07.
 - CA cubiertos: 41 de 41 (CA-01 a CA-41). CA sin cobertura: 0.
 - RN cubiertas: 22 de 22.
 

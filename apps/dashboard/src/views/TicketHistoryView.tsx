@@ -153,6 +153,7 @@ export function TicketHistoryView({ state, actions }: TicketHistoryViewModel) {
             columns={columns}
             rows={state.rows}
             rowKey={(row) => row.folio}
+            rowSearchId={(row) => `ticket-history:${row.folio}`}
           />
         )}
         {state.meta && state.status !== "error" && (

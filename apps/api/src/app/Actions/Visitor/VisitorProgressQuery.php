@@ -5,6 +5,7 @@ namespace App\Actions\Visitor;
 use App\Models\Achievement;
 use App\Models\Mission;
 use App\Models\Visitor;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,10 @@ class VisitorProgressQuery
     {
         $points = (int) DB::table('visitor_point_entries')->where('visitor_id', $visitor->id)->sum('points');
         $level = $this->level($points);
-        $discovered = DB::table('visitor_collections')->where('visitor_id', $visitor->id)->count();
+        $discovered = DB::table('visitor_collections')
+            ->where('visitor_id', $visitor->id)
+            ->whereIn('species_id', fn ($query) => $this->availableSpeciesIds($query))
+            ->count();
 
         return [
             'points' => $points,
@@ -99,12 +103,22 @@ class VisitorProgressQuery
     public function availableSpeciesCount(): int
     {
         return (int) DB::table('species')
-            ->whereIn('id', function ($query): void {
-                $query->select('animals.species_id')
-                    ->from('animals')
-                    ->where('animals.can_receive_visits', 1);
-            })
+            ->whereIn('id', fn ($query) => $this->availableSpeciesIds($query))
             ->count();
+    }
+
+    /**
+     * Especies disponibles (api-019 D-9, RN-14): al menos un animal en exhibición
+     * en un recinto activo y no eliminado. Criterio único para total y numerador.
+     */
+    private function availableSpeciesIds(Builder $query): void
+    {
+        $query->select('animals.species_id')
+            ->from('animals')
+            ->join('enclosures', 'enclosures.id', '=', 'animals.enclosure_id')
+            ->where('animals.can_receive_visits', 1)
+            ->where('enclosures.is_active', 1)
+            ->whereNull('enclosures.deleted_at');
     }
 
     /**

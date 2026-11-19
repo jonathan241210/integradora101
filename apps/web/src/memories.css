@@ -6,13 +6,17 @@
 .mem-retry { justify-self: center; display: block; margin: 0 auto 16px; }
 .mem-retry[hidden] { display: none; }
 
-.mem-carousel { position: relative; min-width: 0; max-width: 720px; margin: 0 auto; }
+/* El carrusel toma el ancho de la foto activa: recuadro y flechas se ajustan a cada imagen */
+.mem-carousel { position: relative; min-width: 0; width: fit-content; max-width: min(720px, 100%); margin: 0 auto; }
 .mem-carousel[hidden] { display: none; }
 /* Todos los momentos comparten la misma celda y se funden entre sí (CA-24) */
-.mem-slides { display: grid; min-width: 0; }
+.mem-slides { position: relative; display: grid; min-width: 0; }
 .mem-slide {
   grid-area: 1 / 1;
+  position: absolute;
+  inset: 0;
   display: grid;
+  justify-items: center;
   gap: 16px;
   min-width: 0;
   align-content: start;
@@ -21,20 +25,22 @@
   pointer-events: none;
   transition: opacity 600ms ease, visibility 0s linear 600ms;
 }
+/* Solo el momento activo ocupa espacio; los demás se superponen durante el fundido */
 .mem-slide-active {
+  position: relative;
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transition: opacity 600ms ease, visibility 0s;
 }
 
-/* Caja de imagen: completa, centrada y sin ampliar por encima de su tamaño (CA-08) */
+/* Caja de imagen: se ajusta al tamaño de la foto, completa y sin ampliarla (CA-08) */
 .mem-media {
   display: grid;
   place-items: center;
-  width: 100%;
+  width: fit-content;
+  max-width: 100%;
   min-width: 0;
-  aspect-ratio: 4 / 3;
   overflow: hidden;
   border-radius: 10px;
   background: var(--surface-subtle);
@@ -44,7 +50,7 @@
   width: auto;
   height: auto;
   max-width: 100%;
-  max-height: 100%;
+  max-height: min(540px, 70vh);
   object-fit: contain;
   object-position: center;
 }
@@ -56,16 +62,17 @@
   from { transform: scale(0.96); }
   to { transform: scale(1); }
 }
-.mem-placeholder { display: grid; place-items: center; color: var(--muted-foreground); font-size: 2.6rem; }
-.mem-opinion { margin: 0; text-align: center; overflow-wrap: anywhere; min-width: 0; }
+.mem-placeholder { display: grid; place-items: center; width: min(480px, 80vw); aspect-ratio: 4 / 3; color: var(--muted-foreground); font-size: 2.6rem; }
+/* El texto se acomoda al ancho de la foto sin ensancharla */
+.mem-opinion { width: 0; min-width: 100%; margin: 0; text-align: center; overflow-wrap: anywhere; }
 
-/* Flechas grandes superpuestas a los lados de la caja de la foto (CA-25) */
+/* Flechas grandes superpuestas a los lados de la foto activa (CA-25); su alto lo fija el carrusel */
 .mem-arrows {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  aspect-ratio: 4 / 3;
+  height: var(--mem-media-h, 100%);
   display: flex;
   align-items: center;
   justify-content: space-between;

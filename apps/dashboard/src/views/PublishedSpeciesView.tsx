@@ -152,6 +152,7 @@ export function PublishedSpeciesView(
                   columns={columns}
                   rows={list.items}
                   rowKey={(row) => row.id}
+                  rowSearchId={(row) => `tulanpedia:published-species:${row.id}`}
                 />
                 <HasMorePaginationBar
                   page={state.page}

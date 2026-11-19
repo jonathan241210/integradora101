@@ -1,5 +1,5 @@
 import { createAuthApi, createHttpClient, type AuthApi, type StaffProfile } from '@arca/api-client';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { clearToasts } from '@/offline/notifications';
 import { getUserScope } from '@/offline/scope';
 
@@ -8,6 +8,7 @@ type SessionResult = { session: 'anonymous' | 'authenticated'; error: string; pr
 
 const api = createAuthApi(createHttpClient({ baseUrl: '' }));
 const anonymous: SessionResult = { session: 'anonymous', error: '', profile: null };
+export const expiredSession: SessionResult = { ...anonymous, error: 'Tu sesión expiró.' };
 const denied = 'Esta cuenta no tiene acceso al módulo veterinario.';
 
 function hasStatus(error: unknown, status: number) {
@@ -129,6 +130,9 @@ export function useStaffSession() {
     };
   }, [state.session, busy]);
 
+  // 401 en cualquier llamada de la sección de solicitudes (pwa-005, CA-19).
+  const expireSession = useCallback(() => setState(expiredSession), []);
+
   async function login(email: string, password: string) {
     setBusy(true);
     setState(anonymous);
@@ -143,5 +147,5 @@ export function useStaffSession() {
     setBusy(false);
   }
 
-  return { ...state, busy, login, logout };
+  return { ...state, busy, login, logout, expireSession };
 }

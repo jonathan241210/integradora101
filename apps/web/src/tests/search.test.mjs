@@ -501,6 +501,47 @@ test('test_ca07_empty_query_and_partial_or_total_source_failures', async () => {
   assert.deepEqual(new Set(total.errors), new Set(['species', 'news', 'events', 'memories']));
 });
 
+test('test_ca07_concurrent_submission_uses_latest_valid_query', async () => {
+  let resolveSpecies;
+  let speciesCalls = 0;
+  const api = publicApi();
+  api.getSpecies = () => {
+    speciesCalls += 1;
+    return new Promise((resolve) => { resolveSpecies = resolve; });
+  };
+  api.getNewsItem = (id) => response({ id, content: 'Texto de contexto.' });
+  const { controller, panel } = mountSearch(api);
+
+  const pending = controller.execute('parque');
+  await flushSearch();
+  await controller.execute('sendero');
+  resolveSpecies({ ok: true, data: [{ id: 1, common_name: 'Zorro del parque' }] });
+  await pending;
+
+  assert.equal(speciesCalls, 1, 'la segunda consulta reutiliza la carga en curso');
+  assert.ok(panel.textContent.includes('Sendero del parque'));
+  assert.ok(!panel.textContent.includes('Zorro del parque'));
+  assert.ok(!panel.textContent.includes('Parque abierto'));
+});
+
+test('test_ca07_empty_submission_during_load_keeps_empty_query_message', async () => {
+  let resolveSpecies;
+  const api = publicApi();
+  api.getSpecies = () => new Promise((resolve) => { resolveSpecies = resolve; });
+  const { controller, panel } = mountSearch(api);
+
+  const pending = controller.execute('parque');
+  await flushSearch();
+  await controller.execute('');
+  assert.ok(panel.textContent.includes('Escribe una palabra o frase para buscar.'));
+
+  resolveSpecies({ ok: true, data: [{ id: 1, common_name: 'Zorro del parque' }] });
+  await pending;
+
+  assert.ok(panel.textContent.includes('Escribe una palabra o frase para buscar.'));
+  assert.equal(flatten(panel).filter((node) => node.tagName === 'A').length, 0);
+});
+
 test('test_ca08_every_acceptance_criterion_has_named_automated_test', () => {
   const source = readFileSync(fileURLToPath(import.meta.url), 'utf8');
   for (let index = 1; index <= 7; index += 1) {

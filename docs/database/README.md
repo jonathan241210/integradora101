@@ -8,6 +8,19 @@ Esta sección regula cualquier cambio al esquema u objetos almacenados de la bas
 
 Cualquier necesidad de crear, modificar o eliminar tablas, columnas, índices, claves, funciones o procedimientos requiere una **Database Change Request (DBR)** en `requests/` usando la [plantilla](templates/change-request.md). Quien solicita **no** crea migraciones ni ejecuta SQL. El responsable de BD crea, prueba y aplica siempre una **migración Laravel**; nunca SQL manual como flujo alternativo.
 
+## Consulta previa obligatoria del esquema vivo
+
+Antes de redactar una DBR, de planear o de implementar cualquier cambio que toque datos (columnas, tablas, índices, FK, soft deletes, estados), quien lo propone —persona o agente— **consulta primero el esquema real de `arca_pruebas`**, aunque crea que la documentación ya lo dice. La base puede tener cambios que no están en ninguna migración ni DBR (ejemplo: `enclosures.deleted_at` y `updated_at` existían sin migración al redactar DBR-020).
+
+- **Solo lectura:** `php artisan db:table <tabla>`, `php artisan migrate:status`, `SHOW CREATE TABLE`, `SHOW INDEX` y `information_schema` (`COLUMNS`, `REFERENTIAL_CONSTRAINTS`). Nunca `ALTER`, `INSERT`, `UPDATE`, `DELETE` ni migraciones. Nunca `arca_zoo`.
+- **Comparar** lo encontrado con las migraciones de `apps/api/src/database/migrations/`, `diccionario-datos.md` y las DBR existentes.
+- **Decidir y registrar** en la DBR o spec, en una sección «Estado actual» con fecha y comandos usados:
+  - si el cambio ya existe en la base → no se pide; si no está versionado, la DBR pide a BD registrarlo en una migración idempotente;
+  - si no existe → se pide en la DBR;
+  - si no hace falta cambio de esquema → se deja constancia de que no requiere DBR.
+- Cualquier divergencia entre base, migraciones y documentación (columnas no versionadas, FK duplicadas, tipos distintos) se reporta como «Verificación para BD» en la DBR.
+- La consulta no sustituye a la DBR: el esquema solo cambia por migración del responsable de BD tras una DBR aprobada.
+
 ## Flujo obligatorio
 
 ```text

@@ -16,7 +16,7 @@
 | CA-04 | T-05 | T-11 | `test_ca04_deep_links_to_static_species_news_and_event` |
 | CA-05 | T-06 | T-12 | `test_ca05_keyboard_and_screen_reader_accessible_results` |
 | CA-06 | T-03, T-07 | T-13 | `test_ca06_only_public_data_and_query_stays_local` |
-| CA-07 | T-04 | T-14 | `test_ca07_empty_query_and_partial_or_total_source_failures` |
+| CA-07 | T-04, T-28 | T-14, T-28 | `test_ca07_empty_query_and_partial_or_total_source_failures`, `test_ca07_concurrent_submission_uses_latest_valid_query`, `test_ca07_empty_submission_during_load_keeps_empty_query_message` |
 | CA-08 | T-15 | T-15 | `test_ca08_every_acceptance_criterion_has_named_automated_test` |
 
 ## Implementación
@@ -99,6 +99,13 @@ Jonathan solicita cerrar con clic fuera, eliminar la redirección automática a 
 
 - [x] **T-26** (CA-02, CA-05) — `top-actions` usa posición estática y capa 3 para que el panel se ancle bajo toda la cabecera y no quede atravesado por el menú. Añadidos título, aviso compacto, reintentos en dos columnas, tarjetas con tipografía/espacios coherentes y fragmentos de dos líneas. Botón de envío con flecha SVG visible. Tokens semánticos; alto limitado con desplazamiento interno; CSS y renderizador versionados `web-012-4`.
 - [x] **T-27** (CA-02, CA-05) — `node apps/web/src/tests/search.test.mjs`: 19/19; cubre render, foco, clic exterior y navegación. `node --check` y `git diff --check` pasan. Browser en 360, 390, 768, 1065 y 1366 px: panel bajo la cabecera, dentro del viewport y sin desbordamiento horizontal; aviso y acciones legibles; scroll interno disponible. Se restauró el tamaño original del navegador. `/verify`: sin `apps/web/src/package.json`, no hay scripts npm disponibles. Guía actualizada.
+
+## Corrección de envíos concurrentes autorizada · CA-07 · 2026-11-18
+
+- [x] **T-28** (CA-07) — Hacer que un envío válido durante una carga actualice la consulta que se aplicará al terminar, sin duplicar solicitudes; una consulta vacía o inválida conserva su aviso e impide que una respuesta pendiente muestre todos los registros. Aplicar la misma protección a la finalización de reintentos.
+  - Pruebas: `test_ca07_concurrent_submission_uses_latest_valid_query` y `test_ca07_empty_submission_during_load_keeps_empty_query_message`.
+  - Evidencia: `node apps/web/src/tests/search.test.mjs` pasa 21/21; incluye ambos casos nuevos. `node --check apps/web/src/js/search.js` y `git diff --check` pasan. `/verify`: app aún no inicializada, sin `apps/web/src/package.json` ni scripts npm disponibles.
+  - Archivos: `apps/web/src/js/search.js`, `apps/web/src/tests/search.test.mjs`, spec, plan y este checklist.
 
 ## Evidencia y seguimiento
 

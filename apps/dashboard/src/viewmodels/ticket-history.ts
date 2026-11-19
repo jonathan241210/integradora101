@@ -40,6 +40,17 @@ export function formatTicketDateTime(
   }
 }
 
+/**
+ * Consulta que se pide a la API: con un folio del buscador global se usa el
+ * filtro `folio` existente sin tocar `state.query` (el formulario no cambia).
+ */
+export function effectiveHistoryQuery(
+  query: TicketHistoryQuery,
+  focusedFolio: string | null,
+): TicketHistoryQuery {
+  return focusedFolio === null ? query : { ...query, folio: focusedFolio, page: 1 };
+}
+
 export const cancelReasonRequiredMessage = "Indica el motivo de la cancelación.";
 
 export type TicketStatusFilter = TicketStatus | "";
@@ -259,3 +270,16 @@ export type TicketHistoryViewModel = {
     dismissNotice: () => void;
   };
 };
+
+/**
+ * Boleto por cancelar elegido en el buscador (dashboard-012 CA-38). Solo abre
+ * el diálogo; no cancela. `null` si la fila no está cargada o no es cancelable.
+ */
+export function cancelTargetForFocus(
+  rows: TicketHistoryRowDto[],
+  focus: { folio: string; action?: string },
+): TicketHistoryRowDto | null {
+  if (focus.action !== "cancel") return null;
+
+  return rows.find((row) => String(row.folio) === focus.folio && row.cancellable) ?? null;
+}

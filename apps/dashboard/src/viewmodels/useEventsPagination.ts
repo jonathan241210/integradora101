@@ -24,10 +24,18 @@ export function getEventsPage(
   };
 }
 
+/** Página (1-based) que contiene el evento, o null si no está en la lista. */
+export function pageOfEvent(items: EventDto[], id: number): number | null {
+  const index = items.findIndex((item) => item.id === id);
+
+  return index < 0 ? null : Math.floor(index / pageSize) + 1;
+}
+
 export function useEventsPagination(
   items: EventDto[],
   pendingAction: PendingAction | null,
   actionBusy: boolean,
+  focus: { id: number; nonce: number } | null = null,
 ) {
   const [requestedPage, setRequestedPage] = useState(1);
   const result = getEventsPage(items, requestedPage, pendingAction);
@@ -35,6 +43,16 @@ export function useEventsPagination(
   useEffect(() => {
     setRequestedPage(result.page);
   }, [result.page]);
+
+  // Buscador global (CA-20): salta a la página que contiene el evento buscado.
+  useEffect(() => {
+    if (!focus) return;
+    const target = pageOfEvent(items, focus.id);
+
+    if (target !== null) setRequestedPage(target);
+    // Solo con un nuevo enfoque o cuando llega la lista.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focus?.nonce, focus?.id, items]);
 
   return {
     ...result,

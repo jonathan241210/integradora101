@@ -39,7 +39,16 @@
 - [x] **T-16** (CA-01..CA-07): ejecutar suite enfocada y completa, `git diff --check` y `/verify`; registrar los fallos preexistentes ajenos sin ocultarlos.
 - [x] **T-17**: marcar spec, plan y tasks Implementados solo tras completar las verificaciones y preservar el historial de validación inicial.
 
-No se crean rutas, endpoints, migraciones, almacenamiento, permisos de servidor ni dependencias. No se modifican assets ni la biblioteca de modelo 3D existente. No se realiza `git add` ni `git commit` como parte de estas tareas.
+No se crean rutas, endpoints, migraciones, almacenamiento, permisos de servidor ni dependencias. La enmienda aprobada el 2026-11-18 sustituye la restricción histórica de no modificar assets: incorpora fotografía y modelo 3D locales. No se realiza `git add` ni `git commit` como parte de estas tareas.
+
+## Enmienda aprobada · vista aérea 2D y mapa 3D · 2026-11-18
+
+- [x] **T-18** (CA-01, CA-05, CA-07): sustituir el arte SVG por `assets/mapa-2d.jpg`, configurar `assets/mapacompleto.glb` como modelo alterno y anunciar carga/error; ante error, volver a 2D. Mantener zonas, selección, zoom y navegación local.
+  - Aprobación: solicitante, 2026-11-18, registrada en la revisión de la spec.
+  - Evidencia: código integrado de `origin/Diego`; los recursos `mapa-2d.jpg`, `mapacompleto.glb` y `model-viewer.min.js` son locales.
+- [x] **T-19** (CA-01, CA-05): ajustar el test CA-01 y los documentos de plan/tasks a los nombres efectivos de los recursos; mantener pruebas de accesibilidad, error y ausencia de proveedores.
+  - Evidencia: nombre `mapacompleto.glb` alineado en spec, test y mensaje de error; el test de integridad ya no exige el GLB retirado por la enmienda aprobada.
+  - Archivos: `apps/web/specs/004-isometric-zoo-map.md`, `plan/004-isometric-zoo-map.md`, `tasks/004-isometric-zoo-map.md`, `src/index.html`, `src/styles.css`, `src/tests/relocation.test.mjs`, `src/assets/`.
 
 ## Evidencia de ejecución
 

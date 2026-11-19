@@ -4,9 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Sin BaseModel (ADR 0021). Sin LogsActivity: el valor del código no debe llegar a Activitylog (api-020 RN-10).
+ */
 class EnclosureQrCode extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'enclosure_qr_codes';
 
     public $timestamps = false;

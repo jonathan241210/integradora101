@@ -2,20 +2,21 @@
 
 namespace App\Console\Commands;
 
+use App\Actions\Admin\Enclosures\GenerateEnclosureQrAction;
+use App\Actions\Admin\Enclosures\RegenerateEnclosureQrAction;
 use App\Models\Enclosure;
-use App\Models\EnclosureQrCode;
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
 
 class GenerateQrCodesCommand extends Command
 {
-    protected $signature = 'arca:generate-qr-codes {enclosure}';
+    protected $signature = 'arca:generate-qr-codes {enclosure} {--regenerate : Desactiva los códigos activos y crea uno nuevo}';
 
-    protected $description = 'Genera un código QR opaco para un recinto';
+    protected $description = 'Imprime el código QR activo de un recinto, creándolo si no existe (api-020 CA-18)';
 
-    public function handle(): int
+    public function handle(GenerateEnclosureQrAction $generate, RegenerateEnclosureQrAction $regenerate): int
     {
-        $enclosure = Enclosure::query()->find($this->argument('enclosure'));
+        $id = (string) $this->argument('enclosure');
+        $enclosure = ctype_digit($id) ? Enclosure::query()->find((int) $id) : null;
 
         if ($enclosure === null) {
             $this->error('El recinto no existe.');
@@ -23,14 +24,12 @@ class GenerateQrCodesCommand extends Command
             return self::FAILURE;
         }
 
-        $code = 'ARCA-'.Str::upper(Str::random(8));
-        EnclosureQrCode::query()->create([
-            'enclosure_id' => $enclosure->id,
-            'code' => $code,
-            'is_active' => true,
-        ]);
+        $properties = ['source' => 'console'];
+        $result = $this->option('regenerate')
+            ? $regenerate->execute($enclosure, $properties)
+            : $generate->execute($enclosure, $properties);
 
-        $this->line($code);
+        $this->line($result->qr->code);
 
         return self::SUCCESS;
     }

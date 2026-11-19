@@ -1,7 +1,7 @@
 # Plan técnico · 012 · portal-search
 
 - Spec: `apps/web/specs/012-portal-search.md` (Estado: **Aprobada**, Jonathan, 2026-11-18).
-- Estado: Implementado y verificado; ajuste visual CA-02/CA-05 completado por solicitud de Jonathan el 2026-11-18; ADR 0031 aceptado.
+- Estado: Implementado y verificado; corrección de envíos concurrentes CA-07 completada el 2026-11-18; ADR 0031 aceptado.
 - Responsable técnico: por identificar.
 - ADR de excepción: `docs/adr/0031-global-portal-search-static-exception.md` (Aceptado por Jonathan, 2026-11-18).
 
@@ -19,6 +19,8 @@ Las cuatro fuentes dinámicas se cargan independientemente en paralelo. Se conse
 Los resultados se presentan en un panel asociado al buscador, agrupados por tipo y con título, fragmento breve y enlace. Un enlace de contenido estático desplaza a su sección. Un enlace de especie abre la sección de TulanPedia y aplica el texto en sus filtros. Noticias y eventos abren su página de listado con un localizador estable para que el módulo de lista cargue la página correcta y enfoque la tarjeta. La actualización de `news-events.js` mantiene el contrato editorial y de carga actual.
 
 La búsqueda aplica normalización de mayúsculas, espacios y diacríticos para comparar texto. La consulta permanece como texto literal, con límite de longitud definido por el componente y sin enviarse a la API ni a servicios externos. No se resaltan coincidencias mediante HTML.
+
+Los envíos mientras una carga está en curso conservan la última intención válida: una nueva consulta válida reutiliza la carga y se aplica al terminar; una consulta vacía o inválida muestra su mensaje de validación y evita que la respuesta pendiente lo reemplace o muestre todos los registros.
 
 **Precondición de implementación:** el ADR 0031 está aceptado. Los ADR 0024, 0027 y 0028 siguen limitados a sus módulos; el ADR nuevo autoriza la búsqueda global y conserva las salvaguardas comunes.
 
@@ -94,7 +96,7 @@ Se conserva la envoltura de `js/api.js`: `{ ok, data, meta }` o `{ ok: false, re
 | CA-04 | `test_ca04_deep_links_to_static_species_news_and_event` | `web/src/tests/search.test.mjs` |
 | CA-05 | `test_ca05_keyboard_and_screen_reader_accessible_results` | `web/src/tests/search.test.mjs` |
 | CA-06 | `test_ca06_only_public_data_and_query_stays_local` | `web/src/tests/search.test.mjs` |
-| CA-07 | `test_ca07_empty_query_and_partial_or_total_source_failures` | `web/src/tests/search.test.mjs` |
+| CA-07 | `test_ca07_empty_query_and_partial_or_total_source_failures`, `test_ca07_concurrent_submission_uses_latest_valid_query`, `test_ca07_empty_submission_during_load_keeps_empty_query_message` | `web/src/tests/search.test.mjs` |
 | CA-08 | `test_ca08_every_acceptance_criterion_has_named_automated_test` | `web/src/tests/search.test.mjs` |
 
 Cobertura adicional de la corrección autorizada (2026-11-18): CA-04 se verifica con `test_ca04_submit_with_portal_script_stays_in_place_and_result_uses_its_destination`, `test_ca04_news_after_first_ten_records_links_to_the_page_containing_the_card`, `test_ca04_species_link_locates_card_again_when_hash_is_unchanged` y «CA-04 portal-search: un resultado de especie oculto por filtros se revela, actualiza el contador y recibe foco» (`animals.test.mjs`). CA-05 se verifica con `test_ca05_outside_click_closes_panel_without_stealing_focus_and_inside_click_keeps_it_open`, `test_ca05_escape_from_result_or_input_closes_panel_and_returns_focus` y `test_ca05_closing_during_loading_or_retry_does_not_reopen_panel`.
@@ -134,3 +136,4 @@ Las excepciones de III y IV quedan resueltas solo para esta feature por el ADR 0
 - Aprobación funcional de la spec: Jonathan, 2026-11-18.
 - Aprobador técnico: Jonathan, 2026-11-18.
 - Estado de aprobación del plan: aprobado; Constitution Check III–IV resuelto por ADR 0031 aceptado. Tasks aprobados el 2026-11-18 y completados con evidencia en `apps/web/tasks/012-portal-search.md`.
+- Corrección CA-07 autorizada por Jonathan, 2026-11-18: los envíos concurrentes respetan la última consulta válida y los estados de validación invalidan las actualizaciones asíncronas obsoletas. Verificación: 21/21 pruebas directas de `search.test.mjs`, `node --check` y `git diff --check`; `/verify` no dispone de scripts npm porque `apps/web/src/package.json` no existe.

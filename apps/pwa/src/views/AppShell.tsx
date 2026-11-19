@@ -1,9 +1,9 @@
 import { Button } from '@arca/ui';
-import { useState, type ComponentType } from 'react';
+import { useEffect, useState, type ComponentType } from 'react';
 import {
+  getNavigationSections,
   getSectionLabel,
   isNavigationActive,
-  pwaSections,
   type PwaSection,
 } from '@/viewmodels/pwaDemo';
 import { Icon } from '@/components/Icon';
@@ -15,6 +15,7 @@ import { DiagnosisIntenseView } from '@/views/DiagnosisIntenseView';
 import { DiagnosisQuickView } from '@/views/DiagnosisQuickView';
 import { HomeView } from '@/views/HomeView';
 import { ReviewFormView } from '@/views/ReviewFormView';
+import { SpeciesRequestView } from '@/views/SpeciesRequestView';
 import { SyncStatusView } from '@/views/SyncStatusView';
 
 type AppShellProps = {
@@ -25,6 +26,7 @@ type AppShellProps = {
   signingOut?: boolean;
   mvzName?: string;
   userScope: string;
+  roles?: readonly string[];
 };
 
 type ActiveViewProps = {
@@ -33,10 +35,11 @@ type ActiveViewProps = {
   onOpenAnimal: (animalId: number) => void;
   mvzName?: string;
   userScope: string;
+  roles?: readonly string[];
 };
 
 const sectionViews: Record<PwaSection, ComponentType<ActiveViewProps>> = {
-  home: HomeView,
+  home: ({ onNavigate, roles }) => <HomeView onNavigate={onNavigate} roles={roles} />,
   animals: AnimalsView,
   'animal-profile': ({ animalId, onNavigate, userScope }) => (
     <AnimalProfileView animalId={animalId} onBack={() => onNavigate('animals')} userScope={userScope} />
@@ -46,6 +49,7 @@ const sectionViews: Record<PwaSection, ComponentType<ActiveViewProps>> = {
   'diagnosis-intense': ({ mvzName, userScope }) => <DiagnosisIntenseView mvzName={mvzName} userScope={userScope} />,
   'diagnosis-quick': ({ mvzName, userScope }) => <DiagnosisQuickView mvzName={mvzName} userScope={userScope} />,
   'review-form': ({ onNavigate }) => <ReviewFormView onNavigate={onNavigate} />,
+  'species-request': () => <SpeciesRequestView />,
   sync: ({ userScope }) => <SyncStatusView userScope={userScope} />,
 };
 
@@ -57,10 +61,16 @@ export function AppShell({
   signingOut,
   mvzName,
   userScope,
+  roles,
 }: AppShellProps) {
   const ActiveView = sectionViews[activeSection];
   const currentLabel = getSectionLabel(activeSection);
   const [animalId, setAnimalId] = useState<number | null>(null);
+
+  // Al cambiar de sección el contenido vuelve al inicio.
+  useEffect(() => {
+    window.scrollTo?.({ top: 0 });
+  }, [activeSection]);
 
   return (
     <div className="app-shell">
@@ -70,6 +80,7 @@ export function AppShell({
         href="#inicio"
         onClick={(event) => {
           event.preventDefault();
+          if (event.detail > 0) event.currentTarget.blur();
           onNavigate('home');
         }}
         >
@@ -84,6 +95,7 @@ export function AppShell({
           activeSection={activeSection}
           onNavigate={onNavigate}
           variant="desktop"
+          roles={roles}
         />
 
         <div className="sidebar-bottom">
@@ -120,6 +132,7 @@ export function AppShell({
             }}
             mvzName={mvzName}
             userScope={userScope}
+            roles={roles}
           />
         </main>
 
@@ -135,6 +148,7 @@ export function AppShell({
           activeSection={activeSection}
           onNavigate={onNavigate}
           variant="mobile"
+          roles={roles}
         />
       </nav>
     </div>
@@ -145,10 +159,12 @@ function Navigation({
   activeSection,
   onNavigate,
   variant,
+  roles,
 }: {
   activeSection: PwaSection;
   onNavigate: (section: PwaSection) => void;
   variant: 'desktop' | 'mobile';
+  roles?: readonly string[];
 }) {
   const iconMap: Record<string, string> = {
     home: 'home',
@@ -159,12 +175,13 @@ function Navigation({
     'diagnosis-intense': 'intense',
     'diagnosis-quick': 'quick',
     'review-form': 'review',
+    'species-request': 'paw',
     sync: 'sync',
   };
 
   return (
     <div className={`navigation navigation-${variant}`}>
-      {pwaSections.map((section) => (
+      {getNavigationSections(roles).map((section) => (
         <button
           aria-current={isNavigationActive(section.id, activeSection) ? 'page' : undefined}
           aria-label={section.label}
@@ -172,7 +189,11 @@ function Navigation({
             isNavigationActive(section.id, activeSection) ? 'is-active' : ''
           }`}
           key={section.id}
-          onClick={() => onNavigate(section.id)}
+          onClick={(event) => {
+            // Con ratón o toque se suelta el foco para que el menú se contraiga.
+            if (event.detail > 0) event.currentTarget.blur();
+            onNavigate(section.id);
+          }}
           type="button"
         >
           <span className="navigation-symbol" aria-hidden="true">

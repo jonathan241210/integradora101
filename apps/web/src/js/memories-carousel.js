@@ -52,6 +52,16 @@
         if (active) slide.removeAttribute('aria-hidden');
         else slide.setAttribute('aria-hidden', 'true');
       });
+      fitArrows();
+    }
+
+    /* Las flechas se centran sobre la foto activa, cuyo alto cambia con cada imagen. */
+    function fitArrows() {
+      var slide = slides[current];
+      var media = slide && typeof slide.querySelector === 'function' ? slide.querySelector('.mem-media') : null;
+      if (!arrows || !arrows.style || typeof arrows.style.setProperty !== 'function') return;
+      if (media && media.offsetHeight > 0) arrows.style.setProperty('--mem-media-h', media.offsetHeight + 'px');
+      else arrows.style.removeProperty('--mem-media-h');
     }
 
     function shouldRun() {
@@ -112,6 +122,13 @@
         bound.push([query, 'legacy', onChange]);
       }
     }
+
+    slides.forEach(function (slide) {
+      var img = slide && typeof slide.querySelector === 'function' ? slide.querySelector('img') : null;
+      bind(img, 'load', fitArrows);
+      bind(img, 'error', function () { root.setTimeout(fitArrows, 0); });
+    });
+    bind(root, 'resize', fitArrows);
 
     syncControls();
     show(0);
