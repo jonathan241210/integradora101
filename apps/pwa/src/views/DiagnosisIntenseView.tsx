@@ -1,8 +1,10 @@
 import { Button, Card, Dialog, Field, SelectField, TextAreaField } from '@arca/ui';
 import { useEffect, useState, type FormEvent } from 'react';
-import { createEvaluation, type AnimalSummary } from '@/services/apiClient';
+import { createEvaluation } from '@/services/apiClient';
 import { formToRecord, useSaveRequest } from '@/viewmodels/useApiData';
-import { AnimalPicker } from '@/views/AnimalPicker';
+import { AnimalPicker, type PickableAnimal } from '@/views/AnimalPicker';
+import { queueEvaluation } from '@/offline/sync-manager';
+import { isOnline, isTemporarySyncFailure } from '@/offline/utils';
 import { SaveFeedback } from '@/views/SaveFeedback';
 import {
   chemicalRestraintRows,
@@ -51,9 +53,9 @@ function calculateAge(birthDate: string | null): string {
 
 
 
-export function DiagnosisIntenseView({ mvzName = '' }: { mvzName?: string }) {
+export function DiagnosisIntenseView({ mvzName = '', userScope }: { mvzName?: string; userScope?: string }) {
   const [step, setStep] = useState<1 | 2>(1);
-  const [selectedAnimal, setSelectedAnimal] = useState<AnimalSummary | null>(null);
+  const [selectedAnimal, setSelectedAnimal] = useState<PickableAnimal | null>(null);
   const [mvz, setMvz] = useState(mvzName);
   const [patientName, setPatientName] = useState('');
   const [species, setSpecies] = useState('');
@@ -62,7 +64,7 @@ export function DiagnosisIntenseView({ mvzName = '' }: { mvzName?: string }) {
   const [age, setAge] = useState('');
   const save = useSaveRequest();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pending, setPending] = useState<{ animalId: number; values: Record<string, string> } | null>(null);
+  const [pending, setPending] = useState<{ animalValue: string; values: Record<string, string> } | null>(null);
   const [followUpReason, setFollowUpReason] = useState('');
   const [followUpStatus, setFollowUpStatus] = useState('');
   const [nextReviewDate, setNextReviewDate] = useState('');
@@ -91,7 +93,7 @@ export function DiagnosisIntenseView({ mvzName = '' }: { mvzName?: string }) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const { 'intense-animal': animalId, ...values } = formToRecord(form);
+    const { 'intense-animal': animalValue, ...values } = formToRecord(form);
 
     if (step !== 2) {
       await save.run(
@@ -101,7 +103,7 @@ export function DiagnosisIntenseView({ mvzName = '' }: { mvzName?: string }) {
       return;
     }
 
-    if (!animalId) {
+    if (!animalValue) {
       await save.run(
         () => Promise.reject(new Error('Selecciona un animal antes de guardar.')),
         '',
@@ -141,7 +143,7 @@ export function DiagnosisIntenseView({ mvzName = '' }: { mvzName?: string }) {
     setFollowUpReason('');
     setFollowUpStatus('');
     setNextReviewDate('');
-    setPending({ animalId: Number(animalId), values });
+    setPending({ animalValue, values });
     setConfirmOpen(true);
   }
 
@@ -157,13 +159,44 @@ export function DiagnosisIntenseView({ mvzName = '' }: { mvzName?: string }) {
       follow_up_status: followUpStatus,
       next_review_date: nextReviewDate,
     };
-    const saved = await save.run(
-      () => createEvaluation('intense', pending.animalId, payload),
-      'Diagnóstico intenso guardado correctamente.',
-    );
+    const isLocal = pending.animalValue.startsWith('local:');
+    const localId = isLocal ? pending.animalValue.slice('local:'.length) : undefined;
+    const serverId = pending.animalValue.startsWith('server:') ? Number(pending.animalValue.slice('server:'.length)) : undefined;
+
+    const saved = await save.run(async () => {
+      if ((isLocal || !isOnline()) && userScope) {
+        await queueEvaluation(userScope, {
+          kind: 'intense',
+          animalLocalId: localId ?? selectedAnimal?.localId,
+          animalServerId: serverId,
+          payload,
+        });
+        return { queued: true };
+      }
+      if (!serverId) {
+        if (userScope && selectedAnimal?.localId) {
+          await queueEvaluation(userScope, { kind: 'intense', animalLocalId: selectedAnimal.localId, payload });
+          return { queued: true };
+        }
+        throw new Error('Selecciona un animal válido antes de guardar.');
+      }
+      try {
+        return await createEvaluation('intense', serverId, payload);
+      } catch (error) {
+        if (userScope && isTemporarySyncFailure(error)) {
+          await queueEvaluation(userScope, { kind: 'intense', animalServerId: serverId, payload });
+          return { queued: true };
+        }
+        throw error;
+      }
+    }, (result) => (result && typeof result === 'object' && 'queued' in (result as object) && (result as { queued?: boolean }).queued)
+      ? 'Diagnóstico intenso guardado localmente (pendiente de sincronización).'
+      : 'Diagnóstico intenso guardado correctamente.');
+
     if (saved) {
       form?.reset();
       setSelectedAnimal(null);
+      setMvz(mvzName);
       setStep(1);
       setPending(null);
       setConfirmOpen(false);
@@ -195,7 +228,7 @@ export function DiagnosisIntenseView({ mvzName = '' }: { mvzName?: string }) {
           <div className={step === 1 ? 'diagnosis-step' : 'diagnosis-step screen-hidden'}>
             <h3>Historia clínica del ejemplar</h3>
             <div className="form-grid">
-              <AnimalPicker label="Animal" name="intense-animal" onSelect={setSelectedAnimal} />
+              <AnimalPicker label="Animal" name="intense-animal" onSelect={setSelectedAnimal} userScope={userScope} />
               <Field
                 label="MVZ"
                 name="intense-mvz"

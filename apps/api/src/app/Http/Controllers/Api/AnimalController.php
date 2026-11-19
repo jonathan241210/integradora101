@@ -166,4 +166,24 @@ class AnimalController extends Controller
             'photo_path' => $animal->photo_path,
         ]], 201);
     }
+
+    public function updatePhoto(Request $request, Animal $animal): JsonResponse
+    {
+        $request->validate([
+            'photo' => ['required', 'image', 'max:5120', 'mimes:jpg,jpeg,png'],
+        ], [
+            'photo.required' => 'Selecciona una imagen para actualizar la foto.',
+            'photo.image' => 'El archivo debe ser una imagen válida.',
+            'photo.max' => 'La imagen no debe superar 5 MB.',
+            'photo.mimes' => 'La imagen debe ser JPG, JPEG o PNG.',
+        ]);
+
+        $photo = $request->file('photo');
+        $path = $photo->store("animals/{$animal->id}", 'public');
+        $animal->update(['photo_path' => $path]);
+
+        return response()->json(['data' => [
+            'photo_path' => $animal->photo_path,
+        ]]);
+    }
 }

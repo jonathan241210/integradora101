@@ -2,7 +2,7 @@ import { Alert, Badge, Button, Card } from '@arca/ui';
 import { Fragment, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { exportSheetPdf } from '@/viewmodels/pdfExport';
-import type { AnimalEvaluation, AnimalProfile } from '@/services/apiClient';
+import { uploadAnimalPhoto, type AnimalEvaluation, type AnimalProfile } from '@/services/apiClient';
 import { institution, usePrintDocument, physicalRestraints } from '@/viewmodels/diagnosisForms';
 import { useAnimal } from '@/viewmodels/useApiData';
 import { LoadingScreen, Spinner } from '@/views/Spinner';
@@ -513,18 +513,28 @@ function SingleEvaluationPrintSheet({ animal, evaluation }: { animal: AnimalProf
   );
 }
 
-function ProfilePhoto({ name, path }: { name: string; path: string | null }) {
-  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
-
-  if (!path) {
-    return <span className="profile-avatar" aria-label="Sin fotografía">{name.slice(0, 1)}</span>;
-  }
+function ProfilePhoto({
+  name,
+  path,
+  onUpload,
+  uploading,
+  canUpload,
+}: {
+  name: string;
+  path: string | null;
+  onUpload?: (file: File) => void;
+  uploading?: boolean;
+  canUpload?: boolean;
+}) {
+  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>(path ? 'loading' : 'loaded');
+  const inputId = `animal-photo-upload-${name.replace(/\s+/g, '-').toLowerCase()}`;
 
   return (
-    <>
-      {status === 'loading' && <span className="profile-photo-status" role="status">Cargando foto…</span>}
-      {status === 'error' && <span className="profile-photo-status" role="alert">No se pudo cargar la foto</span>}
-      {status !== 'error' && (
+    <div className="profile-photo-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
+      {!path && <span className="profile-avatar" aria-label="Sin fotografía">{name.slice(0, 1)}</span>}
+      {path && status === 'loading' && <span className="profile-photo-status" role="status">Cargando foto…</span>}
+      {path && status === 'error' && <span className="profile-photo-status" role="alert">No se pudo cargar la foto</span>}
+      {path && status !== 'error' && (
         <img
           src={/^https?:\/\//i.test(path) ? path : `/storage/${path.replace(/^\/?(?:storage\/)?/, '')}`}
           alt={`Foto de ${name}`}
@@ -534,23 +544,65 @@ function ProfilePhoto({ name, path }: { name: string; path: string | null }) {
           onError={() => setStatus('error')}
         />
       )}
-    </>
+      {canUpload && (
+        <>
+          <input
+            id={inputId}
+            type="file"
+            accept="image/jpeg,image/png,image/jpg"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const file = e.currentTarget.files?.[0];
+              if (file) onUpload?.(file);
+              e.currentTarget.value = '';
+            }}
+          />
+          <label
+            htmlFor={inputId}
+            className="profile-photo-upload-action"
+            title={path ? 'Cambiar foto' : 'Agregar foto'}
+            aria-label={path ? 'Cambiar foto del animal' : 'Agregar foto del animal'}
+            style={{
+              position: 'absolute',
+              right: 4,
+              bottom: 4,
+              background: 'var(--card, #fff)',
+              border: '1px solid var(--border, #d1d5db)',
+              borderRadius: 999,
+              padding: '4px 8px',
+              fontSize: 12,
+              cursor: uploading ? 'wait' : 'pointer',
+              boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
+            }}
+          >
+            {uploading ? 'Subiendo…' : (path ? 'Cambiar foto' : 'Agregar foto')}
+          </label>
+        </>
+      )}
+    </div>
   );
 }
 
 export function AnimalProfileView({
   animalId,
   onBack,
+  userScope,
 }: {
   animalId: number | null;
   onBack: () => void;
+  userScope?: string;
+  onNavigate?: unknown;
+  onOpenAnimal?: unknown;
+  mvzName?: string;
 }) {
-  const { animal, loading, error, reload } = useAnimal(animalId);
+  const { animal, loading, error, reload } = useAnimal(animalId, userScope);
   const { error: printError } = usePrintDocument();
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState('');
   const [openEvaluationId, setOpenEvaluationId] = useState<number | null>(null);
   const [singlePdfEvaluation, setSinglePdfEvaluation] = useState<AnimalEvaluation | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoMessage, setPhotoMessage] = useState('');
 
   const downloadFullPdf = async () => {
     const sheet = document.getElementById('profile-full-sheet');
@@ -603,6 +655,20 @@ export function AnimalProfileView({
     );
   }
 
+  async function handlePhotoUpload(file: File) {
+    setPhotoBusy(true);
+    setPhotoMessage('');
+    try {
+      await uploadAnimalPhoto(animal.id, file);
+      setPhotoMessage('Foto actualizada correctamente.');
+      reload();
+    } catch (err) {
+      setPhotoMessage(err instanceof Error ? err.message : 'No se pudo actualizar la foto del animal.');
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
   return (
     <section className="page-section printable-document profile-page">
       <div className="profile-toolbar no-print">
@@ -612,12 +678,20 @@ export function AnimalProfileView({
         </Button>
       </div>
       {(printError || pdfError) && <Alert className="no-print" role="alert">{printError || pdfError}</Alert>}
+      {photoMessage && <Alert className="no-print" role="status">{photoMessage}</Alert>}
       {createPortal(<ProfilePrintSheet animal={animal} />, document.body)}
       {singlePdfEvaluation && createPortal(<SingleEvaluationPrintSheet animal={animal} evaluation={singlePdfEvaluation} />, document.body)}
 
       <Card className="profile-hero">
         <div className="profile-avatar-container">
-          <ProfilePhoto key={`${animal.id}:${animal.photo_path ?? ''}`} name={animal.name} path={animal.photo_path} />
+          <ProfilePhoto
+            key={`${animal.id}:${animal.photo_path ?? ''}`}
+            name={animal.name}
+            path={animal.photo_path}
+            canUpload
+            uploading={photoBusy}
+            onUpload={(file) => void handlePhotoUpload(file)}
+          />
         </div>
         <div className="profile-hero-text">
           <p className="eyebrow">Perfil del animal</p>

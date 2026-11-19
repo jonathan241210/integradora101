@@ -38,6 +38,10 @@ export function HomeView({
   onNavigate,
 }: {
   onNavigate: (section: PwaSection) => void;
+  animalId?: number | null;
+  onOpenAnimal?: unknown;
+  mvzName?: string;
+  userScope?: string;
 }) {
   return (
     <div className="home-view">

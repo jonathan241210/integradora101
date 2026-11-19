@@ -178,7 +178,7 @@ export async function createAnimalWithPhoto(formData: FormData): Promise<AnimalS
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       throw new ApiError(
         errorData.message || 'No se pudo guardar el animal con foto.',
         response.status,
@@ -190,6 +190,34 @@ export async function createAnimalWithPhoto(formData: FormData): Promise<AnimalS
   } catch (error) {
     if (error instanceof ApiError) throw error;
     throw new ApiError('No se pudo guardar el animal con foto.', 0);
+  }
+}
+
+export async function uploadAnimalPhoto(animalId: number, file: File): Promise<{ photo_path: string | null }> {
+  const formData = new FormData();
+  formData.append('photo', file);
+  try {
+    const response = await globalThis.fetch(`/api/v1/staff/animals/${animalId}/photo`, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const message = response.status === 404 || response.status === 405
+        ? 'La carga de foto desde el perfil aún no está disponible en el servidor.'
+        : (errorData.message || 'No se pudo actualizar la foto del animal.');
+      throw new ApiError(message, response.status);
+    }
+
+    const data = await response.json().catch(() => ({}));
+    return data.data ?? data;
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError('No se pudo actualizar la foto del animal.', 0);
   }
 }
 
@@ -205,4 +233,55 @@ export async function createEvaluation(
       body: { kind, animal_id: animalId, data: { ...data, is_follow_up: '1' } },
     },
   )).data;
+}
+
+export type SyncBootstrapResponse = {
+  profile: { id: number | string; name: string };
+  animals: Array<AnimalSummary & { updated_at?: string | null; deleted_at?: string | null }>;
+  enclosures: Array<EnclosureOption & { updated_at?: string | null; deleted_at?: string | null }>;
+  species: Array<SpeciesOption & { updated_at?: string | null; deleted_at?: string | null }>;
+  cursor?: string;
+  server_time?: string;
+};
+
+export type SyncChangesResponse = {
+  animals: Array<AnimalSummary & { updated_at?: string | null; deleted_at?: string | null }>;
+  enclosures: Array<EnclosureOption & { updated_at?: string | null; deleted_at?: string | null }>;
+  species: Array<SpeciesOption & { updated_at?: string | null; deleted_at?: string | null }>;
+  cursor?: string;
+  has_more?: boolean;
+};
+
+export type SyncOperationInput = {
+  operation_uuid: string;
+  entity_type: 'animal' | 'clinical_evaluation';
+  client_entity_id?: string | null;
+  depends_on_client_entity_id?: string | null;
+  payload: Record<string, unknown>;
+};
+
+export type SyncOperationResult = {
+  operation_uuid: string;
+  status: 'completed' | 'duplicate' | 'rejected' | string;
+  entity_type?: string;
+  server_id?: number | null;
+  server_entity_type?: string | null;
+  error_code?: string | null;
+  message?: string | null;
+};
+
+export async function syncBootstrap(): Promise<SyncBootstrapResponse> {
+  return (await request<{ data: SyncBootstrapResponse }>('/api/v1/staff/sync/bootstrap')).data;
+}
+
+export async function syncChanges(cursor?: string): Promise<SyncChangesResponse> {
+  const params = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
+  return (await request<{ data: SyncChangesResponse }>(`/api/v1/staff/sync/changes${params}`)).data;
+}
+
+export async function syncOperations(operations: SyncOperationInput[]): Promise<SyncOperationResult[]> {
+  return (await request<{ data: { results: SyncOperationResult[] } }>('/api/v1/staff/sync/operations', {
+    method: 'POST',
+    body: { operations },
+  })).data.results;
 }
