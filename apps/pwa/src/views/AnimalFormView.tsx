@@ -104,7 +104,14 @@ export function AnimalFormView({ userScope }: { userScope?: string } = {}) {
 
       try {
         if (selectedFile) {
-          return await createAnimalWithPhoto(animalData as any, selectedFile);
+          const formData = new FormData();
+          Object.entries(animalData).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+              formData.append(key, String(value));
+            }
+          });
+          formData.append('photo', selectedFile);
+          return await createAnimalWithPhoto(formData);
         }
         return await createAnimal(animalData as any);
       } catch (error) {

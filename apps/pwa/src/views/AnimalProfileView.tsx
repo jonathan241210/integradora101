@@ -656,6 +656,7 @@ export function AnimalProfileView({
   }
 
   async function handlePhotoUpload(file: File) {
+    if (!animal) return;
     setPhotoBusy(true);
     setPhotoMessage('');
     try {
