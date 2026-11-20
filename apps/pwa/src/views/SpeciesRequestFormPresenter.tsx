@@ -1,3 +1,4 @@
+import { Spinner } from '@/views/Spinner';
 import { Alert, Badge, Button, Card, Field, SelectField } from '@arca/ui';
 import type { SelectableSpeciesDto, SpeciesFichaField } from '@arca/api-client';
 import { Icon } from '@/components/Icon';
@@ -237,7 +238,7 @@ export function SpeciesRequestFormPresenter({
         <div className="form-actions">
           <Button type="button" variant="secondary" disabled={busy} onClick={onReset}>Limpiar</Button>
           <Button type="submit" disabled={disabled}>
-            {busy ? 'Enviando…' : 'Enviar solicitud'}
+            {busy ? <Spinner label="Enviando solicitud…" /> : 'Enviar solicitud'}
           </Button>
         </div>
       </form>

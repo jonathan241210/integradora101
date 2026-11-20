@@ -1,5 +1,6 @@
 import type { FormEvent, ReactNode } from "react";
-import { Alert, Button, Dialog } from "@arca/ui";
+import { Button, Dialog } from "@arca/ui";
+import { ActionError } from "./DashboardNotifications";
 import type { ConfirmationCopy } from "@/viewmodels/confirmation";
 
 /**
@@ -43,11 +44,7 @@ export function ConfirmDialog({
         <form className="dialog-form" onSubmit={submit}>
           <p className="confirm-dialog__message">{copy.message}</p>
           {children}
-          {error && (
-            <Alert className="dialog-alert" role="alert" aria-live="assertive">
-              {error}
-            </Alert>
-          )}
+          <ActionError message={error} inDialog />
           <div className="dialog-actions">
             <Button
               type="button"

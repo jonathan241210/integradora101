@@ -1,8 +1,8 @@
 import { NewsView } from "@/views/NewsView";
 import { useNewsManagement } from "@/viewmodels/useNewsManagement";
 
-export function NewsSection() {
+export function NewsSection({ focus }: { focus?: { id: number; nonce: number } | null }) {
   const viewModel = useNewsManagement();
 
-  return <NewsView {...viewModel} />;
+  return <NewsView {...viewModel} focus={focus} />;
 }

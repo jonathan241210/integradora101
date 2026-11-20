@@ -2,6 +2,7 @@ import { PendingRequestNotice } from "@/components/PendingRequestNotice";
 import { Alert, Button, Card } from "@arca/ui";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { NoticeBar } from "@/components/NoticeBar";
+import { LoadingIndicator } from "@/components/LoadingIndicator";
 import { SectionHeading } from "@/components/SectionHeading";
 import { SpeciesFichaForm } from "@/components/SpeciesFichaForm";
 import { SpeciesPhoto } from "@/components/SpeciesPhoto";
@@ -47,9 +48,7 @@ export function PublishedSpeciesDetailView({
     return (
       <>
         {heading}
-        <p className="state-message" role="status" aria-live="polite">
-          Cargando especie…
-        </p>
+        <LoadingIndicator message="Cargando especie…" />
       </>
     );
   }

@@ -116,7 +116,7 @@ App.tsx
 | CA-01 | Insignia, botones y nombre accesible con `enclosures.manage`; ausentes sin el permiso | `enclosure-actions-global-search.test.tsx` |
 | CA-02 | Texto del diálogo de desactivar; línea de aviso con N = 0, 1 y 3; sin llamada hasta confirmar | idem |
 | CA-03 | Texto del diálogo de eliminar con variante `danger`; sin llamada al cancelar | idem |
-| CA-04 | Activar llama al cliente sin diálogo; aviso «Recinto activado.» | idem |
+| CA-04 | Activar reutiliza el diálogo de cambio de estado; confirmar llama a `setStatus(id, true)` y emite «Recinto activado.» | idem |
 | CA-05 | El ViewModel llama a `setStatus` y `remove` del cliente simulado; sin `fetch` en `components/` ni `views/` (lectura estática) | idem |
 | CA-06 | Errores 404 y 403 con su texto; la lista se recarga | idem |
 | CA-07 | `enclosurePage` con 10 elementos: 9 y 1; «Página X de Y»; extremos deshabilitados; `aria-current` | idem |
@@ -242,7 +242,7 @@ GlobalSearch (View: combobox, línea match, «Ir a: …»)
 
 - Las palabras de acción exigen 3 o más letras (exacta o prefijo) para evitar ruido con palabras de 1 o 2 letras; con error solo desde 7 letras (D-16).
 - `resolveSelection` (en `focus-target.ts`) concentra la decisión de elegir un resultado: `ignore`, `section` (acción sola, con pestaña de TulanPedia) o `focus` (con `action` solo si la vista la soporta). `App.tsx` solo aplica el plan.
-- «Desactivar» desde un recinto inactivo no abre diálogo (activar no pide confirmación, CA-04). «Cancelar boleto» solo abre el diálogo si la fila localizada es cancelable.
+- La acción «Desactivar» del buscador solo abre el diálogo para un recinto activo. «Cancelar boleto» solo abre el diálogo si la fila localizada es cancelable.
 - `FocusTarget` gana `action?`; no gana `tab?`: la pestaña de una acción sin elemento viaja en un estado aparte de `App.tsx` (`tabRequest`) porque no hay id.
 - Si todas las palabras son de acción, los elementos no reciben «Ir a» (coinciden por la propia palabra).
 

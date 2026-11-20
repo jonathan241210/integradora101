@@ -103,7 +103,10 @@ describe("CA-11 administration-sections", () => {
     api.reports.tickets.mockRejectedValueOnce(apiError(422, "El rango no puede superar 366 días."));
     const h = createHarness(ticketReportReducer, initialTicketReportState);
 
-    expect(render(h.state)).toContain("Cargando el reporte…");
+    const loading = render(h.state);
+    expect(loading).toContain('role="status" aria-live="polite">Cargando el reporte…');
+    expect(loading).toContain('class="loading-indicator__elapsed">0 s');
+    expect(loading).toContain('class="report-loading__preview" aria-hidden="true"');
 
     await loadTicketReport(api, h.dispatch, { period: "custom", from: "2025-01-01", to: "2026-12-31" });
     const markup = render(h.state);
@@ -111,6 +114,7 @@ describe("CA-11 administration-sections", () => {
     expect(markup).toContain('role="alert"');
     expect(markup).toContain("El rango no puede superar 366 días.");
     expect(markup).toContain("Reintentar");
+    expect(markup).not.toContain("loading-indicator__elapsed");
   });
 });
 

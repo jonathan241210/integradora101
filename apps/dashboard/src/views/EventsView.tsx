@@ -2,6 +2,7 @@ import type { FormEvent } from "react";
 import { Alert, Badge, Button, Card, Field, SelectField, TextAreaField } from "@arca/ui";
 import { ContentCardActions } from "@/components/ContentCardActions";
 import { ContentThumbnail } from "@/components/ContentThumbnail";
+import { ActionError } from "@/components/DashboardNotifications";
 import { fieldErrorProps } from "@/components/FieldErrors";
 import { FormField } from "@/components/FormField";
 import { FormPanel } from "@/components/FormPanel";
@@ -65,11 +66,7 @@ export function EventsView({ state, actions, focus = null }: EventsViewModel & {
         description="Crea, edita y retira los eventos del zoológico."
       />
       <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} focusRef={noticeRef} />
-      {state.actionError && pendingAction === null && (
-        <Alert className="inline-alert" role="alert" aria-live="assertive">
-          {state.actionError}
-        </Alert>
-      )}
+      <ActionError message={pendingAction === null ? state.actionError : ""} />
       {missingPending && (
         <Alert className="inline-alert" role="alert">
           El evento ya no está en la lista. Cierra la confirmación para continuar.

@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { Alert, Badge, Button, Card, Dialog, Field } from "@arca/ui";
+import { Badge, Button, Card, Dialog, Field } from "@arca/ui";
+import { ActionError } from "@/components/DashboardNotifications";
 import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EnclosureQrDialog } from "@/components/EnclosureQrDialog";
@@ -77,11 +78,7 @@ export function EnclosuresView({ state, actions, page, pageCount, pageItems, can
         description="Consulta los recintos del zoológico, crea nuevos y renómbralos."
       />
       <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} />
-      {sectionError && (
-        <Alert className="inline-alert" role="alert" aria-live="assertive">
-          {sectionError}
-        </Alert>
-      )}
+      <ActionError message={sectionError} />
       <div className="list-toolbar">
         <Button onClick={() => actions.openDialog({ kind: "create" })}>
           Crear recinto

@@ -56,7 +56,7 @@ export function AnimalsView({
       </div>
 
       <Card className="animals-card">
-        <div className="animals-toolbar" style={{ display: 'grid', gap: '0.75rem' }}>
+        <div className="animals-toolbar">
           <Field
             aria-label="Buscar animal"
             label="Buscar"
@@ -66,18 +66,18 @@ export function AnimalsView({
             type="search"
             value={search}
           />
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-            <label style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <span>Orden</span>
-              <select value={sort} onChange={(e) => setSort(e.target.value as SortMode)} aria-label="Ordenar animales">
-                <option value="recent">Más recientes creados</option>
-                <option value="name">Nombre (A-Z)</option>
-              </select>
-            </label>
-            <span className="sample-count">
-              {loading ? <Spinner label="Cargando…" /> : `${sorted.length} animales`}
-            </span>
-          </div>
+        </div>
+        <div className="animals-results-toolbar">
+          <span className="sample-count">
+            {loading ? <Spinner label="Cargando animales…" /> : `${sorted.length} animales`}
+          </span>
+          <label className="animals-sort">
+            <span>Orden</span>
+            <select value={sort} onChange={(e) => setSort(e.target.value as SortMode)} aria-label="Ordenar animales">
+              <option value="recent">Más recientes creados</option>
+              <option value="name">Nombre (A-Z)</option>
+            </select>
+          </label>
         </div>
         {error && (
           <p role="alert">

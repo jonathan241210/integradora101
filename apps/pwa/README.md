@@ -156,6 +156,7 @@ ZooHealth usa la cookie de sesión de Sanctum. Ten en cuenta:
 - ✅ Puedes recargar la pestaña mientras la sesión esté vigente
 - ✅ Cierra la sesión desde el menú de usuario
 - ✅ El directorio, perfiles y registro de animales usan la sesión con la API
+- En **Animales**, usa «Orden» debajo del buscador para elegir entre los registros más recientes y el orden por nombre. En el perfil, pulsa la foto para ampliarla y usa «Cerrar» o Escape para volver. «Cambiar foto» abre el selector de archivos por separado.
 - ⚠️ **Para registrar un animal**, selecciona un recinto existente (requerido por la API)
 - ⚠️ **Diagnósticos y revisiones clínicas** no envían datos al servidor (fuera del alcance aprobado)
 
