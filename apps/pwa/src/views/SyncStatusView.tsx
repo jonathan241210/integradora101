@@ -1,3 +1,4 @@
+import { Spinner } from '@/views/Spinner';
 import { Button, Card } from '@arca/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { getSyncSnapshot, syncNow } from '@/offline/sync-manager';
@@ -9,7 +10,6 @@ type Snapshot = Awaited<ReturnType<typeof getSyncSnapshot>>;
 const statusLabels: Record<string, string> = {
   pending: 'Pendiente',
   blocked: 'Bloqueado (espera dependencia)',
-  syncing: 'Subiendo',
   synced: 'Sincronizado',
   error: 'Error',
   conflict: 'Conflicto',
@@ -64,13 +64,13 @@ export function SyncStatusView({ userScope }: { userScope: string }) {
 
       <Card className="form-card">
         <div className="form-actions" style={{ justifyContent: 'space-between', marginBottom: '1rem' }}>
-          <span>{rows.filter((r) => r.status !== 'synced').length} pendiente(s)</span>
+          {snapshot && <span>{rows.filter((r) => r.status !== 'synced').length} pendiente(s)</span>}
           <Button onClick={() => void handleSync()} disabled={busy} type="button">
-            {busy ? 'Sincronizando…' : 'Sincronizar ahora'}
+            {busy ? <Spinner label="Sincronizando…" /> : 'Sincronizar ahora'}
           </Button>
         </div>
 
-        {rows.length === 0 ? (
+        {!snapshot ? <Spinner label="Cargando cola…" /> : rows.length === 0 ? (
           <p>No hay registros en la cola de sincronización.</p>
         ) : (
           <div className="table-scroll">
@@ -91,7 +91,7 @@ export function SyncStatusView({ userScope }: { userScope: string }) {
                     <td>{typeLabel(row.entityType)}</td>
                     <td>{row.ref}</td>
                     <td>{new Date(row.createdAt).toLocaleString('es-MX')}</td>
-                    <td>{statusLabels[row.status] ?? row.status}</td>
+                    <td>{row.status === 'syncing' ? <Spinner label="Subiendo…" /> : (statusLabels[row.status] ?? row.status)}</td>
                     <td>{row.attempts}</td>
                     <td>{row.lastError ? toUserSyncMessage(row.lastError) : (row.status === 'synced' ? 'Subido correctamente' : '—')}</td>
                   </tr>

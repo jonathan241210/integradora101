@@ -1,3 +1,4 @@
+import { Spinner } from '@/views/Spinner';
 import { Button, Card } from '@arca/ui';
 import type { OwnSpeciesRequestDto } from '@arca/api-client';
 import {
@@ -27,7 +28,7 @@ export function OwnSpeciesRequestsPresenter({
   onNext,
   onPrevious,
 }: OwnSpeciesRequestsPresenterProps) {
-  if (status === 'loading') return <p role="status">Cargando tus solicitudes…</p>;
+  if (status === 'loading') return <Spinner label="Cargando tus solicitudes…" />;
   if (status === 'forbidden') return <p role="alert">{FORBIDDEN_MESSAGE}</p>;
   if (status === 'error') {
     return (

@@ -270,7 +270,7 @@ export function AnimalFormView({ userScope }: { userScope?: string } = {}) {
               type="submit"
               variant="primary"
             >
-              {save.saving ? <Spinner label="Cargando…" /> : 'Registrar animal'}
+              {save.saving ? <Spinner label="Guardando animal…" /> : 'Registrar animal'}
             </Button>
           </div>
         </form>
