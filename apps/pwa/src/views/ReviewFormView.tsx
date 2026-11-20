@@ -3,7 +3,11 @@ import { Button, Card } from '@arca/ui';
 export function ReviewFormView({
   onNavigate,
 }: {
-  onNavigate?: (section: 'diagnosis-intense' | 'diagnosis-quick') => void;
+  onNavigate?: (section: 'diagnosis-intense' | 'diagnosis-quick' | import('@/viewmodels/pwaDemo').PwaSection) => void;
+  animalId?: number | null;
+  onOpenAnimal?: unknown;
+  mvzName?: string;
+  userScope?: string;
 } = {}) {
   return (
     <section className="page-section">

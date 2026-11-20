@@ -17,7 +17,10 @@ class Enclosure extends Model
 
     protected $table = 'enclosures';
 
-    public $timestamps = false;
+    public $timestamps = true;
+
+    const CREATED_AT = null;
+    const UPDATED_AT = 'updated_at';
 
     protected $fillable = [
         'name',
@@ -25,6 +28,8 @@ class Enclosure extends Model
         'gps_lon',
         'map_x',
         'map_y',
+        'updated_at',
+        'deleted_at',
     ];
 
     protected $casts = [
@@ -33,6 +38,7 @@ class Enclosure extends Model
         'map_x' => 'float',
         'map_y' => 'float',
         'is_active' => 'boolean',
+        'deleted_at' => 'datetime',
     ];
 
     public function animals(): HasMany

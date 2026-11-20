@@ -4,6 +4,7 @@ export const pwaSections = [
   { id: 'animal-form', label: 'Registrar animal', shortLabel: 'Alta', symbol: '+' },
   { id: 'diagnosis-form', label: 'Registrar diagnóstico', shortLabel: 'Diagnóstico', symbol: '✚' },
   { id: 'review-form', label: 'Registrar revisión', shortLabel: 'Revisión', symbol: '◷' },
+  { id: 'sync', label: 'Sync', shortLabel: 'Sync', symbol: '⇅' },
 ] as const;
 
 export const diagnosisModeSections = [

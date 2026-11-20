@@ -33,6 +33,7 @@ describe('CA-05 PWA responsive demo screens', () => {
         activeSection="home"
         onLogout={() => undefined}
         onNavigate={() => undefined}
+        userScope="user:test"
       />,
     );
 
