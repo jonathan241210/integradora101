@@ -249,3 +249,10 @@ El dashboard muestra folios, cantidades, totales, nombres de cajeros en el histo
   10. **Cambio de cantidades con el diálogo abierto:** no se editan dentro del diálogo. El cajero lo cierra, corrige y vuelve a pulsar «Registrar venta», lo que pide una cotización nueva.
   13. **(Boletos individuales, resuelta por Jonathan el 2026-11-05.) R-D1:** la pantalla muestra el total y la lista de folios con tipo y precio; los QR aparecen solo en la impresión.
   14. **(Boletos individuales, resuelta por Jonathan el 2026-11-06.) R-D2:** el precio del boleto se muestra siempre y no es configurable como campo de impresión.
+
+## Nota de revisión (2026-11-20, Borrador de `dashboard-016`)
+
+- Propuesta de Jonathan (2026-11-20) de motivo de cancelación de lista cerrada. El diálogo de cancelar (CA-12) añadirá un selector obligatorio «Motivo» con las opciones que devuelve la API (`api-022` CA-10) y, si el motivo es «Otro», un campo de comentario. Sin motivo, no se llama a la API.
+- La definición está en `apps/dashboard/specs/016-ticket-cancellation-report.md` (CA-18 a CA-20) y en `apps/api/specs/022-ticket-cancellation-report.md`. Esta nota no cambia los CA ni las RN de esta spec, ni su estado (Aprobada · En progreso).
+- Orden de despliegue: la API con `reason_code` obligatorio debe desplegarse junto con el diálogo nuevo; hasta entonces la cancelación sin motivo de lista responde 422.
+- Cambio pendiente de aprobación de Jonathan. Hasta entonces, esta spec rige sin cambios.

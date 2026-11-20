@@ -158,3 +158,9 @@ La persona usuaria confirmó el rediseño visual de las seis secciones administr
 - Confirmado por Jonathan, 2026-10-30: redacción reconciliada de RN-10 y CA-12 (divergencia de `apps/dashboard/plan/003-administration-sections.md`); Excel y PDF se ofrecen en la interfaz y dependen de la API (ADR 0017).
 - Actualización de 2026-10-30 (aceptación del ADR 0017 por el equipo, solicitada por la sesión principal): la API ya habilita CSV, Excel y PDF. RN-10 y CA-12 se actualizan para que el 422 quede solo para formato fuera de la lista o PDF sobre el tope. Los criterios no cambian. Pendiente de confirmación funcional de Jonathan de esta redacción.
 - Estado cambiado a Implementada el 2026-10-30: CA verificados con pruebas, revisión de calidad y de seguridad, Constitution Check y pruebas manuales de Jonathan.
+
+## Nota de revisión (2026-11-20, roles fijos)
+
+- Sustituido en lo que contradiga `dashboard-017` (aprobada el 2026-11-20): CA-04 (el formulario de alta ya no ofrece «los cinco roles»: ofrece los roles de `users/options`, sin `admin`; las cuentas `admin` son de solo lectura) y CA-06 (el perfil `executive` pasa a etiquetarse «Consulta directiva»).
+- La sección Usuarios sigue solo para `users.manage`. Para `admin`, las cuentas `admin` se ven sin acciones (`dashboard-017` CA-04).
+- Las tablas de actores de esta spec que dicen «`admin` (cinco roles)» o «`executive`» quedan leídas según `apps/api/specs/023-fixed-roles-and-console-admins.md`. Esta nota no cambia los CA ni las RN de la spec, salvo lo indicado.

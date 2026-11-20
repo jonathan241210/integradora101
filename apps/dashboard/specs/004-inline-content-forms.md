@@ -154,3 +154,11 @@ La interfaz solo presenta lo que `me` permite. La autorización real la aplica l
 - Aprobadores y fecha: Jonathan (solicitante / responsable funcional), 2026-11-02.
 - Evidencia/enlaces: `apps/dashboard/specs/003-administration-sections.md`, `apps/dashboard/plan/003-administration-sections.md`, `apps/api/specs/008-event-news-images.md`, `apps/api/specs/007-administration-management.md`, `apps/dashboard/specs/002-real-staff-login.md`.
 - Origen: plan de trabajo aprobado por el usuario el 2026-11-01 (fuera del repositorio), y decisiones D1 a D3 y del panel colapsable comunicadas por la sesión principal el mismo día.
+
+## Nota de revisión (2026-11-20, roles fijos)
+
+- En Usuarios, el alta usa los roles de `users/options` (sin `admin`) y las cuentas `admin` no tienen acciones de escritura (`dashboard-017` CA-01 y CA-04). Los formularios en línea de Usuarios no cambian por esto.
+- Restablecer contraseña o 2FA, cambiar rol y las operaciones de Siempre y Ventana de `api-021` piden la confirmación de contraseña de `dashboard-015`. **Conflicto pendiente:** `dashboard-015` usa un diálogo modal para esa confirmación, y RN-01 de esta spec prohíbe modales en Usuarios. No se resuelve aquí; queda para decidir en la siguiente revisión de `dashboard-004` o `dashboard-015`.
+- Esta nota no cambia los CA ni las RN de la spec. Ver `apps/dashboard/specs/017-fixed-roles-account-management.md`.
+
+- Decisión 2026-11-20 (Jonathan): el diálogo de confirmación de contraseña de `dashboard-015` es una excepción explícita a RN-01; ningún otro modal se permite en Usuarios.
