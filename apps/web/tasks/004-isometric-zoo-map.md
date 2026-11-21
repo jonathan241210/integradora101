@@ -43,7 +43,7 @@ No se crean rutas, endpoints, migraciones, almacenamiento, permisos de servidor 
 
 ## Enmienda aprobada · vista aérea 2D y mapa 3D · 2026-11-18
 
-- [x] **T-18** (CA-01, CA-05, CA-07): sustituir el arte SVG por `assets/mapa-2d.jpg`, configurar `assets/mapacompleto.glb` como modelo alterno y anunciar carga/error; ante error, volver a 2D. Mantener zonas, selección, zoom y navegación local.
+- [x] **T-18** (CA-01, CA-05, CA-07): sustituir el arte SVG por `assets/mapa-2d.jpg`, configurar `assets/mapa_corregido.glb` como modelo alterno y anunciar carga/error; ante error, volver a 2D. Mantener zonas, selección, zoom y navegación local.
   - Aprobación: solicitante, 2026-11-18, registrada en la revisión de la spec.
   - Evidencia: código integrado de `origin/Diego`; los recursos `mapa-2d.jpg`, `mapacompleto.glb` y `model-viewer.min.js` son locales.
 - [x] **T-19** (CA-01, CA-05): ajustar el test CA-01 y los documentos de plan/tasks a los nombres efectivos de los recursos; mantener pruebas de accesibilidad, error y ausencia de proveedores.
@@ -61,3 +61,9 @@ No se crean rutas, endpoints, migraciones, almacenamiento, permisos de servidor 
 - T-16: `node --test apps/web/src/tests/relocation.test.mjs`: 29 tests, 29 pass, 0 fail; `node --check apps/web/src/script.js` y `git diff --check` pasan. En navegador se comprobó además el límite 150 %, estado deshabilitado del zoom de acercamiento y restablecimiento.
 - T-16: `/verify` identifica `apps/web` aún no inicializada por falta de `apps/web/src/package.json`; no hay scripts npm de formato, lint, tipos o test que ejecutar. El favicon local responde HTTP 200 `image/jpeg`.
 - No se creó PR ni commit en esta tarea; los tres artefactos `web-004` quedan identificados aquí para enlazarlos cuando se abra el PR.
+
+- [x] **T-20** (CA-01, CA-05): sincronizar la referencia a `mapa_corregido.glb`, comprobar la cabecera y la longitud del recurso en CA-01 y conservar el retorno a 2D durante la carga o ante un error.
+- [x] **T-21** (CA-01, CA-05): cargar `assets/MAPA_2D.svg`, ajustar el marco 2D a la proporción de la imagen y comprobar la referencia y dimensiones en CA-01.
+- [x] **T-22** (CA-02, CA-04, CA-05): retirar la columna lateral, mantener accesibles los marcadores 2D y comprobar el estado de selección y el diseño adaptable.
+- [x] **T-23** (CA-01, CA-05): centrar el SVG en un marco vertical, reservar el ancho de la tarjeta para el modelo 3D y encuadrar el modelo desde arriba.
+- [x] **T-24** (CA-02, CA-04, CA-05, CA-07): retirar botones y controlador 2D, mantener el selector accesible, adaptar el marco 3D en móvil y configurar el visor para permitir el desplazamiento vertical.

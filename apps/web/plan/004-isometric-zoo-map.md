@@ -3,7 +3,7 @@
 - Spec: `apps/web/specs/004-isometric-zoo-map.md`
 - Estado de spec: Implementada
 - Responsable técnico: Por identificar
-- Estado técnico: Implementado y verificado; el botón de restablecer permanece habilitado para conservar el foco al volver a 100 %.
+- Estado técnico: Implementado. La enmienda vigente retira los marcadores interactivos y el zoom 2D. El marco mantiene el SVG completo y el visor 3D usa proporción 4:3 en móviles. Se conserva la rotación con `camera-controls` y se configuran `disable-zoom`, `disable-pan` y `touch-action="pan-y"` para permitir el desplazamiento vertical. Las referencias a selección y zoom corresponden a revisiones previas.
 - Fecha del plan: 2026-10-08
 
 ## Diseño de solución
@@ -12,7 +12,7 @@
 
 Mantener el portal estático aprobado en `apps/web/src/`; no migrar framework ni incorporar paquetes. Reemplazar el dibujo esquemático actual por una escena local compuesta por un SVG decorativo como superficie ilustrada y controles HTML semánticos superpuestos para las zonas. Dibujar una base en perspectiva elevada con caminos, vegetación y recintos de formas geométricas; usar sombras, niveles y proyección CSS moderada para sugerir profundidad, sin mapa, tiles, georreferenciación ni datos de otro proveedor.
 
-Representar Felinos, Aviario, Reptilario, Primates, Granja, Lago y Entrada en el mapa. Mantener también la leyenda actual de Entrada, Baños, Alimentos, Bebederos, Áreas de descanso, Enfermería y Tiendas. Cada control utiliza un SVG inline decorativo, con nombre visible asociado y `aria-pressed` sincronizado. Los SVG pueden reutilizar símbolos declarados en el mismo HTML; no cargar iconos desde CDN ni instalar Bootstrap Icons. El estilo será de trazos simples y consistentes, inspirado en iconografía de interfaz, no una copia de la biblioteca.
+Representar Felinos, Aviario, Reptilario, Primates, Granja, Lago y Entrada en el mapa. Retirar la columna lateral aprobada en la enmienda del 2026-11-21. Cada control utiliza un SVG decorativo, un nombre accesible y `aria-pressed` sincronizado.
 
 Reusar el estado de selección actual y la región `aria-live`; ampliar el controlador para activar igual desde mapa y leyenda, marcar todos los controles con el mismo `data-name` como seleccionados y retirar el estado anterior. Preservar activación nativa de botón con Enter/Espacio, orden de tabulación, foco visible y contenido alternativo en texto. Mantener el aviso de que el mapa es demostrativo y no está a escala.
 
@@ -27,7 +27,7 @@ El dibujo y los controles se adaptan al ancho: la superficie conserva aspect rat
 | Portal estático | `apps/web/src/index.html` | Mantener la escena SVG y marcadores existentes; agrupar arte y marcadores para zoom y añadir controles semánticos de acercar, alejar y restablecer. |
 | Portal estático | `apps/web/src/styles.css` | Profundizar relieves visuales existentes sin alterar paleta; escalar escena agrupada, mantener controles externos a la escala y ajustar responsive/accesibilidad. |
 | Portal / mapa actualizado | `apps/web/src/index.html`, `apps/web/src/styles.css` | Mostrar la fotografía 2D local, alternar el GLB local y anunciar carga/error con retorno a 2D; conservar marcadores y zoom. |
-| Recursos locales | `apps/web/src/assets/mapa-2d.jpg`, `mapacompleto.glb` | Suministrar la vista aérea 2D y el modelo 3D aprobado, sin servicios externos. |
+| Recursos locales | `apps/web/src/assets/MAPA_2D.svg`, `mapa_corregido.glb` | Suministrar la vista 2D y el modelo 3D aprobado, sin servicios externos. El marco 2D mantiene la proporción de la imagen vertical 2160 × 2304. |
 | Portal estático | `apps/web/src/script.js` | Conservar la selección sincronizada e implementar zoom acotado 100–150 %, estado accesible y restablecimiento sin modificar selección/foco. |
 | Pruebas | `apps/web/src/tests/relocation.test.mjs` | Añadir pruebas nombradas para CA-01..CA-07 y simulación de selección/zoom con builtins Node; conservar hashes de assets existentes y pruebas de 001..003. |
 | Artefactos SDD relacionados | `apps/web/specs/001-relocate-static-portal.md`, `apps/web/plan/001-relocate-static-portal.md`, `apps/web/tasks/001-relocate-static-portal.md` | Ampliar el registro de alcance posterior solo si se requiere una excepción de integridad estructural adicional para esta feature; no borrar evidencias históricas. |
@@ -55,7 +55,7 @@ El dibujo y los controles se adaptan al ancho: la superficie conserva aspect rat
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
 | CA-01 | `CA-01 isometric-zoo-map` verifica fotografía 2D y GLB locales, alternancia con estado de carga/error y ausencia de proveedores. | Node `node:test`; `apps/web/src/tests/relocation.test.mjs`. |
-| CA-02 | `CA-02 isometric-zoo-map` comprueba todas las 13 zonas/servicios conservadas, asociación de icono SVG local, nombre accesible y texto correspondiente. | Node `node:test`; `apps/web/src/tests/relocation.test.mjs`. |
+| CA-02 | `CA-02 isometric-zoo-map` comprueba los siete marcadores accesibles y la ausencia de la columna lateral. | Node `node:test`; `apps/web/src/tests/relocation.test.mjs`. |
 | CA-03 | `CA-03 isometric-zoo-map` comprueba texto visible de mapa demostrativo/no a escala/no preciso y estructura accesible. | Node `node:test`; `apps/web/src/tests/relocation.test.mjs`. |
 | CA-04 | `CA-04 isometric-zoo-map` ejecuta el controlador de selección en DOM simulado y comprueba anuncio, resaltado y `aria-pressed` para mapa/leyenda. | Node `node:test` con `node:vm`; `apps/web/src/tests/relocation.test.mjs`. |
 | CA-05 | `CA-05 isometric-zoo-map` comprueba reglas responsive para escena, marcadores y controles; navegador integrado revisa layout/foco/sin desbordamiento en los cinco viewports. | Node `node:test` y navegador integrado; `apps/web/src/tests/relocation.test.mjs`. |
@@ -97,3 +97,5 @@ No se requiere excepción constitucional ni ADR.
 7. Marcar tareas y spec como Implementadas solo después de superar criterios y registrar evidencia.
 
 La aprobación funcional del alcance ampliado fue otorgada por el solicitante el 2026-10-08. La aprobación técnica de este plan revisado y del checklist de tareas está pendiente. La revisión anterior de la escena tampoco pudo ejecutarse con navegador integrado; esta ampliación incluirá una revisión visual nueva de los viewports y no se marcará completa hasta registrarla.
+
+El bot?n carga `assets/mapa_corregido.glb` bajo HTTP o HTTPS. El visor solicita el modelo al activarse, respeta el retorno a 2D durante la carga y permite volver a intentar despu?s de un error.

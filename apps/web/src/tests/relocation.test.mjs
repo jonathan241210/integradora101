@@ -208,89 +208,6 @@ function mountMobileNavigation(initialWidth = 390) {
   };
 }
 
-function mountMapSelection() {
-  const listeners = new Map();
-  const selectedClasses = [];
-  const makeControl = (name) => {
-    const attributes = new Map([['aria-pressed', 'false']]);
-    const classes = new Set();
-    selectedClasses.push(classes);
-    return {
-      dataset: { name },
-      attributes,
-      addEventListener: (type, listener) => listeners.set(`map:${listeners.size}`, listener),
-      setAttribute: (attribute, value) => attributes.set(attribute, value),
-      classList: {
-        toggle: (className, enabled) => enabled ? classes.add(className) : classes.delete(className),
-        contains: (className) => classes.has(className),
-      },
-    };
-  };
-  const controls = [
-    makeControl('Felinos'),
-    makeControl('Felinos'),
-    makeControl('Entrada'),
-    makeControl('Entrada'),
-    makeControl('Baños'),
-  ];
-  const selection = { textContent: '' };
-  const document = {
-    querySelectorAll: () => controls,
-    getElementById: () => selection,
-  };
-  const script = readFileSync(path.join(webSource, 'script.js'), 'utf8');
-  const start = script.indexOf('const mapControls =');
-  const end = script.indexOf('const mapScene =', start);
-  assert.ok(start >= 0 && end > start, 'No se encontró el controlador de selección del mapa');
-  runInNewContext(script.slice(start, end), { document });
-
-  return { controls, listeners, selection, selectedClasses };
-}
-
-function mountMapZoom() {
-  const listeners = new Map();
-  const selectedAttributes = new Map([['aria-pressed', 'false']]);
-  const selectedClasses = new Set();
-  const controls = [{
-    dataset: { name: 'Lago' },
-    addEventListener: (type, listener) => listeners.set(`mapSelection:${type}`, listener),
-    setAttribute: (name, value) => selectedAttributes.set(name, value),
-    classList: {
-      toggle: (name, enabled) => enabled ? selectedClasses.add(name) : selectedClasses.delete(name),
-    },
-  }];
-  const makeButton = (id) => ({
-    disabled: false,
-    addEventListener: (type, listener) => listeners.set(`${id}:${type}`, listener),
-  });
-  const mapScene = { style: { setProperty: (name, value) => listeners.set(`style:${name}`, value) } };
-  const zoomIn = makeButton('mapZoomIn');
-  const zoomOut = makeButton('mapZoomOut');
-  const zoomReset = makeButton('mapZoomReset');
-  const zoomStatus = { textContent: '' };
-  const selection = { textContent: '' };
-  const elements = new Map([
-    ['mapScene', mapScene],
-    ['mapZoomIn', zoomIn],
-    ['mapZoomOut', zoomOut],
-    ['mapZoomReset', zoomReset],
-    ['mapZoomStatus', zoomStatus],
-    ['mapSelection', selection],
-  ]);
-  const document = {
-    activeElement: null,
-    querySelectorAll: () => controls,
-    getElementById: (id) => elements.get(id),
-  };
-  const script = readFileSync(path.join(webSource, 'script.js'), 'utf8');
-  const start = script.indexOf('const mapControls =');
-  const end = script.indexOf("document.querySelectorAll('.foto')", start);
-  assert.ok(start >= 0 && end > start, 'No se encontró el controlador de zoom del mapa');
-  runInNewContext(script.slice(start, end), { document });
-
-  return { listeners, mapScene, zoomIn, zoomOut, zoomReset, zoomStatus, selection, selectedAttributes, selectedClasses, document };
-}
-
 function mountWalkers(initialWidth = 390, reduceMotion = false) {
   const intervals = new Map();
   const clearedIntervals = [];
@@ -667,33 +584,25 @@ test('CA-03 visit-info-icons-and-favicon conserva las etiquetas y prueba todos l
 test('CA-01 isometric-zoo-map carga imagen 2D y configura el modelo 3D local sin proveedor', () => {
   const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
   const section = mapSection(html);
-  assert.match(section, /<img class="map-art" src="assets\/mapa-2d\.jpg"/);
+  assert.match(section, /<img class="map-art" src="assets\/MAPA_2D\.svg"[^>]*width="2160" height="2304"/);
+  const mapArt = readFileSync(path.join(webSource, 'assets', 'MAPA_2D.svg'), 'utf8');
+  assert.match(mapArt, /<svg\b[^>]*viewBox="0 0 2160 2304"/);
   assert.match(section, /class="map-scene" id="mapScene"/);
-  assert.match(section, /map-icon-(?:felinos|aviario|reptilario|primates|granja|lago|entrada)/);
-  assert.match(section, /data-model="assets\/mapacompleto\.glb"/);
+  const modelPath = /data-model="(assets\/mapa_corregido\.glb)"/.exec(section)?.[1];
+  assert.ok(modelPath, 'Falta la ruta al modelo local');
+  const model = readFileSync(path.join(webSource, modelPath));
+  assert.equal(model.toString('ascii', 0, 4), 'glTF');
+  assert.equal(model.readUInt32LE(4), 2);
+  assert.equal(model.readUInt32LE(8), model.length);
   assert.match(section, /id="mapModelStatus" role="status" aria-live="polite" hidden/);
-  assert.match(section, /id="mapZoomReset"[^>]*aria-controls="mapScene"(?![^>]*\sdisabled)/);
   assert.doesNotMatch(section, /https?:|maps\.google|mapbox|openstreetmap/i);
 });
 
-test('CA-02 isometric-zoo-map conserva zonas, servicios e iconos SVG accesibles', () => {
-  const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
-  const section = mapSection(html);
-  const names = ['Felinos', 'Aviario', 'Reptilario', 'Primates', 'Granja', 'Lago', 'Entrada', 'Baños', 'Alimentos', 'Bebederos', 'Áreas de descanso', 'Enfermería', 'Tiendas'];
-  const controls = [...section.matchAll(/<button\b(?=[^>]*\bmap-control\b)[\s\S]*?<\/button>/g)].map((match) => match[0]);
-  const symbols = new Set([...section.matchAll(/<symbol id="([^"]+)"/g)].map((match) => match[1]));
-  assert.ok(controls.length >= names.length);
-  for (const name of names) {
-    assert.ok(section.includes(`data-name="${name}"`), `Falta ${name}`);
-    const control = controls.find((candidate) => candidate.includes(`data-name="${name}"`));
-    assert.ok(control, `Falta un control para ${name}`);
-    assert.match(control, /aria-label="[^"]+"/);
-    assert.match(control, /<svg class="map-icon"[^>]*aria-hidden="true"/);
-    const symbol = control.match(/<use href="#([^"]+)"/)?.[1];
-    assert.ok(symbols.has(symbol), `Falta el símbolo SVG local de ${name}`);
-    assert.match(control, /<span(?: class="map-marker-label")?>[^<]+<\/span>/);
-    assert.match(control, /aria-pressed="false"/);
-  }
+test('CA-02 isometric-zoo-map solo muestra el boton para cambiar de vista', () => {
+  const section = mapSection(readFileSync(path.join(webSource, 'index.html'), 'utf8'));
+  assert.deepEqual([...section.matchAll(/<button\b[^>]*\bid="([^"]+)"/g)].map(match => match[1]), ['mapModelToggle']);
+  assert.equal((section.match(/<button\b/g) ?? []).length, 1);
+  assert.doesNotMatch(section, /map-legend|map-marker|map-zoom-controls/);
 });
 
 test('CA-03 isometric-zoo-map advierte que la ilustración no sirve para orientarse con precisión', () => {
@@ -702,77 +611,28 @@ test('CA-03 isometric-zoo-map advierte que la ilustración no sirve para orienta
   assert.match(section, /Ilustración aproximada,\s*no está a escala y no sirve\s*para orientarte con precisión/);
 });
 
-test('CA-04 isometric-zoo-map sincroniza selección, resaltado y anuncio entre controles', () => {
-  const map = mountMapSelection();
-  map.listeners.get('map:0')();
-  assert.equal(map.selection.textContent, 'Seleccionaste: Felinos. Consulta al personal para encontrar esta zona.');
-  assert.equal(map.controls[0].attributes.get('aria-pressed'), 'true');
-  assert.equal(map.controls[1].attributes.get('aria-pressed'), 'true');
-  assert.equal(map.controls[2].attributes.get('aria-pressed'), 'false');
-  assert.equal(map.controls[0].classList.contains('active'), true);
-  assert.equal(map.controls[2].classList.contains('active'), false);
-
-  map.listeners.get('map:4')();
-  assert.equal(map.selection.textContent, 'Seleccionaste: Baños. Consulta al personal para encontrar esta zona.');
-  assert.equal(map.controls[0].attributes.get('aria-pressed'), 'false');
-  assert.equal(map.controls[0].classList.contains('active'), false);
-  assert.equal(map.controls[4].attributes.get('aria-pressed'), 'true');
-  assert.equal(map.controls[4].classList.contains('active'), true);
+test('CA-04 isometric-zoo-map permite cambiar de vista con un boton accesible', () => {
+  const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
+  assert.match(mapSection(html), /<button type="button"[^>]*id="mapModelToggle"[^>]*aria-pressed="false"[^>]*aria-controls="mapScene"/);
+  assert.match(html, /mapBtn\.setAttribute\('aria-pressed', 'true'\)/);
+  assert.match(html, /mapBtn\.setAttribute\('aria-pressed', 'false'\)/);
 });
 
-test('CA-05 isometric-zoo-map adapta la ilustración y la leyenda a viewports estrechos', () => {
+test('CA-05 isometric-zoo-map adapta ambos marcos y muestra el SVG completo', () => {
   const css = readFileSync(path.join(webSource, 'styles.css'), 'utf8');
   assert.match(css, /\.map\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*10[^}]*overflow:\s*hidden/s);
-  assert.match(css, /\.map-scene\s*\{[^}]*position:\s*absolute[^}]*transform:\s*scale\(var\(--map-scale,\s*1\)\)/s);
-  assert.match(css, /\.map-art\s*\{[^}]*position:\s*absolute[^}]*width:\s*100%[^}]*height:\s*100%/s);
-  assert.match(css, /\.map-zoom-controls\s*\{[^}]*flex-wrap:\s*wrap/s);
-  assert.match(css, /\.map-marker\s*\{[^}]*top:\s*var\(--marker-y\)[^}]*left:\s*var\(--marker-x\)/s);
-  assert.match(css, /@media \(max-width: 820px\)\s*\{\s*\.map-layout\s*\{\s*grid-template-columns:\s*minmax\(0,\s*1fr\)/);
-  assert.match(css, /@media \(max-width: 560px\)\s*\{[\s\S]*?\.map-marker-label\s*\{[^}]*clip:\s*rect\(0,\s*0,\s*0,\s*0\)/);
-  assert.match(css, /\.map-control:focus-visible/);
-  assert.doesNotMatch(css, /html,\s*body\s*\{[^}]*overflow-x:\s*clip/s);
+  assert.match(css, /\.map-art\s*\{[^}]*width:\s*100%[^}]*height:\s*100%[^}]*object-fit:\s*contain/);
+  assert.match(css, /\.map:has\(\.map-toggle\[aria-pressed="false"\]\)\s*\{[^}]*aspect-ratio:\s*15\s*\/\s*16/);
+  assert.match(css, /@media \(max-width: 560px\)\s*\{[^}]*\}\s*\.map:has\(\.map-toggle\[aria-pressed="true"\]\)\s*\{[^}]*aspect-ratio:\s*4\s*\/\s*3/);
+  assert.match(css, /\.model-toggle:focus-visible/);
 });
 
-test('CA-07 isometric-zoo-map controla límites, estado y restablecimiento sin perder selección o foco', () => {
-  const zoom = mountMapZoom();
-  assert.equal(zoom.zoomOut.disabled, true);
-  assert.equal(zoom.zoomReset.disabled, false);
-  assert.equal(zoom.zoomStatus.textContent, 'Vista: 100 %');
-  assert.equal(zoom.listeners.get('style:--map-scale'), '1');
-
-  zoom.listeners.get('mapZoomIn:click')();
-  assert.equal(zoom.zoomStatus.textContent, 'Vista: 110 %');
-  assert.equal(zoom.zoomReset.disabled, false);
-  assert.equal(zoom.listeners.get('style:--map-scale'), '1.1');
-  zoom.listeners.get('mapSelection:click')();
-  assert.equal(zoom.selectedAttributes.get('aria-pressed'), 'true');
-  assert.equal(zoom.selectedClasses.has('active'), true);
-
-  for (let step = 0; step < 5; step += 1) {
-    zoom.listeners.get('mapZoomIn:click')();
-  }
-  assert.equal(zoom.zoomStatus.textContent, 'Vista: 150 %');
-  assert.equal(zoom.zoomIn.disabled, true);
-  assert.equal(zoom.zoomOut.disabled, false);
-  zoom.listeners.get('mapZoomIn:click')();
-  assert.equal(zoom.zoomStatus.textContent, 'Vista: 150 %');
-
-  for (let step = 0; step < 5; step += 1) {
-    zoom.listeners.get('mapZoomOut:click')();
-  }
-  assert.equal(zoom.zoomStatus.textContent, 'Vista: 100 %');
-  assert.equal(zoom.zoomOut.disabled, true);
-  assert.equal(zoom.zoomReset.disabled, false);
-
-  zoom.listeners.get('mapZoomIn:click')();
-  zoom.document.activeElement = zoom.zoomReset;
-  zoom.listeners.get('mapZoomReset:click')();
-  assert.equal(zoom.document.activeElement, zoom.zoomReset);
-  assert.equal(zoom.selectedAttributes.get('aria-pressed'), 'true');
-  assert.equal(zoom.selectedClasses.has('active'), true);
-
-  assert.match(readFileSync(path.join(webSource, 'index.html'), 'utf8'), /aria-label="Controles de zoom del mapa"/);
-  assert.match(readFileSync(path.join(webSource, 'index.html'), 'utf8'), /id="mapZoomStatus" role="status" aria-live="polite"/);
+test('CA-07 isometric-zoo-map permite desplazarse sobre el visor 3D', () => {
+  const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
+  assert.match(html, /mapViewer\.setAttribute\('camera-controls', ''\)/);
+  assert.match(html, /mapViewer\.setAttribute\('touch-action', 'pan-y'\)/);
+  assert.match(html, /mapViewer\.setAttribute\('disable-zoom', ''\)/);
+  assert.match(html, /mapViewer\.setAttribute\('disable-pan', ''\)/);
 });
 
 test('CA-06 isometric-zoo-map conserva suite Node local sin nuevas dependencias', () => {
