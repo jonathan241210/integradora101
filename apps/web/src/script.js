@@ -65,47 +65,6 @@
   mobileNavigation.addEventListener('change', syncNavigationForViewport);
   syncNavigationForViewport();
 
-  /* ---------- Mapa: selección (delegación de eventos) ---------- */
-  const mapSection = document.querySelector('.map-section');
-  const mapControls = [...mapSection.querySelectorAll('.map-control')];
-  const mapSelection = $('mapSelection');
-
-  mapSection.addEventListener('click', event => {
-    const point = event.target.closest('.map-control');
-    if (!point) return;
-
-    mapControls.forEach(control => {
-      const isSelected = control.dataset.name === point.dataset.name;
-      control.setAttribute('aria-pressed', String(isSelected));
-      control.classList.toggle('active', isSelected);
-    });
-
-    mapSelection.textContent = `Seleccionaste: ${point.dataset.name}. Consulta al personal para encontrar esta zona.`;
-  });
-
-  /* ---------- Mapa: zoom ---------- */
-  const mapScene = $('mapScene');
-  const mapZoomIn = $('mapZoomIn');
-  const mapZoomOut = $('mapZoomOut');
-  const mapZoomStatus = $('mapZoomStatus');
-  const MAP_ZOOM_MIN = 100;
-  const MAP_ZOOM_MAX = 150;
-  const MAP_ZOOM_STEP = 10;
-  let mapZoom = MAP_ZOOM_MIN;
-
-  function setMapZoom(value) {
-    mapZoom = Math.min(Math.max(value, MAP_ZOOM_MIN), MAP_ZOOM_MAX);
-    mapScene.style.setProperty('--map-scale', String(mapZoom / 100));
-    mapZoomOut.disabled = mapZoom === MAP_ZOOM_MIN;
-    mapZoomIn.disabled = mapZoom === MAP_ZOOM_MAX;
-    mapZoomStatus.textContent = `Vista: ${mapZoom} %`;
-  }
-
-  mapZoomIn.addEventListener('click', () => setMapZoom(mapZoom + MAP_ZOOM_STEP));
-  mapZoomOut.addEventListener('click', () => setMapZoom(mapZoom - MAP_ZOOM_STEP));
-  $('mapZoomReset').addEventListener('click', () => setMapZoom(MAP_ZOOM_MIN));
-  setMapZoom(MAP_ZOOM_MIN);
-
   /* ---------- Galería ---------- */
   document.querySelectorAll('.foto').forEach((photo, index) => {
     photo.addEventListener('click', () => showToast(`Fotografía ${index + 1} de la galería`));
