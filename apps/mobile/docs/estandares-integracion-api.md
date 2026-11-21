@@ -56,15 +56,7 @@ flowchart LR
 
 ## 3. Configuración y variables de entorno
 
-### Variable de entorno obligatoria
-En Expo, toda variable de entorno pública debe llevar el prefijo `EXPO_PUBLIC_`:
-
-```bash
-# Archivo apps/mobile/.env
-EXPO_PUBLIC_API_URL=http://10.0.2.2:8000/api/v1  # Emulador Android local
-# EXPO_PUBLIC_API_URL=http://localhost:8000/api/v1 # Simulador iOS / Web
-# EXPO_PUBLIC_API_URL=https://api-dev.tulancingo.gob.mx/api/v1 # Servidor compartido
-```
+Para conectar una API real, define `EXPO_PUBLIC_API_URL` en `apps/mobile/.env`. El valor incluye `/api/v1` y debe ser accesible desde el dispositivo. Consulta [Conectar la API](../README.md#conectar-la-api) para elegir la URL del teléfono físico, el emulador o un servidor compartido.
 
 ### Cabeceras HTTP estándar
 Todas las peticiones enviadas por `@arca/api-client` deben incluir:
@@ -84,7 +76,7 @@ Para evitar discrepancias con las specs aprobadas de la API (`api-004` y `api-00
 
 | Dominio | Responsable | Specs móvil / API | Rutas contractuales (API v1) | Autenticación |
 |---|---|---|---|---|
-| **Catálogo Público** | **Víctor** | `mobile-003` | `GET /species`, `GET /species/{id}`, `GET /events` | Ninguna (Público) |
+| **Catálogo Público** | **Víctor** | `mobile-003` | `GET /species`, `GET /species/{id}`, `GET /published-species`, `GET /enclosures`, `GET /events` | Ninguna (Público) |
 | **Mapa y Ubicación** | **Víctor** | `mobile-007` | `GET /enclosures`, `GET /map/locations` | Ninguna (Público) |
 | **Cuenta Visitante** | **Aksel** | `mobile-004` / `api-004` | `POST /visitor/auth/register`<br>`POST /visitor/auth/email/verify`<br>`POST /visitor/auth/login`<br>`POST /visitor/auth/refresh`<br>`POST /visitor/auth/logout`<br>`GET /visitor/me` | Bearer Token (Sanctum) + Refresh Token |
 | **Progreso y Colección** | **Aksel** | `mobile-005` / `api-005` | `GET /visitor/progress`<br>`GET /visitor/collection`<br>`GET /visitor/achievements`<br>`GET /visitor/missions` | Bearer Token obligatorio |

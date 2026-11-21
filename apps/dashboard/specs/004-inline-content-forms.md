@@ -76,7 +76,14 @@ La interfaz solo presenta lo que `me` permite. La autorización real la aplica l
 ### Confirmación en línea
 
 - **CA-08:** Dado un elemento de Noticias, Eventos o Usuarios, cuando se pulsa «Eliminar», entonces aparece una confirmación en línea dentro de su tarjeta o fila que nombra el elemento y el efecto, con «Confirmar» y «Cancelar». En noticias y eventos el efecto es que el elemento se elimina y deja de mostrarse en la lista, y que su imagen se borra del servidor (`api-008` CA-07, P2). En Usuarios, el efecto es la baja lógica de la cuenta (`api-007`). Solo al pulsar «Confirmar» se llama a la API; «Cancelar» no hace nada.
-- **CA-09:** Dado un elemento de Noticias, Eventos o Usuarios, cuando se pulsa «Activar» o «Desactivar», entonces aparece la misma confirmación en línea con el efecto de la acción, y solo al confirmar se llama a la API.
+- **CA-09:** Al pulsar «Activar» o «Desactivar», Noticias muestra una confirmación centrada y Eventos y Usuarios la muestran en línea. La confirmación explica el efecto de la acción. Solo al confirmar se llama a la API.
+
+### Enmienda aprobada para CA-09
+
+- **Aprobación funcional:** confirmada por la persona solicitante en la conversación.
+- **Noticias:** al pulsar «Activar» o «Desactivar», aparece un diálogo centrado con el nombre de la noticia y su efecto en el portal público. El diálogo ofrece «Cancelar» y la acción correspondiente. Solo al confirmar se envía la solicitud. Escape cancela mientras no haya una solicitud en curso y el foco vuelve al control que abrió el diálogo.
+- **Alcance:** la enmienda aplica a los dos cambios de estado de Noticias. Eliminar y las acciones de Eventos y Usuarios siguen sus criterios vigentes.
+- **Datos y permisos:** la enmienda modifica la presentación de la confirmación y usa el contrato actual de la API.
 - **CA-10:** Dada una cuenta de Usuarios, cuando se pulsa «Restablecer contraseña», entonces aparece en línea un campo para la nueva contraseña con botón de mostrar/ocultar accesible y las acciones «Confirmar» y «Cancelar». Solo al confirmar se llama a la API. Tras enviarla, la contraseña se descarta de la interfaz (`dashboard-003` RN-07).
 - **CA-11:** Dada una cuenta de Usuarios, cuando se pulsa «Restablecer 2FA», entonces aparece la confirmación en línea que nombra la cuenta y explica que su segundo factor se borrará y tendrá que volver a configurarlo; solo al confirmar se llama a la API.
 - **CA-12:** Dada una confirmación en línea o un campo de contraseña en línea abierto, cuando se usa el teclado, entonces el foco es visible, «Cancelar» y «Confirmar» se alcanzan con Tab y se activan con Enter, Escape cancela la acción, y solo una acción en línea puede estar abierta a la vez en cada sección.

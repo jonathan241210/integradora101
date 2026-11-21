@@ -85,6 +85,8 @@ describe("CA-11 collapsible-menu-event-pagination", () => {
 
     expect(markup).toContain('class="ticket-sale-result__ticket"');
     expect(markup).toContain('class="ticket-sale-result__check-mark"');
+    expect(markup).toContain('class="card-heading ticket-sale-result__banner"');
+    expect(markup).toContain('class="ticket-sale-success-popup" role="status"');
     expect(markup).toContain("Venta registrada");
     expect(markup).toContain("Imprimir boletos");
   });

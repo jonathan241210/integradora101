@@ -1,6 +1,11 @@
 import React from 'react';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+
+declare const __dirname: string;
+
+const { readFileSync } = jest.requireActual<{
+  readFileSync: (file: string, encoding: string) => string;
+}>('fs');
+const { join } = jest.requireActual<{ join: (...parts: string[]) => string }>('path');
 import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
 import * as ImagePicker from 'expo-image-picker';
 import type { ApiError, VisitorMemoryDto } from '@arca/api-client';
@@ -147,13 +152,13 @@ const visitor: User = {
   totalAnimals: 5,
 };
 
-async function confirmCorrection(view: ReturnType<typeof render>) {
+async function confirmCorrection(view: Awaited<ReturnType<typeof render>>) {
   await fireEvent.press(view.getByRole('button', { name: 'Enviar petición' }));
   expect(view.getByText(CONFIRM_CORRECTION)).toBeTruthy();
   await fireEvent.press(view.getByRole('button', { name: 'Sí, enviar' }));
 }
 
-async function chooseAndConsent(view: ReturnType<typeof render>) {
+async function chooseAndConsent(view: Awaited<ReturnType<typeof render>>) {
   allowPhoto();
   await fireEvent.press(view.getByRole('button', { name: 'Elegir foto' }));
   await waitFor(() => expect(view.getByText('foto.jpg')).toBeTruthy());

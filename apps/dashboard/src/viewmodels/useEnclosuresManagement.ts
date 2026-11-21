@@ -80,10 +80,7 @@ export function useEnclosuresManagement(
       openDialog: (dialog) => dispatch({ type: "dialog-opened", dialog }),
       closeDialog: () => dispatch({ type: "dialog-closed" }),
       dismissNotice: () => dispatch({ type: "notice-dismissed" }),
-      toggleStatus: (item) => {
-        if (item.is_active) dispatch({ type: "dialog-opened", dialog: { kind: "status", item } });
-        else void setEnclosureStatus(adminApi, dispatch, item, true);
-      },
+      toggleStatus: (item) => dispatch({ type: "dialog-opened", dialog: { kind: "status", item } }),
       openQr: (item) => dispatch({ type: "dialog-opened", dialog: qrDialogForCard(item) }),
       setHasQr: (id, hasQr) => dispatch({ type: "qr-status-set", id, hasQr }),
       qrNotFound: (message) => {
@@ -95,7 +92,9 @@ export function useEnclosuresManagement(
       confirm: () => {
         const { dialog } = state;
 
-        if (dialog?.kind === "status") void setEnclosureStatus(adminApi, dispatch, dialog.item, false);
+        if (dialog?.kind === "status") {
+          void setEnclosureStatus(adminApi, dispatch, dialog.item, !dialog.item.is_active);
+        }
         if (dialog?.kind === "delete") void deleteEnclosure(adminApi, dispatch, dialog.item);
       },
       save: (name) => void saveEnclosure(adminApi, dispatch, state.dialog, name),

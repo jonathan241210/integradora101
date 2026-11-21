@@ -2,7 +2,6 @@ import type { ReactNode, SVGProps } from "react";
 
 export type IconName =
   | "animals"
-  | "bell"
   | "building"
   | "calendar"
   | "camera"
@@ -23,7 +22,6 @@ export type IconName =
 
 const iconPaths: Record<IconName, ReactNode> = {
   animals: <><circle cx="7" cy="7" r="2" /><circle cx="17" cy="7" r="2" /><circle cx="4" cy="13" r="2" /><circle cx="20" cy="13" r="2" /><path d="M12 12c-3.3 0-6 3.1-6 6.2 0 1.6 1.2 2.8 2.7 2.8.9 0 2.1-.6 3.3-.6s2.4.6 3.3.6c1.5 0 2.7-1.2 2.7-2.8C18 15.1 15.3 12 12 12Z" /></>,
-  bell: <><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></>,
   building: <><path d="M4 21V5l8-3 8 3v16" /><path d="M2 21h20M8 8h1m6 0h1M8 12h1m6 0h1M10 21v-5h4v5" /></>,
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
   camera: <><path d="M4 8h3l1.5-2h7L17 8h3v11H4Z" /><circle cx="12" cy="13" r="3.5" /></>,

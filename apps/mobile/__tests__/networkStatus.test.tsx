@@ -1,6 +1,6 @@
 import React from 'react';
-import { render, renderHook } from '@testing-library/react-native';
-import { useNetworkState } from 'expo-network';
+import { act, render, renderHook } from '@testing-library/react-native';
+import { getNetworkStateAsync, useNetworkState } from 'expo-network';
 import { useNetworkStatus } from '../src/viewmodels/useNetworkStatus';
 import { AnimalDetailScreen } from '../src/screens/AnimalDetailScreen';
 import { EventDetailScreen } from '../src/screens/EventDetailScreen';
@@ -70,6 +70,62 @@ describe('Conectividad offline (mobile-003: CA-04, ADR 0014)', () => {
     const { result } = await renderHook(() => useNetworkStatus());
 
     expect(result.current.isOffline).toBe(true);
+  });
+
+  it('CA-04: vuelve a consultar tras un error y quita el aviso al recuperar la conexión', async () => {
+    jest.useFakeTimers();
+    const probe = jest.mocked(getNetworkStateAsync);
+    probe.mockClear();
+    probe.mockRejectedValueOnce(new Error('Error al consultar la red'));
+    mockedUseNetworkState.mockReturnValue(networkState({ isInternetReachable: false }));
+
+    try {
+      const { result, unmount } = await renderHook(() => useNetworkStatus());
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(3000);
+      });
+      expect(result.current.isOffline).toBe(true);
+
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(3000);
+      });
+      expect(result.current.isOffline).toBe(false);
+      expect(probe).toHaveBeenCalledTimes(2);
+
+      await unmount();
+      await jest.advanceTimersByTimeAsync(3000);
+      expect(probe).toHaveBeenCalledTimes(2);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('CA-04: evita comprobaciones simultáneas y descarta la que termina tras desmontar', async () => {
+    jest.useFakeTimers();
+    const probe = jest.mocked(getNetworkStateAsync);
+    probe.mockClear();
+    let resolveProbe!: (state: NetworkState) => void;
+    probe.mockReturnValueOnce(new Promise<NetworkState>((resolve) => {
+      resolveProbe = resolve;
+    }));
+    mockedUseNetworkState.mockReturnValue(networkState({ isConnected: false }));
+
+    try {
+      const { unmount } = await renderHook(() => useNetworkStatus());
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(9000);
+      });
+      expect(probe).toHaveBeenCalledTimes(1);
+
+      await unmount();
+      await act(async () => {
+        resolveProbe(networkState({}));
+        await jest.advanceTimersByTimeAsync(3000);
+      });
+      expect(probe).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('CA-04: el detalle de animal muestra el banner sin conexión', async () => {

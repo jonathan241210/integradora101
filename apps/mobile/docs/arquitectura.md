@@ -11,7 +11,7 @@
 
 La aplicación presenta al visitante una experiencia móvil de exploración del zoológico y permite validar sus flujos y diseño.
 
-- **Actual:** cinco pestañas, búsqueda y detalle, colección, perfil, eventos, misiones, salón de logros, QR con cámara o código manual, cola offline de escaneos, cuenta, favoritos, «Mis memorias» y catálogo con caché. Con `EXPO_PUBLIC_API_URL` esas lecturas y escrituras del visitante hablan con la API; sin ella, y en Jest, siguen los mocks de repositorio.
+- **Actual:** cinco pestañas, búsqueda y detalle, colección, perfil, eventos, misiones, salón de logros, QR con cámara o código manual, cola offline de escaneos, cuenta, favoritos, «Mis memorias» y catálogo con caché. Con `EXPO_PUBLIC_API_URL` las lecturas y escrituras del visitante hablan con la API. El [README](../README.md#conectar-la-api) explica la configuración para cada dispositivo.
 - **Catálogo visible:** una especie entra en Inicio, Colección, Perfil y fichas solo si `GET /published-species` la incluye y algún animal de `GET /enclosures` tiene `can_receive_visits` activo. Si el detalle no pasa ese cruce, la ficha no se abre. Los conteos usan esa lista, no `total_species` de la API. `GET /species` no se modificó.
 - **Logros y misiones:** la lista completa se titula «Salón de logros» y se abre con «Ver salón de logros» al final de las misiones. La ficha de una misión no lleva ese botón. «Misión cumplida» y «Maestro de misiones» no se muestran: el seeder los deja con `is_active` falso.
 - **Memorias:** entrada «Mis memorias» en Perfil. Con petición abierta no se ofrece otra alta. Al tocarla se ve la opinión y el estado, sin campos. El límite semanal dice «otra memoria». La API no devuelve la foto al visitante. Un aviso abre `/memory-form` con el id: si esa petición no está en memoria, la ruta pide la lista antes de mostrar «Tu memoria».
@@ -63,7 +63,7 @@ src/
 
 ## 6. Patrón MVVM
 
-El flujo es `Route → Screen/View → ViewModel hook → Repository`. Las rutas coordinan navegación y datos de presentación; las pantallas reciben props y callbacks. Sin `EXPO_PUBLIC_API_URL` la cuenta, el catálogo y el progreso usan mock. Con esa variable usan `@arca/api-client`.
+El flujo es `Route → Screen/View → ViewModel hook → Repository`. Las rutas coordinan navegación y datos de presentación. Las pantallas reciben props y callbacks. `EXPO_PUBLIC_API_URL` conecta la cuenta y el progreso al módulo visitante de `@arca/api-client`. El catálogo público usa su repositorio HTTP por defecto y puede pasar a datos simulados con `EXPO_PUBLIC_USE_MOCKS=true`.
 
 ## 7. Componentes
 
@@ -80,7 +80,7 @@ Las pantallas en `src/screens/` componen controles de `src/components/ui/` y com
 
 La etapa 003 implementa la integración de lectura para el catálogo público y eventos (`GET /species`, `GET /species/{id}`, `GET /events`, `GET /events/{id}`) utilizando `@arca/api-client` (`createHttpClient`) a través de `ApiAnimalRepository` y `ApiZooRepository`.
 Los datos de la API en `snake_case` se normalizan a modelos de dominio en `camelCase` mediante `src/repositories/mappers.ts`.
-Si la variable `EXPO_PUBLIC_USE_MOCKS` está activa o el entorno no cuenta con API disponible, la fábrica `createAnimalRepository()` y `createZooRepository()` recurre limpiamente a las implementaciones mock de `src/mocks/`.
+Las fábricas `createAnimalRepository()` y `createZooRepository()` eligen repositorios simulados cuando `EXPO_PUBLIC_USE_MOCKS=true` o en Jest con la configuración predeterminada. Si una petición real falla, el repositorio HTTP intenta usar los datos guardados.
 La arquitectura de conexión, contratos y manejo de errores para las etapas 005–008 continúa regulada en [estandares-integracion-api.md](./estandares-integracion-api.md).
 
 La cuenta de la spec 004 elige el origen al arrancar: sin `EXPO_PUBLIC_API_URL` usa el mock y el almacenamiento en memoria; con esa variable usa `HttpAuthRepository`, `expo-secure-store` y `createVisitorApi` de `@arca/api-client` contra la API de pruebas. Jest no toma esa variable y sigue en el mock, salvo las pruebas que configuran un cliente simulado. No se importa el cliente de personal (`auth.ts`).
@@ -138,7 +138,7 @@ sequenceDiagram
 | Pendiente | Tratamiento |
 |---|---|
 | Icono de launcher y aviso | El PNG a color y la silueta blanca ya están en `src/assets/icon/`. La publicación en tienda sigue en la spec 008, en borrador |
-| Favoritos del visitante | El corazón y «Animales favoritos» usan la cuenta (`mobile-014`). Colección no filtra favoritos. Esta nota no cierra un PR |
+| Favoritos del visitante | El corazón y «Animales favoritos» usan la cuenta (`mobile-014`). Colección no filtra favoritos. Aksel confirmó el 2026-11-20 la verificación y el pull |
 | Mapa y recorrido 3D | Siguen abiertos (`mobile-007`, `mobile-009`). No se documentan aquí como terminados |
 | Retirar referencia visual temporal | `arca-ui-reference` no es una dependencia y se mantiene fuera de Git |
 | Confundir enmienda 002 con spec 004 | La cuenta de 004 vive en `src/session`. Sin `EXPO_PUBLIC_API_URL` sigue el mock. Con esa variable, el teléfono usa la API de pruebas y `expo-secure-store`. |

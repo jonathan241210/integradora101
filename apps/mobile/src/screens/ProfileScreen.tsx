@@ -9,6 +9,7 @@ interface ProfileScreenProps {
   user: User;
   displayName?: string;
   avatarCode?: string | null;
+  placeholder?: boolean;
   nextThreshold?: number | null;
   achievements: Achievement[];
   onAchievementPress: (id: string) => void;
@@ -19,7 +20,7 @@ interface ProfileScreenProps {
 
 const RECENT_LIMIT = 5;
 
-export function ProfileScreen({ user, displayName, avatarCode, nextThreshold, achievements, onAchievementPress, onSeeAllAchievementsPress, onMemoriesPress, onSettingsPress }: ProfileScreenProps) {
+export function ProfileScreen({ user, displayName, avatarCode, placeholder = false, nextThreshold, achievements, onAchievementPress, onSeeAllAchievementsPress, onMemoriesPress, onSettingsPress }: ProfileScreenProps) {
   const knownAvatar = avatarCode && isAvatarCode(avatarCode) ? avatarCode : null;
   const shownAvatar = knownAvatar ? avatarLabel(knownAvatar) : null;
   const recent = achievements
@@ -51,20 +52,20 @@ export function ProfileScreen({ user, displayName, avatarCode, nextThreshold, ac
               {knownAvatar ? <Image source={AVATAR_IMAGES[knownAvatar]} accessible={false} style={styles.avatarImage} /> : null}
             </View>
             <View style={styles.identityText}>
-              <AppText variant="title">{displayName ?? user.name}</AppText>
+              <AppText variant="title">{placeholder ? (displayName ?? '—') : (displayName ?? user.name)}</AppText>
               <View style={styles.rankPill}>
-                <AppText variant="small" bold>{user.rank}</AppText>
+                <AppText variant="small" bold>{placeholder ? '—' : user.rank}</AppText>
               </View>
             </View>
           </View>
 
           <View style={styles.statsStrip}>
-            <StatItem label="Descubiertos" value={`${user.discoveredCount}/${user.totalAnimals}`} />
-            <StatItem label="Puntos" value={user.points.toString()} />
-            <StatItem label="Nivel" value={user.level.toString()} />
+            <StatItem label="Descubiertos" value={placeholder ? '—' : `${user.discoveredCount}/${user.totalAnimals}`} />
+            <StatItem label="Puntos" value={placeholder ? '—' : user.points.toString()} />
+            <StatItem label="Nivel" value={placeholder ? '—' : user.level.toString()} />
           </View>
 
-          {nextThreshold != null && nextThreshold > 0 ? (
+          {!placeholder && nextThreshold != null && nextThreshold > 0 ? (
             <ProgressBar
               value={user.points / nextThreshold}
               label={`Siguiente umbral: ${nextThreshold} puntos`}

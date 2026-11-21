@@ -27,11 +27,11 @@ Documento de referencia para el equipo de `apps/mobile`. Resume el cumplimiento 
 | 008 | build-distribution | Borrador | No | No iniciada | Play Store pruebas + APK; ADR 0012. Redacción provisional: **Aksel**. |
 | 009 | ar-3d-map-guide | Borrador | Plan y tasks existentes | No se cierra en esta revisión | El recorrido 3D no está terminado. |
 | 009 | expo-sdk57-dependency-alignment | En progreso | Plan y tasks existentes | Alineación de SDK 57 | No cambia el alcance del mapa ni del 3D. |
-| 010 | visitor-memory-requests | En la app | Plan y tasks aprobados | «Mis memorias» en Perfil | Enmienda 2026-11-18: el título pasa de «Mis recuerdos» a «Mis memorias» y el límite semanal dice «otra memoria». Un aviso abre `/memory-form` y espera la lista antes de decir que falta. Sin foto devuelta por la API. Esta nota no cierra un PR. |
+| 010 | visitor-memory-requests | En la app | Plan y tasks aprobados | «Mis memorias» en Perfil | Enmienda 2026-11-18: el título pasa de «Mis recuerdos» a «Mis memorias» y el límite semanal dice «otra memoria». Un aviso abre `/memory-form` y espera la lista antes de decir que falta. Sin foto devuelta por la API. Aksel confirmó el 2026-11-20 la verificación y el pull. No pasa a Implementada: el zoológico aún no redacta el texto de la casilla (RN-07). |
 | 011 | mobile-service-coverage-ci | **Implementada** | Plan y tasks | Jest con umbral en servicios, repositorios y viewmodels | El informe no cubre pantallas ni rutas. |
 | 012 | monorepo-ci-validation | **Implementada** | Plan y tasks | Validación de CI del monorepo | No sustituye la revisión visual del teléfono. |
-| 013 | visitor-push-notifications | En la app | Plan y tasks | Interruptores, token Android y toque del aviso | Enmienda 2026-11-18: el toque de un momento espera la lista. El icono del aviso es `notification.png` y el nombre visible es ARCA-NB. La barra con la app cerrada sigue en el APK `preview`. Esta nota no cierra un PR. |
-| 014 | visitor-favorite-species | En la app | Plan y tasks aprobados | Corazón y «Animales favoritos» contra la cuenta | Esta nota no cierra un PR. |
+| 013 | visitor-push-notifications | En la app | Plan y tasks | Interruptores, token Android y toque del aviso | Enmienda 2026-11-18: el toque de un momento espera la lista. El icono del aviso es `notification.png` y el nombre visible es ARCA-NB. La barra con la app cerrada se comprueba en el APK `preview`. Aksel confirmó el 2026-11-20 la verificación y el pull. |
+| 014 | visitor-favorite-species | En la app | Plan y tasks aprobados | Corazón y «Animales favoritos» contra la cuenta | Aksel confirmó el 2026-11-20 la verificación y el pull. Colección no filtra favoritos. |
 
 ### Evidencia specs 001 y 002
 

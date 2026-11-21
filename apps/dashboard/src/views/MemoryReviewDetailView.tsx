@@ -1,5 +1,6 @@
 import { Alert, Button, Card } from "@arca/ui";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { LoadingIndicator } from "@/components/LoadingIndicator";
 import { MemoryImage } from "@/components/MemoryImage";
 import { MemoryRejectDialog } from "@/components/MemoryRejectDialog";
 import { MemoryStatusBadge } from "@/components/MemoryStatusBadge";
@@ -43,9 +44,7 @@ export function MemoryReviewDetailView({
     return (
       <>
         {heading}
-        <p className="state-message" role="status" aria-live="polite">
-          Cargando petición…
-        </p>
+        <LoadingIndicator message="Cargando petición…" />
       </>
     );
   }
@@ -77,19 +76,7 @@ export function MemoryReviewDetailView({
     <>
       {heading}
       <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} />
-      {state.alert && (
-        <Alert className="global-feedback" role="alert" aria-live="assertive">
-          {state.alert}
-          <Button
-            className="feedback-close"
-            variant="ghost"
-            aria-label="Cerrar aviso"
-            onClick={actions.dismissAlert}
-          >
-            Cerrar
-          </Button>
-        </Alert>
-      )}
+      <NoticeBar message={state.alert} tone="error" onDismiss={actions.dismissAlert} />
       <Card className="memory-review__detail">
         <div className="memory-review__bar">{back}</div>
         <p className="memory-review__meta">

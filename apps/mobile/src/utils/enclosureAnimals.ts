@@ -251,7 +251,7 @@ export function getEnclosureAnimalsList(place: MapPlace): EnclosureAnimalDetail[
         commonName: item.speciesName || place.name,
         scientificName: item.scientificName,
         sex: normalizeSex(item.sex),
-        age: item.age || 'Adulto',
+        age: item.age?.trim() ? item.age : 'Edad no registrada',
         origin: item.origin || 'Zoológico Municipal Nicolás Bravo',
         longevity: item.longevity || 'N/A',
         diet: item.diet || 'Alimentación especializada balanceada',

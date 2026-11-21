@@ -111,7 +111,9 @@ Convención: bloque `describe("CA-NN inline-content-forms", …)` como en `dashb
 | CA-06 | «Quitar imagen» borra la vista previa y envía `remove_image: true`; elegir un archivo nuevo deja `removeImage` en falso | `inline-content-forms.test.tsx` |
 | CA-07 | 422 con `errors.image` y otros campos junto a cada campo en las tres secciones; se conserva lo escrito y el archivo | `inline-content-forms.test.tsx` |
 | CA-08 | Eliminar en Noticias, Eventos y Usuarios abre `InlineConfirm` con el nombre y el efecto (en noticias y eventos, el elemento se elimina y deja de mostrarse, y su imagen se borra; en Usuarios, baja lógica); la API solo se llama al confirmar | `inline-content-forms.test.tsx` |
-| CA-09 | Activar/desactivar en las tres secciones abre la confirmación con su efecto; la API solo se llama al confirmar | `inline-content-forms.test.tsx` |
+| CA-09 | Activar/desactivar abre `ConfirmDialog` en Noticias y `InlineConfirm` en Eventos y Usuarios. La API solo se llama al confirmar | `inline-content-forms.test.tsx` |
+
+Para el cambio de estado de Noticias, `NewsView` adapta el texto existente a `ConfirmDialog`, conserva el registro pendiente y reutiliza el manejo de foco y los controles del ViewModel. El diálogo permanece abierto durante la solicitud y muestra el error si falla. La solución reutiliza el diálogo y los estilos existentes, conserva el contrato y los permisos, y añade cobertura Vitest al criterio CA-09. La enmienda de presentación no requiere acceso a datos ni dependencias.
 | CA-10 | Restablecer contraseña: campo con mostrar/ocultar accesible; la API solo se llama al confirmar; la contraseña no queda en el estado tras enviar | `staff-accounts.test.tsx` (ampliado) y `inline-content-forms.test.tsx` |
 | CA-11 | Restablecer 2FA abre confirmación en línea con el nombre de la cuenta y el efecto; la API solo se llama al confirmar | `staff-accounts.test.tsx` (ampliado) |
 | CA-12 | Escape cancela; una sola acción en línea abierta por sección; foco inicial en «Cancelar»; `role="group"` y `aria-label`; revisión manual de teclado (T-37) | `inline-content-forms.test.tsx` y revisión manual |

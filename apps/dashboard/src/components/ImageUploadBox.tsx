@@ -98,7 +98,7 @@ export function ImageUploadBoxView({
           </span>
         ) : (
           <span className="upload-box__icon" aria-hidden="true">
-            <Icon name="plus" />
+            <Icon name="camera" />
           </span>
         )}
         <strong>{previewUrl ? "Cambiar imagen" : "Imagen (opcional)"}</strong>

@@ -38,7 +38,7 @@ describe('mobile-011 CA-05: repositorio HTTP de autenticación', () => {
     await config.onTokens?.(tokens);
     expect(await config.getAccessToken?.()).toBe('access');
     expect(await config.getRefreshToken?.()).toBe('refresh');
-    await config.onSessionExpired?.();
+    await config.onSessionExpired('access');
     expect(await storage.read()).toBeNull();
   });
   it.each([0,401,403,422,429,500])('traduce fallos HTTP %s sin ocultar el resultado', async status => {
@@ -107,6 +107,10 @@ describe('mobile-011 CA-05: progreso remoto y catálogos', () => {
     expect(unlocked).toMatch(/^Descubriste dos especies/);
     expect(locked).not.toMatch(/\s+\./);
   });
+  it('describe el logro de un animal por su palabra', () => {
+    expect(achievementHowTo({ ...catalog, rule_type: 'species_keyword', rule_param: 'tigre', rule_target: 1 }, false)).toBe('Descubre un tigre.');
+    expect(achievementHowTo({ ...catalog, rule_type: 'species_keyword', rule_param: 'ganso,ganzo', rule_target: 1 }, true)).toBe('Descubriste un ganso.');
+  });
   it('ofrece texto para reglas futuras y conserva campos de logros y misiones', () => {
     const future = {...catalog,rule_type:'future' as VisitorCatalogItemDto['rule_type']};
     expect(achievementHowTo(future,true)).toBe('Completaste el reto de este logro.');
@@ -132,7 +136,7 @@ describe('mobile-011 CA-05: progreso remoto y catálogos', () => {
     mockApi.discoveries.mockResolvedValue({result:'discovered',points_awarded:10,new_species:[{id:1,common_name:'Jaguar'}],already_known_species:[{id:2,common_name:'León'}],progress:progressDto});
     expect(await repo.discover({code:'ARCA-A',scannedAt:'2026-11-09',clientScanId:'id'})).toMatchObject({message:'Descubriste especies nuevas.',newSpecies:['Jaguar'],unlockedSpecies:[{id:'1',name:'Jaguar'}],alreadyKnownSpecies:[{id:'2',name:'León'}]});
     expect(mockApi.discoveries).toHaveBeenCalledWith({code:'ARCA-A',scanned_at:'2026-11-09',client_scan_id:'id'});
-    await config.onSessionExpired?.();
+    await config.onSessionExpired('b');
     await config.onTokens?.({accessToken:'c'} as never);
     expect(await storage.read()).toEqual({accessToken:'c',refreshToken:''});
     mockApi.progress.mockRejectedValueOnce(new Error('offline'));

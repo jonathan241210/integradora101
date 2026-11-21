@@ -64,15 +64,16 @@ const MONTHS_ES = [
 /**
  * Elige una URL que el teléfono pueda abrir.
  * Cumple CA-10 y RN-08: http(s) primero. Una ruta `news/` o `events/`
- * se sirve desde `{origen}/storage/`. localhost se reescribe al origen de la API.
+ * se sirve desde `{origen}/storage/`. Una ruta `species/` se sirve desde `{origen}/media/`.
+ * localhost se reescribe al origen de la API.
  */
 export function resolveUsableImageUrl(
   imageUrl?: string | null,
   imagePath?: string | null,
   apiBaseUrl: string | null | undefined = process.env.EXPO_PUBLIC_API_URL,
 ): string | undefined {
-  const chosen = absoluteHttp(imageUrl) ?? absoluteHttp(imagePath);
-  if (chosen) return rewriteLoopbackHost(chosen, apiBaseUrl);
+  const chosen = absoluteHttp(imageUrl, apiBaseUrl) ?? absoluteHttp(imagePath, apiBaseUrl);
+  if (chosen) return chosen;
   const stored = storagePath(imageUrl) ?? storagePath(imagePath);
   return stored ? storagePublicUrl(stored, apiBaseUrl) : undefined;
 }
@@ -91,33 +92,35 @@ export function usableImageList(
   return fromPath ? [fromPath] : [];
 }
 
-function absoluteHttp(value?: string | null): string | undefined {
+function absoluteHttp(value?: string | null, apiBaseUrl?: string | null): string | undefined {
   const trimmed = value?.trim() ?? '';
-  return ABSOLUTE_HTTP.test(trimmed) ? trimmed : undefined;
+  if (!ABSOLUTE_HTTP.test(trimmed)) return undefined;
+  return rewriteLoopbackHost(trimmed, apiBaseUrl);
 }
 
 function storagePath(value?: string | null): string | undefined {
   const trimmed = value?.trim().replace(/^\/+/, '') ?? '';
   if (!trimmed || trimmed.includes('..') || trimmed.includes('\\')) return undefined;
-  return /^(news|events)\/[^/]+\.(jpg|jpeg|png|webp)$/i.test(trimmed) ? trimmed : undefined;
+  return /^(news|events|species)\/[^/]+\.(jpg|jpeg|png|webp)$/i.test(trimmed) ? trimmed : undefined;
 }
 
 function storagePublicUrl(path: string, apiBaseUrl?: string | null): string | undefined {
   const base = apiBaseUrl?.trim();
   if (!base) return undefined;
   try {
-    return `${new URL(base).origin}/storage/${path}`;
+    const folder = path.startsWith('species/') ? 'media' : 'storage';
+    return `${new URL(base).origin}/${folder}/${path}`;
   } catch {
     return undefined;
   }
 }
 
-function rewriteLoopbackHost(url: string, apiBaseUrl?: string | null): string {
+function rewriteLoopbackHost(url: string, apiBaseUrl?: string | null): string | undefined {
   let parsed: URL;
   try {
     parsed = new URL(url);
   } catch {
-    return url;
+    return undefined;
   }
   if (parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1') return url;
   const base = apiBaseUrl?.trim();
@@ -155,8 +158,12 @@ function normalizeCategory(category?: string): 'mammals' | 'birds' | 'reptiles' 
  * Mapea una especie o animal de la API a la interfaz Animal de UI (camelCase).
  * Cumple con CA-01, CA-02 y RN-02.
  */
-export function mapSpeciesToAnimalModel(item: ApiSpeciesResponse): Animal {
-  const imageUrl = resolveUsableImageUrl(item.image_url, item.photo_path);
+export function mapSpeciesToAnimalModel(
+  item: ApiSpeciesResponse,
+  apiBaseUrl?: string,
+  publishedImage?: string,
+): Animal {
+  const imageUrl = resolveUsableImageUrl(item.image_url, item.photo_path, apiBaseUrl) ?? publishedImage;
   const sizeValue = item.size ? String(item.size) : item.size_cm ? `${item.size_cm} cm` : '';
   const longevityValue = item.life_expectancy || item.longevity || '';
 
@@ -227,6 +234,7 @@ export interface ApiEnclosureAnimal {
   name: string;
   sex?: string | null;
   age?: string | null;
+  birth_date?: string | null;
   origin?: string | null;
   longevity?: string | null;
   diet?: string | null;
@@ -261,6 +269,19 @@ export interface ApiEnclosureResponse {
   map_y?: number | null;
   animals_count?: number;
   animals?: ApiEnclosureAnimal[];
+}
+
+function ageFromBirthDate(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  const born = new Date(value);
+  if (Number.isNaN(born.getTime())) return undefined;
+  const now = new Date();
+  let years = now.getFullYear() - born.getFullYear();
+  const beforeBirthday = now.getMonth() < born.getMonth()
+    || (now.getMonth() === born.getMonth() && now.getDate() < born.getDate());
+  if (beforeBirthday) years -= 1;
+  if (years < 1) return 'Menos de un año';
+  return years === 1 ? '1 año' : `${years} años`;
 }
 
 /**
@@ -298,7 +319,7 @@ export function mapEnclosureToMapPlace(item: ApiEnclosureResponse): MapPlace {
           speciesName,
           scientificName,
           sex: a.sex ?? undefined,
-          age: a.age ?? undefined,
+          age: a.age ?? ageFromBirthDate(a.birth_date) ?? undefined,
           origin: a.origin ?? undefined,
           longevity: a.longevity ?? undefined,
           diet: a.diet ?? undefined,

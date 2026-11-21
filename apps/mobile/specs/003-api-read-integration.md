@@ -11,6 +11,8 @@
 
 El catálogo que ve el visitante no es la lista cruda de `GET /species`. La app cruza `GET /published-species` con los animales de `GET /enclosures` cuyo `can_receive_visits` está activo. Solo esa intersección se muestra en Inicio, Colección, Perfil y ficha. Si las tres lecturas responden y la especie queda fuera, el detalle no se abre. Los conteos usan esa lista. La API de `GET /species` no cambia. Si falla la lectura de visibilidad, se conserva el comportamiento anterior de caché.
 
+Para CA-01, CA-02 y CA-06, el catálogo y la ficha usan la foto usable de la especie y recurren a la foto de `GET /published-species` cuando falta o su URL no es usable. Las rutas relativas `species/…` se resuelven bajo `/media/` y las URLs locales se resuelven con el origen efectivo de la API. Para CA-05, si una actualización cambia la clave de caché del catálogo, la lista anterior sigue disponible sin conexión hasta que la app pueda renovar los datos.
+
 ## Enmienda 2026-11-10
 
 El inicio deja de volcar la lista completa de eventos y pasa a mostrar una noticia y un evento, con despliegue hasta tres y salida avisada al portal. No hay spec nueva: esta enmienda reescribe el CA-03 y agrega CA-08, CA-09 y CA-10. La API no cambia. Las noticias salen de `GET /api/v1/news?limit=3` y `GET /api/v1/news/{id}`; los eventos, de `GET /api/v1/events?limit=3` y `GET /api/v1/events/{id}`. El orden lo decide la API: la noticia más nueva primero y el evento de inicio más próximo primero. La app no reordena.
@@ -71,6 +73,7 @@ Esta especificación define la integración de lectura entre las pantallas de ca
   - Si ocurre un error de red o de servidor (códigos HTTP 4xx/5xx o timeout) sin datos previos en caché, muestra el mensaje de error en español y un botón accesible para reintentar (`error`).
   - Si la petición es exitosa, presenta el contenido en pantalla (`success`).
   - Si no hay red pero existen datos cacheados, muestra los datos y un indicador visible de "Modo sin conexión" (`offline`).
+  - Cuando se recupera la conexión, el aviso desaparece sin salir de la app, aunque el proveedor de conectividad tarde en actualizar su estado. Si una comprobación de la red falla, se conserva el último estado y se vuelve a comprobar.
 - **CA-05 (Caché Stale-While-Revalidate y TTL de 5 minutos):** Dado que existen datos previamente guardados en `AsyncStorage`:
   - Si la última sincronización ocurrió hace menos de 5 minutos (TTL fresco), la app sirve inmediatamente los datos locales sin bloquear la interfaz.
   - Si han transcurrido más de 5 minutos (datos *stale*), la app muestra los datos locales de inmediato y lanza en segundo plano una revalidación contra la API para actualizar la caché local y refrescar la vista al completarse.

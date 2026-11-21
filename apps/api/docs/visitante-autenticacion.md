@@ -33,3 +33,5 @@ Los límites responden 429 con «Espera N segundos e inténtalo de nuevo.»
 ## Progreso
 
 `api-005` añade, con el mismo Bearer `visitor`, el alta `POST /api/v1/visitor/discoveries` y las lecturas `progress`, `collection`, `achievements` y `missions`. El servidor calcula puntos, nivel, rango, logros y misiones. Un `client_scan_id` repetido no suma puntos. Más de 30 escaneos nuevos en un minuto responde 429. El comando `php artisan arca:generate-qr-codes {recinto}` solo imprime en consola un código opaco; no imprime el QR.
+
+Los logros y las misiones con regla `species_keyword` aparecen cuando alguna especie publicada coincide por palabra completa en el nombre común y tiene un animal visitable en un recinto activo. Solo suman avance los descubrimientos de especies que cumplen ese filtro. Si el visitante ya las descubrió por QR, consultar el progreso también puede acreditar la meta. Si la especie deja de ser visitable, la acreditación y los puntos previos se conservan. Consulta [CA-15 y CA-16](../specs/005-visitor-progress.md#enmienda--logros-y-misiones-de-especies-visitables).

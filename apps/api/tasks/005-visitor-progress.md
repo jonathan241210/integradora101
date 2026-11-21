@@ -13,6 +13,7 @@
 - [x] **T-02** (CA-10, RN-11): Crear `config/visitor_progress.php` con 100 puntos por especie y los umbrales de CA-10.
 - [x] **T-03** (CA-04, CA-09): Modelos de escaneo, colección, logros, misiones y libro mayor, sin migración nueva.
 - [x] **T-04** (CA-01, CA-02, CA-04, CA-05, CA-09, RN-10): `RecordVisitorDiscoveryAction` y `EvaluateVisitorProgressAction` en una transacción. El reintento del mismo `client_scan_id` no inserta filas.
+  - La prueba de CA-09 para descubrimientos anteriores también simula un fallo al acreditar puntos, verifica el rollback y comprueba que las consultas repetidas acreditan el logro una sola vez.
 - [x] **T-05** (CA-06, CA-07, CA-08): `VisitorProgressQuery` para progreso, colección, logros y misiones.
 - [x] **T-06** (CA-03, CA-05, RN-07): Form Request, Resource, controlador y rutas nombradas. Límite de 30 escaneos nuevos por minuto.
 - [x] **T-07** (CA-11): `AchievementSeeder` y `MissionSeeder`, idempotentes por `code`, llamados desde `DatabaseSeeder`.
@@ -28,3 +29,10 @@
 - [x] **T-11**: Nota breve en `apps/api/docs/visitante-autenticacion.md` o un doc de progreso, sin secretos. El PR enlaza spec, plan y tasks.
 
 Cada CA-01 a CA-14 tiene una prueba que lo nombra. Ninguna tarea crea una migración. CA-14 no cambia el esquema: `visitor_scans.result` ya es `varchar(30)`.
+
+## Enmienda · Logros y misiones de especies visitables
+
+- [x] **T-12** (CA-15, CA-16, RN-12): Aplicar el mismo conjunto de especies visitables al listado y a la métrica de descubrimientos por palabra clave.
+- [x] **T-13** (CA-15, CA-16): Agregar cobertura de visibilidad, avance, acreditación retroactiva e idempotencia en PHPUnit.
+- [x] **T-14** (CA-15, CA-16): Verificar la API y actualizar la referencia de progreso.
+  - 2026-11-21: `ProgressTest.php` aprobó sus 18 pruebas en `arca_pruebas`. Aprobaron también las dos pruebas unitarias y Pint para los archivos PHP modificados.

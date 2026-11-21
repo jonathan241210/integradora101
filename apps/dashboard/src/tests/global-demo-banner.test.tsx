@@ -70,6 +70,14 @@ function render(home: "administration" | "ticket", activeSection: string, collap
   return renderToStaticMarkup(<App />);
 }
 
+it("CA-03 y CA-05 news-pagination-and-feedback retira la campana y la sección de avisos", () => {
+  const markup = render("administration", "dashboard");
+
+  expect(markup).not.toContain("notification-button");
+  expect(markup).not.toContain("Notificaciones de demostración");
+  expect(markup).not.toContain('aria-label="Notificaciones"');
+});
+
 describe("CA-01 collapsible-menu-event-pagination", () => {
   it("contrae y expande el menú sin cambiar la sección ni el estado móvil", () => {
     const collapsed = initialDashboardShellState;

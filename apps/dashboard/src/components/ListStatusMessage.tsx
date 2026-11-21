@@ -1,4 +1,5 @@
 import { Alert, Button } from "@arca/ui";
+import { LoadingIndicator } from "./LoadingIndicator";
 
 /** Estados de carga, error con reintento y vacío; no pinta nada si hay datos. */
 export function ListStatusMessage({
@@ -15,11 +16,7 @@ export function ListStatusMessage({
   onRetry: () => void;
 }) {
   if (status === "loading") {
-    return (
-      <p className="state-message" role="status" aria-live="polite" data-list-loading="true">
-        {loadingText}
-      </p>
-    );
+    return <LoadingIndicator message={loadingText} />;
   }
 
   if (status === "error") {

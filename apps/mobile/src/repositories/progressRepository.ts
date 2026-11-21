@@ -132,6 +132,10 @@ export function achievementHowTo(dto: Pick<VisitorCatalogItemDto, 'rule_type' | 
     if (amount === 1) return unlocked ? 'Completaste una misión.' : 'Completa una misión.';
     return unlocked ? `Completaste ${counted} misiones.` : `Completa ${counted} misiones.`;
   }
+  if (dto.rule_type === 'species_keyword') {
+    const animal = dto.rule_param?.split(',')[0] ?? 'ese animal';
+    return unlocked ? `Descubriste un ${animal}.` : `Descubre un ${animal}.`;
+  }
   if (dto.rule_type === 'category_species_count') {
     const kind = categoryPhrase(dto.rule_param);
     const species = amount === 1 ? 'una especie' : `${counted} especies`;
@@ -210,8 +214,8 @@ export function createHttpProgressRepository(options: {
         refreshToken: next.refreshToken ?? current?.refreshToken ?? '',
       });
     },
-    onSessionExpired: async () => {
-      await storage.clear();
+    onSessionExpired: async (accessToken) => {
+      await storage.clearIfCurrent(accessToken);
     },
   });
 

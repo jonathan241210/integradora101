@@ -41,7 +41,7 @@ El menú lateral ocupa espacio en pantallas grandes y la lista de eventos muestr
 - **CA-08:** Taquilla presenta venta e historial con una apariencia más clara y destacada, conservando cantidades, precios, confirmación, filtros, cancelación e impresión.
 - **CA-09:** Los menús de administración y taquilla tienen bordes exteriores redondeados y se abren y cierran con una transición suave y pausada; al completarse una venta aparece una animación ligera en su resultado. Se respeta la preferencia de movimiento reducido y no se altera la impresión ni el flujo de venta.
 - **CA-10:** Al registrar cada venta correctamente aparece una palomita con una animación breve de entrada y trazado en el resultado; no aparece antes de la venta ni cambia la impresión. Con movimiento reducido se muestra sin movimiento apreciable.
-- **CA-11:** Cada venta exitosa muestra una animación de boleto y palomita de máximo tres segundos, sin bloquear acciones ni modificar los boletos impresos; respeta movimiento reducido.
+- **CA-11:** Cada venta exitosa muestra en un aviso emergente centrado una animación de boleto y palomita de máximo tres segundos, sin bloquear acciones ni modificar los boletos impresos. El aviso se retira automáticamente y respeta movimiento reducido.
 
 ## Reglas y datos
 

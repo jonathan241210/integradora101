@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
-import { Alert, Button, Dialog, TextAreaField } from "@arca/ui";
+import { Button, Dialog, TextAreaField } from "@arca/ui";
+import { ActionError } from "./DashboardNotifications";
 import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
 import type { TicketHistoryState } from "@/viewmodels/ticket-history";
 
@@ -47,11 +48,7 @@ export function CancelTicketDialog({
             {...fieldErrorProps("cancel-reason", cancel.fieldErrors, "reason")}
           />
           <FieldErrors id="cancel-reason" errors={cancel.fieldErrors} name="reason" />
-          {cancel.error && (
-            <Alert className="dialog-alert" role="alert" aria-live="assertive">
-              {cancel.error}
-            </Alert>
-          )}
+          <ActionError message={cancel.error} inDialog />
           <div className="dialog-actions">
             <Button type="button" variant="secondary" disabled={cancel.busy} onClick={onClose}>
               Volver

@@ -53,6 +53,7 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands();
         $this->forceHttps();
         $this->registerVisitorLimiters();
+        $this->registerReadLimiters();
         $this->registerTicketLimiters();
         $this->registerSearchLimiter();
 
@@ -94,6 +95,35 @@ class AppServiceProvider extends ServiceProvider
 
         RateLimiter::for('visitor-forgot', function (Request $request) use ($response) {
             return Limit::perHour(3)->by(Str::lower((string) $request->input('email')))->response($response);
+        });
+    }
+
+    /**
+     * El catálogo público se cuenta por IP: 1 800 por minuto cabe en una apertura
+     * simultánea del zoológico y corta un bombardeo. La sesión del visitante se
+     * cuenta por cuenta: 120 por minuto. Las pruebas no consumen cupo.
+     */
+    private function registerReadLimiters(): void
+    {
+        $response = $this->visitorThrottleResponse();
+        $open = fn () => $this->app->runningUnitTests();
+
+        RateLimiter::for('public-read', function (Request $request) use ($response, $open) {
+            if ($open()) {
+                return Limit::none();
+            }
+
+            return Limit::perMinute(1800)->by((string) $request->ip())->response($response);
+        });
+
+        RateLimiter::for('visitor-session', function (Request $request) use ($response, $open) {
+            if ($open()) {
+                return Limit::none();
+            }
+
+            $key = (string) ($request->user()?->getAuthIdentifier() ?? $request->ip());
+
+            return Limit::perMinute(120)->by($key)->response($response);
         });
     }
 

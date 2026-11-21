@@ -70,23 +70,25 @@ Route::prefix('staff')->name('staff.')->group(function () {
     });
 });
 
-Route::get('/species', [SpeciesController::class, 'index'])->name('species.index');
-Route::get('/species/{species}', [SpeciesController::class, 'show'])->name('species.show');
+Route::middleware('throttle:public-read')->group(function () {
+    Route::get('/species', [SpeciesController::class, 'index'])->name('species.index');
+    Route::get('/species/{species}', [SpeciesController::class, 'show'])->name('species.show');
 
-// api-015
-Route::get('/published-species', [PublicPublishedSpeciesController::class, 'index'])->name('published-species.index');
+    // api-015
+    Route::get('/published-species', [PublicPublishedSpeciesController::class, 'index'])->name('published-species.index');
 
-Route::get('/enclosures', [EnclosureController::class, 'index'])->name('enclosures.index');
-Route::get('/enclosures/{enclosure}', [EnclosureController::class, 'show'])->name('enclosures.show');
+    Route::get('/enclosures', [EnclosureController::class, 'index'])->name('enclosures.index');
+    Route::get('/enclosures/{enclosure}', [EnclosureController::class, 'show'])->name('enclosures.show');
 
-Route::get('/events', [EventController::class, 'index'])->name('events.index');
-Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+    Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
 
-Route::get('/news', [PublicNewsController::class, 'index'])->name('news.index');
-Route::get('/news/{news}', [PublicNewsController::class, 'show'])->name('news.show');
+    Route::get('/news', [PublicNewsController::class, 'index'])->name('news.index');
+    Route::get('/news/{news}', [PublicNewsController::class, 'show'])->name('news.show');
 
-// api-012: lectura pública de momentos aceptados y vigentes (sin autenticación).
-Route::get('/memories', [PublicMemoryController::class, 'index'])->name('memories.index');
+    // api-012: lectura pública de momentos aceptados y vigentes (sin autenticación).
+    Route::get('/memories', [PublicMemoryController::class, 'index'])->name('memories.index');
+});
 Route::prefix('visitor')->name('visitor.')->group(function () {
     Route::get('legal/privacy-notice', PrivacyNoticeController::class)
         ->name('legal.privacy-notice');
@@ -110,7 +112,7 @@ Route::prefix('visitor')->name('visitor.')->group(function () {
     Route::post('auth/password/reset', [VisitorAuthenticationController::class, 'reset'])
         ->name('auth.password.reset');
 
-    Route::middleware(['auth:sanctum', 'visitor.token'])->group(function () {
+    Route::middleware(['auth:sanctum', 'visitor.token', 'throttle:visitor-session'])->group(function () {
         Route::post('auth/logout', [VisitorAuthenticationController::class, 'logout'])
             ->name('auth.logout');
         Route::get('me', [VisitorProfileController::class, 'show'])
@@ -134,7 +136,7 @@ Route::prefix('visitor')->name('visitor.')->group(function () {
     });
 
     // api-010: momentos del visitante (correo verificado, api-004 CA-04).
-    Route::middleware(['auth:sanctum', 'visitor.token', EnsureVisitorEmailVerified::class])->group(function () {
+    Route::middleware(['auth:sanctum', 'visitor.token', EnsureVisitorEmailVerified::class, 'throttle:visitor-session'])->group(function () {
         Route::post('memories', [VisitorMemoryController::class, 'store'])->name('memories.store');
         Route::get('memories', [VisitorMemoryController::class, 'index'])->name('memories.index');
         Route::post('memories/{id}/resubmit', [VisitorMemoryController::class, 'resubmit'])

@@ -1,5 +1,6 @@
 import type { FormEvent } from "react";
 import { Alert, Button, Card, Field, SelectField } from "@arca/ui";
+import { ActionError } from "@/components/DashboardNotifications";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
@@ -133,11 +134,7 @@ export function TicketPricesView({ state, actions }: TicketPricesViewModel) {
               <FieldErrors id="price-effective-at" errors={fieldErrors} name="effective_at" />
             </>
           )}
-          {state.actionError && !state.twoFactorRequired && Object.keys(fieldErrors).length === 0 && (
-            <Alert className="inline-alert" role="alert" aria-live="assertive">
-              {state.actionError}
-            </Alert>
-          )}
+          <ActionError message={!state.twoFactorRequired && Object.keys(fieldErrors).length === 0 ? state.actionError : ""} />
           <div className="ticket-actions">
             <Button type="submit" disabled={state.saving || state.status === "loading"}>
               Revisar cambio

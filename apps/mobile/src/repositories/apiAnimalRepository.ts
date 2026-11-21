@@ -1,7 +1,7 @@
 import { createHttpClient, type HttpClient } from '@arca/api-client';
 import { Animal } from '../models';
 import { AnimalRepository } from './index';
-import { ApiSpeciesResponse, mapSpeciesToAnimalModel } from './mappers';
+import { ApiSpeciesResponse, mapSpeciesToAnimalModel, resolveUsableImageUrl } from './mappers';
 import { KeyValueStorage, defaultStorage } from './storage';
 
 interface CacheEnvelope<T> {
@@ -10,9 +10,16 @@ interface CacheEnvelope<T> {
   ttlMs: number;
 }
 
+interface VisitorCatalog {
+  ids: string[];
+  images: Partial<Record<string, string>>;
+}
+
 const FIVE_MINUTES_MS = 5 * 60 * 1000;
-const CACHE_KEY_ALL = '@arca:cache:species_list';
-const CACHE_KEY_VISIBLE = '@arca:cache:visitor_species_ids';
+const CACHE_KEY_ALL = '@arca:cache:species_list_v2';
+const LEGACY_CACHE_KEY_ALL = '@arca:cache:species_list';
+const CACHE_KEY_VISIBLE = '@arca:cache:visitor_catalog';
+const LEGACY_CACHE_KEY_VISIBLE = '@arca:cache:visitor_species_ids';
 const CACHE_KEY_PREFIX = '@arca:cache:species:';
 const listFlights = new Map<string, Promise<Animal[]>>();
 
@@ -54,10 +61,26 @@ export function visitorSpeciesIds(publishedBody: unknown, enclosuresBody: unknow
   return visible;
 }
 
+function mapVisitorCatalog(body: unknown, enclosuresBody: unknown, apiBaseUrl: string): VisitorCatalog {
+  const visible = visitorSpeciesIds(body, enclosuresBody);
+  const images: VisitorCatalog['images'] = {};
+  for (const row of rowsOf(body)) {
+    if (!row || typeof row !== 'object') continue;
+    const record = row as { id?: unknown; image_url?: unknown };
+    const id = String(record.id ?? '');
+    if (visible.has(id) && typeof record.image_url === 'string') {
+      const image = resolveUsableImageUrl(record.image_url, null, apiBaseUrl);
+      if (image) images[id] = image;
+    }
+  }
+  return { ids: [...visible], images };
+}
+
 export class ApiAnimalRepository implements AnimalRepository {
   private readonly httpClient: HttpClient;
   private readonly storage: KeyValueStorage;
   private readonly defaultTtl: number;
+  private readonly apiBaseUrl: string;
 
   constructor(
     customClient?: HttpClient,
@@ -66,9 +89,8 @@ export class ApiAnimalRepository implements AnimalRepository {
   ) {
     this.defaultTtl = customTtl;
     this.storage = customStorage;
-    this.httpClient = customClient ?? createHttpClient({
-      baseUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8000/api/v1',
-    });
+    this.apiBaseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8000/api/v1';
+    this.httpClient = customClient ?? createHttpClient({ baseUrl: this.apiBaseUrl });
   }
 
   /**
@@ -78,14 +100,14 @@ export class ApiAnimalRepository implements AnimalRepository {
   async getAllAnimals(): Promise<Animal[]> {
     const cached = await this.readCache<Animal[]>(CACHE_KEY_ALL);
 
-    if (cached) {
-      const isFresh = Date.now() - cached.cachedAt < cached.ttlMs;
-      if (isFresh) {
-        return cached.data;
-      }
-      // Stale data: revalidar en segundo plano sin bloquear
-      this.revalidateAllAnimals().catch(() => {});
+    if (cached && Date.now() - cached.cachedAt < cached.ttlMs) {
       return cached.data;
+    }
+    const previous = cached ?? await this.readCache<Animal[]>(LEGACY_CACHE_KEY_ALL);
+    if (previous) {
+      // Revalidar la caché anterior en segundo plano incluso si todavía está fresca.
+      this.fetchAndCacheAllAnimals().catch(() => {});
+      return previous.data;
     }
 
     return await this.fetchAndCacheAllAnimals();
@@ -102,13 +124,19 @@ export class ApiAnimalRepository implements AnimalRepository {
     if (cached) {
       const isFresh = Date.now() - cached.cachedAt < cached.ttlMs;
       if (isFresh) {
-        const visible = await this.readCache<string[]>(CACHE_KEY_VISIBLE);
-        if (visible && Date.now() - visible.cachedAt < visible.ttlMs && !visible.data.includes(id)) {
-          return null;
+        const visible = await this.readCache<VisitorCatalog>(CACHE_KEY_VISIBLE);
+        if (visible && Date.now() - visible.cachedAt < visible.ttlMs) {
+          if (!visible.data.ids.includes(id)) return null;
+          if (cached.data && !cached.data.imageUrl) {
+            return { ...cached.data, imageUrl: visible.data.images[id] };
+          }
+        } else {
+          const legacy = await this.readLegacyVisibleIds();
+          if (legacy && !legacy.includes(id)) return null;
         }
         return cached.data;
       }
-      this.revalidateAnimalById(id, cacheKey).catch(() => {});
+      this.fetchAndCacheAnimalById(id, cacheKey).catch(() => {});
       return cached.data;
     }
 
@@ -137,14 +165,11 @@ export class ApiAnimalRepository implements AnimalRepository {
     try {
       return await this.readVisitorCatalog();
     } catch (error) {
-      const cached = await this.readCache<Animal[]>(CACHE_KEY_ALL);
+      const cached = await this.readCache<Animal[]>(CACHE_KEY_ALL)
+        ?? await this.readCache<Animal[]>(LEGACY_CACHE_KEY_ALL);
       if (cached) return cached.data;
       throw error;
     }
-  }
-
-  private async revalidateAllAnimals(): Promise<void> {
-    await this.readVisitorCatalog();
   }
 
   private async readVisitorCatalog(): Promise<Animal[]> {
@@ -153,15 +178,16 @@ export class ApiAnimalRepository implements AnimalRepository {
       this.httpClient.get('/published-species'),
       this.httpClient.get('/enclosures'),
     ]);
-    const visible = visitorSpeciesIds(publishedBody, enclosuresBody);
+    const catalog = mapVisitorCatalog(publishedBody, enclosuresBody, this.apiBaseUrl);
+    const visible = new Set(catalog.ids);
     const rawData = (speciesBody as { data?: unknown })?.data ?? speciesBody;
     const list = Array.isArray(rawData)
       ? rawData
-        .map((item) => mapSpeciesToAnimalModel(item as ApiSpeciesResponse))
-        .filter((animal) => visible.has(animal.id))
+        .filter((row: ApiSpeciesResponse) => visible.has(String(row.id)))
+        .map((row: ApiSpeciesResponse) => mapSpeciesToAnimalModel(row, this.apiBaseUrl, catalog.images[String(row.id)]))
       : [];
     await this.writeCache(CACHE_KEY_ALL, list);
-    await this.writeCache(CACHE_KEY_VISIBLE, [...visible]);
+    await this.writeCache(CACHE_KEY_VISIBLE, catalog);
     return list;
   }
 
@@ -169,9 +195,10 @@ export class ApiAnimalRepository implements AnimalRepository {
     try {
       const response = await this.httpClient.get<{ data: ApiSpeciesResponse }>(`/species/${id}`);
       if (!response?.data) return null;
-      const animal = mapSpeciesToAnimalModel(response.data);
-      const visible = await this.currentVisibleIds();
-      if (!visible.has(animal.id)) return null;
+      const speciesId = String(response.data.id);
+      const catalog = await this.currentVisitorCatalog();
+      if (!catalog.ids.includes(speciesId)) return null;
+      const animal = mapSpeciesToAnimalModel(response.data, this.apiBaseUrl, catalog.images[speciesId]);
       await this.writeCache(cacheKey, animal);
       return animal;
     } catch (error: any) {
@@ -184,31 +211,28 @@ export class ApiAnimalRepository implements AnimalRepository {
     }
   }
 
-  private async revalidateAnimalById(id: string, cacheKey: string): Promise<void> {
+  private async currentVisitorCatalog(): Promise<VisitorCatalog> {
+    const cached = await this.readCache<VisitorCatalog>(CACHE_KEY_VISIBLE);
+    if (cached && Date.now() - cached.cachedAt < cached.ttlMs) return cached.data;
+
     try {
-      const response = await this.httpClient.get<{ data: ApiSpeciesResponse }>(`/species/${id}`);
-      if (!response?.data) return;
-      const animal = mapSpeciesToAnimalModel(response.data);
-      const visible = await this.currentVisibleIds();
-      if (!visible.has(animal.id)) return;
-      await this.writeCache(cacheKey, animal);
-    } catch {
-      // Ignorar fallo en background
+      const [publishedBody, enclosuresBody] = await Promise.all([
+        this.httpClient.get('/published-species'),
+        this.httpClient.get('/enclosures'),
+      ]);
+      const catalog = mapVisitorCatalog(publishedBody, enclosuresBody, this.apiBaseUrl);
+      await this.writeCache(CACHE_KEY_VISIBLE, catalog);
+      return catalog;
+    } catch (error) {
+      const legacy = await this.readLegacyVisibleIds();
+      if (legacy) return { ids: legacy, images: {} };
+      throw error;
     }
   }
 
-  private async currentVisibleIds(): Promise<Set<string>> {
-    const cached = await this.readCache<string[]>(CACHE_KEY_VISIBLE);
-    if (cached && Date.now() - cached.cachedAt < cached.ttlMs) {
-      return new Set(cached.data);
-    }
-    const [publishedBody, enclosuresBody] = await Promise.all([
-      this.httpClient.get('/published-species'),
-      this.httpClient.get('/enclosures'),
-    ]);
-    const visible = visitorSpeciesIds(publishedBody, enclosuresBody);
-    await this.writeCache(CACHE_KEY_VISIBLE, [...visible]);
-    return visible;
+  private async readLegacyVisibleIds(): Promise<string[] | null> {
+    const cached = await this.readCache<string[]>(LEGACY_CACHE_KEY_VISIBLE);
+    return cached && Date.now() - cached.cachedAt < cached.ttlMs ? cached.data : null;
   }
 
   private async readCache<T>(key: string): Promise<CacheEnvelope<T> | null> {

@@ -54,6 +54,7 @@ No hay tareas de BD. Esta feature no cambia el esquema ni requiere DBR (`api-008
 - [x] **T-23** (CA-07): 422 con `errors.image` y otros campos en Noticias, Eventos y Usuarios: cada mensaje junto a su campo; se conserva lo escrito y el archivo.
 - [x] **T-24** (CA-08): Eliminar abre `InlineConfirm` en Noticias, Eventos y Usuarios con el nombre y el efecto (en noticias y eventos, el elemento se elimina y deja de mostrarse, y su imagen se borra; en Usuarios, baja lógica); la API no se llama hasta «Confirmar»; «Cancelar» no hace nada. El texto de noticias y eventos depende de `api-008` CA-07 (P2).
 - [x] **T-25** (CA-09): Activar/desactivar abre la confirmación con su efecto en las tres secciones; la API no se llama hasta confirmar.
+- [x] **Enmienda de T-25** (CA-09, CA-12): Reutilizar el diálogo centrado en Noticias para activar y desactivar. Verificar el texto, la ubicación modal de ambas confirmaciones y el flujo de cancelación.
 - [x] **T-26** (CA-10): Restablecer contraseña en línea: campo con mostrar/ocultar accesible; la API no se llama hasta confirmar; la contraseña no queda en el estado del ViewModel tras enviar (`staff-accounts.test.tsx`, ampliado).
 - [x] **T-27** (CA-11): Restablecer 2FA abre confirmación en línea con el nombre de la cuenta y el efecto; la API no se llama hasta confirmar (`staff-accounts.test.tsx`, ampliado).
 - [x] **T-28** (CA-12): Escape cancela; solo una acción en línea abierta por sección; foco inicial en «Cancelar»; `role="group"` y `aria-label` presentes.

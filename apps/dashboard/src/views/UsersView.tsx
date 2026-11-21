@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Alert, Badge, Button, Card, Field, SelectField } from "@arca/ui";
+import { ActionError } from "@/components/DashboardNotifications";
 import { DataTable, type DataTableColumn } from "@/components/DataTable";
 import { fieldErrorProps } from "@/components/FieldErrors";
 import { FormField } from "@/components/FormField";
@@ -154,11 +155,7 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
         description="Gestiona las cuentas del personal del zoológico."
       />
       <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} focusRef={noticeRef} />
-      {state.actionError && pendingAction === null && (
-        <Alert className="inline-alert" role="alert" aria-live="assertive">
-          {state.actionError}
-        </Alert>
-      )}
+      <ActionError message={pendingAction === null ? state.actionError : ""} />
       {state.optionsError && (
         <Alert className="inline-alert" role="alert" aria-live="assertive">
           {state.optionsError}

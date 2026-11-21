@@ -95,4 +95,20 @@ describe('Arranque con la API de pruebas', () => {
     expect(accountSession.getStatus()).toBe('guest');
     expect(await createSecureTokenStorage().read()).toBeNull();
   });
+
+  it('abrir sin red o con el servidor caído conserva los tokens y no manda al login', async () => {
+    const fetchImpl = jest.fn(async () => jsonResponse(503, { message: 'Servicio no disponible.' }));
+    accountSession.configureForTests({
+      apiUrl: 'https://api.pruebas.invalid',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+    await createSecureTokenStorage().write({ accessToken: 'access-http', refreshToken: 'refresh-http' });
+
+    await accountSession.bootstrap();
+    expect(accountSession.getStatus()).toBe('authenticated');
+    expect(await createSecureTokenStorage().read()).toEqual({
+      accessToken: 'access-http',
+      refreshToken: 'refresh-http',
+    });
+  });
 });

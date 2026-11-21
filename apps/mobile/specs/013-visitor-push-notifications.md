@@ -6,8 +6,8 @@
 - Solicitante / responsable funcional: Aksel
 - Aprobación funcional: Aksel, 2026-11-14
 - Decisiones de alcance confirmadas el 2026-11-14: el aviso sale en la barra del sistema, también con la app cerrada; sin correo y sin bandeja dentro de la app; dos interruptores en Ajustes. «Noticias y eventos» nace apagado y «Estado de mis momentos» nace encendido.
-- Dependencias de contrato: `api-017` (Aprobada; plan aprobado), ADR 0029 (Aceptado) y DBR-017 (Lista para backend). No se implementa hasta que las tasks estén aprobadas.
-- Aprobar esta spec no autoriza implementar.
+- Dependencias de contrato: `api-017` (Aprobada; plan aprobado), ADR 0029 (Aceptado) y DBR-017 (Lista para backend). Las tasks están hechas. Aksel confirmó el 2026-11-20 la verificación manual de la barra y el pull.
+- Aprobar esta spec no autoriza implementar por sí sola. La implementación y la verificación ya quedaron confirmadas el 2026-11-20.
 
 ## Problema y contexto
 
@@ -88,11 +88,11 @@ Esta spec hace que el teléfono muestre el push de `api-017` en la barra del sis
 ## Dependencias, riesgos y preguntas
 
 - Dependencias: `api-017`. El ADR 0029 está Aceptado (Aksel, 2026-11-14): `expo-notifications` se instala con las tasks. El plan de `api-017` fija el envío por HTTP al servicio push de Expo.
-- `mobile-010` está Aprobada (Aksel, 2026-11-14). CA-10 no tiene destino hasta que esa feature implemente la pantalla de la petición. Si el push se implementa antes, el toque de un momento queda bloqueado por esa pantalla y no se inventa otra ruta.
+- `mobile-010` tiene la pantalla de la petición. CA-10 abre `/memory-form` con el id y espera la lista antes de decir que falta.
 - Riesgos: en un build de desarrollo sin las credenciales FCM el aviso no llega; la evidencia de CA-08 con la app cerrada pide un build de distribución. Quien niega el permiso no verá la barra.
 - Preguntas pendientes: ninguna. Aksel confirmó el alcance y los valores iniciales el 2026-11-14.
 
 ## Revisión
 
-- Aprobadores y fecha: Aksel, 2026-11-14 (aprobación funcional). Plan aprobado técnicamente por Victor Adrian el 2026-11-14. Faltan las tasks.
+- Aprobadores y fecha: Aksel, 2026-11-14 (aprobación funcional). Plan aprobado técnicamente por Victor Adrian el 2026-11-14. Las tasks están hechas. Aksel confirmó el 2026-11-20 la verificación manual de la barra y el pull.
 - Evidencia/enlaces: `apps/api/specs/017-visitor-push-notifications.md`, `apps/mobile/plan/013-visitor-push-notifications.md`, `docs/adr/0029-visitor-android-push.md`, `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md` (CA-14), `apps/mobile/specs/004-visitor-account.md`, `apps/mobile/specs/010-visitor-memory-requests.md`, `docs/adr/0004-mobile-react-native.md`, `docs/adr/0012-android-distribution-channel.md`.

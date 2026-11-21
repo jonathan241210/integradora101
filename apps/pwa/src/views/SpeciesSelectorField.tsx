@@ -1,3 +1,4 @@
+import { Spinner } from '@/views/Spinner';
 import { Button, SelectField } from '@arca/ui';
 import type { SelectableSpeciesDto } from '@arca/api-client';
 import {
@@ -26,7 +27,7 @@ export function SpeciesSelectorField({
   onRetry,
 }: SpeciesSelectorFieldProps) {
   if (status === 'loading') {
-    return <p role="status">Cargando especies…</p>;
+    return <Spinner label="Cargando especies…" />;
   }
   if (status === 'forbidden') {
     return <p role="alert">{FORBIDDEN_MESSAGE}</p>;

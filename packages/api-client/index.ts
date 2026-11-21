@@ -16,6 +16,7 @@ export type {
   VisitorMemoryStatus,
   VisitorMemorySubmit,
   VisitorMessage,
+  VisitorNotificationPreferences,
   VisitorProfileDto,
   VisitorProgressDto,
   VisitorRegisterInput,

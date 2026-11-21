@@ -6,8 +6,8 @@
 - Solicitante / responsable funcional: Aksel
 - Aprobación funcional: Aksel, 2026-11-14 (alcance, CA y RN)
 - Conformidad del equipo: Aksel, 2026-11-14
-- Dependencias: `api-004` (sesión y borrado físico de la cuenta), `api-015` (especie visible: `is_published = 1` y sin `deleted_at`). DBR-018 está Aprobada y Lista para backend (Aksel, 2026-11-14). El plan y las tasks están aprobados (Aksel, 2026-11-16). El código está en curso. El PR de T-17 sigue abierto.
-- El plan y las tasks están aprobados (Aksel, 2026-11-16). El código está en curso. Esta spec pasa a Implementada cuando cierren el PR y la definición de hecho.
+- Dependencias: `api-004` (sesión y borrado físico de la cuenta), `api-015` (especie visible: `is_published = 1` y sin `deleted_at`). DBR-018 está Aprobada y Lista para backend (Aksel, 2026-11-14). El plan y las tasks están aprobados (Aksel, 2026-11-16). Aksel confirmó el 2026-11-20 la verificación y el pull (T-17).
+- El plan y las tasks están aprobados (Aksel, 2026-11-16). La verificación y el pull quedaron confirmados el 2026-11-20. Esta nota no cambia el estado a Implementada: la definición de hecho de la spec sigue siendo la que cierra ese paso.
 
 ## Problema y contexto
 
@@ -87,9 +87,9 @@ Esta spec pasa la lista a la cuenta. El teléfono puede guardar una copia para m
 
 ## Dependencias, riesgos y preguntas
 
-- Dependencias: `api-004`, `api-015`, DBR-018. No hay paquete nuevo ni ADR nuevo. El teléfono guarda la última respuesta para mostrarla sin red (`mobile-014`). El cache de catálogo del ADR 0014 se queda. El plan y las tasks están aprobados. La implementación está en curso.
+- Dependencias: `api-004`, `api-015`, DBR-018. No hay paquete nuevo ni ADR nuevo. El teléfono guarda la última respuesta para mostrarla sin red (`mobile-014`). El cache de catálogo del ADR 0014 se queda. El plan y las tasks están aprobados. Aksel confirmó la verificación y el pull el 2026-11-20.
 - Riesgos: una especie despublicada desaparece del GET y el corazón deja de verla, aunque la fila siga. Volver a publicarla la muestra otra vez.
-- Preguntas pendientes: ninguna. BD (Victor Adrian) y backend (Aksel) aceptaron el 2026-11-14 la tabla sin SoftDeletes en DBR-018. El plan y las tasks están aprobados (Aksel, 2026-11-16). La implementación está en curso.
+- Preguntas pendientes: ninguna. BD (Victor Adrian) y backend (Aksel) aceptaron el 2026-11-14 la tabla sin SoftDeletes en DBR-018. El plan y las tasks están aprobados (Aksel, 2026-11-16). La verificación y el pull quedaron confirmados el 2026-11-20.
 
 ## Revisión
 

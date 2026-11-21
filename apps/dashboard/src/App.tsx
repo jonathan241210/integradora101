@@ -1,7 +1,9 @@
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Button, Card } from "@arca/ui";
+import { DashboardNotifications } from "@/components/DashboardNotifications";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { Icon } from "@/components/Icon";
+import { NoticeBar } from "@/components/NoticeBar";
 import { SearchHitBanner } from "@/components/SearchHitBanner";
 import { DashboardSection } from "@/sections/DashboardSection";
 import { EnclosuresSection } from "@/sections/EnclosuresSection";
@@ -217,9 +219,7 @@ function App() {
     );
   }
 
-  const activeSection = navigation.some(
-    (item) => item.id === shell.state.activeSection,
-  )
+  const activeSection = navigation.some((item) => item.id === shell.state.activeSection)
     ? shell.state.activeSection
     : navigation[0]?.id ?? null;
 
@@ -254,6 +254,7 @@ function App() {
       : null;
 
   return (
+    <DashboardNotifications key={profile.id}>
     <div
       className={`dashboard-app ${presentationProfile === "ticket" ? "dashboard-app--ticket" : "dashboard-app--admin"} ${shell.state.desktopMenuCollapsed ? "dashboard-app--menu-collapsed" : ""}`}
     >
@@ -354,15 +355,6 @@ function App() {
           </div>
           <GlobalSearch {...globalSearch} />
           <div className="topbar__actions">
-            <Button
-              variant="secondary"
-              className="notification-button"
-              aria-label="Notificaciones de demostración"
-              onClick={() => showNotice("No hay notificaciones reales en esta demostración.")}
-            >
-              <Icon name="bell" />
-              <span aria-hidden="true" />
-            </Button>
             <div className="user-profile">
               <span className="user-profile__avatar" aria-hidden="true">
                 {initials || "AR"}
@@ -384,19 +376,7 @@ function App() {
         </header>
 
         <main className="dashboard-content" ref={contentRef}>
-          {shell.state.notice && (
-            <Alert className="global-feedback" role="status" aria-live="polite">
-              {shell.state.notice}
-              <Button
-                className="feedback-close"
-                variant="ghost"
-                aria-label="Cerrar aviso"
-                onClick={() => showNotice("")}
-              >
-                <Icon name="close" />
-              </Button>
-            </Alert>
-          )}
+          <NoticeBar message={shell.state.notice} tone="error" onDismiss={() => showNotice("")} />
           {navigation.length === 0 && (
             <Alert role="alert">
               Tu cuenta no tiene permisos para mostrar secciones del panel.
@@ -417,7 +397,7 @@ function App() {
               }
             />
           )}
-          {activeSection === "news" && <NewsSection />}
+          {activeSection === "news" && <NewsSection focus={focusFor("news")} />}
           {activeSection === "events" && <EventsSection focus={focusFor("events")} />}
           {activeSection === "tickets" && <TicketSaleSection />}
           {activeSection === "reports" && <TicketReportSection />}
@@ -449,6 +429,7 @@ function App() {
         </main>
       </div>
     </div>
+    </DashboardNotifications>
   );
 }
 

@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from "react";
-import { Alert, Button, Card, Field } from "@arca/ui";
+import { Button, Card, Field } from "@arca/ui";
+import { ActionError } from "@/components/DashboardNotifications";
 import { DataTable, type DataTableColumn } from "@/components/DataTable";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { LoadingIndicator } from "@/components/LoadingIndicator";
 import { PaginationBar } from "@/components/PaginationBar";
 import { SalesTotals } from "@/components/SalesTotals";
 import { SectionHeading } from "@/components/SectionHeading";
@@ -23,6 +25,29 @@ const exportOptions: { format: ReportExportFormat; label: string }[] = [
   { format: "xlsx", label: "Exportar Excel" },
   { format: "pdf", label: "Exportar PDF" },
 ];
+
+function ReportLoading() {
+  return (
+    <div className="report-loading">
+      <LoadingIndicator message="Cargando el reporte…" />
+      <div className="report-loading__preview" aria-hidden="true">
+        <div className="report-loading__totals">
+          {["tickets", "adults", "children", "revenue"].map((metric) => (
+            <Card className="report-loading__metric" key={metric}>
+              <span />
+              <span />
+            </Card>
+          ))}
+        </div>
+        <Card className="report-loading__table">
+          <span />
+          <span />
+          <span />
+        </Card>
+      </div>
+    </div>
+  );
+}
 
 export function TicketReportView({ state, actions }: TicketReportViewModel) {
   const { report, query } = state;
@@ -149,13 +174,17 @@ export function TicketReportView({ state, actions }: TicketReportViewModel) {
         )}
       </Card>
 
-      <ListStatusMessage
-        status={state.status}
-        error={state.error}
-        loadingText="Cargando el reporte…"
-        emptyText=""
-        onRetry={actions.reload}
-      />
+      {state.status === "loading" ? (
+        <ReportLoading key={JSON.stringify(query)} />
+      ) : (
+        <ListStatusMessage
+          status={state.status}
+          error={state.error}
+          loadingText=""
+          emptyText=""
+          onRetry={actions.reload}
+        />
+      )}
 
       {report && state.status === "ready" && (
         <>
@@ -171,11 +200,7 @@ export function TicketReportView({ state, actions }: TicketReportViewModel) {
               </Button>
             ))}
           </div>
-          {state.exportError && (
-            <Alert className="inline-alert" role="alert" aria-live="assertive">
-              {state.exportError}
-            </Alert>
-          )}
+          <ActionError message={state.exportError} />
 
           <SalesTotals
             headingId="report-totals-heading"

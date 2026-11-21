@@ -91,7 +91,7 @@ export function AnimalPicker({
           </option>
         ))}
       </SelectField>
-      {loading && <Spinner label="Cargando…" />}
+      {loading && <Spinner label="Cargando animales…" />}
       {error && <p role="alert">{error}</p>}
       {!loading && !error && options.length === 0 && (
         <p>Aún no hay animales. Registra uno primero.</p>

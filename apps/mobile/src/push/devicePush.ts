@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import type { PushNotificationsPort } from './pushRegistration';
+import type { PushNotificationsPort, PushPermission } from './pushRegistration';
 
 export function createDevicePushPort(): PushNotificationsPort {
   const notifications = require('expo-notifications') as {
@@ -11,9 +11,10 @@ export function createDevicePushPort(): PushNotificationsPort {
     AndroidImportance: { DEFAULT: number };
   };
 
-  const asPermission = (status: string) => ({
-    status: status === 'granted' || status === 'denied' ? status : 'undetermined' as const,
-  });
+  const asPermission = (status: string): PushPermission => {
+    if (status === 'granted' || status === 'denied') return { status };
+    return { status: 'undetermined' };
+  };
 
   return {
     androidVersion: Platform.OS === 'android' ? Number(Platform.Version) : 0,

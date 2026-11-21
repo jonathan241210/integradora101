@@ -43,6 +43,10 @@ describe('mobile-003 enmienda de inicio', () => {
     expect(resolveUsableImageUrl(null, 'https://images.unsplash.com/photo.jpg')).toBe('https://images.unsplash.com/photo.jpg');
     expect(resolveUsableImageUrl(null, 'events/archivo.jpg', 'http://10.0.2.2:8000/api/v1'))
       .toBe('http://10.0.2.2:8000/storage/events/archivo.jpg');
+    expect(resolveUsableImageUrl(null, 'species/llama.jpg', 'http://10.0.2.2:8000/api/v1'))
+      .toBe('http://10.0.2.2:8000/media/species/llama.jpg');
+    expect(resolveUsableImageUrl('http://localhost/media/species/llama.jpg', null, 'http://10.0.2.2:8000/api/v1'))
+      .toBe('http://10.0.2.2:8000/media/species/llama.jpg');
     expect(resolveUsableImageUrl(null, 'events/archivo.jpg', null)).toBeUndefined();
     expect(resolveUsableImageUrl(
       'http://localhost/storage/events/a.jpg',

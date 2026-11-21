@@ -75,8 +75,9 @@ export default function ProfileRoute() {
       user={shownUser}
       displayName={identity?.nickname}
       avatarCode={identity?.avatarCode}
+      placeholder={!live}
       nextThreshold={live?.progress.nextThreshold}
-      achievements={live?.achievements ?? achievements}
+      achievements={live?.achievements ?? []}
       onAchievementPress={(id) => router.push({
         pathname: '/achievement-detail',
         params: { id, source: 'profile', returnTo: 'profile' },

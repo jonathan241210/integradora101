@@ -66,7 +66,7 @@ export function LoginView({
             type="password"
           />
           <Button className="login-submit" disabled={busy} type="submit">
-            {busy ? <Spinner label="Cargando…" /> : 'Iniciar sesión'}
+            {busy ? <Spinner label="Iniciando sesión…" /> : 'Iniciar sesión'}
           </Button>
         </form>
       </Card>

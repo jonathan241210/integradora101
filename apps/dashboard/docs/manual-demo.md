@@ -69,10 +69,10 @@ El menú se despliega con una transición suave y, al registrar una venta, el re
 Las secciones de administración usan datos reales de `arca_pruebas` mediante `api-007` y no muestran el aviso de demostración:
 
 - **Usuarios:** tabla paginada con búsqueda y filtros por rol, área y estado; formulario fijo (minimizable) de alta y edición; activar/desactivar, eliminar, restablecer contraseña y restablecer 2FA con confirmación en línea en la propia fila, sin ventanas emergentes. Solo `admin` (con `users.manage`) ve esta sección; `zoo-admin` no la ve desde el 2026-11-05.
-- **Noticias y Eventos:** listado de activos e inactivos, formulario fijo (minimizable) de alta y edición con caja de imagen (selector o arrastrar y soltar; JPG, PNG o WebP de hasta 5 MB; vista previa, «Quitar imagen» y miniatura en las tarjetas); activar/desactivar y eliminar con confirmación en línea en la tarjeta.
-- **Paginación de Eventos:** se muestran hasta cuatro eventos por página, en el orden entregado por la API. «Anterior» y «Siguiente» cambian la página; si hay una confirmación abierta, hay que confirmarla o cancelarla antes de cambiar. La paginación organiza la lista recibida en el navegador; no reduce la descarga de datos.
+- **Noticias y Eventos:** listado de activos e inactivos, formulario fijo (minimizable) de alta y edición con caja de imagen (selector o arrastrar y soltar; JPG, PNG o WebP de hasta 5 MB; vista previa, «Quitar imagen» y miniatura en las tarjetas). En Noticias, activar y desactivar abre un diálogo centrado. Eliminar en Noticias y las confirmaciones de Eventos aparecen en la tarjeta.
+- **Paginación de Noticias y Eventos:** se muestran hasta seis noticias o cuatro eventos por página, en el orden entregado por la API. «Anterior» y «Siguiente» cambian la página; si hay una confirmación abierta, hay que confirmarla o cancelarla antes de cambiar. La paginación organiza la lista recibida en el navegador.
 - **Recintos:** lista con número de animales, alta y renombrado; no se eliminan.
-- **Panel principal:** totales de hoy y de los últimos 7 días y serie diaria de ingresos. Sin ventas se muestra un estado vacío.
+- **Panel principal:** totales de hoy y de los últimos 7 días y serie diaria de ingresos. Al pasar el puntero sobre una fila de la gráfica, aparece el día y su importe. Sin ventas se muestra un estado vacío.
 - **Reporte de boletos:** periodo semanal o mensual (rango personalizado como opción secundaria), navegación al periodo anterior/siguiente, totales, desglose diario, listado paginado y exportación.
 
 **Exportación:** los botones «Exportar CSV», «Exportar Excel» y «Exportar PDF» siempre están visibles y la API genera los tres formatos. El PDF tiene un tope de boletos por periodo: si se supera, la API responde con un aviso y el reporte en pantalla se conserva.
@@ -83,7 +83,9 @@ Las secciones de administración usan datos reales de `arca_pruebas` mediante `a
 - **Historial:** `cashier` ve sus boletos y puede cancelar los marcados como cancelables indicando el motivo; `admin` y `zoo-admin` lo ven en solo lectura.
 - **Precios (`admin`):** precio vigente y próximo cambio, cambio inmediato o programado con confirmación; sin segundo factor confirmado la API responde 403 y se muestra un aviso.
 
-Ninguna de estas secciones muestra aviso de demostración. Sigue siendo de demostración el botón de notificaciones de la barra superior. El buscador del encabezado es real (`dashboard-012`): tolera mayúsculas, acentos, prefijos y errores de escritura; muestra el fragmento de la coincidencia, un grupo «Acciones» (por ejemplo «contraseña juan» abre la confirmación de restablecer la contraseña de Juan, sin ejecutarla) y «Secciones». Solo Usuarios, Recintos e Historial de boletos abren el diálogo desde un resultado; el resto navega a la sección. «QR» lleva a «Nueva venta», donde se imprime el QR del boleto. Los términos no se guardan en el navegador; el centro de notificaciones y los avisos de precio están diferidos.
+Los avisos de acciones aparecen sobre el contenido y se cierran automáticamente a los cinco segundos. También se pueden cerrar con la X.
+
+El buscador del encabezado (`dashboard-012`) tolera mayúsculas, acentos, prefijos y errores de escritura; muestra el fragmento de la coincidencia, un grupo «Acciones» (por ejemplo «contraseña juan» abre la confirmación de restablecer la contraseña de Juan, sin ejecutarla) y «Secciones». Solo Usuarios, Recintos e Historial de boletos abren el diálogo desde un resultado; el resto navega a la sección. «QR» lleva a «Nueva venta», donde se imprime el QR del boleto. Los términos no se guardan en el navegador. Los avisos programados de precios siguen diferidos.
 
 ### QR de recintos (`dashboard-013`)
 
