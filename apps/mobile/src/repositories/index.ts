@@ -1,4 +1,4 @@
-import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection } from '../models';
+import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection, ZooPlace, PathNode } from '../models';
 import { MOCK_ANIMALS, MOCK_USER, MOCK_MISSIONS, MOCK_EVENTS, MOCK_NEWS, MOCK_ACHIEVEMENTS, MOCK_MILESTONES, MOCK_MAP_SECTIONS, MOCK_MAP_PLACES } from '../mocks/zoo';
 
 export interface AnimalRepository {
@@ -26,6 +26,8 @@ export interface ZooRepository {
 export interface MapRepository {
   getPlaces(): Promise<MapPlace[]>;
   getSections(): Promise<MapSection[]>;
+  getZooPlaces(): Promise<ZooPlace[]>;
+  getPathNodes(): Promise<PathNode[]>;
 }
 
 export class AnimalRepositoryImpl implements AnimalRepository {
@@ -96,6 +98,14 @@ export class MapRepositoryImpl implements MapRepository {
 
   async getSections(): Promise<MapSection[]> {
     return MOCK_MAP_SECTIONS;
+  }
+
+  async getZooPlaces(): Promise<ZooPlace[]> {
+    return [];
+  }
+
+  async getPathNodes(): Promise<PathNode[]> {
+    return [];
   }
 }
 

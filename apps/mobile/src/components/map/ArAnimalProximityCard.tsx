@@ -10,7 +10,6 @@ interface ArAnimalProximityCardProps {
   distanceMeters: number;
   isArrived?: boolean;
   onDismiss: () => void;
-  onNextStop?: () => void;
   onOpenEnclosureSheet?: () => void;
 }
 
@@ -19,7 +18,6 @@ export function ArAnimalProximityCard({
   distanceMeters,
   isArrived = false,
   onDismiss,
-  onNextStop,
   onOpenEnclosureSheet,
 }: ArAnimalProximityCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -148,19 +146,6 @@ export function ArAnimalProximityCard({
         </Pressable>
 
         <View style={styles.rightButtonsRow}>
-          {isArrived && onNextStop && (
-            <Pressable
-              testID="ar-card-next-stop-btn"
-              accessibilityRole="button"
-              accessibilityLabel="Continuar hacia el siguiente recinto"
-              onPress={onNextStop}
-              style={styles.nextStopPill}
-            >
-              <AppText variant="caption" bold color="textOnPrimary">
-                Siguiente recinto ›
-              </AppText>
-            </Pressable>
-          )}
 
           <Pressable
             testID="ar-card-dismiss-btn"
@@ -318,12 +303,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-  },
-  nextStopPill: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
-    borderRadius: radius.pill,
   },
   dismissPill: {
     backgroundColor: colors.overlaySurface,

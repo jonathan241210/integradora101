@@ -1,79 +1,103 @@
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AppText } from '../ui';
-import { MapPlace } from '../../models';
+import { MapPlace, ZooPlace } from '../../models';
 import { colors, radius, spacing } from '../../theme/tokens';
-import { ArGuidanceResult } from '../../utils/arMath';
-import { WalkRouteResult } from '../../utils/pathfinding';
-import { TourForkBranch } from '../../utils/tourPlanner';
-import { ArVisualMode } from '../../viewmodels/useArTourViewModel';
+import { ArLocationPoint } from '../../utils/arLocationMath';
 import { ArAnimalProximityCard } from './ArAnimalProximityCard';
 import { EnclosureDetailModal } from './EnclosureDetailModal';
-import { ThreeTourScene } from './ThreeTourScene';
+import { LocationArScene } from './LocationArScene';
+
+export interface ArrivedArPoint {
+  id: string;
+  name: string;
+  kind: 'enclosure' | 'zoo_place';
+  placeType?: string;
+  description?: string | null;
+}
+
+interface NearbyPathNode {
+  id: string;
+  name: string;
+  nodeType: string;
+  distanceMeters: number;
+  instruction?: string | null;
+}
 
 interface ArTourOverlayProps {
-  visualMode: ArVisualMode;
-  currentStopIndex: number;
-  totalStops: number;
-  currentStop: MapPlace | null;
-  walkRoute: WalkRouteResult | null;
-  guidance: ArGuidanceResult | null;
-  forkBranches: TourForkBranch[];
-  showProximityCard?: boolean;
-  proximityDistanceMeters?: number | null;
-  isArrived?: boolean;
-  onDismissProximityCard?: () => void;
+  arPoints: ArLocationPoint[];
+  nearbyPoints?: ArLocationPoint[];
+  visitedArIds: Set<string>;
+  selectedArPointId: string | null;
+  onSelectArPoint: (id: string | null) => void;
   onClose: () => void;
-  onToggleVisualMode: () => void;
-  onNextStop: () => void;
-  onPrevStop: () => void;
-  onSelectForkStop: (placeId: string) => void;
-  onRotateLeft: () => void;
-  onRotateRight: () => void;
-  onAlignFront: () => void;
-  onStepAnimation?: () => void;
+  hasLocation: boolean;
+  headingAvailable: boolean;
+  lowAccuracy: boolean;
+  arrivedArPoint?: ArrivedArPoint | null;
+  onDismissArrival?: () => void;
+  selectedPlace?: MapPlace | null;
+  selectedZooPlace?: ZooPlace | null;
+  nearbyPathNode?: NearbyPathNode | null;
+  onOpenNativeArPoc?: () => void;
+}
+
+function formatDistance(distanceMeters: number): string {
+  if (!Number.isFinite(distanceMeters) || distanceMeters < 0) return '0 m';
+  if (distanceMeters < 1000) return `${Math.round(distanceMeters)} m`;
+  return `${(distanceMeters / 1000).toFixed(1)} km`;
+}
+
+function formatPathNodeType(nodeType: string): string {
+  const normalized = nodeType.toLowerCase();
+  if (normalized === 'interseccion') return 'Intersección';
+  if (normalized === 'inicio') return 'Inicio de sendero';
+  if (normalized === 'fin') return 'Fin de sendero';
+  if (normalized === 'paso') return 'Punto de paso';
+  return 'Punto de sendero';
 }
 
 export function ArTourOverlay({
-  visualMode,
-  currentStopIndex,
-  totalStops,
-  currentStop,
-  walkRoute,
-  guidance,
-  forkBranches,
-  showProximityCard = false,
-  proximityDistanceMeters,
-  isArrived = false,
-  onDismissProximityCard,
+  arPoints,
+  nearbyPoints: nearbyPointsProp,
+  visitedArIds,
+  selectedArPointId,
+  onSelectArPoint,
   onClose,
-  onToggleVisualMode,
-  onNextStop,
-  onPrevStop,
-  onSelectForkStop,
-  onRotateLeft,
-  onRotateRight,
-  onAlignFront,
-  onStepAnimation,
+  hasLocation,
+  headingAvailable,
+  lowAccuracy,
+  arrivedArPoint,
+  onDismissArrival,
+  selectedPlace,
+  selectedZooPlace,
+  nearbyPathNode,
+  onOpenNativeArPoc,
 }: ArTourOverlayProps) {
   const [isEnclosureModalOpen, setIsEnclosureModalOpen] = useState(false);
 
-  const modeLabel =
-    visualMode === 'camera-ar' ? 'Modo Escena 3D' : 'Modo Cámara AR';
+  const nearbyPoints = useMemo(
+    () => [...(nearbyPointsProp ?? arPoints)].sort((a, b) => a.distanceMeters - b.distanceMeters),
+    [arPoints, nearbyPointsProp],
+  );
+  const selectedPoint = useMemo(
+    () => nearbyPoints.find((point) => point.id === selectedArPointId) ?? null,
+    [nearbyPoints, selectedArPointId],
+  );
+
+  const selectedIsArrived = selectedPoint ? visitedArIds.has(selectedPoint.id) || arrivedArPoint?.id === selectedPoint.id : false;
 
   return (
     <View testID="ar-tour-overlay" style={styles.overlay}>
-      {/* Capa de fondo 3D / Cámara AR a pantalla completa */}
-      <ThreeTourScene
-        visualMode={visualMode}
-        guidance={guidance}
-        forkBranches={forkBranches}
-        currentStop={currentStop}
-        isArrived={isArrived}
-        onStepAnimation={onStepAnimation}
-      />
+      <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+        <LocationArScene
+          points={arPoints}
+          hasLocation={hasLocation}
+          headingAvailable={headingAvailable}
+          lowAccuracy={lowAccuracy}
+        />
+      </View>
 
-      {/* Barra superior minimalista y flotante */}
       <View style={styles.topContainer}>
         <View style={styles.topRow}>
           <Pressable
@@ -83,194 +107,125 @@ export function ArTourOverlay({
             onPress={onClose}
             style={styles.closeCircleButton}
           >
-            <AppText variant="body" bold color="text">
-              ✕
-            </AppText>
+            <AppText variant="body" bold color="text">✕</AppText>
           </Pressable>
 
-          <View style={styles.stopPill}>
-            <AppText variant="caption" bold color="primary">
-              {`Parada ${currentStopIndex + 1} de ${Math.max(1, totalStops)} • Offline 3D`}
-            </AppText>
-          </View>
-
-          <Pressable
-            testID="toggle-ar-visual-mode"
-            accessibilityRole="button"
-            accessibilityLabel="Cambiar entre Cámara AR y Escena 3D"
-            onPress={onToggleVisualMode}
-            style={styles.modePill}
-          >
-            <AppText variant="caption" bold color="text">
-              {modeLabel}
-            </AppText>
-          </Pressable>
-        </View>
-
-        {/* Tarjeta de guía flotante estilo Live View */}
-        {currentStop && (
-          <View
-            testID="ar-guidance-card"
-            style={[styles.guidanceCard, isArrived && styles.guidanceCardArrived]}
-          >
-            <View style={styles.guidanceHeader}>
-              <View
-                style={[
-                  styles.destinationBadge,
-                  isArrived && styles.destinationBadgeArrived,
-                ]}
+          <View style={styles.topActions}>
+            {onOpenNativeArPoc ? (
+              <Pressable
+                testID="open-native-ar-poc-button"
+                accessibilityRole="button"
+                accessibilityLabel="Probar AR nativa PoC"
+                onPress={onOpenNativeArPoc}
+                style={styles.stopPill}
               >
-                <AppText
-                  variant="caption"
-                  bold
-                  color={isArrived ? 'textOnPrimary' : 'primary'}
-                >
-                  {isArrived ? '🎯 ¡LLEGADA AL RECINTO!' : currentStop.name}
-                </AppText>
-              </View>
-              {isArrived ? (
-                <AppText variant="caption" bold color="primary">
-                  ¡Estás aquí!
-                </AppText>
-              ) : walkRoute ? (
-                <AppText variant="caption" color="textMuted">
-                  {`~${walkRoute.distanceMeters} m • ${walkRoute.estimatedMinutes} min`}
-                </AppText>
-              ) : null}
+                <AppText variant="caption" bold color="primary">AR nativa PoC</AppText>
+              </Pressable>
+            ) : null}
+            <View style={styles.stopPill}>
+              <AppText variant="caption" bold color="primary">AR</AppText>
             </View>
-
-            <AppText variant="body" bold color="text" style={styles.instructionText}>
-              {isArrived
-                ? `¡Has llegado a ${currentStop.name}!`
-                : (guidance?.instruction ?? 'Sigue por el sendero principal')}
-            </AppText>
           </View>
-        )}
-
-        {/* Tarjeta interactiva flotante con datos del animal por proximidad o llegada */}
-        {showProximityCard && currentStop && (
-          <ArAnimalProximityCard
-            place={currentStop}
-            distanceMeters={proximityDistanceMeters ?? walkRoute?.distanceMeters ?? (isArrived ? 0 : 10)}
-            isArrived={isArrived}
-            onDismiss={onDismissProximityCard ?? (() => {})}
-            onNextStop={onNextStop}
-            onOpenEnclosureSheet={() => setIsEnclosureModalOpen(true)}
-          />
-        )}
+        </View>
       </View>
 
-      {/* Modal deslizante / Bottom Sheet con la ficha técnica completa del recinto (Boceto del usuario) */}
       <EnclosureDetailModal
         visible={isEnclosureModalOpen}
-        place={currentStop}
+        place={selectedPlace}
         onClose={() => setIsEnclosureModalOpen(false)}
       />
 
-      {/* Área inferior minimalista y flotante */}
       <View style={styles.bottomContainer}>
-        {/* Panel compacto de bifurcaciones si existen desvíos */}
-        {forkBranches.length > 0 && (
-          <View testID="ar-forks-panel" style={styles.forksCard}>
-            <AppText variant="caption" bold color="textMuted" style={styles.forksTitle}>
-              Desvíos en el sendero:
+        {selectedPoint && selectedPoint.kind === 'zoo_place' && (
+          <View style={styles.selectedCard} testID="ar-selected-zoo-place-card">
+            <AppText variant="caption" bold color="primary">{selectedIsArrived ? 'Visitado' : 'Lugar cercano'}</AppText>
+            <AppText variant="body" bold color="text">{selectedPoint.name}</AppText>
+            <AppText variant="caption" color="textMuted">
+              {(selectedZooPlace?.placeType ?? selectedPoint.placeType ?? 'Lugar') + ` • ${formatDistance(selectedPoint.distanceMeters)}`}
             </AppText>
-            <View style={styles.forksRow}>
-              {forkBranches.map((branch) => (
-                <Pressable
-                  key={branch.id}
-                  testID={`fork-select-${branch.targetPlaceId}`}
-                  accessibilityRole="button"
-                  accessibilityLabel={
-                    branch.isPrimary
-                      ? `Ruta activa hacia ${branch.targetPlaceName}`
-                      : `Tomar bifurcación hacia ${branch.targetPlaceName}`
-                  }
-                  onPress={() => onSelectForkStop(branch.targetPlaceId)}
-                  style={[
-                    styles.forkChip,
-                    branch.isPrimary ? styles.forkChipPrimary : styles.forkChipSecondary,
-                  ]}
-                >
-                  <AppText
-                    variant="caption"
-                    bold
-                    color={branch.isPrimary ? 'textOnPrimary' : 'text'}
-                  >
-                    {branch.isPrimary
-                      ? `✓ ${branch.targetPlaceName}`
-                      : `⌥ ${branch.targetPlaceName} (${branch.distanceMeters} m)`}
-                  </AppText>
-                </Pressable>
-              ))}
-            </View>
+            {(selectedZooPlace?.description ?? selectedPoint.description) ? (
+              <AppText variant="caption" color="text">{selectedZooPlace?.description ?? selectedPoint.description}</AppText>
+            ) : null}
           </View>
         )}
 
-        {/* Controles de orientación sutiles y compactos */}
-        <View style={styles.orientationRow}>
-          <Pressable
-            testID="ar-rotate-left"
-            accessibilityRole="button"
-            accessibilityLabel="Girar vista a la izquierda"
-            onPress={onRotateLeft}
-            style={styles.microButton}
-          >
-            <AppText variant="small" bold color="text">
-              ⟲
-            </AppText>
-          </Pressable>
+        {selectedPoint && selectedPoint.kind === 'enclosure' && selectedPlace && (
+          <ArAnimalProximityCard
+            place={selectedPlace}
+            distanceMeters={selectedPoint.distanceMeters}
+            isArrived={selectedIsArrived}
+            onDismiss={() => onSelectArPoint(null)}
+            onOpenEnclosureSheet={() => setIsEnclosureModalOpen(true)}
+          />
+        )}
 
-          <Pressable
-            testID="ar-align-front"
-            accessibilityRole="button"
-            accessibilityLabel="Alinear al frente"
-            onPress={onAlignFront}
-            style={[styles.microButton, styles.microButtonCenter]}
-          >
-            <AppText variant="small" bold color="primary">
-              Alinear
+        {arrivedArPoint && (
+          <View style={styles.arrivalCard} testID="ar-arrival-banner">
+            <AppText variant="caption" bold color="primary">Llegaste a</AppText>
+            <AppText variant="body" bold color="text">{arrivedArPoint.name}</AppText>
+            <AppText variant="caption" color="textMuted">
+              {arrivedArPoint.kind === 'zoo_place'
+                ? `${arrivedArPoint.placeType ?? 'Lugar'}${arrivedArPoint.description ? ` • ${arrivedArPoint.description}` : ''}`
+                : 'Recinto cercano'}
             </AppText>
-          </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Cerrar aviso de llegada"
+              onPress={onDismissArrival}
+              style={styles.dismissButton}
+            >
+              <AppText variant="caption" bold color="primary">Cerrar</AppText>
+            </Pressable>
+          </View>
+        )}
 
-          <Pressable
-            testID="ar-rotate-right"
-            accessibilityRole="button"
-            accessibilityLabel="Girar vista a la derecha"
-            onPress={onRotateRight}
-            style={styles.microButton}
-          >
-            <AppText variant="small" bold color="text">
-              ⟳
+        {nearbyPathNode && (
+          <View style={styles.pathNodeCard} testID="ar-nearby-path-node-card">
+            <AppText variant="caption" bold color="primary">Punto de sendero cercano</AppText>
+            <AppText variant="body" bold color="text">{formatPathNodeType(nearbyPathNode.nodeType)}</AppText>
+            <AppText variant="caption" color="textMuted">
+              {`${nearbyPathNode.name} • ${formatDistance(nearbyPathNode.distanceMeters)}`}
             </AppText>
-          </Pressable>
-        </View>
+            {nearbyPathNode.instruction ? (
+              <AppText variant="caption" bold color="text">{nearbyPathNode.instruction}</AppText>
+            ) : null}
+          </View>
+        )}
 
-        {/* Botones de navegación del recorrido flotantes */}
-        <View style={styles.navRow}>
-          <Pressable
-            testID="prev-tour-stop-button"
-            accessibilityRole="button"
-            accessibilityLabel="Recinto anterior"
-            onPress={onPrevStop}
-            style={styles.navPillSecondary}
-          >
-            <AppText variant="body" bold color="text">
-              ‹ Anterior
+        <View style={styles.nearbyCard} testID="ar-nearby-panel">
+          <AppText variant="caption" bold color="textMuted" style={styles.nearbyTitle}>
+            Cerca de ti
+          </AppText>
+          {nearbyPoints.length === 0 ? (
+            <AppText variant="caption" color="textMuted">
+              Apunta la cámara hacia recintos o lugares cercanos.
             </AppText>
-          </Pressable>
-
-          <Pressable
-            testID="next-tour-stop-button"
-            accessibilityRole="button"
-            accessibilityLabel="Siguiente recinto"
-            onPress={onNextStop}
-            style={styles.navPillPrimary}
-          >
-            <AppText variant="body" bold color="textOnPrimary">
-              Siguiente recinto ›
-            </AppText>
-          </Pressable>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.nearbyRow}>
+              {nearbyPoints.map((point) => {
+                const isSelected = point.id === selectedArPointId;
+                const isVisited = visitedArIds.has(point.id);
+                const isZooPlace = point.kind === 'zoo_place';
+                return (
+                  <Pressable
+                    key={point.id}
+                    testID={`ar-nearby-item-${point.id}`}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${point.name}, ${formatDistance(point.distanceMeters)}${isVisited ? ', visitado' : ''}`}
+                    onPress={() => onSelectArPoint(isSelected ? null : point.id)}
+                    style={[styles.nearbyChip, isSelected && styles.nearbyChipSelected, isZooPlace && styles.nearbyChipZoo]}
+                  >
+                    <AppText variant="caption" bold color={isSelected ? 'textOnPrimary' : 'text'} numberOfLines={1}>
+                      {point.name}
+                    </AppText>
+                    <AppText variant="caption" color={isSelected ? 'textOnPrimary' : 'textMuted'}>
+                      {`${isZooPlace ? point.placeType ?? 'Lugar' : 'Recinto'} • ${formatDistance(point.distanceMeters)}${isVisited ? ' • Visitado' : ''}`}
+                    </AppText>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          )}
         </View>
       </View>
     </View>
@@ -278,181 +233,44 @@ export function ArTourOverlay({
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    zIndex: 99,
-    justifyContent: 'space-between',
-  },
-  topContainer: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    gap: spacing.xs,
-  },
-  topRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
+  overlay: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, zIndex: 99, justifyContent: 'space-between' },
+  topContainer: { paddingHorizontal: spacing.md, paddingTop: spacing.xl, gap: spacing.xs },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  topActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   closeCircleButton: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: colors.surfaceOverlay,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.18,
-    shadowRadius: 3,
+    width: 38, height: 38, borderRadius: 19, backgroundColor: colors.surfaceOverlay,
+    alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.18, shadowRadius: 3,
   },
   stopPill: {
-    backgroundColor: colors.surfaceOverlay,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
-    borderRadius: radius.pill,
-    elevation: 3,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius: 2,
+    backgroundColor: colors.surfaceOverlay, paddingHorizontal: spacing.sm, paddingVertical: 6,
+    borderRadius: radius.pill, elevation: 3, shadowColor: colors.text,
+    shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.12, shadowRadius: 2,
   },
-  modePill: {
-    backgroundColor: colors.surfaceOverlay,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
-    borderRadius: radius.pill,
-    elevation: 3,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius: 2,
+  arrivalCard: {
+    backgroundColor: colors.surfaceOverlay, borderRadius: radius.md, padding: spacing.md,
+    gap: 2, borderWidth: 1, borderColor: colors.primary,
   },
-  guidanceCard: {
-    backgroundColor: colors.surfaceOverlay,
-    borderRadius: radius.lg,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    elevation: 5,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    marginTop: spacing.xs,
+  pathNodeCard: {
+    backgroundColor: colors.surfaceOverlay, borderRadius: radius.md, padding: spacing.sm,
+    gap: 2, borderWidth: 1, borderColor: colors.border,
   },
-  guidanceCardArrived: {
-    borderWidth: 2,
-    borderColor: colors.primary,
+  dismissButton: { alignSelf: 'flex-start', marginTop: spacing.xs, paddingVertical: 4 },
+  nearbyCard: {
+    backgroundColor: colors.surfaceOverlay, borderRadius: radius.md, padding: spacing.sm,
+    gap: spacing.xs, elevation: 3,
   },
-  guidanceHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 2,
+  nearbyTitle: { fontSize: 11 },
+  nearbyRow: { gap: spacing.xs, paddingVertical: 2 },
+  nearbyChip: {
+    maxWidth: 220, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs,
+    borderRadius: radius.md, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border,
   },
-  destinationBadge: {
-    backgroundColor: colors.primarySoft,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
-    borderRadius: radius.sm,
+  nearbyChipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  nearbyChipZoo: { borderColor: colors.primary },
+  selectedCard: {
+    backgroundColor: colors.surfaceOverlay, borderRadius: radius.md, padding: spacing.md,
+    gap: 2, borderWidth: 1, borderColor: colors.primary,
   },
-  destinationBadgeArrived: {
-    backgroundColor: colors.primary,
-  },
-  instructionText: {
-    fontSize: 16,
-    lineHeight: 22,
-  },
-  bottomContainer: {
-    paddingHorizontal: spacing.md,
-    paddingBottom: spacing.lg,
-    gap: spacing.xs,
-  },
-  forksCard: {
-    backgroundColor: colors.surfaceOverlay,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    elevation: 3,
-  },
-  forksTitle: {
-    fontSize: 11,
-    marginBottom: 4,
-  },
-  forksRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-  },
-  forkChip: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 5,
-    borderRadius: radius.pill,
-  },
-  forkChipPrimary: {
-    backgroundColor: colors.primary,
-  },
-  forkChipSecondary: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  orientationRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  microButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.surfaceOverlaySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 2,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius: 2,
-  },
-  microButtonCenter: {
-    width: 'auto',
-    paddingHorizontal: spacing.md,
-  },
-  navRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  navPillSecondary: {
-    flex: 1,
-    minHeight: 46,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceOverlay,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3,
-    shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-  },
-  navPillPrimary: {
-    flex: 1.4,
-    minHeight: 46,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
+  bottomContainer: { paddingHorizontal: spacing.md, paddingBottom: spacing.lg, gap: spacing.xs },
 });

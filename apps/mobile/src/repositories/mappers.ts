@@ -332,12 +332,13 @@ export function mapEnclosureToMapPlace(item: ApiEnclosureResponse): MapPlace {
       })
     : undefined;
 
-  const gpsLat = item.gps_lat != null
+  const hasRealGps = item.gps_lat != null && item.gps_lon != null;
+  const gpsLat = hasRealGps
     ? Number(item.gps_lat)
-    : Math.round((ZOO_BOUNDS.latMax - mapY * (ZOO_BOUNDS.latMax - ZOO_BOUNDS.latMin)) * 1000000) / 1000000;
-  const gpsLon = item.gps_lon != null
+    : undefined;
+  const gpsLon = hasRealGps
     ? Number(item.gps_lon)
-    : Math.round((ZOO_BOUNDS.lonMin + mapX * (ZOO_BOUNDS.lonMax - ZOO_BOUNDS.lonMin)) * 1000000) / 1000000;
+    : undefined;
 
   return {
     id: String(item.id),
@@ -351,5 +352,55 @@ export function mapEnclosureToMapPlace(item: ApiEnclosureResponse): MapPlace {
     gpsLat,
     gpsLon,
     animals,
+  };
+}
+
+export interface ApiZooPlaceResponse {
+  id: number | string;
+  name: string;
+  name_original?: string | null;
+  place_type: string;
+  gps_lat?: number | null;
+  gps_lon?: number | null;
+  map_x?: number | null;
+  map_y?: number | null;
+  is_visible?: boolean | number | null;
+  description?: string | null;
+}
+
+export interface ApiPathNodeResponse {
+  id: number | string;
+  name?: string | null;
+  node_type: string;
+  gps_lat?: number | null;
+  gps_lon?: number | null;
+  map_x?: number | null;
+  map_y?: number | null;
+}
+
+export function mapZooPlaceToModel(item: ApiZooPlaceResponse) {
+  return {
+    id: String(item.id),
+    name: item.name,
+    nameOriginal: item.name_original ?? null,
+    placeType: item.place_type,
+    gpsLat: item.gps_lat != null ? Number(item.gps_lat) : null,
+    gpsLon: item.gps_lon != null ? Number(item.gps_lon) : null,
+    mapX: item.map_x != null ? Number(item.map_x) : null,
+    mapY: item.map_y != null ? Number(item.map_y) : null,
+    isVisible: Boolean(item.is_visible ?? true),
+    description: item.description ?? null,
+  };
+}
+
+export function mapPathNodeToModel(item: ApiPathNodeResponse) {
+  return {
+    id: String(item.id),
+    name: item.name ?? null,
+    nodeType: item.node_type,
+    gpsLat: item.gps_lat != null ? Number(item.gps_lat) : null,
+    gpsLon: item.gps_lon != null ? Number(item.gps_lon) : null,
+    mapX: item.map_x != null ? Number(item.map_x) : null,
+    mapY: item.map_y != null ? Number(item.map_y) : null,
   };
 }

@@ -138,3 +138,26 @@ export interface InfoSection {
   title: string;
   body: string;
 }
+
+export interface ZooPlace {
+  id: string;
+  name: string;
+  nameOriginal?: string | null;
+  placeType: 'servicios' | 'operativo' | 'comun' | 'comercial' | 'infraestructura' | 'otro' | string;
+  gpsLat?: number | null;
+  gpsLon?: number | null;
+  mapX?: number | null;
+  mapY?: number | null;
+  isVisible: boolean;
+  description?: string | null;
+}
+
+export interface PathNode {
+  id: string;
+  name?: string | null;
+  nodeType: 'inicio' | 'interseccion' | 'fin' | 'paso' | string;
+  gpsLat?: number | null;
+  gpsLon?: number | null;
+  mapX?: number | null;
+  mapY?: number | null;
+}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Vibration } from 'react-native';
-import { MapFilter, MapPlace, MapSection } from '../models';
+import { MapFilter, MapPlace, MapSection, PathNode, ZooPlace } from '../models';
 import { MapRepository, createMapRepository } from '../repositories';
 import { haversineMeters } from '../utils/haversine';
 import { geoTransform } from '../utils/geoTransform';
@@ -16,6 +16,8 @@ const defaultRepository = createMapRepository();
 export function useMapViewModel(repository: MapRepository = defaultRepository) {
   const [places, setPlaces] = useState<MapPlace[]>([]);
   const [sections, setSections] = useState<MapSection[]>([]);
+  const [zooPlaces, setZooPlaces] = useState<ZooPlace[]>([]);
+  const [pathNodes, setPathNodes] = useState<PathNode[]>([]);
   const [filter, setFilter] = useState<MapFilter>('all');
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [focusedPlaceId, setFocusedPlaceId] = useState<string | null>(null);
@@ -29,12 +31,16 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
     setIsLoading(true);
     setError(null);
     try {
-      const [loadedPlaces, loadedSections] = await Promise.all([
+      const [loadedPlaces, loadedSections, loadedZooPlaces, loadedPathNodes] = await Promise.all([
         repository.getPlaces(),
         repository.getSections(),
+        repository.getZooPlaces().catch(() => []),
+        repository.getPathNodes().catch(() => []),
       ]);
       setPlaces(loadedPlaces);
       setSections(loadedSections);
+      setZooPlaces(loadedZooPlaces);
+      setPathNodes(loadedPathNodes);
     } catch (loadError: unknown) {
       console.error('Error loading map data:', loadError);
       setError('No se pudo cargar el mapa. Intenta de nuevo.');
@@ -149,6 +155,8 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
   return {
     places,
     sections,
+    zooPlaces,
+    pathNodes,
     filteredPlaces,
     filter,
     selectedPlace,

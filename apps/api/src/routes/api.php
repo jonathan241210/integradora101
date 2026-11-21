@@ -30,6 +30,8 @@ use App\Http\Controllers\Api\ClinicalEvaluationController;
 use App\Http\Controllers\Api\StaffSyncController;
 use App\Http\Controllers\Auth\MeController;
 use App\Http\Controllers\Catalog\EnclosureController;
+use App\Http\Controllers\Catalog\PathNodeController;
+use App\Http\Controllers\Catalog\ZooPlaceController;
 use App\Http\Controllers\Catalog\EventController;
 use App\Http\Controllers\Catalog\NewsController as PublicNewsController;
 use App\Http\Controllers\Catalog\PublicMemoryController;
@@ -79,6 +81,8 @@ Route::middleware('throttle:public-read')->group(function () {
 
     Route::get('/enclosures', [EnclosureController::class, 'index'])->name('enclosures.index');
     Route::get('/enclosures/{enclosure}', [EnclosureController::class, 'show'])->name('enclosures.show');
+    Route::get('/zoo-places', [ZooPlaceController::class, 'index'])->name('zoo-places.index');
+    Route::get('/path-nodes', [PathNodeController::class, 'index'])->name('path-nodes.index');
 
     Route::get('/events', [EventController::class, 'index'])->name('events.index');
     Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
