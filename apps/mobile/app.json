@@ -23,6 +23,7 @@
       ]
     },
     "plugins": [
+      "@reactvision/react-viro",
       "expo-router",
       "expo-secure-store",
       [

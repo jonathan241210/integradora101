@@ -56,15 +56,12 @@ describe('Mobile — Tarjeta interactiva de datos del animal por proximidad en R
 
   it('muestra estado destacado de LLEGADA AL RECINTO cuando isArrived es true y permite continuar al siguiente recinto', async () => {
     const onDismiss = jest.fn();
-    const onNextStop = jest.fn();
-
     const { getByTestId, getByText } = await render(
       <ArAnimalProximityCard
         place={tigerPlace}
         distanceMeters={2}
         isArrived={true}
         onDismiss={onDismiss}
-        onNextStop={onNextStop}
       />,
     );
 
@@ -72,76 +69,39 @@ describe('Mobile — Tarjeta interactiva de datos del animal por proximidad en R
     expect(getByTestId('ar-proximity-badge')).toBeTruthy();
     expect(getByText('🎉 ¡HAS LLEGADO AL RECINTO! • 0 m')).toBeTruthy();
     expect(getByText('¡Llegaste a Hábitat del Tigre!')).toBeTruthy();
-
-    // Debe proveer botón accesible para avanzar de parada directamente desde la llegada
-    const nextBtn = getByTestId('ar-card-next-stop-btn');
-    expect(getByText('Siguiente recinto ›')).toBeTruthy();
-    await fireEvent.press(nextBtn);
-    expect(onNextStop).toHaveBeenCalledTimes(1);
   });
 
-  it('ArTourOverlay refleja la llegada en la barra de guía superior y en la tarjeta interactiva flotante', async () => {
-    const onDismissProximity = jest.fn();
-    const onNextStop = jest.fn();
-
-    const { getByTestId, rerender, getByText, queryByTestId } = await render(
+  it('ArTourOverlay muestra llegada y tarjeta interactiva de recinto seleccionado', async () => {
+    const onDismissArrival = jest.fn();
+    const { getByTestId, getByText } = await render(
       <ArTourOverlay
-        visualMode="camera-ar"
-        currentStopIndex={0}
-        totalStops={5}
-        currentStop={tigerPlace}
-        walkRoute={null}
-        guidance={null}
-        forkBranches={[]}
-        showProximityCard={true}
-        proximityDistanceMeters={0}
-        isArrived={true}
-        onDismissProximityCard={onDismissProximity}
+        arPoints={[{
+          id: 'enclosure-juan',
+          sourceId: 'juan',
+          name: tigerPlace.name,
+          latitude: 20.08,
+          longitude: -98.722,
+          kind: 'enclosure',
+          distanceMeters: 5,
+          bearingDegrees: 0,
+          relativeBearingDegrees: 0,
+          showLabel: true,
+        }]}
+        visitedArIds={new Set(['enclosure-juan'])}
+        selectedArPointId="enclosure-juan"
+        onSelectArPoint={noop}
         onClose={noop}
-        onToggleVisualMode={noop}
-        onNextStop={onNextStop}
-        onPrevStop={noop}
-        onSelectForkStop={noop}
-        onRotateLeft={noop}
-        onRotateRight={noop}
-        onAlignFront={noop}
+        hasLocation={true}
+        headingAvailable={true}
+        lowAccuracy={false}
+        arrivedArPoint={{ id: 'enclosure-juan', name: tigerPlace.name, kind: 'enclosure' }}
+        onDismissArrival={onDismissArrival}
+        selectedPlace={tigerPlace}
       />,
     );
 
-    // En la guía superior debe indicar la llegada al recinto
-    expect(getByTestId('ar-guidance-card')).toBeTruthy();
-    expect(getByText('🎯 ¡LLEGADA AL RECINTO!')).toBeTruthy();
-    expect(getByText(`¡Has llegado a ${tigerPlace.name}!`)).toBeTruthy();
-
-    // En la tarjeta flotante AR debe indicar la llegada
+    expect(getByTestId('ar-arrival-banner')).toBeTruthy();
+    expect(getByText('Llegaste a')).toBeTruthy();
     expect(getByTestId('ar-animal-proximity-card')).toBeTruthy();
-    expect(getByText('🎉 ¡HAS LLEGADO AL RECINTO! • 0 m')).toBeTruthy();
-
-    // Al desmontar o cambiar showProximityCard a false, la tarjeta desaparece
-    await rerender(
-      <ArTourOverlay
-        visualMode="camera-ar"
-        currentStopIndex={0}
-        totalStops={5}
-        currentStop={tigerPlace}
-        walkRoute={null}
-        guidance={null}
-        forkBranches={[]}
-        showProximityCard={false}
-        proximityDistanceMeters={25}
-        isArrived={false}
-        onDismissProximityCard={onDismissProximity}
-        onClose={noop}
-        onToggleVisualMode={noop}
-        onNextStop={onNextStop}
-        onPrevStop={noop}
-        onSelectForkStop={noop}
-        onRotateLeft={noop}
-        onRotateRight={noop}
-        onAlignFront={noop}
-      />,
-    );
-
-    expect(queryByTestId('ar-animal-proximity-card')).toBeNull();
   });
 });

@@ -1,7 +1,14 @@
 import { createHttpClient, type HttpClient } from '@arca/api-client';
-import { MapPlace, MapSection } from '../models';
+import { MapPlace, MapSection, PathNode, ZooPlace } from '../models';
 import { MapRepository } from './index';
-import { ApiEnclosureResponse, mapEnclosureToMapPlace } from './mappers';
+import {
+  ApiEnclosureResponse,
+  ApiPathNodeResponse,
+  ApiZooPlaceResponse,
+  mapEnclosureToMapPlace,
+  mapPathNodeToModel,
+  mapZooPlaceToModel,
+} from './mappers';
 import { KeyValueStorage, defaultStorage } from './storage';
 import { MOCK_MAP_PLACES, MOCK_MAP_SECTIONS } from '../mocks/zoo';
 
@@ -13,7 +20,11 @@ interface CacheEnvelope<T> {
 
 const DEFAULT_CACHE_TTL_MS = 30 * 1000; // 30 segundos para reflejar cambios rápidos en pruebas piloto
 export const CACHE_KEY_MAP_PLACES = '@arca:map_places_cache';
+export const CACHE_KEY_ZOO_PLACES = '@arca:zoo_places_cache';
+export const CACHE_KEY_PATH_NODES = '@arca:path_nodes_cache';
 const placeFlights = new Map<string, Promise<MapPlace[]>>();
+const zooPlaceFlights = new Map<string, Promise<ZooPlace[]>>();
+const pathNodeFlights = new Map<string, Promise<PathNode[]>>();
 
 export class ApiMapRepository implements MapRepository {
   private readonly httpClient: HttpClient;
@@ -62,6 +73,84 @@ export class ApiMapRepository implements MapRepository {
    */
   async getSections(): Promise<MapSection[]> {
     return Promise.resolve(MOCK_MAP_SECTIONS);
+  }
+
+  async getZooPlaces(): Promise<ZooPlace[]> {
+    const cached = await this.readCache<ZooPlace[]>(CACHE_KEY_ZOO_PLACES);
+    if (cached) {
+      const isFresh = Date.now() - cached.cachedAt < cached.ttlMs;
+      if (isFresh) return cached.data;
+      this.revalidateZooPlaces().catch(() => {});
+      return cached.data;
+    }
+    try {
+      return await this.fetchAndCacheZooPlaces();
+    } catch {
+      return [];
+    }
+  }
+
+  async getPathNodes(): Promise<PathNode[]> {
+    const cached = await this.readCache<PathNode[]>(CACHE_KEY_PATH_NODES);
+    if (cached) {
+      const isFresh = Date.now() - cached.cachedAt < cached.ttlMs;
+      if (isFresh) return cached.data;
+      this.revalidatePathNodes().catch(() => {});
+      return cached.data;
+    }
+    try {
+      return await this.fetchAndCachePathNodes();
+    } catch {
+      return [];
+    }
+  }
+
+  private async fetchAndCacheZooPlaces(): Promise<ZooPlace[]> {
+    const pending = zooPlaceFlights.get(CACHE_KEY_ZOO_PLACES);
+    if (pending) return pending;
+    const flight = this.loadZooPlaces().finally(() => {
+      if (zooPlaceFlights.get(CACHE_KEY_ZOO_PLACES) === flight) zooPlaceFlights.delete(CACHE_KEY_ZOO_PLACES);
+    });
+    zooPlaceFlights.set(CACHE_KEY_ZOO_PLACES, flight);
+    return flight;
+  }
+
+  private async loadZooPlaces(): Promise<ZooPlace[]> {
+    const response = await this.httpClient.get<{ data: ApiZooPlaceResponse[] } | ApiZooPlaceResponse[]>('/zoo-places');
+    const items = Array.isArray((response as { data?: ApiZooPlaceResponse[] })?.data)
+      ? (response as { data: ApiZooPlaceResponse[] }).data
+      : (Array.isArray(response) ? response : []);
+    const mapped = items.map(mapZooPlaceToModel);
+    await this.writeCache(CACHE_KEY_ZOO_PLACES, mapped);
+    return mapped;
+  }
+
+  private async revalidateZooPlaces(): Promise<void> {
+    try { await this.fetchAndCacheZooPlaces(); } catch {}
+  }
+
+  private async fetchAndCachePathNodes(): Promise<PathNode[]> {
+    const pending = pathNodeFlights.get(CACHE_KEY_PATH_NODES);
+    if (pending) return pending;
+    const flight = this.loadPathNodes().finally(() => {
+      if (pathNodeFlights.get(CACHE_KEY_PATH_NODES) === flight) pathNodeFlights.delete(CACHE_KEY_PATH_NODES);
+    });
+    pathNodeFlights.set(CACHE_KEY_PATH_NODES, flight);
+    return flight;
+  }
+
+  private async loadPathNodes(): Promise<PathNode[]> {
+    const response = await this.httpClient.get<{ data: ApiPathNodeResponse[] } | ApiPathNodeResponse[]>('/path-nodes');
+    const items = Array.isArray((response as { data?: ApiPathNodeResponse[] })?.data)
+      ? (response as { data: ApiPathNodeResponse[] }).data
+      : (Array.isArray(response) ? response : []);
+    const mapped = items.map(mapPathNodeToModel);
+    await this.writeCache(CACHE_KEY_PATH_NODES, mapped);
+    return mapped;
+  }
+
+  private async revalidatePathNodes(): Promise<void> {
+    try { await this.fetchAndCachePathNodes(); } catch {}
   }
 
   async fetchAndCachePlaces(): Promise<MapPlace[]> {

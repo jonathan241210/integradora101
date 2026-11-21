@@ -129,8 +129,8 @@ describe('mobile-011 CA-05: mapeadores de respuestas API para Mobile', () => {
     expect(fallback).toMatchObject({
       mapX: 0.5, mapY: 0.5, description: 'Recinto de Sin GPS.', animals: undefined,
     });
-    expect(fallback.gpsLat).toBeGreaterThan(0);
-    expect(fallback.gpsLon).toBeLessThan(0);
+    expect(fallback.gpsLat).toBeUndefined();
+    expect(fallback.gpsLon).toBeUndefined();
   });
 
   it('calcula la edad con el cumpleaños y omite una fecha de nacimiento inválida', () => {

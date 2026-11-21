@@ -68,4 +68,24 @@ describe('Map V3 — Grafo de Senderos Peatonales y Algoritmo Dijkstra (CA-18, C
     expect(shortRoute.distanceMeters).toBeLessThan(routeToTiger.distanceMeters);
     expect(shortRoute.estimatedMinutes).toBe(1);
   });
+
+  it('test-ca-06: usa fallback temporal de ruteo con zooPaths.ts cuando no existe red path_edges por BD', () => {
+    const route = computeWalkRoute(
+      { svgX: 500, svgY: 1280 },
+      { svgX: 230, svgY: 350 },
+    );
+
+    expect(route.points.length).toBeGreaterThan(2);
+    expect(route.distanceMeters).toBeGreaterThan(0);
+    expect(route.estimatedMinutes).toBeGreaterThanOrEqual(1);
+
+    const invalid = computeWalkRoute(
+      { svgX: 500, svgY: 1280 },
+      { svgX: 230, svgY: 350 },
+      [],
+      [],
+    );
+    expect(invalid.points.length).toBeGreaterThanOrEqual(2);
+    expect(invalid.distanceMeters).toBeGreaterThanOrEqual(1);
+  });
 });
