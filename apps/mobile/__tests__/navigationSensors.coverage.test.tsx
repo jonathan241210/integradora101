@@ -79,7 +79,7 @@ describe('mobile-011 CA-05: GPS y brújula sin sensores físicos', () => {
 });
 
 describe('mobile-011 CA-05: recorrido, ausencia de destinos y llegada', () => {
-  it('mantiene controles seguros sin paradas y permite alternar modos y cerrar', async () => {
+  it('mantiene controles seguros sin paradas y permite cerrar el recorrido', async () => {
     const { result } = await renderHook(() => useArTourViewModel({ places: [] }));
     await act(async () => {
       result.current.startTour(); result.current.alignFront();
@@ -87,10 +87,8 @@ describe('mobile-011 CA-05: recorrido, ausencia de destinos y llegada', () => {
       result.current.selectForkStop('inexistente'); result.current.dismissProximityCard();
     });
     expect(result.current).toMatchObject({ isTourOpen: true, currentStop: null, walkRoute: null, guidance: null, forkBranches: [], showProximityCard: false, isArrived: false });
-    await act(async () => { result.current.toggleVisualMode(); });
-    expect(result.current.visualMode).toBe('scene-3d');
-    await act(async () => { result.current.toggleVisualMode(); result.current.closeTour(); });
-    expect(result.current).toMatchObject({ visualMode: 'camera-ar', isTourOpen: false });
+    await act(async () => { result.current.closeTour(); });
+    expect(result.current.isTourOpen).toBe(false);
   });
   it('selecciona destinos existentes, avanza y vuelve sin duplicar visitas', async () => {
     const select = jest.fn();

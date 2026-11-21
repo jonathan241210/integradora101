@@ -15,6 +15,8 @@ const noop = () => undefined;
 const emptyRepository: MapRepository = {
   getPlaces: async () => [],
   getSections: async () => MOCK_MAP_SECTIONS,
+  getZooPlaces: async () => [],
+  getPathNodes: async () => [],
 };
 
 function createFlakyRepository(): MapRepository {
@@ -28,6 +30,8 @@ function createFlakyRepository(): MapRepository {
       return MOCK_MAP_PLACES;
     },
     getSections: async () => MOCK_MAP_SECTIONS,
+    getZooPlaces: async () => [],
+    getPathNodes: async () => [],
   };
 }
 

@@ -25,7 +25,7 @@ function AnchorSceneContent({ anchors }: { anchors: ArAnchorPoint[] }) {
   return (
     <ViroARScene>
       {anchors.map((anchor) => {
-        const color = anchor.kind === 'zoo_place' ? '#87293a' : '#2196F3';
+        const color = anchor.kind === 'zoo_place' ? colors.primary : colors.info;
         return (
           <ViroNode key={anchor.id} position={[anchor.x, anchor.y, anchor.z]}>
             <ViroBox
@@ -37,9 +37,9 @@ function AnchorSceneContent({ anchors }: { anchors: ArAnchorPoint[] }) {
               text={`${anchor.name} (${Math.round(anchor.distanceMeters)}m)`}
               position={[0, 0.35, 0]}
               scale={[0.5, 0.5, 0.5]}
-              style={{ fontFamily: 'Arial', fontSize: 20, color: '#FFFFFF', textAlignVertical: 'center', textAlign: 'center' }}
+              style={{ fontFamily: 'Arial', fontSize: 20, color: colors.textOnPrimary, textAlignVertical: 'center', textAlign: 'center' }}
               extrusionDepth={0.1}
-              outerStroke={{ type: 'Outline', width: 2, color: '#000000' }}
+              outerStroke={{ type: 'Outline', width: 2, color: colors.text }}
             />
           </ViroNode>
         );
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     left: spacing.md,
     right: spacing.md,
     padding: spacing.sm,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: colors.overlayMuted,
     borderRadius: 8,
   },
   fallback: {
