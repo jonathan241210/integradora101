@@ -227,6 +227,7 @@ export interface ApiEnclosureAnimal {
   name: string;
   sex?: string | null;
   age?: string | null;
+  birth_date?: string | null;
   origin?: string | null;
   longevity?: string | null;
   diet?: string | null;
@@ -261,6 +262,19 @@ export interface ApiEnclosureResponse {
   map_y?: number | null;
   animals_count?: number;
   animals?: ApiEnclosureAnimal[];
+}
+
+function ageFromBirthDate(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  const born = new Date(value);
+  if (Number.isNaN(born.getTime())) return undefined;
+  const now = new Date();
+  let years = now.getFullYear() - born.getFullYear();
+  const beforeBirthday = now.getMonth() < born.getMonth()
+    || (now.getMonth() === born.getMonth() && now.getDate() < born.getDate());
+  if (beforeBirthday) years -= 1;
+  if (years < 1) return 'Menos de un año';
+  return years === 1 ? '1 año' : `${years} años`;
 }
 
 /**
@@ -298,7 +312,7 @@ export function mapEnclosureToMapPlace(item: ApiEnclosureResponse): MapPlace {
           speciesName,
           scientificName,
           sex: a.sex ?? undefined,
-          age: a.age ?? undefined,
+          age: a.age ?? ageFromBirthDate(a.birth_date) ?? undefined,
           origin: a.origin ?? undefined,
           longevity: a.longevity ?? undefined,
           diet: a.diet ?? undefined,

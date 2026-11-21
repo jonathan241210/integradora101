@@ -1,6 +1,4 @@
 import React from 'react';
-import fs from 'fs';
-import path from 'path';
 import { act, fireEvent, render } from '@testing-library/react-native';
 import { Text } from 'react-native';
 import { SettingsScreen } from '../src/screens/SettingsScreen';
@@ -10,6 +8,7 @@ import {
   DENIED_NOTIFICATION_TEXT,
   preparePushRegistration,
   resetPushRegistrationForTests,
+  type IncomingNotification,
   type PushNotificationsPort,
 } from '../src/push/pushRegistration';
 import { clearNotificationPreferences } from '../src/push/notificationPreferences';
@@ -17,10 +16,17 @@ import { openPush, readPushData, UNAVAILABLE_PUSH_TEXT } from '../src/push/openP
 import { accountSession } from '../src/session/accountSession';
 import { authRepository } from '../src/repositories/mockAuthRepository';
 
+declare const __dirname: string;
+
+const fs = jest.requireActual<{
+  readFileSync: (file: string, encoding: string) => string;
+}>('fs');
+const path = jest.requireActual<{ join: (...parts: string[]) => string }>('path');
+
 const screenProps = {
   accountName: 'Ana',
   accountEmail: 'ana@correo.com',
-  preferences: { location: false },
+  preferences: { notifications: false, location: false },
   onToggle: jest.fn(),
   cameraGranted: true,
   cameraReady: true,
@@ -214,7 +220,9 @@ describe('avisos push del visitante', () => {
     }));
     const first = preparePushRegistration(client({ registerPushToken: parallel }), port());
     const second = preparePushRegistration(client({ registerPushToken: parallel }), port());
-    await new Promise((done) => setImmediate(done));
+    await new Promise<void>((done) => {
+      setImmediate(() => done());
+    });
     expect(parallel).toHaveBeenCalledTimes(1);
     release({ platform: 'android' });
     await Promise.all([first, second]);
@@ -267,24 +275,28 @@ describe('avisos push del visitante', () => {
     }), port());
     jest.spyOn(authRepository, 'deleteAccount').mockImplementation(async () => {
       order.push('delete-account');
-      return { ok: true };
+      return { ok: true as const, status: 204 as const, message: 'Cuenta eliminada' };
     });
     await accountSession.deleteAccount('secreta12');
     expect(order).toEqual(['delete', 'delete-account']);
   });
 
   it('CA-08 declara los canales y conserva el título y el cuerpo', async () => {
-    let handler: ((notification: { title: string; body: string }) => Promise<{ shouldShowBanner: boolean; shouldShowList: boolean }>) | null = null;
+    const captured: {
+      handler: ((notification: IncomingNotification) => Promise<{ shouldShowBanner: boolean; shouldShowList: boolean }>) | null;
+    } = { handler: null };
     const channels: string[] = [];
     await preparePushRegistration(client(), port({
       setNotificationChannelAsync: async (id, channel) => { channels.push(`${id}:${channel.name}`); },
-      setNotificationHandler: (next) => { handler = next.handleNotification; },
+      setNotificationHandler: (next) => { captured.handler = next.handleNotification; },
     }));
     expect(channels).toEqual(['news-and-events:Noticias y eventos', 'memories:Momentos']);
-    const presentation = await handler?.({ title: 'Llegó el jaguar', body: 'Hay una noticia nueva.' });
+    const notify = captured.handler;
+    if (!notify) throw new Error('El aviso no registró el presentador.');
+    const presentation = await notify({ title: 'Llegó el jaguar', body: 'Hay una noticia nueva.' });
     expect(presentation).toEqual({ shouldShowBanner: true, shouldShowList: true });
     expect(deliveredNotification()).toEqual({ title: 'Llegó el jaguar', body: 'Hay una noticia nueva.' });
-    const fromExpo = await handler?.({
+    const fromExpo = await notify({
       title: '',
       body: '',
       request: { content: { title: 'Tu momento fue aceptado', body: 'Tu foto ya está en la galería del portal.' } },

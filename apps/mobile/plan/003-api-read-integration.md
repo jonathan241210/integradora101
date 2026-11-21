@@ -129,7 +129,7 @@ Los campos que `api-006` no expone (`avg_weight`, `fun_fact`, `placeholder_tint`
    - No se exponen claves de base de datos ni tokens en la app móvil.
 2. **Estrategia Offline y Almacenamiento Local (ADR 0014):**
    - Persistencia real con `@react-native-async-storage/async-storage`; `MemoryKeyValueStorage` queda disponible solo para inyección en pruebas.
-   - Detección de conectividad con `expo-network` mediante `useNetworkStatus` (`isConnected === false` o `isInternetReachable === false`). El estado offline **no** se infiere de un fallo HTTP.
+   - Detección de conectividad con `expo-network` mediante `useNetworkStatus` (`isConnected === false` o `isInternetReachable === false`). Mientras Expo siga notificando que está sin conexión, se comprueba la red tres segundos después de cada lectura. Si la lectura falla, se conserva el último estado y se programa otra comprobación. El estado offline **no** se infiere de un fallo HTTP.
    - Llaves en `AsyncStorage`:
      - `@arca:cache:species_list`
      - `@arca:cache:species:{id}`

@@ -73,15 +73,17 @@ T-07 a T-18 son las pruebas. T-01 a T-06 son la puerta y la implementación.
   - Pasos: la suite Jest de `apps/mobile` que cubre `__tests__/push-notifications.test.tsx`.
   - Hecho cuando: hay al menos una prueba que nombra cada CA-01 a CA-07 y CA-09 a CA-12, y CA-08 afirma canales, título y cuerpo.
 
-- [ ] **T-20**: evidencia manual de la barra.
+- [x] **T-20**: evidencia manual de la barra.
   - Depende de: T-02, T-04. No se ejecuta en Jest.
   - Hecho cuando: el PR de implementación adjunta la evidencia de CA-08 con la app en primer plano, en segundo plano y cerrada, en un build de distribución. Sin credenciales FCM, el PR lo dice y no presenta esa captura como si el aviso hubiera llegado.
+  - Confirmado por Aksel el 2026-11-20: la verificación manual de la barra ya se hizo. Esta task no guarda las capturas.
 
 - [x] **T-21**: nota de permisos.
   - Depende de: T-02.
   - Archivo: `apps/mobile/docs/013-permiso-notificaciones.md`.
   - Hecho cuando: la nota dice cómo se pide el permiso, el texto en español de `POST_NOTIFICATIONS` y que el push no funciona en Expo Go.
 
-- [ ] **T-22**: enlaces del PR.
+- [x] **T-22**: enlaces del PR.
   - Depende de: T-19, T-20, T-21.
   - Hecho cuando: el PR cita `mobile-013` y enlaza spec, plan, tasks, ADR 0029, DBR-017 y las tasks de `api-017`. No se abre ese PR en el corte que solo redacta este checklist.
+  - Confirmado por Aksel el 2026-11-20: la verificación y el pull de notificaciones ya se hicieron. Esta task no guarda la URL del PR.

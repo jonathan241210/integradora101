@@ -19,8 +19,8 @@ export async function syncVisitorPush(): Promise<void> {
         refreshToken: tokens.refreshToken ?? current?.refreshToken ?? '',
       });
     },
-    onSessionExpired: async () => {
-      await storage.clear();
+    onSessionExpired: async (accessToken) => {
+      await storage.clearIfCurrent(accessToken);
     },
   });
   try {

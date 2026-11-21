@@ -39,6 +39,8 @@ Rutas bajo el prefijo ya existente `api/v1`, grupo `visitor`, middleware `auth:s
 
 `RecordVisitorDiscoveryAction` corre en una transacción. Antes de insertar, busca `(visitor_id, client_scan_id)`. Si existe, reconstruye la respuesta con las filas de esa hora (`discovered_at` / `unlocked_at` / `completed_at` iguales a `received_at`) y no inserta nada.
 
+Las consultas de progreso, logros y misiones también llaman a `EvaluateVisitorProgressAction` para acreditar descubrimientos anteriores. Esta Action ejecuta su propia transacción, anidada cuando se llama desde el registro del escaneo, para que el desbloqueo y sus puntos se confirmen juntos (CA-09).
+
 `enclosure_count` (RN-10): recintos distintos del QR que originó cada descubrimiento y que todavía apunta a un recinto.
 
 Errores: `invalid_code`, `inactive_code`, `expired_scan` en 422 y quedan en `visitor_scans`. Más de 30 intentos nuevos por minuto → 429 «Espera {seconds} segundos e inténtalo de nuevo.» Sin token → 401.

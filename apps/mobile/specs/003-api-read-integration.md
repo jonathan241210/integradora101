@@ -71,6 +71,7 @@ Esta especificación define la integración de lectura entre las pantallas de ca
   - Si ocurre un error de red o de servidor (códigos HTTP 4xx/5xx o timeout) sin datos previos en caché, muestra el mensaje de error en español y un botón accesible para reintentar (`error`).
   - Si la petición es exitosa, presenta el contenido en pantalla (`success`).
   - Si no hay red pero existen datos cacheados, muestra los datos y un indicador visible de "Modo sin conexión" (`offline`).
+  - Cuando se recupera la conexión, el aviso desaparece sin salir de la app, aunque el proveedor de conectividad tarde en actualizar su estado. Si una comprobación de la red falla, se conserva el último estado y se vuelve a comprobar.
 - **CA-05 (Caché Stale-While-Revalidate y TTL de 5 minutos):** Dado que existen datos previamente guardados en `AsyncStorage`:
   - Si la última sincronización ocurrió hace menos de 5 minutos (TTL fresco), la app sirve inmediatamente los datos locales sin bloquear la interfaz.
   - Si han transcurrido más de 5 minutos (datos *stale*), la app muestra los datos locales de inmediato y lanza en segundo plano una revalidación contra la API para actualizar la caché local y refrescar la vista al completarse.

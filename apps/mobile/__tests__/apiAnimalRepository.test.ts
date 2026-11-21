@@ -169,7 +169,9 @@ describe('ApiAnimalRepository (mobile-003: api-read-integration)', () => {
     const first = new ApiAnimalRepository(mockHttpClient, defaultStorage);
     const second = new ApiAnimalRepository(mockHttpClient, defaultStorage);
     const pending = Promise.all([first.getAllAnimals(), second.getAllAnimals()]);
-    await new Promise((done) => setImmediate(done));
+    await new Promise<void>((done) => {
+      setImmediate(() => done());
+    });
     expect(mockHttpClient.get).toHaveBeenCalledTimes(3);
     release({ data: [{ id: 2, common_name: 'Lobo', scientific_name: 'Canis lupus', category: 'mammal' }] });
     const [a, b] = await pending;

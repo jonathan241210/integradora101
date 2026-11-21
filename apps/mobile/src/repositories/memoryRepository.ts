@@ -47,8 +47,8 @@ export function createMemoryRepository(options: {
         refreshToken: next.refreshToken ?? current?.refreshToken ?? '',
       });
     },
-    onSessionExpired: async () => {
-      await storage.clear();
+    onSessionExpired: async (accessToken) => {
+      await storage.clearIfCurrent(accessToken);
     },
   });
 

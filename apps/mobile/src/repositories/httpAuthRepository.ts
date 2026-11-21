@@ -71,8 +71,8 @@ export function createHttpAuthRepository({ baseUrl, storage, fetchImpl }: HttpAu
     onTokens: async (next) => {
       await storage.write(tokensFrom(next.accessToken, next.refreshToken));
     },
-    onSessionExpired: async () => {
-      await storage.clear();
+    onSessionExpired: async (accessToken) => {
+      await storage.clearIfCurrent(accessToken);
     },
   });
 
@@ -104,7 +104,7 @@ export function createHttpAuthRepository({ baseUrl, storage, fetchImpl }: HttpAu
         await storage.write(tokens);
         return { ok: true, tokens };
       } catch (error) {
-        await storage.clear();
+        if (isApiError(error) && error.status === 401) await storage.clear();
         return failure(error);
       }
     },

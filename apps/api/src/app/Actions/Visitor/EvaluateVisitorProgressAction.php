@@ -5,6 +5,7 @@ namespace App\Actions\Visitor;
 use App\Models\Achievement;
 use App\Models\Mission;
 use App\Models\Visitor;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -16,6 +17,14 @@ class EvaluateVisitorProgressAction
      * @return array{achievements: list<array<string, mixed>>, missions: list<array<string, mixed>>}
      */
     public function execute(Visitor $visitor, Carbon $at): array
+    {
+        return DB::transaction(fn () => $this->evaluate($visitor, $at));
+    }
+
+    /**
+     * @return array{achievements: list<array<string, mixed>>, missions: list<array<string, mixed>>}
+     */
+    private function evaluate(Visitor $visitor, Carbon $at): array
     {
         $unlocked = [];
         $completed = [];
@@ -31,11 +40,13 @@ class EvaluateVisitorProgressAction
                 if ($this->progress->metricFor($metrics, $mission->rule_type, $mission->rule_param) < $mission->rule_target) {
                     continue;
                 }
-                DB::table('visitor_mission_completions')->insert([
+                if (! $this->insertOnce('visitor_mission_completions', [
                     'visitor_id' => $visitor->id,
                     'mission_id' => $mission->id,
                     'completed_at' => $at,
-                ]);
+                ])) {
+                    continue;
+                }
                 $this->award($visitor->id, 'mission', $mission->id, (int) $mission->points, $at);
                 $completed[] = ['code' => $mission->code, 'title' => $mission->title, 'points' => (int) $mission->points];
                 $gained = true;
@@ -50,11 +61,13 @@ class EvaluateVisitorProgressAction
                 if ($this->progress->metricFor($metrics, $achievement->rule_type, $achievement->rule_param) < $achievement->rule_target) {
                     continue;
                 }
-                DB::table('visitor_achievements')->insert([
+                if (! $this->insertOnce('visitor_achievements', [
                     'visitor_id' => $visitor->id,
                     'achievement_id' => $achievement->id,
                     'unlocked_at' => $at,
-                ]);
+                ])) {
+                    continue;
+                }
                 $this->award($visitor->id, 'achievement', $achievement->id, (int) $achievement->points, $at);
                 $unlocked[] = ['code' => $achievement->code, 'title' => $achievement->title, 'points' => (int) $achievement->points];
                 $gained = true;
@@ -66,6 +79,20 @@ class EvaluateVisitorProgressAction
         }
 
         return ['achievements' => $unlocked, 'missions' => $completed];
+    }
+
+    /**
+     * @param  array<string, mixed>  $row
+     */
+    private function insertOnce(string $table, array $row): bool
+    {
+        try {
+            DB::table($table)->insert($row);
+
+            return true;
+        } catch (UniqueConstraintViolationException) {
+            return false;
+        }
     }
 
     private function already(int $visitorId, string $table, string $foreign, int $id): bool

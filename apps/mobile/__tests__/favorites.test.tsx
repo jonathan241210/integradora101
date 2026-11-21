@@ -1,6 +1,12 @@
 import React from 'react';
-import fs from 'fs';
-import path from 'path';
+
+declare const __dirname: string;
+declare const __filename: string;
+
+const fs = jest.requireActual<{
+  readFileSync: (file: string, encoding: string) => string;
+}>('fs');
+const path = jest.requireActual<{ join: (...parts: string[]) => string }>('path');
 import { Text } from 'react-native';
 import { fireEvent, render, waitFor } from '@testing-library/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,12 +14,17 @@ import type { VisitorFavoriteSpeciesList } from '@arca/api-client';
 import { AnimalDetailScreen } from '../src/screens/AnimalDetailScreen';
 import { HomeScreen } from '../src/screens/HomeScreen';
 import { animalsInFavoriteOrder, useFavoriteAnimals, type FavoriteClient } from '../src/viewmodels/useFavoriteAnimals';
-import { createFavoriteAnimals, createFavoriteSpeciesClient } from '../src/repositories/favoriteAnimals';
+import { createFavoriteAnimals, createFavoriteSpeciesClient, favoriteAnimals } from '../src/repositories/favoriteAnimals';
 import { MemoryKeyValueStorage } from '../src/repositories/storage';
 import { accountSession } from '../src/session/accountSession';
 import { authRepository } from '../src/repositories/mockAuthRepository';
 import { createMemoryTokenStorage } from '../src/services/tokenStorage';
 import type { Animal } from '../src/models';
+
+jest.mock('expo-secure-store', () => ({
+  getItemAsync: jest.fn(async () => null),
+  deleteItemAsync: jest.fn(async () => undefined),
+}));
 
 function animal(id: string, commonName: string): Animal {
   return {
@@ -426,5 +437,47 @@ describe('favoritos de la cuenta', () => {
     expect(await tokens.read()).toEqual({ accessToken: 'nuevo-2', refreshToken: 'otro' });
     await expect(client?.listFavoriteSpecies()).rejects.toThrow();
     expect(await tokens.read()).toBeNull();
+  });
+
+  it('CA-04: un 401 de un token anterior conserva la sesión nueva y la copia de favoritos', async () => {
+    const tokens = createMemoryTokenStorage();
+    await tokens.write({ accessToken: 'anterior', refreshToken: 'refresh-anterior' });
+    const renewed = { accessToken: 'vigente', refreshToken: 'refresh-vigente' };
+    const clearIfCurrent = tokens.clearIfCurrent;
+    jest.spyOn(tokens, 'clearIfCurrent').mockImplementationOnce(async (accessToken) => {
+      await tokens.write(renewed);
+      return clearIfCurrent(accessToken);
+    });
+    const clearFavorites = jest.spyOn(favoriteAnimals, 'clearAll');
+    const fetchImpl = jest.fn(async () => jsonResponse(401, { message: 'vencida' }));
+    const client = createFavoriteSpeciesClient({
+      apiUrl: 'https://api.pruebas.invalid',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+      storage: tokens,
+    });
+
+    try {
+      await expect(client?.listFavoriteSpecies()).rejects.toMatchObject({ status: 401 });
+      expect(await tokens.read()).toEqual(renewed);
+      expect(clearFavorites).not.toHaveBeenCalled();
+    } finally {
+      clearFavorites.mockRestore();
+    }
+  });
+
+  it('CA-04: el cliente usa Secure Store y omite la renovación cuando no hay sesión guardada', async () => {
+    await favoriteAnimals.writeCopy(['3']);
+    const fetchImpl = jest.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+      expect(new Headers(init?.headers).has('Authorization')).toBe(false);
+      return jsonResponse(401, { message: 'vencida' });
+    });
+    const client = createFavoriteSpeciesClient({
+      apiUrl: 'https://api.pruebas.invalid',
+      fetchImpl,
+    });
+
+    await expect(client?.listFavoriteSpecies()).rejects.toMatchObject({ status: 401 });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    await expect(favoriteAnimals.readCopy()).resolves.toEqual([]);
   });
 });

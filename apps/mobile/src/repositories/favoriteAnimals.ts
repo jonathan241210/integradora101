@@ -129,9 +129,10 @@ export function createFavoriteSpeciesClient(options?: {
         refreshToken: next.refreshToken ?? current?.refreshToken ?? '',
       });
     },
-    onSessionExpired: async () => {
-      await tokens.clear();
-      await favoriteAnimals.clearAll();
+    onSessionExpired: async (accessToken) => {
+      if (await tokens.clearIfCurrent(accessToken)) {
+        await favoriteAnimals.clearAll();
+      }
     },
   });
 }
