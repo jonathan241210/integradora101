@@ -140,7 +140,7 @@ export type CreateVisitorApiOptions = {
   getAccessToken: () => Promise<string | null>;
   getRefreshToken: () => Promise<string | null>;
   onTokens: (tokens: { accessToken: string; refreshToken: string }) => Promise<void>;
-  onSessionExpired: () => Promise<void>;
+  onSessionExpired: (accessToken: string | null) => Promise<void>;
 };
 
 type RequestOptions = {
@@ -148,8 +148,20 @@ type RequestOptions = {
   body?: unknown;
   auth?: boolean;
   retry?: boolean;
+  rotations?: number;
   raw?: boolean;
 };
+
+function errorStatus(error: unknown): number | null {
+  if (typeof error !== "object" || error === null || !("status" in error)) return null;
+  const status = (error as { status?: unknown }).status;
+  return typeof status === "number" ? status : null;
+}
+
+function keepsSession(error: unknown): boolean {
+  const status = errorStatus(error);
+  return status === null || status === 0 || status >= 500;
+}
 
 function isFormData(value: unknown): value is FormData {
   return typeof FormData !== "undefined" && value instanceof FormData;
@@ -242,6 +254,8 @@ function unwrap<T>(body: unknown): T {
   return body as T;
 }
 
+const refreshFlights = new Map<string, Promise<VisitorTokenPayload>>();
+
 export function createVisitorApi({
   baseUrl,
   fetchImpl = fetch,
@@ -250,8 +264,6 @@ export function createVisitorApi({
   onTokens,
   onSessionExpired,
 }: CreateVisitorApiOptions) {
-  let refreshFlight: Promise<VisitorTokenPayload> | null = null;
-
   const send = async (
     path: string,
     options: RequestOptions,
@@ -283,52 +295,83 @@ export function createVisitorApi({
   };
 
   const refresh = async (): Promise<VisitorTokenPayload> => {
-    if (!refreshFlight) {
-      refreshFlight = (async () => {
-        const refreshToken = await getRefreshToken();
-        if (!refreshToken) {
-          throw visitorError(401, { message: "La sesión ya no es válida. Vuelve a entrar." }, null);
-        }
-        const response = await send(
-          "/api/v1/visitor/auth/refresh",
-          { method: "POST", body: { refresh_token: refreshToken }, auth: false },
-          null,
-        );
-        const body = await readBody(response);
-        if (!response.ok) {
-          throw visitorError(response.status, body, response.headers.get("Retry-After"));
-        }
-        const payload = unwrap<VisitorTokenPayload>(body);
-        await onTokens({
-          accessToken: payload.access_token,
-          refreshToken: payload.refresh_token,
-        });
-        return payload;
-      })().finally(() => {
-        refreshFlight = null;
-      });
+    const refreshToken = await getRefreshToken();
+    if (!refreshToken) {
+      throw visitorError(401, { message: "La sesión ya no es válida. Vuelve a entrar." }, null);
     }
-    return refreshFlight;
+    const inFlight = refreshFlights.get(refreshToken);
+    if (inFlight) return inFlight;
+
+    const flight = (async () => {
+      const response = await send(
+        "/api/v1/visitor/auth/refresh",
+        { method: "POST", body: { refresh_token: refreshToken }, auth: false },
+        null,
+      );
+      const body = await readBody(response);
+      if (!response.ok) {
+        throw visitorError(response.status, body, response.headers.get("Retry-After"));
+      }
+      const payload = unwrap<VisitorTokenPayload>(body);
+      await onTokens({
+        accessToken: payload.access_token,
+        refreshToken: payload.refresh_token,
+      });
+      return payload;
+    })().finally(() => {
+      refreshFlights.delete(refreshToken);
+    });
+    refreshFlights.set(refreshToken, flight);
+    return flight;
+  };
+
+  const followNewerToken = async <T>(
+    path: string,
+    options: RequestOptions,
+    accessToken: string | null,
+  ): Promise<{ value: T } | "keep" | null> => {
+    const latest = await getAccessToken();
+    if (!latest || latest === accessToken) return null;
+    const rotations = options.rotations ?? 0;
+    if (rotations >= 3) return "keep";
+    return { value: await request<T>(path, { ...options, retry: false, rotations: rotations + 1 }) };
   };
 
   const request = async <T>(path: string, options: RequestOptions = {}): Promise<T> => {
     const accessToken = options.auth === false ? null : await getAccessToken();
     const response = await send(path, options, accessToken);
-    if (response.status === 401 && options.auth !== false && options.retry !== false) {
-      await response.body?.cancel();
-      try {
-        await refresh();
-      } catch (error) {
-        await onSessionExpired();
-        throw error;
+    if (response.status === 401 && options.auth !== false) {
+      const followed = await followNewerToken<T>(path, options, accessToken);
+      if (followed === "keep") {
+        await response.body?.cancel();
+        throw visitorError(401, { message: "La sesión ya no es válida. Vuelve a entrar." }, null);
       }
-      return request<T>(path, { ...options, retry: false });
+      if (followed) {
+        await response.body?.cancel();
+        return followed.value;
+      }
+      if (options.retry !== false) {
+        await response.body?.cancel();
+        try {
+          await refresh();
+        } catch (error) {
+          const recovered = await followNewerToken<T>(path, options, accessToken);
+          if (recovered === "keep") throw error;
+          if (recovered) return recovered.value;
+          if (keepsSession(error)) throw error;
+          await onSessionExpired(accessToken);
+          throw error;
+        }
+        return request<T>(path, { ...options, retry: false });
+      }
     }
 
     const body = await readBody(response);
     if (!response.ok) {
       if (response.status === 401 && options.auth !== false) {
-        await onSessionExpired();
+        const followed = await followNewerToken<T>(path, options, accessToken);
+        if (followed && followed !== "keep") return followed.value;
+        if (!followed) await onSessionExpired(accessToken);
       }
       throw visitorError(response.status, body, response.headers.get("Retry-After"));
     }

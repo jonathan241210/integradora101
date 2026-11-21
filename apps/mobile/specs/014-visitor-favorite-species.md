@@ -5,8 +5,8 @@
 - Estado: En progreso
 - Solicitante / responsable funcional: Aksel
 - Aprobación funcional: Aksel, 2026-11-14
-- Dependencias de contrato: `api-018` (En progreso) y DBR-018 (Lista para backend). El plan y las tasks están aprobados (Aksel, 2026-11-16). El código de esta spec está en curso. El PR de T-16 sigue abierto.
-- El plan y las tasks están aprobados (Aksel, 2026-11-16). El código está en curso. Esta spec pasa a Implementada cuando cierren el PR y la definición de hecho.
+- Dependencias de contrato: `api-018` y DBR-018 (Lista para backend). El plan y las tasks están aprobados (Aksel, 2026-11-16). Aksel confirmó el 2026-11-20 la verificación y el pull (T-16).
+- El plan y las tasks están aprobados (Aksel, 2026-11-16). La verificación y el pull quedaron confirmados el 2026-11-20. Esta nota no cambia el estado a Implementada: la definición de hecho de la spec sigue siendo la que cierra ese paso.
 
 ## Problema y contexto
 
@@ -81,9 +81,9 @@ El id de la ficha es el de la especie publicada (`mapSpeciesToAnimalModel`). Est
 
 ## Dependencias, riesgos y preguntas
 
-- Dependencias: `api-018`. No hay dependencia nueva. El ADR 0014 conserva el cache de catálogo y deja la lista de favoritos en la cuenta, con la última respuesta en el teléfono para mostrarla sin red. El plan y las tasks están aprobados. La implementación está en curso.
+- Dependencias: `api-018`. No hay dependencia nueva. El ADR 0014 conserva el cache de catálogo y deja la lista de favoritos en la cuenta, con la última respuesta en el teléfono para mostrarla sin red. El plan y las tasks están aprobados. Aksel confirmó la verificación y el pull el 2026-11-20.
 - Riesgos: si la subida única falla a medias, el siguiente arranque con GET vacío vuelve a intentar los id que sigan en la clave antigua. Un id de demostración no se sube.
-- Preguntas pendientes: ninguna. BD y backend aceptaron la tabla sin SoftDeletes en DBR-018 el 2026-11-14. El plan y las tasks están aprobados (Aksel, 2026-11-16). La implementación está en curso.
+- Preguntas pendientes: ninguna. BD y backend aceptaron la tabla sin SoftDeletes en DBR-018 el 2026-11-14. El plan y las tasks están aprobados (Aksel, 2026-11-16). La verificación y el pull quedaron confirmados el 2026-11-20.
 
 ## Revisión
 

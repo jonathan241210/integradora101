@@ -96,6 +96,7 @@ Ninguna tarea añade alcance. Las pantallas no importan `@arca/api-client` ni `f
   - Cambios: las dos notas de la app pasan a decir que la cuenta es la lista y que el teléfono guarda la última respuesta para mostrarla sin red. En el ADR se retira la frase que dice que los favoritos no salen del teléfono. El cache de catálogo y eventos de esa decisión se queda.
   - Hecho cuando: esos tres archivos describen el comportamiento ya implementado.
 
-- [ ] **T-16**: enlaces del PR.
+- [x] **T-16**: enlaces del PR.
   - Depende de: T-14, T-15.
   - Hecho cuando: el PR cita `mobile-014` y enlaza spec, plan y tasks. No se abre ese PR en el corte que solo redacta este checklist.
+  - Confirmado por Aksel el 2026-11-20: la verificación y el pull de favoritos ya se hicieron. Esta task no guarda la URL del PR.

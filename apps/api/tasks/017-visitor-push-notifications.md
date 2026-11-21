@@ -172,6 +172,7 @@ Ninguna tarea añade alcance. Si algo de la lista no está en la spec o en el pl
   - Cambios: worker de `queue:work`, `schedule:run` y `EXPO_ACCESS_TOKEN` por ambiente. La nota dice las cuatro rutas y que el token no se registra en logs. No se redacta el aviso de privacidad oficial.
   - Hecho cuando: el PR de implementación enlaza esa nota y el checklist de `infra/README.md` menciona el worker y el scheduler.
 
-- [ ] **T-30**: enlaces del PR.
+- [x] **T-30**: enlaces del PR.
   - Depende de: T-27, T-29.
   - Hecho cuando: el PR cita `api-017` y enlaza spec, plan, tasks, ADR 0029 y DBR-017. No se abre ese PR en el corte que solo redacta este checklist.
+  - Confirmado por Aksel el 2026-11-20: la verificación y el pull de notificaciones ya se hicieron. Esta task no guarda la URL del PR.

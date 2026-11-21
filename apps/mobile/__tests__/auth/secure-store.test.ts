@@ -39,4 +39,20 @@ describe('Almacenamiento seguro del visitante', () => {
     expect(mockItems.size).toBe(0);
     expect(await storage.read()).toBeNull();
   });
+
+  it('test-ca-06: el borrado por un 401 solo afecta al par que sigue vigente', async () => {
+    const requestStorage = createSecureTokenStorage();
+    const refreshStorage = createSecureTokenStorage();
+    await requestStorage.write({ accessToken: 'old-access', refreshToken: 'old-refresh' });
+    const renewed = { accessToken: 'new-access', refreshToken: 'new-refresh' };
+
+    const write = refreshStorage.write(renewed);
+    const staleClear = requestStorage.clearIfCurrent('old-access');
+    await write;
+    await expect(staleClear).resolves.toBe(false);
+    await expect(requestStorage.read()).resolves.toEqual(renewed);
+
+    await expect(requestStorage.clearIfCurrent('new-access')).resolves.toBe(true);
+    await expect(refreshStorage.read()).resolves.toBeNull();
+  });
 });

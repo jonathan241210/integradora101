@@ -14,7 +14,7 @@ describe('CA-05 y CA-11 fotos de noticias y eventos', () => {
       arrayBuffer: async () => Uint8Array.from([1, 2, 3]).buffer,
     }));
     const previous = globalThis.fetch;
-    globalThis.fetch = fetchMock as typeof fetch;
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
     try {
       const first = await retainMediaUri(remote);
       const second = await retainMediaUri(remote);
@@ -40,39 +40,39 @@ describe('CA-05 y CA-11 fotos de noticias y eventos', () => {
       let release: (value: Response) => void = () => undefined;
       const pending = new Promise<Response>((resolve) => { release = resolve; });
       const shared = 'http://192.168.1.75:8000/media/news/compartida.jpg';
-      globalThis.fetch = jest.fn(() => pending) as typeof fetch;
+      globalThis.fetch = jest.fn(() => pending) as unknown as typeof fetch;
       const first = retainMediaUri(shared);
       const second = retainMediaUri(shared);
       release({
         ok: true,
         headers: { get: () => null },
         arrayBuffer: async () => Uint8Array.from([4, 5]).buffer,
-      } as Response);
+      } as unknown as Response);
       expect(await first).toBe(await second);
       expect(globalThis.fetch).toHaveBeenCalledTimes(1);
 
-      globalThis.fetch = jest.fn(async () => { throw new Error('red'); }) as typeof fetch;
+      globalThis.fetch = jest.fn(async () => { throw new Error('red'); }) as unknown as typeof fetch;
       expect(await retainMediaUri('http://192.168.1.75:8000/media/news/caida.jpg')).toBe('http://192.168.1.75:8000/media/news/caida.jpg');
 
       globalThis.fetch = jest.fn(async () => ({
         ok: false,
         headers: { get: () => 'image/png' },
         arrayBuffer: async () => new ArrayBuffer(0),
-      })) as typeof fetch;
+      })) as unknown as typeof fetch;
       expect(await retainMediaUri('http://192.168.1.75:8000/media/news/no.jpg')).toBe('http://192.168.1.75:8000/media/news/no.jpg');
 
       globalThis.fetch = jest.fn(async () => ({
         ok: true,
         headers: { get: () => 'image/png' },
         arrayBuffer: async () => new ArrayBuffer(0),
-      })) as typeof fetch;
+      })) as unknown as typeof fetch;
       expect(await retainMediaUri('http://192.168.1.75:8000/media/news/vacia.jpg')).toBe('http://192.168.1.75:8000/media/news/vacia.jpg');
 
       globalThis.fetch = jest.fn(async () => ({
         ok: true,
         headers: { get: () => 'image/png' },
         arrayBuffer: async () => new ArrayBuffer(2_000_001),
-      })) as typeof fetch;
+      })) as unknown as typeof fetch;
       expect(await retainMediaUri('http://192.168.1.75:8000/media/news/grande.jpg')).toBe('http://192.168.1.75:8000/media/news/grande.jpg');
 
       const wide = new Uint8Array(40_000);
@@ -80,7 +80,7 @@ describe('CA-05 y CA-11 fotos de noticias y eventos', () => {
         ok: true,
         headers: { get: () => 'image/webp' },
         arrayBuffer: async () => wide.buffer,
-      })) as typeof fetch;
+      })) as unknown as typeof fetch;
       for (let index = 0; index < 13; index += 1) {
         await retainMediaUri(`http://192.168.1.75:8000/media/news/${index}.jpg`);
       }
@@ -89,7 +89,7 @@ describe('CA-05 y CA-11 fotos de noticias y eventos', () => {
         ok: true,
         headers: { get: () => 'image/jpeg' },
         arrayBuffer: async () => Uint8Array.from([9]).buffer,
-      })) as typeof fetch;
+      })) as unknown as typeof fetch;
       const renewed = await retainMediaUri('http://192.168.1.75:8000/media/news/1.jpg');
       expect(renewed.startsWith('data:image/jpeg;base64,')).toBe(true);
     } finally {

@@ -133,8 +133,7 @@ export const accountSession = {
     }
     try {
       const profile = await readProfile(false);
-      if (!profile) {
-        await activeStorage.clear();
+      if (!profile && !(await activeStorage.read())) {
         setStatus('guest');
         return;
       }
@@ -142,6 +141,10 @@ export const accountSession = {
       void syncZooData();
       scheduleVisitorPush();
     } catch {
+      if (await activeStorage.read()) {
+        setStatus('authenticated');
+        return;
+      }
       setStatus('guest');
     }
   },
@@ -233,8 +236,10 @@ export const accountSession = {
     if (!refreshFlight) {
       refreshFlight = repository.refresh().then(async (result) => {
         if (!result.ok) {
-          await activeStorage.clear();
-          setStatus('guest');
+          if (result.status === 401) {
+            await activeStorage.clear();
+            setStatus('guest');
+          }
           return result;
         }
         await activeStorage.write(result.tokens);

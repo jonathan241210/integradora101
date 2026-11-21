@@ -25,6 +25,11 @@ jest.mock('expo-network', () => ({
     isConnected: true,
     isInternetReachable: true,
   })),
+  getNetworkStateAsync: jest.fn(async () => ({
+    type: 'WIFI',
+    isConnected: true,
+    isInternetReachable: true,
+  })),
 }));
 
 jest.mock('expo-location', () => ({

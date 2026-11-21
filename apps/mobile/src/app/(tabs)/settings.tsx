@@ -80,8 +80,8 @@ function notificationClient() {
         refreshToken: tokens.refreshToken ?? current?.refreshToken ?? '',
       });
     },
-    onSessionExpired: async () => {
-      await storage.clear();
+    onSessionExpired: async (accessToken) => {
+      await storage.clearIfCurrent(accessToken);
     },
   });
 }

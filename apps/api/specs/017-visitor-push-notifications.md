@@ -6,8 +6,8 @@
 - Solicitante / responsable funcional: Aksel
 - Aprobación funcional: Aksel, 2026-11-14
 - Decisiones de alcance confirmadas el 2026-11-14: solo push a la barra del sistema; sin correo; un momento se avisa al aceptarlo o al rechazarlo; noticias y eventos solo a cuentas con sesión que activaron ese aviso; dos preferencias distintas. `news_and_events` nace en `false` y `memory_status` nace en `true`.
-- Dependencias: `api-004` (sesión de visitante y borrado de cuenta), `api-010` (transiciones de un momento), `api-011` (cuándo una noticia es visible) y `api-006` (cuándo un evento es visible). El plan y el ADR 0029 ya están aceptados, y DBR-017 está Lista para backend (Aksel, 2026-11-14). El envío real espera las tasks.
-- Aprobar esta spec no autoriza implementar: faltan las tasks.
+- Dependencias: `api-004` (sesión de visitante y borrado de cuenta), `api-010` (transiciones de un momento), `api-011` (cuándo una noticia es visible) y `api-006` (cuándo un evento es visible). El plan y el ADR 0029 ya están aceptados, y DBR-017 está Lista para backend (Aksel, 2026-11-14). Las tasks están hechas. Aksel confirmó el 2026-11-20 la verificación y el pull.
+- Aprobar esta spec no autoriza implementar por sí sola. La implementación y la verificación ya quedaron confirmadas el 2026-11-20.
 
 ## Problema y contexto
 

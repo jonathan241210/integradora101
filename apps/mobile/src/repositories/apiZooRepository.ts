@@ -225,7 +225,8 @@ export class ApiZooRepository implements ZooRepository {
   }
 
   private async presentNewsList(list: News[], force = false): Promise<News[]> {
-    return Promise.all(list.map((item) => this.presentNews(item, force)));
+    const items = await Promise.all(list.map((item) => this.presentNews(item, force)));
+    return items.filter((item): item is News => item !== null);
   }
 
   private async presentNews(item: News | null, force = false): Promise<News | null> {
@@ -235,7 +236,8 @@ export class ApiZooRepository implements ZooRepository {
   }
 
   private async presentEvents(list: ZooEvent[], force = false): Promise<ZooEvent[]> {
-    return Promise.all(list.map((item) => this.presentEvent(item, force)));
+    const items = await Promise.all(list.map((item) => this.presentEvent(item, force)));
+    return items.filter((item): item is ZooEvent => item !== null);
   }
 
   private async presentEvent(item: ZooEvent | null, force = false): Promise<ZooEvent | null> {

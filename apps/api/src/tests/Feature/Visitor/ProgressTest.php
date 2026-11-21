@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class ProgressTest extends VisitorFeatureTestCase
 {
@@ -167,6 +168,105 @@ class ProgressTest extends VisitorFeatureTestCase
         $this->assertSame(1, DB::table('visitor_point_entries')->where('visitor_id', $visitor->id)->where('source_type', 'species_discovery')->count());
     }
 
+    /** CA-09 visitor-progress: el logro de un animal no se confunde con otro nombre. */
+    public function test_ca09_species_keyword_matches_a_whole_word(): void
+    {
+        [$token] = $this->visitor();
+        Achievement::query()->updateOrCreate(['code' => 'comic-tigre'], [
+            'title' => 'Un tigre... ¿poniendo un huevo?',
+            'description' => 'Escanea un tigre.',
+            'icon' => 'pets',
+            'points' => 50,
+            'rule_type' => 'species_keyword',
+            'rule_target' => 1,
+            'rule_param' => 'tigre',
+            'sort_order' => 27,
+            'is_active' => true,
+        ]);
+        Achievement::query()->updateOrCreate(['code' => 'comic-leon'], [
+            'title' => 'El de la melena',
+            'description' => 'Escanea un león.',
+            'icon' => 'pets',
+            'points' => 50,
+            'rule_type' => 'species_keyword',
+            'rule_target' => 1,
+            'rule_param' => 'leon',
+            'sort_order' => 28,
+            'is_active' => true,
+        ]);
+
+        $this->placeSpecies('mammal', 'León africano');
+        $tiger = $this->placeSpecies('mammal', 'Tigre de Bengala');
+        $this->withVisitorToken($token)->postJson('/api/v1/visitor/discoveries', $this->scan($tiger))->assertCreated();
+        $chameleon = $this->placeSpecies('reptile', 'Camaleón');
+        $this->withVisitorToken($token)->postJson('/api/v1/visitor/discoveries', $this->scan($chameleon))->assertCreated();
+
+        $this->withVisitorToken($token)->getJson('/api/v1/visitor/achievements')
+            ->assertOk()
+            ->assertJsonFragment(['code' => 'comic-tigre', 'state' => 'unlocked'])
+            ->assertJsonFragment(['code' => 'comic-leon', 'state' => 'pending']);
+    }
+
+    /** CA-09 visitor-progress: un descubrimiento anterior desbloquea el logro al consultarlo. */
+    public function test_ca09_already_discovered_species_unlocks_keyword_achievement(): void
+    {
+        [$token, $visitor] = $this->visitor();
+        $this->placeSpecies('mammal', 'Jaguar');
+        $speciesId = DB::table('species')->where('common_name', 'Jaguar')->value('id');
+        DB::table('visitor_collections')->insert([
+            'visitor_id' => $visitor->id,
+            'species_id' => $speciesId,
+            'discovered_at' => now(),
+        ]);
+        $achievement = Achievement::query()->updateOrCreate(['code' => 'comic-jaguar'], [
+            'title' => 'Manchas con motor',
+            'description' => 'Escanea un jaguar.',
+            'icon' => 'pets',
+            'points' => 50,
+            'rule_type' => 'species_keyword',
+            'rule_target' => 1,
+            'rule_param' => 'jaguar',
+            'sort_order' => 34,
+            'is_active' => true,
+        ]);
+
+        $rejectAward = true;
+        DB::connection()->beforeExecuting(function (string $sql, array $bindings) use (&$rejectAward, $visitor, $achievement): void {
+            if ($rejectAward && str_starts_with($sql, 'insert into `visitor_point_entries`')
+                && array_slice($bindings, 0, 3) === [$visitor->id, 'achievement', $achievement->id]) {
+                throw new RuntimeException('Fallo simulado al otorgar los puntos.');
+            }
+        });
+
+        $this->withoutExceptionHandling();
+        try {
+            $this->withVisitorToken($token)->getJson('/api/v1/visitor/achievements');
+            $this->fail('Se esperaba el fallo al otorgar los puntos.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Fallo simulado al otorgar los puntos.', $exception->getMessage());
+        } finally {
+            $rejectAward = false;
+            $this->withExceptionHandling();
+        }
+
+        $this->assertDatabaseMissing('visitor_achievements', [
+            'visitor_id' => $visitor->id,
+            'achievement_id' => $achievement->id,
+        ]);
+
+        $this->withVisitorToken($token)->getJson('/api/v1/visitor/achievements')
+            ->assertOk()
+            ->assertJsonFragment(['code' => 'comic-jaguar', 'state' => 'unlocked', 'progress' => 1]);
+        $this->withVisitorToken($token)->getJson('/api/v1/visitor/progress')->assertOk();
+        $entries = DB::table('visitor_point_entries')
+            ->where('visitor_id', $visitor->id)
+            ->where('source_type', 'achievement')
+            ->where('source_id', $achievement->id)
+            ->pluck('points');
+        $this->assertCount(1, $entries);
+        $this->assertSame(50, (int) $entries->first());
+    }
+
     /** CA-10 visitor-progress */
     public function test_ca10_visitor_progress_level_thresholds(): void
     {
@@ -277,10 +377,10 @@ class ProgressTest extends VisitorFeatureTestCase
         return [$account['access_token'], Visitor::query()->where('email', $account['email'])->firstOrFail()];
     }
 
-    private function placeSpecies(string $category): string
+    private function placeSpecies(string $category, ?string $commonName = null): string
     {
         $species = Model::unguarded(fn () => Species::query()->create([
-            'common_name' => 'Especie '.Str::random(6),
+            'common_name' => $commonName ?? ('Especie '.Str::random(6)),
             'scientific_name' => 'Scientificus test',
             'category' => $category,
             'distribution' => 'México',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Visitor;
 
+use App\Actions\Visitor\EvaluateVisitorProgressAction;
 use App\Actions\Visitor\RecordVisitorDiscoveryAction;
 use App\Actions\Visitor\VisitorProgressQuery;
 use App\Http\Requests\Visitor\StoreVisitorDiscoveryRequest;
@@ -30,10 +31,11 @@ class VisitorProgressController extends VisitorController
         return response()->json($body, $result['status']);
     }
 
-    public function progress(Request $request, VisitorProgressQuery $query): JsonResponse
+    public function progress(Request $request, VisitorProgressQuery $query, EvaluateVisitorProgressAction $evaluate): JsonResponse
     {
         /** @var Visitor $visitor */
         $visitor = $request->user();
+        $evaluate->execute($visitor, now());
 
         return response()->json(['data' => $query->progress($visitor)]);
     }
@@ -46,18 +48,20 @@ class VisitorProgressController extends VisitorController
         return response()->json(['data' => $query->collection($visitor)]);
     }
 
-    public function achievements(Request $request, VisitorProgressQuery $query): JsonResponse
+    public function achievements(Request $request, VisitorProgressQuery $query, EvaluateVisitorProgressAction $evaluate): JsonResponse
     {
         /** @var Visitor $visitor */
         $visitor = $request->user();
+        $evaluate->execute($visitor, now());
 
         return response()->json(['data' => $query->achievements($visitor)]);
     }
 
-    public function missions(Request $request, VisitorProgressQuery $query): JsonResponse
+    public function missions(Request $request, VisitorProgressQuery $query, EvaluateVisitorProgressAction $evaluate): JsonResponse
     {
         /** @var Visitor $visitor */
         $visitor = $request->user();
+        $evaluate->execute($visitor, now());
 
         return response()->json(['data' => $query->missions($visitor)]);
     }

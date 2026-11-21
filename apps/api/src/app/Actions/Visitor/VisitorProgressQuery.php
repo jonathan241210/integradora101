@@ -129,8 +129,16 @@ class VisitorProgressQuery
     {
         $owned = DB::table($table)->where('visitor_id', $visitor->id)->get()->keyBy($foreign);
         $metrics = $this->metrics($visitor);
+        $speciesNames = DB::table('species')->pluck('common_name')->map(strval(...))->all();
+        $visible = $rows->filter(function (Achievement|Mission $row) use ($speciesNames): bool {
+            if ($row->rule_type !== 'species_keyword') {
+                return true;
+            }
 
-        return $rows->map(function (Achievement|Mission $row) use ($owned, $when, $mission, $metrics): array {
+            return $this->discoveredKeyword($speciesNames, (string) $row->rule_param);
+        })->values();
+
+        return $visible->map(function (Achievement|Mission $row) use ($owned, $when, $mission, $metrics): array {
             $hit = $owned->get($row->id);
             $current = $this->metricFor($metrics, $row->rule_type, $row->rule_param);
 
@@ -157,7 +165,7 @@ class VisitorProgressQuery
     }
 
     /**
-     * @return array{species_count: int, enclosure_count: int, missions_completed: int, categories: array<string, int>}
+     * @return array{species_count: int, enclosure_count: int, missions_completed: int, categories: array<string, int>, species_names: list<string>}
      */
     public function metrics(Visitor $visitor): array
     {
@@ -177,17 +185,23 @@ class VisitorProgressQuery
             ->groupBy('species.category')
             ->pluck('total', 'category')
             ->all();
+        $names = DB::table('visitor_collections')
+            ->join('species', 'species.id', '=', 'visitor_collections.species_id')
+            ->where('visitor_collections.visitor_id', $visitor->id)
+            ->pluck('species.common_name')
+            ->all();
 
         return [
             'species_count' => $speciesCount,
             'enclosure_count' => $enclosureCount,
             'missions_completed' => $missions,
             'categories' => $categories,
+            'species_names' => array_map(strval(...), $names),
         ];
     }
 
     /**
-     * @param  array{species_count: int, enclosure_count: int, missions_completed: int, categories: array<string, int>}  $metrics
+     * @param  array{species_count: int, enclosure_count: int, missions_completed: int, categories: array<string, int>, species_names: list<string>}  $metrics
      */
     public function metricFor(array $metrics, string $ruleType, ?string $ruleParam): int
     {
@@ -196,7 +210,43 @@ class VisitorProgressQuery
             'enclosure_count' => $metrics['enclosure_count'],
             'missions_completed' => $metrics['missions_completed'],
             'category_species_count' => (int) ($metrics['categories'][$ruleParam] ?? 0),
+            'species_keyword' => $this->discoveredKeyword($metrics['species_names'], (string) $ruleParam) ? 1 : 0,
             default => 0,
         };
+    }
+
+    /**
+     * @param  list<string>  $names
+     */
+    private function discoveredKeyword(array $names, string $ruleParam): bool
+    {
+        $keywords = array_values(array_filter(array_map(
+            fn (string $word): string => $this->fold($word),
+            explode(',', $ruleParam),
+        )));
+        if ($keywords === []) {
+            return false;
+        }
+
+        foreach ($names as $name) {
+            $words = preg_split('/[^a-z0-9]+/', $this->fold($name)) ?: [];
+            foreach ($words as $word) {
+                if ($word !== '' && in_array($word, $keywords, true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function fold(string $value): string
+    {
+        $lower = mb_strtolower($value);
+        $folded = strtr($lower, [
+            'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n',
+        ]);
+
+        return $folded;
     }
 }

@@ -138,7 +138,7 @@ sequenceDiagram
 | Pendiente | Tratamiento |
 |---|---|
 | Icono de launcher y aviso | El PNG a color y la silueta blanca ya están en `src/assets/icon/`. La publicación en tienda sigue en la spec 008, en borrador |
-| Favoritos del visitante | El corazón y «Animales favoritos» usan la cuenta (`mobile-014`). Colección no filtra favoritos. Esta nota no cierra un PR |
+| Favoritos del visitante | El corazón y «Animales favoritos» usan la cuenta (`mobile-014`). Colección no filtra favoritos. Aksel confirmó el 2026-11-20 la verificación y el pull |
 | Mapa y recorrido 3D | Siguen abiertos (`mobile-007`, `mobile-009`). No se documentan aquí como terminados |
 | Retirar referencia visual temporal | `arca-ui-reference` no es una dependencia y se mantiene fuera de Git |
 | Confundir enmienda 002 con spec 004 | La cuenta de 004 vive en `src/session`. Sin `EXPO_PUBLIC_API_URL` sigue el mock. Con esa variable, el teléfono usa la API de pruebas y `expo-secure-store`. |

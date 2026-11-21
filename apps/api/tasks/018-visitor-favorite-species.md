@@ -103,6 +103,7 @@ Ninguna tarea añade alcance. Si algo de la lista no está en la spec o en el pl
   - Hecho cuando: Pint termina limpio en esos archivos.
   - Evidencia 2026-11-16: `vendor/bin/pint --test` sobre modelo, acciones, request, resource, controller, rutas y los dos tests — `passed`.
 
-- [ ] **T-17**: enlaces del PR.
+- [x] **T-17**: enlaces del PR.
   - Depende de: T-15.
   - Hecho cuando: el PR cita `api-018` y enlaza spec, plan, tasks y DBR-018. No se abre ese PR en el corte que solo redacta este checklist. No se redacta el aviso de privacidad oficial.
+  - Confirmado por Aksel el 2026-11-20: la verificación y el pull de favoritos ya se hicieron. Esta task no guarda la URL del PR.

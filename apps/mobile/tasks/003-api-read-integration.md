@@ -35,7 +35,7 @@
 - [x] **T-15** (CA-01, CA-02, CA-05, CA-07): Crear suite de pruebas `apps/mobile/__tests__/apiAnimalRepository.test.ts` con cliente simulado (`createHttpClient`), verificando mapeo `snake_case` a `camelCase`, detalle por ID y comportamiento de caché SWR con TTL de 5 minutos.
 - [x] **T-16** (CA-03, CA-05, CA-07): Crear suite de pruebas `apps/mobile/__tests__/apiZooRepository.test.ts` verificando listado y detalle de eventos y fallback a caché.
 - [x] **T-17** (CA-04, CA-06, CA-07): Crear suite de pruebas `apps/mobile/__tests__/catalogUiStates.test.tsx` validando el renderizado de los 5 estados (`loading`, `empty`, `error` con reintento, `success` y banner `offline`) y fallback de imágenes.
-- [x] **T-18** (CA-04, ADR 0014): Agregar `apps/mobile/__tests__/networkStatus.test.tsx` para verificar que `useNetworkStatus` marca offline con `isConnected === false` o `isInternetReachable === false`, y que el banner se renderiza en los detalles.
+- [x] **T-18** (CA-04, ADR 0014): Verificar en `apps/mobile/__tests__/networkStatus.test.tsx` la detección offline, el banner en los detalles y la recuperación aunque Expo siga reportando el estado anterior y falle una comprobación de red.
   - 2026-10-22: 5 tests en verde (3 del hook y 2 de los detalles).
 - [x] **T-19** (CA-05): Ajustar `jest.setup.js` con los mocks oficiales de `AsyncStorage` y `expo-network`, y limpiar la caché entre pruebas.
 
