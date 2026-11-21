@@ -29,3 +29,10 @@
 - [x] **T-11**: Nota breve en `apps/api/docs/visitante-autenticacion.md` o un doc de progreso, sin secretos. El PR enlaza spec, plan y tasks.
 
 Cada CA-01 a CA-14 tiene una prueba que lo nombra. Ninguna tarea crea una migración. CA-14 no cambia el esquema: `visitor_scans.result` ya es `varchar(30)`.
+
+## Enmienda · Logros y misiones de especies visitables
+
+- [x] **T-12** (CA-15, CA-16, RN-12): Aplicar el mismo conjunto de especies visitables al listado y a la métrica de descubrimientos por palabra clave.
+- [x] **T-13** (CA-15, CA-16): Agregar cobertura de visibilidad, avance, acreditación retroactiva e idempotencia en PHPUnit.
+- [x] **T-14** (CA-15, CA-16): Verificar la API y actualizar la referencia de progreso.
+  - 2026-11-21: `ProgressTest.php` aprobó sus 18 pruebas en `arca_pruebas`. Aprobaron también las dos pruebas unitarias y Pint para los archivos PHP modificados.

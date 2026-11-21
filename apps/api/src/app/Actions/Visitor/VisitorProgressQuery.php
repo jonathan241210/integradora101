@@ -121,6 +121,17 @@ class VisitorProgressQuery
             ->whereNull('enclosures.deleted_at');
     }
 
+    private function visitableSpecies(): Builder
+    {
+        return DB::table('species')
+            ->where('species.is_published', true)
+            ->whereNull('species.deleted_at')
+            ->whereIn('species.id', function (Builder $query): void {
+                $this->availableSpeciesIds($query);
+                $query->whereNull('animals.deleted_at');
+            });
+    }
+
     /**
      * @param  Collection<int, Achievement|Mission>  $rows
      * @return list<array<string, mixed>>
@@ -129,7 +140,7 @@ class VisitorProgressQuery
     {
         $owned = DB::table($table)->where('visitor_id', $visitor->id)->get()->keyBy($foreign);
         $metrics = $this->metrics($visitor);
-        $speciesNames = DB::table('species')->pluck('common_name')->map(strval(...))->all();
+        $speciesNames = $this->visitableSpecies()->pluck('species.common_name')->map(strval(...))->all();
         $visible = $rows->filter(function (Achievement|Mission $row) use ($speciesNames): bool {
             if ($row->rule_type !== 'species_keyword') {
                 return true;
@@ -185,8 +196,8 @@ class VisitorProgressQuery
             ->groupBy('species.category')
             ->pluck('total', 'category')
             ->all();
-        $names = DB::table('visitor_collections')
-            ->join('species', 'species.id', '=', 'visitor_collections.species_id')
+        $names = $this->visitableSpecies()
+            ->join('visitor_collections', 'visitor_collections.species_id', '=', 'species.id')
             ->where('visitor_collections.visitor_id', $visitor->id)
             ->pluck('species.common_name')
             ->all();

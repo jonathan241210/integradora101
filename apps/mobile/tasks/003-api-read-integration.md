@@ -61,6 +61,7 @@
   - 2026-11-10: `homeNewsEvents`, `navigation` y `scan-queue` en verde; `tsc --noEmit` sin errores.
 - [x] **T-29** (CA-12): La frase de las misiones conserva el margen lateral del encabezado.
   - 2026-11-11: `homeNewsEvents` CA-12 en verde.
+- [x] **T-30** (CA-01, CA-02, CA-05, CA-06): Reusar la foto pública de la especie en catálogo y ficha, mantener la caché anterior durante la actualización y verificar con Jest los casos de URL inválida, ficha en caché y apertura sin conexión.
 
 ## Evidencia
 

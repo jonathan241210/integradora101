@@ -131,8 +131,9 @@ Los campos que `api-006` no expone (`avg_weight`, `fun_fact`, `placeholder_tint`
    - Persistencia real con `@react-native-async-storage/async-storage`; `MemoryKeyValueStorage` queda disponible solo para inyección en pruebas.
    - Detección de conectividad con `expo-network` mediante `useNetworkStatus` (`isConnected === false` o `isInternetReachable === false`). Mientras Expo siga notificando que está sin conexión, se comprueba la red tres segundos después de cada lectura. Si la lectura falla, se conserva el último estado y se programa otra comprobación. El estado offline **no** se infiere de un fallo HTTP.
    - Llaves en `AsyncStorage`:
-     - `@arca:cache:species_list`
+     - `@arca:cache:species_list_v2`, con respaldo de lectura en `@arca:cache:species_list`. La primera lectura de la clave anterior devuelve los datos de inmediato y revalida en segundo plano.
      - `@arca:cache:species:{id}`
+     - `@arca:cache:visitor_catalog` guarda los IDs visitables y sus URLs de foto pública. Si falta o falla su renovación, se pueden usar los IDs vigentes de `@arca:cache:visitor_species_ids`.
      - `@arca:cache:events_list`
      - `@arca:cache:event:{id}`
    - Estructura del registro de caché:
@@ -162,6 +163,7 @@ Los campos que `api-006` no expone (`avg_weight`, `fun_fact`, `placeholder_tint`
 | **CA-04** (Gestión de los 5 estados de UI: loading, empty, error, success, offline) | `CA-04: OfflineBanner se muestra cuando isOffline es verdadero` + `useNetworkStatus` marca offline con `isConnected: false` | `apps/mobile/__tests__/catalogUiStates.test.tsx`, `apps/mobile/__tests__/networkStatus.test.tsx` |
 | **CA-05** (Caché SWR y TTL de 5 minutos) | `should return cached data immediately and revalidate in background when TTL > 5 mins` | `apps/mobile/__tests__/apiAnimalRepository.test.ts` |
 | **CA-06** (Imágenes con respaldo y tolerancia a fallos) | `should display placeholder tint and fallback component when image fails or loads` | `apps/mobile/__tests__/catalogUiStates.test.tsx` |
+| **CA-01, CA-02, CA-05 y CA-06** (foto de especie y compatibilidad de caché) | Foto de catálogo y ficha con URL primaria ausente o inválida. Reapertura sin red con caché anterior y renovación al volver la conexión. | `apps/mobile/__tests__/apiAnimalRepository.test.ts` |
 | **CA-07** (Arquitectura MVVM y ejecución Jest `--runInBand`) | `suite passes with no direct fetch in screens and covers all CA-xx tags` | `apps/mobile/__tests__/*` |
 
 ---

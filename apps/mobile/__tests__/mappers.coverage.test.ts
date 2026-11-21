@@ -1,6 +1,7 @@
 import {
   mapEnclosureToMapPlace,
   mapEventToZooEventModel,
+  mapNewsToModel,
   mapSpeciesToAnimalModel,
 } from '../src/repositories/mappers';
 
@@ -72,6 +73,28 @@ describe('mobile-011 CA-05: mapeadores de respuestas API para Mobile', () => {
     expect(mapEventToZooEventModel({ id: 4, image_urls: [] }).imageUrls).toBeUndefined();
   });
 
+  it('mobile-003 CA-10: prefiere la foto principal usable de un evento a las demás fotos', () => {
+    expect(mapEventToZooEventModel({
+      id: 1,
+      image_url: 'https://img.test/evento.jpg',
+      image_urls: ['https://img.test/secundaria.jpg'],
+      image_path: 'https://img.test/anterior.jpg',
+    }).imageUrls).toEqual(['https://img.test/evento.jpg']);
+  });
+
+  it('mobile-003 CA-08: mantiene una noticia legible si faltan el título y el identificador', () => {
+    expect(mapNewsToModel({
+      id: ' ',
+      published_date: '2026-13-01',
+      description: 'Consulta el horario en taquilla.',
+    })).toMatchObject({
+      id: undefined,
+      title: 'Noticia',
+      date: '2026-13-01',
+      body: 'Consulta el horario en taquilla.',
+    });
+  });
+
   it('calcula coordenadas y describe recintos con y sin detalle animal', () => {
     expect(mapEnclosureToMapPlace({
       id: 1, name: 'Felinos', map_x: 0.2, map_y: 0.7,
@@ -108,5 +131,28 @@ describe('mobile-011 CA-05: mapeadores de respuestas API para Mobile', () => {
     });
     expect(fallback.gpsLat).toBeGreaterThan(0);
     expect(fallback.gpsLon).toBeLessThan(0);
+  });
+
+  it('calcula la edad con el cumpleaños y omite una fecha de nacimiento inválida', () => {
+    jest.useFakeTimers({ now: new Date(2026, 6, 15, 12) });
+    try {
+      const recinto = mapEnclosureToMapPlace({
+        id: 1,
+        name: 'Felinos',
+        animals: [
+          { id: 1, name: 'A', birth_date: '2026-01-01T12:00:00' },
+          { id: 2, name: 'B', birth_date: '2024-07-16T12:00:00' },
+          { id: 3, name: 'C', birth_date: '2024-08-01T12:00:00' },
+          { id: 4, name: 'D', birth_date: '2024-07-15T12:00:00' },
+          { id: 5, name: 'E', birth_date: 'fecha desconocida' },
+        ],
+      });
+
+      expect(recinto.animals?.map(({ age }) => age)).toEqual([
+        'Menos de un año', '1 año', '1 año', '2 años', undefined,
+      ]);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

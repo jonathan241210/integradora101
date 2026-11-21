@@ -10,7 +10,7 @@
 
 La API calcula el progreso del visitante autenticado con el token `visitor`. El cliente envía el código del QR; el servidor decide las especies, los puntos, el nivel y los logros. No hay tabla de líderes ni premios.
 
-Flujo: `POST discoveries` valida la ventana y el límite, registra el intento en `visitor_scans` y, si el código está activo, descubre las especies en exhibición de ese recinto. Un `client_scan_id` repetido devuelve el mismo `result` sin filas nuevas. Las consultas `progress`, `collection`, `achievements` y `missions` solo leen.
+Flujo: `POST discoveries` valida la ventana y el límite, registra el intento en `visitor_scans` y, si el código está activo, descubre las especies en exhibición de ese recinto. Un `client_scan_id` repetido devuelve el mismo `result` sin filas nuevas. Las consultas `progress`, `achievements` y `missions` también evalúan las metas pendientes. La consulta `collection` lee los descubrimientos.
 
 ## Cambios por área
 
@@ -94,3 +94,14 @@ El visitante solo ve su progreso. El código QR no se registra en logs de aplica
 4. La app móvil consume el contrato cuando su propio plan esté aprobado.
 
 Aprobador funcional: Aksel. Fecha: 2026-10-22.
+
+## Enmienda · Logros y misiones de especies visitables
+
+Autorización registrada el 2026-11-21. `VisitorProgressQuery` reutiliza el criterio de exhibición y recinto activo del conteo de progreso. Para `species_keyword` añade la publicación de la especie y excluye animales y especies con baja lógica. Usa la misma consulta para el listado y para los nombres descubiertos por la cuenta. Conserva el reconocimiento por palabra completa y la transacción, el historial y la idempotencia de `EvaluateVisitorProgressAction`. Los endpoints autenticados mantienen su contrato JSON y el cliente móvil presenta el resultado de la API.
+
+| Criterio | Prueba en `tests/Feature/Visitor/ProgressTest.php` |
+|---|---|
+| CA-15 | Mostrar las metas por palabra completa según publicación, exhibición, actividad y baja lógica. |
+| CA-16 | Acreditar descubrimientos visitables por cuenta y conservar el historial y los puntos durante cambios del catálogo. |
+
+Constitution Check I–VI. Se usan el stack existente y las columnas verificadas en MySQL (I y V). La enmienda se limita a CA-15, CA-16 y RN-12 (II). La regla queda en la API y conserva Sanctum (III). Cada criterio tiene su prueba con transacciones en `arca_pruebas` (IV). El código usa nombres en inglés y los criterios se documentan en español (VI).
