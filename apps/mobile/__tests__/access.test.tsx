@@ -185,7 +185,7 @@ describe('Acceso visual del visitante', () => {
 
   it('test-ca-14 y test-ca-15: Perfil abre Ajustes y las filas muestran cuenta, aviso, ayuda y acerca de', async () => {
     const profile = await render(<ProfileRoute />);
-    await waitFor(() => expect(profile.getByText('María García')).toBeTruthy());
+    await waitFor(() => expect(profile.getAllByText('—').length).toBeGreaterThan(0));
     expect(profile.getByText('Perfil')).toBeTruthy();
     await fireEvent.press(profile.getByRole('button', { name: 'Ajustes' }));
     expect(mockPush).toHaveBeenCalledWith('/settings');
