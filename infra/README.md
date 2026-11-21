@@ -6,6 +6,8 @@
 
 Se prevé un `docker-compose` para servicios locales de desarrollo, incluido MySQL 8.0.x. Aún no existe archivo Compose ni configuración de contenedores. El equipo debe decidir puertos, volúmenes, datos semilla y estrategia de respaldos en una spec.
 
+Para levantar la API y conectar un dispositivo, sigue [Requisitos y arranque de la API](../apps/api/docs/requisitos-entorno.md). Incluye el caso local, una computadora visible en la red y un servidor compartido por HTTPS. El cliente se configura desde la [guía móvil](../apps/mobile/README.md#conectar-la-api).
+
 ## Alojamiento previsto
 
 La base de datos administrada es Aiven MySQL (ADR 0013), con TLS configurado por `DB_SSL_CA` en `.env`; `arca_pruebas` es la base de trabajo y PHPUnit, y `arca_zoo` es producción. Google Cloud dejó de ser el destino del sistema: el hosting de la API Laravel y de los clientes queda por definir. El almacenamiento de archivos que se agregue usará discos configurables de Laravel Filesystem, no llamadas a SDK desde dominio.

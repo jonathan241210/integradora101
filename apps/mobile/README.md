@@ -1,6 +1,6 @@
 # Aplicación móvil ARCA-NB
 
-Aplicación móvil del visitante, en React Native y Expo Router. Con `EXPO_PUBLIC_API_URL` usa la API de pruebas para catálogo, cuenta, progreso, favoritos y memorias. El escáner QR usa la cámara del teléfono. El mapa y el recorrido 3D no están cerrados. Los avisos push no se validan en Expo Go.
+Aplicación móvil del visitante, en React Native y Expo Router. `EXPO_PUBLIC_API_URL` indica a qué API se conecta el teléfono para usar el catálogo, la cuenta, el progreso, los favoritos y las memorias. Si es tu primer arranque, instala el workspace, elige una API y luego abre Expo Go.
 
 ## Requisitos
 
@@ -8,7 +8,7 @@ Aplicación móvil del visitante, en React Native y Expo Router. Con `EXPO_PUBLI
 
 - Windows 10/11, macOS o Linux.
 - Git ([Git for Windows](https://git-scm.com/download/win) en Windows).
-- Node.js **22.x** y npm, instalados desde [nodejs.org](https://nodejs.org/). La última validación de este proyecto se hizo con Node.js **22.23.2** y npm **12.2.0**; usa esas versiones si encuentras diferencias de entorno.
+- Node.js **22.x** y npm, instalados desde [nodejs.org](https://nodejs.org/).
 - Un teléfono Android conectado a la misma red Wi-Fi que la computadora.
 - **Expo Go** instalado en el teléfono desde [Google Play](https://play.google.com/store/apps/details?id=host.exp.exponent).
 
@@ -32,7 +32,7 @@ node --version
 npm --version
 ```
 
-Reemplaza `ORGANIZACION/REPOSITORIO` por la URL real; necesitarás permiso de acceso al repositorio. Verifica que Node reporte `v22.x`. npm se instala junto con Node; npm **12.2.0** es la versión usada en la última validación.
+Reemplaza `ORGANIZACION/REPOSITORIO` por la URL real. Necesitarás permiso de acceso al repositorio. Verifica que Node reporte `v22.x` y que npm esté disponible.
 
 3. Instala todas las dependencias del monorepo desde la raíz:
 
@@ -41,6 +41,28 @@ npm ci
 ```
 
 La primera instalación requiere Internet y puede tardar unos minutos. `npm ci` usa el lockfile compartido y no modifica los manifiestos. No ejecutes `npm install` dentro de `apps\mobile`, no instales Expo CLI globalmente y no crees otro lockfile para Mobile.
+
+Si PowerShell bloquea `npm.ps1`, usa `npm.cmd` en los comandos de esta guía.
+
+## Conectar la API
+
+Si ya te compartieron una API accesible, usa su dirección. Si necesitas arrancar Laravel, sigue [Requisitos y arranque de la API](../api/docs/requisitos-entorno.md). Allí se explica qué acceso a base de datos debes pedir, cómo preparar las fotos y cómo iniciar en cada caso.
+
+Crea `apps/mobile/.env` y elige **una** de estas direcciones como valor de `EXPO_PUBLIC_API_URL`:
+
+| Dónde corre la API | Valor de ejemplo |
+|---|---|
+| En una computadora de la misma red que el teléfono | `http://192.168.1.50:8000/api/v1`. Sustituye la IP por la IPv4 del equipo que corre Laravel. En Windows, `ipconfig` muestra la del adaptador Wi-Fi activo. |
+| En la misma computadora que Android Emulator | `http://10.0.2.2:8000/api/v1`. Esa dirección enlaza el emulador con su computadora. |
+| En un servidor compartido | `https://api.example.org/api/v1`. Sustituye el dominio por el que te compartieron. |
+
+```dotenv
+EXPO_PUBLIC_API_URL=http://192.168.1.50:8000/api/v1
+```
+
+Desde un teléfono físico, `localhost` y `127.0.0.1` apuntan al propio teléfono. Usa la IP del servidor y evita adaptadores virtuales. El valor termina en `/api/v1` una sola vez. Mantén el archivo fuera de Git y deja credenciales y tokens fuera de las variables `EXPO_PUBLIC_*`.
+
+Antes de iniciar Expo, abre en el navegador del teléfono el origen seguido de `/up` y luego el recurso `/api/v1/published-species`. El primero confirma que Laravel responde. El segundo debe devolver JSON. Un catálogo vacío puede ser un problema de datos. Para ver un animal en la Colección necesita estar publicado y tener un animal visitable en un recinto activo.
 
 ## Iniciar en Android con Expo Go
 
@@ -62,7 +84,16 @@ Si la red local impide la conexión, detén el servidor con `Ctrl+C` y prueba el
 npx expo start --tunnel
 ```
 
-El modo túnel necesita Internet en ambos dispositivos y puede ser más lento.
+El túnel conecta Expo Go con Metro. La API debe seguir siendo accesible desde el teléfono por su propia dirección. Después de cambiar `apps/mobile/.env`, reinicia Expo y vuelve a abrir la app. Si conserva la dirección anterior, inicia Metro con `npm start -- --clear`.
+
+## Comprobación rápida
+
+| Síntoma | Qué comprobar |
+|---|---|
+| Expo Go no abre el proyecto | Que la versión instalada admita SDK 57 y que Expo Go llegue a Metro por la misma red o por su túnel. |
+| El proyecto abre, pero el catálogo no carga | Desde el teléfono, comprueba `/up`, `/api/v1/species`, `/api/v1/published-species` y `/api/v1/enclosures`. Si `/up` funciona y los recursos del catálogo devuelven 500, revisa la conexión y el esquema de la API. |
+| Aparecen animales, pero faltan fotos | Abre una `image_url` desde el teléfono. Si apunta a otro host, revisa `APP_URL` y `MEDIA_PUBLIC_URL` en Laravel. Si devuelve 404, revisa el disco, el enlace creado con `storage:link` y que el archivo exista en el servidor. |
+| La cuenta no se verifica | Revisa el envío configurado en la API. En una instalación de prueba con `MAIL_MAILER=log` y el canal predeterminado, el correo aparece en `apps/api/src/storage/logs/laravel.log`. |
 
 ## Avisos push
 
@@ -96,34 +127,17 @@ Las pruebas, el chequeo de tipos y la exportación JavaScript no necesitan telé
 
 ## Cuenta del visitante
 
-La spec 004 tiene sesión, registro, verificación, recuperación, edición, cambio de contraseña y borrado. Hay dos caminos. No pongas secretos en `EXPO_PUBLIC_API_URL`, no versiones `apps/mobile/.env` y no apuntes a producción ni a la base `arca_zoo`.
+La spec 004 tiene sesión, registro, verificación, recuperación, edición, cambio de contraseña y borrado. Usa una cuenta de visitante del ambiente que vas a probar. El [contrato de autenticación](../api/docs/visitante-autenticacion.md) describe el correo y la recuperación.
 
 ### Sin API
 
-Si `EXPO_PUBLIC_API_URL` no existe o está vacía, la app usa el repositorio simulado y los tokens quedan en memoria. No hay cuentas precargadas ni un código de prueba visible. El alta y la recuperación reales requieren la API. Jest arma sus propias cuentas solo dentro de la suite.
+Si `EXPO_PUBLIC_API_URL` no existe o está vacía, la cuenta usa el repositorio simulado y guarda sus tokens en memoria. El alta y la recuperación reales requieren la API. Para previsualizar también el catálogo con datos simulados, usa `EXPO_PUBLIC_USE_MOCKS=true`; quita esa variable al volver al catálogo real.
 
-### Con la API de pruebas, en cada máquina
+### Con una API conectada
 
-Con la variable definida, los tokens se guardan con `expo-secure-store` y las llamadas salen por el módulo visitante de `@arca/api-client`. `usesCleartextTraffic` sigue en `false` salvo en el APK del perfil `preview`, que lo enciende para probar por HTTP en la red local. Expo Go usa el `.env` de abajo. El APK de prueba usa el entorno `preview` de EAS, no ese archivo. Un build que no sea `preview` exige HTTPS.
+Metro carga `apps/mobile/.env` al preparar el paquete que abre Expo Go. La cuenta guarda los tokens con `expo-secure-store`. En el APK del perfil `preview`, la URL se incorpora desde el entorno `preview` de EAS y se permite HTTP para pruebas en la red local. Los demás APK usan HTTPS. Cambiar la URL de un APK ya compilado requiere otra compilación.
 
-1. En una terminal, desde `apps/api/src`, deja la API escuchando en la red. Si Windows pregunta, permite el puerto 8000 en redes privadas.
-
-```powershell
-Set-Location .\apps\api\src
-php artisan serve --host=0.0.0.0 --port=8000
-```
-
-2. En `ipconfig`, copia la IPv4 del adaptador de la Wi-Fi. No uses `127.0.0.1`: en el teléfono esa dirección es el propio teléfono. Tampoco uses una tarjeta virtual (por ejemplo `192.168.56.1`).
-3. Crea `apps/mobile/.env` con la IP de esa máquina. El archivo no se sube a git.
-
-```text
-EXPO_PUBLIC_API_URL=http://ESA-IP:8000/api/v1
-```
-
-Ese `/api/v1` es el de la variable, el mismo que usa el catálogo. La cuenta no lo repite.
-
-4. Reinicia Expo. La variable se lee al arrancar: si ya estaba `npm start`, detenlo con `Ctrl+C` y vuelve a lanzarlo. El teléfono y la computadora tienen que estar en la misma red.
-5. El alta real pide al menos 8 caracteres, con letras y números. Para enviar el código de 6 dígitos por **Gmail SMTP**, configura en `apps/api/src/.env`: `MAIL_MAILER=smtp`, `MAIL_SCHEME=smtp`, `MAIL_HOST=smtp.gmail.com`, `MAIL_PORT=587`, `MAIL_USERNAME`, `MAIL_PASSWORD` (contraseña de aplicación de Google) y `MAIL_FROM_ADDRESS` (si dejas `MAIL_MAILER=log`, el correo queda en `apps/api/src/storage/logs/laravel.log`).
+Para probar un flujo completo, abre una ficha y su foto, inicia sesión con un visitante verificado y escanea el QR de un recinto con un animal visitable. Comprueba la colección y el progreso de esa cuenta. Para probar avisos, sigue el apartado de push.
 
 ## Estado y límites
 

@@ -74,7 +74,7 @@ describe('mobile-011 CA-05: cobertura de ApiAnimalRepository', () => {
   it('retorna la caché obsoleta mientras revalida la lista y el detalle', async () => {
     const stale = { data: [mapSpeciesToAnimalModel(species(1, 'Anterior'))], cachedAt: Date.now() - 10, ttlMs: 0 };
     const detail = { data: mapSpeciesToAnimalModel(species(2, 'Anterior')), cachedAt: Date.now() - 10, ttlMs: 0 };
-    await storage.setItem('@arca:cache:species_list', JSON.stringify(stale));
+    await storage.setItem('@arca:cache:species_list_v2', JSON.stringify(stale));
     await storage.setItem('@arca:cache:species:2', JSON.stringify(detail));
     const http = client(jest.fn(async (path: string) => {
       if (path === '/published-species') return { data: [{ id: 1 }, { id: 2 }] };
@@ -103,7 +103,7 @@ describe('mobile-011 CA-05: cobertura de ApiAnimalRepository', () => {
   });
 
   it('tolera caché corrupta y fallos de escritura, y propaga la falla de red sin caché', async () => {
-    await storage.setItem('@arca:cache:species_list', '{invalid');
+    await storage.setItem('@arca:cache:species_list_v2', '{invalid');
     const http = client(jest.fn().mockRejectedValue(new Error('offline')));
     const repo = new ApiAnimalRepository(http, storage);
     await expect(repo.getAllAnimals()).rejects.toThrow('offline');
@@ -288,7 +288,7 @@ describe('mobile-011 CA-05: cobertura de ApiZooRepository', () => {
 
   it('CA-08 mapea noticias y conserva la caché si la red falla', async () => {
     const http = client(jest.fn().mockResolvedValueOnce({
-      data: [{ id: 9, titulo: 'Aviso', descripcion: 'Contenido', image_path: 'news/aviso.jpg' }],
+      data: [{ id: 9, titulo: 'Aviso', descripcion: 'Contenido' }],
     }));
     const repo = new ApiZooRepository(http, new MemoryKeyValueStorage(), 0);
     const first = await repo.getNews();
