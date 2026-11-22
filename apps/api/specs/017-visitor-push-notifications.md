@@ -117,3 +117,5 @@ Afecta a quien tiene cuenta de visitante en la app Android. El portal, el dashbo
 
 - Aprobadores y fecha: Aksel, 2026-11-14 (aprobación funcional). Plan aprobado técnicamente por Victor Adrian el 2026-11-14. Faltan las tasks.
 - Evidencia/enlaces: `apps/mobile/specs/013-visitor-push-notifications.md`, `apps/api/plan/017-visitor-push-notifications.md`, `docs/database/requests/DBR-017-visitor-push-notifications.md`, `docs/adr/0029-visitor-android-push.md`, `apps/api/specs/010-visitor-memory-requests.md`, `apps/api/specs/011-public-news-read.md`, `apps/api/specs/006-public-catalog-read.md`, `apps/api/specs/004-visitor-authentication.md`, `docs/adr/0004-mobile-react-native.md`, `docs/adr/0011-visitor-identity-and-mobile-session.md`, `docs/adr/0012-android-distribution-channel.md`.
+
+> **Nota de revisión (2026-11-20, sin cambio de requisitos ni de estado):** `api-025` no cambia esta spec: no calcula días ni horas de negocio. Sin cambio.

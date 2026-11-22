@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Veterinarian\StoreSpeciesPublicationRequest;
 use App\Http\Resources\Veterinarian\OwnSpeciesPublicationRequestResource;
 use App\Http\Resources\Veterinarian\SubmittedSpeciesPublicationRequestResource;
+use App\Support\PaginationMeta;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -19,7 +20,7 @@ class SpeciesPublicationRequestController extends Controller
 
         return response()->json([
             'data' => OwnSpeciesPublicationRequestResource::collection($page->getCollection())->resolve($request),
-            'meta' => ['has_more' => $page->hasMorePages()],
+            'meta' => PaginationMeta::from($page),
         ]);
     }
 

@@ -138,3 +138,6 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos. Si algo no 
 8. **Aprobación y cierre:** revisión técnica (PWA/API/BD) y validación funcional por el solicitante con evidencia por CA; actualizar documentación operativa y enlazar spec/plan/tasks/ADR/DBR en el PR.
 
 **Aprobadores previstos (a confirmar):** responsable funcional (solicitante) para alcance/UX; responsable técnico PWA y API; responsable de BD para DBR/migraciones. Detenerse antes de implementar código dependiente de decisiones/ADR/DBR no aprobadas.
+## Nota de revisión 2026-11-21
+
+El service worker se registra solo en producción (CA-15). En desarrollo, el caché «cache first» servía módulos de Vite viejos; ahora se retira el service worker y se vacían los cachés `arca-pwa-*`. No cambia la estrategia de caché en producción.

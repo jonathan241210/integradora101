@@ -3,6 +3,7 @@
 namespace Tests\Feature\Tickets;
 
 use App\Actions\Admin\Tickets\CancelTicketAction;
+use App\Enums\TicketCancellationReason;
 use App\Models\Ticket;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -10,8 +11,8 @@ class CancelTicketOrderTest extends TicketFeatureTestCase
 {
     public function test_ca13_ticket_sales_validation_order_is_403_404_reason_already_cancelled_other_day(): void
     {
-        $owner = $this->createAccount('cashier', false);
-        $other = $this->createAccount('cashier', false);
+        $owner = $this->createAccount('cashier');
+        $other = $this->createAccount('cashier');
         $this->setPrices($owner);
         $this->travelTo($this->at('2026-11-02 18:00:00'));
 
@@ -25,14 +26,14 @@ class CancelTicketOrderTest extends TicketFeatureTestCase
         $this->actAs($other)->postJson($url($oldCompleted), [])->assertNotFound()->assertJsonPath('message', 'Boleto no encontrado.');
         // 3) 422 de motivo antes que "ya cancelado" y "otro día".
         $this->actAs($owner)->postJson($url($oldCancelled), [])
-            ->assertStatus(422)->assertJsonValidationErrors(['reason'], 'errors');
+            ->assertStatus(422)->assertJsonValidationErrors(['reason_code'], 'errors');
         $this->actAs($owner)->postJson($url($oldCompleted), [])
-            ->assertStatus(422)->assertJsonValidationErrors(['reason'], 'errors');
+            ->assertStatus(422)->assertJsonValidationErrors(['reason_code'], 'errors');
         // 4) "ya cancelado" antes que "otro día" (el boleto cancelado también es de otro día).
-        $this->actAs($owner)->postJson($url($oldCancelled), ['reason' => 'X'])
+        $this->actAs($owner)->postJson($url($oldCancelled), ['reason_code' => 'capture_error', 'reason' => 'X'])
             ->assertStatus(422)->assertJsonPath('message', 'Este boleto ya está cancelado.');
         // 5) por último, otro día.
-        $this->actAs($owner)->postJson($url($oldCompleted), ['reason' => 'X'])
+        $this->actAs($owner)->postJson($url($oldCompleted), ['reason_code' => 'capture_error', 'reason' => 'X'])
             ->assertStatus(422)->assertJsonPath('message', 'Solo se pueden cancelar boletos el mismo día en que se vendieron.');
 
         $this->assertSame('completed', Ticket::query()->findOrFail($oldCompleted)->status);
@@ -40,7 +41,7 @@ class CancelTicketOrderTest extends TicketFeatureTestCase
 
     public function test_ca13_ticket_sales_ticket_deleted_between_authorization_and_lock_is_404(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $sale = $this->sell($cashier);
         $ticket = Ticket::query()->findOrFail($sale['folio']);
@@ -48,7 +49,7 @@ class CancelTicketOrderTest extends TicketFeatureTestCase
         $ticket->delete(); // borrado lógico entre el authorize() y el bloqueo
 
         try {
-            app(CancelTicketAction::class)->execute($cashier, $ticket, 'Carrera');
+            app(CancelTicketAction::class)->execute($cashier, $ticket, TicketCancellationReason::CaptureError, 'Carrera');
             $this->fail('Se esperaba un 404.');
         } catch (NotFoundHttpException $e) {
             $this->assertSame('Boleto no encontrado.', $e->getMessage());

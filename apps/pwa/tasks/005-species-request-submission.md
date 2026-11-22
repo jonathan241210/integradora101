@@ -167,6 +167,14 @@ Cada tarea nombra un CA-xx y su `describe`. Las pruebas de update que dependen d
 - [x] **T-52** (CA-01, CA-06, CA-13, CA-14, CA-18; RN-03): rediseño de usabilidad aprobado por Jonathan el 2026-11-19. Selector desplegable con resumen (badge de estado, tipo de envío, motivo en alerta suave), maqueta como «Registrar animal» con vista previa local de la foto y botón para quitarla, rejilla de dos columnas, ficha pública como chips, pie con «Limpiar» y «Enviar solicitud», sección deshabilitada con «Elige una especie para continuar.» y pestañas como control segmentado (`aria-pressed`). Archivos: `SpeciesSelectorField.tsx`, `SpeciesRequestFormPresenter.tsx`, `SpeciesRequestFormView.tsx`, `SpeciesRequestView.tsx`, `useSpeciesRequestForm.ts`, `speciesRequestForm.ts`, `styles.css`. Pruebas ajustadas en `species-request-presenters.test.tsx`.
 - [x] **T-53** (RN-01; alcance aprobado por Jonathan, 2026-11-19): el menú lateral de escritorio se contrae al cambiar de sección. `styles.css`: `:focus-within` por `:has(:focus-visible)`; `AppShell.tsx`: `blur()` tras navegar con ratón o toque y `scrollTo` al cambiar de sección. Prueba: `describe('CA-19 PWA solicitud de publicación: menú lateral contraíble')` en `screens.test.tsx`.
 
+## Revisión 2026-11-21 (Jonathan)
+
+- [x] **T-54** (CA-20, CA-21; CA-05, CA-09, CA-14): formulario por secciones, chips opcionales y fijos, campos condicionales, línea «No se publicarán», foco al chip, reglas de campos ocultos y confirmación de «Limpiar». Archivos: `speciesRequestForm.ts`, `speciesRequestSubmit.ts`, `useSpeciesRequestForm.ts`, `SpeciesRequestFormPresenter.tsx`, `SpeciesRequestFormView.tsx`, `components/Icon.tsx` (icono `lock`). Pruebas: `species-request-review-2026-11-21.test.tsx` (CA-20, CA-21) y ajustes en `species-request-presenters.test.tsx`.
+- [x] **T-55** (CA-22, CA-23, CA-24): tarjeta de «Mis solicitudes», paginación, vacío, error y «Enviar de nuevo». Archivos: `OwnSpeciesRequestsView.tsx`, `SpeciesRequestView.tsx`. Pruebas: mismo archivo (CA-22 a CA-24) y ajuste en `species-request-list.test.ts`.
+- [x] **T-56** (CA-25): ajustes de `styles.css` (`.field-help` 14 px, contraste del fieldset, sin `.ficha-fields__option`, `.form-actions` en 360 px). Prueba CA-25 en el mismo archivo.
+- [x] **T-58** (api-026 CA-02, CA-03, CA-04, CA-14): «Dato curioso» en `fichaFieldOptions`, borrador, validación, envío y precarga; `TextAreaField` con ayuda y contador. Archivos: `speciesRequestForm.ts`, `useSpeciesRequestForm.ts`, `SpeciesRequestFormPresenter.tsx`, `styles.css`, `packages/api-client` (tipos y `buildSpeciesRequestFormData`). Pruebas: `species-fun-fact.test.tsx` y ajuste a cuatro casillas en tres pruebas previas. `npx vitest run`: 18 archivos, 153 tests; `npx tsc -b`: código 0, 2026-11-21.
+- [x] **T-57** (CA-20 a CA-25): `npx vitest run` (17 archivos, 148 tests, todos pasan) y `npx tsc -b` (código 0), 2026-11-21.
+
 ## Calidad y entrega
 
 - [x] **T-43** (todos los CA-01 a CA-19): ejecutar `vitest run` y `tsc -b` en `apps/pwa` y registrar comandos, códigos de salida, pruebas omitidas y fallidas. Esta sesión no tiene shell: lo ejecuta la sesión principal. No se afirma que pasen. **Resultado 2026-11-19:** `npm test` → 14 archivos, 112 tests pasan, 0 fallan; `npm run build` (`tsc -b && vite build`) → código 0 (solo aviso de tamaño de chunk >500 kB, previo).
@@ -234,4 +242,6 @@ Cada tarea nombra un CA-xx y su `describe`. Las pruebas de update que dependen d
 | RN-09 | Sin implementación (alcance v1) | T-46 |
 | RN-10 | T-11 (aviso de actualización) | T-21 |
 
-Totales: 54 tareas (T-00 a T-53). Marcadas: T-00 a T-42 y T-51 a T-53. Sin marcar: T-43 a T-50. Tarea externa de bloqueo: `api-014` T-30 (T-01 aquí).
+Totales: 60 tareas (T-00 a T-59; la T-54 repetida pasó a T-59 el 2026-11-21). Sin marcar: T-43 a T-50. Tarea externa de bloqueo: `api-014` T-30 (T-01 aquí).
+
+- [x] **T-59** (CA-26): paginador compartido y `meta` con total en «Mis solicitudes»; pruebas en `shared-ui-pagination-and-countdown.test.tsx`. Queda abierta la revisión a ojo en 360 px.

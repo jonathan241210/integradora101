@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Auth\RequiresBrowserTwoFactorLoginAction;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
-    public function login(Request $request): JsonResponse
+    public function login(Request $request, RequiresBrowserTwoFactorLoginAction $requiresTwoFactor): JsonResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -33,6 +34,15 @@ class AuthController extends Controller
             RateLimiter::hit($throttleKey, 300);
 
             return response()->json(['message' => 'Credenciales incorrectas.'], 422);
+        }
+
+        // api-021 CA-42: el rechazo por rol va después de validar la contraseña (no permite enumerar cuentas),
+        // no limpia el límite de intentos, no actualiza last_login_at y no emite token.
+        if ($requiresTwoFactor->forRole($user)) {
+            return response()->json([
+                'message' => RequiresBrowserTwoFactorLoginAction::MESSAGE,
+                'code' => RequiresBrowserTwoFactorLoginAction::CODE,
+            ], 403);
         }
 
         RateLimiter::clear($throttleKey);

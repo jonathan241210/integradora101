@@ -2,18 +2,16 @@
 
 namespace App\Actions\Admin\Reports;
 
+use App\Support\BusinessTimezone;
 use Carbon\CarbonImmutable;
 
 class BuildDashboardSummaryAction
 {
-    public function __construct(
-        private SummarizeTicketSalesAction $summarize,
-        private ResolveRequestedTimezoneAction $resolveTimezone,
-    ) {}
+    public function __construct(private SummarizeTicketSalesAction $summarize) {}
 
-    public function execute(mixed $requestedTimezone = null): array
+    public function execute(): array
     {
-        $timezone = $this->resolveTimezone->execute($requestedTimezone);
+        $timezone = BusinessTimezone::name();
         $today = CarbonImmutable::now($timezone)->startOfDay();
         $period = new ReportPeriod('custom', $today->subDays(6)->startOfDay(), $today, 'Últimos 7 días', null, null);
 

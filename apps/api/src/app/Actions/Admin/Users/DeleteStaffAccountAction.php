@@ -20,7 +20,6 @@ class DeleteStaffAccountAction
             $locked = User::query()->lockForUpdate()->findOrFail($target->id);
 
             $this->guard->ensureNotSelf($actor, $locked, 'No puedes eliminar tu propia cuenta.');
-            $this->guard->ensureAnotherActiveAdmin($locked);
 
             $this->revoke->execute($locked);
             $locked->forceFill(['updated_by' => $actor->id])->saveQuietly();

@@ -14,7 +14,7 @@ class TicketPriceChangeTest extends TicketFeatureTestCase
         $before = TicketPrice::query()->count();
 
         $data = $this->actAs($admin)->postJson('/api/v1/admin/ticket-prices', [
-            'adult_amount' => 27.5, 'child_amount' => '18.00', 'mode' => 'immediate',
+            'adult_amount' => 27.5, 'child_amount' => '18.00', 'password' => self::STEP_UP_PASSWORD, 'mode' => 'immediate',
         ])->assertCreated()->json('data');
 
         $this->assertCount(2, $data['prices']);
@@ -31,12 +31,12 @@ class TicketPriceChangeTest extends TicketFeatureTestCase
     public function test_ca19_ticket_sales_scheduled_change_takes_effect_at_the_given_time(): void
     {
         $admin = $this->createAccount('admin');
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($admin, '25.00', '16.00');
         $this->travelTo($this->at('2026-11-02 12:00:00'));
 
         $data = $this->actAs($admin)->postJson('/api/v1/admin/ticket-prices', [
-            'adult_amount' => 30, 'child_amount' => 20, 'mode' => 'scheduled', 'effective_at' => '2026-12-01T06:00:00-06:00',
+            'adult_amount' => 30, 'child_amount' => 20, 'password' => self::STEP_UP_PASSWORD, 'mode' => 'scheduled', 'effective_at' => '2026-12-01T06:00:00-06:00',
         ])->assertCreated()->json('data');
 
         $this->assertSame('2026-12-01T12:00:00Z', $data['prices'][0]['effective_at']);

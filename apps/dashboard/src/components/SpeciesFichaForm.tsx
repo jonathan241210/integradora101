@@ -1,14 +1,20 @@
 import type { FormEvent } from "react";
-import { Alert, Button, Field, SelectField } from "@arca/ui";
+import { Button, Field, SelectField } from "@arca/ui";
+import { ActionError } from "./DashboardNotifications";
 import { FieldErrors, fieldErrorProps, type FieldErrorMap } from "./FieldErrors";
+import { ImageUploadBox } from "./ImageUploadBox";
 import { SpeciesPhoto } from "./SpeciesPhoto";
 import type { SpeciesFichaField } from "@/viewmodels/admin-types";
 import {
   EMPTY_CORRECTION_HINT,
+  FUN_FACT_HELP,
+  FUN_FACT_MAX,
   PHOTO_ACCEPT_ATTRIBUTE,
+  PHOTO_HELP_TEXT,
   categoryLabels,
   categoryOptions,
   fichaFieldOptions,
+  funFactLabel,
   originLabel,
   type SpeciesSheetDraft,
 } from "@/viewmodels/species-publication-shared";
@@ -112,6 +118,41 @@ export function SpeciesFichaForm({
         </div>
       </div>
 
+      <div className="form-field species-form__fun-fact">
+        <label className="arca-field__label" htmlFor={id("fun_fact")}>
+          {funFactLabel}
+          {draft.published_fields.includes("fun_fact") && <span aria-hidden="true"> *</span>}
+        </label>
+        <textarea
+          id={id("fun_fact")}
+          name="fun_fact"
+          className="arca-field__control species-form__textarea"
+          rows={4}
+          value={draft.fun_fact}
+          aria-required={draft.published_fields.includes("fun_fact") || undefined}
+          aria-invalid={(fieldErrors.fun_fact ?? []).length > 0 ? true : undefined}
+          aria-describedby={[
+            `${id("fun_fact")}-help`,
+            `${id("fun_fact")}-count`,
+            (fieldErrors.fun_fact ?? []).length > 0 ? `${id("fun_fact")}-error` : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          onChange={(event) => onChange({ fun_fact: event.target.value })}
+        />
+        <span className="arca-field__hint" id={`${id("fun_fact")}-help`}>
+          {FUN_FACT_HELP}
+        </span>
+        <span
+          className="species-form__counter"
+          id={`${id("fun_fact")}-count`}
+          aria-live="polite"
+        >
+          {Array.from(draft.fun_fact).length}/{FUN_FACT_MAX}
+        </span>
+        <FieldErrors id={id("fun_fact")} errors={fieldErrors} name="fun_fact" />
+      </div>
+
       <fieldset className="species-form__fichas">
         <legend>Qué mostrar en la ficha pública</legend>
         {fichaFieldOptions.map((option) => (
@@ -136,54 +177,23 @@ export function SpeciesFichaForm({
             noneText="Sin foto publicada."
           />
         </div>
-        {newPhoto.previewUrl && (
-          <div>
-            <h3>Foto nueva</h3>
-            <figure className="species-photo">
-              <img
-                className="species-photo__image"
-                src={newPhoto.previewUrl}
-                alt={`Vista previa de la nueva foto de ${commonName}`}
-              />
-            </figure>
-            <Button type="button" variant="secondary" onClick={onClearPhoto}>
-              Quitar foto nueva
-            </Button>
-          </div>
-        )}
       </div>
-      <div className="arca-field">
-        <label className="arca-field__label" htmlFor={id("photo")}>
-          Cambiar foto
-        </label>
-        <input
-          id={id("photo")}
-          type="file"
-          accept={PHOTO_ACCEPT_ATTRIBUTE}
-          aria-describedby={`${id("photo")}-help`}
-          aria-invalid={photoError ? true : undefined}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
+      <ImageUploadBox
+        id={id("photo")}
+        previewUrl={newPhoto.previewUrl}
+        previewAlt={`Vista previa de la nueva foto de ${commonName}`}
+        error={photoError}
+        accept={PHOTO_ACCEPT_ATTRIBUTE}
+        helpText={PHOTO_HELP_TEXT}
+        emptyLabel="Elegir imagen"
+        changeLabel="Cambiar imagen"
+        removeLabel="Quitar imagen nueva"
+        onSelect={onChoosePhoto}
+        onRemove={onClearPhoto}
+      />
 
-            event.target.value = "";
-            if (file) onChoosePhoto(file);
-          }}
-        />
-        <span className="arca-field__hint" id={`${id("photo")}-help`}>
-          JPG o PNG · máximo 5 MB
-        </span>
-        {photoError && (
-          <p className="field-error" role="alert">
-            {photoError}
-          </p>
-        )}
-      </div>
-
-      {error && (
-        <Alert className="inline-alert" role="alert" aria-live="assertive">
-          {error}
-        </Alert>
-      )}
+      {/* dashboard-020 CA-28: error general de guardado como aviso; los de campo siguen en su campo. */}
+      <ActionError message={error ?? ""} />
       <div className="species-form__actions">
         <Button type="button" variant="secondary" disabled={busy} onClick={onCancel}>
           Cancelar

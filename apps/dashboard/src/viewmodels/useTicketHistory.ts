@@ -1,6 +1,8 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 import type { FocusDialogAction } from "./focus-target";
 import { ticketSalesApi } from "@/services/arca-api";
+import { useCancellationReasons } from "./useCancellationReasons";
+import { useRunProtected } from "./step-up-context";
 import {
   cancelTargetForFocus,
   cancelTicket,
@@ -20,9 +22,11 @@ export function useTicketHistory(focus: TicketHistoryFocus = null): TicketHistor
     initialTicketHistoryState,
   );
   const generation = useRef(0);
+  const protect = useRunProtected();
   const openedNonce = useRef<number | null>(null);
   // El folio del buscador se pide aparte: el formulario de filtros no cambia.
   const [focusedFolio, setFocusedFolio] = useState<string | null>(focus?.folio ?? null);
+  const reasons = useCancellationReasons(state.cancel.target !== null);
   const effectiveQuery = effectiveHistoryQuery(state.query, focusedFolio);
 
   useEffect(() => {
@@ -62,6 +66,7 @@ export function useTicketHistory(focus: TicketHistoryFocus = null): TicketHistor
 
   return {
     state,
+    reasons,
     actions: {
       applyFilters: (filters) => {
         setFocusedFolio(null);
@@ -92,6 +97,8 @@ export function useTicketHistory(focus: TicketHistoryFocus = null): TicketHistor
       },
       openCancel: (target) => dispatch({ type: "cancel-opened", target }),
       closeCancel: () => dispatch({ type: "cancel-closed" }),
+      changeReasonCode: (reasonCode) =>
+        dispatch({ type: "cancel-reason-code-changed", reasonCode }),
       changeReason: (reason) =>
         dispatch({ type: "cancel-reason-changed", reason }),
       confirmCancel: () => {
@@ -105,9 +112,14 @@ export function useTicketHistory(focus: TicketHistoryFocus = null): TicketHistor
           ticketSalesApi,
           dispatch,
           target,
-          state.cancel.reason,
+          {
+            reasonCode: state.cancel.reasonCode,
+            reason: state.cancel.reason,
+            reasons: reasons.state.reasons,
+          },
           effectiveQuery,
           () => generation.current === mine,
+          protect,
         );
       },
       dismissNotice: () => dispatch({ type: "notice-dismissed" }),

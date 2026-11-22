@@ -16,6 +16,7 @@ Los documentos usan el mismo `NNN-slug.md`; sigue el SDD antes de editar código
 - 008 moderación de momentos: Aprobada (2026-11-12), spec propia y vigente (separada de 010 el 2026-11-12). La implementación empieza cuando su plan y tasks estén aprobados.
 - 009 revisión de solicitudes de especie: Borrador, integrada en 010.
 - 010 public-content-management: En progreso (aprobada 2026-11-12; enmienda 2026-11-13: sección única TulanPedia con pestañas «Solicitudes» y «Publicadas»); publicación de especies, solo `zoo-admin`. DBR-013 está «Lista para backend».
+- 020 unified-reports-and-feedback: Aprobada (2026-11-21); apartado «Reportes» con pestañas por permiso, controles compartidos de reportes y regla de mensajes (aviso emergente, campo, diálogo, estado de la vista).
 
 ## Reglas de interfaz
 - SPA interna con React 19, TypeScript, Vite 7 y Tailwind CSS 4.

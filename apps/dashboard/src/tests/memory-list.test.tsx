@@ -15,20 +15,25 @@ const source = (path: string) =>
   readFileSync(fileURLToPath(new URL(`../${path}`, import.meta.url)), "utf8");
 
 const ready = (items: ReturnType<typeof summary>[], hasMore = false, page = 1): MemoryListState =>
-  listStateWith({ page, status: "ready", items, hasMore });
+  listStateWith({ page, status: "ready", items, hasMore, lastPage: hasMore ? page + 1 : page, total: items.length });
 
 const render = (state: MemoryListState) =>
   renderToStaticMarkup(<MemoriesView {...listViewModel(state)} onOpen={() => undefined} />);
 
 it("CA-02 memory-list: pide page y status solo con filtro; «Siguiente» según has_more", async () => {
   const { api, review } = fakeApi();
-  review.list.mockResolvedValueOnce({ data: [summary()], meta: { has_more: true } });
+  review.list.mockResolvedValueOnce({
+    data: [summary()],
+    meta: { current_page: 1, last_page: 3, per_page: 10, total: 25, has_more: true },
+  });
   const h = listHarness(api);
 
   await loadList(h.ctx, { filter: "", page: 1 });
 
   expect(review.list).toHaveBeenNthCalledWith(1, { status: undefined, page: 1 });
   expect(h.state.hasMore).toBe(true);
+  expect(h.state.lastPage).toBe(3);
+  expect(h.state.total).toBe(25);
 
   await loadList(h.ctx, { filter: "rejected", page: 2 });
 
@@ -49,7 +54,7 @@ it("CA-03 memory-list: cambiar el filtro vuelve a pedir la API; «Todas» omite 
   const { api, review } = fakeApi();
   review.list.mockResolvedValue({
     data: [summary({ status: "accepted" }), summary({ id: 12, status: "rejected" })],
-    meta: { has_more: false },
+    meta: { current_page: 1, last_page: 1, per_page: 10, total: 1, has_more: false },
   });
   const h = listHarness(api, ready([summary()], false, 3));
 

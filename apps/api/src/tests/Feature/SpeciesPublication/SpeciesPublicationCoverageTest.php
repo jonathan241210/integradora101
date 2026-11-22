@@ -4,10 +4,10 @@ namespace Tests\Feature\SpeciesPublication;
 
 use Tests\TestCase;
 
-/** CA-13: every acceptance criterion CA-01 to CA-41 of api-014 has a named test. */
+/** CA-13: every acceptance criterion CA-01 to CA-43 of api-014 has a named test. */
 class SpeciesPublicationCoverageTest extends TestCase
 {
-    private const TOTAL_CA = 41;
+    private const TOTAL_CA = 43;
 
     /** @return list<string> */
     private function specTestFiles(): array

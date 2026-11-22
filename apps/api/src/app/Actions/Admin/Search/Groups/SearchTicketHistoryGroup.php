@@ -2,6 +2,8 @@
 
 namespace App\Actions\Admin\Search\Groups;
 
+use App\Enums\TicketCancellationReason;
+use App\Support\BusinessTimezone;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -10,7 +12,7 @@ class SearchTicketHistoryGroup extends SearchGroup
     private const PAYMENT_METHODS = ['cash' => 'Efectivo'];
 
     /** CA-45 y CA-48: sin comprador, sin `qr_code` y sin cajero. */
-    private const COLUMNS = ['id', 'status', 'payment_method', 'cancellation_reason', 'purchased_at'];
+    private const COLUMNS = ['id', 'status', 'payment_method', 'cancellation_reason_code', 'cancellation_reason', 'purchased_at'];
 
     public function section(): string
     {
@@ -54,7 +56,7 @@ class SearchTicketHistoryGroup extends SearchGroup
     {
         $date = $row->purchased_at === null
             ? null
-            : Carbon::parse($row->purchased_at)->timezone(config('app.timezone'))->format('d/m/Y');
+            : Carbon::parse($row->purchased_at)->timezone(BusinessTimezone::name())->format('d/m/Y');
         $cancelled = $row->status === 'cancelled';
         $status = match ($row->status) {
             'cancelled' => 'Cancelado',
@@ -69,9 +71,19 @@ class SearchTicketHistoryGroup extends SearchGroup
             'fields' => [
                 ['Estado', $status],
                 ['Forma de pago', self::PAYMENT_METHODS[$row->payment_method] ?? $row->payment_method],
-                ['Motivo de cancelación', $row->cancellation_reason],
+                ['Motivo de cancelación', $cancelled ? $this->reasonText($row) : null],
                 ['Fecha de compra', $date],
             ],
         ];
+    }
+
+    /** Etiqueta del motivo derivada del código (api-022 RN-17) y, si existe, el comentario guardado. */
+    private function reasonText(object $row): string
+    {
+        $label = TicketCancellationReason::labelFor(TicketCancellationReason::tryFrom((string) $row->cancellation_reason_code));
+
+        return $row->cancellation_reason === null || $row->cancellation_reason === ''
+            ? $label
+            : $label.': '.$row->cancellation_reason;
     }
 }

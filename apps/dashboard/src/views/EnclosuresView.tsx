@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from "react";
-import { Badge, Button, Card, Dialog, Field } from "@arca/ui";
+import { Badge, Button, Card, Dialog, Field, Pagination } from "@arca/ui";
 import { ActionError } from "@/components/DashboardNotifications";
 import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { EnclosureQrDialog } from "@/components/EnclosureQrDialog";
 import { DialogFormFooter } from "@/components/FormActions";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
-import { PaginationBar } from "@/components/PaginationBar";
+import { CardGridSkeleton } from "@/components/LoadingSkeletons";
 import { NoticeBar } from "@/components/NoticeBar";
 import { SectionHeading } from "@/components/SectionHeading";
 import type { EnclosureDto } from "@/viewmodels/admin-types";
@@ -88,6 +88,7 @@ export function EnclosuresView({ state, actions, page, pageCount, pageItems, can
         status={state.status}
         error={state.error}
         loadingText="Cargando recintos…"
+        skeleton={<CardGridSkeleton kind="enclosures" label="Cargando recintos…" />}
         emptyText="Aún no hay recintos registrados."
         onRetry={actions.reload}
       />
@@ -154,11 +155,10 @@ export function EnclosuresView({ state, actions, page, pageCount, pageItems, can
         </ul>
       )}
       {state.status === "ready" && state.items.length > 0 && (
-        <PaginationBar
+        <Pagination
           page={page}
           lastPage={pageCount}
           total={state.items.length}
-          showPageNumbers
           onPageChange={actions.goToPage}
         />
       )}

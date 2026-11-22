@@ -10,6 +10,8 @@ export function TwoFactorSetupView({
   onConfirm,
   onAcknowledge,
   onRetry,
+  onSignOut,
+  notice,
 }: {
   qrSvg: string | null;
   recoveryCodes: string[];
@@ -18,6 +20,10 @@ export function TwoFactorSetupView({
   onConfirm: (code: string) => void;
   onAcknowledge: () => void;
   onRetry: () => void;
+  /** Cierra la sesión y vuelve al inicio (dashboard-015 CA-18). */
+  onSignOut: () => void;
+  /** Aviso opcional por rol (dashboard-015 CA-10). */
+  notice?: string;
 }) {
   const [code, setCode] = useState("");
 
@@ -34,6 +40,7 @@ export function TwoFactorSetupView({
         </div>
         <p className="auth-kicker">Verificación de seguridad</p>
         <h1>Configura tu segundo factor</h1>
+        {notice && <p className="auth-description auth-notice">{notice}</p>}
         <p className="auth-description">
           Instala una app autenticadora y escanea el código QR. Después confirma
           con el código de seis dígitos que muestra la app.
@@ -101,6 +108,17 @@ export function TwoFactorSetupView({
           </form>
         )}
 
+        {recoveryCodes.length === 0 && (
+          <Button
+            className="auth-submit"
+            type="button"
+            variant="secondary"
+            disabled={submitting}
+            onClick={onSignOut}
+          >
+            Cerrar sesión y volver al inicio
+          </Button>
+        )}
       </Card>
     </main>
   );

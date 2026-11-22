@@ -8,7 +8,7 @@ class TicketPriceResolutionTest extends TicketFeatureTestCase
 {
     public function test_ca04_ticket_sales_rejects_a_sale_without_current_price(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         DB::table('ticket_prices')->where('ticket_type', 'child')->delete();
         $tickets = $this->ticketCount();
@@ -28,7 +28,7 @@ class TicketPriceResolutionTest extends TicketFeatureTestCase
 
     public function test_ca05_ticket_sales_uses_old_price_before_and_new_price_after_scheduled_change(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier, '25.00', '16.00');
         $this->addPrice($cashier, 'adult', '30.00', '2026-12-01 12:00:00');
         $this->addPrice($cashier, 'child', '20.00', '2026-12-01 12:00:00');

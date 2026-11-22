@@ -1,10 +1,17 @@
 import { createAuthApi, createHttpClient, type AuthApi, type StaffProfile } from '@arca/api-client';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { clearToasts } from '@/offline/notifications';
+import { validRetryAfter } from '@arca/ui';
 import { getUserScope } from '@/offline/scope';
 
 type SessionApi = Pick<AuthApi, 'login' | 'me' | 'logout'>;
-type SessionResult = { session: 'anonymous' | 'authenticated'; error: string; profile: StaffProfile | null };
+type SessionResult = {
+  session: 'anonymous' | 'authenticated';
+  error: string;
+  profile: StaffProfile | null;
+  /** Segundos de bloqueo (429 con `Retry-After`); activa el contador de pwa-003 CA-04. */
+  retryAfterSeconds?: number | null;
+};
 
 const api = createAuthApi(createHttpClient({ baseUrl: '' }));
 const anonymous: SessionResult = { session: 'anonymous', error: '', profile: null };
@@ -60,6 +67,10 @@ export async function signInStaff(auth: SessionApi, email: string, password: str
 
     return { session: 'authenticated', error: '', profile };
   } catch (error) {
+    if (hasStatus(error, 429)) {
+      const retryAfterSeconds = validRetryAfter((error as { retryAfterSeconds?: unknown }).retryAfterSeconds);
+      return { ...anonymous, error: requestError(error), retryAfterSeconds };
+    }
     if (hasStatus(error, 422)) return { ...anonymous, error: 'Correo o contraseña incorrectos.' };
     return {
       ...anonymous,
@@ -147,5 +158,5 @@ export function useStaffSession() {
     setBusy(false);
   }
 
-  return { ...state, busy, login, logout, expireSession };
+  return { ...state, retryAfterSeconds: 'retryAfterSeconds' in state ? (state.retryAfterSeconds ?? null) : null, busy, login, logout, expireSession };
 }

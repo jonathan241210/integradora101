@@ -98,3 +98,9 @@ El dashboard no almacena credenciales ni datos personales: solo transporta corre
 
 - Aprobadores y fecha: Jonathan (responsable funcional), 2026-10-15.
 - Evidencia/enlaces: `apps/api/specs/003-staff-authentication.md`, `apps/dashboard/specs/001-admin-dashboard-prototype.md` (criterios reemplazados marcados), `docs/03-roles-y-permisos.md`.
+
+## Nota de revisión (2026-11-20, roles fijos)
+
+- Los roles que exigen 2FA pasan a ser los de `config('arca.two_factor_roles')`: `admin`, `zoo-admin`, `cashier` (`api-021`), `executive` y `communications` (`api-023`). El enrolamiento de CA-05 aplica a todos ellos; `veterinarian` no usa 2FA.
+- CA-06: el destino (`home`) se decide por permiso (`api-023` RN-03). Quien tiene `users.manage` ve Usuarios; `executive` («Consulta directiva») inicia en el Panel principal; `communications` («Comunicación») inicia en Noticias.
+- Roles, etiquetas, cuentas admin y avisos de consola: ver `apps/dashboard/specs/017-fixed-roles-account-management.md`. Esta nota no cambia los CA ni las RN de esta spec.

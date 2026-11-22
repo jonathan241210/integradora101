@@ -6,7 +6,12 @@ import type {
   StaffOptionsDto,
   StaffUpdateInput,
 } from "./admin-types";
+import { sectionsForPermissions } from "./navigation";
+import { departmentSelectionChanges, suggestRole } from "./staff-role-suggestion";
+
+export { suggestRole };
 import { describeApiError } from "./api-errors";
+import { runUnprotected, type RunProtected } from "./step-up";
 import {
   initialInlineListState,
   inlineListReducer,
@@ -32,6 +37,8 @@ export type StaffState = InlineListState<StaffAccountDto, StaffFormValues> & {
   meta: PageMeta | null;
   options: StaffOptionsDto | null;
   optionsError: string;
+  /** El administrador eligió el rol a mano: cambiar el área ya no lo pisa (dashboard-020 CA-39). */
+  roleChosenManually: boolean;
 };
 
 export type StaffAction =
@@ -39,7 +46,8 @@ export type StaffAction =
   | { type: "page-loaded"; items: StaffAccountDto[]; meta: PageMeta }
   | { type: "query-changed"; changes: Partial<StaffQuery> }
   | { type: "options-loaded"; options: StaffOptionsDto }
-  | { type: "options-failed"; message: string };
+  | { type: "options-failed"; message: string }
+  | { type: "role-chosen"; role: string };
 
 export type StaffDispatch = (action: StaffAction) => void;
 
@@ -90,22 +98,56 @@ export function staffAccountsReducer(
       return { ...state, options: action.options, optionsError: "" };
     case "options-failed":
       return { ...state, optionsError: action.message };
+    case "role-chosen":
+      return { ...state, form: { ...state.form, role: action.role }, roleChosenManually: true };
+    case "edit-started":
+    case "edit-cancelled":
+      // Al abrir o cerrar la edición el rol queda como está; el área nunca lo cambia solo al editar (CA-38).
+      return {
+        ...state,
+        ...inlineListReducer<StaffAccountDto, StaffFormValues>(state, action),
+        roleChosenManually: false,
+      };
+    case "saved":
+      return {
+        ...state,
+        ...inlineListReducer<StaffAccountDto, StaffFormValues>(state, action),
+        roleChosenManually: action.resetForm ? false : state.roleChosenManually,
+      };
     default:
       return { ...state, ...inlineListReducer<StaffAccountDto, StaffFormValues>(state, action) };
   }
 }
 
-/** Rol que la API sugiere para el área elegida, si es asignable. */
-export function suggestRole(
-  options: StaffOptionsDto | null,
-  departmentId: string,
-): string {
-  const department = options?.departments.find(
-    (item) => String(item.id) === departmentId,
-  );
-  const suggested = department?.suggested_role ?? "";
+/** Cuenta de solo lectura: se gestiona desde la consola del servidor (dashboard-017 CA-04). */
+export function isConsoleManaged(account: StaffAccountDto): boolean {
+  return account.managed_by_console === true;
+}
 
-  return options?.roles.some((role) => role.name === suggested) ? suggested : "";
+export const CONSOLE_MANAGED_LABEL = "Gestionada desde la consola del servidor";
+
+export const TWO_FACTOR_REQUIRED_NOTE =
+  "Esta cuenta deberá configurar su segundo factor (2FA) al iniciar sesión por primera vez.";
+
+export type RoleSummary = {
+  /** Secciones que abre el rol, derivadas de los permisos que entrega la API. */
+  sections: string[];
+  twoFactorRequired: boolean;
+};
+
+/** Resumen de solo lectura del rol elegido (CA-02, CA-03); `null` sin rol válido. */
+export function roleSummary(
+  role: string,
+  roles: StaffOptionsDto["roles"] | undefined,
+): RoleSummary | null {
+  const found = roles?.find((item) => item.name === role);
+
+  if (!found) return null;
+
+  return {
+    sections: sectionsForPermissions(found.permissions.map((permission) => permission.name)),
+    twoFactorRequired: found.two_factor_required === true,
+  };
 }
 
 export function parseStatusFilter(value: string): StaffQuery["status"] {
@@ -130,6 +172,7 @@ export const initialStaffState: StaffState = {
   meta: null,
   options: null,
   optionsError: "",
+  roleChosenManually: false,
 };
 
 export function staffFormFromAccount(account: StaffAccountDto): StaffFormValues {
@@ -268,17 +311,18 @@ export async function loadStaffOptions(
 
 type Reload = () => Promise<void>;
 
-/** Rol que propone el área al cambiarla en el alta; en edición se conserva. */
+/** Valores del formulario al cambiar el área: sugiere el rol salvo elección manual (CA-38, CA-39). */
 export function staffDepartmentChanges(
   state: StaffState,
   departmentId: string,
 ): Partial<StaffFormValues> {
-  return {
-    department_id: departmentId,
-    role: state.editing
-      ? state.form.role
-      : suggestRole(state.options, departmentId) || state.form.role,
-  };
+  return departmentSelectionChanges({
+    options: state.options,
+    departmentId,
+    currentRole: state.form.role,
+    roleChosenManually: state.roleChosenManually,
+    editing: state.editing !== null,
+  });
 }
 
 /** Alta o edición según `state.editing`. */
@@ -287,6 +331,7 @@ export function saveStaffAccount(
   dispatch: StaffDispatch,
   state: StaffState,
   reload: Reload,
+  protect: RunProtected = runUnprotected,
 ): Promise<boolean> {
   // Doble envío: con una petición del formulario en curso no se lanza otra.
   if (state.saving) return Promise.resolve(false);
@@ -297,8 +342,16 @@ export function saveStaffAccount(
     dispatch,
     () =>
       editing
-        ? api.users.update(editing.id, toStaffUpdateInput(form))
-        : api.users.create(toStaffCreateInput(form)),
+        ? // Cambiar el rol pide contraseña en modo Siempre (api-021 CA-36).
+          protect((password) =>
+            api.users.update(
+              editing.id,
+              password === undefined
+                ? toStaffUpdateInput(form)
+                : { ...toStaffUpdateInput(form), password },
+            ),
+          )
+        : protect(() => api.users.create(toStaffCreateInput(form))),
     {
       notice: editing ? "Los cambios de la cuenta se guardaron." : "La cuenta se creó correctamente.",
       scope: "form",
@@ -318,6 +371,7 @@ export function confirmStaffAction(
   state: StaffState,
   password: string,
   reload: Reload,
+  protect: RunProtected = runUnprotected,
 ): Promise<boolean> {
   const action = state.pendingAction;
   const account = state.items.find((item) => item.id === action?.id);
@@ -336,19 +390,32 @@ export function confirmStaffAction(
   switch (action.type) {
     case "status":
       return run(
-        () => api.users.setStatus(account.id, !account.is_active),
+        () => protect(() => api.users.setStatus(account.id, !account.is_active)),
         account.is_active ? `La cuenta de ${name} se desactivó.` : `La cuenta de ${name} se activó.`,
       );
     case "delete":
-      return run(() => api.users.remove(account.id), `La cuenta de ${name} se eliminó.`);
+      return run(() => protect(() => api.users.remove(account.id)), `La cuenta de ${name} se eliminó.`);
     case "reset-password":
       return run(
-        () => api.users.resetPassword(account.id, password),
+        // `current_password` es la contraseña de quien opera (CA-17); `password`, la nueva.
+        () =>
+          protect(
+            (confirmation) =>
+              confirmation === undefined
+                ? api.users.resetPassword(account.id, password)
+                : api.users.resetPassword(account.id, password, confirmation),
+            { passwordField: "current_password" },
+          ),
         `La contraseña de ${name} se restableció.`,
       );
     case "reset-two-factor":
       return run(
-        () => api.users.resetTwoFactor(account.id),
+        () =>
+          protect((confirmation) =>
+            confirmation === undefined
+              ? api.users.resetTwoFactor(account.id)
+              : api.users.resetTwoFactor(account.id, confirmation),
+          ),
         `La verificación en dos pasos de ${name} se restableció.`,
       );
     default:
@@ -361,10 +428,14 @@ export type StaffAccountsViewModel = {
   actions: {
     changeQuery: (changes: Partial<StaffQuery>) => void;
     reload: () => void;
+    /** Reintenta la carga de roles y áreas (dashboard-020 CA-25). */
+    reloadOptions: () => void;
     dismissNotice: () => void;
     toggleForm: () => void;
     changeForm: (changes: Partial<StaffFormValues>) => void;
     changeDepartment: (departmentId: string) => void;
+    /** Elección manual del rol: deja de sugerirse al cambiar el área. */
+    changeRole: (role: string) => void;
     startEdit: (account: StaffAccountDto) => void;
     cancelEdit: () => void;
     submit: () => void;
@@ -389,5 +460,8 @@ export function pendingActionForFocus(
     return null;
   }
 
-  return items.some((account) => account.id === focus.id) ? { type, id: focus.id } : null;
+  // Las cuentas admin son de solo lectura: el buscador no abre acciones (CA-04).
+  return items.some((account) => account.id === focus.id && !isConsoleManaged(account))
+    ? { type, id: focus.id }
+    : null;
 }

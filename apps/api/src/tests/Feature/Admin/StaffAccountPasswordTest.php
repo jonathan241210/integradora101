@@ -14,10 +14,10 @@ class StaffAccountPasswordTest extends AdminFeatureTestCase
         $target = $this->createAccount('cashier');
         $this->insertSession($target);
 
-        $this->actAs($admin)->putJson("/api/v1/admin/users/{$target->id}/password", ['password' => 'weak'])
+        $this->actAs($admin)->putJson("/api/v1/admin/users/{$target->id}/password", ['current_password' => self::STEP_UP_PASSWORD, 'password' => 'weak'])
             ->assertUnprocessable()->assertJsonValidationErrors('password');
 
-        $this->actAs($admin)->putJson("/api/v1/admin/users/{$target->id}/password", ['password' => 'N3w!Passphrase#77'])->assertNoContent();
+        $this->actAs($admin)->putJson("/api/v1/admin/users/{$target->id}/password", ['current_password' => self::STEP_UP_PASSWORD, 'password' => 'N3w!Passphrase#77'])->assertNoContent();
 
         $hash = $target->fresh()->password;
         $this->assertTrue(Hash::check('N3w!Passphrase#77', $hash));

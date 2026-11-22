@@ -2,6 +2,7 @@
 
 namespace App\Exceptions;
 
+use App\Support\BusinessTimezone;
 use Carbon\CarbonInterface;
 use Illuminate\Http\JsonResponse;
 use RuntimeException;
@@ -13,7 +14,7 @@ class WeeklyMemoryLimitException extends RuntimeException
     {
         parent::__construct(sprintf(
             'Solo puedes enviar un momento por semana. Podrás enviar otro a partir del %s.',
-            $nextSubmissionAt->copy()->setTimezone(config('app.timezone'))->format('d/m/Y H:i'),
+            $nextSubmissionAt->copy()->setTimezone(BusinessTimezone::name())->format('d/m/Y H:i'),
         ));
     }
 

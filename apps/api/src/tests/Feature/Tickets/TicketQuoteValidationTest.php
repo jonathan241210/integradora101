@@ -10,7 +10,7 @@ class TicketQuoteValidationTest extends TicketFeatureTestCase
 
     public function test_ca48_ticket_sales_quote_422_uses_same_messages(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
 
         $cases = [
@@ -46,7 +46,7 @@ class TicketQuoteValidationTest extends TicketFeatureTestCase
 
     public function test_ca48_ticket_sales_quote_422_without_current_price(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier, '25.00', '16.00', '2999-01-01 00:00:00');
         $payload = ['adult_quantity' => 1, 'child_quantity' => 1];
 
@@ -57,7 +57,7 @@ class TicketQuoteValidationTest extends TicketFeatureTestCase
 
     public function test_ca48_ticket_sales_quote_422_over_maximum_amount(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier, '20000.00', '16.00');
 
         $this->actAs($cashier)->postJson('/api/v1/admin/tickets/quote', ['adult_quantity' => 50, 'child_quantity' => 0])
@@ -67,7 +67,7 @@ class TicketQuoteValidationTest extends TicketFeatureTestCase
 
     public function test_ca48_ticket_sales_quote_422_with_one_type_without_current_price(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         DB::table('ticket_prices')->where('ticket_type', 'child')->delete();
         $payload = ['adult_quantity' => 1, 'child_quantity' => 1];

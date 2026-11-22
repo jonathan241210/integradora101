@@ -16,6 +16,7 @@ import {
 } from "../viewmodels/ticket-history";
 import { apiError, createHarness } from "./admin-fixtures";
 import {
+  cancelInput,
   createTicketSalesApiMock,
   historyRow,
 } from "./ticket-sales-fixtures";
@@ -27,6 +28,7 @@ const actions: TicketHistoryViewModel["actions"] = {
   reload: noop,
   openCancel: noop,
   closeCancel: noop,
+  changeReasonCode: noop,
   changeReason: noop,
   confirmCancel: noop,
   dismissNotice: noop,
@@ -71,7 +73,7 @@ describe("CA-10 ticket-sales", () => {
     expect(markup).toContain("Historial de boletos");
     expect(markup).toContain(">7<");
     expect(markup).toContain(">8<");
-    expect(markup).toContain(formatTicketDateTime(completed.purchased_at));
+    expect(markup).toContain(formatTicketDateTime(completed.purchased_at, "America/Mexico_City"));
     expect(markup).toContain("$66.00");
     expect(markup).toContain("Completado");
     expect(markup).toContain("Cancelado");
@@ -141,12 +143,12 @@ describe("CA-12 ticket-sales", () => {
     const h = createHarness(ticketHistoryReducer, stateWith({ type: "loaded", rows: [completed], meta }));
 
     h.dispatch({ type: "cancel-opened", target: completed });
-    const ok = await cancelTicket(api, h.dispatch, completed, "   ", h.state.query);
+    const ok = await cancelTicket(api, h.dispatch, completed, cancelInput("   ", ""), h.state.query);
 
     expect(ok).toBe(false);
     expect(api.history.cancel).not.toHaveBeenCalled();
     expect(render(h.state)).toContain(cancelReasonRequiredMessage);
-    expect(render(h.state)).toContain('id="cancel-reason"');
+    expect(render(h.state)).toContain('id="cancel-reason-code"');
   });
 
   it("con motivo cancela, refresca la lista y avisa de forma accesible", async () => {
@@ -154,10 +156,10 @@ describe("CA-12 ticket-sales", () => {
     const h = createHarness(ticketHistoryReducer, stateWith({ type: "loaded", rows: [completed], meta }));
 
     h.dispatch({ type: "cancel-opened", target: completed });
-    const ok = await cancelTicket(api, h.dispatch, completed, " Error de captura ", h.state.query);
+    const ok = await cancelTicket(api, h.dispatch, completed, cancelInput(" Error de captura "), h.state.query);
 
     expect(ok).toBe(true);
-    expect(api.history.cancel).toHaveBeenCalledWith(7, { reason: "Error de captura" });
+    expect(api.history.cancel).toHaveBeenCalledWith(7, { reason_code: "capture_error", reason: "Error de captura" });
     expect(api.history.list).toHaveBeenCalledOnce();
     expect(h.state.cancel.target).toBeNull();
     expect(render(h.state)).toMatch(/role="status"[^>]*>El boleto 7 se canceló\./);
@@ -170,7 +172,7 @@ describe("CA-12 ticket-sales", () => {
     const h = createHarness(ticketHistoryReducer, stateWith({ type: "loaded", rows: [completed], meta }));
 
     h.dispatch({ type: "cancel-opened", target: completed });
-    await cancelTicket(api, h.dispatch, completed, "Motivo", h.state.query);
+    await cancelTicket(api, h.dispatch, completed, cancelInput("Motivo"), h.state.query);
 
     expect(h.state.rows).toEqual([completed]);
     expect(api.history.list).not.toHaveBeenCalled();
@@ -188,7 +190,7 @@ describe("CA-12 ticket-sales (revisión 2026-11-02: 429)", () => {
 
     h.dispatch({ type: "cancel-opened", target: completed });
     h.dispatch({ type: "cancel-reason-changed", reason: "Error de captura" });
-    const ok = await cancelTicket(api, h.dispatch, completed, "Error de captura", h.state.query);
+    const ok = await cancelTicket(api, h.dispatch, completed, cancelInput("Error de captura"), h.state.query);
 
     expect(ok).toBe(false);
     expect(api.history.cancel).toHaveBeenCalledOnce();
@@ -215,8 +217,8 @@ describe("CA-13 ticket-sales", () => {
   });
 
   it("tolera valores vacíos o inválidos sin lanzar", () => {
-    expect(formatTicketDateTime(null)).toBe("—");
-    expect(formatTicketDateTime("no-es-fecha")).toBe("no-es-fecha");
+    expect(formatTicketDateTime(null, "UTC")).toBe("—");
+    expect(formatTicketDateTime("no-es-fecha", "UTC")).toBe("no-es-fecha");
   });
 
   it("usa un formateador propio y no el de los reportes (formato Y-m-d H:i:s)", () => {

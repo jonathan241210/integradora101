@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Admin\Tickets;
 
 use App\Models\TicketPrice;
+use App\Support\BusinessTimezone;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -25,6 +26,8 @@ class TicketPriceCurrentResource extends JsonResource
                 ] : null,
             ];
         }
+
+        $out['timezone'] = BusinessTimezone::name();
 
         return $out;
     }

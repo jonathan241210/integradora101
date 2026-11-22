@@ -13,6 +13,7 @@ use App\Enums\SpeciesRequestType;
 use App\Models\Species;
 use App\Models\SpeciesPublicationRequest;
 use App\Models\User;
+use App\Support\FunFactRules;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -33,7 +34,7 @@ class SubmitSpeciesPublicationRequestAction
     ) {}
 
     /**
-     * @param  array{species_id: int|string, scientific_name?: ?string, habitat?: ?string, origin?: ?string, category: string, published_fields?: ?list<string>}  $data
+     * @param  array{species_id: int|string, scientific_name?: ?string, habitat?: ?string, origin?: ?string, category: string, fun_fact?: ?string, published_fields?: ?list<string>}  $data
      */
     public function execute(User $user, array $data, ?UploadedFile $image): SpeciesPublicationRequest
     {
@@ -73,6 +74,9 @@ class SubmitSpeciesPublicationRequestAction
             throw ValidationException::withMessages(['image' => ['Elige una foto para la primera publicación.']]);
         }
 
+        $publishedFields = $data['published_fields'] ?? PublishedSpeciesField::defaults();
+        $funFact = FunFactRules::resolve($data['fun_fact'] ?? null, $publishedFields);
+
         $request = new SpeciesPublicationRequest([
             'species_id' => $species->id,
             'request_type' => $type,
@@ -81,7 +85,8 @@ class SubmitSpeciesPublicationRequestAction
             'origin' => $this->correction($data['origin'] ?? null, $species->distribution),
             'category' => $this->correction($data['category'] ?? null, $species->category),
             'image_path' => $imagePath,
-            'published_fields' => $data['published_fields'] ?? PublishedSpeciesField::defaults(),
+            'fun_fact' => $funFact,
+            'published_fields' => $publishedFields,
             'created_by' => $user->id,
         ]);
         $request->status = SpeciesRequestStatus::Submitted;

@@ -8,7 +8,7 @@ class TicketQuoteAccessTest extends TicketFeatureTestCase
 {
     public function test_ca47_ticket_sales_quote_requires_tickets_create(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $payload = ['adult_quantity' => 1, 'child_quantity' => 0];
 
@@ -38,7 +38,7 @@ class TicketQuoteAccessTest extends TicketFeatureTestCase
 
     public function test_ca47_ticket_sales_quote_limit_of_120_per_minute(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $payload = ['adult_quantity' => 1, 'child_quantity' => 0];
         // Reloj congelado: con una base lenta las 120 peticiones podrían rebasar la ventana de un minuto.
@@ -51,7 +51,7 @@ class TicketQuoteAccessTest extends TicketFeatureTestCase
         $this->assertMatchesRegularExpression('/^Demasiados intentos\. Intenta de nuevo en \d+ segundos\.$/', $response->json('message'));
 
         // La cuota es por usuario y no depende de la de la venta.
-        $another = $this->createAccount('cashier', false);
+        $another = $this->createAccount('cashier');
         $this->actAs($another)->postJson('/api/v1/admin/tickets/quote', $payload)->assertStatus(200);
 
         $this->travel(61)->seconds();
@@ -60,7 +60,7 @@ class TicketQuoteAccessTest extends TicketFeatureTestCase
 
     public function test_ca47_ticket_sales_exhausting_quotes_does_not_limit_sales_for_same_cashier(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $payload = ['adult_quantity' => 1, 'child_quantity' => 0];
         // Reloj congelado: con una base lenta las 120 peticiones podrían rebasar la ventana de un minuto.

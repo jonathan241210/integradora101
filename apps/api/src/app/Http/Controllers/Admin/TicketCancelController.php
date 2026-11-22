@@ -14,7 +14,8 @@ class TicketCancelController extends Controller
         return new TicketHistoryResource($action->execute(
             $request->user(),
             $request->ticket(),
-            (string) $request->validated('reason'),
+            $request->reasonCode(),
+            $request->comment(),
         ));
     }
 }

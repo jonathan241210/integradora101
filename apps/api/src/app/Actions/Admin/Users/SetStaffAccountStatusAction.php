@@ -21,7 +21,6 @@ class SetStaffAccountStatusAction
 
             if (! $active) {
                 $this->guard->ensureNotSelf($actor, $locked, 'No puedes desactivar tu propia cuenta.');
-                $this->guard->ensureAnotherActiveAdmin($locked);
             }
 
             $locked->forceFill(['is_active' => $active, 'updated_by' => $actor->id])->save();

@@ -123,6 +123,12 @@ Se requiere habilitar un modo **offline-first** que permita consultar informaci�
   - Contrato API de creación idempotente para **altas de animales offline (sin foto)** (confirmado en alcance MVP) y comportamiento de reintento/corrección de errores de validación desde la interfaz de sincronización (menú `Sync`).
   - Flujo exacto de carga/actualización de fotografía en el perfil del animal (acción online, fuera de cola offline del MVP) y su impacto en specs/contratos de animales (`004`/`010`).
 
+## Revisión 2026-11-21 (corrección, aprobada por Jonathan): service worker solo en producción
+
+- **Problema:** `public/sw.js` responde «cache first» a todo GET del mismo origen. En desarrollo (Vite, módulos sin hash) servía versiones viejas del código tras cada cambio; por ejemplo, la PWA enviaba la solicitud de especie sin `fun_fact` (api-026) y la API respondía «Dato curioso: escribe al menos 20 caracteres.».
+- **CA-15:** Dado el entorno de desarrollo, cuando arranca la PWA, entonces no se registra `/sw.js`, se retiran los service workers previos y se vacían los cachés `arca-pwa-*`; en producción se registra `/sw.js` al cargar la página como antes. Test: `src/tests/service-worker-dev.test.ts`.
+- Sin cambio en producción ni en la estrategia de caché; sin dependencias nuevas.
+
 ## Revisión
 
 - Aprobadores y fecha: Solicitante (usuario), 2026-11-18 (aprobación funcional y reaprobación de ajustes)

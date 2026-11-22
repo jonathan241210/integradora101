@@ -33,8 +33,8 @@ it("CA-05 memory-detail: abrir pide el detalle una vez por petición", async () 
 
   // Al volver, la lista se pide de nuevo y la fila muestra el estado nuevo.
   review.list
-    .mockResolvedValueOnce({ data: [summary({ status: "submitted" })], meta: { has_more: false } })
-    .mockResolvedValueOnce({ data: [summary({ status: "in_review" })], meta: { has_more: false } });
+    .mockResolvedValueOnce({ data: [summary({ status: "submitted" })], meta: { current_page: 1, last_page: 1, per_page: 10, total: 1, has_more: false } })
+    .mockResolvedValueOnce({ data: [summary({ status: "in_review" })], meta: { current_page: 1, last_page: 1, per_page: 10, total: 1, has_more: false } });
   const list = listHarness(api);
 
   await loadList(list.ctx, { filter: "", page: 1 });

@@ -32,8 +32,11 @@ function renderForm(overrides: Partial<SpeciesRequestFormPresenterProps> = {}, s
   );
 }
 
+/** Solo los chips opcionales (name="published_fields"); los fijos van aparte (CA-20). */
 function checkedBoxes(markup: string) {
-  return (markup.match(/<input[^>]*type="checkbox"[^>]*>/g) ?? []).filter((tag) => tag.includes('checked=""'));
+  return (markup.match(/<input[^>]*type="checkbox"[^>]*>/g) ?? []).filter(
+    (tag) => tag.includes('name="published_fields"') && tag.includes('checked=""'),
+  );
 }
 
 function renderSelector(status: 'loading' | 'ready' | 'empty' | 'error' | 'forbidden', species = [makeSpecies()]) {
@@ -86,11 +89,12 @@ describe('CA-07 PWA solicitud de publicación: sin estado tras envío', () => {
 });
 
 describe('CA-09 PWA solicitud de publicación: ficha pública', () => {
-  it('muestra tres casillas marcadas y declara lo que siempre se muestra', () => {
+  it('muestra cuatro casillas (tres marcadas; «Dato curioso» opcional) y declara lo que siempre se muestra', () => {
     const markup = renderForm({ selected: makeSpecies() });
-    expect(markup.match(/type="checkbox"/g)).toHaveLength(3);
+    expect(markup.match(/name="published_fields"/g)).toHaveLength(4);
     expect(checkedBoxes(markup)).toHaveLength(3);
-    expect(markup).toContain('Nombre común, tipo de animal y foto siempre se muestran.');
+    for (const fixed of ['Nombre común', 'Tipo de animal', 'Foto']) expect(markup).toContain(fixed);
+    expect(markup).toContain('Siempre se muestra');
   });
 
   it('en actualización precarga las casillas desde published_fields', () => {
@@ -180,7 +184,7 @@ describe('CA-14 PWA solicitud de publicación: precarga', () => {
   it('muestra el texto de ayuda sobre correcciones y los valores precargados', () => {
     const markup = renderForm({ selected: makeSpecies() });
     expect(markup).toContain(
-      'Al publicarse, una corrección cambia el dato de la especie: lo verán también la app móvil y los animales de esta especie.',
+      'Solo puedes corregir los datos que se publican. Al publicarse, una corrección cambia el dato de la especie: lo verán también la app móvil y los animales de esta especie.',
     );
     expect(markup).toContain('value="Panthera onca"');
     expect(markup).toContain('value="Selva"');

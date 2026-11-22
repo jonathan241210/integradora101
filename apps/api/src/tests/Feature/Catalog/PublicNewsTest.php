@@ -230,6 +230,21 @@ class PublicNewsTest extends FeatureTestCase
         $this->assertSame('UTC', config('app.timezone'));
     }
 
+    /** CA-09 single-business-timezone */
+    public function test_ca09_public_validity_uses_arca_timezone(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-11-07 05:30:00', 'UTC'));
+        $this->isolate();
+        $news = $this->createNews(['published_date' => '2026-11-01', 'end_date' => '2026-11-06']);
+
+        config(['arca.timezone' => 'America/Mexico_City']);
+        $this->assertSame([$news->id], array_column($this->getJson('/api/v1/news?timezone=Asia/Tokyo')->assertOk()->json('data'), 'id'));
+
+        config(['arca.timezone' => 'UTC']);
+        $this->assertNotContains($news->id, array_column($this->getJson('/api/v1/news')->assertOk()->json('data'), 'id'));
+        $this->getJson('/api/v1/news/'.$news->id)->assertNotFound();
+    }
+
     /** Desactiva dentro de la transacción las noticias existentes para aislar listados. */
     private function isolate(): void
     {

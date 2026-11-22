@@ -216,3 +216,9 @@ Las preguntas completas están en el plan (`apps/api/plan/012-public-memories-re
 - CI: no verificado en esta sesión.
 
 Estado final de estas tareas: **En progreso** (plan y tasks aprobados por Jonathan, 2026-11-13). La spec sigue **Aprobada**.
+
+## Revisión 2026-11-21: paginación con total (lista de moderación)
+
+- [x] **T-27** (CA-13; plan, nota 2026-11-21): `ListMemoriesForReviewAction` con `paginate`, `PaginationMeta` y controlador. Test: `test_ca13_review_list_meta_has_total_and_keeps_has_more` (`MemoriesReviewListTest`).
+- [x] **T-28** (CA-14): página absurda con `total` real y `limit` máximo 50. Test: `test_ca14_absurd_page_returns_empty_list_with_real_total`.
+- [x] **T-29** (CA-13; documental): `apps/api/docs/administracion.md` y ajuste de los tests que afirmaban `meta.page` y `meta.limit`.

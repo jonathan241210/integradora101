@@ -37,14 +37,15 @@ Las seis cuentas comparten `DEMO_STAFF_PASSWORD`. No pegues ni guardes ese valor
 | `presidencia@arca.local` | `admin` | Administración; 2FA obligatorio |
 | `admin@arca.local` | `admin` | Administración; 2FA obligatorio |
 | `direccion_zoo@arca.local` | `zoo-admin` | Administración sin Usuarios (desde 2026-11-05); 2FA obligatorio |
-| `ejecutivo@arca.local` | `executive` | Panel y reporte de solo lectura |
+| `ejecutivo@arca.local` | `executive` | «Consulta directiva»: Panel y reporte de solo lectura; 2FA obligatorio (`api-023`) |
 | `boletaje@arca.local` | `cashier` | Venta e historial reales (`api-009`) |
 | `veterinario@arca.local` | `veterinarian` | Redirección a la PWA |
 
 ## Login y segundo factor
 
 1. Escribe el correo institucional y la contraseña demo.
-2. `admin` y `zoo-admin` configuran su segundo factor en el primer acceso: instala una app autenticadora, escanea el QR y confirma con el código de seis dígitos.
+2. `admin`, `zoo-admin` y `cashier` configuran su segundo factor en el primer acceso: instala una app autenticadora, escanea el QR y confirma con el código de seis dígitos. El cajero sin 2FA no ve Venta ni Historial hasta completarlo y la pantalla le muestra el aviso «Para vender boletos y consultar tu historial, configura tu segundo factor de autenticación. Necesitas una app autenticadora en tu celular.» (`dashboard-015`; requiere `api-021`). Si una pantalla recibe el 403 `two_factor_setup_required`, el panel vuelve a esta pantalla.
+3. Confirmación de contraseña (`dashboard-015`): cuando la API lo pide, aparece el diálogo «Confirma tu contraseña» al cancelar un boleto, cambiar precios, administrar cuentas (cambiar rol, restablecer contraseña o 2FA, alta, estado, eliminación) y regenerar o eliminar recintos. En modo Ventana basta escribirla una vez cada 10 minutos y la operación continúa sola; en modo Siempre se pide cada vez. Es la única ventana emergente permitida en Usuarios. La contraseña no se guarda; «Cancelar» o Escape no ejecutan la operación.
 3. Guarda los códigos de recuperación cuando se muestran; el dashboard los descarta al seleccionar **Ya guardé mis códigos**.
 4. En los siguientes accesos, completa el reto con un código TOTP o uno de recuperación.
 5. «Salir» cierra la sesión de la API y devuelve al login.
@@ -55,12 +56,12 @@ El mensaje de credenciales incorrectas es genérico. Los errores de límite de i
 
 La API entrega `home` y permisos; el dashboard solo muestra las secciones asociadas:
 
-- `administration`: Panel principal, Noticias, Eventos, Reporte de boletos, Recintos y, solo con `users.manage`, Usuarios.
+- `administration`: Panel principal, Noticias, Eventos, Reportes (pestañas Boletos, Cancelaciones e Historial según permisos, `dashboard-020`), Recintos y, solo con `users.manage`, Usuarios.
 - `executive`: Panel y Reporte reales en solo lectura, con exportación.
 - `ticket`: Venta e Historial reales (el cajero ve solo sus boletos).
 - `pwa`: la sesión veterinaria se dirige a `pwa_url`. Si la URL no está configurada, se informa que la aplicación no está disponible y no se redirige.
 
-En administración, el panel ejecutivo y taquilla, la navegación en computadora comienza contraída con sus iconos visibles y se despliega al acercar el cursor o al usar el teclado. El botón de la barra superior permite fijarla abierta o volver al despliegue automático. En celular se conserva el botón para abrir y cerrar el menú.
+En administración, la consulta directiva y taquilla, la navegación en computadora comienza contraída con sus iconos visibles y se despliega al acercar el cursor o al usar el teclado. El botón de la barra superior permite fijarla abierta o volver al despliegue automático. En celular se conserva el botón para abrir y cerrar el menú.
 
 El menú se despliega con una transición suave y, al registrar una venta, el resultado muestra una breve animación de boleto y palomita. Si el dispositivo prefiere reducir el movimiento, los efectos se minimizan.
 
@@ -68,19 +69,20 @@ El menú se despliega con una transición suave y, al registrar una venta, el re
 
 Las secciones de administración usan datos reales de `arca_pruebas` mediante `api-007` y no muestran el aviso de demostración:
 
-- **Usuarios:** tabla paginada con búsqueda y filtros por rol, área y estado; formulario fijo (minimizable) de alta y edición; activar/desactivar, eliminar, restablecer contraseña y restablecer 2FA con confirmación en línea en la propia fila, sin ventanas emergentes. Solo `admin` (con `users.manage`) ve esta sección; `zoo-admin` no la ve desde el 2026-11-05.
+- **Usuarios:** tabla paginada con búsqueda y filtros por rol, área y estado; formulario fijo (minimizable) de alta y edición; activar/desactivar, eliminar, restablecer contraseña y restablecer 2FA con confirmación en línea en la propia fila, sin ventanas emergentes. Solo `admin` (con `users.manage`) ve esta sección; `zoo-admin` no la ve desde el 2026-11-05. Desde `dashboard-017` el selector de rol ofrece solo los roles que entrega la API (sin «Administrador de Presidencia»; con «Consulta directiva» y «Comunicación»), muestra en solo lectura las secciones que abre el rol elegido y, si el rol exige 2FA, la nota «Esta cuenta deberá configurar su segundo factor (2FA) al iniciar sesión por primera vez.». Las cuentas `admin` aparecen en la tabla con «Gestionada desde la consola del servidor» y sin acciones; se administran solo desde la consola del servidor (`api-023`). Un 403 de la API se muestra en el formulario o la confirmación sin cambiar la lista.
+- **Avisos de consola:** al entrar, un administrador (`users.manage`) ve sobre el Panel principal los cambios de cuentas admin hechos por consola («Cambio por consola: … Motivo: …»); cada aviso se cierra con «Cerrar aviso», que lo marca como leído. Si falla la consulta aparece un mensaje con «Reintentar» y el panel sigue disponible. Comunicación inicia en Noticias.
 - **Noticias y Eventos:** listado de activos e inactivos, formulario fijo (minimizable) de alta y edición con caja de imagen (selector o arrastrar y soltar; JPG, PNG o WebP de hasta 5 MB; vista previa, «Quitar imagen» y miniatura en las tarjetas). En Noticias, activar y desactivar abre un diálogo centrado. Eliminar en Noticias y las confirmaciones de Eventos aparecen en la tarjeta.
 - **Paginación de Noticias y Eventos:** se muestran hasta seis noticias o cuatro eventos por página, en el orden entregado por la API. «Anterior» y «Siguiente» cambian la página; si hay una confirmación abierta, hay que confirmarla o cancelarla antes de cambiar. La paginación organiza la lista recibida en el navegador.
 - **Recintos:** lista con número de animales, alta y renombrado; no se eliminan.
 - **Panel principal:** totales de hoy y de los últimos 7 días y serie diaria de ingresos. Al pasar el puntero sobre una fila de la gráfica, aparece el día y su importe. Sin ventas se muestra un estado vacío.
-- **Reporte de boletos:** periodo semanal o mensual (rango personalizado como opción secundaria), navegación al periodo anterior/siguiente, totales, desglose diario, listado paginado y exportación.
+- **Reportes (`dashboard-020`):** una sola entrada con pestañas según permisos: Boletos (`reports.view`), Cancelaciones (`reports.cancellations.view`) e Historial (`tickets.view-all`, solo lectura, sin cancelar). Boletos y Cancelaciones comparten selector de periodo (Semanal, Mensual, Rango personalizado, anterior/siguiente), totales, estados de carga con reintento y tres botones de exportación (CSV, Excel y PDF). Cancelaciones añade los filtros de cajero y motivo.
 
 **Exportación:** los botones «Exportar CSV», «Exportar Excel» y «Exportar PDF» siempre están visibles y la API genera los tres formatos. El PDF tiene un tope de boletos por periodo: si se supera, la API responde con un aviso y el reporte en pantalla se conserva.
 
 ### Taquilla y precios (`api-009`)
 
 - **Venta (`cashier`):** cantidades de adultos y niños, precios unitarios vigentes de la API, confirmación, boleto con folio y QR y la lista de boletos, uno por unidad vendida, cada uno con su folio y su QR; «Imprimir boletos» imprime todos, sin salto forzado de página: los boletos fluyen según el formato y ninguno se parte entre hojas (revisión de boletos individuales, aprobada por Jonathan el 2026-11-06). «Configurar impresión» guarda la preferencia solo en el equipo.
-- **Historial:** `cashier` ve sus boletos y puede cancelar los marcados como cancelables indicando el motivo; `admin` y `zoo-admin` lo ven en solo lectura.
+- **Historial:** `cashier` ve sus boletos y puede cancelar los marcados como cancelables indicando el motivo; `admin` y `zoo-admin` lo ven en solo lectura dentro de la pestaña «Historial» de «Reportes» (`dashboard-020`); la entrada «Historial» del menú es solo de taquilla.
 - **Precios (`admin`):** precio vigente y próximo cambio, cambio inmediato o programado con confirmación; sin segundo factor confirmado la API responde 403 y se muestra un aviso.
 
 Los avisos de acciones aparecen sobre el contenido y se cierran automáticamente a los cinco segundos. También se pueden cerrar con la X.

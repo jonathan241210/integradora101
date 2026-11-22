@@ -18,6 +18,23 @@ class GlobalSearchFieldsTest extends AdminFeatureTestCase
         return array_column($this->groupsBySection($this->search($user, $q))[$section]['items'] ?? [], 'id');
     }
 
+    /** CA-26 ticket-cancellation-report: la búsqueda muestra la etiqueta del motivo y el comentario. */
+    public function test_ca26_search_shows_label_and_comment(): void
+    {
+        $cashier = $this->createAccount('cashier');
+        $tag = $this->tag();
+        $coded = $this->makeTicket('cancelled', '2032-07-10 15:30:00', false, ['cancellation_reason_code' => 'visitor_withdrew', 'cancellation_reason' => 'Se fue '.$tag]);
+        $legacy = $this->makeTicket('cancelled', '2032-07-10 15:30:00', false, ['cancellation_reason' => 'Anterior '.$tag]);
+
+        $items = collect($this->groupsBySection($this->search($cashier, $tag))['ticket-history']['items'] ?? [])->keyBy('id');
+        $fields = fn (int $id) => collect($items[$id]['fields'] ?? [])->firstWhere('label', 'Motivo de cancelación')['value'] ?? json_encode($items[$id] ?? null);
+
+        $this->assertTrue($items->has($coded));
+        $this->assertStringContainsString('El visitante desistió', json_encode($items[$coded], JSON_UNESCAPED_UNICODE));
+        $this->assertStringContainsString('Se fue '.$tag, json_encode($items[$coded], JSON_UNESCAPED_UNICODE));
+        $this->assertStringContainsString('Sin clasificar (anterior)', json_encode($items[$legacy], JSON_UNESCAPED_UNICODE));
+    }
+
     /** CA-43 enclosure-status-and-global-search */
     public function test_ca43_users_department_and_role(): void
     {

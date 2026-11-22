@@ -36,7 +36,7 @@ class GlobalSearchUsersTest extends AdminFeatureTestCase
             $this->assertStringNotContainsString($secret, $body);
         }
         foreach ($items as $item) {
-            $this->assertEmpty(array_diff(array_keys($item), ['id', 'title', 'subtitle', 'match']));
+            $this->assertEmpty(array_diff(array_keys($item), ['id', 'title', 'subtitle', 'match', 'managed_by_console']));
         }
 
         // Área y rol (CA-26, CA-43): etiqueta en español e identificador interno.

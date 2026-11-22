@@ -17,14 +17,13 @@ function render(props: Partial<Parameters<typeof OwnSpeciesRequestsPresenter>[0]
       hasMore: false,
       page: 1,
       onRetry: noop,
-      onNext: noop,
-      onPrevious: noop,
+      onPageChange: noop,
       ...props,
     }),
   );
 }
 
-const listApi = (result: () => Promise<{ data: ReturnType<typeof makeRequest>[]; meta: { has_more: boolean } }>) => ({
+const listApi = (result: () => Promise<{ data: ReturnType<typeof makeRequest>[]; meta: { current_page: number; last_page: number; per_page: number; total: number; has_more?: boolean } }>) => ({
   publicationRequests: { list: result },
 });
 
@@ -47,14 +46,14 @@ describe('CA-16 PWA solicitud de publicación: mis solicitudes', () => {
     });
     expect(markup).toContain('Lobo');
     expect(markup).toContain('Actualización publicada');
-    expect(markup).toContain('Enviada el');
-    expect(markup).toContain('Decisión el');
+    expect(markup).toContain('Enviada <time');
+    expect(markup).toContain('Decisión <time');
     expect(markup.match(/Despublicada/g)).toHaveLength(1);
   });
 
   it('conserva el orden que entrega la API', async () => {
     const rows = [makeRequest({ id: 9 }), makeRequest({ id: 3 })];
-    const state = await loadOwnRequests(listApi(async () => ({ data: rows, meta: { has_more: false } })), 1);
+    const state = await loadOwnRequests(listApi(async () => ({ data: rows, meta: { current_page: 1, last_page: 1, per_page: 10, total: 2, has_more: false } })), 1);
     expect(state.requests.map((row) => row.id)).toEqual([9, 3]);
   });
 });
@@ -71,11 +70,11 @@ describe('CA-17 PWA solicitud de publicación: estados de la lista', () => {
 
   it('un error vacía la lista y no deja datos anteriores', async () => {
     const state = await loadOwnRequests(listApi(async () => { throw apiError(500); }), 1);
-    expect(state).toEqual({ status: 'error', requests: [], hasMore: false });
+    expect(state).toEqual({ status: 'error', requests: [], hasMore: false, lastPage: 1, total: 0 });
   });
 
   it('pagina según meta.has_more', async () => {
-    const state = await loadOwnRequests(listApi(async () => ({ data: [makeRequest()], meta: { has_more: true } })), 1);
+    const state = await loadOwnRequests(listApi(async () => ({ data: [makeRequest()], meta: { current_page: 1, last_page: 2, per_page: 10, total: 12, has_more: true } })), 1);
     expect(state.hasMore).toBe(true);
     expect(render({ requests: [makeRequest()], hasMore: true, page: 2 })).toContain('Siguiente');
     expect(render({ requests: [makeRequest()], hasMore: true, page: 2 })).toContain('Anterior');

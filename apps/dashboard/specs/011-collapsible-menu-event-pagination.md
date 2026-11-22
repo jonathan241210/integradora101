@@ -65,3 +65,5 @@ El 2026-11-12 la persona solicitante pidió una palomita animada cada vez que se
 El 2026-11-12 la persona solicitante pidió mejorar la animación, ralentizar un poco el menú y redondear sus bordes.
 
 El 2026-11-12 la persona solicitante pidió una animación de boletos más llamativa, de máximo tres segundos por venta.
+
+- Nota 2026-11-21 (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.

@@ -1,7 +1,7 @@
 import { Alert, Button, Card } from "@arca/ui";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { NoticeBar } from "@/components/NoticeBar";
-import { LoadingIndicator } from "@/components/LoadingIndicator";
+import { DetailSkeleton } from "@/components/LoadingSkeletons";
 import { RejectSpeciesRequestDialog } from "@/components/RejectSpeciesRequestDialog";
 import { SectionHeading } from "@/components/SectionHeading";
 import { SpeciesFichaForm } from "@/components/SpeciesFichaForm";
@@ -12,6 +12,7 @@ import { formatDateTime } from "@/viewmodels/formatters";
 import {
   categoryLabel,
   fichaFieldOptions,
+  funFactLabel,
   originLabel,
   requestTypeLabels,
   unpublishedSpeciesLabel,
@@ -41,6 +42,19 @@ function Comparison({ detail }: { detail: SpeciesRequestDetailDto }) {
       proposed: categoryLabel(detail.proposed.category),
     },
   ];
+
+  // Dato curioso (api-026 CA-15, dashboard-010 CA-74): solo si la ficha lo trae o lo propone.
+  if (
+    detail.current.fun_fact ||
+    detail.proposed.fun_fact ||
+    detail.proposed.published_fields.includes("fun_fact")
+  ) {
+    rows.push({
+      label: funFactLabel,
+      current: dash(detail.current.fun_fact),
+      proposed: dash(detail.proposed.fun_fact),
+    });
+  }
 
   return (
     <div className="species-compare">
@@ -88,7 +102,7 @@ export function SpeciesRequestDetailView({ state, dirty, actions }: SpeciesReque
           title="Solicitud de especie"
           description="Revisa los datos antes de decidir."
         />
-        <LoadingIndicator message="Cargando solicitud…" />
+        <DetailSkeleton label="Cargando solicitud…" withForm />
       </>
     );
   }
@@ -228,6 +242,7 @@ export function SpeciesRequestDetailView({ state, dirty, actions }: SpeciesReque
 
         {data.status === "submitted" && (
           <div className="species-detail__actions">
+            <div className="species-detail__actions-main">
             {available.canEdit && !editing && (
               <Button variant="secondary" onClick={actions.startEdit}>
                 Editar
@@ -250,14 +265,17 @@ export function SpeciesRequestDetailView({ state, dirty, actions }: SpeciesReque
                 Aceptar sin publicar
               </Button>
             )}
+            </div>
             {available.canReject && (
-              <Button
-                variant="danger"
-                disabled={state.busy}
-                onClick={() => actions.openDecision("reject")}
-              >
-                Rechazar
-              </Button>
+              <div className="species-detail__actions-danger">
+                <Button
+                  variant="danger"
+                  disabled={state.busy}
+                  onClick={() => actions.openDecision("reject")}
+                >
+                  Rechazar
+                </Button>
+              </div>
             )}
             {available.saveFirstNotice && (
               <p className="species-detail__hint" role="status">

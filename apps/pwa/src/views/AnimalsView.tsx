@@ -1,4 +1,4 @@
-import { Badge, Button, Card, Field } from '@arca/ui';
+import { Badge, Card, Field, Pagination } from '@arca/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { useAnimals } from '@/viewmodels/useApiData';
 import { Spinner } from '@/views/Spinner';
@@ -113,27 +113,7 @@ export function AnimalsView({
         </div>
 
         {sorted.length > pageSize && (
-          <div className="form-actions" style={{ justifyContent: 'center', alignItems: 'center', gap: '0.75rem', marginTop: '1rem' }}>
-            <Button
-              type="button"
-              variant="secondary"
-              aria-label="Página anterior"
-              disabled={currentPage <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-            >
-              ← Anterior
-            </Button>
-            <span>Página {currentPage} de {totalPages}</span>
-            <Button
-              type="button"
-              variant="secondary"
-              aria-label="Página siguiente"
-              disabled={currentPage >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            >
-              Siguiente →
-            </Button>
-          </div>
+          <Pagination page={currentPage} lastPage={totalPages} total={sorted.length} onPageChange={setPage} />
         )}
       </Card>
     </section>

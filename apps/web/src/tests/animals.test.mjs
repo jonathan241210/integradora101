@@ -653,3 +653,16 @@ test('CA-16 dynamic-tulanpedia: cada criterio tiene su prueba (CA-01 a CA-24)', 
   const names = new Set([...self.matchAll(/^test\('CA-(\d{2}) dynamic-tulanpedia/gm)].map((x) => x[1]));
   for (let i = 1; i <= 24; i += 1) assert.ok(names.has(String(i).padStart(2, '0')), `CA-${String(i).padStart(2, '0')}`);
 });
+
+/* ---------- api-026: Dato curioso (CA-11 y CA-12 de api-026 en la ficha pública) ---------- */
+test('api-026 CA-11 dynamic-tulanpedia: «Dato curioso» se muestra solo si la API lo entrega, como texto plano escapado; sin clave o null no hay fila', async () => {
+  const hostile = '<img src=x onerror=alert(1)> Duerme hasta veinte horas al día.';
+  const m = mount({ fetchImpl: ok([sp(1, { habitat: 'Selva', fun_fact: hostile }), sp(2, { habitat: 'Selva' }), sp(3, { habitat: 'Selva', fun_fact: null })]) });
+  await flush();
+  const [a, b, c] = m.cards();
+  assert.deepEqual(byTag(a, 'dt').map((n) => n.textContent), ['Hábitat', 'Dato curioso']);
+  assert.equal(byTag(a, 'dd')[1].textContent, hostile);
+  assert.equal(byTag(a, 'img').filter((n) => n.src === 'x').length, 0, 'no se crea ningún elemento a partir del texto');
+  for (const card of [b, c]) assert.deepEqual(byTag(card, 'dt').map((n) => n.textContent), ['Hábitat']);
+  assert.ok(/fun_fact/.test(animalsJs) && !/innerHTML|insertAdjacentHTML|outerHTML/.test(animalsJs));
+});

@@ -11,7 +11,7 @@ import { apiError, fakeApi, harness, stateWith, summary, viewModelFor } from "./
 const listState = (items: ReturnType<typeof summary>[], hasMore = false, page = 1) =>
   stateWith({
     page,
-    list: { status: "ready", items, hasMore, error: "", forbidden: false },
+    list: { status: "ready", items, hasMore, lastPage: hasMore ? page + 1 : page, total: items.length, error: "", forbidden: false },
   });
 
 const render = (state: ReturnType<typeof stateWith>) =>
@@ -19,7 +19,7 @@ const render = (state: ReturnType<typeof stateWith>) =>
 
 it("CA-02 species-requests-list: cambiar el filtro vuelve a pedir la API; «Todas» omite status; «Siguiente» según meta.has_more", async () => {
   const { api, requests } = fakeApi();
-  requests.list.mockResolvedValueOnce({ data: [summary()], meta: { has_more: true } });
+  requests.list.mockResolvedValueOnce({ data: [summary()], meta: { current_page: 1, last_page: 2, per_page: 10, total: 11, has_more: true } });
   const h = harness(api);
 
   await loadRequestList(h.ctx, { filter: "", page: 1 });
@@ -51,7 +51,7 @@ it("CA-04 species-requests-list: vacío, cargando y error con Reintentar; sin fi
     "Cargando solicitudes…",
   );
   expect(
-    render(stateWith({ list: { status: "empty", items: [], hasMore: false, error: "", forbidden: false } })),
+    render(stateWith({ list: { status: "empty", items: [], hasMore: false, lastPage: 1, total: 0, error: "", forbidden: false } })),
   ).toContain("No hay solicitudes con este estado.");
 
   const { api, requests } = fakeApi();

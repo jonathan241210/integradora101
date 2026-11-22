@@ -143,3 +143,5 @@ Esta feature no crea permisos ni roles (RN-02).
 
 - Aprobadores y fecha: Jonathan, 2026-11-07 (aprobación explícita del usuario sobre spec, plan y tasks). Estado Aprobada.
 - Evidencia/enlaces: `apps/api/specs/006-public-catalog-read.md` (RN-07, RN-12, «Fuera de alcance», CA-03), `apps/api/specs/008-event-news-images.md` (CA-08, CA-11, `image_url`), `docs/database/requests/DBR-005-news-events-soft-deletes.md`, `apps/web/specs/009-dynamic-news-events.md` (consumidor; CA-14 detalle al expandir), `docs/adr/0024-web-static-portal-exception.md` (excepción de arquitectura del portal, Aceptado el 2026-11-07).
+
+> **Nota de revisión (2026-11-20, sin renumerar, sin cambio de estado):** la RN-14 de esta spec (zona de «hoy» de la visibilidad pública) pasa a la llave única de `api-025`: `App\Support\PublicCalendar::today()` lee `config('arca.timezone')` (`ARCA_TIMEZONE`, por defecto `America/Mexico_City`) en lugar de `config('arca.public_timezone')`, que se retira. El valor por defecto no cambia y `config/app.php` sigue en `UTC`. CA-12 se mantiene con la nueva llave. Hasta que se implemente `api-025`, RN-14 sigue vigente con la llave anterior.

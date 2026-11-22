@@ -39,6 +39,9 @@ class GlobalSearchSecurityTest extends AdminFeatureTestCase
         foreach ($response->json('groups') as $group) {
             foreach ($group['items'] as $item) {
                 $allowed = $group['section'] === 'tulanpedia' ? ['id', 'title', 'subtitle', 'kind', 'match'] : ['id', 'title', 'subtitle', 'match'];
+                if ($group['section'] === 'users') {
+                    $allowed[] = 'managed_by_console'; // api-023 CA-35
+                }
                 $this->assertEmpty(array_diff(array_keys($item), $allowed));
             }
         }

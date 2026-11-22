@@ -8,7 +8,7 @@ class TicketSaleBatchSizeTest extends TicketFeatureTestCase
 {
     public function test_ca54_ticket_sales_largest_sale_of_50_tickets_in_one_transaction_and_response(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier, '25.00', '16.00');
         $before = $this->ticketCount();
         $logs = $this->activityCount('ticket-sold');

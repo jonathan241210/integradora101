@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useReducer, useRef, useState, type ReactNode } from "react";
 import { Alert, Button } from "@arca/ui";
 import { Icon } from "@/components/Icon";
+import { actionErrorPresentation } from "@/viewmodels/feedback-policy";
 import {
   initialNotifications,
   notificationsReducer,
@@ -15,14 +16,20 @@ const PublishContext = createContext<PublishNotification | null>(null);
 const notificationLabels: Record<NotificationTone, string> = {
   success: "Éxito",
   error: "Error",
+  info: "Aviso",
 };
 
 function NotificationIcon({ tone }: { tone: NotificationTone }) {
   return (
     <span className="notification-icon" aria-hidden="true">
-      <Icon name={tone === "error" ? "close" : "check"} />
+      <Icon name={tone === "error" ? "close" : tone === "info" ? "info" : "check"} />
     </span>
   );
+}
+
+/** Función para publicar avisos desde un componente hijo del proveedor (dashboard-018). */
+export function usePublishNotice(): PublishNotification | null {
+  return useContext(PublishContext);
 }
 
 export function usePublishNotification(message: string, tone: NotificationTone) {
@@ -37,15 +44,20 @@ export function usePublishNotification(message: string, tone: NotificationTone) 
   return publish !== null;
 }
 
+/**
+ * Error general de una acción (dashboard-020 RN-07). Fuera de diálogos se muestra una sola
+ * vez, como aviso emergente; dentro de un diálogo o de una confirmación en línea
+ * (`inDialog`) se queda en su lugar y no se publica.
+ */
 export function ActionError({ message, inDialog = false }: { message: string; inDialog?: boolean }) {
-  const hasNotifications = usePublishNotification(message, "error");
-  if (!message) return null;
+  const hasProvider = usePublishNotice() !== null;
+  const presentation = actionErrorPresentation({ inDialog, hasProvider });
+
+  usePublishNotification(presentation.publishToast ? message : "", "error");
+  if (!message || !presentation.renderInline) return null;
 
   return (
-    <Alert
-      className={inDialog ? "dialog-alert" : "inline-alert action-error"}
-      role={hasNotifications && !inDialog ? "none" : "alert"}
-    >
+    <Alert className={inDialog ? "dialog-alert" : "inline-alert action-error"} role="alert">
       {message}
     </Alert>
   );

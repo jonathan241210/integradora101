@@ -1,4 +1,4 @@
-export type NotificationTone = "success" | "error";
+export type NotificationTone = "success" | "error" | "info";
 
 export type DashboardNotification = {
   id: number;
@@ -6,12 +6,14 @@ export type DashboardNotification = {
   tone: NotificationTone;
 };
 
+/** Cola FIFO: `visible` es el primero; el resto espera su turno (RN-14). */
 export type NotificationState = {
   lastId: number;
   visible: DashboardNotification | null;
+  queue: DashboardNotification[];
 };
 
-export const initialNotifications: NotificationState = { lastId: 0, visible: null };
+export const initialNotifications: NotificationState = { lastId: 0, visible: null, queue: [] };
 
 type NotificationAction =
   | { type: "publish"; message: string; tone: NotificationTone }
@@ -19,7 +21,10 @@ type NotificationAction =
 
 export function notificationsReducer(state: NotificationState, action: NotificationAction): NotificationState {
   if (action.type === "dismiss") {
-    return state.visible?.id === action.id ? { ...state, visible: null } : state;
+    if (state.visible?.id !== action.id) return state;
+    const [next = null, ...rest] = state.queue;
+
+    return { ...state, visible: next, queue: rest };
   }
 
   const item = {
@@ -28,5 +33,7 @@ export function notificationsReducer(state: NotificationState, action: Notificat
     tone: action.tone,
   };
 
-  return { lastId: item.id, visible: item };
+  if (state.visible === null) return { ...state, lastId: item.id, visible: item };
+
+  return { ...state, lastId: item.id, queue: [...state.queue, item] };
 }

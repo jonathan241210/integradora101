@@ -20,8 +20,9 @@
 |---|---|---|
 | `cashier` | Vender, cancelar sus boletos del día, ver su historial, leer precios | `tickets.create`, `tickets.cancel`, `tickets.view` |
 | `admin` | Cambiar precios, administrar contenido y cuentas, ver historial | `ticket-prices.manage`, `tickets.view`, 2FA obligatorio |
-| `zoo-admin` | Historial en lectura, administración operativa | `tickets.view`, 2FA obligatorio |
-| `executive` | Panel y reportes de solo lectura | `dashboard.view`, `reports.view` |
+| `zoo-admin` | Historial en lectura, administración operativa | `tickets.view`, `tickets.view-all`, 2FA obligatorio |
+| `executive` (Consulta directiva) | Panel y reportes de solo lectura; 2FA obligatorio (api-023) | `dashboard.view`, `reports.view` |
+| `communications` (Comunicación) | Noticias, eventos, momentos y TulanPedia; 2FA obligatorio (api-023) | `news.manage`, `events.manage`, `memories.review`, `species.review` |
 | `veterinarian` | Sin acceso a `/admin` | — |
 | Visitante | Cuenta y progreso en la app móvil | Token de visitante |
 

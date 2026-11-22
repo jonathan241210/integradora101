@@ -73,6 +73,7 @@ class AcceptSpeciesPublicationRequestAction
         }
         if ($request->published_fields !== null) {
             $species->published_fields = $request->published_fields;
+            $species->fun_fact = $request->fun_fact;
         }
 
         $originalPath = $request->image_path;

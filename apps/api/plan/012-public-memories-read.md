@@ -277,6 +277,12 @@ No hay excepciones que requieran ADR.
    **Resuelta (2026-11-13, Jonathan): sin tope de `page`.** No se añade requisito ni 422 nuevo; una página fuera de rango devuelve lista vacía con la forma normal.
 5. **`opinion` nula.** Una aceptada sin opinión (`api-010`, opinión opcional) ¿se devuelve con la clave `opinion` en `null` (propuesta de este plan, igual que `image_url`) o se omite la clave? CA-05 enumera las claves; la propuesta mantiene siempre las cuatro. **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.** `opinion` siempre presente, en `null` si no hay opinión.
 
+## Nota 2026-11-21: paginación con total de la lista de moderación (CA-13, CA-14)
+
+- `ListMemoriesForReviewAction` pasa de offset/limit manual a `paginate($limit, ['*'], 'page', $page)` y devuelve un `LengthAwarePaginator`; el controlador arma `meta` con `App\Support\PaginationMeta::from()` (`current_page`, `last_page`, `per_page`, `total`, `has_more`). `limit` máximo 50 y 10 por defecto, sin cambio en el Form Request.
+- `PageGuard` (`MAX_PAGE` = 100000) se reutiliza: una página absurda devuelve un paginador vacío con el `total` real (conteo sin orden).
+- Divergencia de contrato: `meta.page` y `meta.limit` de esta lista pasan a `current_page` y `per_page` (decisión de Jonathan, 2026-11-21). Dashboard y cualquier cliente de moderación deben leer los nombres nuevos; `has_more` se conserva.
+
 ## Revisión
 
 - Redactado: 2026-11-12, a partir de la spec 012 Aprobada, de DBR-012 (Lista para backend) y de los patrones de `api-011` y `api-015`.

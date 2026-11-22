@@ -5,6 +5,7 @@ namespace App\Actions\Admin\SpeciesPublication;
 use App\Actions\Admin\SpeciesPublication\Concerns\LocksSpeciesPublication;
 use App\Actions\SpeciesPublication\Audit\LogSpeciesPublicationAction;
 use App\Models\User;
+use App\Support\FunFactRules;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -30,6 +31,10 @@ class RepublishSpeciesAction
 
             if ($species->image_path === null || $species->published_fields === null) {
                 $this->fail('No se puede republicar: faltan la foto o los datos publicados.');
+            }
+
+            if (FunFactRules::isSelected($species->published_fields) && ! FunFactRules::isValidLength($species->fun_fact)) {
+                throw ValidationException::withMessages(['fun_fact' => [FunFactRules::REPUBLISH_MESSAGE]]);
             }
 
             if ($this->hasSubmittedRequest($species)) {

@@ -24,6 +24,7 @@ class ListPublishedSpeciesAction
                 'species.distribution',
                 'species.habitat',
                 'species.image_path',
+                'species.fun_fact',
                 'species.published_fields',
             ])
             ->where('species.is_published', 1)

@@ -35,7 +35,7 @@ class TicketPriceCurrentTest extends TicketFeatureTestCase
         $this->assertNull($data['child']['effective_at']);
         $this->assertSame('No hay un precio vigente configurado para este tipo de boleto.', $data['child']['message']);
 
-        $this->actAs($this->createAccount('cashier', false))->getJson('/api/v1/admin/ticket-prices/current')->assertOk();
+        $this->actAs($this->createAccount('cashier'))->getJson('/api/v1/admin/ticket-prices/current')->assertOk();
         foreach (['zoo-admin', 'executive', 'veterinarian'] as $role) {
             $this->actAs($this->createAccount($role))->getJson('/api/v1/admin/ticket-prices/current')->assertForbidden();
         }

@@ -1,34 +1,46 @@
 import { useState, type FormEvent } from "react";
-import { Alert, Badge, Button, Card, Field, SelectField } from "@arca/ui";
+import { Alert, Badge, Button, Card, Field, Pagination, SelectField } from "@arca/ui";
 import { ActionError } from "@/components/DashboardNotifications";
 import { DataTable, type DataTableColumn } from "@/components/DataTable";
 import { fieldErrorProps } from "@/components/FieldErrors";
 import { FormField } from "@/components/FormField";
 import { FormPanel } from "@/components/FormPanel";
 import { triggerKey, useInlineFocus } from "@/components/inline-focus";
-import { InlineConfirm } from "@/components/InlineConfirm";
 import { InlineFormFooter } from "@/components/InlineFormFooter";
-import { InlinePasswordReset } from "@/components/InlinePasswordReset";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { TableSkeleton } from "@/components/LoadingSkeletons";
 import { NoticeBar } from "@/components/NoticeBar";
 import { PasswordVisibilityToggle } from "@/components/PasswordVisibilityToggle";
-import { PaginationBar } from "@/components/PaginationBar";
 import { SectionHeading } from "@/components/SectionHeading";
+import { StaffActionDialog } from "@/components/StaffActionDialog";
 import type { StaffAccountDto } from "@/viewmodels/admin-types";
 import type { PendingActionType } from "@/viewmodels/inline-list";
 import { formatDateTime } from "@/viewmodels/formatters";
 import {
-  getStaffConfirmation,
+  CONSOLE_MANAGED_LABEL,
+  TWO_FACTOR_REQUIRED_NOTE,
+  isConsoleManaged,
   parseStatusFilter,
+  roleSummary,
   type StaffAccountsViewModel,
   type StaffFormValues,
 } from "@/viewmodels/staff-accounts";
+import { AREA_ROLE_HELP, roleSuggestionNotice } from "@/viewmodels/staff-role-suggestion";
 
 export function UsersView({ state, actions }: StaffAccountsViewModel) {
   const { query, options, meta, items, status, form, editing, fieldErrors: errors, pendingAction } = state;
   const [searchText, setSearchText] = useState(query.search);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const editingNow = editing !== null;
+  const summary = roleSummary(form.role, options?.roles);
+  const roleNotice = roleSuggestionNotice({
+    options,
+    departmentId: form.department_id,
+    role: form.role,
+  });
+  const pendingAccount = pendingAction
+    ? items.find((account) => account.id === pendingAction.id)
+    : undefined;
   const { registerTrigger, noticeRef } = useInlineFocus({
     pendingAction,
     notice: state.notice,
@@ -74,7 +86,10 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
     {
       key: "actions",
       header: "Acciones",
-      render: (account) => (
+      render: (account) =>
+        isConsoleManaged(account) ? (
+          <span className="console-managed-label">{CONSOLE_MANAGED_LABEL}</span>
+        ) : (
         <div className="row-actions">
           <Button
             variant="secondary"
@@ -116,36 +131,9 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
             Eliminar
           </Button>
         </div>
-      ),
+        ),
     },
   ];
-
-  // Confirmación en línea bajo la fila a ancho completo (CA-08 a CA-12, CA-18).
-  const rowDetail = (account: StaffAccountDto) => {
-    if (pendingAction?.id !== account.id) return null;
-
-    const copy = getStaffConfirmation(pendingAction.type, account);
-
-    return pendingAction.type === "reset-password" ? (
-      <InlinePasswordReset
-        idPrefix={`staff-${account.id}`}
-        copy={copy}
-        busy={state.actionBusy}
-        error={state.actionError}
-        errors={state.actionFieldErrors}
-        onConfirm={actions.confirmAction}
-        onCancel={actions.closeAction}
-      />
-    ) : (
-      <InlineConfirm
-        copy={copy}
-        busy={state.actionBusy}
-        error={state.actionError}
-        onConfirm={() => actions.confirmAction("")}
-        onCancel={actions.closeAction}
-      />
-    );
-  };
 
   return (
     <>
@@ -157,9 +145,14 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
       <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} focusRef={noticeRef} />
       <ActionError message={pendingAction === null ? state.actionError : ""} />
       {state.optionsError && (
-        <Alert className="inline-alert" role="alert" aria-live="assertive">
-          {state.optionsError}
-        </Alert>
+        // dashboard-020 D-2, CA-25: el fallo al cargar roles es estado de la vista, con reintento.
+        <ListStatusMessage
+          status="error"
+          error={state.optionsError}
+          loadingText=""
+          emptyText=""
+          onRetry={actions.reloadOptions}
+        />
       )}
 
       <FormPanel
@@ -234,7 +227,7 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
               label="Rol"
               required
               value={form.role}
-              onChange={(event) => set("role", event.target.value)}
+              onChange={(event) => actions.changeRole(event.target.value)}
             >
               <option value="">Selecciona un rol</option>
               {options?.roles.map((role) => (
@@ -244,6 +237,25 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
               ))}
             </SelectField>
           </FormField>
+          <p className="area-role-help" id="staff-area-role-help">
+            {AREA_ROLE_HELP}
+          </p>
+          {roleNotice && (
+            <Alert className="area-role-notice" id="staff-role-suggestion" role="status">
+              {roleNotice}
+            </Alert>
+          )}
+          {summary && (
+            <div className="role-summary" id="staff-role-summary">
+              <p>
+                <strong>Secciones que abre este rol:</strong>{" "}
+                {summary.sections.length > 0 ? summary.sections.join(", ") : "Ninguna sección del panel."}
+              </p>
+              {summary.twoFactorRequired && !editingNow && (
+                <p className="role-summary__note">{TWO_FACTOR_REQUIRED_NOTE}</p>
+              )}
+            </div>
+          )}
           {!editingNow && (
             <FormField id="staff-password" name="password" errors={errors} span="half">
               <Field
@@ -342,6 +354,11 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
           status={status}
           error={state.error}
           loadingText="Cargando cuentas…"
+          skeleton={
+            items.length === 0 ? (
+              <TableSkeleton columns={columns} caption="Cuentas del personal" label="Cargando cuentas…" />
+            ) : undefined
+          }
           emptyText="No hay cuentas que coincidan con la búsqueda."
           onRetry={actions.reload}
         />
@@ -352,11 +369,10 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
             rows={items}
             rowKey={(account) => account.id}
             rowSearchId={(account) => `users:${account.id}`}
-            rowDetail={rowDetail}
           />
         )}
         {meta && status !== "error" && (
-          <PaginationBar
+          <Pagination
             page={meta.current_page}
             lastPage={meta.last_page}
             total={meta.total}
@@ -365,6 +381,15 @@ export function UsersView({ state, actions }: StaffAccountsViewModel) {
           />
         )}
       </Card>
+      <StaffActionDialog
+        pending={pendingAction}
+        account={pendingAccount}
+        busy={state.actionBusy}
+        error={state.actionError}
+        fieldErrors={state.actionFieldErrors}
+        onConfirm={actions.confirmAction}
+        onCancel={actions.closeAction}
+      />
     </>
   );
 }

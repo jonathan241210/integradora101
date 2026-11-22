@@ -8,7 +8,7 @@ class TicketSaleLimitsTest extends TicketFeatureTestCase
 {
     public function test_ca42_ticket_sales_maximum_50_in_total(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $max = (int) config('arca.ticket_sale_max_tickets');
         $this->assertSame(50, $max);
@@ -36,7 +36,7 @@ class TicketSaleLimitsTest extends TicketFeatureTestCase
 
     public function test_ca02_ticket_sales_total_above_999999_99_is_422_without_side_effects(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier, '20000.00', '16.00');
         $tickets = $this->ticketCount();
         $logs = $this->activityCount('ticket-sold');
@@ -57,7 +57,7 @@ class TicketSaleLimitsTest extends TicketFeatureTestCase
 
     public function test_ca43_ticket_sales_limit_of_60_per_minute(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         // Reloj congelado: con una base lenta las 60 peticiones podrían rebasar la ventana de un minuto.
         $this->freezeTime();
@@ -75,7 +75,7 @@ class TicketSaleLimitsTest extends TicketFeatureTestCase
         $this->assertSame($tickets, $this->ticketCount());
 
         // La cuota es por usuario: otro cajero no queda limitado.
-        $another = $this->createAccount('cashier', false);
+        $another = $this->createAccount('cashier');
         $this->actAs($another)->postJson('/api/v1/admin/tickets', ['adult_quantity' => 1, 'child_quantity' => 0])->assertCreated();
 
         // Tras el minuto, la cuota se renueva.

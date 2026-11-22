@@ -167,3 +167,21 @@ Los endpoints de esta feature no dependen del cliente que los llama: el dashboar
 
 - Aprobadores y fecha: Jonathan (responsable funcional), 2026-10-15.
 - Evidencia/enlaces: `docs/database/requests/DBR-001-english-schema-normalization.md`, `docs/database/requests/DBR-002-staff-authentication.md`, `docs/03-roles-y-permisos.md`, `apps/api/docs/inventario-bd-inicial.md`, `apps/api/docs/credenciales-desarrollo.md`, `docs/adr/0013-aiven-managed-mysql.md`.
+
+## Nota de revisión (2026-11-20, Borrador)
+
+El rol `cashier` pasa a exigir 2FA (`config('arca.two_factor_roles')` = `['admin', 'zoo-admin', 'cashier']`), y las operaciones sensibles piden confirmación de contraseña. Ver `apps/api/specs/021-staff-step-up-confirmation.md`, que lo define. Esta nota no cambia CA-01 a CA-18 ni RN-01 a RN-17; RN-16 queda ampliada solo en su lista de roles mientras `api-021` no esté aprobada.
+
+## Nota de revisión (2026-11-20, api-023 fixed roles)
+
+Aprobada por Jonathan el 2026-11-20 en `apps/api/specs/023-fixed-roles-and-console-admins.md`. Sustituye en lo que contradiga:
+
+- **RN-01 (catálogo de roles y sugerencia por área):** el catálogo es `admin`, `zoo-admin`, `executive` («Consulta directiva»), `communications` («Comunicación»), `cashier` y `veterinarian`. La sugerencia para Presidencia e Informática es `executive`, nunca `admin` (`api-023` RN-01, RN-03, CA-09).
+- **RN-16 (2FA obligatorio):** `arca.two_factor_roles` = `admin`, `zoo-admin`, `cashier`, `executive`, `communications` (`api-023` RN-05, CA-04). `veterinarian` no usa 2FA.
+- **RN-17 (permiso huérfano):** `operational-staff.manage` queda sin efecto; su limpieza es un cambio de datos aparte (`api-023` H-01, CA-27).
+- **CA-05 (`me` y `home`):** `executive` sigue con `home` `executive`; `communications` tiene `home` `administration` con la sección de inicio Noticias (`api-023` CA-06, CA-07).
+- **CA-15 (seeder de departamentos):** la sugerencia de rol por área nunca es `admin`; Presidencia e Informática sugieren `executive` (`api-023` CA-09).
+- **Tabla de actores:** Presidencia e Informática ya no se sugieren como `admin`; el rol `executive` cambia su etiqueta a «Consulta directiva» y se añade `communications`.
+- **Complemento (no sustitución):** las cuentas `admin` solo se gestionan desde la consola `arca:admin:*`, y el historial completo de boletos se decide por el permiso `tickets.view-all` (`api-023` RN-06, RN-03, CA-11, CA-12, CA-08).
+
+Esta nota no cambia la numeración ni el estado de la spec.

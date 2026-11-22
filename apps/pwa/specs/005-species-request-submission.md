@@ -161,6 +161,23 @@ Esta spec añade ese paso. La Dirección del Zoológico (`zoo-admin`) revisa la 
 
 - **CA-19 (sesión, errores y cobertura):** Ante `401` en cualquier llamada de la sección (selector, envío o «Mis solicitudes»), la PWA lleva a inicio de sesión y muestra el aviso «Tu sesión expiró.» en esa pantalla (CA-03 remite a este criterio). Ante `403` (sin rol `veterinarian`), muestra «No tienes permiso para ver esta sección.». Las llamadas van por hooks ViewModel con `@arca/api-client`; ningún componente de vista llama a `fetch`. Verificación: test de Vitest que nombra CA-19 con cliente simulado.
 
+### Revisión 2026-11-21 (aprobada por Jonathan)
+
+Rediseño del formulario y de «Mis solicitudes». No cambia la API ni el estado de la spec. El campo «Dato curioso» se sumó después como un chip más de la configuración de campos de CA-20; ver la nota de revisión «Dato curioso» (2026-11-21) más abajo.
+
+- **CA-20 (qué mostrar primero y campos condicionales):** Dado el formulario con una especie elegida, cuando se presenta, entonces es una sola pantalla con secciones numeradas: 1 Especie, 2 Qué mostrar en la ficha pública, 3 Datos de la ficha y 4 Enviar. La sección 2 tiene chips opcionales (Nombre científico, Área de distribución natural, Hábitat) y chips fijos deshabilitados con candado y la leyenda «Siempre se muestra» (Nombre común, Tipo de animal, Foto). En la sección 3, «Tipo de animal» (obligatorio) y «Foto» se muestran siempre y cada campo de texto aparece solo si su chip está marcado. Debajo va la línea «No se publicarán: …» con `aria-live`. Al desmarcar un chip el foco vuelve al chip; al volver a marcarlo se conserva lo escrito. Un campo oculto no se envía; `validateDraft` y `needsChangeConfirmation` lo ignoran. Los chips y campos salen de un arreglo de configuración (`fichaFieldOptions`) para sumar uno nuevo sin tocar la vista.
+  - Verificación: tests de Vitest que nombran CA-20.
+- **CA-21 (Limpiar con confirmación):** Dado el formulario con cambios sobre la precarga (`needsChangeConfirmation`), cuando se pulsa «Limpiar», entonces se pide confirmación antes de vaciar; sin cambios limpia directo.
+  - Verificación: test de Vitest que nombra CA-21.
+- **CA-22 («Enviar de nuevo»):** Dada una solicitud rechazada en «Mis solicitudes», cuando se pulsa «Enviar de nuevo», entonces la PWA cambia a la pestaña del formulario con esa especie ya elegida. Es un envío nuevo; no cambia la API.
+  - Verificación: test de Vitest que nombra CA-22.
+- **CA-23 (tarjeta de solicitud):** Cada solicitud es un `<article>`. Fila 1: nombre común en `h3` y `Badge` de estado con texto (pendiente `warning`, publicada `success`, rechazada `danger`), con `flex-wrap` para 360 px. Fila 2: «Primera publicación» o «Actualización» en texto muted y `Badge` «Despublicada» en tono advertencia. Fila 3: «Enviada 12 nov 2026 · Decisión 14 nov 2026» con `<time>`. El motivo de rechazo va en un recuadro con el título «Motivo del rechazo» (`.species-summary__notice`, `overflow-wrap: anywhere`). Espaciado: 12 px entre filas, 16 px entre tarjetas, padding de 16 px en 360 px y 20 px en pantallas mayores.
+  - Verificación: test de Vitest que nombra CA-23.
+- **CA-24 (paginación, vacío y error):** «Página N» entre «Anterior» y «Siguiente» (en 360 px los botones ocupan el 50 %). La lista vacía muestra «Aún no has enviado solicitudes.» y el botón «Solicitar publicación», que cambia a la pestaña del formulario. El error es un `Alert` con «Reintentar».
+  - Verificación: test de Vitest que nombra CA-24.
+- **CA-25 (ajustes de estilo):** `.field-help` de 14 px; el fieldset deshabilitado conserva contraste; se elimina `.ficha-fields__option` sin uso; en 360 px el botón principal de `.form-actions` va arriba.
+  - Verificación: test de Vitest que nombra CA-25.
+
 ## Reglas de negocio
 
 - **RN-01 (acceso):** Solo personal con rol `veterinarian` puede enviar solicitudes y ver «Mis solicitudes», por regla de rol (`api-014` RN-01; no hay permiso propio de envío). Sin ese rol, la sección no aparece; si se abre por URL, la PWA muestra «No tienes permiso para ver esta sección.». La API es la que aplica esta regla.
@@ -213,6 +230,13 @@ Esta spec añade ese paso. La Dirección del Zoológico (`zoo-admin`) revisa la 
   3. **Aceptar sin publicar.** **Resuelta, decisión del usuario 2026-11-12** (`api-014` pregunta 22). El veterinario no decide nada de esto: la Dirección elige «Aceptar y publicar» o «Aceptar sin publicar» en el dashboard.
   - Resueltas el 2026-11-11 y 2026-11-12: envío por rol (`api-014` pregunta 6); el tipo de animal es obligatorio; la foto de una actualización es opcional; el envío sobre una especie despublicada está permitido (`api-014` pregunta 16); no hay push ni correo en v1 (`api-014` pregunta 2). La etiqueta de `origin` como área natural (DBR-013 2a=A, 2026-11-12).
 
+## Nota de revisión (2026-11-21, campo «Dato curioso»)
+
+- Nuevo campo «Dato curioso» en «Qué mostrar en la ficha pública» (`apps/api/specs/026-species-fun-fact.md`): casilla y texto, con la ayuda «Escribe una o dos frases para quien visita el zoológico. No incluyas datos clínicos ni de personas.»
+- Reglas: texto plano; obligatorio con mínimo de 20 caracteres solo si la casilla está marcada; máximo 500 caracteres (`api-026` CA-02, CA-03). Si la casilla no está marcada, el texto no se envía (`api-026` CA-04).
+- Dependencia (cumplida): la revisión de «Qué mostrar» (orden con la casilla primero y visibilidad de cada campo) es la de CA-20 de esta misma spec; esta nota solo registra el campo. Estado de esta spec sin cambio.
+- Implementado 2026-11-21: «Dato curioso» es una entrada más de `fichaFieldOptions` (chip opcional, desmarcado por defecto; `textarea` de 4 filas con contador sobre 500; mínimo de 20 si está marcado; oculto no se envía; precarga `fun_fact` del selector en actualizaciones, `api-026` CA-14). «Mis solicitudes» no cambia: la spec no lo pide. Pruebas: `species-fun-fact.test.tsx` (`api-026` CA-02, CA-03, CA-04, CA-14).
+
 ## Revisión
 
 - Aprobadores y fecha: Jonathan, 2026-11-19.
@@ -221,4 +245,15 @@ Esta spec añade ese paso. La Dirección del Zoológico (`zoo-admin`) revisa la 
 - Rediseño de usabilidad 2026-11-19 (aprobado por Jonathan, sin cambio de estado): el selector de especie pasa de radios a desplegable (CA-13, que sustituye (c) de la alineación anterior); maqueta como «Registrar animal» (foto con vista previa a la izquierda y rejilla de dos columnas; ficha pública como chips; pie con «Limpiar» y «Enviar solicitud»); pestañas como control segmentado; menú lateral que se contrae al cambiar de sección. Sin cambio de CA ni RN salvo el texto de CA-13.
 - Alineación 2026-11-19 (2): la entrada de navegación pasa de «solo desde Inicio» a Inicio más menú lateral, visible solo para `veterinarian` (decisión 5 del plan; sin cambio de CA ni de RN).
 - Alineación 2026-11-19 (aprobada por Jonathan, sin cambio de estado): preguntas 1 a 8 del plan resueltas. Cambian CA-03, CA-13, CA-14 (texto de ayuda sobre correcciones, antes exigido solo en «Riesgos»), CA-18 (motivo solo con `not_published`) y CA-19 (401 a inicio de sesión con aviso). Responsable técnico: Jonathan. Dependencia nueva: `api-014` CA-26 incluye `published_fields` (tarea T-30 de `api-014`). Sin offline ni borradores locales.
+- Revisión 2026-11-21 (aprobada por Jonathan, sin cambio de estado): CA-20 a CA-25 nuevos; cambian de sentido CA-09 y CA-14, con notas en CA-05, CA-16, CA-17 y CA-18.
 - Evidencia/enlaces: `apps/api/specs/014-species-requests.md`, `apps/dashboard/specs/010-public-content-management.md`, `apps/pwa/specs/004-animal-registration.md`, `apps/api/specs/015-public-species-read.md`, `docs/database/requests/DBR-013-species-requests.md`, `docs/adr/0026-object-storage-s3-images.md`.
+  - Nota revisión 2026-11-21: `scientific_name`, `habitat` y `origin` solo se envían si su chip de CA-09 está marcado; un campo oculto no se envía (CA-20).
+  - Nota revisión 2026-11-21: cambia de sentido. «Qué mostrar en la ficha pública» pasa a ser la sección 2, antes de los datos. Las tres casillas opcionales son chips; «Nombre común», «Tipo de animal» y «Foto» son chips fijos, deshabilitados, con candado y la leyenda «Siempre se muestra». Ayuda: «Elige primero qué verá el visitante. Solo pedimos esos datos.» Ver CA-20.
+  - Nota revisión 2026-11-21: cambia de sentido. La precarga solo aplica a los campos visibles; con un chip desmarcado el dato no se pide ni se corrige. `CORRECTIONS_HELP` pasa a «Solo puedes corregir los datos que se publican. Al publicarse, una corrección cambia el dato de la especie: lo verán también la app móvil y los animales de esta especie.»
+  - Nota revisión 2026-11-21: la tarjeta se rediseña: nombre en `h3` con `Badge` de estado (pendiente `warning`, publicada `success`, rechazada `danger`), tipo en texto muted con `Badge` «Despublicada» en tono advertencia, y fechas en una línea con `<time>`. Ver CA-23. Los textos «Enviada el» y «Decisión el» pasan a «Enviada» y «Decisión».
+  - Nota revisión 2026-11-21: la lista vacía suma el botón «Solicitar publicación» y el error usa `Alert` con «Reintentar» (CA-24).
+  - Nota revisión 2026-11-21: en «Mis solicitudes» el motivo va en un recuadro con el título «Motivo del rechazo» (CA-23); en el selector sigue igual.
+
+## Nota de revisión (2026-11-21, dashboard-020 rev. (d))
+
+- **CA-26:** Dada «Mis solicitudes», cuando hay más de una página, entonces usa el paginador compartido de `@arca/ui` con números de página y `meta` con total («Página N de M · T en total»; contrato `api-014` CA-42 y CA-43); en 360 px conserva la vista anterior (Anterior y Siguiente al 50 % cada uno, números en la fila de abajo). Sustituye en lo visual a la nota de CA-24 («Página N» entre botones). `@arca/api-client` agrega `TotalPage` de forma aditiva.

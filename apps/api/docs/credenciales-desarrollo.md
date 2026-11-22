@@ -26,7 +26,7 @@ Este documento describe los usuarios de ejemplo que creará el seeder `DemoStaff
 | Presidencia | `presidencia@arca.local` | Presidencia (`presidency`) | `admin` | `administration` | Obligatorio |
 | Admin Informática | `admin@arca.local` | Informática (`information-technology`) | `admin` | `administration` | Obligatorio |
 | Dirección Zoo | `direccion_zoo@arca.local` | Dirección (`management`) | `zoo-admin` | `administration` | Obligatorio |
-| Ejecutivo | `ejecutivo@arca.local` | Dirección (`management`) | `executive` | `executive` | No |
+| Consulta directiva | `ejecutivo@arca.local` | Dirección (`management`) | `executive` | `executive` | Obligatorio (api-023) |
 | Boletaje | `boletaje@arca.local` | Taquilla (`box-office`) | `cashier` | `ticket` | No |
 | Veterinario | `veterinario@arca.local` | Servicios veterinarios (`veterinary`) | `veterinarian` | `pwa` + `pwa_url` (`PWA_URL` en `.env`) | No |
 
@@ -65,7 +65,7 @@ php artisan db:seed
 php artisan db:seed --class=DemoStaffSeeder
 ```
 
-Las cuentas reales se crean con `php artisan arca:create-staff` (también en `api-003`). El responsable de BD crea con él el primer `admin`, que después administrará las demás cuentas cuando exista la feature «Gestión de usuarios».
+Las cuentas reales de personal no admin se crean con `php artisan arca:create-staff` (pide motivo y confirmación, audita y avisa a los administradores; api-023). Las cuentas `admin` se crean solo con `php artisan arca:admin:create` desde la consola del servidor; no se crean ni se promueven desde la API ni el dashboard (api-023). Ver `administracion.md`, «Comandos de consola».
 
 ---
 
@@ -85,7 +85,7 @@ php artisan tinker
 ## 6. Notas de gobernanza
 
 - Estos seeders **no son migraciones** y no requieren DBR: no alteran el esquema, solo insertan datos de prueba.
-- `php artisan arca:create-staff` es la herramienta para crear cuentas reales sin dejar credenciales en el repositorio.
+- `php artisan arca:create-staff` (no admin) y `php artisan arca:admin:create` (admin) son las herramientas para crear cuentas reales sin dejar credenciales en el repositorio. `arca:create-staff-simple` se retiró (api-023).
 - Si un administrador pierde su celular y también sus códigos de recuperación, por ahora lo resuelve el responsable de BD; el procedimiento formal queda para la feature «Gestión de usuarios».
 - Esta documentación complementa el [inventario de BD inicial](./inventario-bd-inicial.md) y la spec `003-staff-authentication`.
 - Ajustado el 2026-10-15 por decisión de Jonathan: `admin` para Presidencia, nuevo `zoo-admin`, área `presidency`, cuenta `ejecutivo@arca.local`, contraseña desde `.env` y retiro de `migrate:fresh`.

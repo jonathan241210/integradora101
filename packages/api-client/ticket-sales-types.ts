@@ -44,6 +44,8 @@ export type TicketSaleBatchDto = {
   purchased_at: string;
   cashier_name: string | null;
   tickets: TicketSaleDto[];
+  /** Zona de negocio de la API (`api-025` RN-13); si falta, el respaldo del dashboard. */
+  timezone?: string;
 };
 
 export type TicketHistoryRowDto = {
@@ -54,7 +56,12 @@ export type TicketHistoryRowDto = {
   total_amount: string;
   status: TicketStatus;
   cancelled_at: string | null;
+  /** Solo el comentario guardado (`api-022` RN-03); la etiqueta va en `cancellation_reason_label`. */
   cancellation_reason: string | null;
+  /** Código del catálogo (`api-022`); `null` en cancelaciones anteriores a la feature. */
+  cancellation_reason_code?: CancellationReasonCode | null;
+  /** Etiqueta en español que deriva la API («Sin clasificar (anterior)» si no hay código). */
+  cancellation_reason_label?: string | null;
   cashier_name: string | null;
   /** La API decide si el boleto se puede cancelar; el cliente no lo calcula. */
   cancellable: boolean;
@@ -69,14 +76,33 @@ export type TicketHistoryQuery = {
   to?: string;
   page?: number;
   per_page?: number;
-  /** Zona IANA; por defecto la del dispositivo. */
+};
+
+/** Página del historial con la zona de negocio que informa la API (`api-025` CA-12). */
+export type TicketHistoryPage = Paginated<TicketHistoryRowDto> & {
   timezone?: string;
 };
 
-export type TicketHistoryPage = Paginated<TicketHistoryRowDto>;
+/** Los cinco códigos cerrados de `api-022` RN-02. Las etiquetas las entrega la API. */
+export type CancellationReasonCode =
+  | "capture_error"
+  | "duplicate_charge"
+  | "wrong_ticket_type"
+  | "visitor_withdrew"
+  | "other";
 
+/** Motivo del catálogo de `GET admin/tickets/cancellation-reasons` (`api-022` CA-10). */
+export type CancellationReasonDto = {
+  code: CancellationReasonCode;
+  label: string;
+  /** `required` obliga a escribir comentario (solo `other`); `optional` lo permite. */
+  comment_policy: "required" | "optional";
+};
+
+/** Cuerpo de cancelar (`api-022` CA-11 a CA-13): código obligatorio y comentario. */
 export type TicketCancelInput = {
-  reason: string;
+  reason_code: CancellationReasonCode;
+  reason?: string | null;
 };
 
 export type TicketPriceNextDto = {
@@ -94,6 +120,8 @@ export type TicketPriceTypeDto = {
 export type TicketPriceCurrentDto = {
   adult: TicketPriceTypeDto;
   child: TicketPriceTypeDto;
+  /** Zona de negocio de la API (`api-025` RN-13); si falta, el respaldo del dashboard. */
+  timezone?: string;
 };
 
 export type TicketPriceMode = "immediate" | "scheduled";
@@ -102,7 +130,10 @@ export type TicketPriceScheduleInput = {
   adult_amount: string | number;
   child_amount: string | number;
   mode: TicketPriceMode;
-  /** ISO 8601 con desfase horario o `Z`; obligatorio si `mode` es `scheduled`. */
+  /**
+   * Fecha y hora `AAAA-MM-DDTHH:mm:ss` sin desfase: la API la interpreta en su zona de
+   * negocio (`api-025` RN-12). Obligatorio si `mode` es `scheduled`.
+   */
   effective_at?: string;
 };
 

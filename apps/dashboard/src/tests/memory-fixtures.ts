@@ -59,7 +59,7 @@ export function imageFile(type = "image/png") {
 /** Cliente simulado de `memoryReview` (contrato de api-010 sin implementar). */
 export function fakeApi(overrides: Record<string, unknown> = {}) {
   const review = {
-    list: vi.fn(async (_query?: unknown) => ({ data: [summary()], meta: { has_more: false } })),
+    list: vi.fn(async (_query?: unknown) => ({ data: [summary()], meta: { current_page: 1, last_page: 1, per_page: 10, total: 1, has_more: false } })),
     get: vi.fn(async (_id: number) => detail()),
     image: vi.fn(async (_id: number) => imageFile()),
     accept: vi.fn(async (_id: number) => undefined),

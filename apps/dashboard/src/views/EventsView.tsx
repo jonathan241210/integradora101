@@ -1,5 +1,6 @@
-import type { FormEvent } from "react";
-import { Alert, Badge, Button, Card, Field, SelectField, TextAreaField } from "@arca/ui";
+import { useEffect, type FormEvent } from "react";
+import { Alert, Badge, Button, Card, Field, Pagination, SelectField, TextAreaField } from "@arca/ui";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ContentCardActions } from "@/components/ContentCardActions";
 import { ContentThumbnail } from "@/components/ContentThumbnail";
 import { ActionError } from "@/components/DashboardNotifications";
@@ -10,10 +11,11 @@ import { triggerKey, useInlineFocus } from "@/components/inline-focus";
 import { ImageUploadBox } from "@/components/ImageUploadBox";
 import { InlineFormFooter } from "@/components/InlineFormFooter";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { CardGridSkeleton } from "@/components/LoadingSkeletons";
 import { NoticeBar } from "@/components/NoticeBar";
-import { PaginationBar } from "@/components/PaginationBar";
 import { SectionHeading } from "@/components/SectionHeading";
 import type { EventDto } from "@/viewmodels/admin-types";
+import { confirmationFromCopy } from "@/viewmodels/confirmation";
 import {
   getEventConfirmation,
   type EventFormValues,
@@ -22,6 +24,8 @@ import {
 import { formatDate, formatTime } from "@/viewmodels/formatters";
 import { visibleImageUrl } from "@/viewmodels/inline-content";
 import { useEventsPagination } from "@/viewmodels/useEventsPagination";
+
+const missingPendingMessage = "El evento ya no está en la lista. Se cerró la confirmación.";
 
 function schedule(item: EventDto): string {
   const dates = item.end_date && item.end_date !== item.start_date
@@ -40,6 +44,19 @@ export function EventsView({ state, actions, focus = null }: EventsViewModel & {
   const missingPending = pendingAction !== null
     && (state.status === "ready" || state.status === "empty")
     && !state.items.some((item) => item.id === pendingAction.id);
+  // dashboard-020 CA-26: aviso emergente; la confirmación huérfana se cierra sola.
+  const closePending = actions.closeAction;
+
+  useEffect(() => {
+    if (missingPending) closePending();
+  }, [missingPending, closePending]);
+  // Estado y eliminación se confirman en ventana modal (dashboard-020, revisión 2026-11-21 (b)).
+  const pendingTarget = pendingAction
+    ? state.items.find((item) => item.id === pendingAction.id)
+    : undefined;
+  const pendingCopy = pendingAction && pendingTarget
+    ? confirmationFromCopy(getEventConfirmation(pendingAction.type, pendingTarget))
+    : null;
   const editingNow = editing !== null;
   const { registerTrigger, noticeRef } = useInlineFocus({
     pendingAction,
@@ -67,14 +84,7 @@ export function EventsView({ state, actions, focus = null }: EventsViewModel & {
       />
       <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} focusRef={noticeRef} />
       <ActionError message={pendingAction === null ? state.actionError : ""} />
-      {missingPending && (
-        <Alert className="inline-alert" role="alert">
-          El evento ya no está en la lista. Cierra la confirmación para continuar.
-          <Button variant="secondary" disabled={state.actionBusy} onClick={actions.closeAction}>
-            Cerrar confirmación
-          </Button>
-        </Alert>
-      )}
+      <ActionError message={missingPending ? missingPendingMessage : ""} />
 
       <FormPanel
         id="event-form"
@@ -186,6 +196,7 @@ export function EventsView({ state, actions, focus = null }: EventsViewModel & {
         status={state.status}
         error={state.error}
         loadingText="Cargando eventos…"
+        skeleton={<CardGridSkeleton kind="events" label="Cargando eventos…" />}
         emptyText="Aún no hay eventos registrados."
         onRetry={actions.reload}
       />
@@ -199,8 +210,6 @@ export function EventsView({ state, actions, focus = null }: EventsViewModel & {
           </div>
           <div className="event-card-grid">
             {pagination.items.map((item) => {
-              const pending = pendingAction?.id === item.id ? pendingAction.type : null;
-
               return (
                 <Card className="content-card" key={item.id} data-search-id={`events:${item.id}`}>
                   <ContentThumbnail url={item.image_url} name={item.name} />
@@ -216,22 +225,16 @@ export function EventsView({ state, actions, focus = null }: EventsViewModel & {
                     <ContentCardActions
                       subject={`el evento ${item.name}`}
                       isActive={item.is_active}
-                      pending={pending}
-                      copy={pending ? getEventConfirmation(pending, item) : null}
-                      busy={state.actionBusy}
-                      error={pending ? state.actionError : ""}
                       registerTrigger={(type) => registerTrigger(triggerKey({ type, id: item.id }))}
                       onEdit={() => actions.startEdit(item)}
                       onOpen={(type) => actions.openAction({ type, id: item.id })}
-                      onConfirm={actions.confirmAction}
-                      onCancel={actions.closeAction}
                     />
                   </div>
                 </Card>
               );
             })}
           </div>
-          <PaginationBar
+          <Pagination
             page={pagination.page}
             lastPage={pagination.lastPage}
             total={state.items.length}
@@ -243,6 +246,14 @@ export function EventsView({ state, actions, focus = null }: EventsViewModel & {
           )}
         </section>
       )}
+      <ConfirmDialog
+        copy={pendingCopy}
+        idleTitle="Confirmar acción de evento"
+        busy={state.actionBusy}
+        error={state.actionError}
+        onConfirm={actions.confirmAction}
+        onCancel={actions.closeAction}
+      />
     </>
   );
 }

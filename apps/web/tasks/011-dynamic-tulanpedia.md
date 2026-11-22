@@ -288,6 +288,18 @@ Cobertura: 13 de 13 RN tienen al menos una tarea.
 - PR con spec, plan y tasks enlazados; commit con `web-011`; sin secretos ni artefactos generados.
 - Estado de la spec cambiado solo con aprobación de Jonathan y evidencias.
 
+## Nota api-026 (2026-11-21)
+
+- [x] **T-17** (api-026 CA-11; RN-07): «Dato curioso» en `FIELDS` de `src/js/animals.js` y prueba `api-026 CA-11 dynamic-tulanpedia` en `src/tests/animals.test.mjs`. El test cubre **api-026 CA-11**; CA-12 de `api-026` es de la API y no se prueba aquí (la referencia anterior a «api-026 CA-12» era un error). `node --test src/tests/*.test.mjs`: 168 pasan, 7 fallan; `animals.test.mjs`: 33/34.
+  - Los 7 fallos **ya fallaban antes de este cambio**. Evidencia (2026-11-21): con un worktree de HEAD `01b66ba` (sin los cambios de api-026) pasan 167 y fallan los mismos 7; con el cambio pasan 168 (la prueba nueva de CA-11) y fallan los mismos 7. Ninguno toca esta tarea. Pruebas fallidas:
+    1. `CA-12 dynamic-tulanpedia: index.html conserva los IDs de la sección y las referencias a script.js, animations.js, accessibility.js, js/api.js y js/animals.js` (web-011 CA-12, por `viewerLoaded`).
+    2. `CA-03 lion-hero-mobile-navigation opera apertura, Escape, enlace y breakpoints`.
+    3. `CA-04 isometric-zoo-map sincroniza selección, resaltado y anuncio entre controles`.
+    4. `CA-07 isometric-zoo-map controla límites, estado y restablecimiento sin perder selección o foco`.
+    5. `CA-04 visit-info-icons-and-favicon baja 8 px los tres iconos sin alterar el centrado`.
+    6. `CA-03 header-walker-layer conserva clics decorativos sin cubrir controles`.
+    7. `CA-05 cognitive-accessibility-assistant mantiene el resumen inactivo y sin procesamiento`.
+
 ## Verificación (2026-11-13)
 
 - Web (`node --test`, sin `package.json`): suite completa 127/133 aprobadas; 6 fallos preexistentes en `relocation.test.mjs`, ajenos a esta feature. `animals.test.mjs`: 31/31 (CA-01 a CA-24, cada uno con su nombre).

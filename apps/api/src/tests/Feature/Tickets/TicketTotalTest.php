@@ -15,7 +15,7 @@ class TicketTotalTest extends TicketFeatureTestCase
 
     public function test_ca02_ticket_sales_total_in_response_matches_server_calculation(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier, '25.00', '16.00');
 
         $data = $this->actAs($cashier)->postJson('/api/v1/admin/tickets', [

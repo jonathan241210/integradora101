@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TicketCancellationReason;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,6 +36,7 @@ class Ticket extends Model
         'purchased_at',
         'cancelled_at',
         'cancelled_by',
+        'cancellation_reason_code',
         'cancellation_reason',
         'updated_by',
         'qr_code',
@@ -53,6 +55,7 @@ class Ticket extends Model
             'total_amount' => 'decimal:2',
             'purchased_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'cancellation_reason_code' => TicketCancellationReason::class,
         ];
     }
 
@@ -62,8 +65,14 @@ class Ticket extends Model
         $query->where('status', self::STATUS_COMPLETED);
     }
 
+    /** Incluye cuentas eliminadas lógicamente: el nombre es registro histórico (api-022 RN-12). */
     public function cashier(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'cashier_id');
+        return $this->belongsTo(User::class, 'cashier_id')->withTrashed();
+    }
+
+    public function canceller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by')->withTrashed();
     }
 }

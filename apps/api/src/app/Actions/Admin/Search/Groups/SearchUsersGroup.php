@@ -2,8 +2,8 @@
 
 namespace App\Actions\Admin\Search\Groups;
 
-use App\Actions\Admin\Users\ResolveManageableRolesAction;
 use App\Models\User;
+use App\Support\Staff\StaffRoleCatalog;
 use Illuminate\Support\Facades\DB;
 
 class SearchUsersGroup extends SearchGroup
@@ -43,13 +43,20 @@ class SearchUsersGroup extends SearchGroup
             $fields = [[null, $name], ['Correo', $row->email], ['Área', $row->department_name]];
             foreach ($roles[$row->id] ?? [] as $role) {
                 // Etiqueta en español y también el identificador interno (D-28).
-                $fields[] = ['Rol', ResolveManageableRolesAction::LABELS[$role] ?? $role];
-                if (isset(ResolveManageableRolesAction::LABELS[$role])) {
+                $fields[] = ['Rol', StaffRoleCatalog::roleLabel($role)];
+                if (isset(StaffRoleCatalog::ROLE_LABELS[$role])) {
                     $fields[] = ['Rol', $role];
                 }
             }
 
-            return ['id' => (int) $row->id, 'title' => $name, 'subtitle' => (string) $row->email, 'fields' => $fields];
+            return [
+                'id' => (int) $row->id,
+                'title' => $name,
+                'subtitle' => (string) $row->email,
+                'fields' => $fields,
+                // api-023 CA-35: las cuentas admin se muestran en solo lectura, sin acciones de gestión.
+                'managed_by_console' => StaffRoleCatalog::isConsoleManaged($roles[$row->id] ?? []),
+            ];
         })->all();
     }
 

@@ -47,6 +47,8 @@ export type MemoryListState = {
   status: "loading" | "ready" | "empty" | "error";
   items: MemoryReviewSummaryDto[];
   hasMore: boolean;
+  lastPage: number;
+  total: number;
   error: string;
   forbidden: boolean;
   /** Solo el 5xx o la red ofrecen «Reintentar». */
@@ -60,6 +62,8 @@ export const initialMemoryListState: MemoryListState = {
   status: "loading",
   items: [],
   hasMore: false,
+  lastPage: 1,
+  total: 0,
   error: "",
   forbidden: false,
   retryable: false,
@@ -69,7 +73,7 @@ export type MemoryListAction =
   | { type: "filter-changed"; filter: MemoryFilter }
   | { type: "page-changed"; page: number }
   | { type: "list-loading" }
-  | { type: "list-loaded"; items: MemoryReviewSummaryDto[]; hasMore: boolean }
+  | { type: "list-loaded"; items: MemoryReviewSummaryDto[]; hasMore: boolean; lastPage: number; total: number }
   | { type: "list-failed"; message: string; forbidden: boolean; retryable: boolean };
 
 export function memoryListReducer(state: MemoryListState, action: MemoryListAction): MemoryListState {
@@ -86,6 +90,8 @@ export function memoryListReducer(state: MemoryListState, action: MemoryListActi
         status: action.items.length === 0 ? "empty" : "ready",
         items: action.items,
         hasMore: action.hasMore,
+        lastPage: action.lastPage,
+        total: action.total,
         error: "",
         forbidden: false,
         retryable: false,
@@ -96,6 +102,8 @@ export function memoryListReducer(state: MemoryListState, action: MemoryListActi
         status: "error",
         items: [],
         hasMore: false,
+        lastPage: 1,
+        total: 0,
         error: action.message,
         forbidden: action.forbidden,
         retryable: action.retryable,
@@ -110,6 +118,8 @@ const clearedRows = {
   status: "loading",
   items: [],
   hasMore: false,
+  lastPage: 1,
+  total: 0,
   error: "",
   forbidden: false,
   retryable: false,
@@ -140,7 +150,9 @@ export async function loadList(
       ctx.dispatch({
         type: "list-loaded",
         items: result.data,
-        hasMore: result.meta.has_more,
+        hasMore: result.meta.has_more === true,
+        lastPage: result.meta.last_page,
+        total: result.meta.total,
       });
     }
   } catch (error) {

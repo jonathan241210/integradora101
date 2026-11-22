@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Admin\Tickets;
 
 use App\Actions\Admin\Tickets\IssuedTicketPurchase;
+use App\Support\BusinessTimezone;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,6 +21,7 @@ class TicketSaleBatchResource extends JsonResource
             'child_quantity' => $purchase->childQuantity,
             'total_amount' => $purchase->totalAmount,
             'purchased_at' => $purchase->purchasedAt->utc()->toIso8601ZuluString(),
+            'timezone' => BusinessTimezone::name(),
             'cashier_name' => $cashier ? TicketHistoryResource::fullName($cashier) : null,
             'tickets' => TicketSaleResource::collection(collect($purchase->tickets))->resolve($request),
         ];
