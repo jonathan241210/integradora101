@@ -9,6 +9,7 @@ use App\Actions\Admin\Users\ListStaffAccountsAction;
 use App\Actions\Admin\Users\ListStaffOptionsAction;
 use App\Actions\Admin\Users\UpdateStaffAccountAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\DestroyStaffAccountRequest;
 use App\Http\Requests\Admin\ListStaffAccountsRequest;
 use App\Http\Requests\Admin\StoreStaffAccountRequest;
 use App\Http\Requests\Admin\UpdateStaffAccountRequest;
@@ -49,13 +50,9 @@ class StaffAccountController extends Controller
         return new StaffAccountResource($action->execute($request->user(), $request->target(), $request->validated()));
     }
 
-    public function destroy(
-        Request $request,
-        string $user,
-        FindManageableStaffAccountAction $find,
-        DeleteStaffAccountAction $action,
-    ): Response {
-        $action->execute($request->user(), $find->execute($request->user(), $user));
+    public function destroy(DestroyStaffAccountRequest $request, DeleteStaffAccountAction $action): Response
+    {
+        $action->execute($request->user(), $request->target());
 
         return response()->noContent();
     }

@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 import type { FocusDialogAction } from "./focus-target";
 import { adminApi } from "@/services/arca-api";
+import { useRunProtected } from "./step-up-context";
 import {
   enclosuresReducer,
   initialEnclosuresState,
@@ -25,6 +26,7 @@ export function useEnclosuresManagement(
   focus: EnclosuresFocus = null,
 ): EnclosuresViewModel {
   const [state, dispatch] = useReducer(enclosuresReducer, initialEnclosuresState);
+  const protect = useRunProtected();
 
   const [requestedPage, setRequestedPage] = useState(1);
   const openedNonce = useRef<number | null>(null);
@@ -95,7 +97,7 @@ export function useEnclosuresManagement(
         if (dialog?.kind === "status") {
           void setEnclosureStatus(adminApi, dispatch, dialog.item, !dialog.item.is_active);
         }
-        if (dialog?.kind === "delete") void deleteEnclosure(adminApi, dispatch, dialog.item);
+        if (dialog?.kind === "delete") void deleteEnclosure(adminApi, dispatch, dialog.item, protect);
       },
       save: (name) => void saveEnclosure(adminApi, dispatch, state.dialog, name),
     },

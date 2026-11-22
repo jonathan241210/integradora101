@@ -7,7 +7,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListStaffAccountsAction
 {
-    public function __construct(private ResolveManageableRolesAction $roles) {}
+    public function __construct(private ResolveVisibleRolesAction $roles) {}
 
     public function execute(User $actor, array $filters): LengthAwarePaginator
     {

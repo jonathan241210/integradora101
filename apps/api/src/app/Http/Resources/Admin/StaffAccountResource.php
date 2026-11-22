@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources\Admin;
 
-use App\Actions\Admin\Users\ResolveManageableRolesAction;
+use App\Support\Staff\StaffRoleCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -26,11 +26,13 @@ class StaffAccountResource extends JsonResource
             ] : null,
             'role' => $role ? [
                 'name' => $role,
-                'label' => ResolveManageableRolesAction::LABELS[$role] ?? $role,
+                'label' => StaffRoleCatalog::roleLabel($role),
             ] : null,
             'is_active' => (bool) $this->is_active,
             'last_login_at' => $this->last_login_at?->toIso8601String(),
             'two_factor_confirmed' => $this->two_factor_confirmed_at !== null,
+            // api-023 CA-13: las cuentas admin se leen, pero solo se gestionan desde la consola.
+            'managed_by_console' => StaffRoleCatalog::isConsoleManaged($this->roles->pluck('name')),
         ];
     }
 }

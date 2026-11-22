@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useRef } from "react";
 import type { FocusDialogAction } from "./focus-target";
 import { adminApi } from "@/services/arca-api";
+import { useRunProtected } from "./step-up-context";
 import {
   confirmStaffAction,
   emptyStaffForm,
@@ -21,6 +22,7 @@ export type StaffFocus = { id: number; nonce: number; action?: FocusDialogAction
 export function useStaffAccounts(focus: StaffFocus = null): StaffAccountsViewModel {
   const [state, dispatch] = useReducer(staffAccountsReducer, initialStaffState);
   const openedNonce = useRef<number | null>(null);
+  const protect = useRunProtected();
 
   // Abre la confirmación de la acción elegida sin ejecutarla (CA-37, CA-38).
   useEffect(() => {
@@ -56,19 +58,21 @@ export function useStaffAccounts(focus: StaffFocus = null): StaffAccountsViewMod
     actions: {
       changeQuery: (changes) => dispatch({ type: "query-changed", changes }),
       reload: () => void loadStaffAccounts(adminApi, dispatch, state.query),
+      reloadOptions: () => void loadStaffOptions(adminApi, dispatch),
       dismissNotice: () => dispatch({ type: "notice-dismissed" }),
       toggleForm: () => dispatch({ type: "panel-toggled" }),
       changeForm: (changes) => dispatch({ type: "form-changed", changes }),
       changeDepartment: (departmentId) =>
         dispatch({ type: "form-changed", changes: staffDepartmentChanges(state, departmentId) }),
+      changeRole: (role) => dispatch({ type: "role-chosen", role }),
       startEdit: (account) =>
         dispatch({ type: "edit-started", item: account, form: staffFormFromAccount(account) }),
       cancelEdit: () => dispatch({ type: "edit-cancelled", form: emptyStaffForm() }),
-      submit: () => void saveStaffAccount(adminApi, dispatch, state, reload),
+      submit: () => void saveStaffAccount(adminApi, dispatch, state, reload, protect),
       openAction: (action) => dispatch({ type: "action-opened", action }),
       closeAction: () => dispatch({ type: "action-closed" }),
       confirmAction: (password) =>
-        void confirmStaffAction(adminApi, dispatch, state, password, reload),
+        void confirmStaffAction(adminApi, dispatch, state, password, reload, protect),
     },
   };
 }

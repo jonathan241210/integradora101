@@ -2,8 +2,6 @@
 
 namespace App\Support;
 
-use Carbon\CarbonImmutable;
-
 class PublicCalendar
 {
     /**
@@ -11,6 +9,6 @@ class PublicCalendar
      */
     public static function today(): string
     {
-        return CarbonImmutable::now(config('arca.public_timezone'))->toDateString();
+        return BusinessTimezone::today();
     }
 }

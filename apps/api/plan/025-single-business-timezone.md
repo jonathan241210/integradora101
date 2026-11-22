@@ -2,7 +2,7 @@
 
 - Spec: `apps/api/specs/025-single-business-timezone.md` (Estado: Aprobada, Jonathan, 2026-11-20; decisiones finales 1 a 4 incluidas)
 - Estado de spec: Aprobada
-- Estado del plan: **Borrador — pendiente de aprobación técnica (equipo/Jonathan)**. No autoriza implementación hasta aprobarse.
+- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**. Preguntas P-01 a P-06 y D-03 cerradas en «Decisiones 2026-11-20».
 - Responsable técnico: por identificar en la aprobación técnica
 - Spec dashboard relacionada: `apps/dashboard/specs/019-single-business-timezone.md` (consumidora; se implementa después de esta API)
 - DBR relacionada: ninguna. Es cambio de configuración (`.env` y opciones de conexión), no de esquema (spec, «Datos, privacidad y auditoría»).
@@ -31,7 +31,7 @@ Componentes:
 - **`App\Actions\Admin\Reports\ResolveReportPeriodAction`, `BuildDashboardSummaryAction`, `ListTicketHistoryAction`:** pierden el parámetro de zona del cliente y leen `BusinessTimezone`. `ExportTicketReportAction` no cambia su lógica; su bitácora `report-exported` sigue registrando `timezone` con la zona de negocio.
 - **Resources y writers (CSV, XLSX, PDF):** sin cambio de código. `ReportPeriod::timezone()` ya devuelve la zona resuelta, así que informan la zona de negocio automáticamente.
 - **`config/database.php`, conexión `mysql`:** añade `'timezone' => env('DB_TIMEZONE', '+00:00')`. Laravel aplica esa opción como zona de sesión al conectar. Es configuración de conexión y no crea ni cambia tablas (RN-06).
-- **Conexión `mysql2` (`settings_colores`):** ver «Brechas» (B-01). En el código de la API no existe tal conexión.
+- **Conexión `mysql2` (`settings_colores`):** retirada por P-01 (2026-11-20): no existe en el código. En el código de la API no existe tal conexión.
 
 ## Cambios por área
 
@@ -84,19 +84,22 @@ Convención: docblock `/** CA-NN single-business-timezone */` y método `test_ca
 
 | Criterio | Prueba automatizada | App/ubicación | Tareas |
 |---|---|---|---|
-| CA-01 | `test_ca01_valor_por_defecto_y_llave_unica` (carga `config/arca.php` sin `ARCA_TIMEZONE` con `putenv`; comprueba `timezone`, ausencia de `report_timezone` y `public_timezone`, y que ningún archivo de `app/` lee esas llaves) | API `tests/Feature/Timezone/BusinessTimezoneConfigTest.php` | T-02, T-03 |
-| CA-02 | `test_ca02_cambiar_la_zona_cambia_el_corte` (boleto de las 05:30 UTC del 7 cuenta el 6 con MX y el 7 con UTC; cubre panel y reporte) y `test_ca02_busqueda_global_muestra_fecha_de_negocio` (`api-019` fecha de compra) | API `tests/Feature/Timezone/BusinessDayTest.php` | T-15 |
-| CA-03 | `test_ca03_instantes_en_utc_y_app_timezone_utc` (`config('app.timezone') === 'UTC'`; `purchased_at` y `cancelled_at` guardados en UTC) | API `tests/Feature/Timezone/BusinessTimezoneConfigTest.php` | T-16 |
-| CA-04 | `test_ca04_panel_cuenta_en_la_zona_de_negocio` (`timezone=Europe/Madrid` o ausente; `data.timezone` = MX) | API `tests/Feature/Admin/ReportTimezoneTest.php` | T-17 |
-| CA-05 | `test_ca05_reporte_y_exportacion_en_zona_de_negocio` (CSV, XLSX y PDF con `timezone=America/Tijuana`; día `2026-11-06`) y `test_ca05_csv_hora_de_purchased_at_en_zona_de_negocio` (`2026-11-06 23:30:00`) | API `tests/Feature/Admin/TicketReportExportTest.php` y `ReportTimezoneTest.php` | T-18 |
-| CA-06 | `test_ca06_historial_filtra_por_dia_de_negocio` (`from`/`to` del 6 incluye el boleto; del 7 no) | API `tests/Feature/Tickets/TicketHistoryTest.php` | T-19 |
-| CA-07 | `test_ca07_cancelacion_mismo_dia_en_zona_de_negocio` (venta 05:30 UTC, intento 06:10 UTC: no cancelable aunque `timezone=UTC`) y `test_ca07_cancellable_con_zona_de_negocio` | API `tests/Feature/Tickets/CancelTicketSameDayTest.php` y `TicketCancellableZoneTest.php` | T-20 |
+| CA-01 | `test_ca01_default_value_and_single_key` (carga `config/arca.php` sin `ARCA_TIMEZONE` con `putenv`; comprueba `timezone`, ausencia de `report_timezone` y `public_timezone`, y que ningún archivo de `app/` lee esas llaves) | API `tests/Feature/Timezone/BusinessTimezoneConfigTest.php` | T-02, T-03 |
+| CA-02 | `test_ca02_changing_the_timezone_changes_the_cutoff` (boleto de las 05:30 UTC del 7 cuenta el 6 con MX y el 7 con UTC; cubre panel y reporte) y `test_ca02_global_search_shows_business_date` (`api-019` fecha de compra) | API `tests/Feature/Timezone/BusinessDayTest.php` | T-15 |
+| CA-03 | `test_ca03_instants_in_utc_and_app_timezone_utc` (`config('app.timezone') === 'UTC'`; `purchased_at` y `cancelled_at` guardados en UTC) | API `tests/Feature/Timezone/BusinessTimezoneConfigTest.php` | T-16 |
+| CA-04 | `test_ca04_dashboard_counts_in_the_business_timezone` (`timezone=Europe/Madrid` o ausente; `data.timezone` = MX) | API `tests/Feature/Admin/ReportTimezoneTest.php` | T-17 |
+| CA-05 | `test_ca05_report_and_export_in_business_timezone` (CSV, XLSX y PDF con `timezone=America/Tijuana`; día `2026-11-06`) y `test_ca05_csv_purchased_at_time_in_business_timezone` (`2026-11-06 23:30:00`) | API `tests/Feature/Admin/TicketReportExportTest.php` y `ReportTimezoneTest.php` | T-18 |
+| CA-06 | `test_ca06_history_filters_by_business_day` (`from`/`to` del 6 incluye el boleto; del 7 no) | API `tests/Feature/Tickets/TicketHistoryTest.php` | T-19 |
+| CA-07 | `test_ca07_same_day_cancellation_in_business_timezone` (venta 05:30 UTC, intento 06:10 UTC: no cancelable aunque `timezone=UTC`) y `test_ca07_cancellable_with_business_timezone` | API `tests/Feature/Tickets/CancelTicketSameDayTest.php` y `TicketCancellableZoneTest.php` | T-20 |
 | CA-08 | **Diferido a `api-022`** (reporte de cancelaciones, no existe aún). Ver brecha B-05. | API `tests/Feature/...` de `api-022` | T-23 (diferida) |
-| CA-09 | `test_ca09_vigencia_publica_con_arca_timezone` (noticia con `end_date` 6 visible con MX y no visible con UTC; eventos con el mismo criterio) | API `tests/Feature/Catalog/PublicNewsTest.php` y `PublicEventsLimitTest.php` | T-21 |
-| CA-10 | `test_ca10_el_parametro_timezone_del_cliente_se_ignora` (datos: `Asia/Tokyo`, `Mars/Olympus`, `EST`, `+05:00`; panel, reporte, exportación, historial, cancelación, noticias y eventos; respuesta idéntica sin `422`). Incluye `TicketDatesTest::test_ca10_zona_invalida_no_es_error` | API `tests/Feature/Timezone/ClientTimezoneIgnoredTest.php` y `tests/Feature/Tickets/TicketDatesTest.php` | T-22 |
+| CA-09 | `test_ca09_public_validity_uses_arca_timezone` (noticia con `end_date` 6 visible con MX y no visible con UTC; eventos con el mismo criterio) | API `tests/Feature/Catalog/PublicNewsTest.php` y `PublicEventsLimitTest.php` | T-21 |
+| CA-10 | `test_ca10_the_client_timezone_parameter_is_ignored` (datos: `Asia/Tokyo`, `Mars/Olympus`, `EST`, `+05:00`; panel, reporte, exportación, historial, cancelación, noticias y eventos; respuesta idéntica sin `422`). Incluye `TicketDatesTest::test_ca10_invalid_timezone_is_not_an_error` | API `tests/Feature/Timezone/ClientTimezoneIgnoredTest.php` y `tests/Feature/Tickets/TicketDatesTest.php` | T-22 |
 | CA-11 | `test_ca11_sesion_mysql_en_utc` (`select @@session.time_zone` devuelve `+00:00`) | API `tests/Feature/Timezone/BusinessTimezoneConfigTest.php` | T-16 |
 | CA-12 | `test_ca12_panel_reporte_e_historial_informan_arca_timezone` (`data.timezone`, `period.timezone` y `timezone` del historial) | API `tests/Feature/Admin/ReportTimezoneTest.php` y `tests/Feature/Tickets/TicketHistoryTest.php` | T-17, T-19 |
-| CA-13 | Verificación de cobertura por búsqueda de `test_ca01_` a `test_ca12_` en `tests/` (sin test propio); CA-08 abierto hasta `api-022` | Revisión en PR | T-32 |
+| CA-13 | Verificación de cobertura por búsqueda de `test_ca01_` a `test_ca16_` en `tests/` (sin test propio); CA-08 se verifica con `api-022` T-28 | Revisión en PR | T-32 |
+| CA-14 (P-06) | `test_ca14_boot_fails_with_invalid_arca_timezone` en `tests/Unit/Timezone/BusinessTimezoneTest.php` | API / tests | T-04 |
+| CA-15 (P-02) | `test_ca15_weekly_limit_uses_arca_timezone` en `tests/Feature/Memories/VisitorMemoryLimitsTest.php` | API / tests | T-24 |
+| CA-16 (P-03) | `test_ca16_effective_at_without_offset_is_read_in_arca_timezone` en `tests/Feature/Timezone/ScheduledPriceTimezoneTest.php` | API / tests | T-35 |
 
 Pruebas sin CA (cubren decisiones de la spec): `BusinessTimezoneTest` (unitaria, `tests/Unit/Timezone/BusinessTimezoneTest.php`): valida que `assertValid()` rechaza vacío, `Mars/Olympus` y abreviaturas, y acepta `America/Mexico_City` y `UTC` (decisión 2). Ver pregunta P-06.
 
@@ -107,7 +110,7 @@ Pruebas sin CA (cubren decisiones de la spec): `BusinessTimezoneTest` (unitaria,
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas ni ADR nuevo. Zona y zona de sesión solo por `.env` (`ARCA_TIMEZONE`, `DB_TIMEZONE`). Sin SDK de nube. Funciona igual en Aiven (ADR 0013) y MySQL local. |
 | II. La spec manda | Sí | Spec 025 Aprobada (2026-11-20) con decisiones finales. Plan y tasks con el mismo `025-single-business-timezone`. Plan pendiente de aprobación técnica: no se implementa todavía. |
 | III. Lógica separada de la interfaz | Sí | Toda la regla de día y zona está en `BusinessTimezone`, Actions y `PublicCalendar`. Controladores solo delegan. El dashboard no calcula días (`dashboard-019` RN-02). |
-| IV. Un test por criterio | Parcial (con brecha) | Mapeo completo de CA-01 a CA-07, CA-09 a CA-12. CA-08 queda en `api-022` (brecha B-05, pregunta P-05). CI en verde: pendiente de evidencia de la sesión principal. |
+| IV. Un test por criterio | Sí (CA-08 diferido a `api-022`, P-05) | Mapeo de CA-01 a CA-07 y CA-09 a CA-16. CA-08 se prueba en `api-022` (T-28). CI en verde: pendiente de evidencia de la sesión principal. |
 | V. Una sola fuente de verdad para los datos | Sí | Sin cambios de esquema ni DBR. Modelos y SoftDeletes sin cambio. Los instantes siguen en UTC. Riesgo de datos existentes (RN-08) documentado y con verificación previa. |
 | VI. Código en inglés, personas en español | Sí | `ARCA_TIMEZONE`, `DB_TIMEZONE`, `BusinessTimezone` en inglés. Mensaje de error de arranque y textos de docs en español. |
 
@@ -131,7 +134,18 @@ Pruebas sin CA (cubren decisiones de la spec): `BusinessTimezoneTest` (unitaria,
   - **B-06 Decisión 2 sin CA:** la decisión de arranque fallido no tiene CA en la spec, y su sección «Flujos y errores» aún dice «comportamiento pendiente (pregunta 2)». Ver P-06.
 - **Divergencia spec/código detectada en la revisión (no corregida aquí):** `api-019` (`SearchTicketHistoryGroup`) usa UTC para la fecha de compra. La spec ya lo fija como corrección (RN-03 y «Riesgos»).
 
-## Preguntas abiertas para aprobar este plan
+## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+
+- **P-01 (`mysql2`, B-01):** resuelta. La conexión `mysql2` no existe en `config/database.php` y no se crea en esta spec. Decisión 3 de la spec retirada; T-13 cerrada sin cambios. Divergencia reportada: `docs/02-arquitectura.md`, `infra/README.md` y `docs/database/diccionario-datos.md` describen la conexión como existente; su corrección queda fuera de este cambio.
+- **P-02 (memoria semanal, B-02):** `WeeklyMemoryLimitException` usa `arca.timezone`. Spec: RN-11, CA-15. Tarea: T-24, incluida la corrección de `apps/api/docs/momentos-contrato-para-mobile.md` (línea 152, `APP_TIMEZONE`), que es la referencia que hay que corregir.
+- **P-03 (precios programados, B-03):** la API interpreta la hora de «entrada en vigor» (`effective_at`) en `arca.timezone` cuando llega sin desfase. Es un cambio de contrato de `api-009` CA-18 y CA-19, anotado en su nota de revisión, y en la de `apps/dashboard/specs/005-ticket-sales.md`. El dashboard deja de usar `getTimezoneOffset` (`dashboard-019` T-10). Spec: RN-12, CA-16. Tarea nueva: T-35. Pregunta P-03b (desfase explícito) abierta en la spec.
+- **P-04 (zona en recibo y precios, B-04):** el recibo de venta y las respuestas de precios vigentes incluyen `timezone`. Spec: CA-12 enmendado, RN-13. Tarea nueva: T-36. Desbloquea `dashboard-019` T-09.
+- **P-05 (CA-08 y CA-10 del reporte de cancelaciones, B-05):** el test de CA-08 se entrega con `api-022` (T-28 de `tasks/022-ticket-cancellation-report.md`). CA-13 se cierra para CA-08 entonces.
+- **P-06 (arranque con zona inválida, B-06):** la API no arranca si `ARCA_TIMEZONE` está vacío o no es un identificador IANA; el error es claro y en español. Spec: CA-14 nuevo. Tarea: T-04.
+- **D-03 (dashboard, `formatDateTime`):** aceptado como respaldo fijo en `dashboard-019`, con la divergencia registrada. Este plan no lo modifica.
+- El plan se aprueba con sus propuestas de diseño (`BusinessTimezone`, eliminación de `ResolveRequestedTimezoneAction`, `DB_TIMEZONE` en la conexión `mysql`, CA-01 a CA-13 con sus pruebas).
+
+## Preguntas originales (cerradas por las decisiones de arriba)
 
 - **P-01 (mysql2, B-01):** la conexión `mysql2` para `settings_colores` no existe en `apps/api/src/config/database.php`. ¿Se define fuera de este repositorio (y en ese caso el cambio lo hace quien la mantiene) o debe crearse en la API en esta spec? Propuesta: no crearla aquí; anotar la brecha y cerrarla cuando exista la conexión. Bloquea solo T-13.
 - **P-02 (memoria semanal, B-02):** ¿el mensaje de `WeeklyMemoryLimitException` pasa a `arca.timezone`? Propuesta: sí, con la misma regla de RN-02. Implica ajustar `VisitorMemoryLimitsTest` y `momentos-contrato-para-mobile.md`. Bloquea T-24.
@@ -154,12 +168,30 @@ Pruebas sin CA (cubren decisiones de la spec): `BusinessTimezoneTest` (unitaria,
 
 ## Orden y aprobación
 
-1. Aprobación técnica de este plan y de las preguntas P-01 a P-06 (Jonathan y equipo).
-2. Respuesta a P-01 a P-06 registrada en la spec y en este plan.
+1. Aprobación técnica hecha por Jonathan el 2026-11-20 (preguntas P-01 a P-06 resueltas).
+2. Respuestas registradas en la spec y en este plan (2026-11-20).
 3. Consulta de solo lectura de `tickets.purchased_at` (sesión principal).
 4. Implementación según `apps/api/tasks/025-single-business-timezone.md` (T-02 en adelante).
 5. Verificación con evidencia de la sesión principal; operaciones valida `arca_zoo` antes de desplegar (decisión 4).
 
-- Revisión técnica: pendiente.
+- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan).
 - Aprobador funcional: Jonathan (spec aprobada 2026-11-20).
 - Evidencias: pendientes de la sesión principal. Esta sesión no tiene shell y no afirma que pruebas, lint ni CI pasen.
+
+## Decisión de coordinación 2026-11-20 (sesión principal)
+- P-03b: `effective_at` **con** desfase explícito se sigue aceptando y se respeta el instante indicado (compatibilidad con clientes actuales); **sin** desfase se interpreta en `arca.timezone`. El dashboard (dashboard-019) envía la hora sin desfase.
+
+## Consulta de solo lectura de `arca_pruebas` antes de implementar (2026-11-20, agente backend)
+
+- `@@session.time_zone = SYSTEM`, `@@global.time_zone = SYSTEM`, `@@system_time_zone = UTC`; `now()` = `utc_timestamp()` (2026-11-21 04:02:07), es decir, la sesión efectiva ya es UTC.
+- `tickets` (34 filas): `purchased_at` mínimo `2026-11-08 17:43:31`, máximo `2026-11-19 23:54:35`; `cancelled_at` es `DATETIME` y está nulo en las últimas filas. Los valores son coherentes con UTC (la hora actual en UTC es posterior al máximo).
+- `ticket_prices`: `effective_at` de `2026-11-07 22:35:31` a `2026-11-18 21:19:45`, coherente con UTC.
+- Conclusión: fijar `DB_TIMEZONE=+00:00` no desplaza datos existentes en `arca_pruebas`. No hace falta DBR. `arca_zoo` no se consultó (decisión 4).
+
+## Divergencias de implementación (2026-11-20)
+
+- **Ubicación de `timezone` en recibo y precios (dashboard-019):** el plan decía solo «incluyen `timezone`». Por contrato con el dashboard ya implementado, va dentro de `data`: `POST /tickets` en `data.timezone`, `GET /ticket-prices/current` en `data.timezone` junto a `adult` y `child` y `POST /ticket-prices` en `data.timezone` (y dentro de `data.current`). El historial lo lleva en la raíz.
+- **Helper de día de negocio:** además de `name()`, `now()`, `today()` y `assertValid()`, `BusinessTimezone` expone `startOfDayUtc(Y-m-d)`, `endOfDayUtc(Y-m-d)` (límite exclusivo) y `dateOf(instante)`, para `api-022` y los exportadores de `api-007`. `ListTicketHistoryAction` ya los usa.
+- **`effective_at` (P-03b):** sin desfase se interpreta en `arca.timezone`; con desfase o `Z` se respeta. El Request acepta ambos formatos. El caso de prueba de `TicketPriceValidationTest` que esperaba 422 sin desfase se cambió: ahora un valor sin desfase en el pasado y un formato inválido dan 422.
+- **Pruebas de CA-10 en noticias y eventos:** viven en `ClientTimezoneIgnoredTest` y se comprueba que la respuesta es idéntica con y sin el parámetro.
+- **CA-08:** diferido a `api-022` (sin cambio).

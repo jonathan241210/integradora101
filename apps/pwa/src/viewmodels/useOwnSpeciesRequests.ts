@@ -1,4 +1,4 @@
-import type { HasMorePage, OwnSpeciesRequestDto } from '@arca/api-client';
+import type { OwnSpeciesRequestDto, TotalPage } from '@arca/api-client';
 import { useCallback, useEffect, useState } from 'react';
 import { veterinarianApi } from '@/services/veterinarianApi';
 
@@ -7,12 +7,20 @@ export type OwnRequestsState = {
   status: OwnRequestsStatus;
   requests: OwnSpeciesRequestDto[];
   hasMore: boolean;
+  lastPage: number;
+  total: number;
 };
 
-export const loadingRequests: OwnRequestsState = { status: 'loading', requests: [], hasMore: false };
+export const loadingRequests: OwnRequestsState = {
+  status: 'loading',
+  requests: [],
+  hasMore: false,
+  lastPage: 1,
+  total: 0,
+};
 
 export async function loadOwnRequests(
-  api: { publicationRequests: { list(page?: number): Promise<HasMorePage<OwnSpeciesRequestDto>> } },
+  api: { publicationRequests: { list(page?: number): Promise<TotalPage<OwnSpeciesRequestDto>> } },
   page: number,
 ): Promise<OwnRequestsState> {
   try {
@@ -20,12 +28,20 @@ export async function loadOwnRequests(
     return {
       status: result.data.length === 0 ? 'empty' : 'ready',
       requests: result.data,
-      hasMore: result.meta.has_more,
+      hasMore: result.meta.has_more === true,
+      lastPage: result.meta.last_page,
+      total: result.meta.total,
     };
   } catch (error) {
     const status = typeof error === 'object' && error !== null && 'status' in error ? error.status : null;
     // En error no se conservan datos anteriores como actuales (CA-17).
-    return { status: status === 403 ? 'forbidden' : 'error', requests: [], hasMore: false };
+    return {
+      status: status === 403 ? 'forbidden' : 'error',
+      requests: [],
+      hasMore: false,
+      lastPage: 1,
+      total: 0,
+    };
   }
 }
 
@@ -44,8 +60,7 @@ export function useOwnSpeciesRequests() {
   }, [page, version]);
 
   const reload = useCallback(() => setVersion((current) => current + 1), []);
-  const next = useCallback(() => setPage((current) => current + 1), []);
-  const previous = useCallback(() => setPage((current) => Math.max(1, current - 1)), []);
+  const goToPage = useCallback((target: number) => setPage(Math.max(1, Math.floor(target) || 1)), []);
 
-  return { ...state, page, reload, next, previous };
+  return { ...state, page, reload, goToPage };
 }

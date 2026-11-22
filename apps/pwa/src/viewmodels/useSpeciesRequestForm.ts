@@ -22,6 +22,7 @@ export function useSpeciesRequestForm(species: SelectableSpeciesDto[], reloadSel
   const [pendingSpeciesId, setPendingSpeciesId] = useState<number | null>(null);
   const [focusRequest, setFocusRequest] = useState<{ field: string; nonce: number } | null>(null);
   const [resets, setResets] = useState(0);
+  const [confirmingReset, setConfirmingReset] = useState(false);
   const focusNonce = useRef(0);
 
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -73,6 +74,7 @@ export function useSpeciesRequestForm(species: SelectableSpeciesDto[], reloadSel
       if ('scientific_name' in patch) delete next.scientific_name;
       if ('habitat' in patch) delete next.habitat;
       if ('origin' in patch) delete next.origin;
+      if ('fun_fact' in patch) delete next.fun_fact;
       if ('publishedFields' in patch) delete next.published_fields;
       return next;
     });
@@ -86,7 +88,18 @@ export function useSpeciesRequestForm(species: SelectableSpeciesDto[], reloadSel
     });
   }
 
+  /** «Limpiar» pide confirmación si hay cambios sobre la precarga (CA-21). */
+  function requestReset() {
+    if (needsChangeConfirmation(draft, baseline)) setConfirmingReset(true);
+    else reset();
+  }
+
+  function cancelReset() {
+    setConfirmingReset(false);
+  }
+
   function reset() {
+    setConfirmingReset(false);
     setDraft(emptyDraft);
     setBaseline(null);
     setErrors({});
@@ -151,6 +164,9 @@ export function useSpeciesRequestForm(species: SelectableSpeciesDto[], reloadSel
     cancelChange,
     setField,
     reset,
+    requestReset,
+    cancelReset,
+    confirmingReset,
     photoPreview,
     toggleField,
     setImage,

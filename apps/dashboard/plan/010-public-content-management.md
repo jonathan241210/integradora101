@@ -428,3 +428,25 @@ Máximo 8 por ronda (`AGENTS.md`).
 10. (A2 de la spec, 2026-11-13) **Mecanismo de la URL.** ¿Se confirma `?section=tulanpedia&tab=requests|published` con `history.replaceState` y sin router (CA-63, CA-65)? **Resuelta (2026-11-14, Jonathan): sí.** Desbloquea T-30 y T-32.
 
 Decisiones tomadas en el plan, no preguntas: etiquetas de tipo de animal propuestas (R-9); accesibilidad y diseño adaptable verificados por T-27 sin CA propio; `http.ts` sin cambios; la foto se descarga con `http.download`.
+
+## Nota de revisión 2026-11-21: alineación visual al patrón de dashboard-020 (CA-66 a CA-73)
+
+- `sections/TulanpediaSection.tsx` monta el único `SectionHeading` («Administración» / «TulanPedia») y las pestañas; `SpeciesRequestsView` y `PublishedSpeciesView` ya no llevan encabezado.
+- `components/TulanpediaTabs.tsx` y `ReportTabs.tsx` comparten `section-tabs`, `section-tab`, `section-tab--active` y `section-tab-panel`. `tabForKey` (en `viewmodels/report-tabs.ts`) pasa a ser genérico para servir a ambas. TulanPedia deja de envolver el panel en un `div` para que sea hijo directo de `.dashboard-content`.
+- Espaciado: `.dashboard-content` fija `--content-gap` en cada media query y `.section-tab-panel` lo usa (`gap: var(--content-gap, 20px)`).
+- `styles.css`: `filter-form--species`, `species-cell`, barra de acciones (`species-detail__actions-main` / `-danger`), chips de la ficha y bloque `species-*` en la escala admin (breakpoints 820/640). Se eliminan los duplicados de `enclosure-grid` (admin), `report-metric-grid`, `table-card` y `.inline-confirm*`.
+- `SpeciesStatusBadge`: «Despublicada» pasa a tono `warning`.
+- Extensión prevista («Dato curioso», otro cambio): añadir la opción a `fichaFieldOptions` y el campo a `SpeciesFichaForm`; la ficha de solo lectura se genera desde `fichaFieldOptions`.
+- Pruebas: `tests/species-visual-alignment.test.tsx` (CA-66 a CA-73, `renderToStaticMarkup` y lectura de `styles.css`); ajustes en `reports-a11y`, `administration-quality` y `species-publication-coverage`.
+
+## Nota de revisión 2026-11-21 (b): Publicadas en tarjetas y Dato curioso (CA-74 a CA-79)
+
+- Tipos: `packages/api-client/admin-types.ts` (aditivo, CA-79). La API de `api-026` es el contrato; no se llama nada nuevo.
+- Dato curioso: `fichaFieldOptions` (+ `validateFunFact`, constantes y ayuda) y el borrador/`buildSheetUpdate` en `viewmodels/species-publication-shared.ts`; `components/SpeciesFichaForm.tsx` (textarea, contador); `views/SpeciesRequestDetailView.tsx` y `views/PublishedSpeciesDetailView.tsx` (lectura, como texto).
+- Tarjetas: `views/PublishedSpeciesView.tsx` sustituye `DataTable` por `ul.species-grid` con `SpeciesCard`; las miniaturas siguen viniendo de `loadThumbs` (`has_image` + `publishedSpecies.image`), sin llamadas nuevas. Estilos al final de `styles.css`.
+- Resumen de conteos: no se implementa; `GET /admin/published-species` solo devuelve `meta.has_more`. Requeriría ampliar `api-014`.
+- Pruebas: `tests/species-fun-fact-and-cards.test.tsx` (`renderToStaticMarkup`, reducer y lectura de `styles.css`); el test de cobertura exige hasta CA-79.
+
+## Nota 2026-11-21 (dashboard-020 rev. (d)): paginación con total
+
+Los reductores de `species-requests.ts` y `published-species.ts` guardan `lastPage` y `total`; las vistas los pasan a `Pagination` de `@arca/ui`. El resumen de conteos sigue sin implementarse. Ver `plan/020`.

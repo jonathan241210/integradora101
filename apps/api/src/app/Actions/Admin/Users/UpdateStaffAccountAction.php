@@ -23,7 +23,7 @@ class UpdateStaffAccountAction
 
             if ($newRole !== null && ! $target->hasRole($newRole)) {
                 $this->guard->ensureNotSelf($actor, $target, 'No puedes cambiar tu propio rol.');
-                $this->guard->ensureAnotherActiveAdmin($target);
+                // Las cuentas admin no llegan aquí desde la API (api-023): la continuidad la protege la consola.
                 $target->syncRoles([$newRole]);
                 $changes[] = 'role';
             }

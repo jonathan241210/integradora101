@@ -4,16 +4,18 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Animal;
-use App\Models\ClinicalEvaluation;
 use App\Models\Enclosure;
 use App\Models\Species;
 use App\Models\SyncOperation;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class StaffSyncController extends Controller
 {
@@ -204,7 +206,7 @@ class StaffSyncController extends Controller
     }
 
     /**
-     * @param array{operation_uuid:string,entity_type:string,client_entity_id?:string|null,depends_on_client_entity_id?:string|null,payload:array} $operation
+     * @param  array{operation_uuid:string,entity_type:string,client_entity_id?:string|null,depends_on_client_entity_id?:string|null,payload:array}  $operation
      * @return array<string,mixed>
      */
     private function processOperation(int $userId, array $operation): array
@@ -234,8 +236,9 @@ class StaffSyncController extends Controller
 
                 return $this->recordRejected($userId, $operation, 'unsupported_entity', 'Tipo de operación no soportado.');
             });
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             $message = collect($e->errors())->flatten()->first() ?: 'Los datos enviados no son válidos.';
+
             return $this->recordRejected($userId, $operation, 'validation_error', $message);
         } catch (\Throwable $e) {
             return $this->recordRejected($userId, $operation, 'processing_error', 'No se pudo procesar la operación. Inténtalo de nuevo.');
@@ -243,7 +246,7 @@ class StaffSyncController extends Controller
     }
 
     /**
-     * @param array<string,mixed> $operation
+     * @param  array<string,mixed>  $operation
      * @return array<string,mixed>
      */
     private function processAnimalOperation(int $userId, array $operation): array
@@ -272,7 +275,7 @@ class StaffSyncController extends Controller
         $hasSpeciesId = ! empty($data['species_id']);
         $hasSpeciesName = $speciesName !== '';
         if (! $hasSpeciesId && ! $hasSpeciesName) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'species' => ['Selecciona una especie existente o ingresa el nombre de una nueva.'],
             ]);
         }
@@ -293,8 +296,12 @@ class StaffSyncController extends Controller
         }
 
         $sex = $data['sex'];
-        if ($sex === 'hembra') $sex = 'F';
-        if ($sex === 'macho') $sex = 'M';
+        if ($sex === 'hembra') {
+            $sex = 'F';
+        }
+        if ($sex === 'macho') {
+            $sex = 'M';
+        }
 
         $origin = $data['origin'] ?? null;
         if ($origin !== null && isset($origins[$origin])) {
@@ -330,7 +337,7 @@ class StaffSyncController extends Controller
     }
 
     /**
-     * @param array<string,mixed> $operation
+     * @param  array<string,mixed>  $operation
      * @return array<string,mixed>
      */
     private function processEvaluationOperation(int $userId, array $operation): array
@@ -383,7 +390,7 @@ class StaffSyncController extends Controller
             'animal_id' => (int) $animalServerId,
             'data' => array_map(fn ($v) => is_string($v) ? $v : (is_scalar($v) ? (string) $v : $v), $data),
         ]);
-        $request->setUserResolver(fn () => \App\Models\User::find($userId));
+        $request->setUserResolver(fn () => User::find($userId));
 
         try {
             $response = $controller->store($request);
@@ -399,19 +406,24 @@ class StaffSyncController extends Controller
                 'status' => 'completed',
                 'processed_at' => now(),
             ]);
+
             return $this->resultFromOperation($op, 'completed');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             $message = collect($e->errors())->flatten()->first() ?: 'Los datos de la evaluación no son válidos.';
+
             return $this->recordRejected($userId, $operation, 'validation_error', $message);
-        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        } catch (HttpException $e) {
             $message = $e->getMessage() ?: 'No se pudo guardar la evaluación.';
             if ($e->getStatusCode() === 422) {
                 $content = json_decode((string) $e->getResponse()->getContent(), true);
                 $message = $content['message'] ?? $message;
                 $first = collect($content['errors'] ?? [])->flatten()->first();
-                if ($first) $message = $first;
+                if ($first) {
+                    $message = $first;
+                }
             }
             $code = $e->getStatusCode() === 403 ? 'forbidden' : ($e->getStatusCode() === 422 ? 'validation_error' : 'processing_error');
+
             return $this->recordRejected($userId, $operation, $code, $message);
         }
     }
@@ -430,7 +442,7 @@ class StaffSyncController extends Controller
     }
 
     /**
-     * @param array<string,mixed> $operation
+     * @param  array<string,mixed>  $operation
      */
     private function recordRejected(int $userId, array $operation, string $errorCode, string $message): array
     {

@@ -8,7 +8,7 @@ import { LoadingScreen } from '@/views/Spinner';
 import { ensureBootstrap, notifyPendingSummary, startSyncListeners } from '@/offline/sync-manager';
 
 function App() {
-  const { session, error, busy, login, logout, profile, expireSession } = useStaffSession();
+  const { session, error, retryAfterSeconds, busy, login, logout, profile, expireSession } = useStaffSession();
 
   useEffect(() => {
     onVeterinarianUnauthorized(expireSession);
@@ -24,6 +24,7 @@ function App() {
       <LoginView
         busy={busy}
         error={error}
+        retryAfterSeconds={retryAfterSeconds}
         onLogin={login}
       />
     );

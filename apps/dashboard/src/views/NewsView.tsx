@@ -1,5 +1,5 @@
 import type { FormEvent } from "react";
-import { Badge, Card, Field, SelectField, TextAreaField } from "@arca/ui";
+import { Badge, Card, Field, Pagination, SelectField, TextAreaField } from "@arca/ui";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ContentCardActions } from "@/components/ContentCardActions";
 import { ContentThumbnail } from "@/components/ContentThumbnail";
@@ -11,11 +11,12 @@ import { triggerKey, useInlineFocus } from "@/components/inline-focus";
 import { ImageUploadBox } from "@/components/ImageUploadBox";
 import { InlineFormFooter } from "@/components/InlineFormFooter";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { CardGridSkeleton } from "@/components/LoadingSkeletons";
 import { NoticeBar } from "@/components/NoticeBar";
-import { PaginationBar } from "@/components/PaginationBar";
 import { SectionHeading } from "@/components/SectionHeading";
 import { formatDate } from "@/viewmodels/formatters";
 import { visibleImageUrl } from "@/viewmodels/inline-content";
+import { confirmationFromCopy } from "@/viewmodels/confirmation";
 import { getNewsConfirmation, type NewsFormValues, type NewsViewModel } from "@/viewmodels/news-management";
 import { useContentPagination } from "@/viewmodels/useEventsPagination";
 
@@ -25,10 +26,16 @@ export function NewsView({ state, actions, focus = null }: NewsViewModel & {
   const { form, editing, fieldErrors: errors, pendingAction } = state;
   const pagination = useContentPagination(state.items, pendingAction, state.actionBusy, 6, focus);
   const confirmingVisibleItem = pendingAction !== null && pagination.items.some((item) => item.id === pendingAction.id);
-  const statusTarget = pendingAction?.type === "status"
+  // Estado y eliminación se confirman en ventana modal (dashboard-020, revisión 2026-11-21 (b)).
+  const pendingTarget = pendingAction
     ? state.items.find((item) => item.id === pendingAction.id)
     : undefined;
-  const statusCopy = statusTarget ? getNewsConfirmation("status", statusTarget) : null;
+  const pendingCopy = pendingAction && pendingTarget
+    ? confirmationFromCopy(
+        getNewsConfirmation(pendingAction.type, pendingTarget),
+        pendingAction.type === "status" ? "Confirmar cambio de estado" : undefined,
+      )
+    : null;
   const editingNow = editing !== null;
   const { registerTrigger, noticeRef } = useInlineFocus({
     pendingAction,
@@ -168,6 +175,7 @@ export function NewsView({ state, actions, focus = null }: NewsViewModel & {
         status={state.status}
         error={state.error}
         loadingText="Cargando noticias…"
+        skeleton={<CardGridSkeleton kind="news" label="Cargando noticias…" />}
         emptyText="Aún no hay noticias registradas."
         onRetry={actions.reload}
       />
@@ -181,10 +189,6 @@ export function NewsView({ state, actions, focus = null }: NewsViewModel & {
           </div>
           <div className="content-card-grid">
             {pagination.items.map((item) => {
-              const pending = pendingAction?.type === "delete" && pendingAction.id === item.id
-                ? pendingAction.type
-                : null;
-
               return (
                 <Card className="content-card" key={item.id} data-search-id={`news:${item.id}`}>
                   <ContentThumbnail url={item.image_url} name={item.title} />
@@ -200,15 +204,9 @@ export function NewsView({ state, actions, focus = null }: NewsViewModel & {
                     <ContentCardActions
                       subject={`la noticia ${item.title}`}
                       isActive={item.is_active}
-                      pending={pending}
-                      copy={pending ? getNewsConfirmation(pending, item) : null}
-                      busy={state.actionBusy}
-                      error={pending ? state.actionError : ""}
                       registerTrigger={(type) => registerTrigger(triggerKey({ type, id: item.id }))}
                       onEdit={() => actions.startEdit(item)}
                       onOpen={(type) => actions.openAction({ type, id: item.id })}
-                      onConfirm={actions.confirmAction}
-                      onCancel={actions.closeAction}
                     />
                   </div>
                 </Card>
@@ -216,27 +214,24 @@ export function NewsView({ state, actions, focus = null }: NewsViewModel & {
             })}
           </div>
           {pagination.lastPage > 1 && (
-            <PaginationBar
+            <Pagination
               page={pagination.page}
               lastPage={pagination.lastPage}
               total={state.items.length}
               busy={confirmingVisibleItem || state.actionBusy}
-              showPageNumbers
               onPageChange={pagination.changePage}
             />
           )}
         </section>
       )}
-      {statusCopy && (
-        <ConfirmDialog
-          copy={{ ...statusCopy, title: "Confirmar cambio de estado" }}
-          idleTitle="Cambiar estado de noticia"
-          busy={state.actionBusy}
-          error={state.actionError}
-          onConfirm={actions.confirmAction}
-          onCancel={actions.closeAction}
-        />
-      )}
+      <ConfirmDialog
+        copy={pendingCopy}
+        idleTitle="Confirmar acción de noticia"
+        busy={state.actionBusy}
+        error={state.actionError}
+        onConfirm={actions.confirmAction}
+        onCancel={actions.closeAction}
+      />
     </>
   );
 }

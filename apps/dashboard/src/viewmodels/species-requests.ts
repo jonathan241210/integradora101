@@ -50,6 +50,8 @@ export type SpeciesRequestsState = {
     status: "loading" | "ready" | "empty" | "error";
     items: SpeciesRequestSummaryDto[];
     hasMore: boolean;
+    lastPage: number;
+    total: number;
     error: string;
     forbidden: boolean;
   };
@@ -111,7 +113,15 @@ const closedDetail: Pick<
 export const initialSpeciesRequestsState: SpeciesRequestsState = {
   filter: "submitted",
   page: 1,
-  list: { status: "loading", items: [], hasMore: false, error: "", forbidden: false },
+  list: {
+    status: "loading",
+    items: [],
+    hasMore: false,
+    lastPage: 1,
+    total: 0,
+    error: "",
+    forbidden: false,
+  },
   ...closedDetail,
   notice: "",
 };
@@ -120,7 +130,7 @@ export type SpeciesRequestsAction =
   | { type: "filter-changed"; filter: RequestFilter }
   | { type: "page-changed"; page: number }
   | { type: "list-loading" }
-  | { type: "list-loaded"; items: SpeciesRequestSummaryDto[]; hasMore: boolean }
+  | { type: "list-loaded"; items: SpeciesRequestSummaryDto[]; hasMore: boolean; lastPage: number; total: number }
   | { type: "list-failed"; message: string; forbidden: boolean }
   | { type: "detail-opening"; id: number }
   | { type: "detail-closed" }
@@ -172,6 +182,8 @@ export function speciesRequestsReducer(
           status: action.items.length === 0 ? "empty" : "ready",
           items: action.items,
           hasMore: action.hasMore,
+          lastPage: action.lastPage,
+          total: action.total,
           error: "",
           forbidden: false,
         },
@@ -184,6 +196,8 @@ export function speciesRequestsReducer(
           status: "error",
           items: [],
           hasMore: false,
+          lastPage: 1,
+          total: 0,
           error: action.message,
           forbidden: action.forbidden,
         },
@@ -354,7 +368,13 @@ export async function loadRequestList(
     });
 
     if (ctx.isCurrent()) {
-      ctx.dispatch({ type: "list-loaded", items: page.data, hasMore: page.meta.has_more });
+      ctx.dispatch({
+      type: "list-loaded",
+      items: page.data,
+      hasMore: page.meta.has_more === true,
+      lastPage: page.meta.last_page,
+      total: page.meta.total,
+    });
     }
   } catch (error) {
     const described = describeSpeciesError(error, "requests");

@@ -95,7 +95,7 @@ describe("CA-12 administration-sections", () => {
     const { http, calls } = clientWith(
       () => new Response("x", { status: 200, headers: { "Content-Disposition": "attachment; filename=r.csv" } }),
     );
-    const api = createAdminApi(http, { deviceTimeZone: () => undefined });
+    const api = createAdminApi(http);
 
     const file = await api.reports.exportTickets(
       { period: "month", date: "2026-09-15", page: 4 },
@@ -174,7 +174,7 @@ describe("CA-14 administration-sections", () => {
       if (call.url.startsWith("/api/v1/admin/news")) return json(200, { data: [{ id: 1 }] });
       return json(200, { data: [{ id: 1 }], meta: { current_page: 1, last_page: 1, per_page: 25, total: 1 } });
     });
-    const api = createAdminApi(http, { deviceTimeZone: () => undefined });
+    const api = createAdminApi(http);
 
     const report = await api.reports.tickets({ period: "week", page: 2 });
     const news = await api.news.list();
@@ -217,65 +217,42 @@ describe("CA-19 administration-sections", () => {
     await api.reports.exportTickets(query, "csv").catch(() => undefined);
   }
 
-  it("envía timezone con la zona del dispositivo en panel, reporte y exportación", async () => {
+  it("CA-04 single-business-timezone: panel, reporte y exportación no envían timezone aunque el navegador informe otra zona", async () => {
+    const original = Intl.DateTimeFormat;
+    const spy = vi
+      .spyOn(Intl, "DateTimeFormat")
+      .mockImplementation(
+        (...args: ConstructorParameters<typeof Intl.DateTimeFormat>) => {
+          const format = new original(...args);
+          const resolved = format.resolvedOptions.bind(format);
+          format.resolvedOptions = () => ({ ...resolved(), timeZone: "Asia/Tokyo" });
+          return format;
+        },
+      );
     const { http, calls } = clientWith(ok);
 
-    await callAll(createAdminApi(http, { deviceTimeZone: () => "America/Tijuana" }));
-
-    expect(calls).toHaveLength(3);
-    for (const call of calls) {
-      expect(new URL(call.url, "http://x").searchParams.get("timezone")).toBe("America/Tijuana");
+    try {
+      await callAll(createAdminApi(http));
+      // Aunque un llamador antiguo pase timezone, el cliente no lo reenvía (RN-03).
+      await createAdminApi(http).reports.tickets({ period: "week", timezone: "Europe/Madrid" } as never);
+    } finally {
+      spy.mockRestore();
     }
-  });
 
-  it("no envía timezone si el navegador no informa la zona", async () => {
-    const { http, calls } = clientWith(ok);
-
-    await callAll(createAdminApi(http, { deviceTimeZone: () => undefined }));
-
+    expect(calls).toHaveLength(4);
     for (const call of calls) expect(call.url).not.toContain("timezone");
   });
 
-  it("un timezone explícito prevalece y el predeterminado usa la zona de Intl", async () => {
-    const explicit = clientWith(ok);
-    await createAdminApi(explicit.http, { deviceTimeZone: () => "America/Tijuana" }).reports.tickets({
-      period: "week",
-      timezone: "Europe/Madrid",
-    });
-    expect(explicit.calls[0].url).toContain("timezone=Europe%2FMadrid");
+  it("CA-06: el cliente no lee la zona del dispositivo (Intl no se consulta)", async () => {
+    const spy = vi.spyOn(Intl, "DateTimeFormat");
+    const { http } = clientWith(ok);
 
-    const fallback = clientWith(ok);
-    await createAdminApi(fallback.http).dashboard.summary();
-    const expected = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    expect(new URL(fallback.calls[0].url, "http://x").searchParams.get("timezone")).toBe(expected);
-  });
-});
-
-describe("CA-19 administration-sections · exportación con la zona del reporte", () => {
-  it("reporte y exportación usan la misma zona aunque la del sistema cambie entre ambas", async () => {
-    const responses = () =>
-      json(200, {
-        data: {
-          period: { type: "week", from: "a", to: "b", label: "S", previous_date: null, next_date: null, timezone: "America/Tijuana" },
-          totals: { tickets: 0, adults: 0, children: 0, revenue: "0.00" },
-          daily: [],
-          tickets: [],
-        },
-        meta: { current_page: 1, last_page: 1, per_page: 50, total: 0 },
-      });
-    const { http, calls } = clientWith(responses);
-    let system = "America/Mexico_City";
-    const api = createAdminApi(http, { deviceTimeZone: () => system });
-
-    const report = await api.reports.tickets({ period: "week" });
-    system = "Asia/Tokyo";
-    await api.reports.exportTickets(
-      { period: "week", timezone: report.period.timezone },
-      "csv",
-    );
-
-    const zones = calls.map((call) => new URL(call.url, "http://x").searchParams.get("timezone"));
-    expect(zones).toEqual(["America/Mexico_City", "America/Tijuana"]);
+    try {
+      await callAll(createAdminApi(http));
+      expect(spy).not.toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
   });
 });
 
@@ -352,5 +329,36 @@ describe("CA-04 inline-content-forms", () => {
 
     expect(posts).toHaveLength(2);
     expect(posts[1].init?.body).toBeInstanceOf(FormData);
+  });
+});
+
+describe("CA-15 fixed-roles-account-management", () => {
+  it("CA-15: las rutas de avisos y de cuentas usan el contrato de api-023", async () => {
+    const notice = {
+      id: 31,
+      action: "Cuenta creada",
+      account_email: "rosa@test.arca.invalid",
+      origin: "consola",
+      reason: "Alta inicial",
+      created_at: "2026-11-20T16:30:00+00:00",
+    };
+    const { http, calls } = clientWith((call) =>
+      call.url.endsWith("/read")
+        ? new Response(null, { status: 204 })
+        : json(200, { data: call.url.endsWith("/users/options") ? { departments: [], roles: [] } : [notice] }),
+    );
+    const api = createAdminApi(http);
+
+    expect(await api.consoleNotices.list()).toEqual([notice]);
+    await api.consoleNotices.read(31);
+    await api.users.options();
+
+    expect(
+      calls.filter((call) => !call.url.includes("csrf")).map((call) => `${call.init?.method} ${call.url}`),
+    ).toEqual([
+      "GET /api/v1/admin/console-notices",
+      "POST /api/v1/admin/console-notices/31/read",
+      "GET /api/v1/admin/users/options",
+    ]);
   });
 });

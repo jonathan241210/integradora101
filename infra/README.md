@@ -26,6 +26,23 @@ La familia MySQL 8.0.x es obligatoria en todos los ambientes; la revisión míni
 
 Ninguno de estos ajustes viaja con el código: la configuración local no se copia al servidor, y sin ellos la app arranca pero falla después. Se repite en cada ambiente y se registra con su evidencia. Es el mínimo conocido, no sustituye al checklist operativo aprobado que falta definir, y se amplía si aparece otro requisito.
 
+**Zona horaria (api-025)**
+
+- [ ] `ARCA_TIMEZONE` tiene la zona de negocio (por defecto y en producción `America/Mexico_City`, a confirmar por operaciones). Debe ser un identificador IANA: si está vacía o es inválida, la API no arranca.
+- [ ] `DB_TIMEZONE=+00:00` (valor por defecto): la sesión MySQL va en UTC.
+- [ ] Tras cambiar `.env` se ejecutó `php artisan config:clear` o `config:cache`.
+- [ ] **Evidencia antes de desplegar (operaciones, sobre `arca_zoo`):** `@@session.time_zone` y `@@system_time_zone`, y que `tickets.purchased_at` y `cancelled_at` guardados están en UTC.
+
+**Consola de administradores (api-023)**
+
+- [ ] `ARCA_PRIMARY_ADMIN_EMAIL` apunta a un administrador activo (titular) y `ARCA_ADMIN_RECOVERY=false`. Sin titular los comandos `arca:admin:*` de nivel alto fallan; el modo recuperación solo se activa durante el procedimiento de `apps/api/docs/administracion.md` y se desactiva al terminar (api-023).
+
+**Seguridad de la configuración (revisión de calidad y seguridad 2026-11-21)**
+
+- [ ] `APP_ENV=production` y `APP_DEBUG=false` en producción; nunca `APP_DEBUG=true` fuera de desarrollo.
+- [ ] El bloqueo por intentos fallidos de confirmación del titular (api-023) y los límites de frecuencia (`throttle`) viven en la caché: `CACHE_STORE=database` o `redis` (persistente y compartida entre procesos); **nunca** `array` ni `file` en producción, porque el bloqueo se perdería al reiniciar o no se compartiría.
+- [ ] `DEMO_STAFF_PASSWORD` vacía en producción y el comando `arca:demo:cancellation-reviews` (cuentas `demo-cancel-*`) **no se ejecuta nunca** en producción; el comando se niega fuera de `arca_pruebas` y con `APP_ENV=production`.
+
 **Imágenes de noticias y eventos**
 
 - [ ] `APP_URL` tiene la dirección pública real, con esquema y puerto si aplica. De ahí sale la URL de cada imagen.

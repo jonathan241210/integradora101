@@ -36,6 +36,8 @@ export type CreateHttpClientOptions = {
   baseUrl: string;
   fetchImpl?: typeof fetch;
   onUnauthorized?: () => void;
+  /** Opcional y aditivo: se invoca con 403 `two_factor_setup_required` (dashboard-015 CA-09). */
+  onTwoFactorSetupRequired?: () => void;
 };
 
 function cookieValue(name: string): string | null {
@@ -96,6 +98,9 @@ function apiError(response: Response, body: unknown): ApiError {
   error.name = "ApiError";
   error.status = response.status;
   if (typeof payload.code === "string") error.code = payload.code;
+  if (payload.mode === "window" || payload.mode === "always") {
+    error.mode = payload.mode;
+  }
   if (
     typeof payload.errors === "object" &&
     payload.errors !== null &&
@@ -152,6 +157,7 @@ export function createHttpClient({
   baseUrl,
   fetchImpl = fetch,
   onUnauthorized,
+  onTwoFactorSetupRequired,
 }: CreateHttpClientOptions): ExtendedHttpClient {
   let unauthorizedHandler = onUnauthorized;
 
@@ -224,7 +230,14 @@ export function createHttpClient({
 
     if (!response.ok) {
       if (response.status === 401) unauthorizedHandler?.();
-      throw apiError(response, responseData);
+      const failure = apiError(response, responseData);
+      if (
+        response.status === 403 &&
+        failure.code === "two_factor_setup_required"
+      ) {
+        onTwoFactorSetupRequired?.();
+      }
+      throw failure;
     }
 
     return responseData as T;

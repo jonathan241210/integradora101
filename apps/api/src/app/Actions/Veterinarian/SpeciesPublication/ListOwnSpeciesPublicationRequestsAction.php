@@ -7,7 +7,7 @@ use App\Enums\SpeciesRequestStatus;
 use App\Models\SpeciesPublicationRequest;
 use App\Models\User;
 use App\Support\PageGuard;
-use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListOwnSpeciesPublicationRequestsAction
 {
@@ -18,18 +18,20 @@ class ListOwnSpeciesPublicationRequestsAction
     /**
      * Own, non-deleted requests (CA-33). Each item carries `species_publication_status`.
      */
-    public function execute(User $user): Paginator
+    public function execute(User $user): LengthAwarePaginator
     {
-        if (PageGuard::exceeds()) {
-            return PageGuard::empty(self::PER_PAGE);
-        }
-
-        $page = SpeciesPublicationRequest::query()
+        $query = SpeciesPublicationRequest::query()
             ->where('created_by', $user->id)
             ->with(['species' => fn ($query) => $query->withTrashed()])
             ->orderByDesc('created_at')
-            ->orderByDesc('id')
-            ->simplePaginate(self::PER_PAGE);
+            ->orderByDesc('id');
+
+        // Page out of range: empty list that still reports the real total.
+        if (PageGuard::exceeds()) {
+            return PageGuard::empty(self::PER_PAGE, (clone $query)->reorder()->count());
+        }
+
+        $page = $query->paginate(self::PER_PAGE);
 
         $speciesIds = $page->getCollection()->pluck('species_id')->unique()->all();
         $pending = SpeciesPublicationRequest::query()

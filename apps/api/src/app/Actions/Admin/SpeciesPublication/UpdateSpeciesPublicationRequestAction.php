@@ -9,6 +9,7 @@ use App\Actions\SpeciesPublication\Media\StoreSpeciesImageAction;
 use App\Models\Species;
 use App\Models\SpeciesPublicationRequest;
 use App\Models\User;
+use App\Support\FunFactRules;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -58,6 +59,18 @@ class UpdateSpeciesPublicationRequestAction
 
         $before = [];
         $after = [];
+
+        // Final state under the lock (api-026 CA-05): the text only lives with the field selected.
+        $funFact = FunFactRules::resolve(
+            array_key_exists('fun_fact', $data) ? $data['fun_fact'] : $request->fun_fact,
+            $publishedFields ?? $request->published_fields,
+        );
+        unset($data['fun_fact']);
+
+        if ($funFact !== $request->fun_fact) {
+            $before['fun_fact'] = $request->fun_fact;
+            $after['fun_fact'] = $funFact;
+        }
 
         foreach ($data as $field => $value) {
             $new = $this->correction($field, $value, $species);

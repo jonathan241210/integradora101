@@ -70,3 +70,6 @@
 - [ ] **T-44**: Obtener aprobación técnica y validación funcional con evidencia por CA antes de considerar la implementación completa/cerrada.
 
 Cada tarea de implementación nombra CA/RN cubiertos; todo CA-01..CA-14 tiene al menos una tarea explícita de prueba automatizada. No se crean migraciones ni SQL desde agentes/clientes: las tareas de BD dependen de DBR aprobada y ejecución por responsable de BD. Ajustar nombres/rutas finales de archivos, endpoints y pruebas a la estructura real durante `/sdd-implement` sin ampliar alcance.
+## Revisión 2026-11-21 (corrección)
+
+- [x] **T-R1** (CA-15): `src/offline/register-sw.ts` registra `/sw.js` solo en producción (`import.meta.env.PROD`); en desarrollo retira service workers previos y vacía los cachés `arca-pwa-*`. Test `src/tests/service-worker-dev.test.ts`. `npx vitest run` 155/155, `npx tsc -b` sin errores.

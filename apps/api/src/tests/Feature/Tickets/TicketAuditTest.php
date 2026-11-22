@@ -12,13 +12,13 @@ class TicketAuditTest extends TicketFeatureTestCase
     public function test_ca28_ticket_sales_audits_sale_cancellation_and_price_change_without_secrets(): void
     {
         $admin = $this->createAccount('admin');
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($admin, '25.00', '16.00');
 
         $purchase = $this->sellPurchase($cashier, 2, 1);
         $sale = $purchase['tickets'][0];
-        $this->actAs($cashier)->postJson("/api/v1/admin/tickets/{$sale['folio']}/cancel", ['reason' => 'Motivo auditado'])->assertOk();
-        $this->actAs($admin)->postJson('/api/v1/admin/ticket-prices', ['adult_amount' => 30, 'child_amount' => 20, 'mode' => 'immediate'])->assertCreated();
+        $this->actAs($cashier)->postJson("/api/v1/admin/tickets/{$sale['folio']}/cancel", ['reason_code' => 'capture_error', 'reason' => 'Motivo auditado'])->assertOk();
+        $this->actAs($admin)->postJson('/api/v1/admin/ticket-prices', ['adult_amount' => 30, 'child_amount' => 20, 'password' => self::STEP_UP_PASSWORD, 'mode' => 'immediate'])->assertCreated();
 
         $sold = Activity::query()->where('event', 'ticket-sold')->where('causer_id', $cashier->id)->where('subject_id', $sale['folio'])->firstOrFail();
         $this->assertSame(Ticket::class, $sold->subject_type);
@@ -46,7 +46,7 @@ class TicketAuditTest extends TicketFeatureTestCase
 
     public function test_ca53_ticket_sales_one_ticket_sold_event_per_ticket_without_qr(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier, '25.00', '16.00');
         $logs = $this->activityCount('ticket-sold');
 

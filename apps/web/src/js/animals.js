@@ -32,7 +32,9 @@
     { key: 'gestation_period', label: 'Gestación' },
     { key: 'diet', label: 'Alimentación' },
     { key: 'longevity', label: 'Esperanza de vida' },
-    { key: 'characteristics', label: 'Características' }
+    { key: 'characteristics', label: 'Características' },
+    /* api-026: texto plano que la API publica solo si la Dirección lo marcó; se muestra con textContent (CA-11). */
+    { key: 'fun_fact', label: 'Dato curioso' }
   ];
 
   /* ---------- Helpers puros ---------- */

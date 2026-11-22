@@ -109,12 +109,14 @@ La decisión se toma por permiso (`profile.permissions`), no por nombre de rol.
 - **RN-04 (puntito):** El puntito aparece cuando el último conteo recibido de esa clave es mayor que 0 y desaparece cuando es 0. No hay número visible en el menú.
 - **RN-05 (sin estado de leído):** Abrir la sección no oculta el puntito. Solo lo oculta un conteo de 0, es decir, que la solicitud o el momento salió de la cola.
 - **RN-06 (sin tiempo real):** La actualización ocurre al iniciar sesión y al cambiar de pantalla. No hay sondeo, websockets, correo ni notificaciones del sistema.
-- **RN-07 (intervalo mínimo):** Entre dos consultas seguidas, el panel espera al menos 15 segundos (decisión 2026-11-20). Un cambio de pantalla dentro de ese intervalo usa el último resultado (CA-16).
+- **RN-07 (intervalo mínimo):** Entre dos consultas seguidas, el panel espera al menos 15 segundos (decisión 2026-11-20). Un cambio de pantalla dentro de ese intervalo usa el último resultado (CA-16). *Enmienda técnica 2026-11-20 (pregunta 4 del plan): solo las consultas con éxito actualizan el intervalo; un fallo no cuenta para él.*
 - **RN-08 (fallo):** Si la consulta falla, no se muestra puntito ni aviso nuevo (CA-10). El fallo no bloquea la navegación ni las acciones.
 - **RN-09 (menú contraído y móvil):** El puntito se ve también con el menú contraído (`dashboard-011` CA-01), sobre el icono, y en el menú móvil, con el mismo texto accesible.
 - **RN-10 (sin cambio de decisiones de revisión):** Las acciones de revisión (`dashboard-008`, `dashboard-010`) no cambian. Tras una decisión, el puntito se actualiza al cambiar de pantalla, no en la misma pantalla (decisión 2026-11-20).
 - **RN-11 (estilo):** Usa tokens semánticos y los componentes de `@arca/ui` y los avisos existentes. No fija colores de marca. Modo claro.
-- **RN-12 (tono):** El aviso de pendientes usa tono informativo neutro dentro de `DashboardNotifications`, sin dependencia nueva (decisión 2026-11-20). No usa el tono de éxito.
+- **RN-12 (tono):** El aviso de pendientes usa tono informativo neutro dentro de `DashboardNotifications`, sin dependencia nueva (decisión 2026-11-20). No usa el tono de éxito. *Enmienda técnica 2026-11-20 (pregunta 2 del plan): el encabezado del tono informativo es «Aviso».*
+- **RN-13 (clic en la sección abierta; enmienda técnica 2026-11-20, pregunta 3):** Un clic en la sección que ya está abierta no vuelve a consultar los conteos. Solo un cambio de sección consulta (CA-07).
+- **RN-14 (cola de avisos; enmienda técnica 2026-11-20, pregunta 1):** `DashboardNotifications` muestra los avisos en orden de llegada, en cola FIFO para todos los tonos: un aviso espera a que termine el anterior (por tiempo o por su botón) y después se muestra. Sustituye la ranura única de la versión anterior (CA-15).
 
 ## Datos, privacidad y auditoría
 
@@ -152,5 +154,15 @@ La decisión se toma por permiso (`profile.permissions`), no por nombre de rol.
 ## Revisión
 
 - Aprobadores y fecha: Jonathan, 2026-11-20.
+- Enmienda técnica 2026-11-20: decisiones de la aprobación técnica de `apps/dashboard/plan/018-pending-review-badges.md`. Enmienda RN-07 (fallo no cuenta) y RN-12 (etiqueta «Aviso»); añade RN-13 (clic sin consulta) y RN-14 (cola FIFO). CA sin cambio de número.
 - Evidencia/enlaces: `apps/dashboard/src/components/DashboardNotifications.tsx` (aviso emergente, `NotificationAlert`, cierre automático de 5 s), `apps/dashboard/src/components/NoticeBar.tsx`, `apps/dashboard/src/components/PendingRequestNotice.tsx`, `apps/dashboard/src/App.tsx` (menú `sidebar-link`, `navigate`, perfil con `permissions`), `apps/dashboard/src/viewmodels/navigation.ts` (secciones `memories` y `tulanpedia` con sus permisos), `apps/dashboard/src/viewmodels/dashboard-shell.ts` (acción `navigate`); specs `apps/dashboard/specs/008-memory-moderation.md`, `apps/dashboard/specs/009-species-request-review.md`, `apps/dashboard/specs/010-public-content-management.md`, `apps/dashboard/specs/011-collapsible-menu-event-pagination.md`; `apps/api/specs/024-pending-review-counts.md`.
 - Consulta de esquema vivo: no aplica a esta spec (no toca datos); ver `api-024`.
+
+## Nota de revisión (2026-11-21, `dashboard-021` y `api-027`)
+
+- **Clave nueva `cancellation_days`:** para quien tiene `reports.cancellations.view` (solo `admin`), el aviso al iniciar sesión y el puntito usan la clave `cancellation_days` de `GET /api/v1/admin/pending-counts` (`api-024` nota de 2026-11-21).
+- **Texto del aviso:** «Tienes N días de cancelaciones en Atención sin revisar.» y, con 1, «Tienes 1 día de cancelaciones en Atención sin revisar.». Mismo tono informativo, cola FIFO (RN-14) y cierre de 5 s (RN-03).
+- **Puntito:** aparece junto a «Reportes» (menú) y en la pestaña «Cancelaciones» cuando la clave es mayor que 0; el nombre accesible es «Reportes, con días de cancelaciones pendientes de revisión». Sustituye el criterio de CA-05 solo para esa sección; las secciones «TulanPedia» y «Momentos» no cambian.
+- **Permisos:** RN-02 y CA-11 se amplían con `reports.cancellations.view`. Sin ese permiso no hay consulta de `cancellation_days`.
+- **Intervalo y sondeo:** RN-07 y CA-16 sin cambio; la consulta sigue solo al iniciar sesión y al cambiar de pantalla.
+- **CA y RN nuevos:** ninguno en esta spec. El detalle de la pestaña y el registro de revisión está en `apps/dashboard/specs/021-cancellation-review-signals.md` (CA-10 a CA-12 de esa spec).

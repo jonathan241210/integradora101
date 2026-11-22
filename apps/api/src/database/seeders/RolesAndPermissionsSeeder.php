@@ -16,7 +16,9 @@ class RolesAndPermissionsSeeder extends Seeder
         $permissions = [
             'dashboard.view',
             'reports.view',
+            'reports.cancellations.view',
             'tickets.view',
+            'tickets.view-all',
             'tickets.create',
             'tickets.cancel',
             'ticket-prices.manage',
@@ -40,7 +42,7 @@ class RolesAndPermissionsSeeder extends Seeder
             ->mapWithKeys(fn (string $name) => [$name => Permission::findOrCreate($name, 'web')]);
 
         $roles = [
-            // Only the box office sells and cancels tickets; admin manages prices.
+            // Only the box office sells and cancels tickets; admin manages prices. `tickets.view-all` lo recibe por array_diff.
             'admin' => array_values(array_diff($permissions, ['tickets.create', 'tickets.cancel', 'species.review', 'memories.review'])),
             'zoo-admin' => [
                 'news.manage',
@@ -49,6 +51,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'dashboard.view',
                 'reports.view',
                 'tickets.view',
+                'tickets.view-all',
                 'cash-closings.view',
                 'public-content.view',
                 'species.review',
@@ -57,6 +60,14 @@ class RolesAndPermissionsSeeder extends Seeder
             'executive' => [
                 'dashboard.view',
                 'reports.view',
+                'public-content.view',
+            ],
+            // api-023: contenido público; sin panel, reportes ni cuentas.
+            'communications' => [
+                'news.manage',
+                'events.manage',
+                'memories.review',
+                'species.review',
                 'public-content.view',
             ],
             'cashier' => [

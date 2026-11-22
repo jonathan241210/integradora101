@@ -17,7 +17,7 @@ class StaffAccountTwoFactorTest extends AdminFeatureTestCase
         ])->save();
         $this->insertSession($target);
 
-        $this->actAs($actor)->deleteJson("/api/v1/admin/users/{$target->id}/two-factor")->assertNoContent();
+        $this->actAs($actor)->deleteJson("/api/v1/admin/users/{$target->id}/two-factor", ['password' => self::STEP_UP_PASSWORD])->assertNoContent();
 
         $fresh = $target->fresh();
         $this->assertNull($fresh->two_factor_secret);

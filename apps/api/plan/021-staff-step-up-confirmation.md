@@ -2,7 +2,7 @@
 
 - Spec: `apps/api/specs/021-staff-step-up-confirmation.md`
 - Estado de spec: Aprobada (Jonathan, 2026-11-20), con «Decisiones finales 2026-11-20».
-- Estado del plan: **Borrador — pendiente de aprobación técnica (equipo/Jonathan)**. No autoriza implementación. Bloqueado por las brechas B-1 a B-5 de la sección «Brechas abiertas».
+- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**. Brechas B-1 a B-8 cerradas en la sección «Decisiones 2026-11-20». La implementación sigue el orden de `tasks/021-staff-step-up-confirmation.md`.
 - Responsable técnico: `<por identificar según acuerdo del equipo>`
 - Orden: primer cambio de la secuencia 021 → 025 → 022 → 023 → 024. Los demás cambios dependen de su middleware `step-up` y del contrato 403 `password_confirmation_required` definidos aquí.
 - DBR: **no requerida** por el diseño propuesto (la ventana vive en la sesión; ver «Contrato y datos»). Condicionado a la consulta de esquema pendiente (T-01).
@@ -11,11 +11,12 @@
 ## Consulta de esquema vivo (`arca_pruebas`)
 
 - Estado actual registrado en la spec (2026-11-20, sesión principal): existen `sessions` y `activity_log`; `users` tiene `two_factor_*`; roles vivos `admin`, `zoo-admin`, `executive`, `cashier`, `veterinarian`.
-- **Pendiente de consulta a la base:** existencia de `cache` y `cache_locks` (necesarias si `CACHE_STORE=database`, valor de `.env.example`, para el contador de intentos de CA-27). No se afirma aquí que existan. La sesión principal debe ejecutar `information_schema` en solo lectura sobre `arca_pruebas` y registrar la fecha y el resultado en este apartado antes de aprobar el plan. Si faltan, el cambio requiere DBR propia (no se crea en este plan) o un cambio de driver de caché por `.env`, decisión a tomar en B-6.
+- **Resuelto 2026-11-20 (B-6):** `cache` y `cache_locks` existen en `arca_pruebas` (ver «Verificación de esquema»).
+- Historial de la consulta, previo a la resolución: existencia de `cache` y `cache_locks` (necesarias si `CACHE_STORE=database`, valor de `.env.example`, para el contador de intentos de CA-27). No se afirma aquí que existan. La sesión principal debe ejecutar `information_schema` en solo lectura sobre `arca_pruebas` y registrar la fecha y el resultado en este apartado antes de aprobar el plan. Si faltan, el cambio requiere DBR propia (no se crea en este plan) o un cambio de driver de caché por `.env`, decisión a tomar en B-6.
 
 ## Diseño de solución
 
-El flujo sigue la cadena de la API: ruta admin con `auth:sanctum` → `staff.user` → `administrator.two-factor` → `permission:<permiso>` → `throttle` (si existe) → **`step-up:<modo>`** → Form Request → Action → Resource. La API decide qué operación pide contraseña; el cliente solo reacciona a la respuesta.
+El flujo sigue la cadena de la API: ruta admin con `auth:sanctum` → `staff.user` → `administrator.two-factor` → `permission:<permiso>` → `throttle` (si existe) → **`console-managed-account`** (guard de `api-023`, solo rutas cuyo objetivo es una cuenta; decisión 2026-11-20, Q6 de `api-023`) → **`step-up:<modo>`** → Form Request → Action → Resource. La API decide qué operación pide contraseña; el cliente solo reacciona a la respuesta.
 
 Hay dos piezas independientes.
 
@@ -49,7 +50,7 @@ Componentes:
 - **`PasswordAttemptLimiter`** (contador en caché, clave por **usuario**, no por sesión):
   - `password-confirmation:failures:{userId}`: `Cache::add(..., 600)` en el primer fallo y `increment`. Ventana de conteo de 10 minutos desde el primer fallo.
   - Al quinto fallo en la ventana: se borra el contador y se escribe `password-confirmation:locked:{userId}` con TTL 600 s y valor `expires_at`. Así el bloqueo dura **10 minutos desde el quinto fallo**, como pide la spec, y no 10 minutos desde el primero (que es lo que daría `RateLimiter::hit` por defecto). Divergencia de implementación resuelta aquí; se registra en «Riesgos y decisiones».
-  - Un acierto no borra el contador (lectura literal de RN-07: «5 contraseñas incorrectas en 10 minutos»). Ver B-7 si Jonathan prefiere lo contrario.
+  - Un acierto sin bloqueo activo borra el contador del usuario (decisión B-7 de 2026-11-20; CA-41). Con bloqueo activo, la contraseña correcta responde 429 y no borra nada.
   - Bloqueo activo → 429 con `Retry-After` = segundos restantes y mensaje «Demasiados intentos. Intenta de nuevo en :seconds segundos.» (`lang/es/auth.php`, clave `throttle`).
 - **`LogPasswordConfirmationAction`**: auditoría con `activity()` (ver «Auditoría»).
 - **Exponer errores**: `PasswordIncorrectException` (422) y `PasswordAttemptsExceededException` (429) se renderizan en `bootstrap/app.php` dentro de `withExceptions`, igual que `ThrottleRequestsException` y `UnauthorizedException` hoy.
@@ -90,7 +91,7 @@ Modo `Siempre` = `step-up:always` (la contraseña va en el cuerpo). Modo `Ventan
 | Nombre de ruta | Modo | Notas |
 |---|---|---|
 | `admin.ticket-prices.store` | always | CA-12, CA-13, CA-14 |
-| `admin.users.password.update` | always | **Bloqueada por B-1** (el campo `password` ya es la nueva contraseña) |
+| `admin.users.password.update` | always | Decisión B-1: confirmación en `current_password`; `password` es la nueva contraseña (CA-37, RN-16) |
 | `admin.users.two-factor.destroy` | always | Contraseña en el cuerpo de un `DELETE` |
 | `admin.users.update` | staff-account-update | always si `role` viene y es distinto del actual (CA-36); si no, window (CA-18) |
 | `admin.tickets.cancel` | window | CA-16; api-022 mantiene este modo |
@@ -100,7 +101,7 @@ Modo `Siempre` = `step-up:always` (la contraseña va en el cuerpo). Modo `Ventan
 | `admin.enclosures.destroy` | window | CA-20 |
 | `admin.enclosures.qr.regenerate` | enclosure-qr-regenerate | window si el recinto tiene QR activo; none si no (**B-3**) |
 | `admin.enclosures.qr.generate` | none | CA-34 |
-| `admin.enclosures.store`, `admin.enclosures.update`, `admin.enclosures.status` | **sin clasificar** | **B-4**: el test de RN-01 falla hasta decidir |
+| `admin.enclosures.store`, `admin.enclosures.update`, `admin.enclosures.status` | none | Decisión B-4: No pide (CA-40). Sin `step-up` adicional que el de `none` |
 | `admin.tickets.store`, `admin.tickets.quote`, `admin.reports.tickets.export` | none | CA-21, CA-22 |
 | `admin.news.*`, `admin.events.*` (escritura) | none | CA-23 |
 | `admin.memories.accept|reject`, `admin.species-publication-requests.*` (escritura), `admin.species.unpublish|republish|publication.*` | none | CA-24 |
@@ -111,7 +112,7 @@ Lecturas `GET` de admin: sin `step-up` (CA-26).
 ### Respuestas
 
 - **200** `POST admin/password-confirmation`: `{ "data": { "confirmed_until": "2026-11-20T18:10:00Z" } }` (envoltorio `data` como el resto de admin; B-8 no cambia esto).
-- **403** (ventana o Siempre sin contraseña): `{ "message": "Confirma tu contraseña para realizar esta acción.", "code": "password_confirmation_required", "mode": "window" | "always" }`. El texto del mensaje es propuesta (B-8 menor; la spec no lo fija).
+- **403** (ventana o Siempre sin contraseña): `{ "message": "Confirma tu contraseña para realizar esta acción.", "code": "password_confirmation_required", "mode": "window" | "always" }`. Texto aceptado en la aprobación técnica (decisión B-8; RN-18 de la spec).
 - **403** `two_factor_setup_required` (sin cambios): `{ "message": "Debes configurar tu segundo factor de autenticación.", "code": "two_factor_setup_required" }`.
 - **422** contraseña incorrecta: `{ "message": "La contraseña no es correcta.", "errors": { "password": ["La contraseña no es correcta."] } }`. El campo `errors.password` permite al dashboard mostrarlo junto al campo (dashboard CA-03).
 - **429**: `{ "message": "Demasiados intentos. Intenta de nuevo en N segundos." }` con cabecera `Retry-After: N`. El cliente ya lee `Retry-After` en `packages/api-client/http.ts`.
@@ -122,7 +123,7 @@ Ninguna respuesta incluye la contraseña, el hash ni secretos 2FA.
 ### Contrato para los demás cambios (fijado aquí)
 
 - Toda ruta nueva de escritura bajo `/api/v1/admin/*` declara su modo en `routes/api.php` (`step-up:none|window|always|…`) y tiene una fila en la tabla de RN-01 de la spec. El test `StepUpClassificationTest` falla si aparece una escritura sin modo.
-- El campo `password` del cuerpo queda **reservado** para la confirmación de Siempre. Una operación nueva no puede usarlo con otro significado (ver B-1).
+- El campo `password` del cuerpo queda **reservado** para la confirmación de Siempre. Una operación nueva no puede usarlo con otro significado. Única excepción, decidida en B-1: `PUT admin/users/{user}/password`, donde `password` es la nueva contraseña y la confirmación va en `current_password` (RN-16 de la spec).
 - El middleware va después de `permission:*` y antes del Form Request, así que una operación sin permiso responde 403 de permiso, no de contraseña.
 - **api-022**: `admin.tickets.cancel` conserva `step-up:window` y su código de motivo se valida después del middleware.
 - **api-023**: añade roles a `two_factor_roles` en su spec; no toca `step-up` salvo para clasificar sus rutas nuevas.
@@ -146,7 +147,7 @@ Ninguna respuesta incluye la contraseña, el hash ni secretos 2FA.
 - Nunca se registra la contraseña, el hash, la ventana ni secretos 2FA. Las propiedades se construyen explícitamente; no se vuelcan `$request->all()`.
 - 403 `password_confirmation_required` no se registra (CA-29).
 - Bloqueo (429): se registra `failed` con `locked: true` (propuesta; ver B-8).
-- Log name: ver B-8 (`auth`, como `LogAuthenticationEventAction`, o `admin`, como api-007 CA-26).
+- Log name: `auth`, como `LogAuthenticationEventAction` (decisión B-8; RN-18 de la spec).
 
 ## Seguridad, offline y operación
 
@@ -168,44 +169,49 @@ Todas las pruebas: `DatabaseTransactions` sobre `arca_pruebas`; nunca `RefreshDa
 
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
-| CA-01 | `test_ca01_cajero_sin_2fa_recibe_two_factor_setup_required_en_admin` | API `tests/Feature/Auth/CashierTwoFactorTest.php` |
-| CA-02 | `test_ca02_cajero_sin_2fa_puede_consultar_me_salir_y_enrolar` | idem |
-| CA-03 | `test_ca03_cajero_con_2fa_recibe_reto_y_no_datos_hasta_completarlo` | idem |
-| CA-04 | `test_ca04_veterinarian_sin_2fa_entra_sin_enrolamiento` | idem |
-| CA-05 | `test_ca05_admin_y_zoo_admin_mantienen_2fa_de_api_003` | idem |
-| CA-06 | `test_ca06_confirmacion_correcta_abre_ventana_y_no_guarda_la_contrasena` | `tests/Feature/Auth/PasswordConfirmationTest.php` |
-| CA-07 | `test_ca07_confirmacion_incorrecta_responde_422_y_no_abre_ventana` | idem |
-| CA-08 | `test_ca08_ventana_acepta_a_9m59s_y_rechaza_a_10m1s_sin_alargarse` | idem (`Carbon::setTestNow`) |
-| CA-09 | `test_ca09_ventana_no_se_comparte_entre_sesiones` | idem (driver database) |
-| CA-10 | `test_ca10_logout_y_nuevo_login_eliminan_la_ventana` | idem |
-| CA-11 | `test_ca11_sesion_expirada_responde_401_no_403` | idem |
-| CA-12 | `test_ca12_siempre_sin_password_responde_403_aunque_haya_ventana` | `tests/Feature/Admin/StepUpAlwaysTest.php` |
-| CA-13 | `test_ca13_siempre_con_password_incorrecta_responde_422_sin_cambios` | idem |
-| CA-14 | `test_ca14_siempre_correcta_ejecuta_la_operacion_sin_crear_ventana` | idem |
-| CA-15 | `test_ca15_operaciones_ventana_sin_confirmacion_responden_403` (cancelar, crear, editar, desactivar, activar, eliminar cuenta, regenerar QR, eliminar recinto) | `tests/Feature/Admin/StepUpWindowTest.php` |
-| CA-16 | `test_ca16_cancelar_con_ventana_vigente_no_pide_otra_vez` | idem |
-| CA-17 | `test_ca17_crear_cuenta_no_admin_con_ventana` | idem |
-| CA-18 | `test_ca18_editar_cuenta_sin_cambio_de_rol_con_ventana` | idem |
-| CA-19 | `test_ca19_desactivar_y_eliminar_cuenta_con_ventana` | idem |
-| CA-20 | `test_ca20_regenerar_qr_con_codigo_y_eliminar_recinto_piden_ventana` | idem |
-| CA-21 | `test_ca21_vender_y_cotizar_no_piden_contrasena` | `tests/Feature/Admin/StepUpNoConfirmationTest.php` |
-| CA-22 | `test_ca22_exportar_reporte_no_pide_contrasena` | idem |
-| CA-23 | `test_ca23_noticias_y_eventos_no_piden_contrasena` | idem |
-| CA-24 | `test_ca24_recuerdos_y_especies_no_piden_contrasena` | idem |
-| CA-25 | `test_ca25_veterinarian_en_pwa_sin_2fa_ni_contrasena` | idem |
-| CA-26 | `test_ca26_lecturas_admin_no_piden_contrasena` | idem |
-| CA-27 | `test_ca27_cinco_fallos_bloquean_diez_minutos_en_ventana_y_siempre` | `tests/Feature/Admin/StepUpAttemptLimitTest.php` |
-| CA-28 | `test_ca28_auditoria_registra_succeeded_y_failed_sin_contrasena` | idem |
-| CA-29 | `test_ca29_403_de_falta_de_confirmacion_no_cuenta_ni_audita` | idem |
-| CA-30 | `test_ca30_cajero_con_2fa_vende_y_consulta_historial_con_forma_de_api_009` | `tests/Feature/Auth/CashierTwoFactorTest.php` |
+| CA-01 | `test_ca01_cashier_without_2fa_gets_two_factor_setup_required_in_admin` | API `tests/Feature/Auth/CashierTwoFactorTest.php` |
+| CA-02 | `test_ca02_cashier_without_2fa_can_read_me_log_out_and_enroll` | idem |
+| CA-03 | `test_ca03_cashier_with_2fa_gets_a_challenge_and_no_data_until_completed` | idem |
+| CA-04 | `test_ca04_veterinarian_without_2fa_enters_without_enrollment` | idem |
+| CA-05 | `test_ca05_admin_and_zoo_admin_keep_api_003_2fa` | idem |
+| CA-06 | `test_ca06_correct_confirmation_opens_a_window_and_does_not_store_the_password` | `tests/Feature/Auth/PasswordConfirmationTest.php` |
+| CA-07 | `test_ca07_wrong_confirmation_returns_422_and_does_not_open_a_window` | idem |
+| CA-08 | `test_ca08_window_accepts_at_9m59s_and_rejects_at_10m1s_without_extending` | idem (`Carbon::setTestNow`) |
+| CA-09 | `test_ca09_window_is_not_shared_between_sessions` | idem (driver database) |
+| CA-10 | `test_ca10_logout_and_new_login_remove_the_window` | idem |
+| CA-11 | `test_ca11_expired_session_returns_401_not_403` | idem |
+| CA-12 | `test_ca12_always_without_password_returns_403_even_with_window` | `tests/Feature/Admin/StepUpAlwaysTest.php` |
+| CA-13 | `test_ca13_always_with_wrong_password_returns_422_without_changes` | idem |
+| CA-14 | `test_ca14_always_with_correct_password_runs_without_opening_a_window` | idem |
+| CA-15 | `test_ca15_window_operations_without_confirmation_return_403` (cancelar, crear, editar, desactivar, activar, eliminar cuenta, regenerar QR, eliminar recinto) | `tests/Feature/Admin/StepUpWindowTest.php` |
+| CA-16 | `test_ca16_cancelling_with_an_open_window_does_not_ask_again` | idem |
+| CA-17 | `test_ca17_creating_a_non_admin_account_with_window` | idem |
+| CA-18 | `test_ca18_editing_an_account_without_role_change_with_window` | idem |
+| CA-19 | `test_ca19_deactivating_and_deleting_an_account_with_window` | idem |
+| CA-20 | `test_ca20_regenerating_qr_with_code_and_deleting_enclosure_require_a_window` | idem |
+| CA-21 | `test_ca21_selling_and_quoting_do_not_ask_for_password` | `tests/Feature/Admin/StepUpNoConfirmationTest.php` |
+| CA-22 | `test_ca22_exporting_a_report_does_not_ask_for_password` | idem |
+| CA-23 | `test_ca23_news_and_events_do_not_ask_for_password` | idem |
+| CA-24 | `test_ca24_memories_and_species_do_not_ask_for_password` | idem |
+| CA-25 | `test_ca25_veterinarian_in_pwa_needs_no_2fa_or_password` | idem |
+| CA-26 | `test_ca26_admin_reads_do_not_ask_for_password` | idem |
+| CA-27 | `test_ca27_five_failures_lock_for_ten_minutes_in_window_and_always` | `tests/Feature/Admin/StepUpAttemptLimitTest.php` |
+| CA-28 | `test_ca28_audit_records_succeeded_and_failed_without_password` | idem |
+| CA-29 | `test_ca29_403_for_missing_confirmation_neither_counts_nor_audits` | idem |
+| CA-30 | `test_ca30_cashier_with_2fa_sells_and_reads_history_with_api_009_shape` | `tests/Feature/Auth/CashierTwoFactorTest.php` |
 | CA-31 | `test_ca31_two_factor_roles_contiene_cashier_y_no_veterinarian_ni_executive` | idem |
-| CA-32 | `test_ca32_cada_criterio_tiene_al_menos_un_test` (lee `tests/` y busca `test_caNN_`; excluye solo los CA con decisión registrada en B-5) | `tests/Feature/Admin/StepUpClassificationTest.php` |
-| CA-33 | **Brecha B-5.** Fuera de alcance según «Decisiones finales». Sin test hasta resolver B-5. | — |
-| CA-34 | `test_ca34_primera_generacion_qr_no_pide_contrasena` | `tests/Feature/Admin/StepUpNoConfirmationTest.php` |
-| CA-35 | `test_ca35_activar_cuenta_no_admin_exige_ventana` | `tests/Feature/Admin/StepUpStatusAndRoleTest.php` |
-| CA-36 | `test_ca36_cambio_de_rol_con_otros_campos_exige_contrasena_siempre` | idem |
+| CA-32 | `test_ca32_every_criterion_has_at_least_one_test` (lee `tests/` y busca `test_caNN_`; excluye solo los CA con decisión registrada en B-5) | `tests/Feature/Admin/StepUpClassificationTest.php` |
+| CA-33 | Fuera de alcance según «Decisiones finales» y decisión B-5 (2026-11-20). Sin test. | — |
+| CA-34 | `test_ca34_first_qr_generation_does_not_ask_for_password` | `tests/Feature/Admin/StepUpNoConfirmationTest.php` |
+| CA-35 | `test_ca35_activating_a_non_admin_account_requires_a_window` | `tests/Feature/Admin/StepUpStatusAndRoleTest.php` |
+| CA-36 | `test_ca36_role_change_with_other_fields_always_requires_password` | idem |
+| CA-37 | `test_ca37_reset_password_confirms_with_current_password` | `tests/Feature/Admin/StepUpAlwaysTest.php` (B-1) |
+| CA-38 | `test_ca38_admin_account_returns_admin_403_before_password` | `tests/Feature/Admin/StepUpWindowTest.php` (orden con api-023) |
+| CA-39 | `test_ca39_regenerating_qr_without_code_does_not_ask_for_password` | `tests/Feature/Admin/StepUpNoConfirmationTest.php` (B-3) |
+| CA-40 | `test_ca40_enclosure_create_edit_and_status_do_not_ask_for_password` | idem (B-4) |
+| CA-41 | `test_ca41_success_without_lock_clears_previous_failures` | `tests/Feature/Admin/StepUpAttemptLimitTest.php` (B-7) |
 
-Pruebas adicionales (no CA, RN-01): `test_rn01_toda_escritura_admin_declara_modo_step_up` (recorre `Route::getRoutes()` y exige parámetro `step-up:` en cada `POST|PUT|PATCH|DELETE` bajo `admin.*`, excepto `admin.password-confirmation.store`). Falla mientras B-4 esté abierta.
+Pruebas adicionales (no CA, RN-01): `test_rn01_every_admin_write_declares_a_step_up_mode` (recorre `Route::getRoutes()` y exige parámetro `step-up:` en cada `POST|PUT|PATCH|DELETE` bajo `admin.*`, excepto `admin.password-confirmation.store`). Tras la decisión B-4 (2026-11-20) debe pasar en verde.
 
 Regresión obligatoria: `AdministratorTwoFactorTest`, `StaffAccountTwoFactorTest`, `AdminAccessTest`, `MemoriesReviewAccessTest`, `TicketPriceAccessTest` y `MeTest` en verde; sus expectativas de 2FA se mantienen salvo la lista de roles.
 
@@ -214,15 +220,33 @@ Regresión obligatoria: `AdministratorTwoFactorTest`, `StaffAccountTwoFactorTest
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas (ADR 0001). Sesión y caché por `.env` (`database`). Sin funciones de nube. |
-| II. La spec manda | Parcial | Spec 021 Aprobada y plan/tasks con el mismo NNN-slug. **Brechas B-1 a B-8 abiertas**: bloquean T-10 (B-1), T-12 (B-2, B-3), T-13 (B-4), T-16 (B-4, B-5) y T-17 (B-5). |
+| II. La spec manda | Sí | Spec 021 Aprobada (enmienda técnica 2026-11-20) y plan/tasks con el mismo NNN-slug. Brechas B-1 a B-8 cerradas el 2026-11-20. |
 | III. Lógica separada de la interfaz | Sí | Clasificación y verificación en Actions y middleware; controladores delgados; el dashboard solo presenta (CA-12 de dashboard). |
-| IV. Un test por criterio | Parcial | Mapeo CA-01 a CA-36 completo salvo **CA-33** (B-5). CI no verificado en esta sesión (sin shell). |
+| IV. Un test por criterio | Parcial | Mapeo CA-01 a CA-41 completo, con **CA-33 fuera de alcance** (B-5). `test_ca32_*` exige el docblock «CA-NN staff-step-up-confirmation» junto a cada `test_caNN_*` de api-021. CI no verificado en esta sesión. |
 | V. Una sola fuente de verdad para los datos | Sí | Sin esquema nuevo. Ventana en sesión; contador en caché; auditoría en `activity_log` sin borrado. Pendiente: confirmar tablas de caché (T-01). |
 | VI. Código en inglés, personas en español | Sí | Rutas, claves de sesión, códigos `password_confirmation_required` y `two_factor_setup_required`, eventos en inglés; mensajes y descripciones de auditoría en español. |
 
 Excepciones: ninguna implementada. Si B-6 exige cambiar el driver de caché, se abre ADR de configuración (no es dependencia nueva, pero se revisa).
 
-## Brechas abiertas (bloquean la aprobación técnica)
+## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+
+Cierran las brechas y preguntas del borrador. Cada decisión queda reflejada en la spec (enmienda técnica 2026-11-20) y en las tasks.
+
+- **Decisión 2026-11-20 — B-1 (`PUT users/{user}/password`):** la confirmación del administrador va en `current_password`; `password` es la nueva contraseña. Respuestas: 403 `password_confirmation_required` (`mode: always`) sin `current_password`; 422 con `current_password` incorrecta; 200 con `current_password` correcta. Spec: CA-37, RN-16. Tasks: T-10. Consumidores: `apps/dashboard/plan/015` (T-07 resetPassword).
+- **Decisión 2026-11-20 — B-2 (cuentas no admin y `zoo-admin`):** crear, editar, activar, desactivar y eliminar cuentas `zoo-admin` y demás no admin es **Ventana**. Las cuentas con rol `admin` no son objetivo de estas operaciones desde la API; su 403 de `api-023` se evalúa antes que el de contraseña (CA-38, RN-17). Implementación: el guard `console-managed-account` (de `api-023`) va como middleware entre `permission:*` y `step-up:*` en las rutas cuyo objetivo es una cuenta. Pendiente de confirmar en la tarea de `api-023` (ver nota en su plan): el 403 de «rol `admin` pedido» (`api-023` CA-12) no está ordenado frente al 403 de contraseña; ver «Preguntas de orden» abajo.
+- **Decisión 2026-11-20 — B-3 (regenerar QR sin código previo):** **No pide**, tratado como primera generación (CA-39). `ResolveEnclosureQrRegenerateModeAction` devuelve `none` si el recinto no tiene QR activo.
+- **Decisión 2026-11-20 — B-4 (alta, edición y estado de recintos):** **No pide** (CA-40). `admin.enclosures.store`, `admin.enclosures.update` y `admin.enclosures.status` llevan `step-up:none`. Se elimina la brecha del test de RN-01.
+- **Decisión 2026-11-20 — B-5 (CA-32 frente a «Decisiones finales»):** CA-32 se enmienda y excluye CA-33 explícitamente. CA-33 no tiene test ni tarea de implementación (T-17 se cierra como «fuera de alcance»).
+- **Decisión 2026-11-20 — B-6 (caché en `arca_pruebas`):** **Resuelta.** `cache` y `cache_locks` existen en `arca_pruebas` y `CACHE_STORE=database` (`.env.example` y `config/cache.php`). No hace falta DBR ni cambio de driver. Consulta de solo lectura de la sesión principal, 2026-11-20.
+- **Decisión 2026-11-20 — B-7 (aciertos y contador):** una confirmación correcta sin bloqueo activo **borra** los fallos previos del usuario (CA-41; enmienda de RN-07). Con bloqueo activo, la contraseña correcta responde 429 y no borra el contador.
+- **Decisión 2026-11-20 — B-8 (auditoría y textos):** `log_name` `auth` con correo, IP y user-agent (RN-18). Textos del 403, 422 y 429 y envoltorio `data` del 200 propuestos por este plan: **aceptados**.
+- **Decisión 2026-11-20 — resto de propuestas del plan:** aceptadas (modo `none|window|always|staff-account-update|enclosure-qr-regenerate`, `PasswordAttemptLimiter` con clave por usuario y bloqueo de 10 minutos desde el quinto fallo, auditoría con `activity()`, errores `PasswordIncorrectException` y `PasswordAttemptsExceededException`, `Carbon::setTestNow` para CA-08 y CA-27).
+
+### Preguntas de orden (surgidas de la decisión B-2; pendientes)
+
+1. ¿El 403 de «rol `admin` pedido» (`api-023` CA-12, en alta o cambio de rol) se evalúa antes del 403 de contraseña (`step-up`) cuando el cuerpo pide `role: "admin"` sin `password`? La decisión de 2026-11-20 solo fija el orden para la **cuenta** `admin` (Q6 de `api-023`). Propuesta: sí, igual que la cuenta, para no revelar nada con la contraseña antes del rechazo de rol. Hasta decidir, T-12 no cierra CA-12.
+
+## Brechas abiertas (histórico; cerradas por la sección «Decisiones 2026-11-20» de arriba)
 
 - **B-1 (campo `password` en `PUT users/{user}/password`).** La spec usa `password` como contraseña de confirmación en todas las operaciones de Siempre, pero en esta ruta `password` ya es la **nueva** contraseña del usuario restablecido. No se pueden usar ambos significados en el mismo campo. *Recomendación:* en esta ruta, la confirmación va en `current_password` (contraseña del administrador) y `password` queda para la nueva. Requiere enmienda a api-021 CA-12/CA-13/CA-06 del dashboard para esta ruta. Hasta decidir, T-09 queda bloqueada para esta ruta.
 - **B-2 (cuentas con rol `admin` o `zoo-admin` como objetivo o como rol nuevo).** La spec clasifica solo cuentas «no admin». Pregunta: ¿crear, editar, activar, desactivar o eliminar una cuenta `admin`/`zoo-admin` pide Ventana, Siempre o queda rechazada por las reglas de api-007 antes de confirmar? *Recomendación:* Ventana en todos los casos, y que api-007 rechace la operación sobre cuentas admin después del middleware.
@@ -241,22 +265,49 @@ Preguntas: máximo 8 por ronda; aquí hay 7 (B-1, B-2, B-3, B-4, B-5, B-7, B-8) 
 - **Pruebas de fixture.** Las 60 llamadas `createAccount('cashier', false)` fallan con `two_factor_setup_required` tras el cambio de config. Se cambian a 2FA confirmado; no se relajan los CA. Se revisan una a una porque algunas prueban permisos (403 de permiso) y pueden enmascararse.
 - **Divergencia de bloqueo resuelta:** `RateLimiter::hit` bloquea desde el primer fallo; la spec pide 10 minutos desde el bloqueo. Se implementa con clave propia (ver «Diseño»).
 - **Orden de middleware:** el middleware va antes de la validación del Form Request. Un Siempre con cuerpo inválido y contraseña incorrecta responde 422 de contraseña; aceptado.
-- **`StepUp` antes de las reglas de negocio de api-007:** una operación sobre una cuenta admin sin ventana responde 403 de contraseña antes de la negativa de negocio (B-2).
+- **Orden con cuentas admin:** el 403 de cuenta admin de `api-023` se evalúa antes que el de contraseña (decisión Q6 de `api-023`, CA-38). Queda abierta la pregunta de orden sobre `role: "admin"` pedido (ver «Preguntas de orden»).
 - **Alternativas descartadas:** Fortify `confirmPassword` (no cubre `/admin`); `password.confirm` de Laravel (423, sin modo, sin límite ni auditoría); guardar la ventana en tabla propia (contradice RN-11).
 
 ## Orden y aprobación
 
-1. Aprobación de este plan con B-1 a B-8 resueltas y B-6 consultada (sesión principal, solo lectura, fecha registrada).
+1. Aprobación técnica de este plan: **hecha por Jonathan el 2026-11-20** (B-1 a B-8 cerradas; B-6 consultada, solo lectura, con fecha).
 2. T-01 (consulta de esquema) → T-02 (config) → T-03 (2FA cajero) → T-04 (fixtures).
 3. T-05 (soporte y excepciones) → T-06 (confirmación y ventana) → T-07 (auditoría y límite) → T-08 (middleware) → T-09 (resolutores de modo dinámico).
 4. Operaciones: T-10 (Siempre), T-11 (cancelar con ventana), T-12 (cuentas y recintos con ventana), T-13 (recintos sin clasificar, B-4), T-14 (sin confirmación).
 5. T-15 (límite e intentos en ambos modos), T-16 (RN-01 y cobertura CA-32), T-17 (CA-33, B-5), T-18 (documentación), T-19 (verificación), T-20 (PR), T-21 (estado de la spec).
 
 - Dependencias: `apps/dashboard/tasks/015-step-up-confirmation.md` puede empezar con contratos simulados tras aprobar este plan; la integración real requiere T-06 a T-12.
-- Revisión técnica: pendiente (equipo, según acuerdo).
+- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan). Revisión adicional de equipo: según acuerdo.
 - Aprobador funcional: Jonathan (spec aprobada 2026-11-20).
 - Evidencias: pendientes de la sesión principal (consulta de esquema, `php artisan test` contra `arca_pruebas`, Pint). Esta sesión no tiene shell y no afirma que pasen.
 
 ## Verificación de esquema de la sesión principal (2026-11-20, solo lectura)
 - B-6 resuelta: `cache` y `cache_locks` existen en `arca_pruebas` (`information_schema.tables`); `CACHE_STORE=database` en `.env.example` y por defecto en `config/cache.php`. El contador de intentos cabe sin DBR.
 - `sessions` existe y `SESSION_DRIVER=database` en `.env.example`.
+
+## Decisión de coordinación 2026-11-20 (sesión principal)
+- El 403 por pedir el rol `admin` (api-023 CA-12) también se evalúa **antes** que el 403 de confirmación de contraseña, igual que el de cuenta admin (CA-38): toda negativa por reglas de admin precede a pedir contraseña, para no pedir la contraseña de una operación que de todos modos se rechazará.
+
+## Divergencias de implementación (2026-11-20, sesión de implementación)
+
+Cambios menores respecto al diseño, sin alterar el contrato 403/422/429 ni los CA:
+
+1. **Limpieza de la ventana en login y logout (CA-10).** Las rutas de login y logout de personal son de Fortify (`api/v1/auth/*`), no controladores propios. En lugar de editar un controlador, el listener `app/Listeners/ClearStepUpWindow.php` escucha `Illuminate\Auth\Events\Login` y `Logout` (registrado una sola vez en `AppServiceProvider`; su `handle(object $event)` evita el doble registro por auto-descubrimiento que provocaba el tipo `Login|Logout`, comprobado con `php artisan event:list`) y borra `arca.step_up.confirmed_until` de la sesión. El `AuthController` de la PWA (`staff/auth/*`, tokens) no usa sesión ni ventana.
+2. **Segundo parámetro del middleware.** `step-up:always` admite un campo opcional: `step-up:always,current_password` en `admin.users.password.update` (decisión B-1). Por defecto el campo es `password`.
+3. **Cliente sin sesión.** `POST admin/password-confirmation` sin sesión de navegador (token Bearer) responde 422 «La confirmación de contraseña requiere una sesión de navegador.» sin consumir intentos; la ventana no puede existir sin sesión (RN-11). No estaba cubierto por la spec; solo afecta a clientes que no son SPA.
+4. **Resolutores con recurso inexistente.** `ResolveStaffAccountUpdateModeAction` y `ResolveEnclosureQrRegenerateModeAction` devuelven `none` si la cuenta o el recinto no existen, para que la ruta responda 404 sin pedir contraseña por una operación imposible.
+5. **Bloqueo (429) auditado.** Un intento rechazado por bloqueo registra `password-confirmation.failed` con `locked: true` (propuesta del plan aceptada en B-8).
+6. **CA-38 parcial.** El guard `console-managed-account` de `api-023` no existe aún. Esta feature solo fija y prueba el orden de middleware (`permission:users.manage` antes de `step-up:*` en las seis rutas de cuentas), que permite insertar el guard entre ambos. El 403 de cuenta admin y el de rol `admin` pedido (decisión de coordinación) se prueban en `api-023`. T-12 queda abierta por esa razón.
+7. **Pruebas de otras specs.** `actAs()` de `AdminFeatureTestCase` y `TicketFeatureTestCase` abre una ventana de confirmación vigente (sesión de navegador simulada con `ConfirmsStepUp`) para que las pruebas de api-007 y api-009 sigan cubriendo sus CA sin repetir la confirmación; las operaciones «Siempre» de esas pruebas envían `password` o `current_password`. Ninguna aserción de esos CA se relajó. Las pruebas de api-021 usan `actAsWithoutWindow()` y `actAsConfirmed()`.
+8. **`tests/Feature/Auth/PasswordConfirmationTest.php` (CA-09, CA-10, CA-11)** usan `session.driver=database` real con login por Fortify, cookie de sesión (`withCredentials()`) y una ruta de prueba con `step-up:window`; el resto de pruebas de ventana usan la sesión en memoria de PHPUnit (`SESSION_DRIVER=array`).
+9. **Pint.** `vendor/bin/pint --test` completo reporta archivos ajenos a este cambio (migraciones, `Animal`, `StaffSyncController`, etc.); se verificaron solo los archivos tocados por esta feature.
+10. **Ajustes de la revisión de calidad y seguridad (2026-11-20).**
+    - La contraseña de «Siempre» se lee solo del cuerpo (JSON o formulario), nunca de la query (`test_ca12_password_in_the_query_does_not_confirm`).
+    - `ResolveStaffAccountUpdateModeAction` reutiliza `FindManageableStaffAccountAction`: cuenta inexistente o fuera de alcance da `none` (404 sin gastar intentos ni auditar), y compara el rol con `getRoleNames()->contains()`, no con `hasRole` (que interpreta `|`).
+    - Concurrencia (CA-27): `VerifyStaffPasswordAction` serializa bloqueo, comparación y contador con `Cache::lock` por usuario (10 s; si no obtiene el candado responde 429). Cota: el candado es de la caché (`database`, tabla `cache_locks`), no de MySQL.
+    - `admin.password-confirmation.store` lleva `throttle:password-confirmation` (10 por minuto y usuario; «Demasiadas solicitudes de confirmación. Espera un minuto e inténtalo de nuevo.»), definido en `AppServiceProvider`. No es un CA; prueba `test_rn07_*`.
+    - Auditoría del bloqueo: solo el primer intento bloqueado de cada periodo de bloqueo se registra (`failed`, `locked: true`); los siguientes responden 429 sin registro.
+    - `StepUpWindow` guarda también `arca.step_up.user_id` y `isOpen()` lo compara con el usuario autenticado.
+    - Pruebas: CA-27 separa los fallos en el tiempo (el primero en T y el quinto en T+5 min) y comprueba que bloqueo y `Retry-After` cuentan desde el quinto; CA-38 añade pruebas de comportamiento (ticket-prices, cancel y users.update sin permiso y sin `password` responden el 403 de permiso); CA-32 busca el docblock propio.
+11. **(Sustituido por el punto 12.)**
+12. **CA-42 / RN-19 (hallazgo de seguridad aprobado por Jonathan).** `POST staff/auth/login` ya no emite token a cuentas con rol de `config('arca.two_factor_roles')`: responde 403 `two_factor_login_required` después de validar la contraseña (sin enumerar cuentas), antes de `RateLimiter::clear` y de `last_login_at`. La regla vive en `app/Actions/Auth/RequiresBrowserTwoFactorLoginAction.php` (`forRole`, `forPersonalAccessToken`); el controlador solo delega. Defensa adicional: `EnsureAdministratorTwoFactor` rechaza con el mismo 403 un token personal (`currentAccessToken()` que no es `TransientToken`) de una cuenta con rol de 2FA, lo que cubre tokens emitidos antes del cambio. Pruebas: `tests/Feature/Auth/StaffTokenTwoFactorTest.php` (`test_ca42_*`). Ningún test existente usaba `staff/auth/login`.

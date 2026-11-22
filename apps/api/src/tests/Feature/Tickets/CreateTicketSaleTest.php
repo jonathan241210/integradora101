@@ -8,7 +8,7 @@ class CreateTicketSaleTest extends TicketFeatureTestCase
 {
     public function test_ca01_ticket_sales_cashier_registers_a_cash_sale_with_current_prices(): void
     {
-        $cashier = $this->createAccount('cashier', false, ['first_name' => 'Caja', 'last_name' => 'Uno']);
+        $cashier = $this->createAccount('cashier', true, ['first_name' => 'Caja', 'last_name' => 'Uno']);
         $this->setPrices($cashier, '25.00', '16.00');
 
         $data = $this->actAs($cashier)->postJson('/api/v1/admin/tickets', ['adult_quantity' => 2, 'child_quantity' => 1])

@@ -162,3 +162,6 @@ La interfaz solo presenta lo que `me` permite. La autorización real la aplica l
 - Esta nota no cambia los CA ni las RN de la spec. Ver `apps/dashboard/specs/017-fixed-roles-account-management.md`.
 
 - Decisión 2026-11-20 (Jonathan): el diálogo de confirmación de contraseña de `dashboard-015` es una excepción explícita a RN-01; ningún otro modal se permite en Usuarios.
+- Nota de revisión (2026-11-21 (b), `dashboard-020` CA-33 a CA-37): las confirmaciones de Usuarios, Noticias y Eventos (CA-08 a CA-12 y RN-02) pasan de «en línea» a un diálogo modal `ConfirmDialog`, con el mismo texto, el foco devuelto al botón disparador y el error dentro del diálogo; `InlineConfirm` e `InlinePasswordReset` se eliminan. El formulario de alta y edición sigue en línea y sin modal. Ver `apps/dashboard/specs/020-unified-reports-and-feedback.md`.
+
+- Nota 2026-11-21 (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.

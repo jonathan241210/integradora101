@@ -336,3 +336,33 @@ Aprobada por Jonathan (responsable de backend), 2026-11-13. Tareas nuevas sin ma
 - Pendientes: T-23 (verificación cruzada y prueba contra la API real), T-24 (confirmación escrita de la revisión del PR), T-27 (verificación manual en navegador), T-28 (`git diff --check`, `/verify`, CI), T-29 (PR y estado de la spec), T-01 (registro en el PR).
 
 Estado final de estas tareas: **En progreso** (plan y tasks aprobados por Jonathan, 2026-11-13; enmienda de navegación aprobada el mismo día). La spec queda **En progreso** por la enmienda. La verificación de arriba es anterior a la enmienda: no cubre la entrada «TulanPedia» ni el aviso con enlace.
+
+## Revisión 2026-11-21: alineación visual (CA-66 a CA-73)
+
+- [x] **T-39** (CA-66, CA-67, CA-68): encabezado único en `TulanpediaSection`, pestañas y panel compartidos (`section-tab*`), teclado con `tabForKey` y `--content-gap`.
+  - Archivos: `sections/TulanpediaSection.tsx`, `components/TulanpediaTabs.tsx`, `components/ReportTabs.tsx`, `viewmodels/report-tabs.ts`, `styles.css`.
+- [x] **T-40** (CA-69, CA-70, CA-72): filtros en `filter-form--species`, `row-actions` con `aria-label`, aviso pendiente bajo el Badge, `species-cell`, badge «Despublicada» en advertencia.
+  - Archivos: `views/SpeciesRequestsView.tsx`, `views/PublishedSpeciesView.tsx`, `components/SpeciesStatusBadge.tsx`, `styles.css`.
+- [x] **T-41** (CA-71): detalle y ficha en escala admin, barra de acciones agrupada, chips y rejilla de datos.
+  - Archivos: `views/SpeciesRequestDetailView.tsx`, `views/PublishedSpeciesDetailView.tsx`, `styles.css`.
+- [x] **T-42** (CA-73): limpieza de CSS (duplicados e `.inline-confirm*`).
+- [x] **T-43** (CA-66 a CA-73): `tests/species-visual-alignment.test.tsx`; ajustes en `reports-a11y`, `administration-quality`, `species-publication-coverage`.
+  - Evidencia (2026-11-21): `npx vitest run` 95 archivos / 822 pruebas en verde; `tsc --noEmit` sin errores.
+- [ ] **T-44** (CA-66 a CA-73; verificación manual): revisión a ojo en navegador (360, 768, 1366 px).
+
+## Revisión 2026-11-21 (b): Publicadas en tarjetas y Dato curioso (CA-74 a CA-79)
+
+- [x] **T-45** (CA-79): tipos aditivos `fun_fact` en `packages/api-client/admin-types.ts`.
+- [x] **T-46** (CA-77, CA-78): chip, textarea con contador, ayuda y validación en `species-publication-shared.ts` y `SpeciesFichaForm.tsx`.
+- [x] **T-47** (CA-74): `fun_fact` en los detalles de solicitud y de especie.
+- [x] **T-48** (CA-75, CA-76): `PublishedSpeciesView` en tarjetas, estados y CSS.
+- [x] **T-49** (CA-74 a CA-79): `tests/species-fun-fact-and-cards.test.tsx` y cobertura hasta CA-79.
+- [ ] **T-50** (CA-75, CA-76; verificación manual): revisión a ojo en navegador (360, 768, 1100, 1366 px).
+- [x] **T-51** (CA-80): paginación con total en Solicitudes y Publicadas (tarea T-28 de `dashboard-020`).
+
+## Revisión 2026-11-21 (e): subida de foto (CA-81, CA-82)
+
+- [x] **T-52** (CA-81): `ImageUploadBox` con props opcionales de texto y tipos; `SpeciesFichaForm` lo usa.
+- [x] **T-53** (CA-82): `PHOTO_HELP_TEXT`; sin «Quitar foto actual».
+- [x] **T-54** (CA-81, CA-82): `tests/species-photo-upload.test.tsx`; ajuste de `species-request-edit` y `published-species-edit` («Elegir imagen»); cobertura hasta CA-82.
+- [ ] **T-55** (CA-81; verificación manual): revisión a ojo en navegador (360, 768, 1366 px).

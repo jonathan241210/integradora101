@@ -49,14 +49,15 @@ class StaffAccountsScopeTest extends AdminFeatureTestCase
         $this->assertTrue($cashier->fresh()->hasRole('cashier'));
     }
 
-    /** CA-04: admin asigna cualquiera de los cinco roles. */
+    /** CA-04 api-007 revisado por CA-12 api-023: admin asigna los cinco roles no admin; `admin` ya no es asignable. */
     public function test_ca04_administration_management_admin_assigns_any_of_the_five_roles(): void
     {
         $admin = $this->createAccount('admin');
 
-        foreach (['admin', 'zoo-admin', 'executive', 'cashier', 'veterinarian'] as $role) {
+        foreach (['zoo-admin', 'executive', 'communications', 'cashier', 'veterinarian'] as $role) {
             $this->actAs($admin)->postJson('/api/v1/admin/users', $this->validAccount($role))->assertCreated();
         }
+        $this->actAs($admin)->postJson('/api/v1/admin/users', $this->validAccount('admin'))->assertForbidden();
     }
 
     /** CA-04 */
@@ -84,9 +85,10 @@ class StaffAccountsScopeTest extends AdminFeatureTestCase
         $zoo = $this->createAccount('zoo-admin');
         $admin = $this->createAccount('admin');
 
-        foreach (['admin', 'zoo-admin', 'executive', 'cashier', 'veterinarian'] as $role) {
+        foreach (['admin', 'zoo-admin', 'executive', 'communications', 'cashier', 'veterinarian'] as $role) {
             $this->assertFalse(Gate::forUser($zoo)->allows('assignRole', [User::class, $role]));
-            $this->assertTrue(Gate::forUser($admin)->allows('assignRole', [User::class, $role]));
+            // api-023 CA-12: el rol `admin` no es asignable ni para quien tiene `users.manage`.
+            $this->assertSame($role !== 'admin', Gate::forUser($admin)->allows('assignRole', [User::class, $role]), $role);
         }
     }
 }

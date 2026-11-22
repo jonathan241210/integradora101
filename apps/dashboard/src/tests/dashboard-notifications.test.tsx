@@ -17,11 +17,16 @@ describe("news-pagination-and-feedback", () => {
     expect(errorMarkup).toContain('aria-label="Cerrar aviso"');
   });
 
-  it("CA-04 solo permite que el cierre afecte al aviso correspondiente", () => {
+  it("CA-04 solo permite que el cierre afecte al aviso visible y entrega el siguiente en orden (cola FIFO, dashboard-018 RN-14)", () => {
     const first = notificationsReducer(initialNotifications, { type: "publish", tone: "success", message: "Guardado." });
     const second = notificationsReducer(first, { type: "publish", tone: "error", message: "Error." });
 
-    expect(notificationsReducer(second, { type: "dismiss", id: 1 })).toBe(second);
-    expect(notificationsReducer(second, { type: "dismiss", id: 2 }).visible).toBeNull();
+    expect(second.visible?.id).toBe(1);
+    expect(second.queue.map((item) => item.id)).toEqual([2]);
+    // Cerrar un aviso que no es el visible no cambia nada.
+    expect(notificationsReducer(second, { type: "dismiss", id: 2 })).toBe(second);
+    const next = notificationsReducer(second, { type: "dismiss", id: 1 });
+    expect(next.visible?.id).toBe(2);
+    expect(notificationsReducer(next, { type: "dismiss", id: 2 }).visible).toBeNull();
   });
 });

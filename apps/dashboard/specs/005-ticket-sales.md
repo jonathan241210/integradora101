@@ -255,4 +255,21 @@ El dashboard muestra folios, cantidades, totales, nombres de cajeros en el histo
 - Propuesta de Jonathan (2026-11-20) de motivo de cancelación de lista cerrada. El diálogo de cancelar (CA-12) añadirá un selector obligatorio «Motivo» con las opciones que devuelve la API (`api-022` CA-10) y, si el motivo es «Otro», un campo de comentario. Sin motivo, no se llama a la API.
 - La definición está en `apps/dashboard/specs/016-ticket-cancellation-report.md` (CA-18 a CA-20) y en `apps/api/specs/022-ticket-cancellation-report.md`. Esta nota no cambia los CA ni las RN de esta spec, ni su estado (Aprobada · En progreso).
 - Orden de despliegue: la API con `reason_code` obligatorio debe desplegarse junto con el diálogo nuevo; hasta entonces la cancelación sin motivo de lista responde 422.
-- Cambio pendiente de aprobación de Jonathan. Hasta entonces, esta spec rige sin cambios.
+- Aprobado por Jonathan el 2026-11-20 junto con `dashboard-016`; entra en vigor al implementarse.
+
+## Nota de revisión (2026-11-20, dashboard-016 aprobada; dashboard-019 y api-025)
+
+- **Motivo al cancelar (`dashboard-016` CA-18 a CA-21):** el diálogo de cancelar pide un motivo de la lista de la API. Sin motivo, el texto de error es «Elige un motivo de cancelación.». Esto sustituye el texto anterior de esta spec sin cambiar sus CA. Para «Otro», el comentario es obligatorio.
+- **Columna de motivo del historial (`dashboard-016` CA-26, `api-022` CA-26):** muestra la etiqueta del motivo y el comentario, no el texto libre anterior.
+- **Zona de presentación (`dashboard-019` CA-01 a CA-04, RN-01):** las fechas y horas del historial, del recibo y de los precios se presentan en la zona que devuelve la API (`timezone`), no en la del navegador. Esto sustituye CA-13 y RN-13 de esta spec en lo que toca a la zona del dispositivo. El cliente deja de enviar `timezone`.
+- **Precios programados (`dashboard-019` RN-06, `api-025` P-03):** la fecha de «entrada en vigor» se envía sin desfase del navegador y la API la interpreta en `arca.timezone`.
+- **Diálogo de contraseña (`dashboard-015` CA-01 y CA-06):** cancelar boletos y cambiar precios usan el diálogo de contraseña cuando la API lo pide.
+- Esta nota no cambia los CA de esta spec. Las enmiendas se aplican al implementar `dashboard-016` y `dashboard-019`.
+
+## Nota de revisión (2026-11-21, dashboard-020)
+
+- La entrada «Historial» de taquilla queda solo para cuentas con `tickets.create` y `tickets.view` (`dashboard-020` CA-09, RN-06). El cajero no cambia.
+- El historial completo de boletos para `admin` y `zoo-admin` (`tickets.view-all`) pasa a la pestaña «Historial» de «Reportes», sin acción de cancelar (`dashboard-020` CA-02, CA-08). Esto no cambia los CA de esta spec para el cajero.
+- Los mensajes de éxito y error de la taquilla siguen la regla de `dashboard-020` RN-07. El mensaje de 2FA de CA-16 se mantiene en la sección.
+
+- Nota 2026-11-21 (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.

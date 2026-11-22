@@ -21,7 +21,7 @@ const listWith = (items: ReturnType<typeof row>[]) =>
     <PublishedSpeciesView
       {...publishedViewModel(
         publishedStateWith({
-          list: { status: "ready", items, hasMore: false, error: "", forbidden: false },
+          list: { status: "ready", items, hasMore: false, lastPage: 1, total: 0, error: "", forbidden: false },
           thumbs: Object.fromEntries(items.map((item) => [item.id, { status: "none" as const, url: "" }])),
         }),
       )}

@@ -5,6 +5,9 @@ export type DescribedApiError = {
   unauthorized: boolean;
   forbidden: boolean;
   notFound: boolean;
+  /** Código de la API (p. ej. `password_confirmation_required`), si llegó. */
+  code?: string;
+  mode?: "window" | "always";
 };
 
 const networkMessage =
@@ -23,6 +26,8 @@ export function describeApiError(error: unknown): DescribedApiError {
           status?: unknown;
           message?: unknown;
           errors?: unknown;
+          code?: unknown;
+          mode?: unknown;
         })
       : {};
   const status = typeof candidate.status === "number" ? candidate.status : 0;
@@ -55,5 +60,9 @@ export function describeApiError(error: unknown): DescribedApiError {
     unauthorized: status === 401,
     forbidden: status === 403,
     notFound: status === 404,
+    ...(typeof candidate.code === "string" ? { code: candidate.code } : {}),
+    ...(candidate.mode === "window" || candidate.mode === "always"
+      ? { mode: candidate.mode }
+      : {}),
   };
 }

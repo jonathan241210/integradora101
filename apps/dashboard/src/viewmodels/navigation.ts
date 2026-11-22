@@ -1,6 +1,7 @@
 import type { StaffProfile } from "@arca/api-client";
 import type { DashboardSection } from "./dashboard-shell";
 import type { IconName } from "@/components/Icon";
+import { availableReportTabs } from "./report-tabs";
 
 export type PresentationProfile = "administration" | "executive" | "ticket";
 
@@ -12,13 +13,15 @@ export type DashboardNavigationItem = {
 
 type NavigationCandidate = {
   item: DashboardNavigationItem;
+  /** Con `visible` la entrada la decide una regla pura de presentación (dashboard-020). */
   permission: string | string[];
+  visible?: (granted: Set<string>) => boolean;
 };
 
 /**
  * Mapa permiso → sección (dashboard-005 CA-01, RN-01). Es solo presentación:
  * la API aplica la autorización. «Venta» exige `tickets.create`, que solo
- * tiene `cashier`; «Historial» exige `tickets.view` y «Precios»
+ * tiene `cashier`; «Historial» exige `tickets.create` y `tickets.view` y «Precios»
  * `ticket-prices.manage`.
  */
 const navigationCandidates: NavigationCandidate[] = [
@@ -35,8 +38,10 @@ const navigationCandidates: NavigationCandidate[] = [
     permission: "events.manage",
   },
   {
-    item: { id: "reports", label: "Reporte de boletos", icon: "trend" },
-    permission: "reports.view",
+    // dashboard-020 CA-01: una sola entrada «Reportes», con pestañas según permisos.
+    item: { id: "reports", label: "Reportes", icon: "trend" },
+    permission: ["reports.view", "reports.cancellations.view", "tickets.view-all"],
+    visible: (granted) => availableReportTabs([...granted]).length > 0,
   },
   {
     item: { id: "enclosures", label: "Recintos", icon: "building" },
@@ -59,8 +64,10 @@ const navigationCandidates: NavigationCandidate[] = [
     permission: "tickets.create",
   },
   {
+    // Historial de taquilla junto a «Venta» (dashboard-020 CA-09, CA-10): exige crear y ver.
     item: { id: "ticket-history", label: "Historial", icon: "trend" },
     permission: "tickets.view",
+    visible: (granted) => granted.has("tickets.create") && granted.has("tickets.view"),
   },
   {
     item: { id: "ticket-prices", label: "Precios", icon: "ticket" },
@@ -81,6 +88,26 @@ export function getPresentationProfile(home: StaffProfile["home"]): Presentation
   }
 }
 
+function allows(candidate: NavigationCandidate, granted: Set<string>): boolean {
+  if (candidate.visible) return candidate.visible(granted);
+
+  return Array.isArray(candidate.permission)
+    ? candidate.permission.some((item) => granted.has(item))
+    : granted.has(candidate.permission);
+}
+
+/**
+ * Etiquetas de las secciones que abre una lista de permisos (dashboard-017
+ * CA-02). Reutiliza el mapa permiso → sección; es solo presentación.
+ */
+export function sectionsForPermissions(permissions: string[]): string[] {
+  const granted = new Set(permissions);
+
+  return navigationCandidates
+    .filter((candidate) => allows(candidate, granted))
+    .map(({ item }) => item.label);
+}
+
 export function getNavigationForProfile(
   profile: StaffProfile,
 ): DashboardNavigationItem[] {
@@ -93,10 +120,6 @@ export function getNavigationForProfile(
   if (!hasPortal) return [];
 
   return navigationCandidates
-    .filter(({ permission }) =>
-      Array.isArray(permission)
-        ? permission.some((item) => permissions.has(item))
-        : permissions.has(permission),
-    )
+    .filter((candidate) => allows(candidate, permissions))
     .map(({ item }) => item);
 }

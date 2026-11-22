@@ -25,7 +25,7 @@ class TicketQuoteNoSideEffectsTest extends TicketFeatureTestCase
 
     public function test_ca49_ticket_sales_quote_creates_nothing(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $before = $this->snapshot();
         $this->neverIssueTokens();
@@ -39,7 +39,7 @@ class TicketQuoteNoSideEffectsTest extends TicketFeatureTestCase
 
     public function test_ca49_ticket_sales_quote_422_and_403_create_nothing(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $admin = $this->createAccount('admin');
         $this->neverIssueTokens();
 

@@ -8,7 +8,7 @@ class CancelTicketPerRowTest extends TicketFeatureTestCase
 {
     public function test_ca51_ticket_sales_cancelling_one_child_ticket_leaves_three_valid_and_57_00_of_revenue(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $admin = $this->createAccount('admin');
         $this->setPrices($cashier, '25.00', '16.00');
         $this->travelTo($this->at('2026-11-06 18:00:00'));
@@ -32,7 +32,7 @@ class CancelTicketPerRowTest extends TicketFeatureTestCase
         $this->assertSame(['tickets' => 4, 'adults' => 1, 'children' => 3, 'revenue' => '73.00'], $delta($summary(), $base));
         $this->assertSame(['tickets' => 4, 'adults' => 1, 'children' => 3, 'revenue' => '73.00'], $delta($dashboard(), $dashBase));
 
-        $this->actAs($cashier)->postJson("/api/v1/admin/tickets/{$folios[1]}/cancel", ['reason' => 'No entró'])->assertOk();
+        $this->actAs($cashier)->postJson("/api/v1/admin/tickets/{$folios[1]}/cancel", ['reason_code' => 'capture_error', 'reason' => 'No entró'])->assertOk();
 
         $this->assertSame('cancelled', Ticket::query()->findOrFail($folios[1])->status);
         foreach ([$folios[0], $folios[2], $folios[3]] as $folio) {

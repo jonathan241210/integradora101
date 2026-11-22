@@ -6,6 +6,7 @@ type Tab = 'form' | 'mine';
 
 export function SpeciesRequestView() {
   const [tab, setTab] = useState<Tab>('form');
+  const [resubmitId, setResubmitId] = useState<number | null>(null);
 
   return (
     <section className="page-section">
@@ -19,7 +20,7 @@ export function SpeciesRequestView() {
           type="button"
           className="segmented__item"
           aria-pressed={tab === 'form'}
-          onClick={() => setTab('form')}
+          onClick={() => { setResubmitId(null); setTab('form'); }}
         >
           Solicitar publicación
         </button>
@@ -32,7 +33,14 @@ export function SpeciesRequestView() {
           Mis solicitudes
         </button>
       </div>
-      {tab === 'form' ? <SpeciesRequestFormView /> : <OwnSpeciesRequestsView />}
+      {tab === 'form' ? (
+        <SpeciesRequestFormView initialSpeciesId={resubmitId} />
+      ) : (
+        <OwnSpeciesRequestsView
+          onRequestNew={() => { setResubmitId(null); setTab('form'); }}
+          onResubmit={(speciesId) => { setResubmitId(speciesId); setTab('form'); }}
+        />
+      )}
     </section>
   );
 }

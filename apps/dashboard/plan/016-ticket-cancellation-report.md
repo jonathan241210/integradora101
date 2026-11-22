@@ -4,7 +4,7 @@
 - Spec de la API (dueña de la lógica): `apps/api/specs/022-ticket-cancellation-report.md`; plan de la API: `apps/api/plan/022-ticket-cancellation-report.md`
 - Enmienda relacionada: `apps/dashboard/specs/005-ticket-sales.md` (nota de 2026-11-20: selector de motivo en el diálogo de cancelar; CA-12 y RN-03 no cambian de número)
 - Estado de spec: Aprobada
-- Estado del plan: **Borrador — pendiente de aprobación técnica (equipo/Jonathan)**. No autoriza programar.
+- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**. Una pregunta nueva queda abierta (fuente de la lista de cajeros; sección «Pregunta abierta»).
 - Responsable técnico: `<por identificar>` (frontend)
 - Orden de implementación en la SPA: `dashboard-015` (diálogo de contraseña y manejo de 403 `password_confirmation_required`) → `dashboard-019` (formateo de fechas con la zona que devuelve la API, sin zona del dispositivo) → **`dashboard-016`** (este plan) → `dashboard-017` → `dashboard-018`.
 - Orden de despliegue: DBR-024 → API (`api-022` y `api-009` con `reason_code`) → dashboard. Desplegar la SPA del diálogo junto con la API; antes, la cancelación sin motivo de lista responde 422.
@@ -55,7 +55,7 @@ Nota de copia: el mensaje «Indica el motivo de la cancelación.» de `dashboard
 ## Contrato y datos
 
 - Endpoints consumidos (todos por `@arca/api-client`, por rutas nombradas de la API): `GET /api/v1/admin/tickets/cancellation-reasons`, `POST /api/v1/admin/tickets/{ticket}/cancel`, `GET /api/v1/admin/reports/cancellations`, `GET /api/v1/admin/reports/cancellations/export`.
-- Filtro de cajeros (CA-06): la lista de cajeros la entrega la API. Si `api-022` no añade un endpoint de cajeros, el filtro usa un campo de la respuesta del reporte (`reconciliation.cashiers`) y no se fija en el cliente. Esta dependencia se resuelve en el plan de la API antes de implementar T-03.
+- Filtro de cajeros (CA-06): la lista de cajeros la entrega la API. Si `api-022` no añade un endpoint de cajeros, el filtro usa un campo de la respuesta del reporte (`reconciliation.cashiers`) y no se fija en el cliente. Pregunta abierta (2026-11-20): el plan de `api-022` no añadió endpoint de cajeros; ver «Pregunta abierta» antes de implementar T-04.
 - No hay estado persistente: sin `localStorage`, cookies ni caché persistente (RN-09). El estado vive en memoria de la sesión.
 - Errores 401 → login con «Tu sesión expiró» (`dashboard-002` CA-08, CA-03); 403 → mensaje de la API; 422 → mensaje por campo o aviso de la página; 429 → mensaje de la API sin reintento; 5xx o red → error con «Reintentar» manual.
 
@@ -100,7 +100,8 @@ Vitest en `apps/dashboard/src/tests/`. Cada archivo nombra los CA en el `describ
 | CA-22 | `cancellation-report-responsive.test.tsx`: foco visible, tablas con desplazamiento propio o diseño apilado, sin desbordamiento de 360 a 1366 px (en el patrón de `responsive.test.tsx`) | dashboard / `src/tests/` |
 | CA-23 | `cancellation-report-mvvm.test.tsx`: búsqueda estática en `views/` y `components/` de la página y el diálogo: sin `fetch`/`axios`, sin cálculos, sin decisiones de permiso; toda llamada pasa por hooks | dashboard / `src/tests/` |
 | CA-24 | `cancellation-report-design.test.tsx`: sin hex de marca en los componentes nuevos; uso de tokens semánticos (en el patrón de `design-system.test.tsx`) | dashboard / `src/tests/` |
-| CA-25 | `cancellation-report-coverage.test.tsx`: comprueba que existe al menos una prueba que nombra cada CA-01 a CA-25 | dashboard / `src/tests/` |
+| CA-25 | `cancellation-report-coverage.test.tsx`: comprueba que existe al menos una prueba que nombra cada CA-01 a CA-26 | dashboard / `src/tests/` |
+| CA-26 (enmienda) | `cancel-ticket-reason.test.tsx` (columna de motivo de `ticket-history.test.tsx`): muestra `cancellation_reason_label` y el comentario; «Sin clasificar (anterior)» si el código es nulo | dashboard / `src/tests/` |
 
 Regresión (sin relajar CA): `ticket-history.test.tsx` y `ticket-sales-fixtures.ts` (cancelar envía `reason_code`), `api-client-admin.test.tsx` (sin `timezone` en reporte ni exportación de cancelaciones), `ticket-sales-api-client.test.tsx`, `administration-navigation.test.tsx` (nueva entrada de menú), `responsive.test.tsx`, `design-system.test.tsx`, `acceptance-coverage.test.tsx`.
 
@@ -127,14 +128,59 @@ Brechas: ninguna que requiera ADR. Condiciones: plan aprobado; API `api-022` des
 - **Paginación de filas:** si `api-022` devuelve todas las filas (pregunta 2 de la API), la paginación es solo de presentación del cliente; el cliente no suma ni recalcula.
 - **Alternativas:** no se añade React Router (ADR 0002 pendiente) ni gráfica nueva; la conciliación se muestra en tabla.
 
+## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+
+- **Historial y búsqueda (pregunta 3 de `api-022`):** la columna de motivo muestra `cancellation_reason_label` y el comentario. Spec: CA-26 (nuevo). Tarea: T-13, desbloqueada.
+- **Periodo sin fecha (pregunta 1 de `api-022`):** la SPA ya envía la fecha de hoy por defecto (CA-04); sin cambio.
+- **Umbrales, periodo por `purchased_at`, snapshot de CA-22, `throttle:20,1` de la exportación y filtro con cajeros eliminados** (preguntas 4 a 8 de `api-022`): sin cambio en la SPA; son reglas de la API (`api-022` RN-08, RN-14, RN-15, RN-16).
+- **Filas sin paginar (pregunta 2 de `api-022`):** la SPA muestra todas las filas que recibe. La paginación es solo de presentación, sin sumar ni recalcular.
+- Propuestas del plan aceptadas, salvo la fuente de la lista de cajeros (pregunta abierta).
+
+## Pregunta abierta (2026-11-20; bloquea la parte del filtro «Cajero» de T-04)
+
+- **P-016-1 (lista de cajeros para el filtro):** ¿de dónde sale la lista?
+  - A) Un endpoint nuevo en `api-022` (`GET /api/v1/admin/reports/cancellations/cashiers`), que incluye cajeros eliminados lógicamente (`api-022` RN-16). Propuesta: A.
+  - B) El campo `reconciliation.cashiers` del reporte. No requiere cambio de API, pero solo lista cajeros con actividad en el periodo y no permite elegir un cajero sin consultar antes.
+  - La opción A exige enmendar el contrato de `api-022` y su plan. Hasta decidir, T-04 no implementa el filtro «Cajero».
+
 ## Orden y aprobación
 
 1. `dashboard-015` y `dashboard-019` implementadas (prerrequisitos; evidencia de sus PR).
-2. Aprobación de este plan y de las respuestas de `api-022` que afectan a la SPA (preguntas 2, 3, 5 y 7).
+2. Plan aprobado el 2026-11-20. Las preguntas 2, 3, 5 y 7 de `api-022` quedan cerradas; el filtro «Cajero» espera P-016-1.
 3. Contrato de la API disponible (`api-022` T-06, T-10, T-11, T-16 con sus respuestas) o cliente simulado para las pruebas.
 4. `packages/api-client` (T-01), hooks (T-02), página (T-03 a T-09), diálogo (T-10 a T-12), historial y navegación (T-13, T-14), pruebas de calidad y regresión (T-15 a T-18), verificación (T-19).
 
-- Revisión técnica: pendiente (equipo).
+- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan; P-016-1 abierta).
 - Aprobador funcional: Jonathan (spec aprobada 2026-11-20).
-- Fecha de aprobación del plan: pendiente.
+- Fecha de aprobación del plan: 2026-11-20 (Jonathan).
 - Evidencias: pendientes (salida de Vitest, lint y tipos aportada por la sesión principal).
+
+## Decisión de coordinación 2026-11-20 (sesión principal)
+- Lista de cajeros del filtro: opción **A**, endpoint propio `GET /api/v1/admin/reports/cancellations/cashiers` (permiso `reports.cancellations.view`), que devuelve todas las cuentas con rol `cashier` o que hayan vendido boletos, incluidas las eliminadas lógicamente (RN-16), solo con `id` y nombre. Se añade a las tasks de API (con test) y dashboard-016 T-04 lo consume.
+
+## Divergencias de implementación (2026-11-20)
+- **Lista de cajeros:** implementada la opción A de la decisión de coordinación (`reports.cancellationCashiers()` → `GET /api/v1/admin/reports/cancellations/cashiers`). El cliente espera `{ data: [{ id, name }] }` y tolera `full_name` o `cashier_name` como nombre. Si la llamada falla, el filtro queda en «Todos los cajeros» y el reporte sigue.
+- **Filtro «Motivo» del reporte:** el catálogo (`GET tickets/cancellation-reasons`) exige `tickets.cancel` según el plan de `api-022`, permiso que `admin` no tiene. La SPA usa el catálogo si responde y, si no, los motivos de `totals.by_reason` del reporte (datos de la API). Riesgo: sin catálogo el filtro solo ofrece motivos con cancelaciones en el periodo. Recomendación para `api-022`: permitir también `reports.cancellations.view` en el catálogo.
+- **CA-01 «Sin permiso»:** el dashboard no tiene ruta ni vista «Sin permiso»; como en el resto de secciones, una sección fuera de la navegación no se activa (`dashboardShellReducer` la ignora y `App` cae a la primera disponible). La API responde 403.
+- **CA-04 fecha de hoy:** el valor por defecto es «Semana» sin `date`; la API resuelve hoy en su zona de negocio (`api-022` CA-04 enmendado), así el cliente no usa la zona del dispositivo. El campo de fecha de referencia queda vacío hasta que el usuario la elige.
+- **Paginación (CA-10):** sin paginación; la tabla tiene desplazamiento propio con encabezado fijo.
+- **Catálogo en el diálogo:** `useCancellationReasons(enabled)` carga el catálogo al abrir el diálogo de cancelar (no al montar el historial) para no pedirlo a roles sin `tickets.cancel`.
+- **Comentario obligatorio:** la SPA exige presencia cuando `comment_policy` del catálogo es `required` («Describe el motivo de la cancelación.») y deja que la API valide el mínimo de caracteres (422).
+- **Contrato asumido:** `alert_reasons` son textos en español listos para mostrar; `totals.by_cashier[]` trae `cashier_id` y `cashier_name`; `cancel_percent` llega como número o cadena y se muestra tal cual con « %».
+- **Contrato real de api-022 (ajustes 2026-11-20):** (1) `period` es obligatorio; el cliente siempre lo envía, también con «Semana» sin `date` (test CA-05). (2) `cashier_id` puede ser `null` («Sin cajero registrado») en `by_cashier` y `reconciliation.cashiers`: tipos `number | null` y keys `none:<nombre>`. (3) Con `reason_code` aplicado la conciliación no aplica: se ocultan «Neto», «Conciliación» (cuadre) y «% cancelación», y se muestra «Con filtro de motivo la conciliación no aplica; quita el filtro para ver bruto, cancelado y neto.» (test CA-11). (4) `cancel_percent` llega como número con 2 decimales; se mantiene « %». (5) El 422 de comentario llega en `reason`; `cancellation_reason_label` es `null` si no está cancelado (ya tipado como nulo). (6) El 422 de exportación trae `errors.format` también si falta el formato. (7) La API ya permite `reports.cancellations.view` en el catálogo; el respaldo con `by_reason` se conserva.
+- **T-18:** el paquete no tiene script de lint; se corrieron `tsc --noEmit` y `vitest run`.
+
+## Nota 2026-11-21 (dashboard-020 rev. (d)): paginación de filas
+
+`useCancellationReport.goToPage` cambia `query.page`; `buildCancellationQuery` no lleva `page` (filtros y periodo vuelven a la página 1); `Rows` pinta `Pagination` de `@arca/ui` con `report.meta`. `reports.cancellations` copia el `meta` raíz al DTO; `exportCancellations` no envía `page`. Detalle en `plan/020`.
+
+## Nota 2026-11-21: conciliación sin columna «cuadra» (CA-29 a CA-31)
+
+`Reconciliation` (`views/CancellationReportView.tsx`) quita las columnas `balanced`; con `balanced: false` (y sin filtro de motivo) usa `rowDetail` de `DataTable` para un `Alert` por fila y un `Alert` resumen arriba de cada tabla. La línea de ayuda es un `<p role="note">`. No hay cálculo en el cliente: solo se lee el campo de la API. Se eliminó el estilo `.cancellation-unbalanced`. Tests en `cancellation-report-reconciliation.test.tsx`.
+
+## Revisión 2026-11-21 (c): alertas retiradas, columnas nuevas y aviso de exportación (CA-32 a CA-35)
+
+- `packages/api-client/admin-types.ts`: se quitan `CancellationAlertDto`, `alert` y `alert_reasons`; `CancellationRowDto` gana `late_cancellation` y `signal_codes`; `CancellationReconciliationCashierDto` gana `days_to_review` (`CancellationDaysToReviewDto`); `CancellationSignalReasonDto` gana `folios`. Retirar `alert` es un cambio no aditivo permitido porque la API lo retira a la vez.
+- `CancellationAlertBadge` se elimina; `CancellationReportView` añade columnas «Tardía» y «Señales» (etiquetas de `legend[]`) y «Días por revisar»; `ReportExportButtons` acepta `note` y la vista lo llena con `describeExportFilters`.
+- Lógica de presentación nueva en `viewmodels/cancellation-ticket-focus.ts`. Sin dependencias.
+- Divergencia: `DataTable` gana `rowProps` (id y clase de fila).

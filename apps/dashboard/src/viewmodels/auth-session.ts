@@ -12,6 +12,8 @@ export type AuthSessionState = {
   status: AuthSessionStatus;
   profile: StaffProfile | null;
   error: string;
+  /** Segundos de bloqueo de un 429 (dashboard-015 CA-21); `null` sin bloqueo. */
+  retryAfterSeconds: number | null;
   sessionExpired: boolean;
   submitting: boolean;
   qrSvg: string | null;
@@ -30,7 +32,7 @@ export type AuthSessionAction =
   | { type: "account-without-role" }
   | { type: "authenticated"; profile: StaffProfile }
   | { type: "redirecting-pwa"; profile: StaffProfile }
-  | { type: "request-failed"; message: string }
+  | { type: "request-failed"; message: string; retryAfterSeconds?: number | null }
   | { type: "unauthorized"; sessionExpired: boolean }
   | { type: "signed-out" };
 
@@ -41,6 +43,7 @@ export const initialAuthSessionState: AuthSessionState = {
   status: "checking",
   profile: null,
   error: "",
+  retryAfterSeconds: null,
   sessionExpired: false,
   submitting: false,
   qrSvg: null,
@@ -52,6 +55,20 @@ const accountWithoutRole =
 const expiredSession = "Tu sesión expiró. Vuelve a iniciar sesión.";
 
 export function authSessionReducer(
+  state: AuthSessionState,
+  action: AuthSessionAction,
+): AuthSessionState {
+  const next = reduceAuthSession(state, action);
+
+  // El bloqueo solo sobrevive al `request-failed` que lo trae (CA-21).
+  if (action.type === "request-failed") {
+    return { ...next, retryAfterSeconds: action.retryAfterSeconds ?? null };
+  }
+
+  return next.retryAfterSeconds === null ? next : { ...next, retryAfterSeconds: null };
+}
+
+function reduceAuthSession(
   state: AuthSessionState,
   action: AuthSessionAction,
 ): AuthSessionState {
@@ -145,9 +162,23 @@ export function authSessionReducer(
 }
 
 function apiMessage(error: unknown): string {
-  if (error instanceof Error && error.message) return error.message;
+  if (error instanceof Error && error.name === "ApiError" && error.message) {
+    return error.message;
+  }
 
-  return "No fue posible completar la solicitud. Intenta de nuevo.";
+  return "No fue posible conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.";
+}
+
+/** Segundos del `Retry-After` de un 429 (CA-21); `null` si no llegan o no son válidos. */
+function retryAfterOf(error: unknown): number | null {
+  if (typeof error !== "object" || error === null) return null;
+
+  const { status, retryAfterSeconds } = error as { status?: unknown; retryAfterSeconds?: unknown };
+
+  return status === 429 && typeof retryAfterSeconds === "number" &&
+    Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0
+    ? Math.ceil(retryAfterSeconds)
+    : null;
 }
 
 function isUnauthorized(error: unknown): error is ApiError {
@@ -188,7 +219,11 @@ async function handleRequestError(
     }
   }
 
-  dispatch({ type: "request-failed", message: apiMessage(error) });
+  dispatch({
+    type: "request-failed",
+    message: apiMessage(error),
+    retryAfterSeconds: retryAfterOf(error),
+  });
 }
 
 export async function startTwoFactorSetup(
@@ -350,4 +385,33 @@ export async function signOut(
       dispatch({ type: "request-failed", message: apiMessage(error) });
     }
   }
+}
+
+/**
+ * Un 403 `two_factor_setup_required` llegó desde taquilla o administración
+ * (dashboard-015 CA-09): se consulta el perfil y, si la API confirma que
+ * falta el 2FA, se muestra el enrolamiento en lugar de Venta e Historial.
+ */
+export async function handleTwoFactorSetupRequired(
+  authApi: AuthApi,
+  dispatch: AuthSessionDispatch,
+): Promise<void> {
+  try {
+    const profile = await authApi.me();
+
+    if (profile.two_factor_setup_required) {
+      dispatch({ type: "two-factor-setup-required", profile });
+      await startTwoFactorSetup(authApi, dispatch);
+    }
+  } catch (error) {
+    if (isUnauthorized(error)) dispatch({ type: "unauthorized", sessionExpired: true });
+  }
+}
+
+/** Aviso del enrolamiento para cajeros (dashboard-015 CA-10, RN-05). */
+export const cashierTwoFactorNotice =
+  "Para vender boletos y consultar tu historial, configura tu segundo factor de autenticación. Necesitas una app autenticadora en tu celular.";
+
+export function twoFactorSetupNotice(profile: StaffProfile | null): string | undefined {
+  return profile?.roles.includes("cashier") ? cashierTwoFactorNotice : undefined;
 }

@@ -413,3 +413,12 @@ Notas:
 - La cancelación de un boleto (`POST /api/v1/admin/tickets/{ticket}/cancel`) pasa a requerir una confirmación de contraseña en modo Ventana: la contraseña se confirma una vez y vale 10 minutos fijos en la sesión que confirmó (`apps/api/specs/021-staff-step-up-confirmation.md`, CA-16). Con la ventana expirada, la API responde 403 `password_confirmation_required`.
 - CA-10 mantiene su regla de mismo día y de cajero que vendió; esta nota no cambia los CA ni las RN de esta spec, solo añade el requisito de confirmación previa de `api-021`.
 - Los cajeros necesitan 2FA confirmado para cancelar (`api-021` CA-01 y CA-15).
+
+## Nota de revisión (2026-11-20, enmiendas de `api-022` y `api-025` aprobadas por Jonathan)
+
+- **Nota previa de 2026-11-20 (`api-022`):** queda aprobada por Jonathan junto con `api-022`.
+- **Historial con etiqueta del motivo (`api-022` CA-26, RN-17):** `TicketHistoryResource` añade `cancellation_reason_code` y `cancellation_reason_label` («Sin clasificar (anterior)» si el código es nulo). `cancellation_reason` pasa a contener solo el comentario. Los campos son aditivos.
+- **Zona en el recibo y en los precios (`api-025` CA-12, decisión P-04):** la respuesta de venta (`POST /api/v1/admin/tickets`) y las respuestas de precios vigentes incluyen `timezone` con el valor de `arca.timezone`. El historial ya lo incluye (`api-025` CA-12).
+- **Precios programados (`api-025` CA-16, decisión P-03):** la hora de «entrada en vigor» (`effective_at`) de `POST /api/v1/admin/ticket-prices` se interpreta en `arca.timezone` cuando llega sin desfase. Es un cambio de contrato de CA-18 y CA-19 de esta spec: el dashboard deja de calcular el desfase del navegador.
+- **Pendiente de confirmar:** si un `effective_at` con desfase explícito sigue aceptándose (pregunta abierta en `apps/api/specs/025-single-business-timezone.md`, P-03b).
+- Esta nota no cambia los CA ni las RN de esta spec. Los cambios de contrato se aplican al implementar `api-022` y `api-025`.

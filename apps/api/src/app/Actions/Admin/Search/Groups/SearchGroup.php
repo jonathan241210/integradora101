@@ -79,6 +79,9 @@ abstract class SearchGroup
             if (isset($candidate['kind'])) {
                 $item['kind'] = $candidate['kind'];
             }
+            if (isset($candidate['managed_by_console'])) {
+                $item['managed_by_console'] = $candidate['managed_by_console'];
+            }
             if ($found !== null && $found['match'] !== null) {
                 $item['match'] = $found['match'];
             }

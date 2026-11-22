@@ -2,21 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Actions\Admin\Users\FindManageableStaffAccountAction;
 use App\Actions\Admin\Users\ResetStaffTwoFactorAction;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\Admin\ResetStaffTwoFactorRequest;
 use Illuminate\Http\Response;
 
 class StaffAccountTwoFactorController extends Controller
 {
-    public function __invoke(
-        Request $request,
-        string $user,
-        FindManageableStaffAccountAction $find,
-        ResetStaffTwoFactorAction $action,
-    ): Response {
-        $action->execute($request->user(), $find->execute($request->user(), $user));
+    public function __invoke(ResetStaffTwoFactorRequest $request, ResetStaffTwoFactorAction $action): Response
+    {
+        $action->execute($request->user(), $request->target());
 
         return response()->noContent();
     }

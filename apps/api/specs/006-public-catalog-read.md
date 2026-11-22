@@ -114,3 +114,5 @@ El esquema actual no guarda en `species` todos los campos que consume la ficha m
 
 - Aprobadores y fecha: Víctor Adrián (2026-10-22).
 - Evidencia/enlaces: `apps/api/plan/006-public-catalog-read.md`, `apps/api/tasks/006-public-catalog-read.md`, `apps/api/src/tests/Feature/Catalog/PublicCatalogTest.php`, `apps/mobile/specs/003-api-read-integration.md`, `docs/database/fixtures/sample-catalog-events.sql`. Implementación probada de punta a punta contra `arca_pruebas` el 2026-10-22 (8 tests, 74 aserciones) y verificación manual de listados, detalles y `404`.
+
+> **Nota de revisión (2026-11-20, sin cambio de requisitos ni de estado):** `api-025` hace que «hoy» de RN-12 salga de `config('arca.timezone')` (`ARCA_TIMEZONE`) mediante `PublicCalendar::today()`; el valor por defecto sigue siendo `America/Mexico_City`.

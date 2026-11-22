@@ -1,6 +1,6 @@
 import { Alert, Button, Card } from "@arca/ui";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { LoadingIndicator } from "@/components/LoadingIndicator";
+import { DetailSkeleton } from "@/components/LoadingSkeletons";
 import { MemoryImage } from "@/components/MemoryImage";
 import { MemoryRejectDialog } from "@/components/MemoryRejectDialog";
 import { MemoryStatusBadge } from "@/components/MemoryStatusBadge";
@@ -44,7 +44,7 @@ export function MemoryReviewDetailView({
     return (
       <>
         {heading}
-        <LoadingIndicator message="Cargando petición…" />
+        <DetailSkeleton label="Cargando petición…" />
       </>
     );
   }

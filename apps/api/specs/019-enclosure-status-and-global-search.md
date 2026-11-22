@@ -258,3 +258,9 @@ Pedida por Jonathan: «busco una noticia y salen primero eventos; solo toma algu
 - **Sección nombrada en la consulta** (dashboard, `viewmodels/search-intent.ts`): si la consulta incluye una palabra de sección (noticia/s, nota/s; evento/s, actividad/es; recinto/s; usuario/s, cuenta/s, empleado/s, personal; momento/s, recuerdo/s; especie/s, tulanpedia; boleto/s, folio/s), esa palabra no se envía a la API (si queda texto suficiente) y el grupo de esa sección se muestra primero, antes que el de la sección actual.
 - **Palabras de sección y vacías no son acciones** (dashboard, `splitSearchQuery`): antes una palabra como «noticia» se reconocía como parte de una acción («Publicar noticia») y se quitaba de la consulta enviada a la API, por lo que la búsqueda usaba una sola palabra. Ahora esas palabras siempre llegan a la búsqueda.
 - **Tests:** pendientes por indicación de Jonathan (no correrlos en esta ronda). Afectan a CA-37, CA-41, CA-43 (dashboard) y CA-50 a CA-54 (API); deben actualizarse antes del PR.
+
+## Nota de revisión (2026-11-20, enmiendas de `api-022` CA-26 y `api-025` CA-02)
+
+- **Motivo de cancelación en la búsqueda de boletos (`api-022` CA-26, RN-17):** el campo «Motivo de cancelación» muestra la etiqueta del motivo (`cancellation_reason_label`, o «Sin clasificar (anterior)» si el código es nulo), no el texto libre. El comentario no cambia de campo. No cambia el CA de búsqueda de `ticket-history`; solo cambia el valor que se muestra.
+- **Fecha de compra en la zona de negocio (`api-025` RN-02, CA-02):** «Fecha de compra» se formatea con `arca.timezone` en lugar de `config('app.timezone')` (UTC). Corrige el valor de esta spec, que `api-025` ya anotaba como divergencia.
+- Esta nota no añade grupos, permisos ni campos de búsqueda. La implementación la hace `api-022` T-19 y `api-025` T-08.

@@ -36,10 +36,16 @@ export function formatDate(value: string | null | undefined): string {
   return Number.isNaN(date.getTime()) ? value : shortDate.format(date);
 }
 
+/**
+ * Respaldo fijo cuando una respuesta no informa su zona (dashboard-019, decisión final 1).
+ * Nunca se usa la zona del navegador.
+ */
+export const BUSINESS_TIMEZONE_FALLBACK = "America/Mexico_City";
+
 const zonedDateTime = new Intl.DateTimeFormat("es-MX", {
   dateStyle: "medium",
   timeStyle: "short",
-  timeZone: "America/Mexico_City",
+  timeZone: BUSINESS_TIMEZONE_FALLBACK,
 });
 
 /** Fecha y hora; sin desfase si la API envía hora local sin zona. */

@@ -1,3 +1,5 @@
+import type { ReportTabId } from "./report-tabs";
+
 /**
  * Estado de la shell del dashboard: sección activa, menú móvil y aviso.
  * No contiene datos de demostración (dashboard-005 CA-02); las secciones
@@ -21,11 +23,14 @@ export type DashboardShellState = {
   mobileMenuOpen: boolean;
   desktopMenuCollapsed: boolean;
   notice: string;
+  /** Pestaña elegida en «Reportes»; `null` usa la primera permitida (dashboard-020 CA-04, CA-05). */
+  reportsTab: ReportTabId | null;
 };
 
 export type DashboardShellAction =
   | { type: "reset" }
   | { type: "navigate"; section: DashboardSection; available: DashboardSection[] }
+  | { type: "select-reports-tab"; tab: ReportTabId; available: ReportTabId[] }
   | { type: "toggle-menu" }
   | { type: "close-menu" }
   | { type: "toggle-desktop-menu" }
@@ -36,6 +41,7 @@ export const initialDashboardShellState: DashboardShellState = {
   mobileMenuOpen: false,
   desktopMenuCollapsed: true,
   notice: "",
+  reportsTab: null,
 };
 
 export function dashboardShellReducer(
@@ -53,7 +59,13 @@ export function dashboardShellReducer(
         activeSection: action.section,
         mobileMenuOpen: false,
         notice: "",
+        // Al salir de «Reportes» y volver se abre la pestaña por defecto (CA-05, D-6).
+        reportsTab: null,
       };
+    case "select-reports-tab":
+      // Una pestaña no permitida se ignora (CA-06); no hay URL (RN-12).
+      if (!action.available.includes(action.tab)) return state;
+      return { ...state, reportsTab: action.tab };
     case "toggle-menu":
       return { ...state, mobileMenuOpen: !state.mobileMenuOpen };
     case "close-menu":

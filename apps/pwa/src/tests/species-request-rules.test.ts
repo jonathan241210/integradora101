@@ -81,9 +81,9 @@ describe('CA-09 PWA solicitud de publicación: ficha pública', () => {
 });
 
 describe('CA-11 PWA solicitud de publicación: campos sin fuente', () => {
-  it('solo ofrece tres casillas y no las seis sin fuente', () => {
+  it('solo ofrece cuatro casillas y no las seis sin fuente', () => {
     const labels = fichaFieldOptions.map((option) => option.label);
-    expect(labels).toEqual(['Nombre científico', 'Área de distribución natural', 'Hábitat']);
+    expect(labels).toEqual(['Nombre científico', 'Área de distribución natural', 'Hábitat', 'Dato curioso']);
     for (const missing of ['Estado de conservación', 'Tamaño', 'Gestación', 'Alimentación', 'Esperanza de vida', 'Características']) {
       expect(labels).not.toContain(missing);
     }

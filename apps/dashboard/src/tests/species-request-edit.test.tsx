@@ -65,7 +65,7 @@ it("CA-07 species-request-edit: nombre común como texto y sin campo editable; c
   expect(html).toContain("Área de distribución natural");
   expect(html).toContain("Qué mostrar en la ficha pública");
   expect(html.match(/type="checkbox"[^>]*checked/g)).toHaveLength(3);
-  expect(html).toContain("Cambiar foto");
+  expect(html).toContain("Elegir imagen");
   expect(html).toContain("Guardar cambios");
   for (const label of ["Mamífero", "Ave", "Reptil", "Anfibio", "Pez", "Invertebrado"]) {
     expect(html).toContain(label);

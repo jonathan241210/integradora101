@@ -66,7 +66,7 @@ export const pendingSpecies = (overrides: Partial<SpeciesPublicationDetailDto> =
 
 export function fakePublishedApi(overrides: Record<string, unknown> = {}) {
   const species = {
-    list: vi.fn(async (_query?: unknown) => ({ data: [row()], meta: { has_more: false } })),
+    list: vi.fn(async (_query?: unknown) => ({ data: [row()], meta: { current_page: 1, last_page: 1, per_page: 10, total: 1, has_more: false } })),
     get: vi.fn(async (_id: number) => publication()),
     update: vi.fn(async (_id: number, _input: unknown) => unpublishedSpecies()),
     unpublish: vi.fn(async (_id: number) => unpublishedSpecies()),

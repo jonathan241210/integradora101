@@ -57,7 +57,7 @@ const base = "/api/v1/admin";
 
 it("CA-02 memory-api-client: list envía status solo con filtro y page; no envía limit", async () => {
   const { api, calls } = clientWith(() =>
-    json(200, { data: [], meta: { page: 1, limit: 10, has_more: true } }),
+    json(200, { data: [], meta: { current_page: 1, last_page: 3, per_page: 10, total: 25, has_more: true } }),
   );
 
   const all = await api.memoryReview.list({ page: 1 });

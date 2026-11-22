@@ -325,3 +325,9 @@
 - CI: no verificado en esta sesión.
 
 Estado final de estas tareas: **En progreso** (plan y tasks aprobados por Jonathan, 2026-11-13). La spec sigue **Aprobada**.
+
+## Revisión 2026-11-21: paginación con total
+
+- [x] **T-31** (CA-42; plan, nota 2026-11-21): `paginate(10)` en las tres Actions de lista, `PaginationMeta` y controladores. Test: `test_ca42_species_lists_return_meta_with_total_and_keep_has_more` (`SpeciesListsPaginationTotalTest`).
+- [x] **T-32** (CA-43): orden estable con desempate por `id` y página absurda con `total` real. Test: `test_ca43_species_lists_keep_stable_order_and_absurd_page_reports_total`; `SpeciesPublicationCoverageTest` sube a CA-43.
+- [x] **T-33** (CA-42; documental): `apps/api/docs/publicacion-de-especies.md` y `administracion.md`; ajuste de los tests de `meta.has_more`.

@@ -69,7 +69,7 @@ Tabla normativa: toda operación de `/api/v1/admin/*` se clasifica en uno de est
 | Modo | Operación | Ruta (API) | Permiso / rol | Spec de origen |
 |---|---|---|---|---|
 | Siempre | Cambiar precio de adulto o niño (inmediato o programado) | `POST /api/v1/admin/ticket-prices` | `ticket-prices.manage` | `api-009` CA-18, CA-19 |
-| Siempre | Restablecer contraseña de otra cuenta | `PUT /api/v1/admin/users/{user}/password` | `users.manage` | `api-007` CA-10 |
+| Siempre | Restablecer contraseña de otra cuenta | `PUT /api/v1/admin/users/{user}/password` | `users.manage` | `api-007` CA-10. Enmienda técnica 2026-11-20 (B-1): la confirmación va en `current_password` (CA-37, RN-16) |
 | Siempre | Restablecer 2FA de otra cuenta | `DELETE /api/v1/admin/users/{user}/two-factor` | `users.manage` | `api-007` CA-11 |
 | Siempre | Cambiar el rol de una cuenta, o cualquier `PATCH` que cambie `role` junto con otros campos (p. ej. nombre o área) | `PATCH /api/v1/admin/users/{user}` con `role` distinto del actual | `users.manage` | `api-007` CA-06 |
 | Siempre | Cambiar la contraseña propia (exige la contraseña actual) | Ruta por definir en el plan (hoy no existe para el personal; `me/password` es de visitantes) | Sesión propia + 2FA según rol | Decisión 2026-11-20 (CA-33) |
@@ -79,8 +79,11 @@ Tabla normativa: toda operación de `/api/v1/admin/*` se clasifica en uno de est
 | Ventana 10 min | Desactivar una cuenta no admin | `PATCH /api/v1/admin/users/{user}/status` | `users.manage` | `api-007` CA-07 |
 | Ventana 10 min | Activar una cuenta no admin | `PATCH /api/v1/admin/users/{user}/status` (activación) | `users.manage` | `api-007` CA-07; decisión 2026-11-20 (CA-35) |
 | Ventana 10 min | Eliminar una cuenta no admin | `DELETE /api/v1/admin/users/{user}` | `users.manage` | `api-007` CA-08 |
-| Ventana 10 min | Regenerar el QR de un recinto que ya tiene QR | `POST /api/v1/admin/enclosures/{enclosure}/qr/regenerate` | `enclosures.manage` | `api-020` |
+| Ventana 10 min | Regenerar el QR de un recinto que ya tiene QR (sin QR previo, No pide: CA-39) | `POST /api/v1/admin/enclosures/{enclosure}/qr/regenerate` | `enclosures.manage` | `api-020` |
 | Ventana 10 min | Eliminar un recinto | `DELETE /api/v1/admin/enclosures/{enclosure}` | `enclosures.manage` | `api-007` (recintos) |
+| No pide | Crear un recinto (enmienda técnica 2026-11-20, B-4; CA-40) | `POST /api/v1/admin/enclosures` | `enclosures.manage` | `api-019` |
+| No pide | Editar un recinto (enmienda técnica 2026-11-20, B-4; CA-40) | `PATCH /api/v1/admin/enclosures/{enclosure}` | `enclosures.manage` | `api-019` |
+| No pide | Cambiar el estado de un recinto (enmienda técnica 2026-11-20, B-4; CA-40) | `PATCH /api/v1/admin/enclosures/{enclosure}/status` | `enclosures.manage` | `api-019` |
 | No pide | Vender boletos | `POST /api/v1/admin/tickets` | `tickets.create` | `api-009` CA-01 |
 | No pide | Cotizar boletos | `POST /api/v1/admin/tickets/quote` | `tickets.create` | `api-009` CA-46 |
 | No pide | Exportar reportes (CSV, XLSX, PDF); solo se audita, como ya ocurre | `GET /api/v1/admin/reports/tickets/export` | `reports.view` | `api-007` |
@@ -91,6 +94,12 @@ Tabla normativa: toda operación de `/api/v1/admin/*` se clasifica en uno de est
 | No pide | Lecturas (`GET`) de administración no listadas arriba | p. ej. `GET /api/v1/admin/tickets`, `GET /api/v1/admin/users`, `GET /api/v1/admin/dashboard` | permiso de cada lectura | specs de cada módulo |
 
 Las dos operaciones que la versión anterior dejaba sin clasificar quedan resueltas en «Decisiones 2026-11-20»: generar el QR por primera vez es **No pide**; activar una cuenta es **Ventana**.
+
+**Enmienda técnica 2026-11-20** (decisiones de la aprobación técnica del plan; sin renumerar CA ni RN):
+- B-1: en `PUT /api/v1/admin/users/{user}/password` la confirmación del administrador va en `current_password`, y `password` es la nueva contraseña (CA-37, RN-16).
+- B-2: crear, editar, activar, desactivar o eliminar cuentas `zoo-admin` y demás cuentas no admin es Ventana. Las cuentas `admin` quedan fuera de la operación desde la API (`api-023`); su 403 se evalúa antes que el de contraseña (CA-38, RN-17).
+- B-3: regenerar el QR de un recinto sin código previo es No pide (CA-39).
+- B-4: crear, editar un recinto y cambiar su estado son No pide (CA-40).
 
 ## Mecanismo de confirmación
 
@@ -153,7 +162,7 @@ Las dos operaciones que la versión anterior dejaba sin clasificar quedan resuel
 
 - **CA-30:** Dado un `cashier` con 2FA confirmado, cuando vende o consulta su historial, entonces las respuestas de venta e historial mantienen su forma de `api-009` (CA-01, CA-14, CA-16); esta spec solo añade los códigos 403 y 422 descritos.
 - **CA-31:** Dado el catálogo de roles con 2FA, cuando se lee `config('arca.two_factor_roles')`, entonces contiene `admin`, `zoo-admin` y `cashier`, y no contiene `veterinarian` ni `executive`. (La lista se amplía en `api-023`, CA-04.)
-- **CA-32:** Dada la suite de PHPUnit, cuando se ejecuta `php artisan test`, entonces corre contra `arca_pruebas` con `DatabaseTransactions` (nunca `arca_zoo`) y existe al menos un test que nombra cada CA-01 a CA-36.
+- **CA-32:** Dada la suite de PHPUnit, cuando se ejecuta `php artisan test`, entonces corre contra `arca_pruebas` con `DatabaseTransactions` (nunca `arca_zoo`) y existe al menos un test que nombra cada CA-01 a CA-42, excepto CA-33. *Enmienda técnica 2026-11-20 (B-5): CA-33 queda fuera de alcance por la decisión final de 2026-11-20 y no tiene test; el resto de CA sí lo tiene.*
 
 ### Decisiones 2026-11-20 (criterios añadidos)
 
@@ -161,6 +170,11 @@ Las dos operaciones que la versión anterior dejaba sin clasificar quedan resuel
 - **CA-34:** Dado un recinto que todavía no tiene código QR generado, cuando se genera por primera vez (`POST /api/v1/admin/enclosures/{enclosure}/qr`), entonces se resuelve según `api-020` sin pedir contraseña ni ventana, tenga o no una ventana vigente. Las generaciones posteriores (regenerar) siguen el modo Ventana de CA-20.
 - **CA-35:** Dada una cuenta no admin desactivada, cuando `admin` la activa (`PATCH /api/v1/admin/users/{user}/status` con activación), entonces sin ventana vigente responde 403 `password_confirmation_required` y no cambia datos; con ventana vigente se aplica la regla de activación de `api-007`.
 - **CA-36:** Dado `PATCH /api/v1/admin/users/{user}` que cambia `role` junto con otros campos (nombre, área, etc.), cuando se llama sin `password`, aunque exista una ventana vigente, entonces responde 403 `password_confirmation_required` con `mode: always` y no cambia datos. Con `password` correcta se aplica la petición completa (`api-007` CA-06); con `password` incorrecta responde 422 y no cambia datos.
+- **CA-37 (enmienda técnica 2026-11-20, B-1):** Dado `PUT /api/v1/admin/users/{user}/password` (restablecer la contraseña de otra cuenta, `users.manage`), cuando se llama sin `current_password` aunque exista una ventana vigente, entonces responde 403 `password_confirmation_required` con `mode: always` y no cambia datos. Con `current_password` incorrecta (contraseña del administrador que opera) responde 422 «La contraseña no es correcta.», no cambia datos y registra el intento fallido (CA-28). Con `current_password` correcta restablece la contraseña usando `password` como nueva contraseña, validada con `Password::defaults()`; `password` nunca sirve de confirmación en esta ruta.
+- **CA-38 (enmienda técnica 2026-11-20, orden con `api-023`):** Dada una cuenta con rol `admin` como objetivo de una escritura bajo `/api/v1/admin/users/*` (`api-023` CA-11), cuando la llama un actor con `users.manage` sin ventana vigente y sin `password`, entonces responde el 403 de cuenta admin de `api-023` y no `password_confirmation_required`. El control de cuenta admin se evalúa antes que el de contraseña (`api-023` Q6).
+- **CA-39 (enmienda técnica 2026-11-20, B-3):** Dado `POST /api/v1/admin/enclosures/{enclosure}/qr/regenerate` sobre un recinto sin código QR activo, cuando se llama sin ventana vigente, entonces se resuelve como primera generación (CA-34): no pide contraseña ni ventana. Sobre un recinto con QR activo se aplica CA-20 (Ventana).
+- **CA-40 (enmienda técnica 2026-11-20, B-4):** Dado un usuario con `enclosures.manage` y sin ventana vigente, cuando crea un recinto (`POST /api/v1/admin/enclosures`), edita sus datos (`PATCH /api/v1/admin/enclosures/{enclosure}`) o cambia su estado (`PATCH /api/v1/admin/enclosures/{enclosure}/status`), entonces la operación se resuelve según `api-019` sin pedir contraseña ni responder `password_confirmation_required`.
+- **CA-41 (enmienda técnica 2026-11-20, B-7):** Dados cuatro intentos fallidos de un usuario dentro de 10 minutos, sin bloqueo activo, cuando confirma su contraseña correctamente, entonces el contador de fallos de ese usuario se borra y un fallo posterior empieza a contar desde cero. Dado un bloqueo activo (CA-27), la contraseña correcta responde 429, no valida la contraseña y no borra el contador.
 
 ## Reglas de negocio
 
@@ -170,8 +184,8 @@ Las dos operaciones que la versión anterior dejaba sin clasificar quedan resuel
 - **RN-04:** Las operaciones de Siempre exigen la contraseña en cada petición y no crean ventana. Una ventana vigente no las satisface.
 - **RN-05:** La contraseña se verifica contra el hash bcrypt de `users` (`api-003` RN-10). Nunca se guarda en sesión, en `activity_log`, en respuestas ni en logs.
 - **RN-06:** Confirmar la contraseña no sustituye al 2FA. Un usuario sin 2FA confirmado en un rol de `config('arca.two_factor_roles')` no opera aunque confirme su contraseña.
-- **RN-07:** Límite de intentos de contraseña por usuario: 5 contraseñas incorrectas en 10 minutos bloquean la confirmación durante 10 minutos (429), tanto en Ventana como en Siempre (decisión 2026-11-20). El límite cuenta solo las contraseñas verificadas y fallidas (CA-29).
-- **RN-08:** Toda confirmación exitosa o fallida y toda operación de Siempre con `password` se registra en Activitylog (CA-28), con el mismo formato de auditoría que `api-007` CA-26.
+- **RN-07:** Límite de intentos de contraseña por usuario: 5 contraseñas incorrectas en 10 minutos bloquean la confirmación durante 10 minutos (429), tanto en Ventana como en Siempre (decisión 2026-11-20). El límite cuenta solo las contraseñas verificadas y fallidas (CA-29). *Enmienda técnica 2026-11-20 (B-7): una confirmación correcta sin bloqueo activo borra los fallos previos del usuario (CA-41).*
+- **RN-08:** Toda confirmación exitosa o fallida y toda operación de Siempre con `password` se registra en Activitylog (CA-28). *Enmienda técnica 2026-11-20 (B-8): `log_name` `auth`, como `api-003`, con correo, IP y user-agent (RN-18); deja de usarse el formato de `api-007` CA-26.*
 - **RN-09:** `config('arca.two_factor_roles')` pasa a `['admin', 'zoo-admin', 'cashier']` en esta spec. `api-023` lo amplía con los roles nuevos. `veterinarian` no usa 2FA.
 - **RN-10:** Los mensajes al usuario están en español; los códigos (`two_factor_setup_required`, `password_confirmation_required`) y los nombres de rutas y eventos, en inglés (Constitución VI).
 - **RN-11:** La ventana vive en la sesión de Laravel (driver `database`, tabla `sessions`). No requiere columnas ni tablas nuevas.
@@ -179,6 +193,9 @@ Las dos operaciones que la versión anterior dejaba sin clasificar quedan resuel
 - **RN-13:** La confirmación de contraseña no reemplaza ni modifica `api-003` (login, 2FA, expiración). Solo se añade una capa por operación.
 - **RN-14:** Despliegue del 2FA de `cashier` (decisión 2026-11-20): los cajeros se avisan fuera del sistema unos días antes del despliegue; desde el despliegue el 2FA es obligatorio para `cashier`, sin fecha de corte en el código.
 - **RN-15:** Los eventos `password-confirmation.*` se conservan en `activity_log` con la misma retención que el resto de eventos de auditoría; no hay panel nuevo para consultarlos (decisión 2026-11-20).
+- **RN-16 (enmienda técnica 2026-11-20, B-1):** En `PUT /api/v1/admin/users/{user}/password` el campo `password` es la nueva contraseña y la confirmación del administrador va en `current_password`. Es la única excepción a la reserva del campo `password` para la confirmación de Siempre (CA-37).
+- **RN-17 (enmienda técnica 2026-11-20, B-2):** Las altas, ediciones, activaciones, desactivaciones y bajas de cuentas no admin, incluidas las de `zoo-admin`, siguen el modo Ventana de la tabla. Las cuentas `admin` no son objetivo de estas operaciones desde la API (`api-023` CA-11) y su 403 se evalúa antes (CA-38).
+- **RN-18 (enmienda técnica 2026-11-20, B-8):** Los eventos `password-confirmation.*` usan `log_name` `auth` y registran correo, IP y user-agent del actor, como `api-003`. Textos aceptados: 403 «Confirma tu contraseña para realizar esta acción.»; 422 «La contraseña no es correcta.»; 429 «Demasiados intentos. Intenta de nuevo en :seconds segundos.»; 200 con envoltorio `data`: `{ "data": { "confirmed_until": "…" } }`, como el resto de `/api/v1/admin`.
 
 ## Datos, privacidad y auditoría
 
@@ -241,9 +258,17 @@ Las dos operaciones que la versión anterior dejaba sin clasificar quedan resuel
 ## Revisión
 
 - Aprobadores y fecha: Jonathan (responsable funcional), 2026-11-20.
+- Enmienda técnica 2026-11-20: aprobación técnica del plan `apps/api/plan/021-staff-step-up-confirmation.md` con las decisiones B-1 a B-8. Añade CA-37 a CA-41 y RN-16 a RN-18; enmienda RN-07, RN-08, CA-32, la tabla de modos y la línea de `PUT users/{user}/password`. Ningún CA ni RN existente cambia de número.
 - Nota de revisión 2026-11-20 en `apps/api/specs/009-ticket-sales.md` (cancelación con confirmación de contraseña y ventana de 10 min).
 - Evidencia/enlaces: `apps/api/specs/003-staff-authentication.md` (nota de revisión 2026-11-20), `apps/api/specs/007-administration-management.md`, `apps/api/specs/009-ticket-sales.md`, `apps/dashboard/specs/015-step-up-confirmation.md`, `apps/api/src/routes/api.php`, `apps/api/src/config/arca.php`, `apps/api/src/app/Http/Middleware/EnsureAdministratorTwoFactor.php`, `apps/api/src/config/fortify.php`.
 
 ## Decisiones finales 2026-11-20 (Jonathan)
 - **CA-33 fuera de alcance.** El personal no tiene función para cambiar su propia contraseña (solo existe `me/password` para visitantes). CA-33 no se implementa ni se prueba en esta feature; si después se crea esa función, exigirá la contraseña actual. Sigue vigente que restablecer la contraseña de **otra** cuenta (`PUT users/{user}/password`) pide confirmación «Siempre».
 - **Política de contraseñas del personal (Jonathan, 2026-11-20).** Nadie del personal cambia su propia contraseña. Solo el `admin` restablece la contraseña de otras cuentas, desde el dashboard y con confirmación «Siempre». La contraseña de una cuenta `admin` solo se restablece por consola (`arca:admin:reset-password`, `api-023`).
+
+## Revisión 2026-11-20 (hallazgo de seguridad, aprobado por Jonathan)
+
+Hallazgo: `POST /api/v1/staff/auth/login` (`staff.auth.login`, `AuthController::login`) emitía un token Sanctum sin reto 2FA, y ese token también autenticaba en `admin/*`, lo que anulaba el 2FA obligatorio de `admin`, `zoo-admin` y `cashier`. Ningún cliente usa ese endpoint: la PWA usa `/api/v1/auth/login` (Fortify, cookie; pwa-003). No se renumera ningún CA ni RN existente.
+
+- **CA-42:** Dada una cuenta con un rol de `config('arca.two_factor_roles')` (`admin`, `zoo-admin`, `cashier`), cuando llama `POST /api/v1/staff/auth/login` con credenciales válidas, entonces responde 403 con `code: two_factor_login_required` y el mensaje «Esta cuenta debe iniciar sesión desde el panel con su segundo factor.», no emite token y no actualiza `last_login_at`. El rechazo va después de validar la contraseña (una contraseña incorrecta responde igual que una cuenta inexistente, sin enumerar cuentas) y no limpia el límite de intentos del login. Un `veterinarian` sigue recibiendo su token. Un token Sanctum que no sea de la sesión de navegador (`currentAccessToken()` distinto de `TransientToken`) de una cuenta con rol de 2FA, incluidos los emitidos antes de esta regla, recibe el mismo 403 en `admin/*` (middleware `administrator.two-factor`).
+- **RN-19:** Las cuentas con un rol de `config('arca.two_factor_roles')` solo operan con sesión de navegador y reto de segundo factor; no pueden obtener ni usar tokens personales de personal. La regla sigue la lista de roles, así que `api-023` la amplía junto con `two_factor_roles`. *Nota de revisión 2026-11-21 (seguridad): la regla alcanza también a `/api/v1/staff/*` y `GET /api/v1/auth/me` (middleware `staff.user`); el `veterinarian` con token sigue funcionando. Test: `test_ca42_api021_rn19_token_of_a_2fa_role_is_rejected_outside_admin`.*

@@ -4,6 +4,8 @@
  * importen `@arca/api-client` directamente (dashboard-005 CA-21).
  */
 export type {
+  CancellationReasonCode,
+  CancellationReasonDto,
   PageMeta,
   TicketHistoryPage,
   TicketHistoryQuery,

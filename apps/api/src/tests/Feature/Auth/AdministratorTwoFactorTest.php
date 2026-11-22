@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Fortify;
 use PragmaRX\Google2FA\Google2FA;
@@ -20,7 +21,8 @@ class AdministratorTwoFactorTest extends FeatureTestCase
             ->get('/api/v1/__test/protected', fn () => response()->json(['ok' => true]))
             ->name('auth.test.protected');
 
-        foreach (['admin', 'zoo-admin'] as $role) {
+        // api-021 y api-023: roles de `arca.two_factor_roles`.
+        foreach (['admin', 'zoo-admin', 'cashier', 'executive', 'communications'] as $role) {
             $user = $this->createStaffUser($role);
 
             $this->actingAs($user, 'web')
@@ -31,6 +33,10 @@ class AdministratorTwoFactorTest extends FeatureTestCase
                     'code' => 'two_factor_setup_required',
                 ]);
         }
+
+        // `veterinarian` no usa 2FA.
+        Auth::forgetGuards();
+        $this->actingAs($this->createStaffUser('veterinarian'), 'web')->getJson('/api/v1/__test/protected')->assertOk();
     }
 
     /** CA-09 staff-authentication */

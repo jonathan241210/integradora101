@@ -39,7 +39,6 @@ function json(status: number, body: unknown): Response {
 
 function clientWith(
   respond: (call: Call) => Response,
-  deviceTimeZone: () => string | undefined = () => "America/Mexico_City",
   onUnauthorized?: () => void,
 ) {
   const calls: Call[] = [];
@@ -56,56 +55,51 @@ function clientWith(
   };
   const http = createHttpClient({ baseUrl: "", fetchImpl, onUnauthorized });
 
-  return { calls, api: createTicketSalesApi(http, { deviceTimeZone }) };
+  return { calls, api: createTicketSalesApi(http) };
 }
 
 const page = { data: [], links: {}, meta: { current_page: 1, last_page: 1, per_page: 25, total: 0 } };
 
-describe("CA-13 ticket-sales", () => {
-  it("history.list envía timezone del dispositivo y filtros", async () => {
-    const { api, calls } = clientWith((call) =>
-      call.url.endsWith("/cancel") ? json(200, { data: { folio: 7 } }) : json(200, page),
-    );
+describe("dashboard-019 single-business-timezone (cliente)", () => {
+  it("CA-04 single-business-timezone: history.list no envía timezone aunque el llamador lo pase", async () => {
+    const { api, calls } = clientWith(() => json(200, page));
 
-    await api.history.list({ folio: "7", status: "completed", page: 2 });
-    await api.history.cancel(7, { reason: "Error" });
+    await api.history.list({ folio: "7", status: "completed", page: 2, timezone: "UTC" } as never);
+    await api.history.list({});
 
+    for (const call of calls) expect(call.url).not.toContain("timezone");
     const listUrl = new URL(calls[0].url, "http://x");
-
     expect(listUrl.pathname).toBe("/api/v1/admin/tickets");
-    expect(listUrl.searchParams.get("timezone")).toBe("America/Mexico_City");
     expect(listUrl.searchParams.get("folio")).toBe("7");
     expect(listUrl.searchParams.get("status")).toBe("completed");
     expect(listUrl.searchParams.get("page")).toBe("2");
-    expect(calls[1].url).toBe("/api/v1/admin/tickets/7/cancel");
-    expect(JSON.parse(String(calls[1].init?.body))).toEqual({ reason: "Error" });
   });
 
-  it("el llamador puede sobrescribir timezone en el historial", async () => {
-    const { api, calls } = clientWith((call) =>
-      call.url.endsWith("/cancel") ? json(200, { data: {} }) : json(200, page),
-    );
+  it("CA-07 single-business-timezone: historial envía from y to como Y-m-d sin timezone", async () => {
+    const { api, calls } = clientWith(() => json(200, page));
 
-    await api.history.list({ timezone: "UTC" });
+    await api.history.list({ from: "2026-11-06", to: "2026-11-06" });
 
-    expect(new URL(calls[0].url, "http://x").searchParams.get("timezone")).toBe("UTC");
+    const params = new URL(calls[0].url, "http://x").searchParams;
+    expect(params.get("from")).toBe("2026-11-06");
+    expect(params.get("to")).toBe("2026-11-06");
+    expect(params.has("timezone")).toBe(false);
   });
-});
 
-describe("CA-12 ticket-sales", () => {
-  it("history.cancel envía solo reason, sin timezone, y history.list sí envía la zona", async () => {
-    const { api, calls } = clientWith((call) =>
-      call.url.endsWith("/cancel") ? json(200, { data: { folio: 7 } }) : json(200, page),
-    );
+  it("CA-08 single-business-timezone: cancelar envía reason_code y reason, sin timezone", async () => {
+    const { api, calls } = clientWith(() => json(200, { data: { folio: 7 } }));
 
-    await api.history.cancel(7, { reason: "Error de captura" });
-    await api.history.list({});
+    await api.history.cancel(7, { reason_code: "capture_error", reason: "Error de captura" });
 
     expect(calls[0].url).toBe("/api/v1/admin/tickets/7/cancel");
-    expect(JSON.parse(String(calls[0].init?.body))).toEqual({ reason: "Error de captura" });
+    expect(JSON.parse(String(calls[0].init?.body))).toEqual({ reason_code: "capture_error", reason: "Error de captura" });
     expect(String(calls[0].init?.body)).not.toContain("timezone");
-    expect(calls[0].url).not.toContain("timezone");
-    expect(new URL(calls[1].url, "http://x").searchParams.get("timezone")).toBe("America/Mexico_City");
+  });
+
+  it("CA-01 single-business-timezone: history.list conserva la zona de negocio que informa la API", async () => {
+    const { api } = clientWith(() => json(200, { ...page, timezone: "America/Mexico_City" }));
+
+    expect((await api.history.list({})).timezone).toBe("America/Mexico_City");
   });
 });
 
@@ -190,7 +184,6 @@ describe("CA-21 ticket-sales", () => {
         call.url.includes("ticket-prices")
           ? json(403, { message: "Configura 2FA.", code: "two_factor_setup_required" })
           : json(401, { message: "Unauthenticated." }),
-      () => undefined,
       () => {
         unauthorized += 1;
       },

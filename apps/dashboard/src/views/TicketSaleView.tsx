@@ -4,10 +4,11 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
 import { ActionError } from "@/components/DashboardNotifications";
 import { Icon } from "@/components/Icon";
+import { PriceLineSkeleton } from "@/components/LoadingSkeletons";
 import { PrintSettingsDialog } from "@/components/PrintSettingsDialog";
 import { SectionHeading } from "@/components/SectionHeading";
 import { TicketReceipt } from "@/components/TicketReceipt";
-import { formatCurrency } from "@/viewmodels/formatters";
+import { BUSINESS_TIMEZONE_FALLBACK, formatCurrency } from "@/viewmodels/formatters";
 import type { TicketPrintSettingsViewModel } from "@/viewmodels/useTicketPrintSettings";
 import {
   canConfirmSale,
@@ -36,10 +37,10 @@ function PriceCard({
       </div>
       {price?.amount ? (
         <strong className="ticket-price">{formatCurrency(price.amount)}</strong>
+      ) : loading ? (
+        <PriceLineSkeleton />
       ) : (
-        <strong className="ticket-price ticket-price--missing">
-          {loading ? "Cargando…" : "Sin precio"}
-        </strong>
+        <strong className="ticket-price ticket-price--missing">Sin precio</strong>
       )}
       <p>
         {price?.amount
@@ -266,6 +267,7 @@ export function TicketSaleView({
             <TicketReceipt
               key={ticket.folio}
               ticket={ticket}
+              timezone={state.sale?.timezone ?? BUSINESS_TIMEZONE_FALLBACK}
               settings={printSettings.settings}
             />
           ))}

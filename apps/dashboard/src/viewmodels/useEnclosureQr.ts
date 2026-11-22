@@ -1,5 +1,6 @@
 import { useEffect, useReducer, useRef } from "react";
 import { adminApi } from "@/services/arca-api";
+import { useRunProtected } from "./step-up-context";
 import {
   enclosureQrReducer,
   generateEnclosureQr,
@@ -38,6 +39,7 @@ export function useEnclosureQr(
     initialEnclosureQrState(enclosure, intent),
   );
   const started = useRef(false);
+  const protect = useRunProtected();
   const latest = useRef(callbacks);
 
   latest.current = callbacks;
@@ -62,7 +64,7 @@ export function useEnclosureQr(
       generate: () => void generateEnclosureQr(api, enclosure.id, dispatch, stable),
       requestRegenerate: () => dispatch({ type: "regenerate-requested" }),
       cancelRegenerate: () => dispatch({ type: "regenerate-cancelled" }),
-      confirmRegenerate: () => void regenerateEnclosureQr(api, enclosure.id, dispatch, stable),
+      confirmRegenerate: () => void regenerateEnclosureQr(api, enclosure.id, dispatch, stable, protect),
       print: () => window.print(),
     },
   };

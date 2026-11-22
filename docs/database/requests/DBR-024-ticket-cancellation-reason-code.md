@@ -1,10 +1,10 @@
 # DBR-024 · Código de motivo de cancelación de boletos
 
-- Estado: Borrador (pendiente de revisión por BD y backend; no aprobada)
-- Feature/spec origen: `apps/api/specs/022-ticket-cancellation-report.md` (Borrador). Revisión de `apps/api/specs/009-ticket-sales.md` (contrato de cancelación, nota de revisión 2026-11-20). Consumidores: `apps/dashboard/specs/016-ticket-cancellation-report.md` (Borrador) y `apps/dashboard/specs/005-ticket-sales.md` (selector de motivo en el diálogo de cancelar).
+- Estado: Lista para backend (aplicada en `arca_pruebas` el 2026-11-20; BD por delegación a Jonathan)
+- Feature/spec origen: `apps/api/specs/022-ticket-cancellation-report.md` (Aprobada 2026-11-20). Revisión de `apps/api/specs/009-ticket-sales.md` (contrato de cancelación, nota de revisión 2026-11-20). Consumidores: `apps/dashboard/specs/016-ticket-cancellation-report.md` (Aprobada 2026-11-20) y `apps/dashboard/specs/005-ticket-sales.md` (selector de motivo en el diálogo de cancelar).
 - Solicitante: Jonathan (decisión de producto del 2026-11-20: lista cerrada de motivos al cancelar un boleto).
-- Responsable de BD: Víctor Adrián (según DBR-006). Pendiente de confirmar para esta DBR.
-- Responsable backend: por confirmar.
+- Responsable de BD: Jonathan, por delegación del responsable de BD (Víctor Adrián) comunicada por Jonathan el 2026-11-20. La delegación cubre aprobar, crear y aplicar la migración de esta DBR en `arca_pruebas`.
+- Responsable backend: Jonathan.
 - Fecha de redacción: 2026-11-20
 
 ## Problema y justificación
@@ -49,7 +49,7 @@ Evaluado y propuesto **sin índice nuevo** en esta DBR:
 - Agrupar por `cancellation_reason_code` sobre ese subconjunto no justifica un índice nuevo con el volumen actual.
 - Alternativa si el volumen crece: índice compuesto `(status, purchased_at)`, o `(cancellation_reason_code)`. Se decide con datos reales de `arca_pruebas` y producción, no ahora.
 
-Pregunta para BD: ¿confirma que no se añade índice en esta DBR?
+Decisión de BD (2026-11-20): no se añade índice en esta DBR.
 
 ## Elementos afectados
 
@@ -93,43 +93,50 @@ No aplica.
 ## Plan de ejecución
 
 ### Fase 0: cierre documental
-- [ ] Revisión de BD (Víctor Adrián, según DBR-006) y backend (por confirmar).
+- [x] Revisión de BD (Jonathan, por delegación) y backend (Jonathan), 2026-11-20.
 - [x] Consulta de solo lectura de las filas canceladas (2026-11-20): 3 de 34.
-- [ ] Estado pasa a «Aprobada» con fecha.
+- [x] Estado pasa a «Aprobada» (2026-11-20).
 
 ### Fase 1: migración de esquema (responsable de BD)
-- [ ] Crear la migración bajo `apps/api/src/database/migrations/` (idempotente), con `down()`.
-- [ ] Probar en MySQL 8.0 aislado y en `arca_pruebas` según el flujo.
-- [ ] Registrar evidencia en «Pruebas y evidencia».
-- [ ] Estado pasa a «Lista para backend».
+- [x] Migración creada: `apps/api/src/database/migrations/2026_11_20_000024_ticket_cancellation_reason_code.php` (idempotente, con `down()`).
+- [x] Probada y aplicada en `arca_pruebas`. No hay MySQL 8.0 aislado en esta máquina (sin `mysqld`); la prueba aislada y la de `down()` quedan pendientes (ver evidencia).
+- [x] Evidencia registrada.
+- [x] Estado pasa a «Lista para backend» (2026-11-20).
 
 ### Fase 2: backend (tras «Lista para backend»)
 - [ ] Integrar `cancellation_reason_code` en `CancelTicketAction` y en la validación de `CancelTicketRequest` (`api-022` CA-11 a CA-13).
 
 ## Pruebas y evidencia
 
-Pendiente. Sin migración creada ni aplicada.
+Evidencia de `arca_pruebas` (2026-11-20, Jonathan como responsable de BD por delegación; migración creada y aplicada por la sesión del asistente por su instrucción expresa: excepción registrada a AGENTS.md, que reserva esta tarea al responsable de BD):
+- Base confirmada antes de migrar: `DB::connection()->getDatabaseName()` = `arca_pruebas`. Sin migraciones pendientes previas.
+- `php artisan migrate --pretend --path=…000024…`: solo comprueba existencia de tabla/columna y añade la columna.
+- `php artisan migrate --path=…000024… --force`: DONE (batch 14).
+- `php artisan db:table tickets`: `cancellation_reason_code varchar(30)` nullable, junto a `cancellation_reason varchar(255)` nullable.
+- Idempotencia: una segunda ejecución responde «Nothing to migrate»; el `up()` además comprueba la columna antes de crearla.
+- Datos: 34 boletos, 0 con código, 3 cancelados (quedan en NULL, «Sin clasificar (anterior)»). Sin backfill.
+- `migrate:rollback` está prohibido en este ambiente (protección de comandos destructivos del proyecto); no se forzó. **Pendiente:** probar `down()` en un MySQL 8.0 aislado.
 
 ## Aprobaciones
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Responsable de BD | Víctor Adrián (pendiente de confirmar) | | Pendiente |
-| Responsable backend | Por confirmar | | Pendiente |
-| Solicitante / responsable funcional | Jonathan | | Pendiente |
+| Responsable de BD | Jonathan (por delegación de Víctor Adrián) | 2026-11-20 | Aprobada |
+| Responsable backend | Jonathan | 2026-11-20 | Aprobada |
+| Solicitante / responsable funcional | Jonathan | 2026-11-20 | Aprobada |
 
 ## Aplicación por ambiente
 
 | Ambiente | Estado | Fecha | Evidencia |
 |---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | Pendiente | | |
+| desarrollo/pruebas (`arca_pruebas`) | Aplicada | 2026-11-20 | batch 14, ver «Pruebas y evidencia» |
 | staging | Pendiente | | |
 | producción | Pendiente | | |
 
 ## Verificaciones para BD
 
-1. **Columna inexistente en `arca_pruebas` (2026-11-20):** comprobado en solo lectura; pendiente de repetir justo antes de aprobar.
+1. **Columna inexistente en `arca_pruebas` (2026-11-20):** repetido justo antes de migrar (`Schema::hasColumn` = false).
 2. **Número de filas canceladas:** resuelto el 2026-11-20 (3 de 34 en `arca_pruebas`).
-3. **Índice:** confirmar que no se añade índice en esta DBR (sección «Índice»).
+3. **Índice:** confirmado, sin índice nuevo.
 4. **Orden de despliegue:** la API nueva no se despliega antes de la migración; el dashboard no envía el código hasta que la API lo acepte.
-5. **Ejecución de `down()`:** pendiente en un MySQL 8.0 aislado.
+5. **Ejecución de `down()`:** pendiente en un MySQL 8.0 aislado (rollback prohibido en `arca_pruebas`).

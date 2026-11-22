@@ -55,7 +55,7 @@ class VisitorMemoryLimitsTest extends VisitorFeatureTestCase
         $disk = $this->fakeMemoryDisk();
         $now = Carbon::now()->startOfSecond();
         Carbon::setTestNow($now);
-        config(['app.timezone' => 'America/Mexico_City']);
+        config(['arca.timezone' => 'America/Mexico_City']);
 
         $created = $now->copy()->subDay();
         $this->memoryOf($visitor, 'accepted', [], $created);
@@ -73,6 +73,28 @@ class VisitorMemoryLimitsTest extends VisitorFeatureTestCase
         );
         $this->assertSame([], $disk->allFiles());
         $this->assertSame(1, VisitorMemory::withTrashed()->where('visitor_id', $visitor->id)->count());
+    }
+
+    /** CA-15 single-business-timezone */
+    public function test_ca15_weekly_limit_uses_arca_timezone(): void
+    {
+        [$token, $visitor] = $this->memoryVisitor();
+        $this->fakeMemoryDisk();
+        $now = Carbon::parse('2026-11-07 05:30:00', 'UTC');
+        Carbon::setTestNow($now);
+        $this->assertSame('UTC', config('app.timezone'));
+
+        $created = $now->copy()->subDay();
+        $this->memoryOf($visitor, 'accepted', [], $created);
+        $next = $created->copy()->addDays(7);
+
+        foreach (['America/Mexico_City', 'UTC'] as $zone) {
+            config(['arca.timezone' => $zone]);
+            $this->submitMemory($token)->assertStatus(429)->assertJsonPath(
+                'message',
+                'Solo puedes enviar un momento por semana. Podrás enviar otro a partir del '.$next->copy()->setTimezone($zone)->format('d/m/Y H:i').'.',
+            );
+        }
     }
 
     /** CA-23: también cuentan las rechazadas ya corregidas y las eliminadas lógicamente. */

@@ -2,7 +2,7 @@
 
 - Spec: `apps/dashboard/specs/018-pending-review-badges.md`
 - Estado de spec: Aprobada (Jonathan, 2026-11-20)
-- Estado del plan: **Borrador — pendiente de aprobación técnica (equipo/Jonathan)**. No autoriza implementación hasta aprobarse.
+- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**. Preguntas 1 a 4 cerradas en «Decisiones 2026-11-20».
 - Responsable técnico: `<por identificar>`
 - Dependencia de contrato: `apps/api/specs/024-pending-review-counts.md` y su plan `apps/api/plan/024-pending-review-counts.md` (endpoint `GET /api/v1/admin/pending-counts`, Borrador). Las pruebas de cliente pueden usar mocks; la integración real exige la ruta de `api-024` mergeada.
 - DBR relacionada: ninguna. No toca datos ni esquema.
@@ -130,7 +130,16 @@ Excepciones: ninguna. El tono `info` y la cola de avisos son cambios de `Dashboa
   - Sondeo con `setInterval`: prohibido por la spec (CA-08).
   - Mostrar el aviso desde `NoticeBar`: no es un aviso de tono informativo ni acepta cola.
 
-## Preguntas abiertas para la revisión técnica
+## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+
+- **Pregunta 1 (cola de avisos):** cola FIFO para todos los tonos. `publish` añade a la cola; sale el siguiente al cerrarse (5 s o botón). Spec: RN-14. Tareas: T-04, T-07. Regresión de los avisos de éxito y error en `published-species-*` (T-08).
+- **Pregunta 2 (etiqueta del tono informativo):** «Aviso». Spec: RN-12 (enmendado).
+- **Pregunta 3 (clic en la sección ya abierta):** no consulta de nuevo. Spec: RN-13. Test: CA-07 (T-07).
+- **Pregunta 4 (fallos y el intervalo de 15 s):** un fallo no cuenta para el intervalo; solo las consultas con éxito actualizan `lastLoadedAt`. Spec: RN-07 (enmendado). Tarea: T-03.
+- **Pregunta 5 y 6 (textos de CA-01 y CA-03; puntito tras aceptar o rechazar):** aprobados tal como están; el puntito se actualiza al cambiar de pantalla (RN-10).
+- Las propuestas del plan quedan aceptadas (nombres accesibles, puntito `aria-hidden`, componente `PendingReviewNotices`, `usePublishNotice()`, hook sin `setInterval`).
+
+## Preguntas originales (cerradas por las decisiones de arriba)
 
 1. **Cola de avisos:** ¿se aprueba el cambio de `publish` a cola FIFO para todos los tonos (propuesta), o solo para el aviso de pendientes con una cola aparte? La primera cambia cómo se sustituyen los avisos de éxito y error existentes.
 2. **Etiqueta del tono informativo:** la spec no fija el texto del encabezado del aviso (hoy «Éxito» y «Error»). Propuesta: «Aviso». ¿Se aprueba?
@@ -149,6 +158,17 @@ Dependencias y secuencia:
 6. Documentación, verificación y PR (T-10 a T-12).
 7. Integración con `api-024` real (T-13) cuando la ruta esté mergeada. Hasta entonces, el PR no se mergea.
 
-- Revisión técnica: pendiente (equipo/Jonathan).
+- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan).
 - Aprobador funcional: Jonathan, spec aprobada el 2026-11-20.
 - Evidencias: pendientes de la sesión principal (salida de `npm test`/Vitest, `tsc` y lint del dashboard). Esta sesión no tiene shell y no afirma que pasen.
+
+## Divergencias de implementación (2026-11-20)
+
+- Las pruebas del dashboard corren en Vitest con entorno `node` (sin DOM), así que la lógica de consulta (intervalo, fallo silencioso, una consulta en curso, aviso de inicio) vive en `viewmodels/pending-review.ts` como funciones y reducer puros (`refreshPendingCounts`, `pendingReviewReducer`) y el hook `usePendingReviewCounts` solo los conecta con React. Los casos prueban esas funciones y el marcado de `SidebarLink`; los CA-07, CA-08 y CA-13 además revisan el código fuente.
+- Se extrajo `components/SidebarLink.tsx` (botón del menú con puntito y nombre accesible) en lugar de editar el `button` en línea de `App.tsx`.
+- «Aviso de inicio» = primera consulta con éxito de la sesión: si trae 0 no se anuncia después aunque luego haya pendientes (solo se actualiza el puntito).
+- Se añadió el icono `info` a `components/Icon.tsx` para el tono informativo.
+- Un fallo conserva el último conteo conocido (no lo borra); sin consulta previa no hay puntito.
+- El hook ignora respuestas de otra sesión (memo por cuenta) pero no las de una sección anterior, para no repetir la consulta al cambiar rápido de pantalla; evita consultas simultáneas.
+- T-08: solo hizo falta ajustar `dashboard-notifications.test.tsx` (cierre del aviso con la cola FIFO). Los tests de navegación no dependían del `aria-label` antiguo.
+- Se añadió `pendingCounts` al mock `createAdminApiMock` (`tests/admin-fixtures.ts`).

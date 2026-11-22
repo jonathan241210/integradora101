@@ -9,12 +9,12 @@ class TicketSnapshotTest extends TicketFeatureTestCase
     public function test_ca27_ticket_sales_sold_ticket_keeps_its_prices_after_a_price_change(): void
     {
         $admin = $this->createAccount('admin');
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($admin, '25.00', '16.00');
         $sale = $this->sell($cashier, 2, 1);
 
         $this->actAs($admin)->postJson('/api/v1/admin/ticket-prices', [
-            'adult_amount' => 99, 'child_amount' => 88, 'mode' => 'immediate',
+            'adult_amount' => 99, 'child_amount' => 88, 'password' => self::STEP_UP_PASSWORD, 'mode' => 'immediate',
         ])->assertCreated();
 
         $ticket = Ticket::query()->findOrFail($sale['folio']);

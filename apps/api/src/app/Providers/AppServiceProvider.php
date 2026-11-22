@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use App\Actions\Admin\Enclosures\Qr\EnclosureQrCodeGenerator;
 use App\Actions\Admin\Enclosures\Qr\QrCodeValueGenerator;
+use App\Listeners\ClearStepUpWindow;
 use App\Listeners\RecordAuthenticationEvent;
 use App\Push\ExpoPushGateway;
 use App\Push\PushGateway;
+use App\Support\BusinessTimezone;
 use Closure;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
@@ -50,12 +52,21 @@ class AppServiceProvider extends ServiceProvider
             return app()->environment('local') ? $rule : $rule->uncompromised();
         });
 
+        // api-025 CA-14: una zona de negocio inválida impide el arranque (sin respaldo silencioso).
+        BusinessTimezone::assertValid();
+
         DB::prohibitDestructiveCommands();
         $this->forceHttps();
         $this->registerVisitorLimiters();
         $this->registerTicketLimiters();
         $this->registerSearchLimiter();
+        $this->registerPendingCountsLimiter();
+        $this->registerCancellationReportLimiter();
+        $this->registerPasswordConfirmationLimiter();
 
+        // api-021 CA-10: la ventana de confirmación no sobrevive a un inicio ni a un cierre de sesión.
+        Event::listen(Login::class, ClearStepUpWindow::class);
+        Event::listen(Logout::class, ClearStepUpWindow::class);
         Event::listen(Login::class, RecordAuthenticationEvent::class);
         Event::listen(Failed::class, RecordAuthenticationEvent::class);
         Event::listen(Logout::class, RecordAuthenticationEvent::class);
@@ -127,6 +138,52 @@ class AppServiceProvider extends ServiceProvider
             ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip()))
             ->response(fn (Request $request, array $headers) => response()->json([
                 'message' => 'Demasiadas búsquedas. Espera un minuto e inténtalo de nuevo.',
+            ], 429, $headers)));
+    }
+
+    /** api-024 CA-10: 60 consultas por minuto y usuario; quien no tiene permiso no consume cuota y recibe 403. */
+    private function registerPendingCountsLimiter(): void
+    {
+        RateLimiter::for('admin-pending-counts', function (Request $request) {
+            $user = $request->user();
+
+            if (! $user?->hasAnyPermission(['species.review', 'memories.review', 'reports.cancellations.view'])) {
+                return Limit::none();
+            }
+
+            return Limit::perMinute(60)
+                ->by((string) $user->getAuthIdentifier())
+                ->response(fn (Request $request, array $headers) => response()->json([
+                    'message' => 'Demasiadas consultas. Espera un minuto e inténtalo de nuevo.',
+                ], 429, $headers));
+        });
+    }
+
+    /** api-022: 60 consultas por minuto y usuario a las lecturas del reporte de cancelaciones; sin permiso no consume cuota. */
+    private function registerCancellationReportLimiter(): void
+    {
+        RateLimiter::for('cancellation-report', function (Request $request) {
+            $user = $request->user();
+
+            if (! $user?->can('reports.cancellations.view')) {
+                return Limit::none();
+            }
+
+            return Limit::perMinute(60)
+                ->by((string) $user->getAuthIdentifier())
+                ->response(fn (Request $request, array $headers) => response()->json([
+                    'message' => 'Demasiadas consultas al reporte. Espera un minuto e inténtalo de nuevo.',
+                ], 429, $headers));
+        });
+    }
+
+    /** api-021: 10 confirmaciones por minuto y usuario, antes de verificar la contraseña. */
+    private function registerPasswordConfirmationLimiter(): void
+    {
+        RateLimiter::for('password-confirmation', fn (Request $request) => Limit::perMinute(10)
+            ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip()))
+            ->response(fn (Request $request, array $headers) => response()->json([
+                'message' => 'Demasiadas solicitudes de confirmación. Espera un minuto e inténtalo de nuevo.',
             ], 429, $headers)));
     }
 

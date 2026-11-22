@@ -52,7 +52,7 @@ it("CA-55 published-species-edit: PATCH sin publicar; 422 junto al campo; Cancel
   expect(form).toContain('value="Sabana"');
   expect(form).toContain("Área de distribución natural");
   expect(form.match(/type="checkbox"[^>]*checked/g)).toHaveLength(3);
-  expect(form).toContain("Cambiar foto");
+  expect(form).toContain("Elegir imagen");
   expect(form).toContain("Guardar cambios");
 
   // PATCH solo con campos cambiados; la especie sigue despublicada.

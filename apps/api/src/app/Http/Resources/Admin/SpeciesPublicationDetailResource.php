@@ -17,6 +17,7 @@ class SpeciesPublicationDetailResource extends JsonResource
             'habitat' => $this->habitat,
             'origin' => $this->distribution,
             'category' => $this->category,
+            'fun_fact' => $this->fun_fact,
             'publication_status' => $this->resource->getAttribute('publication_status')->value,
             'is_published' => (bool) $this->is_published,
             'published_at' => $this->published_at?->toJSON(),

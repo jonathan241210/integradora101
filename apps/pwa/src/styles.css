@@ -1316,6 +1316,15 @@ select:focus-visible {
     padding: 8px;
     font-size: 12px;
   }
+
+  /* pwa-005: en 360 px el botón principal va arriba. */
+  .species-request-form .form-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .species-request-form .form-actions [type="submit"] {
+    order: -1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2387,8 +2396,7 @@ select:focus-visible {
   }
 
 /* pwa-005: solicitud de publicación de especie (tokens semánticos) */
-.species-request-tabs,
-.own-requests__pager {
+.species-request-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -2405,8 +2413,7 @@ select:focus-visible {
   border-radius: 8px;
 }
 
-.species-option,
-.ficha-fields__option {
+.species-option {
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -2423,14 +2430,18 @@ select:focus-visible {
   overflow-wrap: anywhere;
 }
 
-.species-option__status,
-.field-help {
+.species-option__status {
   color: var(--dashboard-muted-foreground);
   font-size: 12px;
 }
 
-.species-option__notice,
-.own-request__reason {
+.field-help {
+  margin: 0;
+  color: var(--dashboard-muted-foreground);
+  font-size: 14px;
+}
+
+.species-option__notice {
   overflow-wrap: anywhere;
   color: var(--danger);
 }
@@ -2448,16 +2459,173 @@ select:focus-visible {
 
 .own-requests__list {
   display: grid;
-  gap: 12px;
+  gap: 16px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.own-request__flag {
-  color: var(--warning);
-  font-size: 12px;
+/* pwa-005 (revisión 2026-11-21): tarjeta de «Mis solicitudes», escala 12/16/20 */
+.own-request {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.own-request__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.own-request__row:not(.own-request__head) {
+  justify-content: flex-start;
+}
+
+.own-request__head h3 {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.own-request__type,
+.own-request__meta {
+  margin: 0;
+  color: var(--dashboard-muted-foreground);
+  font-size: 14px;
+}
+
+.own-request__reason {
+  display: grid;
+  gap: 4px;
+}
+
+.own-request__reason p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.own-request__actions {
+  display: flex;
+}
+
+.own-requests__empty {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.own-requests__empty p {
+  margin: 0;
+}
+
+.own-requests__error {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.own-requests__error p {
+  margin: 0;
+}
+
+/* pwa-005 rev. (d): paginación compartida (@arca/ui) dentro de «Mis solicitudes» */
+.own-requests .pagination-bar {
+  margin: 12px 0;
+  padding: 0;
+  border-top: 0;
+  font-size: 14px;
+}
+
+@media (min-width: 481px) {
+  .own-request {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .own-requests .pagination-bar {
+    display: grid;
+    justify-content: stretch;
+  }
+
+  .own-requests .pagination-bar__summary {
+    text-align: center;
+  }
+
+  /* Anterior y Siguiente a 50 % cada uno; los números pasan a la fila de abajo. */
+  .own-requests .pagination-bar__actions {
+    justify-content: center;
+  }
+
+  .own-requests .pagination-bar__actions > .arca-button:first-child,
+  .own-requests .pagination-bar__actions > .arca-button:last-child {
+    flex: 1 1 calc(50% - 4px);
+  }
+
+  .own-requests .pagination-bar__actions > .arca-button:last-child {
+    order: 1;
+  }
+
+  .own-requests .pagination-bar__actions > :not(:first-child):not(:last-child) {
+    order: 2;
+  }
+}
+
+/* pwa-005 (revisión 2026-11-21): formulario por secciones numeradas */
+.form-step {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.form-step__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+}
+
+.form-step__num {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 13px;
   font-weight: 700;
+}
+
+.species-request-data {
+  display: grid;
+  gap: 20px;
+}
+
+.ficha-chip--fixed {
+  background: var(--surface-subtle);
+  color: var(--dashboard-muted-foreground);
+  cursor: not-allowed;
+}
+
+.ficha-chip__icon {
+  display: inline-flex;
+}
+
+.ficha-chip__legend {
+  display: block;
+  font-size: 12px;
+}
+
+.species-request-form__hidden-line {
+  font-weight: 600;
 }
 
 /* pwa-005 (rediseño 2026-11-19) */
@@ -2545,7 +2713,7 @@ select:focus-visible {
 }
 
 .species-request-data:disabled {
-  opacity: 0.55;
+  opacity: 0.7;
 }
 
 .ficha-fields__grid {
@@ -2578,4 +2746,9 @@ select:focus-visible {
   .species-request-data .image-upload-area {
     width: 100%;
   }
+}
+
+/* pwa-005 / api-026: «Dato curioso» ocupa todo el ancho de la rejilla */
+.species-request-form__wide {
+  grid-column: 1 / -1;
 }

@@ -20,8 +20,8 @@ class AdminAuditTest extends AdminFeatureTestCase
         $userId = $this->postJson('/api/v1/admin/users', $account)->assertCreated()->json('data.id');
         $this->patchJson("/api/v1/admin/users/{$userId}", ['first_name' => 'Editada', 'last_name' => 'Cuenta', 'department_id' => $account['department_id'], 'role' => 'cashier'])->assertOk();
         $this->patchJson("/api/v1/admin/users/{$userId}/status", ['is_active' => false])->assertOk();
-        $this->putJson("/api/v1/admin/users/{$userId}/password", ['password' => 'N3w!Passphrase#77'])->assertNoContent();
-        $this->deleteJson("/api/v1/admin/users/{$userId}/two-factor")->assertNoContent();
+        $this->putJson("/api/v1/admin/users/{$userId}/password", ['current_password' => self::STEP_UP_PASSWORD, 'password' => 'N3w!Passphrase#77'])->assertNoContent();
+        $this->deleteJson("/api/v1/admin/users/{$userId}/two-factor", ['password' => self::STEP_UP_PASSWORD])->assertNoContent();
         $this->deleteJson("/api/v1/admin/users/{$userId}")->assertNoContent();
 
         $newsId = $this->postJson('/api/v1/admin/news', [

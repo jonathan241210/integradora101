@@ -48,7 +48,7 @@ Esta spec define un endpoint de conteos, de solo lectura, que devuelve cuántos 
 
 ## Criterios de aceptación
 
-- **CA-01 (ambos permisos):** Dado un usuario con sesión, 2FA confirmado y `species.review` y `memories.review`, cuando llama `GET /api/v1/admin/pending-counts`, entonces responde `200` con las dos claves `species_requests` y `memories`, cada una con un entero mayor o igual que 0.
+- **CA-01 (ambos permisos):** Dado un usuario con sesión, 2FA confirmado y `species.review` y `memories.review`, cuando llama `GET /api/v1/admin/pending-counts`, entonces responde `200` con las dos claves `species_requests` y `memories`, cada una con un entero mayor o igual que 0, en la raíz del JSON y sin envoltorio `data` (enmienda técnica 2026-11-20, pregunta 3 del plan).
   - Verificación: `test_ca01_counts_both_keys_for_both_permissions`.
 
 - **CA-02 (solo `species.review`):** Dado un usuario con `species.review` y sin `memories.review`, cuando llama la ruta, entonces responde `200` solo con la clave `species_requests`. La clave `memories` no aparece (ni como `null` ni como `0`).
@@ -75,7 +75,7 @@ Esta spec define un endpoint de conteos, de solo lectura, que devuelve cuántos 
 - **CA-09 (solo lectura):** Dada cualquier llamada a la ruta, cuando termina, entonces ninguna fila de `species_publication_requests`, `species`, `visitor_memories` o `visitor_memory_reviews` cambia, y Activitylog no registra nada.
   - Verificación: `test_ca09_read_only_no_rows_or_activity_changed`.
 
-- **CA-10 (frecuencia):** Dado un usuario autenticado, cuando hace más de 60 llamadas a la ruta en un minuto (decisión 2026-11-20: 60 por minuto y por usuario), entonces la llamada que supera el límite responde `429` con la cabecera `Retry-After`, y las llamadas dentro del límite responden normal.
+- **CA-10 (frecuencia):** Dado un usuario autenticado, cuando hace más de 60 llamadas a la ruta en un minuto (decisión 2026-11-20: 60 por minuto y por usuario), entonces la llamada que supera el límite responde `429` con la cabecera `Retry-After`, y las llamadas dentro del límite responden normal. *Enmienda técnica 2026-11-20: quien no tiene `species.review` ni `memories.review` no consume cuota (`Limit::none()`; recibe el 403 de CA-07). El 429 lleva el mensaje «Demasiadas consultas. Espera un minuto e inténtalo de nuevo.» en la raíz del JSON, sin `data`.*
   - Verificación: `test_ca10_throttle_per_user_returns_429`.
 
 - **CA-11 (cobertura):** Dada la suite PHPUnit, cuando se ejecuta contra `arca_pruebas` con `DatabaseTransactions`, entonces existe al menos un test que nombra cada CA-01 a CA-12 (Constitución IV). Ningún test usa `RefreshDatabase` ni migra.
@@ -137,5 +137,16 @@ Esta spec define un endpoint de conteos, de solo lectura, que devuelve cuántos 
 ## Revisión
 
 - Aprobadores y fecha: Jonathan, 2026-11-20.
+- Enmienda técnica 2026-11-20: aprobación técnica del plan `apps/api/plan/024-pending-review-counts.md`. Enmienda CA-01 (forma sin `data`) y CA-10 (cuota para quien no tiene permiso y texto del 429). Sin CA ni RN nuevos.
 - Evidencia/enlaces: `apps/api/specs/014-species-requests.md`, `apps/api/specs/010-visitor-memory-requests.md`, `apps/dashboard/specs/008-memory-moderation.md`, `apps/dashboard/specs/009-species-request-review.md`, `apps/dashboard/specs/011-collapsible-menu-event-pagination.md`; código: `apps/api/src/app/Enums/SpeciesRequestStatus.php`, `apps/api/src/app/Enums/MemoryStatus.php`, `apps/api/src/app/Models/SpeciesPublicationRequest.php`, `apps/api/src/app/Models/VisitorMemory.php`, `apps/api/src/routes/api.php` (grupo `admin`, middleware `administrator.two-factor`, rutas `species.review` y `memories.review`), `apps/api/src/database/seeders/RolesAndPermissionsSeeder.php`.
 - Consulta de esquema vivo (`arca_pruebas`, solo lectura, 2026-11-20): realizada; resultados en «Datos, privacidad y auditoría».
+
+## Nota de revisión (2026-11-21, `api-027`)
+
+- Se añade la clave `cancellation_days` (entero ≥ 0) para quien tiene `reports.cancellations.view` (solo `admin`). Cuenta los pares cajero-día en Atención de los últimos 7 días de negocio cerrados sin revisión vigente o con `clarification_required` (`api-027` CA-23, RN-11). Sin envoltorio `data`.
+- Excepción a «Fuera de alcance»: los avisos de cancelaciones dejan de estar fuera de alcance solo para esta clave. Los demás flujos (pagos, arqueo, cuentas, recuerdos sin revisar) siguen fuera.
+- RN-06 y CA-07 se amplían: sin ninguno de los tres permisos (`species.review`, `memories.review`, `reports.cancellations.view`), la respuesta es 403 sin cifras. La ruta usa `permission:species.review|memories.review|reports.cancellations.view`.
+- CA-10 se amplía: quien no tiene ninguno de los tres permisos no consume cuota (`Limit::none()`); el resto, 60/min por usuario, sin cambio.
+- RN-05 se amplía: `reports.cancellations.view` habilita `cancellation_days`. CA-02 y CA-03 (solo una clave por permiso) siguen vigentes para sus permisos; `admin` solo recibe `cancellation_days`, porque no tiene los otros dos permisos.
+- Sin cambio de esquema ni de índices (`api-027` no requiere índice nuevo en estas tablas; el cálculo reutiliza la Action de semáforo).
+- RN-08 se matiza: `admin` ya no está excluido en general; recibe solo la clave de cancelaciones.

@@ -198,6 +198,14 @@ Afectados: visitantes del portal (lectura), equipo del portal (mantenimiento) y 
 
 Esta spec no cambia requisitos de ambiente nuevos: reutiliza `CORS_ALLOWED_ORIGINS` (con el origen del portal, `http://localhost:8080` en desarrollo) y la meta `arca-api-base` de `web-009`. Si se aprueba, el PR anota en `infra/README.md` la misma condición de origen de `web-009` (sección «Portal público»).
 
+## Nota de revisión (2026-11-21, campo «Dato curioso»)
+
+- La ficha de TulanPedia muestra «Dato curioso» solo si `GET /api/v1/published-species` devuelve la clave `fun_fact` (`apps/api/specs/026-species-fun-fact.md`, CA-11). Sin ese dato, no se muestra.
+- Se muestra como texto, con la regla de CA-11 de esta spec. Añadir la etiqueta «Dato curioso» a la lista de campos de `apps/web/src/js/animals.js`.
+- Implementado (2026-11-21): `fun_fact` es la última entrada de `FIELDS` en `animals.js`; se muestra como fila «Dato curioso» con `textContent`, solo si la API lo entrega con texto. Prueba: `api-026 CA-11 dynamic-tulanpedia` en `animals.test.mjs`. `search.js` no cambia.
+- Deriva conocida, sin corregir aquí: esta spec y `animals.js` / `search.js` usan `diet` para «Alimentación», mientras la columna se llama `feeding` (DBR-014). Ver `api-026`, «Riesgos».
+- Sin plan ni tareas de web todavía. Estado de esta spec sin cambio.
+
 ## Revisión
 
 - Aprobadores y fecha: Jonathan (responsable de backend), 2026-11-12.

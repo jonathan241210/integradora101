@@ -3,6 +3,7 @@
 namespace App\Actions\Admin\Reports;
 
 use App\Models\Ticket;
+use App\Support\BusinessTimezone;
 
 class PresentTicketRow
 {
@@ -14,7 +15,7 @@ class PresentTicketRow
         return [
             'folio' => (string) $ticket->id,
             'purchased_at' => $ticket->purchased_at
-                ?->setTimezone($timezone ?? config('arca.report_timezone'))
+                ?->setTimezone($timezone ?? BusinessTimezone::name())
                 ->format('Y-m-d H:i:s'),
             'adults' => (int) $ticket->adult_quantity,
             'children' => (int) $ticket->child_quantity,

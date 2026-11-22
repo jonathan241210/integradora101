@@ -21,13 +21,15 @@ trait SeedsRolesWhenMissing
             return;
         }
 
-        $names = ['admin', 'zoo-admin', 'executive', 'cashier', 'veterinarian'];
+        $names = ['admin', 'zoo-admin', 'executive', 'communications', 'cashier', 'veterinarian'];
         $roles = Role::query()->where('guard_name', 'web')->whereIn('name', $names)->get();
         $zooAdmin = $roles->firstWhere('name', 'zoo-admin');
 
         $complete = $roles->count() === count($names)
             && Permission::query()->where('guard_name', 'web')->where('name', 'species.review')->exists()
-            && $zooAdmin?->permissions()->where('name', 'species.review')->exists();
+            && Permission::query()->where('guard_name', 'web')->where('name', 'tickets.view-all')->exists()
+            && $zooAdmin?->permissions()->where('name', 'species.review')->exists()
+            && $zooAdmin?->permissions()->where('name', 'tickets.view-all')->exists();
 
         if (! $complete) {
             $this->seed(RolesAndPermissionsSeeder::class);

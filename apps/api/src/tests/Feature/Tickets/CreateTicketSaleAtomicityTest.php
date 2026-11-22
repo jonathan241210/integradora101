@@ -9,7 +9,7 @@ class CreateTicketSaleAtomicityTest extends TicketFeatureTestCase
 {
     public function test_ca07_ticket_sales_leaves_no_ticket_or_audit_when_svg_generation_fails(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $tickets = $this->ticketCount();
         $logs = $this->activityCount('ticket-sold');
@@ -31,7 +31,7 @@ class CreateTicketSaleAtomicityTest extends TicketFeatureTestCase
 
     public function test_ca52_ticket_sales_failure_on_third_of_four_rows_leaves_no_rows_or_events(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $tickets = $this->ticketCount();
         $logs = $this->activityCount('ticket-sold');
@@ -59,7 +59,7 @@ class CreateTicketSaleAtomicityTest extends TicketFeatureTestCase
 
     public function test_ca07_ticket_sales_leaves_no_ticket_or_audit_when_token_issue_fails(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $tickets = $this->ticketCount();
         $logs = $this->activityCount('ticket-sold');

@@ -1,5 +1,6 @@
 import { useEffect, useReducer, useRef } from "react";
 import { ticketSalesApi } from "@/services/arca-api";
+import { useRunProtected } from "./step-up-context";
 import {
   initialTicketPricesState,
   loadTicketPrices,
@@ -15,6 +16,7 @@ export function useTicketPrices(): TicketPricesViewModel {
     initialTicketPricesState,
   );
   const generation = useRef(0);
+  const protect = useRunProtected();
 
   useEffect(() => {
     const mine = ++generation.current;
@@ -44,6 +46,7 @@ export function useTicketPrices(): TicketPricesViewModel {
           dispatch,
           state.pending,
           () => generation.current > 0,
+          protect,
         );
       },
       reload: () => {

@@ -2,21 +2,19 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Actions\Admin\Users\ResolveManageableRolesAction;
-use App\Models\User;
-use Illuminate\Support\Facades\Gate;
+use App\Actions\Admin\Users\GuardAssignableRoleAction;
+use App\Actions\Admin\Users\ResolveAssignableRolesAction;
 use Illuminate\Validation\Rule;
 
 class UpdateStaffAccountRequest extends ManagedStaffAccountRequest
 {
     protected function authorizeTarget(): bool
     {
-        $role = $this->input('role');
+        // El rol admin responde 403 y se audita (CA-12). Un rol desconocido lo rechaza la validación (422).
+        app(GuardAssignableRoleAction::class)
+            ->execute($this->input('role'), $this->target(), null, $this->route()?->getName());
 
-        // Un rol desconocido lo rechaza la validación (422), no la autorización.
-        return ! is_string($role)
-            || ! array_key_exists($role, ResolveManageableRolesAction::LABELS)
-            || Gate::forUser($this->user())->allows('assignRole', [User::class, $role]);
+        return true;
     }
 
     public function rules(): array
@@ -26,7 +24,7 @@ class UpdateStaffAccountRequest extends ManagedStaffAccountRequest
             'last_name' => ['sometimes', 'required', 'string', 'max:255'],
             'second_last_name' => ['sometimes', 'nullable', 'string', 'max:255'],
             'department_id' => ['sometimes', 'required', 'integer', Rule::exists('departments', 'id')->where('is_active', true)],
-            'role' => ['sometimes', 'required', 'string', Rule::in(array_keys(ResolveManageableRolesAction::LABELS))],
+            'role' => ['sometimes', 'required', 'string', Rule::in(app(ResolveAssignableRolesAction::class)->execute($this->user()))],
         ];
     }
 }

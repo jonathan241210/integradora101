@@ -82,7 +82,8 @@ describe('pwa-011 · carga, avisos y consulta de animales', () => {
     expect(sort.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(list.childElementCount).toBe(10);
     expect(list.firstElementChild?.textContent).toContain('Animal 12');
-    act(() => container.querySelector<HTMLButtonElement>('[aria-label="Página siguiente"]')!.click());
+    // Paginador compartido de @arca/ui (pwa-010, nota 2026-11-21).
+    act(() => [...container.querySelectorAll<HTMLButtonElement>('nav[aria-label="Paginación"] button')].find((button) => button.textContent === 'Siguiente')!.click());
     expect(list.childElementCount).toBe(2);
     act(() => {
       sort.value = 'name';

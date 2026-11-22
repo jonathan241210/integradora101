@@ -2,7 +2,7 @@
 
 - Spec: `apps/api/specs/024-pending-review-counts.md`
 - Estado de spec: Aprobada (Jonathan, 2026-11-20)
-- Estado del plan: **Borrador — pendiente de aprobación técnica (equipo/Jonathan)**. No autoriza implementación hasta aprobarse.
+- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**. Preguntas 1 a 3 cerradas en «Decisiones 2026-11-20». Sin cambios de la spec más allá de la enmienda de CA-01 y CA-10.
 - Responsable técnico: Jonathan (backend, según la spec).
 - DBR relacionada: ninguna. La feature no crea ni modifica esquema; no hay migraciones ni SQL.
 - Consulta de esquema vivo (`arca_pruebas`, solo lectura, 2026-11-20): aportada por la sesión principal y recogida en la spec («Datos, privacidad y auditoría»). `species_publication_requests` y `visitor_memories` tienen `status varchar(20)` y `deleted_at` nullable; índices que empiezan por `status` en ambas tablas. `species.deleted_at` existe. Conclusión de la spec: no hace falta índice ni DBR.
@@ -40,8 +40,8 @@ Componentes:
   Nombre completo: `admin.pending-counts.show` (RN-10). Ruta: `GET /api/v1/admin/pending-counts`.
 - **Limitador** `admin-pending-counts` en `App\Providers\AppServiceProvider` (método privado nuevo, p. ej. `registerPendingCountsLimiter()`, llamado desde `boot()` como los demás):
   - Si el usuario tiene `species.review` o `memories.review` (`hasAnyPermission`): `Limit::perMinute(60)->by((string) $user->getAuthIdentifier())`.
-  - Si no: `Limit::none()` (no consume cuota a quien va a recibir 403; es el mismo criterio RN-30 que los límites de tickets). Decisión propuesta; ver pregunta 1.
-  - Respuesta 429: JSON `{ "message": "..." }` con las cabeceras que da el middleware (incluye `Retry-After`), mismo patrón que `admin-search`.
+  - Si no: `Limit::none()` (no consume cuota a quien va a recibir 403; es el mismo criterio RN-30 que los límites de tickets). Decisión 2026-11-20 (pregunta 1).
+  - Respuesta 429: JSON `{ "message": "..." }` con las cabeceras que da el middleware (incluye `Retry-After`), mismo patrón que `admin-search`. Texto: «Demasiadas consultas. Espera un minuto e inténtalo de nuevo.» (decisión 2026-11-20, pregunta 2).
 - **Sin cambios** en `RolesAndPermissionsSeeder`, `config/arca.php`, modelos, migraciones ni `infra/README.md`. Los permisos `species.review` y `memories.review` ya existen en el seeder.
 
 ## Cambios por área
@@ -67,7 +67,7 @@ Patrón de pruebas: `Tests\Feature\Admin\AdminFeatureTestCase` (extiende `Featur
   { "species_requests": 2, "memories": 5 }
   ```
   - Con ambos permisos: las dos claves (CA-01). Solo `species.review`: solo `species_requests` (CA-02). Solo `memories.review`: solo `memories` (CA-03). Cero pendientes: `0`, no ausencia (CA-04).
-  - No hay envoltorio `data`. Esto sigue la spec aprobada (CA-01 pide las claves en la raíz). Es una divergencia respecto a la convención `{ data }` de otros endpoints; ver pregunta 3.
+  - No hay envoltorio `data`. Esto sigue la spec aprobada (CA-01 pide las claves en la raíz). Es una divergencia respecto a la convención `{ data }` de otros endpoints, aceptada el 2026-11-20 (pregunta 3).
 - **Errores:**
   - 401 sin sesión (`auth:sanctum`).
   - 403 sin 2FA cuando el rol lo exige: lo responde `administrator.two-factor` con `code: two_factor_setup_required` (CA-07).
@@ -133,7 +133,29 @@ Ninguna excepción nueva. El texto del 429 es una propuesta en español (pregunt
   - Caché de conteos: la spec la excluye en esta versión y el límite de frecuencia basta.
   - Rate limit antes del permiso para usuarios sin permiso: consumiría cuota a quien no puede ver nada; se usa `Limit::none()` (ver pregunta 1).
 
-## Preguntas abiertas para la revisión técnica
+## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+
+- **Pregunta 1 (límite para quien no tiene permiso):** `Limit::none()`. Quien no tiene `species.review` ni `memories.review` no consume cuota y recibe 403 (CA-07). Spec: CA-10 enmendado. Tarea: T-06.
+- **Pregunta 2 (texto del 429):** «Demasiadas consultas. Espera un minuto e inténtalo de nuevo.», en la raíz del JSON y con `Retry-After`. Spec: CA-10 enmendado. Tarea: T-06.
+- **Pregunta 3 (forma de la respuesta):** claves en la raíz, sin envoltorio `data`, como fija la spec (CA-01 enmendado). Divergencia aceptada frente a `{ data }` de otros endpoints.
+- Las propuestas de Diseño y pruebas quedan aceptadas. La forma de `GetPendingReviewCountsAction`, el controlador invocable, el limitador `admin-pending-counts` a 60 por minuto y usuario, y los tests CA-01 a CA-12 no cambian.
+
+## Consulta de esquema vivo previa a la implementación (2026-11-21, solo lectura, `arca_pruebas`)
+
+`php artisan db:table` confirma `status varchar(20)` y `deleted_at` en ambas tablas. Valores reales de `status` (consulta `GROUP BY status`, sin filas eliminadas):
+
+- `species_publication_requests`: `accepted` (2), `approved` (2), `draft` (1), `rejected` (1); ninguna `submitted`. `approved` y `draft` son datos antiguos fuera del enum `SpeciesRequestStatus` y no cuentan (la cola de api-014 también los excluye).
+- `visitor_memories`: `accepted` (3), `in_review` (1), `rejected` (2); ninguna `submitted`.
+
+Los valores del enum (`submitted`, `accepted`, `rejected` y `submitted`, `in_review`, `accepted`, `rejected`) coinciden con los de la spec. Sin DBR ni migración.
+
+## Divergencias de implementación
+
+- Ninguna de contrato. La Action usa `hasPermissionTo` (permisos directos o por rol).
+- Pruebas: como `arca_pruebas` puede traer pendientes reales, CA-01/05/06/12 comparan contra la línea base (diferencias) y CA-04 marca como eliminados los pendientes dentro de la transacción de la prueba (se revierte). Los usuarios de un solo permiso se crean con permiso directo (`PendingReviewTestCase::staffWith`). Se añadió además la base `PendingReviewTestCase` y los tests de 401 y 2FA como métodos separados de CA-07.
+- `test_comunicacion_sees_both_keys` (T-11) activo: `api-023` ya está en el árbol.
+
+## Preguntas originales (cerradas por las decisiones de arriba)
 
 1. **Límite para quien no tiene permiso:** ¿`Limit::none()` (propuesta: no consume cuota y recibe 403) o un límite general por usuario? Confirmar antes de implementar T-06.
 2. **Texto del 429:** propuesta «Demasiadas consultas. Espera un minuto e inténtalo de nuevo.», en línea con `admin-search`. ¿Se aprueba?
@@ -150,6 +172,6 @@ Dependencias y secuencia:
 5. Documentación, `/verify` y PR (T-12 a T-14).
 6. El cliente (`packages/api-client`) y la UI van en `apps/dashboard/plan/018-pending-review-badges.md`. Pueden empezar con mocks cuando este contrato esté aprobado.
 
-- Revisión técnica: pendiente (Jonathan).
+- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan).
 - Aprobador funcional: Jonathan, spec aprobada el 2026-11-20.
 - Evidencias: pendientes de la sesión principal (salida de `php artisan test --filter PendingReview` contra `arca_pruebas`, Pint y `migrate:status` sin migraciones nuevas). Esta sesión no tiene shell y no afirma que pasen.

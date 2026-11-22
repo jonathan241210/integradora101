@@ -6,7 +6,7 @@ class CreateTicketSaleValidationTest extends TicketFeatureTestCase
 {
     public function test_ca03_ticket_sales_rejects_invalid_quantities_without_side_effects(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $tickets = $this->ticketCount();
         $logs = $this->activityCount('ticket-sold');
@@ -38,7 +38,7 @@ class CreateTicketSaleValidationTest extends TicketFeatureTestCase
 
     public function test_ca03_ticket_sales_booleans_fractions_and_non_numeric_strings(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $tickets = $this->ticketCount();
         $logs = $this->activityCount('ticket-sold');

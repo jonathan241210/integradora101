@@ -205,6 +205,22 @@ button:disabled {
   content: "";
 }
 
+.sidebar-link {
+  position: relative;
+}
+
+/* dashboard-018: puntito decorativo de pendientes; el estado va en el nombre accesible. */
+.sidebar-link__dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  border: 2px solid var(--sidebar);
+  border-radius: 50%;
+  background: var(--accent);
+  box-sizing: content-box;
+}
+
 .sidebar-link svg {
   width: 17px;
   height: 17px;
@@ -345,6 +361,11 @@ button:disabled {
   --notification-surface: var(--danger-subtle);
 }
 
+.dashboard-notification[data-tone="info"] {
+  --notification-tone: var(--muted-foreground);
+  --notification-surface: var(--dashboard-secondary);
+}
+
 .notification-icon {
   display: grid;
   place-items: center;
@@ -373,13 +394,6 @@ button:disabled {
 .dashboard-notification .dashboard-notification__close svg {
   width: 12px;
   height: 12px;
-}
-
-.report-loading,
-.report-loading__preview,
-.report-loading__table {
-  display: grid;
-  gap: 14px;
 }
 
 .loading-indicator {
@@ -413,37 +427,6 @@ button:disabled {
   white-space: nowrap;
 }
 
-.report-loading__totals {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
-  gap: 14px;
-}
-
-.report-loading__metric {
-  display: grid;
-  gap: 12px;
-}
-
-.report-loading__preview span {
-  display: block;
-  height: 10px;
-  border-radius: 5px;
-  background: color-mix(in srgb, var(--muted-foreground) 16%, var(--surface));
-}
-
-.report-loading__metric span:first-child {
-  width: 55%;
-}
-
-.report-loading__metric span:last-child {
-  width: 35%;
-  height: 20px;
-}
-
-.report-loading__table span:first-child {
-  width: 28%;
-}
-
 @media (prefers-reduced-motion: no-preference) {
   .loading-indicator__spinner {
     animation: loading-indicator-spin 800ms linear infinite;
@@ -453,18 +436,6 @@ button:disabled {
     to { transform: rotate(360deg); }
   }
 
-  .report-loading__preview span {
-    animation: report-loading-pulse 1.4s ease-in-out infinite alternate;
-  }
-
-  .report-loading__preview span:nth-child(2) {
-    animation-delay: 120ms;
-  }
-
-  @keyframes report-loading-pulse {
-    from { opacity: 0.45; }
-    to { opacity: 1; }
-  }
 }
 
 .dashboard-notification p {
@@ -500,12 +471,15 @@ button:disabled {
   }
 }
 
-.notice-focus-anchor:not(:focus) {
+/* Ancla de foco del aviso emergente: el texto visible ya va en la ventana emergente
+   (dashboard-020); el ancla solo lo lee el lector de pantalla, también con foco. */
+.notice-focus-anchor {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
   clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .user-profile {
@@ -536,9 +510,10 @@ button:disabled {
 }
 
 .dashboard-content {
+  --content-gap: 20px;
   display: grid;
   width: min(100%, 1580px);
-  gap: 20px;
+  gap: var(--content-gap);
   margin: 0 auto;
   padding: 28px clamp(18px, 3vw, 42px) 44px;
 }
@@ -610,8 +585,7 @@ button:disabled {
   font-size: 13px;
 }
 
-.metric-grid,
-.report-metric-grid {
+.metric-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
@@ -670,8 +644,7 @@ button:disabled {
 .chart-card,
 .recent-card,
 .form-card,
-.filter-card,
-.table-card {
+.filter-card {
   display: grid;
   gap: 16px;
 }
@@ -1270,7 +1243,9 @@ button:disabled {
 }
 
 .report-metric-grid {
+  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .report-metric {
@@ -1310,6 +1285,8 @@ button:disabled {
 }
 
 .table-card {
+  display: grid;
+  gap: 16px;
   padding: 0;
 }
 
@@ -1471,7 +1448,8 @@ button:disabled {
   }
 
   .dashboard-content {
-    gap: 16px;
+    --content-gap: 16px;
+    gap: var(--content-gap);
   }
 
   .event-card-grid {
@@ -1609,7 +1587,8 @@ button:disabled {
   }
 
   .dashboard-content {
-    gap: 14px;
+    --content-gap: 14px;
+    gap: var(--content-gap);
     padding: 17px 13px 28px;
   }
 
@@ -2087,26 +2066,12 @@ ul.enclosure-grid {
   font-size: 11px;
 }
 
-.pagination-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 12px 20px 16px;
-  border-top: 1px solid var(--border);
-  color: var(--muted-foreground);
-  font-size: 12px;
-}
-
-.pagination-bar__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
 .filter-form--users {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.filter-form--species {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .filter-form--range {
@@ -2165,12 +2130,6 @@ ul.enclosure-grid {
   width: min(560px, calc(100% - 32px));
 }
 
-.confirm-dialog__message {
-  margin: 0;
-  color: var(--foreground);
-  font-size: 14px;
-}
-
 .dialog-actions {
   display: flex;
   flex-wrap: wrap;
@@ -2190,6 +2149,7 @@ ul.enclosure-grid {
 
 @media (max-width: 640px) {
   .filter-form--users,
+  .filter-form--species,
   .filter-form--range {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -2230,10 +2190,6 @@ ul.enclosure-grid {
 
   .table-scroll .data-table td {
     border-top: 0;
-  }
-
-  .pagination-bar {
-    justify-content: center;
   }
 
   .form-dialog,
@@ -2632,34 +2588,6 @@ ul.enclosure-grid {
   font-size: 11px;
 }
 
-.inline-confirm {
-  display: grid;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface-subtle);
-}
-
-.inline-confirm:focus-within {
-  border-color: var(--primary);
-}
-
-.inline-confirm .inline-confirm__message {
-  min-height: 0;
-  margin: 0;
-  color: var(--foreground);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.inline-confirm__actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
 .inline-password {
   max-width: 520px;
 }
@@ -2788,8 +2716,9 @@ ul.enclosure-grid {
 }
 
 .dashboard-app--admin .dashboard-content {
+  --content-gap: 24px;
   width: min(100%, 1640px);
-  gap: 24px;
+  gap: var(--content-gap);
   padding: 34px clamp(24px, 3vw, 48px) 52px;
 }
 
@@ -2986,11 +2915,8 @@ ul.enclosure-grid {
   }
 
   .dashboard-app--admin .dashboard-content {
-    gap: 20px;
-  }
-
-  .dashboard-app--admin .enclosure-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    --content-gap: 20px;
+    gap: var(--content-gap);
   }
 }
 
@@ -3029,7 +2955,8 @@ ul.enclosure-grid {
   }
 
   .dashboard-app--admin .dashboard-content {
-    gap: 18px;
+    --content-gap: 18px;
+    gap: var(--content-gap);
     padding: 22px 14px 32px;
   }
 
@@ -3068,10 +2995,6 @@ ul.enclosure-grid {
 
   .dashboard-app--admin .pagination-bar {
     padding: 14px 16px 18px;
-  }
-
-  .dashboard-app--admin .enclosure-grid {
-    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -3176,6 +3099,14 @@ ul.enclosure-grid {
   .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link--active::before {
     width: 0;
     opacity: 0;
+  }
+
+  /* Con el menú contraído el puntito se superpone al icono (dashboard-018 RN-09). */
+  .dashboard-app--menu-collapsed .sidebar:not(:hover):not(:focus-within) .sidebar-link__dot {
+    position: absolute;
+    inset-block-start: 6px;
+    inset-inline-end: 8px;
+    margin-left: 0;
   }
 }
 
@@ -3511,9 +3442,15 @@ ul.enclosure-grid {
   font-size: 12px;
 }
 
+.species-cell {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
 .species-tag {
   display: inline-block;
-  margin-left: 6px;
   padding: 2px 8px;
   border: 1px solid var(--border);
   border-radius: 999px;
@@ -3522,14 +3459,15 @@ ul.enclosure-grid {
   font-size: 12px;
 }
 
+/* Detalle y ficha: escala de administración (padding 24, gap 20, títulos 17, radio de tarjeta). */
 .species-detail {
   display: grid;
-  gap: 18px;
-  padding: 20px;
+  gap: 20px;
+  padding: 24px;
 }
 
 .species-detail__bar {
-  margin-bottom: 12px;
+  margin: 0;
 }
 
 .species-detail__meta {
@@ -3543,7 +3481,7 @@ ul.enclosure-grid {
 .species-detail__facts,
 .species-compare dl {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   margin: 0;
 }
 
@@ -3563,20 +3501,21 @@ ul.enclosure-grid {
 .species-detail__photos,
 .species-form__photos {
   display: grid;
-  gap: 16px;
+  gap: 20px;
 }
 
 .species-compare > section {
-  padding: 14px;
+  padding: 20px;
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   background: var(--surface-subtle);
 }
 
 .species-compare h2,
-.species-detail h3 {
+.species-detail h3,
+.species-form h3 {
   margin: 0 0 8px;
-  font-size: 15px;
+  font-size: 17px;
 }
 
 .species-photo {
@@ -3609,7 +3548,29 @@ ul.enclosure-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 12px;
+}
+
+/* Barra de acciones del detalle: acciones juntas y «Rechazar» aparte, al otro extremo. */
+.species-detail__actions {
+  justify-content: space-between;
+}
+
+.species-detail__actions-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
+}
+
+.species-detail__actions-danger {
+  margin-inline-start: auto;
+  padding-inline-start: 16px;
+  border-inline-start: 1px solid var(--border);
+}
+
+.species-detail__actions > .species-detail__hint {
+  flex-basis: 100%;
 }
 
 .species-detail__hint {
@@ -3618,12 +3579,39 @@ ul.enclosure-grid {
   font-size: 13px;
 }
 
+/* Ficha pública de solo lectura: chips. Un campo nuevo de la ficha se añade a
+   `fichaFieldOptions` y aparece aquí sin tocar el CSS. */
+.species-detail__ficha ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.species-detail__ficha li {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  color: var(--foreground);
+  font-size: 13px;
+}
+
 .species-form {
   display: grid;
-  gap: 16px;
-  padding: 16px;
+  gap: 20px;
+  padding: 24px;
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
+}
+
+/* Dentro del detalle la tarjeta ya da borde y relleno. */
+.species-detail .species-form {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
 }
 
 .species-form__common {
@@ -3641,6 +3629,7 @@ ul.enclosure-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
+  padding: 16px 20px;
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
 }
@@ -3654,9 +3643,9 @@ ul.enclosure-grid {
 .species-detail__remove {
   display: grid;
   gap: 8px;
-  padding: 16px;
+  padding: 20px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius-card);
   background: var(--surface-subtle);
 }
 
@@ -3676,11 +3665,42 @@ ul.enclosure-grid {
   font-size: 12px;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 821px) {
   .species-compare,
   .species-detail__photos,
   .species-form__photos {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .species-detail__facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 820px) {
+  .species-detail,
+  .species-form {
+    padding: 20px;
+  }
+
+  .species-detail .species-form {
+    padding: 0;
+  }
+
+  .species-detail__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .species-detail__facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .species-detail__actions-danger {
+    margin-inline-start: 0;
+    padding-inline-start: 0;
+    border-inline-start: 0;
   }
 }
 
@@ -3809,15 +3829,16 @@ ul.enclosure-grid {
   gap: 6px;
 }
 
-.tulanpedia-tabs__list {
+/* Pestañas compartidas por «Reportes» (dashboard-020) y «TulanPedia» (dashboard-010 CA-67). */
+.section-tabs {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 8px;
+  margin-bottom: 16px;
   border-bottom: 1px solid var(--border);
 }
 
-.tulanpedia-tabs__tab {
-  padding: 0.625rem 1rem;
+.section-tab {
+  padding: 10px 16px;
   border: 0;
   border-bottom: 3px solid transparent;
   background: transparent;
@@ -3827,21 +3848,24 @@ ul.enclosure-grid {
   cursor: pointer;
 }
 
-.tulanpedia-tabs__tab--active {
+.section-tab--active {
   border-bottom-color: var(--primary);
   color: var(--foreground);
 }
 
-.tulanpedia-tabs__tab:focus-visible {
-  outline: 2px solid var(--primary);
+.section-tab:focus-visible,
+.section-tab-panel:focus-visible {
+  outline: 3px solid var(--ring);
   outline-offset: 2px;
 }
 
-/* dashboard-012 · cuadrícula de recintos: 9 por página, 3/2/1 columnas */
-.dashboard-app--admin .enclosure-grid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+/* Un solo ritmo: el panel da a sus hijos el mismo gap que `.dashboard-content` en cada ancho. */
+.section-tab-panel {
+  display: grid;
+  gap: var(--content-gap, 20px);
 }
 
+/* dashboard-012 · cuadrícula de recintos: 9 por página, 3/2/1 columnas (base en el bloque admin) */
 @media (max-width: 1024px) {
   .dashboard-app--admin .enclosure-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4131,3 +4155,643 @@ ul.enclosure-grid {
   }
 }
 /* enclosure-qr:end */
+
+.step-up-dialog {
+  width: min(440px, calc(100% - 32px));
+}
+
+/* cancellation-report:start (dashboard-016) */
+.cancellation-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  align-items: end;
+  gap: 14px;
+}
+
+.cancellation-filters .field-error {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.cancellation-breakdowns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.cancellation-cashier {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* La tabla de filas tiene desplazamiento propio y conserva los encabezados (CA-10, CA-22). */
+.cancellation-card .data-table-scroll {
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.cancellation-card .data-table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+@media (max-width: 820px) {
+  .cancellation-breakdowns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* cancellation-report:end */
+
+/* cancellation-review-signals:start (dashboard-021) */
+.traffic-light-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.traffic-light-badge svg {
+  width: 1em;
+  height: 1em;
+}
+
+.cancellation-review-current {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cancellation-review-current p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.cancellation-review-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cancellation-review-history-scroll {
+  overflow-x: auto;
+}
+
+.cancellation-review-history {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.cancellation-review-history th,
+.cancellation-review-history td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.cancellation-review-history th {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.cancellation-legend__details > summary {
+  padding: 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cancellation-legend__body {
+  display: grid;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.cancellation-legend__scroll {
+  overflow-x: auto;
+}
+
+.cancellation-legend__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.cancellation-legend__levels {
+  max-width: 28rem;
+}
+
+.cancellation-legend__table th,
+.cancellation-legend__table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.cancellation-legend__table th {
+  font-weight: 700;
+}
+
+.cancellation-legend__disclaimer {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--surface-subtle);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.cancellation-reconciliation-help {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.cancellation-review-options {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.cancellation-review-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cancellation-review-counter {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+/* Puntito decorativo de la pestaña «Cancelaciones»; el estado va en su nombre accesible. */
+.report-tab__dot {
+  display: inline-block;
+  width: 0.6rem;
+  height: 0.6rem;
+  margin-left: 0.5rem;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.cancellation-review-filter {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.cancellation-review-filter label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.cancellation-signals {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.cancellation-signals__reason {
+  color: var(--foreground);
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.cancellation-review-current__date {
+  color: var(--foreground);
+  font-size: 0.875rem;
+}
+
+.traffic-light-badge--level {
+  padding: 0.125rem 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.cancellation-review-detail {
+  display: grid;
+  gap: 1rem;
+  padding: 0.5rem 0.25rem;
+  font-size: 0.9375rem;
+  white-space: normal;
+}
+
+.cancellation-review-detail__block {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.cancellation-review-detail__block h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.cancellation-review-detail__block p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.traffic-col .arca-button {
+  white-space: nowrap;
+}
+
+@media (min-width: 40.0625rem) {
+  .traffic-col--num {
+    min-width: 6rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .traffic-col--signals {
+    min-width: 18rem;
+  }
+
+  .traffic-col--level {
+    min-width: 8rem;
+  }
+
+  .traffic-col--date {
+    min-width: 7rem;
+  }
+
+  .traffic-col--actions {
+    min-width: 15rem;
+  }
+
+  .traffic-col--review {
+    min-width: 9rem;
+  }
+
+  .cancellation-card .data-table td.traffic-col,
+  .cancellation-card .data-table th.traffic-col {
+    padding-top: 0.875rem;
+    padding-bottom: 0.875rem;
+    font-size: 0.9375rem;
+    vertical-align: top;
+  }
+}
+
+/* cancellation-review-signals:end */
+
+/* fixed-roles-account-management:start (dashboard-017) */
+.console-managed-label {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+.form-grid .role-summary {
+  grid-column: 1 / -1;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--foreground);
+}
+
+.role-summary p {
+  margin: 0;
+}
+
+.role-summary__note {
+  margin-top: 6px !important;
+  color: var(--muted-foreground);
+}
+/* fixed-roles-account-management:end */
+
+/* dashboard-020 · pestañas de Reportes: estilo compartido `.section-tab*` */
+.report-tabs {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+
+.report-tab {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* dashboard-020 · revisión 2026-11-21 (b): ayuda y aviso del par Área/Rol */
+.form-grid .area-role-help,
+.form-grid .area-role-notice {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.area-role-help {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+/* dashboard-010 rev. 2026-11-21 (b): «Publicadas» en tarjetas y Dato curioso (solo tokens semánticos). */
+.species-grid-card {
+  padding: 20px;
+}
+
+.species-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.species-grid > li {
+  display: flex;
+  min-width: 0;
+}
+
+.species-card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease;
+}
+
+.species-card:hover,
+.species-card:focus-within {
+  border-color: var(--primary);
+}
+
+.species-card:focus-within {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.species-card__media {
+  aspect-ratio: 4 / 3;
+  background: var(--surface-subtle);
+}
+
+.species-card__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.species-card__placeholder {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--muted-foreground);
+  font-size: 13px;
+}
+
+.species-card__body {
+  display: grid;
+  flex: 1;
+  align-content: start;
+  gap: 8px;
+  padding: 16px 18px 12px;
+}
+
+.species-card__title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 17px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.species-card__scientific {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  font-style: italic;
+}
+
+.species-card .species-cell {
+  margin: 0;
+}
+
+.species-card__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin: 4px 0 0;
+}
+
+.species-card__meta dt {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+.species-card__meta dd {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 13px;
+}
+
+.species-card__notice {
+  padding: 8px 18px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-subtle);
+}
+
+.species-card__notice .species-detail__hint {
+  margin: 0;
+}
+
+.species-card__footer {
+  margin-top: auto;
+  padding: 12px 18px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.species-detail__facts .species-detail__fact-wide {
+  grid-column: 1 / -1;
+}
+
+.species-form__fun-fact {
+  display: grid;
+  gap: 6px;
+}
+
+.species-form__textarea {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+}
+
+.species-form__counter {
+  color: var(--muted-foreground);
+  font-size: 12px;
+  text-align: right;
+}
+
+@media (max-width: 1100px) {
+  .species-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .species-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .species-grid-card {
+    padding: 16px;
+  }
+}
+
+.species-empty {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 24px 0;
+  color: var(--muted-foreground);
+}
+
+/* cancellation-ticket-focus (revisión 2026-11-21 (c)): rem y tokens semánticos */
+.cancellation-focus-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 1rem 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--border);
+  border-left: 0.375rem solid var(--primary);
+  border-radius: 0.5rem;
+  background: var(--surface);
+  font-weight: 600;
+}
+
+.cancellation-ticket-row--highlight > td {
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+}
+
+.cancellation-ticket-row--highlight > td:first-child {
+  border-left: 0.375rem solid var(--primary);
+}
+
+.cancellation-ticket-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.cancellation-signal-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cancellation-signal-list__item {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.cancellation-folio-chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.cancellation-folio-chip {
+  min-height: 2rem;
+  padding: 0.125rem 0.625rem;
+  border: 1px solid var(--border);
+  border-radius: 62.4375rem;
+  background: var(--surface);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.cancellation-folio-chip:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+
+.cancellation-folio-chip:focus-visible,
+#cancellation-tickets-heading:focus-visible,
+.data-table tr:focus-visible {
+  outline: 0.1875rem solid var(--ring);
+  outline-offset: 0.125rem;
+}
+
+.report-export-note {
+  margin: 0.5rem 0 0;
+  color: var(--foreground);
+  font-size: 0.9375rem;
+}
+
+/* cancellation-ticket-focus:end */
+
+/* dashboard-020 rev. (e): esqueletos de carga (medidas en rem; tokens ya definidos). */
+.loading-skeleton,
+.report-skeleton {
+  display: grid;
+  gap: 0.875rem;
+}
+
+.loading-skeleton > [aria-hidden="true"] {
+  display: grid;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.data-table .arca-skeleton--text {
+  height: 0.8125rem;
+}
+
+.loading-skeleton__bars {
+  display: grid;
+  gap: 0.625rem;
+}
+
+.loading-skeleton__bar-row {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(0, 1fr) 3.5rem;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.loading-skeleton__detail {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.loading-skeleton__detail-head {
+  display: grid;
+  grid-template-columns: minmax(0, 16rem) minmax(0, 1fr);
+  gap: 1.25rem;
+}
+
+.loading-skeleton__detail-text {
+  display: grid;
+  align-content: start;
+  gap: 0.75rem;
+}
+
+@media (max-width: 40rem) {
+  .loading-skeleton__detail-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
