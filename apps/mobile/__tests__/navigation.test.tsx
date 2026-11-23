@@ -144,7 +144,7 @@ describe('Navegación visitante', () => {
 
   it('test-ca-02: Mapa abre la búsqueda de destino, Colección abre animales descubiertos y Perfil carga sus datos', async () => {
     const map = await render(<MapRoute />);
-    await waitFor(() => expect(map.getByText('Hábitat del Tigre')).toBeTruthy());
+    await waitFor(() => expect(map.getByTestId('map-marker-juan')).toBeTruthy());
     await fireEvent.press(map.getByText('Buscar animales'));
     expect(mockPush).toHaveBeenCalledWith({ pathname: '/search', params: { selectForTour: 'true', returnTo: 'map' } });
     await map.unmount();

@@ -61,7 +61,7 @@ interface MapScreenProps {
   onCloseDetail: () => void;
   onRetry: () => void;
   onSearchPress: () => void;
-  /** PosiciÃ³n GPS del visitante (null si permiso denegado o no disponible). */
+  /** Posición GPS del visitante (null si permiso denegado o no disponible). */
   userPosition?: UserPosition | null;
   /** Recinto actualmente fijado como destino (CA-14). */
   destinationPlace?: MapPlace | null;
@@ -109,7 +109,7 @@ export function MapScreen({
     panX: 0,
     panY: 0,
   });
-  // AR dinÃ¡mico: selecciÃ³n cercana y visitados en sesiÃ³n (015 enmienda 2026-11-21)
+  // AR dinámico: selección cercana y visitados en sesión (015 enmienda 2026-11-21)
   const [selectedArPointId, setSelectedArPointId] = useState<string | null>(null);
   const [visitedArIds, setVisitedArIds] = useState<Set<string>>(new Set());
   const [arrivedArPoint, setArrivedArPoint] = useState<{ id: string; name: string; kind: 'enclosure' | 'zoo_place'; placeType?: string; description?: string | null } | null>(null);
@@ -229,20 +229,25 @@ export function MapScreen({
     [zooPlaces],
   );
 
-  const isInsideZooContour = useCallback((mapX: number, mapY: number) => {
-    const svgX = mapX * SVG_WIDTH;
-    const svgY = mapY * SVG_HEIGHT;
-    // Capa contorno (layer1): convex hull + recorte superior para excluir puntos fuera del trazo real.
-    return isPointInSvgContour(svgX, svgY) && svgY >= 140;
+  const isInsideZooContour = useCallback((_mapX: number, _mapY: number) => {
+    // Contorno desactivado temporalmente: los puntos con map_x/map_y se muestran en su posición del SVG.
+    return true;
   }, []);
 
+  const shouldApplyContourFilter = useCallback((place: MapPlace) => /^\d+$/.test(place.id) || place.id.startsWith('zoo-place-'), []);
+  const mockFixedServiceIds = useMemo(() => new Set(['restrooms', 'food', 'main-entrance']), []);
+
   const visibleFilteredPlaces = useMemo(
-    () => filteredPlaces.filter((p) => isInsideZooContour(p.mapX, p.mapY)),
-    [filteredPlaces, isInsideZooContour],
+    () =>
+      filteredPlaces.filter((p) => {
+        if (zooPlaces.length > 0 && mockFixedServiceIds.has(p.id)) return false;
+        return !shouldApplyContourFilter(p) || isInsideZooContour(p.mapX, p.mapY);
+      }),
+    [filteredPlaces, isInsideZooContour, shouldApplyContourFilter, zooPlaces.length, mockFixedServiceIds],
   );
   const visibleZooPlaceMarkers = useMemo(
-    () => zooPlaceMarkers.filter((p) => isInsideZooContour(p.mapX, p.mapY)),
-    [zooPlaceMarkers, isInsideZooContour],
+    () => zooPlaceMarkers.filter((p) => !shouldApplyContourFilter(p) || isInsideZooContour(p.mapX, p.mapY)),
+    [zooPlaceMarkers, isInsideZooContour, shouldApplyContourFilter],
   );
 
   const allMapPins = useMemo(
@@ -396,7 +401,7 @@ export function MapScreen({
           const relative = computeRelativeAngleDegrees(bearing, stableHeading);
           const abs = Math.abs(relative);
           if (abs <= 20) instruction = 'Al frente';
-          else if (abs >= 160) instruction = 'DetrÃ¡s de ti';
+          else if (abs >= 160) instruction = 'Detrás de ti';
           else if (relative > 0) instruction = 'Gira a la derecha';
           else instruction = 'Gira a la izquierda';
         }
@@ -473,7 +478,7 @@ export function MapScreen({
   }, [selectedArPoint, zooPlaces]);
 
   const selectedSectionName =
-    sections.find((section) => section.id === selectedPlace?.sectionId)?.name ?? 'Sin secciÃ³n';
+    sections.find((section) => section.id === selectedPlace?.sectionId)?.name ?? 'Sin sección';
   const hasNoPlaces = !isLoading && !error && filteredPlaces.length === 0;
   const showFocusNotice = focusNotFound && !selectedPlace;
 
@@ -481,7 +486,7 @@ export function MapScreen({
     <ScreenContainer scroll={false}>
       {!arTour.isTourOpen && (
         <View style={styles.header}>
-          <AppText variant="title">Mapa del zoolÃ³gico</AppText>
+          <AppText variant="title">Mapa del zoológico</AppText>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Buscar animales"
@@ -504,12 +509,12 @@ export function MapScreen({
           </View>
           <View style={styles.infoRow}>
             <AppText variant="small" color="textMuted">
-              Toca un punto del mapa para ver su informaciÃ³n.
+              Toca un punto del mapa para ver su información.
             </AppText>
             {userPosition && (
               <View style={styles.gpsBadge}>
                 <AppText variant="caption" style={styles.gpsText}>
-                  {`ðŸ“ GPS: ${userPosition.lat.toFixed(6)}, ${userPosition.lon.toFixed(6)}`}
+                  {`GPS: ${userPosition.lat.toFixed(6)}, ${userPosition.lon.toFixed(6)}`}
                 </AppText>
               </View>
             )}
@@ -617,7 +622,7 @@ export function MapScreen({
 
         {!arTour.isTourOpen && isLoading && (
           <Card style={styles.stateCard}>
-            <LoadingView message="Cargando mapa del zoolÃ³gico..." />
+            <LoadingView message="Cargando mapa del zoológico..." />
           </Card>
         )}
 

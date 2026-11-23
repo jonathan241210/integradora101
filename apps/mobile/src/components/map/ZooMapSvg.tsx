@@ -1,9 +1,10 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { View } from 'react-native';
 import { SvgXml } from 'react-native-svg';
-import { ZOO_MAP_CANONICAL_SVG } from './zooMapCanonicalSvg';
+import { ZOO_MAP_CANONICAL_SVG } from '../../data/zooMapCanonicalSvg';
 import { MapPlace } from '../../models';
 import { SVG_WIDTH, SVG_HEIGHT } from '../../constants/zoo';
+import { colors } from '../../theme/tokens';
 
 interface ZooMapSvgProps {
   highlightedSectionId?: string | null;
@@ -20,8 +21,8 @@ function esc(value: string): string {
 }
 
 function pinColor(kind: MapPlace['kind']): string {
-  if (kind === 'zoo_place') return '#87293a';
-  return '#2E7D32';
+  if (kind === 'zoo_place') return colors.base;
+  return colors.enclosure;
 }
 
 function buildMarker(place: MapPlace, selected: boolean): string {
@@ -30,15 +31,15 @@ function buildMarker(place: MapPlace, selected: boolean): string {
   const r = selected ? 11 : 9;
   const strokeW = selected ? 3 : 2;
   const color = pinColor(place.kind);
-  const fill = selected ? color : '#ffffff';
-  const inner = selected ? '#ffffff' : color;
+  const fill = selected ? color : colors.surface;
+  const inner = selected ? colors.surface : color;
   const labelY = (place.mapY * SVG_HEIGHT + (selected ? 18 : 16)).toFixed(1);
-  const name = esc(place.name.length > 18 ? place.name.slice(0, 17) + '…' : place.name);
+  const name = esc(place.name.length > 18 ? place.name.slice(0, 17) + 'â€¦' : place.name);
   const id = esc(place.sectionId || place.id);
   return `<g id="pin-${id}" data-kind="${esc(place.kind)}">
   <circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${color}" stroke-width="${strokeW}"/>
   <circle cx="${cx}" cy="${cy}" r="${selected ? 3.2 : 2.6}" fill="${inner}"/>
-  <text x="${cx}" y="${labelY}" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="${selected ? 8 : 7}" font-weight="700" fill="#2E2A26" paint-order="stroke" stroke="#F4F1E8" stroke-width="2">${name}</text>
+  <text x="${cx}" y="${labelY}" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="${selected ? 8 : 7}" font-weight="700" fill="${colors.text}" paint-order="stroke" stroke="${colors.background}" stroke-width="2">${name}</text>
 </g>`;
 }
 
@@ -79,3 +80,4 @@ function ZooMapSvgComponent({ highlightedSectionId, places = [] }: ZooMapSvgProp
 }
 
 export const ZooMapSvg = React.memo(ZooMapSvgComponent);
+

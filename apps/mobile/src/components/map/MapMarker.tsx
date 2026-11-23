@@ -67,14 +67,14 @@ const styles = StyleSheet.create({
   hitAreaSelected: {
     borderWidth: 2,
     borderColor: colors.primary,
-    backgroundColor: 'rgba(46, 125, 50, 0.12)',
+    backgroundColor: colors.primarySurface,
   },
   hitAreaZooPlace: {
     borderRadius: radius.pill,
   },
   hitAreaZooPlaceSelected: {
     borderColor: colors.base,
-    backgroundColor: 'rgba(135, 41, 58, 0.12)',
+    backgroundColor: colors.baseSurface,
   },
 });
 
