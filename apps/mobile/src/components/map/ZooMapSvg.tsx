@@ -70,7 +70,7 @@ function ZooMapSvgComponent({ highlightedSectionId, places = [] }: ZooMapSvgProp
         testID="zoo-map-svg"
         accessible
         accessibilityRole="image"
-        accessibilityLabel="Mapa canÃ³nico del zoolÃ³gico con recintos, lugares y caminos"
+        accessibilityLabel="Mapa canónico del zoológico con recintos, lugares y caminos"
       />
       {highlightedSectionId ? (
         <View testID={`map-zone-highlight-${highlightedSectionId}`} style={{ position: 'absolute', width: 0, height: 0 }} />
