@@ -387,7 +387,10 @@ export function mapZooPlaceToModel(item: ApiZooPlaceResponse) {
   const canonical = canonicalPlaceByName.get(String(item.name_original ?? item.name).trim().toLowerCase());
   const nameKey = String(item.name_original ?? item.name).trim().toLowerCase();
   const isInicio = nameKey === 'inicio';
+  const isComida = nameKey.includes('establecimiento') && nameKey.includes('comida');
   const inicioSvg = { mapX: 523 / SVG_WIDTH, mapY: 828 / SVG_HEIGHT, svgId: 'Inicio' };
+  const comidaSvg = { mapX: 599 / SVG_WIDTH, mapY: 551 / SVG_HEIGHT, svgId: 'establecimientos_comida' };
+  const svgOverride = isInicio ? inicioSvg : isComida ? comidaSvg : null;
   return {
     id: String(item.id),
     name: item.name,
@@ -395,11 +398,11 @@ export function mapZooPlaceToModel(item: ApiZooPlaceResponse) {
     placeType: item.place_type,
     gpsLat: item.gps_lat != null ? Number(item.gps_lat) : null,
     gpsLon: item.gps_lon != null ? Number(item.gps_lon) : null,
-    mapX: isInicio ? inicioSvg.mapX : (item.map_x != null ? Number(item.map_x) : null),
-    mapY: isInicio ? inicioSvg.mapY : (item.map_y != null ? Number(item.map_y) : null),
+    mapX: svgOverride ? svgOverride.mapX : (item.map_x != null ? Number(item.map_x) : null),
+    mapY: svgOverride ? svgOverride.mapY : (item.map_y != null ? Number(item.map_y) : null),
     isVisible: Boolean(item.is_visible ?? true),
     description: item.description ?? null,
-    svgId: isInicio ? inicioSvg.svgId : (canonical?.svgId ?? null),
+    svgId: svgOverride ? svgOverride.svgId : (canonical?.svgId ?? null),
   };
 }
 

@@ -229,20 +229,25 @@ export function MapScreen({
     [zooPlaces],
   );
 
-  const isInsideZooContour = useCallback((mapX: number, mapY: number) => {
-    const svgX = mapX * SVG_WIDTH;
-    const svgY = mapY * SVG_HEIGHT;
-    // Capa contorno (layer1): convex hull + recorte superior para excluir puntos fuera del trazo real.
-    return isPointInSvgContour(svgX, svgY) && svgY >= 140;
+  const isInsideZooContour = useCallback((_mapX: number, _mapY: number) => {
+    // Contorno desactivado temporalmente: los puntos con map_x/map_y se muestran en su posición del SVG.
+    return true;
   }, []);
 
+  const shouldApplyContourFilter = useCallback((place: MapPlace) => /^\d+$/.test(place.id) || place.id.startsWith('zoo-place-'), []);
+  const mockFixedServiceIds = useMemo(() => new Set(['restrooms', 'food', 'main-entrance']), []);
+
   const visibleFilteredPlaces = useMemo(
-    () => filteredPlaces.filter((p) => isInsideZooContour(p.mapX, p.mapY)),
-    [filteredPlaces, isInsideZooContour],
+    () =>
+      filteredPlaces.filter((p) => {
+        if (zooPlaces.length > 0 && mockFixedServiceIds.has(p.id)) return false;
+        return !shouldApplyContourFilter(p) || isInsideZooContour(p.mapX, p.mapY);
+      }),
+    [filteredPlaces, isInsideZooContour, shouldApplyContourFilter, zooPlaces.length, mockFixedServiceIds],
   );
   const visibleZooPlaceMarkers = useMemo(
-    () => zooPlaceMarkers.filter((p) => isInsideZooContour(p.mapX, p.mapY)),
-    [zooPlaceMarkers, isInsideZooContour],
+    () => zooPlaceMarkers.filter((p) => !shouldApplyContourFilter(p) || isInsideZooContour(p.mapX, p.mapY)),
+    [zooPlaceMarkers, isInsideZooContour, shouldApplyContourFilter],
   );
 
   const allMapPins = useMemo(

@@ -40,24 +40,20 @@ describe('Map V2.2 — Controles Interactivos de Zoom, Desplazamiento y Centrado
     const zoomOutButton = view.getByRole('button', { name: 'Alejar mapa' });
     const resetButton = view.getByRole('button', { name: 'Restablecer vista del mapa' });
 
-    // En 1x el botón de alejar está deshabilitado
-    expect(zoomOutButton.props.accessibilityState).toEqual({ disabled: true });
-    expect(view.getByText('1x')).toBeTruthy();
+    // Zoom inicial más cercano para legibilidad del mapa canónico
+    expect(view.getByText('2.2x')).toBeTruthy();
+    expect(zoomOutButton.props.accessibilityState).toEqual({ disabled: false });
 
-    // Acercamos a 1.5x y 2x
+    // Acercar y alejar
     await fireEvent.press(zoomInButton);
-    expect(view.getByText('1.5x')).toBeTruthy();
+    expect(view.getByText('2.5x')).toBeTruthy();
 
-    await fireEvent.press(zoomInButton);
+    await fireEvent.press(view.getByRole('button', { name: 'Alejar mapa' }));
     expect(view.getByText('2x')).toBeTruthy();
 
-    // Alejamos a 1.5x
-    await fireEvent.press(view.getByRole('button', { name: 'Alejar mapa' }));
-    expect(view.getByText('1.5x')).toBeTruthy();
-
-    // Restablecemos a 1x
+    // Restablecer vuelve al zoom inicial
     await fireEvent.press(resetButton);
-    expect(view.getByText('1x')).toBeTruthy();
+    expect(view.getByText('2.2x')).toBeTruthy();
   });
 
   it('test-ca-16: el desplazamiento del lienzo se acota a los bordes (clampPan) y se mantiene en (0, 0) a escala 1.0x', () => {
