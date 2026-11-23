@@ -95,11 +95,18 @@ while ($row = $tablesStmt->fetch(PDO::FETCH_NUM)) {
 echo "[*] Se encontraron " . count($tables) . " tablas para respaldar.\n";
 
 $timestamp = date('Y-m-d_H-i-s');
-$fullBackupFile = "{$backupDir}/backup_{$database}_full_{$timestamp}.sql";
-$dataOnlyFile = "{$backupDir}/{$database}_data_only_{$timestamp}.sql";
-$schemaOnlyFile = "{$backupDir}/backup_{$database}_schema_only_{$timestamp}.sql";
+$runDir = "{$backupDir}/{$timestamp}";
 
-// También mantener nombres fijos para facilidad de uso
+if (!is_dir($runDir) && !mkdir($runDir, 0777, true) && !is_dir($runDir)) {
+    echo "[-] No se pudo crear la carpeta de respaldo: {$runDir}\n";
+    exit(1);
+}
+
+$fullBackupFile = "{$runDir}/backup_{$database}_full_{$timestamp}.sql";
+$dataOnlyFile = "{$runDir}/{$database}_data_only_{$timestamp}.sql";
+$schemaOnlyFile = "{$runDir}/backup_{$database}_schema_only_{$timestamp}.sql";
+
+// También mantener nombres fijos para facilidad de uso en la raíz de backups
 $latestFullFile = "{$backupDir}/backup_{$database}_full_latest.sql";
 $latestDataFile = "{$backupDir}/{$database}_data_only_latest.sql";
 $latestSchemaFile = "{$backupDir}/backup_{$database}_schema_only_latest.sql";

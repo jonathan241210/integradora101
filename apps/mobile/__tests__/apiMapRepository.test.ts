@@ -18,7 +18,7 @@ describe('ApiMapRepository (mobile-007 Enmienda V4: api-enclosures-integration)'
     };
   });
 
-  it('CA-21 & RN-20: should fetch enclosures from /enclosures, map to MapPlace with explicit map coordinates or geoTransform fallback', async () => {
+  it('CA-21 & RN-20: should fetch enclosures from /enclosures, map to MapPlace with explicit map coordinates and hide enclosures without map coordinates', async () => {
     const apiPayload = {
       data: [
         {
@@ -71,9 +71,8 @@ describe('ApiMapRepository (mobile-007 Enmienda V4: api-enclosures-integration)'
     const herpetario = places.find((p) => p.id === '2');
     expect(herpetario).toBeDefined();
     expect(herpetario?.name).toBe('Herpetario');
-    // Coordenadas calculadas vía geoTransform porque map_x/map_y eran null
-    expect(herpetario?.mapX).toBeGreaterThan(0);
-    expect(herpetario?.mapY).toBeGreaterThan(0);
+    // Sin map_x/map_y no se renderiza en el mapa 2D
+    expect(herpetario?.visible).toBe(false);
 
     // Debe preservar servicios esenciales
     const entrance = places.find((p) => p.kind === 'entrance');

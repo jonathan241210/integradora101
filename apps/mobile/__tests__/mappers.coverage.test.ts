@@ -127,7 +127,7 @@ describe('mobile-011 CA-05: mapeadores de respuestas API para Mobile', () => {
 
     const fallback = mapEnclosureToMapPlace({ id: 3, name: 'Sin GPS' });
     expect(fallback).toMatchObject({
-      mapX: 0.5, mapY: 0.5, description: 'Recinto de Sin GPS.', animals: undefined,
+      mapX: 0, mapY: 0, visible: false, description: 'Recinto de Sin GPS.', animals: undefined,
     });
     expect(fallback.gpsLat).toBeUndefined();
     expect(fallback.gpsLon).toBeUndefined();

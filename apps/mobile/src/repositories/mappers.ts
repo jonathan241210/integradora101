@@ -1,6 +1,15 @@
 import { Animal, MapPlace, News, ZooEvent } from '../models';
 import { SVG_HEIGHT, SVG_WIDTH, ZOO_BOUNDS } from '../constants/zoo';
 import { geoTransform } from '../utils/geoTransform';
+import canonicalMapMapping from '../data/canonicalMapMapping.json';
+
+type CanonicalMapEntry = { suggestedId: string; nameOriginal: string; svgId: string | null; mapX: number | null; mapY: number | null; status: string };
+const canonicalEnclosureByName = new Map<string, CanonicalMapEntry>(
+  (((canonicalMapMapping as any).enclosures ?? []) as CanonicalMapEntry[]).map((e) => [String(e.nameOriginal).trim().toLowerCase(), e])
+);
+const canonicalPlaceByName = new Map<string, CanonicalMapEntry>(
+  (((canonicalMapMapping as any).zoo_places ?? []) as CanonicalMapEntry[]).map((e) => [String(e.nameOriginal).trim().toLowerCase(), e])
+);
 
 export interface ApiSpeciesResponse {
   id: number | string;
@@ -289,17 +298,9 @@ function ageFromBirthDate(value?: string | null): string | undefined {
  * Cumple con CA-21 y RN-20.
  */
 export function mapEnclosureToMapPlace(item: ApiEnclosureResponse): MapPlace {
-  let mapX = 0.5;
-  let mapY = 0.5;
-
-  if (item.map_x != null && item.map_y != null) {
-    mapX = Number(item.map_x);
-    mapY = Number(item.map_y);
-  } else if (item.gps_lat != null && item.gps_lon != null) {
-    const { svgX, svgY } = geoTransform(Number(item.gps_lat), Number(item.gps_lon));
-    mapX = svgX / SVG_WIDTH;
-    mapY = svgY / SVG_HEIGHT;
-  }
+  const hasMapCoords = item.map_x != null && item.map_y != null;
+  const mapX = hasMapCoords ? Number(item.map_x) : 0;
+  const mapY = hasMapCoords ? Number(item.map_y) : 0;
 
   const animalsList = Array.isArray(item.animals) && item.animals.length > 0
     ? item.animals.map((a) => a.name || a.species_name).filter(Boolean).join(', ')
@@ -340,18 +341,22 @@ export function mapEnclosureToMapPlace(item: ApiEnclosureResponse): MapPlace {
     ? Number(item.gps_lon)
     : undefined;
 
+  const canonical = canonicalEnclosureByName.get(String(item.name).trim().toLowerCase());
+  const svgId = canonical?.svgId ?? undefined;
+
   return {
     id: String(item.id),
     name: item.name,
     kind: 'animal',
-    sectionId: `enclosure-${item.id}`,
+    sectionId: svgId ?? `enclosure-${item.id}`,
     description,
     mapX,
     mapY,
-    visible: true,
+    visible: hasMapCoords,
     gpsLat,
     gpsLon,
     animals,
+    svgId,
   };
 }
 
@@ -379,6 +384,13 @@ export interface ApiPathNodeResponse {
 }
 
 export function mapZooPlaceToModel(item: ApiZooPlaceResponse) {
+  const canonical = canonicalPlaceByName.get(String(item.name_original ?? item.name).trim().toLowerCase());
+  const nameKey = String(item.name_original ?? item.name).trim().toLowerCase();
+  const isInicio = nameKey === 'inicio';
+  const isComida = nameKey.includes('establecimiento') && nameKey.includes('comida');
+  const inicioSvg = { mapX: 523 / SVG_WIDTH, mapY: 828 / SVG_HEIGHT, svgId: 'Inicio' };
+  const comidaSvg = { mapX: 599 / SVG_WIDTH, mapY: 551 / SVG_HEIGHT, svgId: 'establecimientos_comida' };
+  const svgOverride = isInicio ? inicioSvg : isComida ? comidaSvg : null;
   return {
     id: String(item.id),
     name: item.name,
@@ -386,10 +398,11 @@ export function mapZooPlaceToModel(item: ApiZooPlaceResponse) {
     placeType: item.place_type,
     gpsLat: item.gps_lat != null ? Number(item.gps_lat) : null,
     gpsLon: item.gps_lon != null ? Number(item.gps_lon) : null,
-    mapX: item.map_x != null ? Number(item.map_x) : null,
-    mapY: item.map_y != null ? Number(item.map_y) : null,
+    mapX: svgOverride ? svgOverride.mapX : (item.map_x != null ? Number(item.map_x) : null),
+    mapY: svgOverride ? svgOverride.mapY : (item.map_y != null ? Number(item.map_y) : null),
     isVisible: Boolean(item.is_visible ?? true),
     description: item.description ?? null,
+    svgId: svgOverride ? svgOverride.svgId : (canonical?.svgId ?? null),
   };
 }
 

@@ -77,7 +77,7 @@ export interface Milestone {
   date: string;
 }
 
-export type MapPlaceKind = 'animal' | 'service' | 'entrance';
+export type MapPlaceKind = 'animal' | 'service' | 'entrance' | 'zoo_place';
 
 export interface MapSection {
   id: string;
@@ -117,6 +117,8 @@ export interface MapPlace {
   gpsLon?: number;
   /** Animales que habitan este recinto */
   animals?: MapPlaceAnimalInfo[];
+  /** ID de forma en SVG canónico (017), si existe mapeo. */
+  svgId?: string;
 }
 
 export type MapFilter = 'all' | 'animal' | 'service';
@@ -150,6 +152,7 @@ export interface ZooPlace {
   mapY?: number | null;
   isVisible: boolean;
   description?: string | null;
+  svgId?: string | null;
 }
 
 export interface PathNode {

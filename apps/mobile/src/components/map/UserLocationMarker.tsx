@@ -123,8 +123,8 @@ export function UserLocationMarker({
   );
 }
 
-const DOT_SIZE = 16;
-const PULSE_SIZE = 28;
+const DOT_SIZE = 14;
+const PULSE_SIZE = 24;
 
 const styles = StyleSheet.create({
   container: {
@@ -166,12 +166,12 @@ const styles = StyleSheet.create({
   headingBeam: {
     position: 'absolute',
     bottom: PULSE_SIZE / 2 + 1,
-    width: 34,
-    height: 44,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderBottomLeftRadius: 6,
-    borderBottomRightRadius: 6,
+    width: 24,
+    height: 32,
+    borderTopLeftRadius: 14,
+    borderTopRightRadius: 14,
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
     backgroundColor: colors.infoSurfaceMuted,
   },
   headingTip: {
@@ -179,9 +179,9 @@ const styles = StyleSheet.create({
     bottom: PULSE_SIZE / 2,
     width: 0,
     height: 0,
-    borderLeftWidth: 5,
-    borderRightWidth: 5,
-    borderBottomWidth: 7,
+    borderLeftWidth: 4,
+    borderRightWidth: 4,
+    borderBottomWidth: 6,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     borderBottomColor: colors.info,
