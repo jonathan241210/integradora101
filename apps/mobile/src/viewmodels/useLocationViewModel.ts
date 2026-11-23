@@ -8,7 +8,7 @@ import {
 } from '../constants/zoo';
 
 export interface UserPosition {
-  /** Coordenada X en el viewBox SVG (0..1000). */
+  /** Coordenada X en el viewBox SVG (0..1600). */
   svgX: number;
   /** Coordenada Y en el viewBox SVG (0..1400). */
   svgY: number;

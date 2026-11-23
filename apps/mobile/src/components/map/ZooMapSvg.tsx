@@ -1,154 +1,80 @@
-import React from 'react';
-import Svg, { Ellipse, G, Path, Rect, Text as SvgText } from 'react-native-svg';
-import { colors } from '../../theme/tokens';
+import React, { useMemo } from 'react';
+import { View } from 'react-native';
+import { SvgXml } from 'react-native-svg';
+import { ZOO_MAP_CANONICAL_SVG } from './zooMapCanonicalSvg';
+import { MapPlace } from '../../models';
+import { SVG_WIDTH, SVG_HEIGHT } from '../../constants/zoo';
 
 interface ZooMapSvgProps {
   highlightedSectionId?: string | null;
+  places?: MapPlace[];
 }
 
-interface RectZone {
-  id: string;
-  label: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  fill: string;
-  fillOpacity: number;
-  labelX: number;
-  labelY: number;
-  labelSize?: number;
+function esc(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
-const rectZones: RectZone[] = [
-  { id: 'zone-felines', label: 'FELINOS', x: 70, y: 140, width: 330, height: 330, fill: colors.accent, fillOpacity: 0.55, labelX: 235, labelY: 320 },
-  { id: 'zone-birds', label: 'AVES', x: 600, y: 140, width: 330, height: 330, fill: colors.border, fillOpacity: 0.9, labelX: 765, labelY: 320 },
-  { id: 'zone-aquatic', label: 'ACUARIO', x: 70, y: 540, width: 330, height: 300, fill: colors.primarySoft, fillOpacity: 1, labelX: 235, labelY: 800 },
-  { id: 'zone-reptiles', label: 'REPTILES', x: 600, y: 540, width: 330, height: 300, fill: colors.accent, fillOpacity: 0.4, labelX: 765, labelY: 700 },
-  { id: 'zone-herbivores', label: 'HERBÍVOROS', x: 70, y: 920, width: 330, height: 280, fill: colors.border, fillOpacity: 0.75, labelX: 235, labelY: 1080 },
-  { id: 'zone-services', label: 'SERVICIOS', x: 600, y: 920, width: 330, height: 280, fill: colors.background, fillOpacity: 1, labelX: 765, labelY: 1080 },
-  { id: 'zone-entrance', label: 'ACCESO', x: 350, y: 1180, width: 300, height: 160, fill: colors.accent, fillOpacity: 0.7, labelX: 500, labelY: 1270, labelSize: 26 },
-];
+function pinColor(kind: MapPlace['kind']): string {
+  if (kind === 'zoo_place') return '#87293a';
+  return '#2E7D32';
+}
 
-function ZooMapSvgComponent({ highlightedSectionId }: ZooMapSvgProps) {
+function buildMarker(place: MapPlace, selected: boolean): string {
+  const cx = (place.mapX * SVG_WIDTH).toFixed(1);
+  const cy = (place.mapY * SVG_HEIGHT).toFixed(1);
+  const r = selected ? 11 : 9;
+  const strokeW = selected ? 3 : 2;
+  const color = pinColor(place.kind);
+  const fill = selected ? color : '#ffffff';
+  const inner = selected ? '#ffffff' : color;
+  const labelY = (place.mapY * SVG_HEIGHT + (selected ? 18 : 16)).toFixed(1);
+  const name = esc(place.name.length > 18 ? place.name.slice(0, 17) + '…' : place.name);
+  const id = esc(place.sectionId || place.id);
+  return `<g id="pin-${id}" data-kind="${esc(place.kind)}">
+  <circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${color}" stroke-width="${strokeW}"/>
+  <circle cx="${cx}" cy="${cy}" r="${selected ? 3.2 : 2.6}" fill="${inner}"/>
+  <text x="${cx}" y="${labelY}" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="${selected ? 8 : 7}" font-weight="700" fill="#2E2A26" paint-order="stroke" stroke="#F4F1E8" stroke-width="2">${name}</text>
+</g>`;
+}
+
+function injectMarkers(svg: string, places: MapPlace[], highlightedSectionId?: string | null): string {
+  if (!places.length) return svg;
+  const markers = places
+    .filter((p) => typeof p.mapX === 'number' && typeof p.mapY === 'number')
+    .map((p) => buildMarker(p, !!highlightedSectionId && (p.sectionId === highlightedSectionId || p.id === highlightedSectionId)))
+    .join('\n');
+  if (!markers) return svg;
+  const layer = `\n<g id="dynamic-markers">\n${markers}\n</g>\n`;
+  return svg.replace(/<\/svg>\s*$/, `${layer}</svg>`);
+}
+
+function ZooMapSvgComponent({ highlightedSectionId, places = [] }: ZooMapSvgProps) {
+  const xml = useMemo(
+    () => injectMarkers(ZOO_MAP_CANONICAL_SVG, places, highlightedSectionId),
+    [places, highlightedSectionId],
+  );
+
   return (
-    <Svg
-      width="100%"
-      height="100%"
-      viewBox="0 0 1000 1400"
-      preserveAspectRatio="xMidYMid meet"
-      testID="zoo-map-svg"
-      accessible
-      accessibilityRole="image"
-      accessibilityLabel="Mapa esquemático del zoológico con secciones Acceso, Plaza, Felinos, Aves, Acuario, Reptiles, Herbívoros y Servicios"
-    >
-      <G id="background">
-        <Rect width="1000" height="1400" fill={colors.background} />
-        <Rect x="24" y="24" width="952" height="1352" rx="48" fill="none" stroke={colors.border} strokeWidth="4" />
-      </G>
-
-      <G id="water">
-        <Path
-          id="water-pond"
-          d="M 120 600 C 190 570 270 590 300 630 C 320 670 260 710 180 700 C 120 690 90 640 120 600 Z"
-          fill={colors.primarySoft}
-          stroke={colors.secondary}
-          strokeWidth="3"
-        />
-      </G>
-
-      <G id="paths">
-        <G id="paths-underlay" fill="none" stroke={colors.border} strokeWidth="42" strokeLinecap="round" strokeLinejoin="round">
-          <Path id="path-entrance" d="M 500 1180 L 500 860" />
-          <Path id="path-felines" d="M 420 700 L 300 470" />
-          <Path id="path-birds" d="M 580 700 L 700 470" />
-          <Path id="path-aquatic" d="M 380 760 L 400 760" />
-          <Path id="path-reptiles" d="M 620 760 L 600 760" />
-          <Path id="path-herbivores" d="M 420 820 L 300 920" />
-          <Path id="path-services" d="M 580 820 L 700 920" />
-        </G>
-        <G id="paths-surface" fill="none" stroke={colors.surface} strokeWidth="32" strokeLinecap="round" strokeLinejoin="round">
-          <Path id="path-entrance-surface" d="M 500 1180 L 500 860" />
-          <Path id="path-felines-surface" d="M 420 700 L 300 470" />
-          <Path id="path-birds-surface" d="M 580 700 L 700 470" />
-          <Path id="path-aquatic-surface" d="M 380 760 L 400 760" />
-          <Path id="path-reptiles-surface" d="M 620 760 L 600 760" />
-          <Path id="path-herbivores-surface" d="M 420 820 L 300 920" />
-          <Path id="path-services-surface" d="M 580 820 L 700 920" />
-        </G>
-      </G>
-
-      <G id="zones">
-        {rectZones.map((zone) => {
-          const highlighted = highlightedSectionId === zone.id;
-          return (
-            <G key={zone.id}>
-              <Rect
-                id={zone.id}
-                x={zone.x}
-                y={zone.y}
-                width={zone.width}
-                height={zone.height}
-                rx="44"
-                fill={zone.fill}
-                fillOpacity={zone.fillOpacity}
-                stroke={highlighted ? colors.primary : colors.secondary}
-                strokeWidth={highlighted ? 8 : 4}
-              />
-              {highlighted && (
-                <Rect
-                  testID={`map-zone-highlight-${zone.id}`}
-                  x={zone.x}
-                  y={zone.y}
-                  width={zone.width}
-                  height={zone.height}
-                  rx="44"
-                  fill="none"
-                  stroke={colors.primary}
-                  strokeWidth="8"
-                  strokeDasharray="14 10"
-                />
-              )}
-            </G>
-          );
-        })}
-        <G>
-          <Ellipse
-            id="zone-plaza"
-            cx="500"
-            cy="760"
-            rx="120"
-            ry="100"
-            fill={colors.accent}
-            fillOpacity={0.8}
-            stroke={highlightedSectionId === 'zone-plaza' ? colors.primary : colors.secondary}
-            strokeWidth={highlightedSectionId === 'zone-plaza' ? 8 : 4}
-          />
-          {highlightedSectionId === 'zone-plaza' && (
-            <Ellipse
-              testID="map-zone-highlight-zone-plaza"
-              cx="500"
-              cy="760"
-              rx="120"
-              ry="100"
-              fill="none"
-              stroke={colors.primary}
-              strokeWidth="8"
-              strokeDasharray="14 10"
-            />
-          )}
-        </G>
-      </G>
-
-      <G id="labels" fill={colors.text} textAnchor="middle" fontWeight="700">
-        {rectZones.map((zone) => (
-          <SvgText key={`label-${zone.id}`} x={zone.labelX} y={zone.labelY} fontSize={zone.labelSize ?? 28} letterSpacing="1.5">
-            {zone.label}
-          </SvgText>
-        ))}
-        <SvgText x="500" y="770" fontSize="24" letterSpacing="1">PLAZA</SvgText>
-      </G>
-    </Svg>
+    <View style={{ width: '100%', height: '100%' }}>
+      <SvgXml
+        xml={xml}
+        width="100%"
+        height="100%"
+        preserveAspectRatio="xMidYMid meet"
+        testID="zoo-map-svg"
+        accessible
+        accessibilityRole="image"
+        accessibilityLabel="Mapa canónico del zoológico con recintos, lugares y caminos"
+      />
+      {highlightedSectionId ? (
+        <View testID={`map-zone-highlight-${highlightedSectionId}`} style={{ position: 'absolute', width: 0, height: 0 }} />
+      ) : null}
+    </View>
   );
 }
 

@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { AppText, Icon } from '../ui';
 import { MapPlace } from '../../models';
-import { colors, radius, spacing } from '../../theme/tokens';
+import { colors, radius } from '../../theme/tokens';
 
 interface MapMarkerProps {
   place: MapPlace;
@@ -14,15 +13,10 @@ const kindLabels: Record<MapPlace['kind'], string> = {
   animal: 'Animal',
   service: 'Servicio',
   entrance: 'Acceso',
+  zoo_place: 'Lugar',
 };
 
-const kindIcons: Record<MapPlace['kind'], string> = {
-  animal: 'paw',
-  service: 'information-circle-outline',
-  entrance: 'location',
-};
-
-export function MapMarker({ place, selected = false, onPress }: MapMarkerProps) {
+function MapMarkerComponent({ place, selected = false, onPress }: MapMarkerProps) {
   return (
     <Pressable
       testID={`map-marker-${place.id}`}
@@ -30,30 +24,24 @@ export function MapMarker({ place, selected = false, onPress }: MapMarkerProps) 
       accessibilityLabel={`${place.name}, ${kindLabels[place.kind]}`}
       accessibilityState={{ selected }}
       onPress={() => onPress(place.id)}
-      style={[
+      hitSlop={10}
+      style={({ pressed }) => [
         styles.marker,
         {
           left: `${place.mapX * 100}%` as `${number}%`,
           top: `${place.mapY * 100}%` as `${number}%`,
         },
+        pressed && styles.markerPressed,
       ]}
     >
-      <View style={[styles.pin, selected && styles.pinSelected]}>
-        <Icon
-          name={kindIcons[place.kind]}
-          size={18}
-          color={selected ? colors.textOnPrimary : colors.primary}
-        />
-      </View>
-      <AppText
-        variant="caption"
-        bold
-        center
-        color={selected ? 'primary' : 'text'}
-        style={styles.label}
-      >
-        {place.name}
-      </AppText>
+      <View
+        style={[
+          styles.hitArea,
+          selected && styles.hitAreaSelected,
+          place.kind === 'zoo_place' && styles.hitAreaZooPlace,
+          selected && place.kind === 'zoo_place' && styles.hitAreaZooPlaceSelected,
+        ]}
+      />
     </Pressable>
   );
 }
@@ -61,30 +49,33 @@ export function MapMarker({ place, selected = false, onPress }: MapMarkerProps) 
 const styles = StyleSheet.create({
   marker: {
     position: 'absolute',
-    width: 108,
-    alignItems: 'center',
-    transform: [{ translateX: -54 }, { translateY: -18 }],
-  },
-  pin: {
-    width: 32,
-    height: 32,
-    borderRadius: radius.pill,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    backgroundColor: colors.surface,
+    width: '2.2%',
+    aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 2,
+    transform: [{ translateX: '-50%' }, { translateY: '-50%' }],
   },
-  pinSelected: {
-    backgroundColor: colors.primary,
+  markerPressed: {
+    opacity: 0.8,
   },
-  label: {
-    maxWidth: 108,
-    marginTop: spacing.xs,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: 2,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surface,
+  hitArea: {
+    width: '100%',
+    height: '100%',
+    borderRadius: radius.pill,
+    backgroundColor: 'transparent',
+  },
+  hitAreaSelected: {
+    borderWidth: 2,
+    borderColor: colors.primary,
+    backgroundColor: 'rgba(46, 125, 50, 0.12)',
+  },
+  hitAreaZooPlace: {
+    borderRadius: radius.pill,
+  },
+  hitAreaZooPlaceSelected: {
+    borderColor: colors.base,
+    backgroundColor: 'rgba(135, 41, 58, 0.12)',
   },
 });
+
+export const MapMarker = memo(MapMarkerComponent);

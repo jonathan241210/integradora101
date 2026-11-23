@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { PanResponder, StyleSheet, View, Pressable } from 'react-native';
 import { ArrivalBanner } from '../components/map/ArrivalBanner';
 import { DestinationRouteLine } from '../components/map/DestinationRouteLine';
@@ -25,6 +25,8 @@ import {
   SVG_HEIGHT,
   SVG_WIDTH,
   ZOOM_STEP,
+  ZOO_ENTRANCE_SVG,
+  isPointInSvgContour,
 } from '../constants/zoo';
 import { MapFilter, MapPlace, MapSection, PathNode, ZooPlace } from '../models';
 import { colors, radius, spacing } from '../theme/tokens';
@@ -59,7 +61,7 @@ interface MapScreenProps {
   onCloseDetail: () => void;
   onRetry: () => void;
   onSearchPress: () => void;
-  /** Posición GPS del visitante (null si permiso denegado o no disponible). */
+  /** PosiciÃ³n GPS del visitante (null si permiso denegado o no disponible). */
   userPosition?: UserPosition | null;
   /** Recinto actualmente fijado como destino (CA-14). */
   destinationPlace?: MapPlace | null;
@@ -76,6 +78,8 @@ const filters: { key: MapFilter; label: string }[] = [
   { key: 'animal', label: 'Animales' },
   { key: 'service', label: 'Servicios' },
 ];
+
+const noopPlacePress = (_id: string) => {};
 
 export function MapScreen({
   sections,
@@ -100,19 +104,20 @@ export function MapScreen({
   onToggleDestination,
   onDismissArrival,
 }: MapScreenProps) {
-  const [zoomScale, setZoomScale] = useState<number>(MIN_ZOOM_SCALE);
+  const [zoomScale, setZoomScale] = useState<number>(2.2);
   const [panOffset, setPanOffset] = useState<{ panX: number; panY: number }>({
     panX: 0,
     panY: 0,
   });
-  // AR dinámico: selección cercana y visitados en sesión (015 enmienda 2026-11-21)
+  // AR dinÃ¡mico: selecciÃ³n cercana y visitados en sesiÃ³n (015 enmienda 2026-11-21)
   const [selectedArPointId, setSelectedArPointId] = useState<string | null>(null);
   const [visitedArIds, setVisitedArIds] = useState<Set<string>>(new Set());
   const [arrivedArPoint, setArrivedArPoint] = useState<{ id: string; name: string; kind: 'enclosure' | 'zoo_place'; placeType?: string; description?: string | null } | null>(null);
   const [dismissedArrivalId, setDismissedArrivalId] = useState<string | null>(null);
   const [showNativeArPoc, setShowNativeArPoc] = useState(false);
+  const [mapLayout, setMapLayout] = useState<{ width: number; height: number }>({ width: 0, height: 0 });
 
-  const zoomScaleRef = useRef<number>(MIN_ZOOM_SCALE);
+  const zoomScaleRef = useRef<number>(2.2);
   zoomScaleRef.current = zoomScale;
 
   const panOffsetRef = useRef<{ panX: number; panY: number }>({
@@ -122,6 +127,7 @@ export function MapScreen({
   panOffsetRef.current = panOffset;
   const smoothedHeadingRef = useRef<number | null>(null);
   const visibleArIdsRef = useRef<Set<string>>(new Set());
+  const hasCenteredOnEntranceRef = useRef(false);
 
   const applyPan = useCallback((nextPanX: number, nextPanY: number) => {
     const clamped = clampPan(nextPanX, nextPanY, zoomScaleRef.current);
@@ -150,7 +156,8 @@ export function MapScreen({
   }, [applyZoom]);
 
   const handleResetView = useCallback(() => {
-    setZoomScale(MIN_ZOOM_SCALE);
+    setZoomScale(2.2);
+    zoomScaleRef.current = 2.2;
     setPanOffset({ panX: 0, panY: 0 });
   }, []);
 
@@ -201,6 +208,70 @@ export function MapScreen({
       },
     );
   }, [userPosition, activeTargetPlace]);
+
+  const zooPlaceMarkers = useMemo(
+    () =>
+      zooPlaces
+        .filter((place) => place.isVisible && typeof place.mapX === 'number' && typeof place.mapY === 'number')
+        .map((place) => ({
+          id: `zoo-place-${place.id}`,
+          name: place.name,
+          kind: 'zoo_place' as const,
+          sectionId: place.svgId ?? `zoo-place-${place.id}`,
+          description: place.description ?? place.placeType,
+          mapX: place.mapX as number,
+          mapY: place.mapY as number,
+          visible: true,
+          gpsLat: typeof place.gpsLat === 'number' ? place.gpsLat : undefined,
+          gpsLon: typeof place.gpsLon === 'number' ? place.gpsLon : undefined,
+          svgId: place.svgId ?? undefined,
+        })),
+    [zooPlaces],
+  );
+
+  const isInsideZooContour = useCallback((mapX: number, mapY: number) => {
+    const svgX = mapX * SVG_WIDTH;
+    const svgY = mapY * SVG_HEIGHT;
+    // Capa contorno (layer1): convex hull + recorte superior para excluir puntos fuera del trazo real.
+    return isPointInSvgContour(svgX, svgY) && svgY >= 140;
+  }, []);
+
+  const visibleFilteredPlaces = useMemo(
+    () => filteredPlaces.filter((p) => isInsideZooContour(p.mapX, p.mapY)),
+    [filteredPlaces, isInsideZooContour],
+  );
+  const visibleZooPlaceMarkers = useMemo(
+    () => zooPlaceMarkers.filter((p) => isInsideZooContour(p.mapX, p.mapY)),
+    [zooPlaceMarkers, isInsideZooContour],
+  );
+
+  const allMapPins = useMemo(
+    () => [...visibleFilteredPlaces, ...visibleZooPlaceMarkers] as MapPlace[],
+    [visibleFilteredPlaces, visibleZooPlaceMarkers],
+  );
+
+  const mapContentSize = useMemo(() => {
+    if (mapLayout.width <= 0 || mapLayout.height <= 0) return null;
+    const aspect = SVG_WIDTH / SVG_HEIGHT;
+    let width = mapLayout.width;
+    let height = width / aspect;
+    if (height > mapLayout.height) {
+      height = mapLayout.height;
+      width = height * aspect;
+    }
+    return { width, height };
+  }, [mapLayout.height, mapLayout.width]);
+
+  useEffect(() => {
+    if (hasCenteredOnEntranceRef.current || !mapContentSize) return;
+    hasCenteredOnEntranceRef.current = true;
+    const centerPan = computeCenterPanForSvgPoint(
+      ZOO_ENTRANCE_SVG.svgX,
+      ZOO_ENTRANCE_SVG.svgY,
+      zoomScaleRef.current,
+    );
+    setPanOffset(centerPan);
+  }, [mapContentSize]);
 
   const arTour = useArTourViewModel({
     places: filteredPlaces,
@@ -325,7 +396,7 @@ export function MapScreen({
           const relative = computeRelativeAngleDegrees(bearing, stableHeading);
           const abs = Math.abs(relative);
           if (abs <= 20) instruction = 'Al frente';
-          else if (abs >= 160) instruction = 'Detrás de ti';
+          else if (abs >= 160) instruction = 'DetrÃ¡s de ti';
           else if (relative > 0) instruction = 'Gira a la derecha';
           else instruction = 'Gira a la izquierda';
         }
@@ -402,7 +473,7 @@ export function MapScreen({
   }, [selectedArPoint, zooPlaces]);
 
   const selectedSectionName =
-    sections.find((section) => section.id === selectedPlace?.sectionId)?.name ?? 'Sin sección';
+    sections.find((section) => section.id === selectedPlace?.sectionId)?.name ?? 'Sin secciÃ³n';
   const hasNoPlaces = !isLoading && !error && filteredPlaces.length === 0;
   const showFocusNotice = focusNotFound && !selectedPlace;
 
@@ -410,7 +481,7 @@ export function MapScreen({
     <ScreenContainer scroll={false}>
       {!arTour.isTourOpen && (
         <View style={styles.header}>
-          <AppText variant="title">Mapa del zoológico</AppText>
+          <AppText variant="title">Mapa del zoolÃ³gico</AppText>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Buscar animales"
@@ -433,12 +504,12 @@ export function MapScreen({
           </View>
           <View style={styles.infoRow}>
             <AppText variant="small" color="textMuted">
-              Toca un punto del mapa para ver su información.
+              Toca un punto del mapa para ver su informaciÃ³n.
             </AppText>
             {userPosition && (
               <View style={styles.gpsBadge}>
                 <AppText variant="caption" style={styles.gpsText}>
-                  {`📍 GPS: ${userPosition.lat.toFixed(6)}, ${userPosition.lon.toFixed(6)}`}
+                  {`ðŸ“ GPS: ${userPosition.lat.toFixed(6)}, ${userPosition.lon.toFixed(6)}`}
                 </AppText>
               </View>
             )}
@@ -454,11 +525,19 @@ export function MapScreen({
         <View style={styles.canvas}>
           {!arTour.isTourOpen ? (
             <>
-              <View style={styles.viewportContent} {...panResponder.panHandlers}>
+              <View
+                style={styles.viewportGestureArea}
+                onLayout={(e) => {
+                  const { width, height } = e.nativeEvent.layout;
+                  setMapLayout((prev) => (prev.width === width && prev.height === height ? prev : { width, height }));
+                }}
+                {...panResponder.panHandlers}
+              >
                 <View
                   testID="map-viewport-content"
                   style={[
                     styles.viewportContent,
+                    mapContentSize ? { width: mapContentSize.width, height: mapContentSize.height } : null,
                     {
                       transform: [
                         { scale: zoomScale },
@@ -468,19 +547,27 @@ export function MapScreen({
                     },
                   ]}
                 >
-                  <ZooMapSvg highlightedSectionId={focusedSectionId} />
+                  <ZooMapSvg highlightedSectionId={focusedSectionId ?? focusedPlaceId} places={allMapPins} />
                   {userPosition && activeTargetPlace && (
                     <DestinationRouteLine
                       userPosition={userPosition}
                       destinationPlace={activeTargetPlace}
                     />
                   )}
-                  {filteredPlaces.map((place) => (
+                  {visibleFilteredPlaces.map((place) => (
                     <MapMarker
                       key={place.id}
                       place={place}
                       selected={place.id === focusedPlaceId}
                       onPress={onSelectPlace}
+                    />
+                  ))}
+                  {visibleZooPlaceMarkers.map((place) => (
+                    <MapMarker
+                      key={place.id}
+                      place={place}
+                      selected={false}
+                      onPress={noopPlacePress}
                     />
                   ))}
                   {userPosition && (
@@ -530,7 +617,7 @@ export function MapScreen({
 
         {!arTour.isTourOpen && isLoading && (
           <Card style={styles.stateCard}>
-            <LoadingView message="Cargando mapa del zoológico..." />
+            <LoadingView message="Cargando mapa del zoolÃ³gico..." />
           </Card>
         )}
 
@@ -653,7 +740,7 @@ const styles = StyleSheet.create({
   mapArea: {
     flex: 1,
     position: 'relative',
-    padding: spacing.md,
+    padding: 0,
   },
   mapAreaFullBleed: {
     padding: 0,
@@ -671,9 +758,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.text,
   },
+  viewportGestureArea: {
+    flex: 1,
+    justifyContent: 'center',
+  },
   viewportContent: {
     width: '100%',
-    height: '100%',
+    aspectRatio: 1600 / 1200,
+    alignSelf: 'center',
   },
   tourStartButton: {
     position: 'absolute',
@@ -703,3 +795,4 @@ const styles = StyleSheet.create({
     padding: spacing.sm,
   },
 });
+
