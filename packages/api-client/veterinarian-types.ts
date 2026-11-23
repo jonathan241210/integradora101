@@ -17,6 +17,8 @@ export type SelectableSpeciesDto = {
   scientific_name: string | null;
   habitat: string | null;
   origin: string | null;
+  /** Dato curioso vigente (api-026 CA-14); la PWA lo precarga. */
+  fun_fact?: string | null;
   category: SpeciesCategory | null;
   publication_status: SpeciesPublicationStatus;
   next_request_type: SpeciesRequestType | null;
@@ -43,6 +45,8 @@ export type SubmitSpeciesRequestInput = {
   scientific_name?: string;
   habitat?: string;
   origin?: string;
+  /** Solo con el campo marcado en `published_fields` (api-026 CA-04). */
+  fun_fact?: string;
   published_fields: readonly SpeciesFichaField[];
   image?: Blob | null;
 };

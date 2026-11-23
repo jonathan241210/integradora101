@@ -1,5 +1,6 @@
 import { describeApiError } from "./api-errors";
 import type { AdminApi } from "./admin-types";
+import { isStepUpCancelled, runUnprotected, type RunProtected } from "./step-up";
 
 /**
  * ViewModel puro del QR de un recinto (dashboard-013). El panel solo
@@ -210,15 +211,23 @@ export async function regenerateEnclosureQr(
   id: number,
   dispatch: EnclosureQrDispatch,
   callbacks: EnclosureQrCallbacks,
+  protect: RunProtected = runUnprotected,
 ): Promise<void> {
   dispatch({ type: "operation-started" });
 
   try {
-    const data = await api.enclosures.regenerateQr(id);
+    // Ventana si el recinto ya tiene QR; la primera generación no pide contraseña (B-3).
+    const data = await protect(() => api.enclosures.regenerateQr(id));
 
     dispatch({ type: "regenerated", data });
     callbacks.onHasQr(data.qr !== null);
   } catch (error) {
+    if (isStepUpCancelled(error)) {
+      dispatch({ type: "operation-failed", message: "" });
+
+      return;
+    }
+
     const failure = failureMessage(error, QR_TEXTS.regenerateError);
 
     if (failure.notFound) {

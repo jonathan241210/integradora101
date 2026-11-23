@@ -4,9 +4,10 @@ import { ActionError } from "@/components/DashboardNotifications";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { PricesSkeleton } from "@/components/LoadingSkeletons";
 import { NoticeBar } from "@/components/NoticeBar";
 import { SectionHeading } from "@/components/SectionHeading";
-import { formatCurrency } from "@/viewmodels/formatters";
+import { BUSINESS_TIMEZONE_FALLBACK, formatCurrency } from "@/viewmodels/formatters";
 import { formatTicketDateTime } from "@/viewmodels/ticket-history";
 import {
   priceConfirmationCopy,
@@ -14,14 +15,22 @@ import {
 } from "@/viewmodels/ticket-prices";
 import type { TicketPriceMode, TicketPriceTypeDto } from "@/viewmodels/ticket-types";
 
-function CurrentPrice({ title, price }: { title: string; price: TicketPriceTypeDto }) {
+function CurrentPrice({
+  title,
+  price,
+  timezone,
+}: {
+  title: string;
+  price: TicketPriceTypeDto;
+  timezone: string;
+}) {
   return (
     <Card className="ticket-type-card">
       <h2>{title}</h2>
       {price.amount ? (
         <>
           <strong className="ticket-price">{formatCurrency(price.amount)}</strong>
-          <p>Vigente desde el {formatTicketDateTime(price.effective_at)}</p>
+          <p>Vigente desde el {formatTicketDateTime(price.effective_at, timezone)}</p>
         </>
       ) : (
         <p>{price.message ?? "No hay un precio vigente configurado."}</p>
@@ -29,7 +38,7 @@ function CurrentPrice({ title, price }: { title: string; price: TicketPriceTypeD
       {price.next && (
         <p className="ticket-price-next">
           Próximo cambio programado: {formatCurrency(price.next.amount)} a partir del{" "}
-          {formatTicketDateTime(price.next.effective_at)}
+          {formatTicketDateTime(price.next.effective_at, timezone)}
         </p>
       )}
     </Card>
@@ -64,6 +73,7 @@ export function TicketPricesView({ state, actions }: TicketPricesViewModel) {
           status={state.status}
           error={state.error}
           loadingText="Cargando los precios vigentes…"
+          skeleton={<PricesSkeleton />}
           emptyText=""
           onRetry={actions.reload}
         />
@@ -71,8 +81,16 @@ export function TicketPricesView({ state, actions }: TicketPricesViewModel) {
 
       {state.current && (
         <div className="ticket-type-grid">
-          <CurrentPrice title="Adulto" price={state.current.adult} />
-          <CurrentPrice title="Niño" price={state.current.child} />
+          <CurrentPrice
+            title="Adulto"
+            price={state.current.adult}
+            timezone={state.current.timezone ?? BUSINESS_TIMEZONE_FALLBACK}
+          />
+          <CurrentPrice
+            title="Niño"
+            price={state.current.child}
+            timezone={state.current.timezone ?? BUSINESS_TIMEZONE_FALLBACK}
+          />
         </div>
       )}
 

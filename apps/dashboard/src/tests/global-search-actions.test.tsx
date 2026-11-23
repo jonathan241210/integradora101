@@ -81,7 +81,7 @@ describe("CA-33 enclosure-actions-global-search", () => {
 
   it("«Cancelar boleto» exige tickets.cancel además del Historial", () => {
     expect(visibleFor(profile(["tickets.view"])).map((entry) => entry.id)).not.toContain("ticket-history.cancel");
-    expect(visibleFor(profile(["tickets.view", "tickets.cancel"])).map((entry) => entry.id)).toContain("ticket-history.cancel");
+    expect(visibleFor(profile(["tickets.create", "tickets.view", "tickets.cancel"])).map((entry) => entry.id)).toContain("ticket-history.cancel");
   });
 });
 
@@ -96,7 +96,7 @@ describe("CA-34 enclosure-actions-global-search", () => {
     const action = ordered[1].results[0];
 
     expect(action.isAction).toBe(true);
-    expect(action.subtitle).toBe("Reporte de boletos");
+    expect(action.subtitle).toBe("Reportes");
   });
 
   it("sin acciones coincidentes no hay grupo", () => {

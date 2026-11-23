@@ -1,4 +1,5 @@
 import { describeApiError } from "./api-errors";
+import { isStepUpCancelled } from "./step-up";
 import type { FieldErrors, ListStatus } from "./managed-list";
 
 /**
@@ -246,12 +247,14 @@ export async function runInlineOperation<Item, Form>(
     await operation();
   } catch (error) {
     const described = describeApiError(error);
+    // 401 o confirmación cancelada (dashboard-015 CA-08): sin mensaje de error.
+    const silent = described.unauthorized || isStepUpCancelled(error);
 
     dispatch({
       type: "save-failed",
       scope: options.scope,
-      message: described.unauthorized ? "" : described.message,
-      fieldErrors: described.unauthorized ? {} : described.fieldErrors,
+      message: silent ? "" : described.message,
+      fieldErrors: silent ? {} : described.fieldErrors,
     });
 
     return false;

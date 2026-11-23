@@ -1,4 +1,5 @@
-import type { HasMorePage } from "./admin-types";
+import type { TotalPage } from "./admin-types";
+import { normalizeTotalPage } from "./admin";
 import type { HttpClient } from "./http";
 import type {
   OwnSpeciesRequestDto,
@@ -40,6 +41,7 @@ export function buildSpeciesRequestFormData(
   }
   if (input.habitat !== undefined) form.append("habitat", input.habitat);
   if (input.origin !== undefined) form.append("origin", input.origin);
+  if (input.fun_fact !== undefined) form.append("fun_fact", input.fun_fact);
   form.append("published_fields", JSON.stringify(input.published_fields));
   if (input.image) form.append("image", input.image);
 
@@ -59,16 +61,13 @@ export function createVeterinarianApi(http: HttpClient) {
       },
     },
     publicationRequests: {
-      async list(page = 1): Promise<HasMorePage<OwnSpeciesRequestDto>> {
+      async list(page = 1): Promise<TotalPage<OwnSpeciesRequestDto>> {
         const query = page > 1 ? `?page=${page}` : "";
         const response = await http.get<
-          Partial<HasMorePage<OwnSpeciesRequestDto>>
+          Partial<TotalPage<OwnSpeciesRequestDto>>
         >(`${base}/species-publication-requests${query}`);
 
-        return {
-          data: Array.isArray(response?.data) ? response.data : [],
-          meta: { has_more: response?.meta?.has_more === true },
-        };
+        return normalizeTotalPage(response);
       },
       async submit(
         input: SubmitSpeciesRequestInput,

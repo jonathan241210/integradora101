@@ -14,6 +14,7 @@ class StaffAccountsUpdateTest extends AdminFeatureTestCase
         $this->actAs($admin)->patchJson("/api/v1/admin/users/{$target->id}", [
             'first_name' => 'Renombrada',
             'role' => 'veterinarian',
+            'password' => self::STEP_UP_PASSWORD,
             'email' => 'otro@test.arca.invalid',
         ])->assertOk()->assertJsonPath('data.first_name', 'Renombrada')->assertJsonPath('data.role.name', 'veterinarian');
 

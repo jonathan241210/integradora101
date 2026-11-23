@@ -84,3 +84,7 @@ Este cambio debe alinearse con `009-offline-first-sync`: las altas pueden sincro
 
 - Aprobadores y fecha: Pendiente
 - Evidencia/enlaces: `apps/pwa/src/views/AnimalsView.tsx`, `apps/pwa/src/views/AnimalFormView.tsx`, `apps/pwa/src/views/AnimalProfileView.tsx`, `apps/pwa/src/services/apiClient.ts`, specs `004`, `009`.
+
+## Nota de revisión (2026-11-21, paginador compartido)
+
+La paginación de 10 por página de CA-02 (RN-02) se presenta con `Pagination` de `@arca/ui` en modo con total y paginación en cliente (`page`, `lastPage`, `total`), en lugar de los botones «← Anterior» / «Siguiente →» y el texto «Página X de Y» hechos a mano con estilos en línea. El comportamiento no cambia: 10 por página, vuelve a la página 1 al buscar u ordenar, flechas siguiente/anterior (ahora «Anterior» y «Siguiente» más números de página). Cubierto por `apps/dashboard/src/tests/shared-components-and-total-pagination.test.tsx` (dashboard-020 CA-55), que además detecta paginadores hechos a mano en `dashboard` y `pwa`. Estado de la spec sin cambio.

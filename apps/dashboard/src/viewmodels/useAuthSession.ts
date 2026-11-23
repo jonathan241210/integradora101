@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import type { TwoFactorChallenge } from "@arca/api-client";
-import { authApi, setUnauthorizedHandler } from "@/services/arca-api";
+import { authApi, setTwoFactorSetupHandler, setUnauthorizedHandler } from "@/services/arca-api";
 import {
   acknowledgeRecoveryCodes,
   authSessionReducer,
   checkSession,
   cancelTwoFactorSession,
   confirmTwoFactorSetup,
+  handleTwoFactorSetupRequired,
   initialAuthSessionState,
   signOut,
   retryTwoFactorSetup as retrySetup,
@@ -37,7 +38,17 @@ export function useAuthSession(redirect: PwaRedirect) {
       void checkSession(authApi, dispatch, redirect);
     }
 
-    return unregister;
+    const unregisterSetup = setTwoFactorSetupHandler(() => {
+      // Solo en una sesión ya iniciada; el login atiende su propio 403.
+      if (stateRef.current.status === "authenticated") {
+        void handleTwoFactorSetupRequired(authApi, dispatch);
+      }
+    });
+
+    return () => {
+      unregister();
+      unregisterSetup();
+    };
   }, [redirect]);
 
   const login = useCallback(

@@ -88,3 +88,10 @@ La feature deja fuera de alcance varios elementos que podrían parecer parte de 
 - Responsable de BD: DBR-006, aprobada por BD el 2026-11-02, ya refleja la falta de `created_by` en `tickets` y `staff_notifications` sin SoftDeletes (resolución 6). Este ADR no cambia el esquema.
 - Revisión obligatoria: al reactivar cualquiera de los diferidos, o al decidir crear `BaseModel`.
 - Enlaces: `apps/api/plan/009-ticket-sales.md` (Constitution Check y decisiones 1 y 5), `apps/api/tasks/009-ticket-sales.md` (T-05 y T-56), `apps/dashboard/plan/005-ticket-sales.md` (enlaza este ADR por el alcance de `api-009`; no tiene excepción propia), `docs/adr/0019-qr-svg-generation-api.md` y `docs/adr/0020-price-change-email-notifications.md`.
+
+## Nota de revisión (2026-11-20, excepción b) reactivada por `api-023`)
+
+- Jonathan autorizó el 2026-11-20 añadir esta nota. `apps/api/specs/023-fixed-roles-and-console-admins.md` reactiva `staff_notifications` para los avisos de cambios por consola (tipo `console_admin_change`), sin modelo `BaseModel` ni SoftDeletes. El modelo `StaffNotification` extiende `Model`.
+- Revisión exigida por este ADR: se revisa la excepción b) y se mantiene. La verificación de esquema de 2026-11-20 (solo lectura en `arca_pruebas`) indica que `staff_notifications.created_by` admite `NULL`, así que no hace falta columna nueva ni DBR para `api-023`. Si la tarea de verificación del responsable de BD (`apps/api/tasks/023-fixed-roles-and-console-admins.md`, T-01) encuentra lo contrario, se abre DBR antes de cualquier código.
+- Los avisos de consola no llevan SoftDeletes. Su contenido es mínimo (acción, correo afectado, origen, motivo y fecha) y no contiene contraseñas ni secretos 2FA.
+- Este ADR sigue en estado Aceptado; esta nota no cambia la decisión de a) ni de c).

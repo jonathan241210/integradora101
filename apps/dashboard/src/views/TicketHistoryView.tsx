@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { Badge, Button, Card, Field, SelectField } from "@arca/ui";
+import { Badge, Button, Card, Field, Pagination, SelectField } from "@arca/ui";
 import { CancelTicketDialog } from "@/components/CancelTicketDialog";
 import { DataTable, type DataTableColumn } from "@/components/DataTable";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { TableSkeleton } from "@/components/LoadingSkeletons";
 import { NoticeBar } from "@/components/NoticeBar";
-import { PaginationBar } from "@/components/PaginationBar";
 import { SectionHeading } from "@/components/SectionHeading";
 import { formatCount, formatCurrency } from "@/viewmodels/formatters";
 import {
@@ -14,7 +14,21 @@ import {
 } from "@/viewmodels/ticket-history";
 import type { TicketHistoryRowDto } from "@/viewmodels/ticket-types";
 
-export function TicketHistoryView({ state, actions }: TicketHistoryViewModel) {
+export function TicketHistoryView({
+  state,
+  actions,
+  reasons,
+  canCancel = true,
+  heading = true,
+}: TicketHistoryViewModel & {
+  /**
+   * Presentación de «Cancelar» por permiso `tickets.cancel`, no por `cancellable`
+   * (dashboard-020 RN-04, CA-08). La taquilla lo deja activo; «Reportes» lo apaga.
+   */
+  canCancel?: boolean;
+  /** Sin título cuando la vista va dentro de «Reportes» (que ya tiene el suyo). */
+  heading?: boolean;
+}) {
   const { query } = state;
   const [folio, setFolio] = useState(query.folio ?? "");
   const [status, setStatus] = useState<TicketStatusFilter>(query.status ?? "");
@@ -38,7 +52,7 @@ export function TicketHistoryView({ state, actions }: TicketHistoryViewModel) {
     {
       key: "purchased",
       header: "Fecha y hora",
-      render: (row) => formatTicketDateTime(row.purchased_at),
+      render: (row) => formatTicketDateTime(row.purchased_at, state.timezone),
     },
     { key: "adults", header: "Adultos", render: (row) => formatCount(row.adult_quantity) },
     { key: "children", header: "Niños", render: (row) => formatCount(row.child_quantity) },
@@ -55,10 +69,17 @@ export function TicketHistoryView({ state, actions }: TicketHistoryViewModel) {
     {
       key: "reason",
       header: "Motivo",
-      render: (row) => (row.status === "cancelled" ? row.cancellation_reason ?? "—" : "—"),
+      // Etiqueta que deriva la API (dashboard-016 CA-26) y el comentario guardado.
+      render: (row) =>
+        row.status === "cancelled"
+          ? [row.cancellation_reason_label, row.cancellation_reason].filter(Boolean).join(" · ") ||
+            "—"
+          : "—",
     },
     { key: "cashier", header: "Cajero", render: (row) => row.cashier_name ?? "—" },
-    {
+  ];
+
+  if (canCancel) columns.push({
       key: "actions",
       header: "Acciones",
       render: (row) =>
@@ -75,16 +96,21 @@ export function TicketHistoryView({ state, actions }: TicketHistoryViewModel) {
         ) : (
           "—"
         ),
-    },
-  ];
+  });
 
   return (
     <>
-      <SectionHeading
-        eyebrow="Taquilla / Historial"
-        title="Historial de boletos"
-        description="Consulta los boletos vendidos, filtra por folio, estado o fechas y cancela los del día cuando corresponda."
-      />
+      {heading && (
+        <SectionHeading
+          eyebrow={canCancel ? "Taquilla / Historial" : "Reportes / Historial"}
+          title="Historial de boletos"
+          description={
+            canCancel
+              ? "Consulta los boletos vendidos, filtra por folio, estado o fechas y cancela los del día cuando corresponda."
+              : "Consulta los boletos vendidos, filtra por folio, estado o fechas."
+          }
+        />
+      )}
 
       <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} />
 
@@ -144,6 +170,7 @@ export function TicketHistoryView({ state, actions }: TicketHistoryViewModel) {
           status={state.status}
           error={state.error}
           loadingText="Cargando el historial…"
+          skeleton={<TableSkeleton columns={columns} caption="Historial de boletos" label="Cargando el historial…" />}
           emptyText="No hay boletos que coincidan con los filtros."
           onRetry={actions.reload}
         />
@@ -157,7 +184,7 @@ export function TicketHistoryView({ state, actions }: TicketHistoryViewModel) {
           />
         )}
         {state.meta && state.status !== "error" && (
-          <PaginationBar
+          <Pagination
             page={state.meta.current_page}
             lastPage={state.meta.last_page}
             total={state.meta.total}
@@ -167,12 +194,16 @@ export function TicketHistoryView({ state, actions }: TicketHistoryViewModel) {
         )}
       </Card>
 
-      <CancelTicketDialog
-        cancel={state.cancel}
-        onReasonChange={actions.changeReason}
-        onConfirm={actions.confirmCancel}
-        onClose={actions.closeCancel}
-      />
+      {canCancel && (
+        <CancelTicketDialog
+          cancel={state.cancel}
+          reasons={reasons}
+          onReasonCodeChange={actions.changeReasonCode}
+          onReasonChange={actions.changeReason}
+          onConfirm={actions.confirmCancel}
+          onClose={actions.closeCancel}
+        />
+      )}
     </>
   );
 }

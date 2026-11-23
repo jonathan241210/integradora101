@@ -396,3 +396,7 @@ Máximo 8 por ronda (`AGENTS.md`).
 8. **Textos propuestos.** ¿Aprueba el responsable funcional los textos de este plan: el mensaje del diálogo de aceptar («…durante {N} días…» y «1 día»), el del diálogo de rechazar, el aviso «Petición aceptada.», «Reenviada 1 vez» y «Reenviada {n} veces», el fragmento de 120 caracteres y los mensajes de error de lista y detalle? **Resuelta (2026-11-13, Jonathan): se adoptan los textos propuestos** (opción propuesta por la sesión de documentación, aceptada por Jonathan).
 
 Decisiones tomadas en este plan (no preguntas): el ViewModel recarga el detalle tras aceptar o rechazar; `blob.type` debe empezar por `image/`; el GET de detalle se acepta como idempotente en StrictMode; `status` se omite en «Todas»; el icono nuevo es `camera`; no se modifica `PaginationBar`, `ConfirmDialog`, `image-field.ts`, `image-preview.ts` ni `http.ts`.
+
+## Nota 2026-11-21 (dashboard-020 rev. (d))
+
+`memory-review.ts` guarda `lastPage` y `total`; `MemoriesView` usa `Pagination` de `@arca/ui` con total. Ver `plan/020`.

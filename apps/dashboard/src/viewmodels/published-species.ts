@@ -44,6 +44,8 @@ export type PublishedSpeciesState = {
     status: "loading" | "ready" | "empty" | "error";
     items: PublishedSpeciesRowDto[];
     hasMore: boolean;
+    lastPage: number;
+    total: number;
     error: string;
     forbidden: boolean;
   };
@@ -94,7 +96,15 @@ export const initialPublishedSpeciesState: PublishedSpeciesState = {
   statusFilter: "",
   category: "",
   page: 1,
-  list: { status: "loading", items: [], hasMore: false, error: "", forbidden: false },
+  list: {
+    status: "loading",
+    items: [],
+    hasMore: false,
+    lastPage: 1,
+    total: 0,
+    error: "",
+    forbidden: false,
+  },
   thumbs: {},
   ...closedDetail,
   notice: "",
@@ -105,7 +115,7 @@ export type PublishedSpeciesAction =
   | { type: "category-changed"; category: "" | SpeciesCategory }
   | { type: "page-changed"; page: number }
   | { type: "list-loading" }
-  | { type: "list-loaded"; items: PublishedSpeciesRowDto[]; hasMore: boolean }
+  | { type: "list-loaded"; items: PublishedSpeciesRowDto[]; hasMore: boolean; lastPage: number; total: number }
   | { type: "list-failed"; message: string; forbidden: boolean }
   | { type: "thumbs-reset" }
   | { type: "thumb-changed"; id: number; photo: PhotoSlot }
@@ -160,6 +170,8 @@ export function publishedSpeciesReducer(
           status: action.items.length === 0 ? "empty" : "ready",
           items: action.items,
           hasMore: action.hasMore,
+          lastPage: action.lastPage,
+          total: action.total,
           error: "",
           forbidden: false,
         },
@@ -173,6 +185,8 @@ export function publishedSpeciesReducer(
           status: "error",
           items: [],
           hasMore: false,
+          lastPage: 1,
+          total: 0,
           error: action.message,
           forbidden: action.forbidden,
         },
@@ -368,7 +382,13 @@ export async function loadPublishedList(
 
     if (!ctx.isCurrent()) return;
 
-    ctx.dispatch({ type: "list-loaded", items: page.data, hasMore: page.meta.has_more });
+    ctx.dispatch({
+      type: "list-loaded",
+      items: page.data,
+      hasMore: page.meta.has_more === true,
+      lastPage: page.meta.last_page,
+      total: page.meta.total,
+    });
     await loadThumbs(ctx, page.data);
   } catch (error) {
     const described = describeSpeciesError(error, "published");

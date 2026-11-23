@@ -198,6 +198,12 @@ Una ampliación de `api-006` cambiaría el contrato que consume la app móvil. P
   8. **Acentos en los filtros.** **Resuelta, decisión del usuario 2026-11-11:** no se normalizan acentos; solo se quitan espacios sobrantes y se ignoran mayúsculas.
   9. **Despublicadas y app móvil.** **Resuelta, decisión del usuario 2026-11-12: no aplica a mobile, la publicación solo afecta al portal.** Mobile no tiene esta función; `api-006` no filtra por `is_published` y se mantiene así a propósito. El portal sí respeta `is_published` (CA-18).
 
+## Nota de revisión (2026-11-21, campo «Dato curioso»)
+
+- `GET /api/v1/published-species` añade la clave `fun_fact` solo a las especies visibles que tienen `fun_fact` en `published_fields` (`api-026` CA-11). No hay filtro por `fun_fact` (`api-026` RN-06).
+- Con el campo no seleccionado, la respuesta no cambia. Durante una actualización pendiente se muestra la versión publicada (`api-026` CA-12).
+- Cambio aditivo: CA-03 y CA-13 de esta spec se leen con esa clave; no cambian sus CA ni sus RN. Requiere DBR-025 en «Lista para backend» (RN-02 de esta spec). Estado de esta spec sin cambio.
+
 ## Revisión
 
 - Aprobadores y fecha: Jonathan (responsable de backend), 2026-11-12. Aprobado por: Jonathan (responsable de backend), 2026-11-12.

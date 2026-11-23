@@ -48,6 +48,12 @@ type UploadBoxProps = {
   error: string;
   onSelect: (file: File) => void;
   onRemove: () => void;
+  /** Opcionales: Noticias y Eventos usan los valores por defecto (dashboard-010 CA-81). */
+  accept?: string;
+  helpText?: string;
+  emptyLabel?: string;
+  changeLabel?: string;
+  removeLabel?: string;
 };
 
 /**
@@ -63,6 +69,11 @@ export function ImageUploadBoxView({
   handlers,
   onSelect,
   onRemove,
+  accept = IMAGE_ACCEPT_ATTRIBUTE,
+  helpText = IMAGE_HELP_TEXT,
+  emptyLabel = "Imagen (opcional)",
+  changeLabel = "Cambiar imagen",
+  removeLabel = "Quitar imagen",
 }: UploadBoxProps & {
   dragging: boolean;
   handlers: ReturnType<typeof createDropHandlers>;
@@ -87,7 +98,7 @@ export function ImageUploadBoxView({
         <input
           id={`${id}-input`}
           type="file"
-          accept={IMAGE_ACCEPT_ATTRIBUTE}
+          accept={accept}
           aria-describedby={describedBy}
           aria-invalid={error ? true : undefined}
           onChange={change}
@@ -101,9 +112,9 @@ export function ImageUploadBoxView({
             <Icon name="camera" />
           </span>
         )}
-        <strong>{previewUrl ? "Cambiar imagen" : "Imagen (opcional)"}</strong>
+        <strong>{previewUrl ? changeLabel : emptyLabel}</strong>
         <span id={`${id}-help`}>
-          {dragging ? "Suelta la imagen aquí" : IMAGE_HELP_TEXT}
+          {dragging ? "Suelta la imagen aquí" : helpText}
         </span>
       </label>
       {error && (
@@ -113,7 +124,7 @@ export function ImageUploadBoxView({
       )}
       {previewUrl && (
         <Button type="button" variant="secondary" onClick={onRemove}>
-          Quitar imagen
+          {removeLabel}
         </Button>
       )}
     </div>

@@ -24,6 +24,8 @@ const list = (has: boolean) =>
             status: "ready",
             items: [row({ has_pending_request: has })],
             hasMore: false,
+            lastPage: 1,
+            total: 0,
             error: "",
             forbidden: false,
           },

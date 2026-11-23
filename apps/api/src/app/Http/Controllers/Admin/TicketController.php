@@ -6,15 +6,16 @@ use App\Actions\Admin\Tickets\ListTicketHistoryAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Tickets\ListTicketsRequest;
 use App\Http\Resources\Admin\Tickets\TicketHistoryResource;
+use App\Support\BusinessTimezone;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class TicketController extends Controller
 {
     public function index(ListTicketsRequest $request, ListTicketHistoryAction $action): AnonymousResourceCollection
     {
-        // `timezone` se lee sin regla de validación: una zona inválida nunca produce 422 (api-007 RN-14).
+        // El `timezone` del cliente se ignora (api-025 RN-04); la respuesta informa la zona de negocio (CA-12).
         return TicketHistoryResource::collection(
-            $action->execute($request->user(), $request->validated(), $request->input('timezone')),
-        );
+            $action->execute($request->user(), $request->validated()),
+        )->additional(['timezone' => BusinessTimezone::name()]);
     }
 }

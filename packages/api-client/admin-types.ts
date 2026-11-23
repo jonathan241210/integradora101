@@ -3,6 +3,7 @@
  * `snake_case`, tal como los entrega la API. Los importes llegan como cadena
  * con dos decimales y el cliente nunca los suma ni los promedia.
  */
+import type { CancellationReasonCode } from "./ticket-sales-types";
 
 export type PageMeta = {
   current_page: number;
@@ -35,6 +36,8 @@ export type StaffAccountDto = {
   is_active: boolean;
   last_login_at: string | null;
   two_factor_confirmed: boolean;
+  /** `true` en cuentas `admin`: solo lectura, se gestionan por consola (api-023 CA-13). */
+  managed_by_console: boolean;
 };
 
 export type StaffDepartmentOption = {
@@ -44,9 +47,31 @@ export type StaffDepartmentOption = {
   suggested_role: string | null;
 };
 
+/** Permiso etiquetado en español por la API (api-023 CA-10). */
+export type StaffPermissionOption = {
+  name: string;
+  label: string;
+};
+
+/** Rol asignable de `users/options`; nunca incluye `admin` (api-023 CA-10). */
+export type StaffAssignableRole = StaffRoleOption & {
+  two_factor_required: boolean;
+  permissions: StaffPermissionOption[];
+};
+
 export type StaffOptionsDto = {
   departments: StaffDepartmentOption[];
-  roles: StaffRoleOption[];
+  roles: StaffAssignableRole[];
+};
+
+/** Aviso de un cambio de cuentas admin hecho por consola (api-023 CA-25). */
+export type ConsoleNoticeDto = {
+  id: number;
+  action: string;
+  account_email: string;
+  origin: string;
+  reason: string;
+  created_at: string;
 };
 
 export type StaffListQuery = {
@@ -201,7 +226,7 @@ export type SalesTotalsDto = {
 };
 
 export type DashboardSummaryDto = {
-  /** Zona con la que la API calculó el panel (no se muestra). */
+  /** Zona de negocio con la que la API calculó el panel (`api-025`; no se muestra). */
   timezone?: string;
   today: SalesTotalsDto;
   last_7_days: SalesTotalsDto;
@@ -216,8 +241,6 @@ export type TicketReportQuery = {
   from?: string;
   to?: string;
   page?: number;
-  /** Zona IANA; si falta, el paquete usa la del dispositivo. */
-  timezone?: string;
 };
 
 export type DailySalesDto = SalesTotalsDto & { date: string };
@@ -248,10 +271,206 @@ export type TicketReportDto = {
 
 export type ReportExportFormat = "csv" | "xlsx" | "pdf";
 
-/** Página con `meta.has_more` (api-014: sin total ni última página). */
+/**
+ * Reporte de cancelaciones (`api-022`). Importes en cadenas con dos decimales; fechas
+ * `purchased_at`/`cancelled_at` en ISO 8601 UTC. Todo total, conciliación, minuto, porcentaje
+ * y señal lo calcula la API. Revisión 2026-11-21 (c): se retiran los campos de alerta antiguos
+ * (el semáforo es la única alerta; ya no hay alerta por boleto ni por cajero) y se añaden `late_cancellation`, `signal_codes`,
+ * `days_to_review` y `reasons[].folios`.
+ */
+export type CancellationReportQuery = {
+  period: ReportPeriodType;
+  date?: string;
+  from?: string;
+  to?: string;
+  cashier_id?: number;
+  reason_code?: CancellationReasonCode;
+  /** Página de filas (api-022 CA-27, 50 por página); la exportación la ignora. */
+  page?: number;
+};
+
+export type CancellationRowDto = {
+  folio: number | string;
+  adult_quantity: number;
+  child_quantity: number;
+  total_amount: string;
+  /** `null` si la API no tiene la fecha (dato histórico incompleto). */
+  purchased_at: string | null;
+  cancelled_at: string | null;
+  cashier_name: string | null;
+  cancelled_by_name: string | null;
+  reason_code: CancellationReasonCode | null;
+  reason_label: string;
+  comment: string | null;
+  /** `null` si falta alguna de las dos fechas. */
+  minutes_to_cancel: number | null;
+  /** Cancelada más de 30 min después de la venta (la API decide el límite). */
+  late_cancellation: boolean;
+  /** Códigos de las señales del semáforo de su cajero y día en las que participa; vacío si ninguna. */
+  signal_codes: string[];
+};
+
+export type CancellationReconciliationDayDto = {
+  date: string;
+  gross: string;
+  cancelled: string;
+  net: string;
+  balanced: boolean;
+};
+
+/** Días del cajero en el periodo por nivel del semáforo (la API los cuenta). */
+export type CancellationDaysToReviewDto = { attention: number; review: number };
+
+export type CancellationReconciliationCashierDto = {
+  /** `null` con el nombre «Sin cajero registrado» (`api-022`). */
+  cashier_id: number | null;
+  cashier_name: string;
+  gross: string;
+  cancelled: string;
+  net: string;
+  balanced: boolean;
+  active_days: string[];
+  sold_tickets: number;
+  cancel_percent: number | string;
+  days_to_review: CancellationDaysToReviewDto;
+};
+
+/** Nivel del semáforo de un cajero y día; lo decide `api-027` (el cliente no lo calcula). */
+export type CancellationTrafficLight = "normal" | "review" | "attention";
+
+export type CancellationReviewStatus = "reviewed_ok" | "clarification_required";
+
+export type CancellationSignalReasonDto = {
+  code: string;
+  label: string;
+  count: number;
+  detail: string;
+  /** Folios (`tickets.id` como texto, no `qr_code`) de los boletos que activan la señal. */
+  folios: string[];
+};
+
+/** Revisión vigente o entrada del historial (`api-027`). */
+export type CancellationReviewDto = {
+  id: number;
+  status: CancellationReviewStatus;
+  status_label: string;
+  note: string;
+  reviewed_by_name: string | null;
+  reviewed_at: string | null;
+};
+
+/** Semáforo por cajero y día (`reconciliation.cashier_days[]`). */
+export type CancellationTrafficLightDto = {
+  cashier_id: number | null;
+  cashier_name: string;
+  date: string;
+  traffic_light: CancellationTrafficLight | null;
+  traffic_light_label: string | null;
+  signals_count: number;
+  /** Cifras del día (`api-027`, aditivas); el cliente solo las muestra. */
+  sold_tickets?: number;
+  cancelled_tickets?: number;
+  cancel_percent?: number | string;
+  reasons: CancellationSignalReasonDto[];
+  reason_sentence: string | null;
+  action: string;
+  review: CancellationReviewDto | null;
+};
+
+export type CancellationLegendDto = {
+  code: string;
+  label: string;
+  explanation: string;
+  limit: string;
+};
+
+/**
+ * Nivel del semáforo con su condición, calculado por la API desde `attention_min_signals`
+ * (`GET reports/cancellations` → `data.levels[]`). El cliente lo pinta tal como llega.
+ */
+export type CancellationLevelDto = {
+  code: CancellationTrafficLight;
+  label: string;
+  condition: string;
+};
+
+export type CancellationReviewInput = {
+  cashier_id: number;
+  business_date: string;
+  status: CancellationReviewStatus;
+  note: string;
+};
+
+export type CancellationReportDto = {
+  period: {
+    type: ReportPeriodType;
+    from: string;
+    to: string;
+    label: string;
+    previous_date: string | null;
+    next_date: string | null;
+    timezone?: string;
+  };
+  totals: {
+    cancelled_tickets: number;
+    cancelled_amount: string;
+    by_cashier: {
+      cashier_id: number | null;
+      cashier_name: string;
+      cancelled_tickets: number;
+      cancelled_amount: string;
+    }[];
+    by_reason: {
+      reason_code: CancellationReasonCode | null;
+      reason_label: string;
+      cancelled_tickets: number;
+      cancelled_amount: string;
+    }[];
+  };
+  reconciliation: {
+    days: CancellationReconciliationDayDto[];
+    cashiers: CancellationReconciliationCashierDto[];
+    /** Semáforo por cajero y día (`api-027`); ausente con una API anterior. */
+    cashier_days?: CancellationTrafficLightDto[];
+  };
+  /** Leyenda y aviso del semáforo (`api-027`). */
+  legend?: CancellationLegendDto[];
+  /** Niveles con su condición, calculados en la API; ausente o vacío: no se muestra la tabla. */
+  levels?: CancellationLevelDto[];
+  disclaimer?: string;
+  rows: CancellationRowDto[];
+  /** `meta` de las filas (api-022 rev. 2026-11-21), hermano de `data` en la respuesta. */
+  meta?: PageMeta;
+};
+
+/** Cajero del filtro (`GET reports/cancellations/cashiers`, solo `id` y nombre). */
+export type CancellationCashierOption = { id: number; name: string };
+
+/**
+ * Página solo con `meta.has_more` (respaldo; api-014 original, sin total).
+ * Las listas actuales entregan total: ver `TotalPage`.
+ */
 export type HasMorePage<T> = {
   data: T[];
   meta: { has_more: boolean };
+};
+
+/**
+ * `meta` de las listas con total (api-012 rev., api-014 rev. 2026-11-21):
+ * `has_more` es opcional (la API lo conserva; si falta se deduce de las páginas).
+ */
+export type ListPageMeta = {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+  has_more?: boolean;
+};
+
+/** Página con total: momentos, solicitudes y publicadas del panel, y «Mis solicitudes». */
+export type TotalPage<T> = {
+  data: T[];
+  meta: ListPageMeta;
 };
 
 export type MemoryReviewStatus = "submitted" | "in_review" | "accepted" | "rejected";
@@ -259,7 +478,12 @@ export type MemoryReviewStatus = "submitted" | "in_review" | "accepted" | "rejec
 /** Valores de `rejected_fields` (api-010 RN-20): la foto y la opinión. */
 export type MemoryRejectedField = "image" | "content";
 
-export type MemoryReviewListQuery = { status?: MemoryReviewStatus; page?: number };
+export type MemoryReviewListQuery = {
+  status?: MemoryReviewStatus;
+  page?: number;
+  /** Filas por página (1..50; la API usa 10 por defecto). */
+  limit?: number;
+};
 
 /** Fila de la lista de revisión (api-010 CA-07, M-1). Sin datos del visitante. */
 export type MemoryReviewSummaryDto = {
@@ -306,7 +530,11 @@ export type SpeciesPublicationStatus =
   | "published"
   | "unpublished";
 /** Claves de la ficha pública que la API acepta hoy (api-014 RN-13). */
-export type SpeciesFichaField = "scientific_name" | "origin" | "habitat";
+export type SpeciesFichaField =
+  | "scientific_name"
+  | "origin"
+  | "habitat"
+  | "fun_fact";
 
 export type SpeciesRequestListQuery = {
   status?: SpeciesRequestStatus;
@@ -345,6 +573,8 @@ export type SpeciesRequestDetailDto = {
     published_at: string | null;
     publication_status: SpeciesPublicationStatus;
     has_image: boolean;
+    /** api-026 CA-15: dato curioso vigente de la especie. */
+    fun_fact?: string | null;
   };
   proposed: {
     scientific_name: string | null;
@@ -353,6 +583,8 @@ export type SpeciesRequestDetailDto = {
     category: SpeciesCategory | null;
     published_fields: string[];
     has_new_photo: boolean;
+    /** api-026 CA-15: dato curioso que se publicaría. */
+    fun_fact?: string | null;
   };
 };
 
@@ -364,6 +596,8 @@ export type SpeciesRequestUpdateInput = {
   scientific_name?: string;
   habitat?: string;
   origin?: string;
+  /** api-026 CA-05: dato curioso (20 a 500 caracteres si se muestra). */
+  fun_fact?: string;
   category?: SpeciesCategory;
   published_fields?: SpeciesFichaField[];
   image?: File | null;
@@ -403,8 +637,21 @@ export type SpeciesPublicationDetailDto = {
   unpublished_at: string | null;
   /** La API puede enviar null en una especie sin ficha publicada. */
   published_fields: string[] | null;
+  /** api-026 CA-15: dato curioso de la especie. */
+  fun_fact?: string | null;
   has_image: boolean;
   has_pending_request: boolean;
 };
 
 export type SpeciesPublicationUpdateInput = SpeciesRequestUpdateInput;
+
+/**
+ * Conteos de pendientes de revisión (api-024). Cada clave solo llega si el
+ * usuario tiene el permiso correspondiente; van en la raíz, sin `data`.
+ */
+export type PendingReviewCountsDto = {
+  species_requests?: number;
+  memories?: number;
+  /** Días de cancelaciones en Atención sin revisar (`api-027`); solo con `reports.cancellations.view`. */
+  cancellation_days?: number;
+};

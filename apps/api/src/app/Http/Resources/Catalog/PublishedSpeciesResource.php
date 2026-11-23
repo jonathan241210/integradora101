@@ -19,6 +19,7 @@ class PublishedSpeciesResource extends JsonResource
         'scientific_name' => 'scientific_name',
         'origin' => 'distribution',
         'habitat' => 'habitat',
+        'fun_fact' => 'fun_fact',
     ];
 
     /**

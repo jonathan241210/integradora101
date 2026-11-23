@@ -144,6 +144,13 @@ Decisión del responsable, aprobada con esta spec por Jonathan el 2026-11-12. S�
 - **CA-05 (sin datos internos):** `image_url` no revela rutas absolutas del servidor, credenciales ni URLs con firma; es la URL pública del disco (`api-013` CA-23).
 - **Infraestructura:** `storage:link` crea el enlace `public/media`, y los momentos aceptados se publican desde la carpeta versionada `media/memories/` (`api-013` D-02). `CORS_ALLOWED_ORIGINS` no cambia: el portal consume el JSON, y `<img>` no necesita CORS (`api-013` RN-12).
 
+## Revisión 2026-11-21 (aprobada por Jonathan): paginación con total
+
+Jonathan aprobó el 2026-11-21 que todas las listas paginadas den el total de páginas, para que los clientes muestren números de página de forma coherente. Aplica a la lista de moderación de momentos `GET /api/v1/admin/memories` (la lectura pública `GET /api/v1/memories` no cambia: sigue con `meta {page, limit, has_more}`). No cambia el estado de la spec ni renumera CA.
+
+- **CA-13 (moderación con total):** Dada la lista `GET /api/v1/admin/memories`, cuando se consulta, entonces `meta` trae `current_page`, `last_page`, `per_page` y `total` (mismo formato que Usuarios y el historial de boletos) y conserva `has_more`; `per_page` es el `limit` pedido (1 a 50, por defecto 10), `last_page` es `ceil(total / per_page)` (mínimo 1) y `total` respeta el filtro `status`. El orden es `created_at` descendente con desempate por `id` descendente. Se sustituyen `meta.page` y `meta.limit` por `current_page` y `per_page`.
+- **CA-14 (página absurda con total):** Dada una `page` mayor que 100000, cuando se consulta la lista de moderación, entonces responde `200` con `data` vacío, `has_more` en `false` y el `total` real; sin `500`. `limit` mayor que 50 sigue respondiendo `422`.
+
 ## Revisión
 
 - Aprobadores y fecha: Jonathan (responsable de backend), 2026-11-12.

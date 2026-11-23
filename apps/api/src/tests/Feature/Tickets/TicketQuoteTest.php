@@ -6,7 +6,7 @@ class TicketQuoteTest extends TicketFeatureTestCase
 {
     public function test_ca46_ticket_sales_quote_matches_real_sale(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier, '25.00', '16.00');
         $payload = ['adult_quantity' => 2, 'child_quantity' => 1];
 
@@ -32,7 +32,7 @@ class TicketQuoteTest extends TicketFeatureTestCase
 
     public function test_ca46_ticket_sales_quote_uses_cents_without_float(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier, '0.10', '0.20');
 
         $this->actAs($cashier)->postJson('/api/v1/admin/tickets/quote', ['adult_quantity' => 3, 'child_quantity' => 3])
@@ -44,7 +44,7 @@ class TicketQuoteTest extends TicketFeatureTestCase
 
     public function test_ca46_ticket_sales_quote_with_zero_quantity_in_one_type(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
 
         $this->actAs($cashier)->postJson('/api/v1/admin/tickets/quote', ['adult_quantity' => 0, 'child_quantity' => 2])

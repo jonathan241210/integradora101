@@ -11,19 +11,23 @@ export type TicketReportState = {
   status: "loading" | "ready" | "error";
   report: TicketReportDto | null;
   error: string;
+  /** 422 de periodo, por campo; se muestra junto al selector (dashboard-020 CA-15). */
+  fieldErrors: Record<string, string[]>;
   query: TicketReportQuery;
   exporting: ReportExportFormat | null;
   exportError: string;
+  /** 422 de formato o tope de filas, junto al grupo de exportación (CA-14). */
+  exportFieldErrors: Record<string, string[]>;
 };
 
 export type TicketReportAction =
   | { type: "query-changed"; changes: Partial<TicketReportQuery> }
   | { type: "load-started" }
   | { type: "loaded"; report: TicketReportDto }
-  | { type: "load-failed"; message: string }
+  | { type: "load-failed"; message: string; fieldErrors?: Record<string, string[]> }
   | { type: "export-started"; format: ReportExportFormat }
   | { type: "export-finished" }
-  | { type: "export-failed"; message: string };
+  | { type: "export-failed"; message: string; fieldErrors?: Record<string, string[]> };
 
 export type TicketReportDispatch = (action: TicketReportAction) => void;
 
@@ -31,9 +35,11 @@ export const initialTicketReportState: TicketReportState = {
   status: "loading",
   report: null,
   error: "",
+  fieldErrors: {},
   query: { period: "week", page: 1 },
   exporting: null,
   exportError: "",
+  exportFieldErrors: {},
 };
 
 export function ticketReportReducer(
@@ -45,20 +51,33 @@ export function ticketReportReducer(
       return {
         ...state,
         query: { ...state.query, ...action.changes },
+        fieldErrors: {},
         exportError: "",
+        exportFieldErrors: {},
       };
     case "load-started":
-      return { ...state, status: "loading", error: "" };
+      return { ...state, status: "loading", error: "", fieldErrors: {} };
     case "loaded":
-      return { ...state, status: "ready", report: action.report, error: "" };
+      return { ...state, status: "ready", report: action.report, error: "", fieldErrors: {} };
     case "load-failed":
-      return { ...state, status: "error", error: action.message };
+      return {
+        ...state,
+        status: "error",
+        error: action.message,
+        fieldErrors: action.fieldErrors ?? {},
+      };
     case "export-started":
-      return { ...state, exporting: action.format, exportError: "" };
+      return { ...state, exporting: action.format, exportError: "", exportFieldErrors: {} };
     case "export-finished":
       return { ...state, exporting: null };
     case "export-failed":
-      return { ...state, exporting: null, exportError: action.message };
+      return {
+        ...state,
+        exporting: null,
+        // Un 422 va junto al grupo; el fallo de red o 5xx es aviso emergente (RN-07).
+        exportError: Object.keys(action.fieldErrors ?? {}).length > 0 ? "" : action.message,
+        exportFieldErrors: action.fieldErrors ?? {},
+      };
     default:
       return state;
   }
@@ -99,7 +118,11 @@ export async function loadTicketReport(
     const described = describeApiError(error);
 
     if (isCurrent() && !described.unauthorized) {
-      dispatch({ type: "load-failed", message: described.message });
+      dispatch({
+        type: "load-failed",
+        message: described.message,
+        fieldErrors: described.fieldErrors,
+      });
     }
   }
 }
@@ -111,17 +134,12 @@ export async function exportTicketReport(
   query: TicketReportQuery,
   format: ReportExportFormat,
   save: SaveFile,
-  report: TicketReportDto | null = null,
 ): Promise<boolean> {
   dispatch({ type: "export-started", format });
 
-  // Misma zona que el reporte visible (la que devolvió la API); un timezone
-  // explícito en la consulta prevalece.
-  const timezone = query.timezone || report?.period.timezone;
-  const exportQuery = timezone ? { ...query, timezone } : query;
-
+  // Solo periodo y formato: la zona la decide la API (dashboard-019 CA-05).
   try {
-    const file = await api.reports.exportTickets(exportQuery, format);
+    const file = await api.reports.exportTickets(query, format);
 
     save(file);
     dispatch({ type: "export-finished" });
@@ -133,7 +151,11 @@ export async function exportTicketReport(
     dispatch(
       described.unauthorized
         ? { type: "export-finished" }
-        : { type: "export-failed", message: described.message },
+        : {
+            type: "export-failed",
+            message: described.message,
+            fieldErrors: described.fieldErrors,
+          },
     );
 
     return false;

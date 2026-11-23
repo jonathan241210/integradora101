@@ -184,3 +184,5 @@ Cobertura: CA vigentes sin tarea = **0** (19 de 19: CA-01 a CA-19). RN vigentes 
 - Pendientes: T-17 (verificación manual en navegador), T-18 (`git diff --check`, `/verify` y CI), T-19 (PR y estado de la spec), T-01 (registro en el PR).
 
 Estado final de estas tareas: **En progreso** (plan y tasks aprobados por Jonathan, 2026-11-13). La spec sigue **Aprobada**.
+
+- [x] **T-20** (CA-49): paginación con total en Momentos (tarea T-28 de `dashboard-020`).

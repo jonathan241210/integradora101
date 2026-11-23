@@ -1,12 +1,12 @@
-import type { FormEvent, ReactNode } from "react";
-import { Button, Dialog } from "@arca/ui";
+import type { ReactNode } from "react";
+import { ConfirmDialog as SharedConfirmDialog } from "@arca/ui";
 import { ActionError } from "./DashboardNotifications";
 import type { ConfirmationCopy } from "@/viewmodels/confirmation";
 
 /**
- * Diálogo de confirmación explícita (RN-03) sobre el `Dialog` de `@arca/ui`
- * (`<dialog>` modal: foco atrapado y cierre con Escape). `idleTitle` mantiene
- * un identificador único mientras está cerrado.
+ * Envoltorio delgado del `ConfirmDialog` de `@arca/ui` (dashboard-020 rev. (d)):
+ * conserva el ancho propio del dashboard (`confirm-dialog`) y presenta el error
+ * con `ActionError` (regla de mensajes), que es lo único que depende de la app.
  */
 export function ConfirmDialog({
   copy,
@@ -28,38 +28,18 @@ export function ConfirmDialog({
   onCancel: () => void;
   children?: ReactNode;
 }) {
-  const submit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!busy && !confirmDisabled) onConfirm();
-  };
-
   return (
-    <Dialog
-      open={copy !== null}
-      title={copy?.title ?? idleTitle}
-      onClose={onCancel}
+    <SharedConfirmDialog
+      copy={copy}
+      idleTitle={idleTitle}
+      busy={busy}
+      confirmDisabled={confirmDisabled}
+      error={<ActionError message={error} inDialog />}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
       className="confirm-dialog"
     >
-      {copy && (
-        <form className="dialog-form" onSubmit={submit}>
-          <p className="confirm-dialog__message">{copy.message}</p>
-          {children}
-          <ActionError message={error} inDialog />
-          <div className="dialog-actions">
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={busy}
-              onClick={onCancel}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" variant={copy.danger ? "danger" : "primary"} disabled={busy || confirmDisabled}>
-              {busy ? "Procesando…" : copy.confirmLabel}
-            </Button>
-          </div>
-        </form>
-      )}
-    </Dialog>
+      {children}
+    </SharedConfirmDialog>
   );
 }

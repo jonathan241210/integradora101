@@ -3,7 +3,6 @@ import { fileURLToPath } from "node:url";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { FormPanel } from "../components/FormPanel";
-import { InlineConfirm, cancelOnEscape } from "../components/InlineConfirm";
 import { createDropHandlers, ImageUploadBoxView } from "../components/ImageUploadBox";
 import { applyFocus, createFocusRegistry, decideFocus, triggerKey } from "../components/inline-focus";
 import type { ReactElement, ReactNode } from "react";
@@ -74,8 +73,8 @@ const newsActions = {
 } as NewsViewModel["actions"];
 const eventActions = newsActions as unknown as EventsViewModel["actions"];
 const staffActions: StaffAccountsViewModel["actions"] = {
-  changeQuery: vi.fn(), reload: vi.fn(), dismissNotice: vi.fn(), toggleForm: vi.fn(), changeForm: vi.fn(),
-  changeDepartment: vi.fn(), startEdit: vi.fn(), cancelEdit: vi.fn(), submit: vi.fn(), openAction: vi.fn(),
+  changeQuery: vi.fn(), reload: vi.fn(), reloadOptions: vi.fn(), dismissNotice: vi.fn(), toggleForm: vi.fn(), changeForm: vi.fn(),
+  changeDepartment: vi.fn(), changeRole: vi.fn(), startEdit: vi.fn(), cancelEdit: vi.fn(), submit: vi.fn(), openAction: vi.fn(),
   closeAction: vi.fn(), confirmAction: vi.fn(),
 };
 
@@ -103,7 +102,7 @@ const renderEvents = (state = eventsReady()) => renderToStaticMarkup(<EventsView
 const renderUsers = (state = staffReady()) => renderToStaticMarkup(<UsersView state={state} actions={staffActions} />);
 
 describe("CA-01 inline-content-forms", () => {
-  it("Noticias, Eventos y Usuarios muestran el formulario fijo sin ventana emergente", () => {
+  it("Noticias, Eventos y Usuarios muestran el formulario fijo, fuera de cualquier ventana emergente", () => {
     const views = [
       renderNews(),
       renderNews({ ...newsReady(), pendingAction: { type: "delete", id: 11 } }),
@@ -116,9 +115,9 @@ describe("CA-01 inline-content-forms", () => {
     for (const markup of views) {
       expect(markup).toContain("<form");
       expect(markup).toContain("form-panel");
-      expect(markup).not.toContain("<dialog");
       expect(markup).not.toContain("form-dialog");
-      expect(markup).not.toContain("confirm-dialog");
+      // dashboard-020 revisión 2026-11-21 (b): solo la confirmación es modal; el formulario la precede.
+      if (markup.includes("<dialog")) expect(markup.indexOf("<form")).toBeLessThan(markup.indexOf("<dialog"));
     }
     expect(renderNews()).toContain('for="news-title"');
     expect(renderEvents()).toContain('for="event-name"');
@@ -505,7 +504,7 @@ describe("CA-09 inline-content-forms", () => {
     const activate = renderNews({ ...news.state, items: [{ ...savedNews, is_active: false }] });
     expect(activate).toMatch(/<dialog[^>]*aria-modal="true"[\s\S]*¿Activar la noticia «Nace una cría de jaguar»\? Volverá a mostrarse en el portal público\./);
     const cancelled = newsReducer(news.state, { type: "action-closed" });
-    expect(renderNews(cancelled)).not.toContain("<dialog");
+    expect(renderNews(cancelled)).not.toContain("confirm-dialog__message");
     expect(renderEvents(events.state)).toContain("¿Activar el evento «Noche de safari»?");
     expect(renderUsers(users.state)).toContain("¿Activar la cuenta de Luis Soto?");
     expect(getNewsConfirmation("status", savedNews)?.confirmLabel).toBe("Confirmar");
@@ -526,36 +525,6 @@ describe("CA-09 inline-content-forms", () => {
 
 describe("CA-12 inline-content-forms", () => {
   const copy = { label: "Confirmar eliminar la noticia X", message: "¿Eliminar?", confirmLabel: "Confirmar", danger: true };
-
-  it("la confirmación es un grupo etiquetado con Cancelar antes que Confirmar", () => {
-    const markup = renderToStaticMarkup(
-      <InlineConfirm copy={copy} busy={false} onConfirm={() => undefined} onCancel={() => undefined} />,
-    );
-
-    expect(markup).toContain('role="group"');
-    expect(markup).toContain('aria-label="Confirmar eliminar la noticia X"');
-    expect(markup.indexOf(">Cancelar<")).toBeLessThan(markup.indexOf(">Confirmar<"));
-    expect(markup).not.toContain("tabindex=\"-1\"");
-    expect(styles).toMatch(/\.inline-confirm:focus-within/);
-  });
-
-  it("Escape se ignora mientras hay una petición en curso", () => {
-    const onCancel = vi.fn();
-    const stopPropagation = vi.fn();
-
-    cancelOnEscape({ key: "Escape", stopPropagation }, onCancel, true);
-    expect(onCancel).not.toHaveBeenCalled();
-
-    cancelOnEscape({ key: "Escape", stopPropagation }, onCancel, false);
-    expect(onCancel).toHaveBeenCalledOnce();
-
-    const busyMarkup = renderToStaticMarkup(
-      <InlineConfirm copy={copy} busy onConfirm={() => undefined} onCancel={() => undefined} />,
-    );
-
-    expect(busyMarkup).toContain("Procesando…");
-    expect(busyMarkup.match(/disabled=""/g)).toHaveLength(2);
-  });
 
   it("al cancelar, con Escape o al confirmar el foco vuelve al botón disparador", () => {
     const registry = createFocusRegistry();
@@ -624,19 +593,7 @@ describe("CA-12 inline-content-forms", () => {
     expect(firstField.focus).toHaveBeenCalledOnce();
   });
 
-  it("Escape cancela y otras teclas no", () => {
-    const onCancel = vi.fn();
-    const stopPropagation = vi.fn();
-
-    cancelOnEscape({ key: "Enter", stopPropagation }, onCancel);
-    cancelOnEscape({ key: "Tab", stopPropagation }, onCancel);
-    expect(onCancel).not.toHaveBeenCalled();
-
-    cancelOnEscape({ key: "Escape", stopPropagation }, onCancel);
-    expect(onCancel).toHaveBeenCalledOnce();
-  });
-
-  it("solo hay una acción en línea abierta a la vez en cada sección", () => {
+  it("solo hay una confirmación abierta a la vez en cada sección", () => {
     const news = createHarness(newsReducer, newsReady());
     const users = createHarness<StaffState, StaffAction>(staffAccountsReducer, staffReady());
 
@@ -650,7 +607,7 @@ describe("CA-12 inline-content-forms", () => {
     const newsMarkup = renderNews(news.state);
     expect(newsMarkup.match(/<dialog\b/g)).toHaveLength(1);
     expect(newsMarkup).not.toContain('role="group"');
-    expect(renderUsers(users.state).match(/role="group"/g)).toHaveLength(1);
+    expect(renderUsers(users.state).match(/<dialog\b/g)).toHaveLength(1);
   });
 });
 
@@ -799,7 +756,7 @@ describe("CA-07 inline-content-forms · errores del formulario y de las acciones
 
     expect(markup).toContain("La contraseña inicial es muy débil.");
     expect(markup).toContain('id="staff-password-error"');
-    expect(markup).not.toContain('id="staff-7-new-password-error"');
+    expect(markup).not.toContain('id="staff-action-new-password-error"');
     expect(h.state.fieldErrors.password).toEqual(["La contraseña inicial es muy débil."]);
     expect(h.state.actionFieldErrors).toEqual({});
 
@@ -808,7 +765,7 @@ describe("CA-07 inline-content-forms · errores del formulario y de las acciones
     markup = renderUsers(h.state);
 
     expect(markup).toContain("La nueva contraseña repite la anterior.");
-    expect(markup).toContain('id="staff-7-new-password-error"');
+    expect(markup).toContain('id="staff-action-new-password-error"');
     expect(markup).toContain("La contraseña inicial es muy débil.");
     expect(h.state.fieldErrors.password).toEqual(["La contraseña inicial es muy débil."]);
     expect(h.state.actionFieldErrors.password).toEqual(["La nueva contraseña repite la anterior."]);

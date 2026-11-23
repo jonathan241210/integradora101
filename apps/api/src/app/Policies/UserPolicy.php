@@ -2,7 +2,8 @@
 
 namespace App\Policies;
 
-use App\Actions\Admin\Users\ResolveManageableRolesAction;
+use App\Actions\Admin\Users\ResolveAssignableRolesAction;
+use App\Actions\Admin\Users\ResolveVisibleRolesAction;
 use App\Models\User;
 
 class UserPolicy
@@ -24,12 +25,12 @@ class UserPolicy
 
     public function assignRole(User $actor, string $role): bool
     {
-        return in_array($role, app(ResolveManageableRolesAction::class)->execute($actor), true);
+        return in_array($role, app(ResolveAssignableRolesAction::class)->execute($actor), true);
     }
 
     private function manages(User $actor, User $target): bool
     {
-        $roles = app(ResolveManageableRolesAction::class)->execute($actor);
+        $roles = app(ResolveVisibleRolesAction::class)->execute($actor);
 
         $names = $target->roles->pluck('name');
 

@@ -2,36 +2,28 @@
 
 namespace App\Actions\Admin\Tickets;
 
-use App\Actions\Admin\Reports\ResolveRequestedTimezoneAction;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Support\BusinessTimezone;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListTicketHistoryAction
 {
-    /** Roles con lectura de todos los boletos (api-009 RN-17); cualquier otro ve solo los suyos. */
-    private const FULL_READ_ROLES = ['admin', 'zoo-admin'];
-
-    public function __construct(
-        private IsTicketCancellableAction $cancellable,
-        private ResolveRequestedTimezoneAction $resolveTimezone,
-    ) {}
+    public function __construct(private IsTicketCancellableAction $cancellable) {}
 
     /**
      * @param  array{folio?: int|string|null, status?: string|null, from?: string|null, to?: string|null, per_page?: int|string|null}  $filters
      */
-    public function execute(User $user, array $filters, mixed $requestedTimezone = null): LengthAwarePaginator
+    public function execute(User $user, array $filters): LengthAwarePaginator
     {
-        // Solo interpreta from/to; `cancellable` usa la zona del zoológico (RN-16).
-        $timezone = $this->resolveTimezone->execute($requestedTimezone);
-
         $query = Ticket::query()
             ->with('cashier:id,first_name,last_name,second_last_name')
             ->orderByDesc('purchased_at')
             ->orderByDesc('id');
 
-        if (! $user->hasAnyRole(self::FULL_READ_ROLES)) {
+        // api-023 RN-03: la lectura total es un permiso (`tickets.view-all`); cualquier otro ve solo los suyos.
+        if (! $user->can('tickets.view-all')) {
             $query->where('cashier_id', $user->id);
         }
 
@@ -42,10 +34,10 @@ class ListTicketHistoryAction
             $query->where('status', $filters['status']);
         }
         if (! empty($filters['from'])) {
-            $query->where('purchased_at', '>=', CarbonImmutable::parse($filters['from'].' 00:00:00', $timezone)->utc());
+            $query->where('purchased_at', '>=', BusinessTimezone::startOfDayUtc($filters['from']));
         }
         if (! empty($filters['to'])) {
-            $query->where('purchased_at', '<', CarbonImmutable::parse($filters['to'].' 00:00:00', $timezone)->addDay()->utc());
+            $query->where('purchased_at', '<', BusinessTimezone::endOfDayUtc($filters['to']));
         }
 
         $perPage = min(max((int) ($filters['per_page'] ?? 25), 1), 100);

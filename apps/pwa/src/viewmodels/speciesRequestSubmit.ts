@@ -8,6 +8,7 @@ import {
   FORBIDDEN_MESSAGE,
   fieldKeys,
   validateDraft,
+  visibleTextFields,
   type FieldErrors,
   type SpeciesRequestDraft,
 } from '@/viewmodels/speciesRequestForm';
@@ -72,9 +73,7 @@ export async function submitSpeciesRequest(
     const created = await api.publicationRequests.submit({
       species_id: draft.speciesId,
       category: draft.category,
-      scientific_name: draft.scientific_name,
-      habitat: draft.habitat,
-      origin: draft.origin,
+      ...visibleTextFields(draft),
       published_fields: draft.publishedFields,
       image: draft.image,
     });

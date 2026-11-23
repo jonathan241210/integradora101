@@ -1,4 +1,5 @@
 import type { AdminApi, EnclosureDto } from "./admin-types";
+import { runUnprotected, type RunProtected } from "./step-up";
 import {
   initialManagedListState,
   loadManagedList,
@@ -239,10 +240,11 @@ export async function deleteEnclosure(
   api: AdminApi,
   dispatch: EnclosuresDispatch,
   item: EnclosureDto,
+  protect: RunProtected = runUnprotected,
 ): Promise<boolean> {
   const done = await runOperation(
     dispatch,
-    () => api.enclosures.remove(item.id),
+    () => protect(() => api.enclosures.remove(item.id)),
     "Recinto eliminado.",
     () => loadEnclosures(api, dispatch, true),
   );

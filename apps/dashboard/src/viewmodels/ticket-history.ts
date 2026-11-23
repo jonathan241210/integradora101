@@ -1,5 +1,10 @@
 import { describeApiError } from "./api-errors";
+import { BUSINESS_TIMEZONE_FALLBACK } from "./formatters";
+import { commentRequiredFor, type CancellationReasonsViewModel } from "./cancellation-reasons";
+import { isStepUpCancelled, runUnprotected, type RunProtected } from "./step-up";
 import type {
+  CancellationReasonCode,
+  CancellationReasonDto,
   PageMeta,
   TicketHistoryQuery,
   TicketHistoryRowDto,
@@ -8,13 +13,14 @@ import type {
 } from "./ticket-types";
 
 /**
- * Fecha y hora `dd/mm/aaaa HH:mm` en la zona indicada (por defecto la del
- * dispositivo) a partir de un instante ISO 8601 UTC (dashboard-005 CA-13).
- * Es conversión de presentación: no calcula periodos ni días de cancelación.
+ * Fecha y hora `dd/mm/aaaa HH:mm` en la zona que informa la API, a partir de un
+ * instante ISO 8601 UTC (dashboard-019 RN-01; formato de dashboard-005 CA-13). La
+ * zona es obligatoria: el navegador no decide la presentación. Es conversión de
+ * presentación: no calcula periodos ni días de cancelación.
  */
 export function formatTicketDateTime(
   iso: string | null | undefined,
-  timeZone?: string,
+  timeZone: string,
 ): string {
   if (!iso) return "—";
 
@@ -51,7 +57,10 @@ export function effectiveHistoryQuery(
   return focusedFolio === null ? query : { ...query, folio: focusedFolio, page: 1 };
 }
 
-export const cancelReasonRequiredMessage = "Indica el motivo de la cancelación.";
+/** Sin motivo elegido no se llama a la API (dashboard-016 CA-19). */
+export const cancelReasonRequiredMessage = "Elige un motivo de cancelación.";
+/** Comentario vacío con un motivo que lo exige según el catálogo de la API (CA-20). */
+export const cancelCommentRequiredMessage = "Describe el motivo de la cancelación.";
 
 export type TicketStatusFilter = TicketStatus | "";
 
@@ -68,9 +77,13 @@ export type TicketHistoryState = {
   meta: PageMeta | null;
   error: string;
   query: TicketHistoryQuery;
+  /** Zona de negocio de la última respuesta (`api-025`); respaldo fijo si no llega. */
+  timezone: string;
   notice: string;
   cancel: {
     target: TicketHistoryRowDto | null;
+    /** Código elegido del catálogo de la API; vacío si aún no se elige. */
+    reasonCode: string;
     reason: string;
     busy: boolean;
     error: string;
@@ -81,10 +94,11 @@ export type TicketHistoryState = {
 export type TicketHistoryAction =
   | { type: "query-changed"; changes: Partial<TicketHistoryQuery> }
   | { type: "load-started" }
-  | { type: "loaded"; rows: TicketHistoryRowDto[]; meta: PageMeta }
+  | { type: "loaded"; rows: TicketHistoryRowDto[]; meta: PageMeta; timezone?: string }
   | { type: "load-failed"; message: string }
   | { type: "cancel-opened"; target: TicketHistoryRowDto }
   | { type: "cancel-closed" }
+  | { type: "cancel-reason-code-changed"; reasonCode: string }
   | { type: "cancel-reason-changed"; reason: string }
   | { type: "cancel-started" }
   | {
@@ -100,6 +114,7 @@ export type TicketHistoryDispatch = (action: TicketHistoryAction) => void;
 
 const idleCancel: TicketHistoryState["cancel"] = {
   target: null,
+  reasonCode: "",
   reason: "",
   busy: false,
   error: "",
@@ -112,6 +127,7 @@ export const initialTicketHistoryState: TicketHistoryState = {
   meta: null,
   error: "",
   query: { page: 1 },
+  timezone: BUSINESS_TIMEZONE_FALLBACK,
   notice: "",
   cancel: idleCancel,
 };
@@ -135,6 +151,7 @@ export function ticketHistoryReducer(
         status: action.rows.length === 0 ? "empty" : "ready",
         rows: action.rows,
         meta: action.meta,
+        timezone: action.timezone || BUSINESS_TIMEZONE_FALLBACK,
         error: "",
       };
     case "load-failed":
@@ -143,6 +160,16 @@ export function ticketHistoryReducer(
       return { ...state, notice: "", cancel: { ...idleCancel, target: action.target } };
     case "cancel-closed":
       return state.cancel.busy ? state : { ...state, cancel: idleCancel };
+    case "cancel-reason-code-changed":
+      return {
+        ...state,
+        cancel: {
+          ...state.cancel,
+          reasonCode: action.reasonCode,
+          error: "",
+          fieldErrors: {},
+        },
+      };
     case "cancel-reason-changed":
       return {
         ...state,
@@ -193,7 +220,12 @@ export async function loadTicketHistory(
     const page = await api.history.list(query);
 
     if (isCurrent()) {
-      dispatch({ type: "loaded", rows: page.data, meta: page.meta });
+      dispatch({
+        type: "loaded",
+        rows: page.data,
+        meta: page.meta,
+        timezone: page.timezone ?? BUSINESS_TIMEZONE_FALLBACK,
+      });
     }
   } catch (error) {
     const described = describeApiError(error);
@@ -204,25 +236,46 @@ export async function loadTicketHistory(
   }
 }
 
+export type CancelTicketInput = {
+  /** Código elegido; vacío si no se eligió. */
+  reasonCode: string;
+  /** Comentario libre; opcional salvo que el catálogo de la API lo exija. */
+  reason: string;
+  /** Catálogo de la API: de aquí sale la política de comentario. */
+  reasons: CancellationReasonDto[];
+};
+
 /**
- * Cancela con motivo obligatorio (RN-03, RN-13). Sin motivo no llama a la API.
- * Tras el 200 refresca la lista con los mismos filtros.
+ * Cancela con motivo de lista obligatorio (dashboard-005 RN-03, dashboard-016 CA-19 a CA-21).
+ * Sin motivo no llama a la API. El mínimo de caracteres del comentario lo valida la API
+ * (422). Tras el 200 refresca la lista con los mismos filtros.
  */
 export async function cancelTicket(
   api: TicketSalesApi,
   dispatch: TicketHistoryDispatch,
   target: TicketHistoryRowDto,
-  reason: string,
+  input: CancelTicketInput,
   query: TicketHistoryQuery,
   isCurrent: () => boolean = () => true,
+  protect: RunProtected = runUnprotected,
 ): Promise<boolean> {
-  const trimmed = reason.trim();
+  const trimmed = input.reason.trim();
 
-  if (!trimmed) {
+  if (!input.reasonCode) {
     dispatch({
       type: "cancel-failed",
       message: cancelReasonRequiredMessage,
-      fieldErrors: { reason: [cancelReasonRequiredMessage] },
+      fieldErrors: { reason_code: [cancelReasonRequiredMessage] },
+    });
+
+    return false;
+  }
+
+  if (!trimmed && commentRequiredFor(input.reasons, input.reasonCode)) {
+    dispatch({
+      type: "cancel-failed",
+      message: cancelCommentRequiredMessage,
+      fieldErrors: { reason: [cancelCommentRequiredMessage] },
     });
 
     return false;
@@ -231,8 +284,21 @@ export async function cancelTicket(
   dispatch({ type: "cancel-started" });
 
   try {
-    await api.history.cancel(target.folio, { reason: trimmed });
+    // Ventana: si la API pide contraseña, se confirma y se reintenta una vez (CA-01, CA-02).
+    await protect(() =>
+      api.history.cancel(target.folio, {
+        reason_code: input.reasonCode as CancellationReasonCode,
+        reason: trimmed || null,
+      }),
+    );
   } catch (error) {
+    if (isStepUpCancelled(error)) {
+      // Sin petición ni mensaje: el diálogo de cancelación sigue abierto (CA-08).
+      dispatch({ type: "cancel-failed", message: "", fieldErrors: {} });
+
+      return false;
+    }
+
     const described = describeApiError(error);
 
     dispatch(
@@ -259,12 +325,15 @@ export async function cancelTicket(
 
 export type TicketHistoryViewModel = {
   state: TicketHistoryState;
+  /** Catálogo de motivos del diálogo de cancelar (hook `useCancellationReasons`). */
+  reasons?: CancellationReasonsViewModel;
   actions: {
     applyFilters: (filters: TicketHistoryFilters) => void;
     goToPage: (page: number) => void;
     reload: () => void;
     openCancel: (target: TicketHistoryRowDto) => void;
     closeCancel: () => void;
+    changeReasonCode: (reasonCode: string) => void;
     changeReason: (reason: string) => void;
     confirmCancel: () => void;
     dismissNotice: () => void;

@@ -180,6 +180,13 @@ Ninguna excepción se propone. Si en tasks aparece alguna, se detiene y se resue
 - Pestañas como control segmentado, botones con `aria-pressed`.
 - Menú lateral de escritorio: `:focus-within` se sustituye por `:has(:focus-visible)` y se suelta el foco (`blur`) tras navegar con ratón o toque (`event.detail > 0`); al cambiar de sección el contenido vuelve arriba (`scrollTo`). Ninguna spec previa de la PWA define el menú contraíble; se registra aquí como alcance aprobado por Jonathan (T-53).
 
+## Revisión 2026-11-21 (aprobada por Jonathan)
+
+- Formulario en secciones numeradas con «Qué mostrar» antes de los datos (CA-20). `speciesRequestForm.ts` expone `fichaFieldOptions` (clave, etiqueta, límite) como única configuración de chips y campos condicionales; `visibleFichaOptions`, `visibleTextFields` y `notPublishedLine` derivan de ella. Un campo oculto no se envía; `validateDraft` y `needsChangeConfirmation` lo ignoran. «Dato curioso» (spec de `api` aparte, tras su DBR) se sumará con una entrada más en la configuración, su clave en el borrador y en `FichaTextKey`; no se implementa aquí.
+- «Limpiar» confirma con un `Dialog` si `needsChangeConfirmation` (CA-21). «Enviar de nuevo» (CA-22) lo coordina `SpeciesRequestView` con `initialSpeciesId`; sin cambios de API.
+- «Mis solicitudes»: tarjeta `<article>` con `Badge` de `@arca/ui`, `<time>`, motivo en `.species-summary__notice`, paginación con «Página N», vacío con botón y error con `Alert` (CA-23, CA-24). Ajustes de CSS con tokens (CA-25).
+- Sin dependencias nuevas; tests en `node` con `renderToStaticMarkup` y lectura de fuente/CSS (sin jsdom). Los tests de CA-09, CA-14 y CA-16 se actualizaron por el cambio de diseño (chips fijos, texto de ayuda, «Enviada»/«Decisión»), sin relajar sus verificaciones.
+
 ## Orden y aprobación
 
 Decisiones registradas (Jonathan, 2026-11-19):
@@ -205,3 +212,7 @@ Secuencia propuesta (después de aprobar este plan):
 Dependencias: `api-014` (selector con `published_fields`, envío, lista propia y reglas), `api-013` (almacenamiento de imágenes), DBR-013 (aplicada en `arca_pruebas`, lote 5), `pwa-004` (alta de animal, seguimiento aparte; el texto de CA-15 lo menciona).
 
 Aprobación técnica: **Jonathan, 2026-11-19**. Plan Aprobado; se avanza a tasks.
+
+## Nota 2026-11-21 (dashboard-020 rev. (d)): paginador compartido
+
+`OwnSpeciesRequestsView` usa `Pagination` de `@arca/ui` (con `lastPage` y `total`; respaldo `hasMore`); `useOwnSpeciesRequests` guarda `lastPage` y `total` y expone `goToPage`. El CSS de `.own-requests__pager` se sustituye por ajustes de `.own-requests .pagination-bar` (50 % por botón a 360 px).

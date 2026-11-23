@@ -23,7 +23,7 @@ Una noticia se muestra si `is_active` es verdadero, no está borrada lógicament
 
 ## Zona horaria
 
-«Hoy» se calcula en `America/Mexico_City` (`config('arca.public_timezone')`, `App\Support\PublicCalendar::today()`). `config('app.timezone')` sigue en `UTC`.
+«Hoy» se calcula en `America/Mexico_City` (`config('arca.timezone')`, variable `ARCA_TIMEZONE`; `App\Support\PublicCalendar::today()` delega en `BusinessTimezone`). `config('app.timezone')` sigue en `UTC`.
 
 ## Ejemplo de listado
 
@@ -122,7 +122,7 @@ Los filtros se combinan con «y». Un parámetro desconocido se ignora. El error
 
 ### Campos
 
-Siempre: `id`, `common_name`, `category` (`null` si no tiene) e `image_url`. Además, según `species.published_fields`: `scientific_name`, `origin` (se lee de `species.distribution`) y `habitat`, con `null` si no hay dato. Cualquier otra clave de `published_fields` se ignora. No se devuelven `image_path`, `is_published`, `published_fields` ni datos de personal.
+Siempre: `id`, `common_name`, `category` (`null` si no tiene) e `image_url`. Además, según `species.published_fields`: `scientific_name`, `origin` (se lee de `species.distribution`), `habitat` y `fun_fact` («Dato curioso», texto plano de 20 a 500 caracteres; api-026), con `null` si no hay dato. La clave `fun_fact` solo aparece si la especie la tiene seleccionada; no es filtro. Cualquier otra clave de `published_fields` se ignora. No se devuelven `image_path`, `is_published`, `published_fields` ni datos de personal.
 
 `image_url` es la URL pública del archivo en `species/` del disco público de medios (`ResolveMediaDiskAction`), o `null` si `image_path` es `null`, no está bajo `species/` o el archivo no existe.
 
@@ -131,3 +131,8 @@ Siempre: `id`, `common_name`, `category` (`null` si no tiene) e `image_url`. Ade
 ```
 
 Precondición: DBR-013 aplicada en el ambiente. CORS: el origen del portal debe estar en `CORS_ALLOWED_ORIGINS`.
+
+### Dato curioso (`fun_fact`, api-026)
+
+- Lectura pública: `fun_fact` en `GET /api/v1/published-species` solo si está en `published_fields`. No aparece en `GET /api/v1/species` ni en los listados de administración.
+- Selector del veterinario (`GET /api/v1/veterinarian/species`): cada especie trae `fun_fact` con el valor vigente (o `null`).

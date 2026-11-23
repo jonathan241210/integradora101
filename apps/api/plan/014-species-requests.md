@@ -297,6 +297,12 @@ Las preguntas Q3 a Q8 se citan en el plan sin lista propia; su respuesta figura 
 - Índice único parcial: MySQL 8.0 no lo tiene; se usa la columna generada (DBR-013, 14).
 - Almacenamiento de objetos: fuera de alcance (ADR 0026, `docs/propuestas/almacenamiento-objetos-s3.md`).
 
+## Nota 2026-11-21: paginación con total (CA-42, CA-43)
+
+- `ListSpeciesPublicationRequestsAction`, `ListPublishedSpeciesAction` (admin) y `ListOwnSpeciesPublicationRequestsAction` pasan de `simplePaginate` a `paginate(10)` y devuelven `LengthAwarePaginator`. Los controladores arman `meta` con `App\Support\PaginationMeta::from()` (`current_page`, `last_page`, `per_page`, `total`, `has_more`).
+- `PageGuard::empty()` devuelve ahora un paginador con total: una página absurda responde vacía con el `total` real (conteo sin orden). Orden y desempate por `id` sin cambio.
+- Consumidores: `GET /api/v1/published-species` (público, `api-015`) no cambia.
+
 ## Orden y aprobación
 
 ### Secuencia de implementación

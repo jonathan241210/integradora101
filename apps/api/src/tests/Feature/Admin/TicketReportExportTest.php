@@ -75,6 +75,7 @@ class TicketReportExportTest extends AdminFeatureTestCase
         $this->insertTicket('2026-11-03 05:59:00', 1, 0, '50.00');
         $this->insertTicket('2026-11-09 05:59:00', 2, 1, '120.50');
 
+        // El timezone del cliente se ignora (api-025 CA-10): la zona es la de negocio.
         $url = '/api/v1/admin/reports/tickets/export?period=week&date=2026-11-04&timezone=Asia/Tokyo&format=xlsx';
         $json = $this->actAs($admin)->getJson('/api/v1/admin/reports/tickets?period=week&date=2026-11-04&timezone=Asia/Tokyo')->assertOk()->json('data');
         $response = $this->actAs($admin)->get($url)->assertOk();
@@ -92,7 +93,7 @@ class TicketReportExportTest extends AdminFeatureTestCase
         unlink($path);
 
         $totals = $json['totals'];
-        $this->assertStringContainsString('Asia/Tokyo', $xml);
+        $this->assertStringContainsString('America/Mexico_City', $xml);
         $this->assertStringContainsString($totals['revenue'], $xml);
         $this->assertStringContainsString('Ingresos (MXN)', $xml);
         foreach ($json['tickets'] as $ticket) {
@@ -170,5 +171,37 @@ class TicketReportExportTest extends AdminFeatureTestCase
         }
 
         $this->actAs($admin)->getJson('/api/v1/admin/reports/tickets/export?period=week&format=txt')->assertStatus(429);
+    }
+
+    /** CA-05 single-business-timezone */
+    public function test_ca05_report_and_export_in_business_timezone(): void
+    {
+        $admin = $this->createAccount('admin');
+        $this->travelTo(Carbon::parse('2026-11-07 05:45:00', 'UTC'));
+        $this->clearTickets('2026-10-25 00:00:00', '2026-12-05 00:00:00');
+        $this->insertTicket('2026-11-07 05:30:00', 1, 0, '50.00');
+
+        $base = '/api/v1/admin/reports/tickets';
+        $json = $this->actAs($admin)->getJson($base.'?period=week&date=2026-11-06&timezone=America/Tijuana')->assertOk()->json('data');
+        $this->assertSame('America/Mexico_City', $json['period']['timezone']);
+        $this->assertSame(1, $json['totals']['tickets']);
+        $this->assertSame('50.00', collect($json['daily'])->firstWhere('date', '2026-11-06')['revenue']);
+
+        $csv = $this->actAs($admin)->get($base.'/export?period=week&date=2026-11-06&timezone=America/Tijuana&format=csv')->assertOk()->streamedContent();
+        $this->assertStringContainsString('"2026-11-06 23:30:00"', $csv);
+
+        $xlsx = $this->actAs($admin)->get($base.'/export?period=week&date=2026-11-06&timezone=America/Tijuana&format=xlsx')->assertOk()->streamedContent();
+        $path = tempnam(sys_get_temp_dir(), 'arca-tz-xlsx-');
+        file_put_contents($path, $xlsx);
+        $zip = new \ZipArchive;
+        $this->assertTrue($zip->open($path) === true);
+        $xml = $zip->getFromName('xl/worksheets/sheet1.xml').($zip->getFromName('xl/sharedStrings.xml') ?: '');
+        $zip->close();
+        unlink($path);
+        $this->assertStringContainsString('2026-11-06 23:30:00', $xml);
+        $this->assertStringContainsString('America/Mexico_City', $xml);
+
+        $pdf = $this->actAs($admin)->get($base.'/export?period=week&date=2026-11-06&timezone=America/Tijuana&format=pdf')->assertOk();
+        $this->assertStringStartsWith('%PDF', $pdf->streamedContent());
     }
 }

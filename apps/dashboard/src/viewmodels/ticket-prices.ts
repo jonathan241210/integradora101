@@ -1,6 +1,7 @@
 import { describeApiError } from "./api-errors";
+import { isStepUpCancelled, runUnprotected, type RunProtected } from "./step-up";
 import type { ConfirmationCopy } from "./confirmation";
-import { formatCurrency } from "./formatters";
+import { BUSINESS_TIMEZONE_FALLBACK, formatCurrency } from "./formatters";
 import { formatTicketDateTime } from "./ticket-history";
 import type {
   TicketPriceCurrentDto,
@@ -16,7 +17,7 @@ export type TicketPriceForm = {
   adultAmount: string;
   childAmount: string;
   mode: TicketPriceMode;
-  /** Valor de `datetime-local` (`AAAA-MM-DDTHH:mm`) en la hora del dispositivo. */
+  /** Valor de `datetime-local` (`AAAA-MM-DDTHH:mm`) en la hora del zoológico (la API la interpreta en su zona). */
   effectiveAt: string;
 };
 
@@ -158,14 +159,11 @@ function isTwoFactorRequired(error: unknown): boolean {
   );
 }
 
-function pad(value: number, length = 2): string {
-  return String(value).padStart(length, "0");
-}
-
 /**
- * Convierte la fecha y hora locales del formulario (`datetime-local`) a un
- * instante ISO 8601 con el desfase del dispositivo. Es conversión de entrada
- * (decisión 3 de api-009); la API valida que sea futura.
+ * Normaliza la fecha y hora del formulario (`datetime-local`) a
+ * `AAAA-MM-DDTHH:mm:ss` sin desfase: la API la interpreta en su zona de negocio
+ * (`api-025` RN-12; dashboard-019 RN-06). No lee la zona del dispositivo; la API valida
+ * que sea futura.
  */
 export function localDateTimeToIso(value: string): string | null {
   const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/.exec(value);
@@ -173,26 +171,31 @@ export function localDateTimeToIso(value: string): string | null {
   if (!match) return null;
 
   const [, year, month, day, hour, minute, second = "00"] = match;
-  const date = new Date(
-    Number(year),
-    Number(month) - 1,
-    Number(day),
-    Number(hour),
-    Number(minute),
-    Number(second),
+  const valid = new Date(
+    Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second)),
   );
 
-  if (Number.isNaN(date.getTime())) return null;
+  if (
+    Number.isNaN(valid.getTime()) ||
+    valid.getUTCMonth() !== Number(month) - 1 ||
+    valid.getUTCDate() !== Number(day)
+  ) {
+    return null;
+  }
 
-  const offset = -date.getTimezoneOffset();
-  const sign = offset >= 0 ? "+" : "-";
-  const absolute = Math.abs(offset);
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+}
 
-  return (
-    `${pad(date.getFullYear(), 4)}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}` +
-    `${sign}${pad(Math.floor(absolute / 60))}:${pad(absolute % 60)}`
-  );
+/**
+ * `dd/mm/aaaa HH:mm` de una fecha y hora sin desfase (hora del zoológico): se muestra
+ * tal cual, sin convertir. Si trae desfase o `Z`, se presenta en la zona de respaldo.
+ */
+export function formatBusinessLocalDateTime(value: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::\d{2})?$/.exec(value);
+
+  return match
+    ? `${match[3]}/${match[2]}/${match[1]} ${match[4]}:${match[5]}`
+    : formatTicketDateTime(value, BUSINESS_TIMEZONE_FALLBACK);
 }
 
 export type PriceInputResult =
@@ -241,7 +244,7 @@ export function priceConfirmationCopy(
 
   const when =
     input.mode === "scheduled" && input.effective_at
-      ? `el ${formatTicketDateTime(input.effective_at)}`
+      ? `el ${formatBusinessLocalDateTime(input.effective_at)}`
       : "de inmediato";
 
   return {
@@ -256,7 +259,7 @@ export function priceConfirmationCopy(
 
 export function priceSavedNotice(input: TicketPriceScheduleInput): string {
   return input.mode === "scheduled" && input.effective_at
-    ? `Cambio de precios programado para el ${formatTicketDateTime(input.effective_at)}.`
+    ? `Cambio de precios programado para el ${formatBusinessLocalDateTime(input.effective_at)}.`
     : "Los precios se actualizaron y ya están vigentes.";
 }
 
@@ -311,17 +314,21 @@ export async function submitPriceChange(
   dispatch: TicketPricesDispatch,
   input: TicketPriceScheduleInput,
   isCurrent: () => boolean = () => true,
+  protect: RunProtected = runUnprotected,
 ): Promise<boolean> {
   dispatch({ type: "save-started" });
 
   let result;
 
   try {
-    result = await api.prices.schedule(input);
+    // Siempre: la contraseña viaja solo en el reenvío que la API pidió (CA-06).
+    result = await protect((password) =>
+      api.prices.schedule(password === undefined ? input : { ...input, password }),
+    );
   } catch (error) {
     const described = describeApiError(error);
 
-    if (described.unauthorized) {
+    if (described.unauthorized || isStepUpCancelled(error)) {
       dispatch({ type: "save-aborted" });
 
       return false;

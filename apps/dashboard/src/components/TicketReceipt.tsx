@@ -17,9 +17,12 @@ import type { TicketSaleDto } from "@/viewmodels/ticket-types";
  */
 export function TicketReceipt({
   ticket,
+  timezone,
   settings,
 }: {
   ticket: TicketSaleDto;
+  /** Zona de negocio de la respuesta de venta (`api-025` RN-13). */
+  timezone: string;
   settings: TicketPrintSettings;
 }) {
   const { fields } = settings;
@@ -37,7 +40,7 @@ export function TicketReceipt({
       </p>
       {fields.dateTime && (
         <p className="ticket-receipt__line">
-          {formatTicketDateTime(ticket.purchased_at)}
+          {formatTicketDateTime(ticket.purchased_at, timezone)}
         </p>
       )}
       <p className="ticket-receipt__kind">{ticketKindLabel(ticket.ticket_type)}</p>

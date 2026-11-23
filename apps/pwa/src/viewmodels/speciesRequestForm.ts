@@ -13,7 +13,11 @@ export const ACCEPTED_PHOTO_TYPES = ['image/jpeg', 'image/png'] as const;
 export const FORBIDDEN_MESSAGE = 'No tienes permiso para ver esta sección.';
 export const SESSION_EXPIRED_MESSAGE = 'Tu sesión expiró.';
 export const CORRECTIONS_HELP =
-  'Al publicarse, una corrección cambia el dato de la especie: lo verán también la app móvil y los animales de esta especie.';
+  'Solo puedes corregir los datos que se publican. Al publicarse, una corrección cambia el dato de la especie: lo verán también la app móvil y los animales de esta especie.';
+export const FICHA_HELP = 'Elige primero qué verá el visitante. Solo pedimos esos datos.';
+export const FIXED_FIELD_LEGEND = 'Siempre se muestra';
+/** Datos que siempre se publican: chips fijos y deshabilitados. */
+export const fixedFichaLabels = ['Nombre común', 'Tipo de animal', 'Foto'] as const;
 export const NO_SPECIES_HELP =
   'Si la especie que buscas no aparece, primero debe registrarse con un animal (Registrar animal).';
 
@@ -26,12 +30,51 @@ export const categoryOptions: { value: SpeciesCategory; label: string }[] = [
   { value: 'invertebrate', label: 'Invertebrado' },
 ];
 
-/** Solo las tres claves con fuente en la solicitud (CA-11). */
-export const fichaFieldOptions: { key: SpeciesFichaField; label: string }[] = [
-  { key: 'scientific_name', label: 'Nombre científico' },
-  { key: 'origin', label: 'Área de distribución natural' },
-  { key: 'habitat', label: 'Hábitat' },
+/** Campo de texto opcional de la ficha: su clave es también la del borrador. */
+export type FichaTextKey = 'scientific_name' | 'origin' | 'habitat' | 'fun_fact';
+export type FichaFieldOption = {
+  key: FichaTextKey & SpeciesFichaField;
+  label: string;
+  maxLength: number;
+  /** Mínimo de caracteres (sin espacios de los extremos) cuando el campo está marcado. */
+  minLength?: number;
+  /** `textarea` con contador en lugar de `input`. */
+  multiline?: boolean;
+  help?: string;
+};
+
+export const FUN_FACT_HELP =
+  'Escribe una o dos frases para quien visita el zoológico. No incluyas datos clínicos ni de personas.';
+
+/**
+ * Única configuración de chips y campos condicionales (CA-09, CA-11, CA-20).
+ * Para sumar un dato opcional: una entrada aquí, su clave en `SpeciesRequestDraft`
+ * y en `FichaTextKey`.
+ */
+export const fichaFieldOptions: FichaFieldOption[] = [
+  { key: 'scientific_name', label: 'Nombre científico', maxLength: 150 },
+  { key: 'origin', label: 'Área de distribución natural', maxLength: 150 },
+  { key: 'habitat', label: 'Hábitat', maxLength: 150 },
+  { key: 'fun_fact', label: 'Dato curioso', maxLength: 500, minLength: 20, multiline: true, help: FUN_FACT_HELP },
 ];
+
+export function isFichaFieldVisible(
+  draft: Pick<SpeciesRequestDraft, 'publishedFields'>,
+  key: SpeciesFichaField,
+): boolean {
+  return draft.publishedFields.includes(key);
+}
+
+/** Opciones marcadas, en el orden de la configuración. */
+export function visibleFichaOptions(draft: Pick<SpeciesRequestDraft, 'publishedFields'>): FichaFieldOption[] {
+  return fichaFieldOptions.filter((option) => isFichaFieldVisible(draft, option.key));
+}
+
+/** Línea «No se publicarán: …» (CA-20). */
+export function notPublishedLine(draft: Pick<SpeciesRequestDraft, 'publishedFields'>): string {
+  const labels = fichaFieldOptions.filter((option) => !isFichaFieldVisible(draft, option.key)).map((option) => option.label);
+  return labels.length === 0 ? 'Se publicarán todos los datos opcionales.' : `No se publicarán: ${labels.join(', ')}.`;
+}
 
 export const defaultFichaFields: SpeciesFichaField[] = ['scientific_name', 'origin', 'habitat'];
 
@@ -62,6 +105,14 @@ export function speciesOptionLabel(
   species: Pick<SelectableSpeciesDto, 'common_name' | 'publication_status'>,
 ): string {
   return `${species.common_name} · ${speciesStatusLabel(species.publication_status)}`;
+}
+
+export type RequestTone = 'warning' | 'success' | 'danger';
+
+export function requestStatusTone(status: OwnSpeciesRequestDto['status']): RequestTone {
+  if (status === 'submitted') return 'warning';
+  if (status === 'rejected') return 'danger';
+  return 'success';
 }
 
 export function requestTypeLabel(type: SpeciesRequestType | null): string {
@@ -126,6 +177,7 @@ export type SpeciesRequestDraft = {
   scientific_name: string;
   habitat: string;
   origin: string;
+  fun_fact: string;
   category: SpeciesCategory | '';
   publishedFields: SpeciesFichaField[];
   image: File | null;
@@ -137,6 +189,7 @@ export const emptyDraft: SpeciesRequestDraft = {
   scientific_name: '',
   habitat: '',
   origin: '',
+  fun_fact: '',
   category: '',
   publishedFields: [...defaultFichaFields],
   image: null,
@@ -149,6 +202,7 @@ export function draftFromSpecies(species: SelectableSpeciesDto): SpeciesRequestD
     scientific_name: species.scientific_name ?? '',
     habitat: species.habitat ?? '',
     origin: species.origin ?? '',
+    fun_fact: species.fun_fact ?? '',
     category: species.category ?? '',
     publishedFields: fichaFieldsFor(species.next_request_type, species.published_fields),
     image: null,
@@ -162,10 +216,10 @@ export function needsChangeConfirmation(
 ): boolean {
   if (!baseline) return false;
   if (draft.image) return true;
+  // Los campos ocultos no cuentan (CA-20).
+  const textChanged = visibleFichaOptions(draft).some((option) => draft[option.key] !== baseline[option.key]);
   return (
-    draft.scientific_name !== baseline.scientific_name ||
-    draft.habitat !== baseline.habitat ||
-    draft.origin !== baseline.origin ||
+    textChanged ||
     draft.category !== baseline.category ||
     draft.publishedFields.join(',') !== baseline.publishedFields.join(',')
   );
@@ -178,6 +232,7 @@ export type FieldKey =
   | 'scientific_name'
   | 'habitat'
   | 'origin'
+  | 'fun_fact'
   | 'published_fields';
 export type FieldErrors = Partial<Record<FieldKey, string>>;
 
@@ -188,6 +243,7 @@ export const fieldKeys: FieldKey[] = [
   'scientific_name',
   'habitat',
   'origin',
+  'fun_fact',
   'published_fields',
 ];
 
@@ -216,6 +272,15 @@ export function validateDraft(
     errors.species_id = NOT_ELIGIBLE_MESSAGE;
   }
   if (!draft.category) errors.category = 'Tipo de animal requerido.';
+  // Solo se valida lo visible: un campo oculto no se envía (CA-20).
+  for (const option of visibleFichaOptions(draft)) {
+    const value = draft[option.key];
+    if (option.minLength !== undefined && value.trim().length < option.minLength) {
+      errors[option.key] = `${option.label}: escribe al menos ${option.minLength} caracteres.`;
+    } else if (value.length > option.maxLength) {
+      errors[option.key] = `${option.label}: máximo ${option.maxLength} caracteres.`;
+    }
+  }
   const photoError = validatePhoto(draft.image, draft.requestType);
   if (photoError && draft.speciesId !== null) errors.image = photoError;
   return errors;
@@ -224,4 +289,11 @@ export function validateDraft(
 /** Primer campo con error en el orden visual del formulario. */
 export function firstErrorField(errors: FieldErrors): FieldKey | null {
   return fieldKeys.find((key) => errors[key]) ?? null;
+}
+
+/** Texto de los campos visibles; los ocultos no se envían (CA-05, CA-20). */
+export function visibleTextFields(draft: SpeciesRequestDraft): Partial<Record<FichaTextKey, string>> {
+  const fields: Partial<Record<FichaTextKey, string>> = {};
+  for (const option of visibleFichaOptions(draft)) fields[option.key] = draft[option.key];
+  return fields;
 }

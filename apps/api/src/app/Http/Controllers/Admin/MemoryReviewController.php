@@ -11,6 +11,7 @@ use App\Http\Requests\Admin\ListMemoriesForReviewRequest;
 use App\Http\Requests\Admin\RejectMemoryRequest;
 use App\Http\Resources\Admin\MemoryReviewDetailResource;
 use App\Http\Resources\Admin\MemoryReviewResource;
+use App\Support\PaginationMeta;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,11 +19,11 @@ class MemoryReviewController extends Controller
 {
     public function index(ListMemoriesForReviewRequest $request, ListMemoriesForReviewAction $action): JsonResponse
     {
-        $result = $action->execute($request->status(), $request->page(), $request->limit());
+        $page = $action->execute($request->status(), $request->page(), $request->limit());
 
         return response()->json([
-            'data' => MemoryReviewResource::collection($result['items'])->resolve($request),
-            'meta' => $result['meta'],
+            'data' => MemoryReviewResource::collection($page->getCollection())->resolve($request),
+            'meta' => PaginationMeta::from($page),
         ]);
     }
 

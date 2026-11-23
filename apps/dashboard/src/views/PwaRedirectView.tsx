@@ -1,7 +1,19 @@
-import { Card } from "@arca/ui";
+import { Alert, Button, Card } from "@arca/ui";
 import { Icon } from "@/components/Icon";
 
-export function PwaRedirectView({ pwaUrl }: { pwaUrl: string | null }) {
+export function PwaRedirectView({
+  pwaUrl,
+  submitting = false,
+  error = "",
+  onSignOut,
+}: {
+  pwaUrl: string | null;
+  /** Error del cierre de sesión (CA-20); llega en español desde el ViewModel. */
+  error?: string;
+  submitting?: boolean;
+  /** Cierra la sesión y vuelve al inicio (dashboard-015 CA-19). */
+  onSignOut: () => void;
+}) {
   return (
     <main className="auth-page">
       <Card className="auth-card auth-card--redirect">
@@ -25,6 +37,14 @@ export function PwaRedirectView({ pwaUrl }: { pwaUrl: string | null }) {
             administrador.
           </p>
         )}
+        {error && (
+          <Alert className="auth-alert" role="alert" aria-live="assertive">
+            {error}
+          </Alert>
+        )}
+        <Button type="button" variant="secondary" disabled={submitting} onClick={onSignOut}>
+          Cerrar sesión y volver al inicio
+        </Button>
       </Card>
     </main>
   );

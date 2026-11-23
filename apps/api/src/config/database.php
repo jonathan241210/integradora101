@@ -58,6 +58,8 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
+            // Zona de sesión de la conexión: UTC (api-025 RN-06). Solo por .env.
+            'timezone' => env('DB_TIMEZONE', '+00:00'),
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 (defined('Pdo\\Mysql::ATTR_SSL_CA') ? Mysql::ATTR_SSL_CA : PDO::MYSQL_ATTR_SSL_CA) => env('DB_SSL_CA'),
             ]) : [],

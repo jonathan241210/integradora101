@@ -14,6 +14,7 @@ enum PublishedSpeciesField: string
     case Diet = 'diet';
     case Longevity = 'longevity';
     case Characteristics = 'characteristics';
+    case FunFact = 'fun_fact';
 
     /**
      * Keys accepted today. The others are reserved and not implemented
@@ -23,7 +24,7 @@ enum PublishedSpeciesField: string
      */
     public static function implemented(): array
     {
-        return [self::ScientificName, self::Origin, self::Habitat];
+        return [self::ScientificName, self::Origin, self::Habitat, self::FunFact];
     }
 
     /** @return list<string> */
@@ -35,6 +36,6 @@ enum PublishedSpeciesField: string
     /** @return list<string> Default selection (RN-13). */
     public static function defaults(): array
     {
-        return self::implementedValues();
+        return [self::ScientificName->value, self::Origin->value, self::Habitat->value];
     }
 }

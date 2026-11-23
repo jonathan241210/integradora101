@@ -150,16 +150,15 @@ describe("CA-15 ticket-sales", () => {
 
     expect(scheduled.ok).toBe(true);
     if (scheduled.ok) {
-      expect(priceConfirmationCopy(scheduled.input)?.message).toMatch(/el 01\/12\/2026 \d{2}:\d{2}/);
+      expect(priceConfirmationCopy(scheduled.input)?.message).toMatch(/el 01\/12\/2026 09:00/);
     }
   });
 
-  it("convierte la fecha local a ISO 8601 con desfase y exige fecha al programar", () => {
-    const iso = localDateTimeToIso("2026-12-01T09:00");
-
-    expect(iso).toMatch(/^2026-12-01T09:00:00[+-]\d{2}:\d{2}$/);
-    expect(new Date(iso as string).getTime()).toBe(new Date("2026-12-01T09:00").getTime());
+  it("CA-06: la fecha de entrada en vigor se envía sin desfase y se exige fecha al programar", () => {
+    expect(localDateTimeToIso("2026-12-01T09:00")).toBe("2026-12-01T09:00:00");
+    expect(localDateTimeToIso("2026-12-01T09:00:30")).toBe("2026-12-01T09:00:30");
     expect(localDateTimeToIso("")).toBeNull();
+    expect(localDateTimeToIso("2026-02-31T09:00")).toBeNull();
 
     const missing = buildPriceInput({ ...filled, mode: "scheduled", effectiveAt: "" });
 

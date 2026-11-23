@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import { createPasswordResetHandlers } from "../components/InlinePasswordReset";
+import { createPasswordResetHandlers } from "../components/StaffActionDialog";
 import { UsersView } from "../views/UsersView";
 import { emptyPasswordField } from "../viewmodels/password-field";
 import type { PendingActionType } from "../viewmodels/inline-list";
@@ -32,10 +32,11 @@ import {
 const actions: StaffAccountsViewModel["actions"] = {
   changeQuery: vi.fn(),
   reload: vi.fn(),
+  reloadOptions: vi.fn(),
   dismissNotice: vi.fn(),
   toggleForm: vi.fn(),
   changeForm: vi.fn(),
-  changeDepartment: vi.fn(),
+  changeDepartment: vi.fn(), changeRole: vi.fn(),
   startEdit: vi.fn(),
   cancelEdit: vi.fn(),
   submit: vi.fn(),
@@ -160,11 +161,11 @@ describe("CA-04 administration-sections", () => {
     expect(suggestRole(staffOptions, "4")).toBe("");
     expect(suggestRole(staffOptions, "999")).toBe("");
     expect(suggestRole(null, "2")).toBe("");
-    // El ViewModel propone el rol en el alta y lo conserva al editar.
+    // dashboard-020 revisión 2026-11-21 (b): el área propone el rol en el alta; al editar el rol se conserva.
     expect(staffDepartmentChanges(readyState(), "3")).toEqual({ department_id: "3", role: "veterinarian" });
     expect(
       staffDepartmentChanges(
-        readyState({ editing: staffAccount(), form: { ...emptyStaffForm(), role: "cashier" } }),
+        readyState({ editing: staffAccount(), form: { ...emptyStaffForm(), role: "cashier" }, roleChosenManually: false }),
         "3",
       ),
     ).toEqual({ department_id: "3", role: "cashier" });
@@ -273,15 +274,19 @@ describe("CA-06 administration-sections", () => {
     ["reset-two-factor", true, "¿Restablecer el 2FA de Ana López Pérez?"],
   ];
 
-  it.each(cases)("pide confirmación en línea que nombra la cuenta y el efecto (%s, activa=%s)", (type, active, text) => {
+  it.each(cases)("pide confirmación en ventana modal que nombra la cuenta y el efecto (%s, activa=%s)", (type, active, text) => {
     const target = staffAccount({ is_active: active });
     const copy = getStaffConfirmation(type, target);
     const markup = render(readyState({ items: [target], pendingAction: { type, id: target.id } }));
 
     expect(copy.message).toContain(text);
     expect(markup).toContain(copy.label);
-    expect(markup).toContain('role="group"');
-    expect(markup).not.toContain("<dialog");
+    // dashboard-020 revisión 2026-11-21 (b), CA-33: diálogo modal con los mismos textos.
+    expect(markup).toContain("<dialog");
+    expect(markup).toContain(`${copy.label}</h2>`);
+    expect(markup).toContain(copy.message);
+    expect(markup).toContain(`>${copy.confirmLabel}<`);
+    expect(markup).not.toContain('role="group"');
   });
 
   it("solo llama a la API al confirmar", async () => {
@@ -346,14 +351,15 @@ describe("CA-10 inline-content-forms", () => {
     const markup = render(readyState({ pendingAction: { type: "reset-password", id: 7 } }));
 
     expect(markup).toContain('type="password"');
-    expect(markup).toContain('for="staff-7-new-password"');
-    expect(markup).toContain('aria-controls="staff-7-new-password"');
+    expect(markup).toContain('for="staff-action-new-password"');
+    expect(markup).toContain('aria-controls="staff-action-new-password"');
     // Una sola forma de anunciar el estado: la etiqueta cambia, sin aria-pressed.
     expect(markup).not.toContain("aria-pressed");
     expect(markup).toContain(">Mostrar contraseña<");
     expect(markup).toContain(">Confirmar<");
     expect(markup).toContain(">Cancelar<");
-    expect(markup).not.toContain("<dialog");
+    // dashboard-020 revisión 2026-11-21 (b): el campo vive dentro del diálogo.
+    expect(markup).toContain("<dialog");
   });
 
   it("solo llama a la API al confirmar y la contraseña no queda en el estado ni en las acciones", async () => {
@@ -414,26 +420,20 @@ describe("CA-10 inline-content-forms · campo de contraseña en línea", () => {
     expect(busy.onConfirm).not.toHaveBeenCalled();
   });
 
-  it("Escape y Cancelar descartan lo escrito y cancelan, salvo con una petición en curso", () => {
+  it("Cancelar descarta lo escrito y cancela, salvo con una petición en curso", () => {
     const t = setup();
-    const stopPropagation = vi.fn();
 
     t.handlers().change("secreto");
-    t.handlers().keyDown({ key: "Escape", stopPropagation });
+    t.handlers().cancel();
     expect(t.onCancel).toHaveBeenCalledOnce();
     expect(t.field).toEqual({ value: "", visible: false });
 
-    t.handlers().change("otro");
-    t.handlers().cancel();
-    expect(t.onCancel).toHaveBeenCalledTimes(2);
-    expect(t.field.value).toBe("");
-
     const busy = setup(true);
 
-    busy.handlers().keyDown({ key: "Escape", stopPropagation });
     busy.handlers().cancel();
     expect(busy.onCancel).not.toHaveBeenCalled();
   });
+
 });
 
 describe("CA-11 inline-content-forms", () => {

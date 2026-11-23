@@ -2,7 +2,7 @@ import { PendingRequestNotice } from "@/components/PendingRequestNotice";
 import { Alert, Button, Card } from "@arca/ui";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { NoticeBar } from "@/components/NoticeBar";
-import { LoadingIndicator } from "@/components/LoadingIndicator";
+import { DetailSkeleton } from "@/components/LoadingSkeletons";
 import { SectionHeading } from "@/components/SectionHeading";
 import { SpeciesFichaForm } from "@/components/SpeciesFichaForm";
 import { SpeciesPhoto } from "@/components/SpeciesPhoto";
@@ -17,6 +17,7 @@ import {
 import {
   categoryLabel,
   fichaFieldOptions,
+  funFactLabel,
   originLabel,
 } from "@/viewmodels/species-publication-shared";
 
@@ -48,7 +49,7 @@ export function PublishedSpeciesDetailView({
     return (
       <>
         {heading}
-        <LoadingIndicator message="Cargando especie…" />
+        <DetailSkeleton label="Cargando especie…" withForm />
       </>
     );
   }
@@ -110,6 +111,12 @@ export function PublishedSpeciesDetailView({
             <dt>{originLabel}</dt>
             <dd>{dash(data.origin)}</dd>
           </div>
+          {(data.fun_fact || (data.published_fields ?? []).includes("fun_fact")) && (
+            <div className="species-detail__fact-wide">
+              <dt>{funFactLabel}</dt>
+              <dd>{dash(data.fun_fact)}</dd>
+            </div>
+          )}
           <div>
             <dt>Tipo de animal</dt>
             <dd>{categoryLabel(data.category)}</dd>
@@ -169,6 +176,7 @@ export function PublishedSpeciesDetailView({
         )}
 
         <div className="species-detail__actions">
+          <div className="species-detail__actions-main">
           {available.canUnpublish && (
             <Button
               variant="secondary"
@@ -195,6 +203,7 @@ export function PublishedSpeciesDetailView({
               Republicar
             </Button>
           )}
+          </div>
           {available.pendingNotice && (
             <PendingRequestNotice message={available.pendingNotice} onOpenRequests={onOpenRequests} />
           )}

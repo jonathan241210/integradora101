@@ -15,12 +15,9 @@ class TicketReportRequest extends AdminFormRequest
         ];
     }
 
-    /**
-     * Filtros validados más `timezone` (RN-14): se lee sin regla de validación para que
-     * una zona inválida nunca produzca 422; la Action la resuelve.
-     */
+    /** Filtros validados. El `timezone` del cliente se ignora (api-025 RN-04): no tiene regla ni produce 422. */
     public function reportInput(): array
     {
-        return $this->validated() + ['timezone' => $this->input('timezone')];
+        return $this->validated();
     }
 }

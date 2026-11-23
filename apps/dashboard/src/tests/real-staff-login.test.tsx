@@ -233,6 +233,7 @@ describe("CA-05 real-staff-login", () => {
           onConfirm={() => undefined}
           onAcknowledge={() => undefined}
           onRetry={() => undefined}
+          onSignOut={() => undefined}
         />,
       );
       expect(markup).toContain('alt="Código QR para tu app autenticadora"');
@@ -256,7 +257,7 @@ describe("CA-05 real-staff-login", () => {
     });
     const authApi = createAuthApi({
       twoFactorQrCode: vi.fn()
-        .mockRejectedValueOnce(new Error("No se pudo cargar el QR."))
+        .mockRejectedValueOnce(Object.assign(new Error("No se pudo cargar el QR."), { name: "ApiError", status: 500 }))
         .mockResolvedValueOnce({ svg: "<svg>renovado</svg>" }),
     });
 
@@ -273,6 +274,7 @@ describe("CA-05 real-staff-login", () => {
         onConfirm={() => undefined}
         onAcknowledge={() => undefined}
         onRetry={() => undefined}
+        onSignOut={() => undefined}
       />,
     );
     expect(markup).toContain("Reintentar");
@@ -388,7 +390,7 @@ describe("CA-07 real-staff-login", () => {
       missingUrlHarness.dispatch,
       missingUrlRedirect,
     );
-    const markup = renderToStaticMarkup(<PwaRedirectView pwaUrl={null} />);
+    const markup = renderToStaticMarkup(<PwaRedirectView pwaUrl={null} onSignOut={() => undefined} />);
     expect(missingUrlRedirect).not.toHaveBeenCalled();
     expect(markup).toContain("no está configurada");
     expect(markup).not.toContain("<a");

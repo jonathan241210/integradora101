@@ -1,5 +1,6 @@
 import { Button, Card } from "@arca/ui";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { DashboardSummarySkeleton } from "@/components/LoadingSkeletons";
 import { SalesTotals } from "@/components/SalesTotals";
 import { SectionHeading } from "@/components/SectionHeading";
 import {
@@ -35,6 +36,7 @@ export function DashboardView({
         status={state.status === "empty" ? "ready" : state.status}
         error={state.error}
         loadingText="Cargando el resumen…"
+        skeleton={<DashboardSummarySkeleton />}
         emptyText=""
         onRetry={actions.reload}
       />

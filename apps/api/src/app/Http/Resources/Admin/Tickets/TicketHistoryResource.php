@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Admin\Tickets;
 
+use App\Enums\TicketCancellationReason;
 use App\Models\Ticket;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -22,6 +23,10 @@ class TicketHistoryResource extends JsonResource
             'total_amount' => $ticket->total_amount,
             'status' => $ticket->status,
             'cancelled_at' => $ticket->cancelled_at?->utc()->toIso8601ZuluString(),
+            'cancellation_reason_code' => $ticket->cancellation_reason_code?->value,
+            'cancellation_reason_label' => $ticket->status === Ticket::STATUS_CANCELLED
+                ? TicketCancellationReason::labelFor($ticket->cancellation_reason_code)
+                : null,
             'cancellation_reason' => $ticket->cancellation_reason,
             'cashier_name' => $ticket->cashier ? self::fullName($ticket->cashier) : null,
             'cancellable' => (bool) $ticket->getAttribute('cancellable'),

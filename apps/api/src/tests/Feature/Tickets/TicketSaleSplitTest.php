@@ -8,7 +8,7 @@ class TicketSaleSplitTest extends TicketFeatureTestCase
 {
     public function test_ca50_ticket_sales_one_ticket_per_unit_with_ascending_folios_and_own_qr(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier, '25.00', '16.00');
         $payload = ['adult_quantity' => 1, 'child_quantity' => 3];
 

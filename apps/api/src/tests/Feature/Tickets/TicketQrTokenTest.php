@@ -9,7 +9,7 @@ class TicketQrTokenTest extends TicketFeatureTestCase
 {
     public function test_ca08_ticket_sales_issues_distinct_unpredictable_tokens_and_database_rejects_duplicates(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
 
         $first = $this->sell($cashier);

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { EventsView } from "../views/EventsView";
@@ -139,12 +141,14 @@ describe("CA-05 collapsible-menu-event-pagination", () => {
     expect(markup).toContain("Confirma o cancela la acción para cambiar de página.");
   });
 
-  it("permite cerrar la confirmación si el evento ya no está en la lista", () => {
+  it("CA-26 avisa y cierra la confirmación si el evento ya no está en la lista", () => {
     const state = { ...readyEvents, pendingAction: { type: "delete" as const, id: 999 } };
     const markup = renderToStaticMarkup(<EventsView state={state} actions={eventActions} />);
 
+    // dashboard-020 CA-26: aviso emergente (sin proveedor queda en línea) y cierre automático.
     expect(markup).toContain("El evento ya no está en la lista.");
-    expect(markup).toContain("Cerrar confirmación");
+    expect(markup).not.toContain("Cerrar confirmación");
+    expect(readFileSync(resolve(__dirname, "../views/EventsView.tsx"), "utf8")).toContain("closePending()");
   });
 });
 

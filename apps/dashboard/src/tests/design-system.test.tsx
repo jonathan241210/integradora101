@@ -83,3 +83,26 @@ describe("CA-14 admin-dashboard-prototype", () => {
     expect(views).not.toMatch(/#[\da-f]{3,8}\b/i);
   });
 });
+
+describe("CA-17 fixed-roles-account-management", () => {
+  it("CA-17: las vistas nuevas no fijan hex de marca", () => {
+    const files = [
+      "views/UsersView.tsx",
+      "components/ConsoleNoticesPublisher.tsx",
+      "viewmodels/console-notices.ts",
+    ];
+
+    for (const file of files) {
+      expect(readFileSync(`${dashboardRoot}/src/${file}`, "utf8"), file).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+    }
+
+    const css = readFileSync(`${dashboardRoot}/src/styles.css`, "utf8");
+    const block = css.slice(
+      css.indexOf("fixed-roles-account-management:start"),
+      css.indexOf("fixed-roles-account-management:end"),
+    );
+
+    expect(block.length).toBeGreaterThan(0);
+    expect(block).not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+  });
+});

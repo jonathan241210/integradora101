@@ -149,7 +149,7 @@ Definido en `api-010` CA-26 y CA-27. Es la misma petición: no crea una nueva.
 | 422 `errors.consent` | Sin la casilla marcada | «Confirma que tienes permiso para compartir esta foto y que aceptas los términos.» | `api-010` CA-04 |
 | 422 `errors.open_request` | Ya hay una petición abierta (`submitted`, `in_review` o `rejected`) | «Ya tienes una petición abierta. Espera la revisión o corrígela si fue rechazada.» Incluye `open_request_id`. Dónde va ese campo: pendiente de confirmar | `api-010` CA-24 |
 | 422 `errors.status` | Resubmit de una petición que no está `rejected` | «Solo puedes corregir una petición rechazada.» | `api-010` CA-26 |
-| 429 `weekly_limit_reached` | Menos de 7 días desde el `created_at` de la última petición nueva | «Solo puedes enviar un momento por semana. Podrás enviar otro a partir del {fecha y hora}.» (zona de `APP_TIMEZONE`). Incluye `next_submission_at` (ISO 8601 UTC) y la cabecera `Retry-After` en segundos | `api-010` CA-23 |
+| 429 `weekly_limit_reached` | Menos de 7 días desde el `created_at` de la última petición nueva | «Solo puedes enviar un momento por semana. Podrás enviar otro a partir del {fecha y hora}.» (zona `ARCA_TIMEZONE`, `arca.timezone`). Incluye `next_submission_at` (ISO 8601 UTC) y la cabecera `Retry-After` en segundos | `api-010` CA-23 |
 | 413 / 415 | Límites del servidor (tamaño o tipo) | Sin texto en la spec. La app muestra su mensaje de tamaño o formato (`mobile-010` CA-09). Pendiente / por confirmar con backend | `api-010` Flujos y errores; `infra/README.md` |
 | 5xx | Fallo de disco u otro | Sin texto definido. No se crea petición ni archivo | `api-010` RN-16 |
 
@@ -290,7 +290,7 @@ Esta guía no corrige specs. Estas divergencias quedan para la revisión de `api
 
 - **D1. Opinión: obligatoria o no.** `mobile-010` (Decisiones tomadas, CA-02, Flujos 4, «Problema y contexto») pide opinión y bloquea el botón sin ella. `api-010` (Pregunta 7, RN-06, CA-01, CA-03) la hace opcional desde el 2026-11-11. `mobile-010` no se ha actualizado.
 - **D2. Quién envía la versión de términos.** La spec dice que la API la guarda desde `MEMORIES_TERMS_VERSION` (RN-23). Sin embargo, el contrato de envío de la app no la menciona. Pendiente de confirmar.
-- **D3. Zona horaria de las fechas.** `mobile-010` CA-08 dice «en la zona horaria de la API (`api-010` CA-06)». `api-010` CA-06 no fija zona. CA-23 usa `APP_TIMEZONE` solo en el texto del mensaje, y `next_submission_at` va en ISO 8601 UTC. Falta definir cómo se formatean las fechas en la app.
+- **D3. Zona horaria de las fechas.** `mobile-010` CA-08 dice «en la zona horaria de la API (`api-010` CA-06)». `api-010` CA-06 no fija zona. CA-23 usa `ARCA_TIMEZONE` (`arca.timezone`, api-025 RN-11) solo en el texto del mensaje, y `next_submission_at` va en ISO 8601 UTC. Falta definir cómo se formatean las fechas en la app.
 - **D4. Capa de Repository.** `mobile-010` CA-11 dice «un hook ViewModel que llama a `@arca/api-client`». `mobile-004` CA-12 y `apps/mobile/docs/estandares-integracion-api.md` (sección 2) piden «ViewModel → Repository → `@arca/api-client`». Hay que elegir una.
 - **D5. ADR de `expo-camera`.** `mobile-010` RN-10 dice que el ADR 0004 cubre `expo-camera`. El ADR que lo autoriza para QR es el 0022. `apps/mobile/AGENTS.md` exige specs propias para cámara. Es un tema interno de `mobile-010`.
 - **D6. Imprecisiones en las referencias de `api-010`** al borrado de cuenta y al registro (ver 5.1).

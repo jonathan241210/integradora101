@@ -17,7 +17,7 @@ class TicketPriceHorizonTest extends TicketFeatureTestCase
 
         foreach (['2027-11-02T12:00:01Z', '2027-11-02T06:00:01-06:00', '2030-01-01T00:00:00Z'] as $far) {
             $this->actAs($admin)->postJson('/api/v1/admin/ticket-prices', [
-                'adult_amount' => 30, 'child_amount' => 20, 'mode' => 'scheduled', 'effective_at' => $far,
+                'adult_amount' => 30, 'child_amount' => 20, 'password' => self::STEP_UP_PASSWORD, 'mode' => 'scheduled', 'effective_at' => $far,
             ])->assertStatus(422)
                 ->assertJsonValidationErrors(['effective_at'], 'errors')
                 ->assertJsonPath('errors.effective_at.0', self::MESSAGE);
@@ -25,7 +25,7 @@ class TicketPriceHorizonTest extends TicketFeatureTestCase
         $this->assertSame($rows, TicketPrice::query()->count());
 
         $this->actAs($admin)->postJson('/api/v1/admin/ticket-prices', [
-            'adult_amount' => 30, 'child_amount' => 20, 'mode' => 'scheduled', 'effective_at' => '2027-06-01T09:00:00-06:00',
+            'adult_amount' => 30, 'child_amount' => 20, 'password' => self::STEP_UP_PASSWORD, 'mode' => 'scheduled', 'effective_at' => '2027-06-01T09:00:00-06:00',
         ])->assertCreated();
         $this->assertSame($rows + 2, TicketPrice::query()->count());
     }
@@ -36,7 +36,7 @@ class TicketPriceHorizonTest extends TicketFeatureTestCase
         $this->setPrices($admin);
 
         $this->actAs($admin)->postJson('/api/v1/admin/ticket-prices', [
-            'adult_amount' => 30, 'child_amount' => 20, 'mode' => 'immediate',
+            'adult_amount' => 30, 'child_amount' => 20, 'password' => self::STEP_UP_PASSWORD, 'mode' => 'immediate',
         ])->assertCreated();
     }
 }

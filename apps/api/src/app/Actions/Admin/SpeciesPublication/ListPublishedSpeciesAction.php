@@ -6,7 +6,7 @@ use App\Enums\SpeciesRequestStatus;
 use App\Models\Species;
 use App\Models\SpeciesPublicationRequest;
 use App\Support\PageGuard;
-use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ListPublishedSpeciesAction
 {
@@ -16,13 +16,9 @@ class ListPublishedSpeciesAction
      * Published and unpublished species, never `not_published` (CA-40, RN-22).
      * Items carry `has_pending_request` as a runtime attribute.
      */
-    public function execute(?string $status, ?string $category): Paginator
+    public function execute(?string $status, ?string $category): LengthAwarePaginator
     {
-        if (PageGuard::exceeds()) {
-            return PageGuard::empty(self::PER_PAGE);
-        }
-
-        $page = Species::query()
+        $query = Species::query()
             ->when($status === 'published', fn ($query) => $query->where('is_published', true))
             ->when($status === 'unpublished', fn ($query) => $query->where('is_published', false)->whereNotNull('unpublished_at'))
             ->when($status === null || $status === '', fn ($query) => $query->where(
@@ -30,8 +26,14 @@ class ListPublishedSpeciesAction
             ))
             ->when($category !== null && $category !== '', fn ($query) => $query->where('category', $category))
             ->orderByDesc('published_at')
-            ->orderByDesc('id')
-            ->simplePaginate(self::PER_PAGE);
+            ->orderByDesc('id');
+
+        // Page out of range: empty list that still reports the real total.
+        if (PageGuard::exceeds()) {
+            return PageGuard::empty(self::PER_PAGE, (clone $query)->reorder()->count());
+        }
+
+        $page = $query->paginate(self::PER_PAGE);
 
         $pending = SpeciesPublicationRequest::query()
             ->where('status', SpeciesRequestStatus::Submitted->value)

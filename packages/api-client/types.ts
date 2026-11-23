@@ -29,6 +29,8 @@ export type ApiErrorPayload = {
   code?: string;
   errors?: Record<string, string[]>;
   retryAfterSeconds?: number;
+  /** Solo en 403 `password_confirmation_required` (api-021). */
+  mode?: "window" | "always";
   data?: unknown;
 };
 

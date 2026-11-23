@@ -32,6 +32,10 @@ class GlobalSearchResultsTest extends AdminFeatureTestCase
             foreach ($group['items'] as $item) {
                 // `kind` solo en tulanpedia; `match` es opcional y va al final (CA-42).
                 $expected = $group['section'] === 'tulanpedia' ? ['id', 'title', 'subtitle', 'kind'] : ['id', 'title', 'subtitle'];
+                // api-023 CA-35: `users` añade `managed_by_console` antes de `match`.
+                if ($group['section'] === 'users') {
+                    $expected[] = 'managed_by_console';
+                }
                 $keys = array_keys($item);
                 if (isset($item['match'])) {
                     $this->assertSame('match', array_pop($keys));

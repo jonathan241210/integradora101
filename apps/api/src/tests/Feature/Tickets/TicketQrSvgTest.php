@@ -9,7 +9,7 @@ class TicketQrSvgTest extends TicketFeatureTestCase
 {
     public function test_ca09_ticket_sales_response_contains_a_valid_svg_made_from_the_token(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
 
         $data = $this->sell($cashier);
@@ -28,7 +28,7 @@ class TicketQrSvgTest extends TicketFeatureTestCase
         $action = new RenderTicketQrSvgAction;
         $this->assertNotSame($action->execute('token-uno'), $action->execute('token-dos'));
 
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $data = $this->sell($cashier);
 

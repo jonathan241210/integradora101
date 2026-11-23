@@ -23,6 +23,7 @@ class SpeciesPublicationRequest extends Model
         'habitat',
         'origin',
         'category',
+        'fun_fact',
         'image_path',
         'published_fields',
         'rejection_reason',

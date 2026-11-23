@@ -537,6 +537,19 @@ Decisiones del usuario del 2026-11-12 para que la funcionalidad funcione en `arc
 
 Pendientes que no se decidieron aquí y siguen fuera de esta sección: DBR-013 pregunta 8 (campos extra) y el origen de producción de la API y del portal (`web-009` pregunta 2).
 
+## Nota de revisión (2026-11-21, campo «Dato curioso»)
+
+- Se añade el campo `fun_fact` («Dato curioso») según `apps/api/specs/026-species-fun-fact.md` (Aprobada 2026-11-21). Esta nota no cambia el estado, los CA, las RN ni los endpoints de esta spec.
+- Afecta, según `api-026`: edición de solicitud (CA-15, CA-16, CA-18), detalle de administración (CA-06, CA-37), aceptación (CA-08), republicar (CA-36), eliminar la publicación (CA-38) y selector (CA-26). Los listados (CA-05) no lo incluyen.
+- DBR-025 (columna `fun_fact` en `species_publication_requests` y `species`): ya aplicada en `arca_pruebas` (nota de revisión 2026-11-21); ver `api-026`.
+
+## Revisión 2026-11-21 (aprobada por Jonathan): paginación con total
+
+Jonathan aprobó el 2026-11-21 que todas las listas paginadas den el total de páginas, para que los clientes muestren números de página de forma coherente. Aplica a `GET /api/v1/admin/species-publication-requests` (CA-05), `GET /api/v1/admin/published-species` (CA-40) y `GET /api/v1/veterinarian/species-publication-requests` (CA-33). No cambia el estado de la spec ni renumera CA.
+
+- **CA-42 (meta con total):** Dadas las tres listas, cuando se consultan, entonces `meta` trae `current_page`, `last_page`, `per_page` (10) y `total` (mismo formato que Usuarios y el historial de boletos) y conserva `has_more`. `last_page` es `ceil(total / per_page)` (mínimo 1) y `total` respeta el filtro (`status`, `category`) y las exclusiones de cada lista (solicitudes borradas, solicitudes ajenas, especies no publicadas).
+- **CA-43 (orden estable y página absurda):** Dadas las tres listas, cuando varias filas comparten fecha, entonces el desempate por `id` descendente mantiene el orden estable entre páginas, sin repetidos ni omitidos. Con una `page` mayor que 100000 responde `200` con `data` vacío, `has_more` en `false` y el `total` real; sin `500`.
+
 ## Revisión
 
 - Aprobadores y fecha: Jonathan (responsable de backend), 2026-11-12.

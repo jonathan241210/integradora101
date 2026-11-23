@@ -60,7 +60,7 @@ export function useTicketReport(): TicketReportViewModel {
         );
       },
       exportAs: (format) =>
-        void exportTicketReport(adminApi, dispatch, state.query, format, saveFile, state.report),
+        void exportTicketReport(adminApi, dispatch, state.query, format, saveFile),
     },
   };
 }
