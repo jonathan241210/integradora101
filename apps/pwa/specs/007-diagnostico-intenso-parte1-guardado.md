@@ -2,9 +2,10 @@
 
 - App dueña: `pwa`
 - Apps/paquetes afectados: `pwa`, `api` (`ClinicalEvaluationController`, modelos/rutas/validación clínica), `docs/database` (DBR-015)
-- Estado: Aprobada para implementación (modalidad B; DBR-015 “Lista para backend”, evidencia post-migración detallada pendiente)
-- Solicitante / responsable funcional: Victor Adrian
-- Aprobación funcional: Victor Adrian, 2026-11-13 (iniciar implementación de guardado completo al enviar partes 1 y 2)
+- Estado: Implementada
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-13
+- Aprobación funcional: Aprobada (iniciar implementación de guardado completo al enviar partes 1 y 2)
 
 ## Problema y contexto
 
@@ -48,7 +49,7 @@ Decisiones previas/actualizadas en conversación: contención física y química
 | Muestras/lab/biopsia/Rx (parte 2) | `lab_samples` | `clinical_evaluation_id`, `sample_type`, `result_notes` (y `file_path` si aplica) | 1 fila por muestra/tipo. |
 | Eliminación lógica clínica | `clinical_evaluations`, `clinical_evaluation_findings`, `animal_restraints`, `lab_samples` | `deleted_at` (DBR-015) | SoftDeletes; sin borrado físico de datos clínicos. |
 
-## Decisiones registradas (2026-11-13)
+## Decisiones registradas
 
 1. **Modalidad:** **B — guardar en BD solo cuando las dos partes (1 y 2) estén completas** en un solo envío (evita diagnósticos incompletos). Sin borrador progresivo en BD.
 2. **Edad (DBR-015, aprobada):** `patient_age VARCHAR(50) NULL` en `clinical_evaluations`. Se retira `animals.estimated_age` (queda `birth_date`). Backfill: 1 registro con `estimated_age` en `arca_pruebas` a registrar por BD antes de `DROP`. Persistencia de `patient_age` depende de que DBR-015 esté aplicada y en “Lista para backend”.

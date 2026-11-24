@@ -1,11 +1,11 @@
 # DBR-002 · staff-authentication
 
-- Estado: Lista para backend
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-10-13
+- Aprobada: 2026-10-14
 - Feature/spec origen: `apps/api/specs/003-staff-authentication.md`
-- Solicitante: Jonathan (backend)
-- Responsable de BD: Victor Adrian
-- Responsable backend: Jonathan
-- Fecha: 2026-10-13
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 - Depende de: DBR-001 (`english-schema-normalization`), que debe aplicarse primero
 
 ## Problema y justificación
@@ -149,15 +149,15 @@ No aplica.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Victor Adrian | 2026-10-14 | Aprobada |
-| Responsable backend | Jonathan | 2026-10-14 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | aplicada | 2026-10-14 | Migración 2026_10_14_000002 ejecutada y verificada |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_10_14_000002` ejecutada y verificada |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

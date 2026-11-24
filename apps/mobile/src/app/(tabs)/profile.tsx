@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { AppText, ScreenContainer, TitledLoading } from '../../components/ui';
+import { AppText, ScreenContainer, TitledLoading, VisitorDataGate } from '../../components/ui';
 import { Animal } from '../../models';
 import { ProfileScreen } from '../../screens/ProfileScreen';
 import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
@@ -10,7 +10,7 @@ import { mergeDiscoveredSpecies, profileDiscoveryCounts, useVisitorProgress } fr
 
 export default function ProfileRoute() {
   const router = useRouter();
-  const { user, achievements, loading, error } = useUserViewModel();
+  const { user, achievements, loading, error, status, refresh } = useUserViewModel();
   const { getAnimals } = useAnimalViewModel();
   const progress = useVisitorProgress();
   const { profile } = useVisitorProfile();
@@ -39,11 +39,17 @@ export default function ProfileRoute() {
       </ScreenContainer>
     );
   }
-  if (error) {
+  if (status === 'guest' || status === 'error') {
     return (
-      <ScreenContainer>
-        <AppText variant="body" color="danger">No se pudo cargar el perfil: {error}</AppText>
-      </ScreenContainer>
+      <VisitorDataGate
+        title="Perfil"
+        status={status}
+        error={error}
+        onLogin={() => router.replace('/login')}
+        onRetry={refresh}
+      >
+        {null}
+      </VisitorDataGate>
     );
   }
   if (!user) {

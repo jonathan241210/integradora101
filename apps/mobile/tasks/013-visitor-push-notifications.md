@@ -1,10 +1,12 @@
 # Tareas · 013 · visitor-push-notifications
 
-- Spec: `apps/mobile/specs/013-visitor-push-notifications.md` (Aprobada, Aksel, 2026-11-14)
-- Plan: `apps/mobile/plan/013-visitor-push-notifications.md` (Aprobado técnicamente, Victor Adrian, 2026-11-14)
-- ADR: `docs/adr/0029-visitor-android-push.md` (Aceptado, Aksel, 2026-11-14)
+- Spec: `apps/mobile/specs/013-visitor-push-notifications.md` (Aprobada)
+- Plan: `apps/mobile/plan/013-visitor-push-notifications.md` (Aprobado técnicamente)
+- ADR: `docs/adr/0029-visitor-android-push.md` (Aceptado)
 - Depende de: `apps/api/tasks/017-visitor-push-notifications.md` y de DBR-017 en `Lista para backend`
-- Estado del checklist: **Aprobado** (Aksel, 2026-11-14). Autoriza el código de estas tareas, incluida `expo-notifications`. No autoriza credenciales FCM ni el PR.
+- Estado del checklist: **Aprobado**. Autoriza el código de estas tareas, incluida `expo-notifications`. No autoriza credenciales FCM ni el PR.
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
 
 Ninguna tarea añade alcance. Las vistas no importan `@arca/api-client` ni `fetch`. El cliente se simula en Jest. La barra de Android con la app cerrada no se afirma en Jest: queda como evidencia manual del PR de implementación.
 
@@ -44,7 +46,7 @@ Ninguna tarea añade alcance. Las vistas no importan `@arca/api-client` ni `fetc
 - [x] **T-06** (CA-09, CA-10; RN-01): toque del aviso.
   - Depende de: T-04.
   - Archivo: `apps/mobile/src/push/usePushNavigation.ts`.
-  - Cambios: `type` `news` abre `/news-detail` con `id`. `type` `event` abre `/event-detail` con `id`. Si el detalle ya no existe, muestra «Ya no está disponible.» y se queda en el inicio. `type` `memory` abre `/memory-form` con ese `id`. Enmienda 2026-11-18: esa ruta espera la lista si el id no está en memoria y, si sigue ausente, muestra «Tu memoria». No se crea otra bandeja. El título y el cuerpo del sistema no se cambian, y el aviso del momento no añade motivo ni opinión.
+  - Cambios: `type` `news` abre `/news-detail` con `id`. `type` `event` abre `/event-detail` con `id`. Si el detalle ya no existe, muestra «Ya no está disponible.» y se queda en el inicio. `type` `memory` abre `/memory-form` con ese `id`. Enmienda: esa ruta espera la lista si el id no está en memoria y, si sigue ausente, muestra «Tu memoria». No se crea otra bandeja. El título y el cuerpo del sistema no se cambian, y el aviso del momento no añade motivo ni opinión.
   - Hecho cuando: T-15 y T-16 pasan.
 
 ## Pruebas
@@ -60,7 +62,7 @@ Las pruebas viven en `apps/mobile/__tests__/push-notifications.test.tsx`, con cl
 - [x] **T-13** (CA-07): cerrar sesión y borrar la cuenta llaman a `deletePushToken` antes de terminar el flujo de `mobile-004`.
 - [x] **T-14** (CA-08): el módulo declara los canales `news-and-events` y `memories` con los nombres visibles de la spec, y conserva el título y el cuerpo del payload. La barra con la app cerrada no se afirma aquí.
 - [x] **T-15** (CA-09): un payload `news` o `event` navega al detalle de ese `id`. Si la ficha no existe, se muestra «Ya no está disponible.» y la app permanece en el inicio.
-- [x] **T-16** (CA-10): un payload `memory` abre `/memory-form` con ese `id`. Enmienda 2026-11-18: la pantalla «Tu memoria» se afirma en `visitor-memories.test.tsx` cuando la petición no está.
+- [x] **T-16** (CA-10): un payload `memory` abre `/memory-form` con ese `id`. Enmienda: la pantalla «Tu memoria» se afirma en `visitor-memories.test.tsx` cuando la petición no está.
 - [x] **T-17** (CA-11): el árbol cubierto por la prueba no tiene una pantalla de lista de avisos.
 - [x] **T-18** (CA-12): `SettingsScreen` no importa `@arca/api-client` ni `fetch`. La prueba no decide si una noticia se envía.
 
@@ -76,7 +78,7 @@ T-07 a T-18 son las pruebas. T-01 a T-06 son la puerta y la implementación.
 - [x] **T-20**: evidencia manual de la barra.
   - Depende de: T-02, T-04. No se ejecuta en Jest.
   - Hecho cuando: el PR de implementación adjunta la evidencia de CA-08 con la app en primer plano, en segundo plano y cerrada, en un build de distribución. Sin credenciales FCM, el PR lo dice y no presenta esa captura como si el aviso hubiera llegado.
-  - Confirmado por Aksel el 2026-11-20: la verificación manual de la barra ya se hizo. Esta task no guarda las capturas.
+  - La verificación manual de la barra quedó confirmada. Esta task no guarda las capturas.
 
 - [x] **T-21**: nota de permisos.
   - Depende de: T-02.
@@ -86,4 +88,4 @@ T-07 a T-18 son las pruebas. T-01 a T-06 son la puerta y la implementación.
 - [x] **T-22**: enlaces del PR.
   - Depende de: T-19, T-20, T-21.
   - Hecho cuando: el PR cita `mobile-013` y enlaza spec, plan, tasks, ADR 0029, DBR-017 y las tasks de `api-017`. No se abre ese PR en el corte que solo redacta este checklist.
-  - Confirmado por Aksel el 2026-11-20: la verificación y el pull de notificaciones ya se hicieron. Esta task no guarda la URL del PR.
+  - La verificación y el pull de notificaciones quedaron confirmados. Esta task no guarda la URL del PR.

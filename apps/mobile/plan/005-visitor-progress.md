@@ -1,10 +1,12 @@
 # Plan técnico · 005 · visitor-progress
 
 - Spec: `apps/mobile/specs/005-visitor-progress.md`
-- Estado de spec: Implementada (2026-11-01; aprobación funcional Aksel, 2026-10-22)
-- Estado del plan: Aprobado (Aksel, 2026-10-22)
-- Responsable técnico: Aksel
-- Depende de `apps/api/plan/005-visitor-progress.md` (Aprobado, Aksel, 2026-10-22)
+- Estado de spec: Implementada
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
+- Estado del plan: Aprobado
+- Responsable técnico: Frontend
+- Depende de `apps/api/plan/005-visitor-progress.md` (Aprobado)
 
 ## Diseño de solución
 
@@ -12,11 +14,11 @@ La app presenta el progreso que devuelve la API y guarda solo la cola de escaneo
 
 Perfil sustituye puntos, nivel y rango de demostración cuando hay sesión. La colección lista especies con `discovered`. Logros y misiones muestran el estado del servidor. Se retiran líderes y recompensas.
 
-Enmienda 2026-10-23: `readSharedProgress` guarda una copia por repositorio. Las pantallas esperan la lectura en curso y no repiten la petición si ya hay datos. La copia se tira al cerrar sesión y al entrar en otra. `bootstrap()` regresa de inmediato si el estado ya es `authenticated`. Guardar el perfil avisa a la sesión, pero no dispara otra lectura de progreso. Ajustes sigue pidiendo el perfil una vez para mostrar nombre y correo.
+Enmienda: `readSharedProgress` guarda una copia por repositorio. Las pantallas esperan la lectura en curso y no repiten la petición si ya hay datos. La copia se tira al cerrar sesión y al entrar en otra. `bootstrap()` regresa de inmediato si el estado ya es `authenticated`. Guardar el perfil avisa a la sesión, pero no dispara otra lectura de progreso. Ajustes sigue pidiendo el perfil una vez para mostrar nombre y correo.
 
-Enmienda 2026-11-01: el resultado del escaneo es un recuadro de color (vino, dorado o crema) con icono, puntos y nombres grandes. En el perfil, las cifras se leen en el tamaño del título y el siguiente umbral es una barra chica de los puntos actuales contra ese umbral. La colección usa pastillas de estado y foto más alta. La aventura muestra la barra de la misión en vino. El inicio, con sesión, saluda con el apodo y los animales que faltan.
+Enmienda visual: el resultado del escaneo es un recuadro de color (vino, dorado o crema) con icono, puntos y nombres grandes. En el perfil, las cifras se leen en el tamaño del título y el siguiente umbral es una barra chica de los puntos actuales contra ese umbral. La colección usa pastillas de estado y foto más alta. La aventura muestra la barra de la misión en vino. El inicio, con sesión, saluda con el apodo y los animales que faltan.
 
-Enmienda visual 2026-11-11: el perfil es una ficha `surface` con franja `primary`. El rango va en pastilla `accent`. El total de descubiertos sale de la lista de la colección cuando `total_species` solo cuenta especies con animal visitable. «Logros recientes» lista 5 y se desplaza dentro de esa zona. La colección no repite el faltante del inicio; «Descubierto» usa `text` sobre `accent` y el borde de la tarjeta es `border`. «Ordenar» es un botón en `primary`. En un descubrimiento, el recuadro no repite el nombre y cada «Ver {nombre}» ocupa su propio renglón. Solo tokens de `@arca/tokens`.
+Enmienda visual: el perfil es una ficha `surface` con franja `primary`. El rango va en pastilla `accent`. El total de descubiertos sale de la lista de la colección cuando `total_species` solo cuenta especies con animal visitable. «Logros recientes» lista 5 y se desplaza dentro de esa zona. La colección no repite el faltante del inicio; «Descubierto» usa `text` sobre `accent` y el borde de la tarjeta es `border`. «Ordenar» es un botón en `primary`. En un descubrimiento, el recuadro no repite el nombre y cada «Ver {nombre}» ocupa su propio renglón. Solo tokens de `@arca/tokens`.
 
 ## Cambios por área
 
@@ -43,10 +45,10 @@ La cola no guarda tokens ni contraseñas. El UUID nace en el teléfono al acepta
 
 | Criterio | Prueba | Ubicación |
 |---|---|---|
-| CA-01 | `test-ca-01-progress-profile` | `__tests__/progress/profile.test.tsx`. Muestra «Cargando perfil…» hasta que llega el progreso y «Aún no tienes logros» si no hay desbloqueados. Enmienda 2026-10-23. |
+| CA-01 | `test-ca-01-progress-profile` | `__tests__/progress/profile.test.tsx`. Muestra «Cargando perfil…» hasta que llega el progreso y «Aún no tienes logros» si no hay desbloqueados. Enmienda. |
 | CA-01 | `una sola lectura de progreso` | `__tests__/progress/single-load.test.tsx`. Dos pantallas disparan `load()` una vez y guardar el perfil no lo repite. `__tests__/auth/http-bootstrap.test.ts` comprueba que `bootstrap()` no vuelve a pedir el perfil si la sesión ya está autenticada. |
 | CA-02 | `test-ca-02-progress-collection` | `__tests__/progress/collection.test.tsx` |
-| CA-03 | `test-ca-03-progress-achievements-missions` | `__tests__/progress/catalogs.test.tsx`. Sin desbloqueados, «Salón de logros» abre en «Por obtener». Enmienda 2026-10-23. |
+| CA-03 | `test-ca-03-progress-achievements-missions` | `__tests__/progress/catalogs.test.tsx`. Sin desbloqueados, «Salón de logros» abre en «Por obtener». Enmienda. |
 | CA-04 | `test-ca-04-progress-queue-offline` | `__tests__/progress/scan-queue.test.ts` |
 | CA-05 | `test-ca-05-progress-queue-flush` | `__tests__/progress/scan-queue.test.ts` |
 | CA-06 | `test-ca-06-progress-queue-result` | `__tests__/progress/scan-queue.test.ts` |
@@ -73,8 +75,8 @@ La cola no guarda tokens ni contraseñas. El UUID nace en el teléfono al acepta
 
 ## Orden y aprobación
 
-1. Spec aprobada por Aksel el 2026-10-22, después de `api-005`.
-2. Este plan, aprobado por Aksel el 2026-10-22.
+1. Spec aprobada, después de `api-005`.
+2. Este plan, aprobado.
 3. El código de la app espera los endpoints de la API descritos en el plan de `api-005`.
 
-Aprobador funcional: Aksel. Fecha: 2026-10-22.
+Aprobación funcional: Aprobada.

@@ -1,8 +1,10 @@
 # Tareas · 004 · visitor-authentication
 
-- Spec: `apps/api/specs/004-visitor-authentication.md` (Implementada, 2026-10-21; aprobación funcional de Aksel, 2026-10-20)
-- Plan: `apps/api/plan/004-visitor-authentication.md` (Aprobado, Aksel, 2026-10-21)
-- Estado del checklist: Aprobado por Aksel, 2026-10-21.
+- Spec: `apps/api/specs/004-visitor-authentication.md` (Implementada)
+- Plan: `apps/api/plan/004-visitor-authentication.md` (Aprobado)
+- Estado del checklist: Completado.
+- Solicitada: 2026-10-20
+- Aprobada: 2026-10-20
 
 ## Alcance
 
@@ -12,7 +14,7 @@ Todas las tareas están bajo `apps/api/src`, más una nota en `apps/api/docs/`. 
 
 No editar al implementar estas tareas:
 
-- `apps/mobile`. Este checklist no la edita. El corte HTTP, con `expo-secure-store` y el cliente visitante, quedó en `mobile-004` el 2026-10-21. Sin `EXPO_PUBLIC_API_URL`, Jest sigue con el mock y sin un código de prueba publicado.
+- `apps/mobile`. Este checklist no la edita. El corte HTTP, con `expo-secure-store` y el cliente visitante, quedó en `mobile-004`. Sin `EXPO_PUBLIC_API_URL`, Jest sigue con el mock y sin un código de prueba publicado.
 - `packages/api-client`, incluido `auth.ts`. No se crea el módulo visitante.
 - `apps/web` y `apps/dashboard`.
 - `docs/adr` y `docs/database`. Este checklist no instala `expo-secure-store`. ADR 0011 está aceptado y esa dependencia pertenece al checklist HTTP de la app.
@@ -80,10 +82,10 @@ Cada prueba vive en `tests/Feature/Visitor/`, usa `DatabaseTransactions` sobre `
 
 - [x] **T-39**: Ejecutar `php artisan test` desde `apps/api/src`. La suite de personal existente debe seguir en verde.
 - [x] **T-40**: Documentar el contrato del visitante en `apps/api/docs/`, sin secretos ni credenciales. El PR enlaza spec, plan y tasks.
-- [x] **T-41** (CA-04, CA-16, CA-20): Enmienda 2026-11-05. Enviar automáticamente código de verificación en `LoginVisitorAction` cuando `email_verified_at === null` (`LoginTest.php`), mejorar la plantilla `resources/views/mail/visitor-access-code.blade.php` para distinguir verificación de correo y recuperación de contraseña en español (`VerificationCodeTest.php`) y documentar la configuración SMTP (Gmail) en `apps/api/docs/visitante-autenticacion.md`.
+- [x] **T-41** (CA-04, CA-16, CA-20): Enmienda. Enviar automáticamente código de verificación en `LoginVisitorAction` cuando `email_verified_at === null` (`LoginTest.php`), mejorar la plantilla `resources/views/mail/visitor-access-code.blade.php` para distinguir verificación de correo y recuperación de contraseña en español (`VerificationCodeTest.php`) y documentar la configuración SMTP (Gmail) en `apps/api/docs/visitante-autenticacion.md`.
 
-- [x] **T-41** (CA-03, RN-04): Enmienda de Aksel, 2026-11-05. Un registro con correo ya usado responde 201 con el mismo mensaje, no crea otra cuenta ni cambia nombre, apodo, avatar ni contraseña, y envía `registration_notice`. Verificar ese código responde 200 «Ese correo ya está registrado.» con `email_already_registered` y sin tokens. Un código inválido suma intento solo al código vigente más reciente de `email_verification` y `registration_notice`. El reenvío repite ese propósito más reciente. Prueba en `RegisterTest.php`. El asunto del correo de aviso se distingue del de verificación.
+- [x] **T-41** (CA-03, RN-04): Enmienda de Equipo de producto móvil. Un registro con correo ya usado responde 201 con el mismo mensaje, no crea otra cuenta ni cambia nombre, apodo, avatar ni contraseña, y envía `registration_notice`. Verificar ese código responde 200 «Ese correo ya está registrado.» con `email_already_registered` y sin tokens. Un código inválido suma intento solo al código vigente más reciente de `email_verification` y `registration_notice`. El reenvío repite ese propósito más reciente. Prueba en `RegisterTest.php`. El asunto del correo de aviso se distingue del de verificación.
 
 Cada CA-01 a CA-21 tiene una tarea de prueba que lo nombra. Ninguna tarea sale de `apps/api`.
 
-Cierre 2026-10-21: `php artisan test` en verde (51 pruebas, 694 aserciones). La spec quedó en Implementada. El PR enlaza spec, plan y tasks.
+Cierre: `php artisan test` en verde (51 pruebas, 694 aserciones). La spec quedó en Implementada. El PR enlaza spec, plan y tasks.

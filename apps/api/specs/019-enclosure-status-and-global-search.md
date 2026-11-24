@@ -2,12 +2,13 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña de la lógica, las rutas y los permisos); `dashboard` (consumidor: `dashboard-012`); `mobile` y `web` (consumidores del catálogo público, sin cambio de código en esta spec); `packages/api-client` (métodos y tipos, sin lógica de negocio).
-- Estado: Aprobada (Jonathan, 2026-11-18). La parte de recintos queda bloqueada hasta que DBR-020 esté «Lista para backend»; la búsqueda global puede implementarse con plan y tasks aprobados.
-- Solicitante / responsable funcional: usuario del proyecto (nombre por registrar)
-- Aprobación funcional: Jonathan, 2026-11-18. Decisiones de producto registradas el 2026-11-18 (Jonathan).
+- Estado: Implementada. La parte de recintos depende de DBR-020 («Lista para backend»); la búsqueda global está implementada con plan y tasks aprobados.
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Aprobación funcional: Aprobada. Decisiones de producto registradas (el responsable funcional).
 - Dependencias: DBR-020 (Borrador; necesaria solo para la parte de recintos). La búsqueda global no necesita DBR. Enmienda `api-007` (CA-18), `api-010` (fuera de alcance) y `api-005` (CA-06); ver «Enmiendas».
-- **Enmienda 2026-11-18 (b), aprobada por Jonathan:** búsqueda tolerante, campos buscables por grupo, `match` con fragmento, tope de candidatos y límite de peticiones. Modifica CA-23, CA-24, CA-26 a CA-32, CA-34 y RN-09, RN-10, RN-12; añade CA-36 a CA-49 y RN-15 a RN-19. No retira ningún número. Ver «Enmienda 2026-11-18 (b)» en «Enmiendas».
-- **Enmienda 2026-11-18 (d), aprobada por Jonathan:** relevancia de la búsqueda global: coincidencia parcial de palabras, orden por tupla de relevancia y `best_score` por grupo. Modifica CA-37 y CA-41 (conservan número) y RN-16; añade CA-50 a CA-54. Ver «Enmienda 2026-11-18 (d)» en «Enmiendas».
+- **Enmienda (b), aprobada por el responsable funcional:** búsqueda tolerante, campos buscables por grupo, `match` con fragmento, tope de candidatos y límite de peticiones. Modifica CA-23, CA-24, CA-26 a CA-32, CA-34 y RN-09, RN-10, RN-12; añade CA-36 a CA-49 y RN-15 a RN-19. No retira ningún número. Ver «Enmienda (b)» en «Enmiendas».
+- **Enmienda (d), aprobada por el responsable funcional:** relevancia de la búsqueda global: coincidencia parcial de palabras, orden por tupla de relevancia y `best_score` por grupo. Modifica CA-37 y CA-41 (conservan número) y RN-16; añade CA-50 a CA-54. Ver «Enmienda (d)» en «Enmiendas».
 
 ## Problema y contexto
 
@@ -25,7 +26,7 @@ Se aplican solo al aprobarse esta spec. No se modifican ahora.
 | `api-010` (fuera de alcance) | «Creación, edición, cambio de estatus o borrado de recintos» | El cambio de estatus y el borrado pasan a `api-019` (rutas admin). `api-010` sigue siendo solo lectura pública, pero el catálogo público filtra según RN-05 de esta spec. |
 | `api-005` CA-06 (progreso) | «especies descubiertas / total disponibles (especies con al menos un animal en exhibición, aunque su recinto aún no tenga QR)» | El total «disponibles» y el numerador «descubiertas» excluyen las especies cuyos animales en exhibición están solo en recintos inactivos o eliminados; los registros de descubrimiento no se borran (CA-35 y RN-14 de esta spec). |
 
-### Enmienda 2026-11-18 (b), aprobada por Jonathan
+### Enmienda (b), aprobada por el responsable funcional
 
 Alcance: búsqueda global tolerante (sin mayúsculas ni acentos, varias palabras en cualquier orden, prefijos, errores de escritura), campos buscables por grupo, `match` con fragmento, tope de candidatos, límite de peticiones y reglas de datos. No cambia recintos (bloque B), no requiere DBR (solo lee columnas existentes) y no añade permisos. El grupo «Acciones» no es de la API: es un catálogo del dashboard (`apps/dashboard/specs/012`, enmienda (b)).
 
@@ -33,7 +34,7 @@ Alcance: búsqueda global tolerante (sin mayúsculas ni acentos, varias palabras
 |---|---|---|
 | CA-23, CA-24 | Sin `match`; orden por título e `id`. | `match` opcional (CA-42); orden por puntuación, título, `kind` (solo `tulanpedia`) e `id` (CA-41). |
 | CA-26 a CA-28 | Nombre, correo o título con LIKE. | Campos de CA-43 con tolerancia (CA-36 a CA-41). |
-| CA-29 | Solo número de momento; nunca opinión; cualquier otro carácter, sin grupo. | Revertido en la parte de «solo número»: se busca por opinión, motivo de rechazo y estado. El fragmento de opinión solo llega a `memories.review` (decisión de Jonathan, 2026-11-18). |
+| CA-29 | Solo número de momento; nunca opinión; cualquier otro carácter, sin grupo. | Revertido en la parte de «solo número»: se busca por opinión, motivo de rechazo y estado. El fragmento de opinión solo llega a `memories.review`. |
 | CA-30 | Nombre común de especie y solicitudes. | Campos de especie de CA-43 y solicitudes `submitted`. |
 | CA-31 | Solo folio exacto. | Folio exacto más estado, forma de pago, motivo de cancelación y fecha (CA-43, CA-45). |
 | CA-32, CA-34 | LIKE escapado; cobertura CA-01 a CA-35. | Comparación en PHP (sigue sin interpretar `%` ni `_`); cobertura CA-01 a CA-49. |
@@ -48,14 +49,14 @@ Reglas de la enmienda:
 - La consulta se divide por espacios. Los datos se dividen por cualquier carácter que no sea letra ni dígito. «Longitud» de una palabra = número de letras y dígitos.
 - Un campo vacío o nulo nunca coincide.
 
-Preguntas de la enmienda (b), con redacción propuesta; pendientes de confirmación de Jonathan:
+Preguntas de la enmienda (b), con redacción propuesta; pendientes de confirmación del responsable funcional:
 1. ¿El tope de 2000 candidatos toma los más recientes por `id` descendente? (propuesta: sí; CA-46).
 2. ¿La puntuación de un elemento es el peor nivel de sus palabras? (propuesta: sí; CA-41).
 3. ¿Se omite `match` cuando la coincidencia está solo en el título? (propuesta: sí; CA-42).
 4. ¿El rol se busca por su etiqueta en español y no por el identificador interno? (propuesta: sí; CA-43).
 5. ¿Texto del 429: «Demasiadas búsquedas. Espera un minuto e inténtalo de nuevo.»? (propuesta; CA-47).
 
-### Enmienda 2026-11-18 (d), aprobada por Jonathan
+### Enmienda (d), aprobada por el responsable funcional
 
 Alcance: mejorar la relevancia de la búsqueda global (`GET /api/v1/admin/search`). Sin DBR, sin migraciones, sin permisos nuevos.
 
@@ -85,7 +86,7 @@ Alcance: mejorar la relevancia de la búsqueda global (`GET /api/v1/admin/search
 - Gestión de códigos QR (generar, rotar o desactivar `enclosure_qr_codes`): pasa a `api-020`. Esta spec solo decide si un QR se acepta según el estado de su recinto.
 - Búsqueda en otros recursos (animales individuales, cuentas de visitantes, códigos QR, especies no publicadas).
 - Búsqueda de texto completo (`FULLTEXT`), sugerencias, paginación de resultados, historial de búsquedas o persistencia.
-- ~~Buscar o mostrar el texto de las opiniones de momentos (RN-09).~~ *Retirado por la enmienda 2026-11-18 (b): la opinión y el motivo de rechazo se buscan, y el fragmento se muestra solo a `memories.review` (CA-29, CA-44).*
+- ~~Buscar o mostrar el texto de las opiniones de momentos (RN-09).~~ *Retirado por la enmienda (b): la opinión y el motivo de rechazo se buscan, y el fragmento se muestra solo a `memories.review` (CA-29, CA-44).*
 - Nuevos permisos o cambios en roles. Se usan los permisos existentes del seeder.
 - Cambios de código en `mobile`, `web` o `pwa`.
 
@@ -133,12 +134,12 @@ Alcance: mejorar la relevancia de la búsqueda global (`GET /api/v1/admin/search
 ### Asignación, escaneo QR y progreso
 
 - **CA-15 (no asignable):** Dado un recinto inactivo o eliminado, cuando se registra un animal con ese `enclosure_id` mediante `POST /api/v1/staff/animals` (nombre `staff.animals.store`), entonces responde 422 con mensaje en español en el campo `enclosure_id` y no crea el animal.
-- **CA-16 (regla en todo punto de escritura):** Dado cualquier punto que escriba `enclosure_id` en `animals` (hoy solo `AnimalController::store`, verificado el 2026-11-18), cuando recibe un recinto, entonces aplica la regla de RN-04. Cada punto nuevo debe tener un test que lo cubra y que use `POST /api/v1/staff/animals` como caso de referencia.
+- **CA-16 (regla en todo punto de escritura):** Dado cualquier punto que escriba `enclosure_id` en `animals` (hoy solo `AnimalController::store`, verificado), cuando recibe un recinto, entonces aplica la regla de RN-04. Cada punto nuevo debe tener un test que lo cubra y que use `POST /api/v1/staff/animals` como caso de referencia.
 - **CA-17 (QR de recinto inactivo):** Dado un código QR válido cuyo recinto está inactivo, cuando el visitante lo escanea (`api-005` CA-04), entonces la API rechaza el escaneo con 422 y el mensaje «Este recinto no está disponible en este momento.», y no registra descubrimiento, especies ni puntos.
 - **CA-18 (QR de recinto eliminado):** Dado un código QR cuyo recinto está eliminado, cuando el visitante lo escanea, entonces se aplica el mismo rechazo que en CA-17 y no se registra nada. Enmienda `api-020` (CA-20): al eliminar el recinto sus códigos quedan eliminados, así que el escaneo responde 422 `invalid_code` («El código no es válido.»); `inactive_enclosure` solo aplica a códigos que siguen activos.
 - **CA-19 (reactivación del QR):** Dado un recinto reactivado, cuando el visitante escanea su QR, entonces el escaneo vuelve a registrar las especies según `api-005` CA-04.
 - **CA-20 (sin revelar datos):** El rechazo de CA-17 y CA-18 no revela el nombre del recinto, el código QR ni los animales. Cumple `api-005` RN-02.
-- **CA-35 (progreso sin recintos cerrados):** Dado un visitante con sesión y especies cuyos animales en exhibición están solo en recintos inactivos o eliminados, cuando consulta `GET /api/v1/visitor/progress`, entonces el total de especies disponibles no cuenta esas especies, y el numerador de especies descubiertas tampoco las cuenta, de modo que el numerador nunca supera al total (enmienda a `api-005` CA-06). Los registros de descubrimiento no se borran. Una especie con al menos un animal en un recinto activo sigue contando. Cuando el recinto se reactiva, vuelve a contar. El numerador «descubiertas» aplica el mismo criterio (solo cuenta especies disponibles), de modo que nunca supera al total; los registros de descubrimiento no se borran y vuelven a contar si el recinto se reactiva (decisión técnica de la sesión principal, 2026-11-18).
+- **CA-35 (progreso sin recintos cerrados):** Dado un visitante con sesión y especies cuyos animales en exhibición están solo en recintos inactivos o eliminados, cuando consulta `GET /api/v1/visitor/progress`, entonces el total de especies disponibles no cuenta esas especies, y el numerador de especies descubiertas tampoco las cuenta, de modo que el numerador nunca supera al total (enmienda a `api-005` CA-06). Los registros de descubrimiento no se borran. Una especie con al menos un animal en un recinto activo sigue contando. Cuando el recinto se reactiva, vuelve a contar. El numerador «descubiertas» aplica el mismo criterio (solo cuenta especies disponibles), de modo que nunca supera al total; los registros de descubrimiento no se borran y vuelven a contar si el recinto se reactiva.
 
 ### Búsqueda global
 
@@ -151,13 +152,13 @@ Alcance: mejorar la relevancia de la búsqueda global (`GET /api/v1/admin/search
 - **CA-27 (noticias y eventos):** Dado un usuario con `news.manage` o `events.manage`, cuando busca, entonces recibe las noticias o eventos no eliminados, activos e inactivos, cuyos campos buscables (CA-43) coinciden según CA-36 a CA-41. Cada grupo exige su propio permiso (noticias: `news.manage`; eventos: `events.manage`). El `subtitle` indica «Activa» o «Inactiva» en noticias y «Activo» o «Inactivo» en eventos, como ya implementa T-06. *(Modificado por enmienda (b); corrige la redacción original, que pedía «Activa» para ambos.)*
 - **CA-28 (recintos):** Dado un usuario con `enclosures.manage`, cuando busca, entonces recibe los recintos no eliminados, activos e inactivos, cuyo nombre coincide con el término según CA-36 a CA-41. El `subtitle` indica «Activo» o «Inactivo». *(Modificado por enmienda (b): tolerancia.)*
 - **CA-29 (momentos):** Dado un usuario con `memories.review`, cuando busca, entonces recibe los momentos no eliminados cuyo identificador (`visitor_memories.id`) es exactamente el número buscado (si `q` solo tiene dígitos) o cuya opinión, motivo de rechazo o estado en español coinciden según CA-36 a CA-41, dentro del grupo `memories`. El `title` es «Momento #N» y el `subtitle` es el estado en español («Enviado», «En revisión», «Aceptado» o «Rechazado»). El `match` puede mostrar la opinión o el motivo de rechazo, solo a quien tiene `memories.review`. No se busca ni se muestra ningún dato del visitante (RN-09). *(Modificado por enmienda (b): revierte la decisión de solo número.)*
-- **CA-30 (TulanPedia):** Dado un usuario con `species.review`, cuando busca, entonces el grupo `tulanpedia` incluye las especies publicadas (`is_published = 1`, no eliminadas) y solo las solicitudes en estado `submitted` (las únicas accionables) cuyo nombre común, nombre científico, categoría, hábitat, distribución o estado de conservación coincide según CA-36 a CA-41 (campos de la especie, CA-43). Un solo grupo, máximo 5 elementos en total. *(Modificado por enmienda (b).)* El `subtitle` es «Publicada» para una especie publicada y «Solicitud · <estado>» para una solicitud, con el estado en español (hoy `submitted` se muestra como «Enviada»). Cada elemento de `tulanpedia` incluye `kind`: `published-species` para una especie publicada o `species-request` para una solicitud. Decisión técnica de la sesión principal (2026-11-18), pendiente de aprobación de Jonathan. Cada elemento lleva `kind`: `published-species` o `species-request`, para que el panel abra la pestaña correcta. Solo se incluyen solicitudes `submitted`, las únicas accionables (decisión técnica de la sesión principal, 2026-11-18).
+- **CA-30 (TulanPedia):** Dado un usuario con `species.review`, cuando busca, entonces el grupo `tulanpedia` incluye las especies publicadas (`is_published = 1`, no eliminadas) y solo las solicitudes en estado `submitted` (las únicas accionables) cuyo nombre común, nombre científico, categoría, hábitat, distribución o estado de conservación coincide según CA-36 a CA-41 (campos de la especie, CA-43). Un solo grupo, máximo 5 elementos en total. *(Modificado por enmienda (b).)* El `subtitle` es «Publicada» para una especie publicada y «Solicitud · <estado>» para una solicitud, con el estado en español (hoy `submitted` se muestra como «Enviada»). Cada elemento de `tulanpedia` incluye `kind`: `published-species` para una especie publicada o `species-request` para una solicitud. Decisión técnica de la sesión principal, pendiente de aprobación del responsable funcional. Cada elemento lleva `kind`: `published-species` o `species-request`, para que el panel abra la pestaña correcta. Solo se incluyen solicitudes `submitted`, las únicas accionables.
 - **CA-31 (boletos):** Dado un usuario con `tickets.view`, cuando busca, entonces recibe el boleto cuyo folio (`tickets.id`) es exactamente el número buscado (si `q` solo tiene dígitos) o cuyos campos buscables coinciden según CA-43 (estado, forma de pago, motivo de cancelación y fecha de compra), dentro del grupo `ticket-history`. *(Modificado por enmienda (b): revierte «solo folio».)* El `subtitle` muestra la fecha de compra y el estado (vigente o cancelado), sin nombre ni correo del comprador.
 - **CA-32 (comodines):** Dado un término con `%` o `_`, cuando se busca, entonces esos caracteres se tratan como literales y no como comodines. Un término como `%%` no devuelve todas las filas. Como la comparación se hace en PHP (enmienda (b)), `%` y `_` no tienen efecto especial.
 - **CA-33 (solo lectura):** La búsqueda no escribe en la base de datos ni en el registro de actividad.
 - **CA-34 (cobertura):** Dada la suite PHPUnit contra `arca_pruebas`, cuando se ejecuta, entonces hay al menos un test por cada CA-01 a CA-54 que se implemente, en `tests/Feature/Admin/` o donde corresponda, que usa `DatabaseTransactions` y no usa `RefreshDatabase`.
 
-### Búsqueda tolerante, campos y límites (enmienda 2026-11-18 (b), aprobada por Jonathan)
+### Búsqueda tolerante, campos y límites (enmienda (b), aprobada por el responsable funcional)
 
 - **CA-36 (sin mayúsculas ni acentos):** Dado el término «ÉLEFANTE» o «elefante», cuando se busca, entonces coincide con un elemento cuyo campo dice «Elefante». La comparación usa RN-15.
 - **CA-37 (palabras en cualquier orden; coincidencia parcial):** Dado un término, cuando se busca, entonces un elemento coincide si al menos `m` palabras de la consulta coinciden con algún campo buscable del elemento, con `m` = todas las palabras si la consulta tiene 1 o 2, y `m` = ceil(n/2) si tiene n ≥ 3. El orden no importa y las palabras pueden estar en campos distintos. «lopez juan» coincide con «Juan López Pérez»; «juan zebra» (2 palabras) no coincide; con 4 palabras de las que coinciden 3, el elemento aparece, después de los que coinciden con las 4 (CA-53). *(Modificado por enmienda (d); antes exigía todas las palabras.)*
@@ -215,7 +216,7 @@ Alcance: mejorar la relevancia de la búsqueda global (`GET /api/v1/admin/search
 - **Búsqueda:** devuelve nombres y correos de cuentas (solo con `users.manage`), área y rol de cuentas, títulos y campos de noticias, eventos y especies, identificadores, estado y, solo con `memories.review`, fragmentos de opinión y motivo de rechazo de momentos; folios, estado, forma de pago, motivo de cancelación y fecha de compra de boletos. No devuelve datos de visitantes ni del comprador. *(Modificado por enmienda (b).)*
 - **Auditoría:** las acciones de recintos quedan en Activitylog. La eliminación lógica conserva la fila.
 - **Modelo:** `Enclosure` extiende `Model` con SoftDeletes, sin `BaseModel` (RN-13).
-- **Requiere DBR:** sí, para la parte de recintos (`docs/database/requests/DBR-020-enclosure-status-soft-delete.md`, Borrador). La búsqueda no requiere DBR, porque solo lee. La enmienda (b) tampoco requiere DBR: solo lee columnas existentes (campos registrados por la sesión principal en `arca_pruebas`, solo lectura, 2026-11-18; ver plan, «Estado actual de datos»).
+- **Requiere DBR:** sí, para la parte de recintos (`docs/database/requests/DBR-020-enclosure-status-soft-delete.md`, Borrador). La búsqueda no requiere DBR, porque solo lee. La enmienda (b) tampoco requiere DBR: solo lee columnas existentes (campos registrados por la sesión principal en `arca_pruebas`, solo lectura; ver plan, «Estado actual de datos»).
 - **Tablas que consulta la búsqueda:** `users`, `news`, `events` (con `deleted_at`, DBR-005, Aplicada en `arca_pruebas`), `enclosures` (DBR-020), `visitor_memories` (DBR-012, Lista para backend), `species` y `species_publication_requests` (DBR-013, Lista para backend), `tickets` (DBR-006). La enmienda (b) añade lecturas de `departments` (nombre del área), `model_has_roles` y `roles` (rol), y las columnas de CA-43 (`news.description`, `news.content`, `news.category`, `events.description`, `events.location`, `visitor_memories.opinion`, `visitor_memories.rejection_reason`, `tickets.payment_method`, `tickets.cancellation_reason`, `tickets.purchased_at` y las de la especie).
 
 ## Flujos y errores
@@ -236,30 +237,30 @@ Alcance: mejorar la relevancia de la búsqueda global (`GET /api/v1/admin/search
 - **Dependencias:** DBR-020 (recintos); `api-004` (sesión de visitante); `api-005` (escaneo QR, CA-04 y RN-02; progreso, CA-06, enmendado); `api-007` (enmienda CA-18 y CA-26); `api-009` (folio = `tickets.id`); `api-010` (enmienda de alcance); `api-014` y DBR-013 (solicitudes de especie); DBR-012 (momentos); DBR-005 (`deleted_at` en noticias y eventos); ADR 0021 (excepción de `BaseModel`). Consumidor: `dashboard-012`.
 - **Dependencias/ADR:** no hay paquete nuevo ni ADR nuevo.
 - **Riesgos:**
-  - **Único punto de escritura:** verificado el 2026-11-18 con búsqueda en `apps/api/src`: `enclosure_id` de `animals` solo se escribe en `AnimalController::store`. El plan previo suponía que no existía ningún punto; CA-15 y RN-04 cubren ese.
+  - **Único punto de escritura:** verificado con búsqueda en `apps/api/src`: `enclosure_id` de `animals` solo se escribe en `AnimalController::store`. El plan previo suponía que no existía ningún punto; CA-15 y RN-04 cubren ese.
   - **Consultas sin SoftDeletes:** cualquier consulta cruda sobre `enclosures` puede mostrar recintos eliminados. Revisar en el plan.
   - **Carga:** LIKE sobre varias tablas; volumen actual bajo. Aceptado mientras no crezca.
-- **Puntos abiertos:** ninguno. Cerrados el 2026-11-18 como decisiones técnicas de la sesión principal: numerador con el mismo criterio que el total (CA-35, RN-14); TulanPedia solo con solicitudes `submitted` y campo `kind` (CA-23, CA-30).
+- **Puntos abiertos:** ninguno. Cerrados como decisiones técnicas de la sesión principal: numerador con el mismo criterio que el total (CA-35, RN-14); TulanPedia solo con solicitudes `submitted` y campo `kind` (CA-23, CA-30).
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan, 2026-11-18 (DBR-020 sigue pendiente de BD).
-- **Enmienda 2026-11-18 (d), aprobada por Jonathan (2026-11-18).** Relevancia de la búsqueda global (CA-37, CA-41, CA-50 a CA-54).
-- **Enmienda 2026-11-18 (b), aprobada por Jonathan.** Las preguntas 1 a 5 de la sección «Enmienda 2026-11-18 (b)» son redacciones propuestas que Jonathan debe confirmar antes de implementarlas.
-- Decisiones de producto de 2026-11-18 (Jonathan): momentos por identificador numérico (CA-29); progreso sin especies de recintos cerrados (CA-35 y enmienda a `api-005`); sin restauración de recintos eliminados (RN-02); aceptadas las propuestas de la versión anterior (activar sin confirmación, singular, grupo «Secciones» al final, unicidad solo entre no eliminados, búsqueda con inactivos, DELETE 200 con mensaje, 422 de QR con el texto indicado, textos de Activitylog, orden por título y máximo 5); TulanPedia en un solo grupo. Decisiones técnicas de la sesión principal (2026-11-18), para aprobación de Jonathan: numerador de progreso excluye recintos cerrados sin borrar registros; TulanPedia solo `submitted`; campo `kind` en los elementos de `tulanpedia`.
+- Aprobación: el responsable funcional (DBR-020 sigue pendiente de BD).
+- **Enmienda (d), aprobada por el responsable funcional.** Relevancia de la búsqueda global (CA-37, CA-41, CA-50 a CA-54).
+- **Enmienda (b), aprobada por el responsable funcional.** Las preguntas 1 a 5 de la sección «Enmienda (b)» son redacciones propuestas que el responsable funcional debe confirmar antes de implementarlas.
+- Decisiones de producto (el responsable funcional): momentos por identificador numérico (CA-29); progreso sin especies de recintos cerrados (CA-35 y enmienda a `api-005`); sin restauración de recintos eliminados (RN-02); aceptadas las propuestas de la versión anterior (activar sin confirmación, singular, grupo «Secciones» al final, unicidad solo entre no eliminados, búsqueda con inactivos, DELETE 200 con mensaje, 422 de QR con el texto indicado, textos de Activitylog, orden por título y máximo 5); TulanPedia en un solo grupo. Decisiones técnicas de la sesión principal, para aprobación del responsable funcional: numerador de progreso excluye recintos cerrados sin borrar registros; TulanPedia solo `submitted`; campo `kind` en los elementos de `tulanpedia`.
 - Evidencia/enlaces: `docs/database/requests/DBR-020-enclosure-status-soft-delete.md`, `apps/api/specs/007-administration-management.md` (CA-18, CA-26), `apps/api/specs/010-public-enclosures-read.md`, `apps/api/specs/005-visitor-progress.md` (CA-04, CA-06, RN-02), `apps/api/specs/009-ticket-sales.md` (folio), `docs/adr/0021-ticket-sales-constitution-exceptions.md` (BaseModel), `docs/database/requests/DBR-012-visitor-memories.md`, `docs/database/requests/DBR-013-species-requests.md`, `apps/dashboard/specs/012-enclosure-actions-global-search.md`.
 
-## Enmienda 2026-11-19 (e), aprobada por Jonathan
+## Enmienda (e), aprobada por el responsable funcional
 
-Pedida por Jonathan: «busco una noticia y salen primero eventos; solo toma algunas palabras».
+Pedida por el responsable funcional: «busco una noticia y salen primero eventos; solo toma algunas palabras».
 
 - **Palabras vacías** (a, al, con, de, del, el, en, es, la, las, lo, los, o, para, por, que, se, su, sus, un, una, unas, unos, y): no se exigen ni cuentan como coincidencia; sí forman parte de la frase literal (CA-50 a CA-52). Si la consulta solo tiene palabras vacías, se usan todas. Implementado en `ItemMatcher` (API) y `search-tolerance.ts` (cliente, paridad).
 - **Coincidencia parcial más estricta** (modifica CA-37 y la regla de ceil(n/2) de la enmienda d): con 1 a 3 palabras con contenido se exigen todas; con 4 o más, al menos 3 y al menos el 75 % (redondeado hacia arriba).
 - **Sección nombrada en la consulta** (dashboard, `viewmodels/search-intent.ts`): si la consulta incluye una palabra de sección (noticia/s, nota/s; evento/s, actividad/es; recinto/s; usuario/s, cuenta/s, empleado/s, personal; momento/s, recuerdo/s; especie/s, tulanpedia; boleto/s, folio/s), esa palabra no se envía a la API (si queda texto suficiente) y el grupo de esa sección se muestra primero, antes que el de la sección actual.
 - **Palabras de sección y vacías no son acciones** (dashboard, `splitSearchQuery`): antes una palabra como «noticia» se reconocía como parte de una acción («Publicar noticia») y se quitaba de la consulta enviada a la API, por lo que la búsqueda usaba una sola palabra. Ahora esas palabras siempre llegan a la búsqueda.
-- **Tests:** pendientes por indicación de Jonathan (no correrlos en esta ronda). Afectan a CA-37, CA-41, CA-43 (dashboard) y CA-50 a CA-54 (API); deben actualizarse antes del PR.
+- **Tests:** pendientes por indicación del responsable funcional (no correrlos en esta ronda). Afectan a CA-37, CA-41, CA-43 (dashboard) y CA-50 a CA-54 (API); deben actualizarse antes del PR.
 
-## Nota de revisión (2026-11-20, enmiendas de `api-022` CA-26 y `api-025` CA-02)
+## Nota de revisión (, enmiendas de `api-022` CA-26 y `api-025` CA-02)
 
 - **Motivo de cancelación en la búsqueda de boletos (`api-022` CA-26, RN-17):** el campo «Motivo de cancelación» muestra la etiqueta del motivo (`cancellation_reason_label`, o «Sin clasificar (anterior)» si el código es nulo), no el texto libre. El comentario no cambia de campo. No cambia el CA de búsqueda de `ticket-history`; solo cambia el valor que se muestra.
 - **Fecha de compra en la zona de negocio (`api-025` RN-02, CA-02):** «Fecha de compra» se formatea con `arca.timezone` en lugar de `config('app.timezone')` (UTC). Corrige el valor de esta spec, que `api-025` ya anotaba como divergencia.

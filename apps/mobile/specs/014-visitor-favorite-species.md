@@ -2,11 +2,12 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile` (corazón, inicio «Animales favoritos», copia local y cierre de sesión); `packages/api-client` (métodos y tipos, sin lógica de negocio); `api` (lista y reglas, spec `api-018`).
-- Estado: En progreso
-- Solicitante / responsable funcional: Aksel
-- Aprobación funcional: Aksel, 2026-11-14
-- Dependencias de contrato: `api-018` y DBR-018 (Lista para backend). El plan y las tasks están aprobados (Aksel, 2026-11-16). Aksel confirmó el 2026-11-20 la verificación y el pull (T-16).
-- El plan y las tasks están aprobados (Aksel, 2026-11-16). La verificación y el pull quedaron confirmados el 2026-11-20. Esta nota no cambia el estado a Implementada: la definición de hecho de la spec sigue siendo la que cierra ese paso.
+- Estado: Implementada
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Aprobación funcional: Aprobada
+- Dependencias de contrato: `api-018` y DBR-018 (Lista para backend). El plan y las tasks están aprobados. La verificación y el pull quedaron confirmados (T-16).
+- El plan y las tasks están aprobados. La verificación y el pull quedaron confirmados. Esta nota no cambia el estado a Implementada: la definición de hecho de la spec sigue siendo la que cierra ese paso.
 
 ## Problema y contexto
 
@@ -81,11 +82,11 @@ El id de la ficha es el de la especie publicada (`mapSpeciesToAnimalModel`). Est
 
 ## Dependencias, riesgos y preguntas
 
-- Dependencias: `api-018`. No hay dependencia nueva. El ADR 0014 conserva el cache de catálogo y deja la lista de favoritos en la cuenta, con la última respuesta en el teléfono para mostrarla sin red. El plan y las tasks están aprobados. Aksel confirmó la verificación y el pull el 2026-11-20.
+- Dependencias: `api-018`. No hay dependencia nueva. El ADR 0014 conserva el cache de catálogo y deja la lista de favoritos en la cuenta, con la última respuesta en el teléfono para mostrarla sin red. El plan y las tasks están aprobados. La verificación y el pull quedaron confirmados.
 - Riesgos: si la subida única falla a medias, el siguiente arranque con GET vacío vuelve a intentar los id que sigan en la clave antigua. Un id de demostración no se sube.
-- Preguntas pendientes: ninguna. BD y backend aceptaron la tabla sin SoftDeletes en DBR-018 el 2026-11-14. El plan y las tasks están aprobados (Aksel, 2026-11-16). La verificación y el pull quedaron confirmados el 2026-11-20.
+- Sin preguntas abiertas: BD y backend aceptaron la tabla sin SoftDeletes en DBR-018. El plan y las tasks están aprobados. La verificación y el pull quedaron confirmados.
 
 ## Revisión
 
-- Aprobación funcional: Aksel, 2026-11-14. Alcance, CA y RN de la app.
+- Aprobación funcional: Aprobada. Alcance, CA y RN de la app.
 - Evidencia/enlaces: `apps/api/specs/018-visitor-favorite-species.md`, `docs/database/requests/DBR-018-visitor-favorite-species.md`, `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md` (CA-16), `apps/mobile/src/repositories/favoriteAnimals.ts`, `docs/adr/0014-mobile-offline-cache-and-connectivity.md`.

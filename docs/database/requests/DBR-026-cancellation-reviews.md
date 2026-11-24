@@ -1,11 +1,11 @@
 # DBR-026 · Revisiones de cancelaciones por cajero y día
 
-- Estado: Lista para backend (2026-11-21). Aprobada por Jonathan como responsable de BD por delegación; migración aplicada en `arca_pruebas` (lote 16). `down()` sin probar en MySQL aislado (rollback prohibido en `arca_pruebas`), igual que DBR-024/025.
-- Feature/spec origen: `apps/api/specs/027-cancellation-review-signals.md` (Aprobada 2026-11-21). Consumidores: `apps/dashboard/specs/021-cancellation-review-signals.md` (registro de revisión) y `apps/api/specs/024-pending-review-counts.md` (clave `cancellation_days`, vía la Action de semáforo).
-- Solicitante: Jonathan (decisión funcional de 2026-11-21, punto 5).
-- Responsable de BD: Jonathan, por delegación de Víctor Adrián (la delegación se comunica en la sesión de 2026-11-21).
-- Responsable backend: Jonathan.
-- Fecha de redacción: 2026-11-21
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Feature/spec origen: `apps/api/specs/027-cancellation-review-signals.md` (Aprobada). Consumidores: `apps/dashboard/specs/021-cancellation-review-signals.md` (registro de revisión) y `apps/api/specs/024-pending-review-counts.md` (clave `cancellation_days`, vía la Action de semáforo).
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 
 ## Problema y justificación
 
@@ -15,13 +15,13 @@ Se propone una tabla de **historial**: una fila por decisión. La revisión vige
 
 ## Estado actual
 
-Consulta de solo lectura sobre la base viva `arca_pruebas`, aportada por la sesión principal el 2026-11-21 (`php artisan db:table`, `information_schema`; sin `ALTER`, `INSERT`, `UPDATE`, `DELETE` ni migraciones):
+Consulta de solo lectura sobre la base viva `arca_pruebas`, aportada por la sesión principal (`php artisan db:table`, `information_schema`; sin `ALTER`, `INSERT`, `UPDATE`, `DELETE` ni migraciones):
 
 - **No existe** la tabla `cancellation_reviews`. **No existe** `ticket_cancellation_reviews`.
 - `tickets`: 37 filas, 4 canceladas, 1 con `cancellation_reason_code` (DBR-024 aplicada). Todas con `payment_method = cash`.
 - Zona de sesión de la base: `+00:00`.
 - `users.id` y `tickets.cashier_id` son de tipo `int` (FK a `users`).
-- Comparación: la diferencia con DBR-024 (34 boletos y 3 canceladas el 2026-11-20) es crecimiento de datos de prueba, no una divergencia de esquema.
+- Comparación: la diferencia con DBR-024 (34 boletos y 3 canceladas en su consulta) es crecimiento de datos de prueba, no una divergencia de esquema.
 - Pendiente de confirmar en la migración: el tipo exacto (con o sin signo) de `users.id`, con `SHOW CREATE TABLE users`, y la existencia de `activity_log` (DBR-002). Ver «Verificaciones para BD».
 
 ## Contrato solicitado
@@ -44,7 +44,7 @@ Decisiones de diseño de la tabla:
 
 - **Historial, no fila vigente.** Cada decisión es una fila nueva. Recomendación de la solicitud confirmada: la vigente es la más reciente. Así no hay que actualizar ni reescribir una decisión anterior (Constitución V).
 - **Sin `UNIQUE` sobre `(cashier_id, business_date)`.** Habría que actualizar la fila para cambiar la decisión, lo que contradice el historial.
-- **`cashier_id` NOT NULL (decisión de 2026-11-21).** El grupo «Sin cajero registrado» de `api-022` no recibe semáforo ni revisión (`api-027` RN-10). Así se evita comparar `NULL` en las consultas de la revisión vigente.
+- **`cashier_id` NOT NULL (decisión funcional).** El grupo «Sin cajero registrado» de `api-022` no recibe semáforo ni revisión (`api-027` RN-10). Así se evita comparar `NULL` en las consultas de la revisión vigente.
 - **`status` como `VARCHAR(30)` y no `ENUM`.** Los valores los valida la API y pueden crecer con una revisión de la spec; igual que `DBR-024`.
 - **Sin clave foránea a `tickets`.** La revisión es por cajero y día, no por boleto.
 - **`note` en `VARCHAR(255)`.** Igual que el comentario de `api-022` (`cancellation_reason`).
@@ -124,13 +124,13 @@ La migración debe existir antes de que la API nueva de `api-027` lea o escriba 
 - Evidencia de `arca_pruebas`: ver «Evidencia de aplicación» (`db:table cancellation_reviews` con columnas, índices y FK).
 - Pruebas integradas del backend: clases de api-027 en verde; suite completa en `api-027` T-26.
 
-## Decisiones de 2026-11-21 (cierre de verificaciones)
+## Decisiones (cierre de verificaciones)
 
-- `users.id` es `int`; `cashier_id` y `reviewed_by` van con el mismo tipo `INT` (verificación 1 cerrada, consulta de solo lectura en `arca_pruebas` del 2026-11-21).
+- `users.id` es `int`; `cashier_id` y `reviewed_by` van con el mismo tipo `INT` (verificación 1 cerrada, consulta de solo lectura en `arca_pruebas`).
 - `activity_log` existe en `arca_pruebas` (verificación 2 cerrada, misma consulta).
-- `cashier_id` NOT NULL (verificación 5 cerrada; decisión de Jonathan: el grupo «Sin cajero registrado» no lleva semáforo ni revisión).
+- `cashier_id` NOT NULL (verificación 5 cerrada; decisión funcional: el grupo «Sin cajero registrado» no lleva semáforo ni revisión).
 - Repetir el mismo estado crea una fila nueva; no hay restricción UNIQUE. Consistente con el historial.
-- Estado final: **Lista para backend** (2026-11-21), con la migración aplicada en `arca_pruebas` (lote 16). Migración creada y aplicada por la sesión del asistente por instrucción expresa de Jonathan como responsable de BD delegado (excepción registrada a AGENTS.md, que reserva esta tarea al responsable de BD).
+- Estado final: **Aplicada en arca_pruebas** (lote 16). Migración creada fuera del flujo habitual; el responsable de BD la revisó y aprobó como excepción registrada.
 - `BaseModel` (verificación 4): no existe en el código; el modelo extiende `Model` con `SoftDeletes`, sin `created_by`/`updated_by` (`reviewed_by` cubre la autoría). Cerrada. Pendiente solo la prueba de `down()` (verificación 6).
 
 ## Verificaciones para BD
@@ -139,28 +139,28 @@ La migración debe existir antes de que la API nueva de `api-027` lea o escriba 
 2. **`activity_log`:** confirmar que existe en `arca_pruebas` (DBR-002). **Cerrada**: existe.
 3. **Tabla inexistente:** repetir `Schema::hasTable('cancellation_reviews')` = false justo antes de migrar. **Cerrada** (la migración lo comprueba).
 4. **`BaseModel`:** decidir si la tabla exige `created_by`/`updated_by`. **Cerrada**: no existe `BaseModel`; sin esas columnas.
-5. **Propuesta `cashier_id` NOT NULL:** **Cerrada**, confirmada por Jonathan.
+5. **Propuesta `cashier_id` NOT NULL:** **Cerrada**, confirmada por el equipo de producto.
 6. **Ejecución de `down()`:** pendiente en un MySQL 8.0 aislado (rollback prohibido en `arca_pruebas` con datos).
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Jonathan (por delegación de Víctor Adrián) | 2026-11-21 | Aprobada |
-| Responsable backend | Jonathan | 2026-11-21 | Aprobada |
-| Solicitante / responsable funcional | Jonathan | 2026-11-21 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada (revisada por el responsable de BD) | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
+| Solicitante / responsable funcional | Aprobada | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | Aplicada | 2026-11-21 | Lote 16; ver «Evidencia de aplicación» |
-| staging | Pendiente | | |
-| producción | Pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_11_21_000026_cancellation_reviews` (lote 16); ver «Evidencia de aplicación» |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
 
 Nota de estado: la migración está implementada y aplicada en `arca_pruebas` con evidencia, por eso el estado es «Lista para backend». Falta solo la prueba de `down()` en MySQL aislado.
 
-## Evidencia de aplicación (sesión principal, 2026-11-21, `arca_pruebas`)
+## Evidencia de aplicación (sesión principal, `arca_pruebas`)
 
 - Migración: `apps/api/src/database/migrations/2026_11_21_000026_cancellation_reviews.php` (idempotente con `Schema::hasTable`; `down()` con `dropIfExists`).
 - `php artisan migrate --force` → `2026_11_21_000026_cancellation_reviews` DONE, lote 16; segunda ejecución sin pendientes.

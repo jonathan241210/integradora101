@@ -2,9 +2,10 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `mobile` (consumidor), `@arca/api-client`
-- Estado: Aprobada
-- Solicitante / responsable funcional: Víctor Adrián
-- Aprobación funcional: Víctor Adrián (2026-11-07)
+- Estado: Implementada
+- Solicitada: 2026-11-07
+- Aprobada: 2026-11-07
+- Aprobación funcional: Aprobada
 - DBR asociada: `docs/database/requests/DBR-008-enclosure-gps-coordinates.md` (Aprobada)
 
 ---
@@ -31,7 +32,7 @@ Para que la app muestre los recintos reales del Zoológico Municipal Nicolás Br
 
 ## Fuera de alcance
 
-- Creación y edición de recintos (pertenecen al dashboard administrativo cubierto en `api-007`). *Enmienda `api-019` (2026-11-18):* el cambio de estatus y el borrado pasan a `api-019` (rutas admin); `api-010` sigue siendo solo lectura pública, pero el catálogo, el detalle y el escaneo QR muestran solo recintos activos y no eliminados (RN-05 de `api-019`).
+- Creación y edición de recintos (pertenecen al dashboard administrativo cubierto en `api-007`). *Enmienda `api-019`:* el cambio de estatus y el borrado pasan a `api-019` (rutas admin); `api-010` sigue siendo solo lectura pública, pero el catálogo, el detalle y el escaneo QR muestran solo recintos activos y no eliminados (RN-05 de `api-019`).
 - Modificaciones al esquema de base de datos (el esquema ya está resuelto y aprobado en `DBR-008`).
 - Cálculo de distancias geodésicas en el servidor (el cálculo Haversine se ejecuta en el dispositivo cliente en memoria para no saturar la API).
 - Subida o procesamiento de archivos multimedia de recintos.
@@ -123,7 +124,7 @@ flowchart TD
 
 ## Revisión
 
-- **Aprobadores:** Víctor Adrián (Responsable funcional).
+- **Aprobación:** Aprobada (responsable funcional).
 - **Evidencia/enlaces:**
   - `docs/database/requests/DBR-008-enclosure-gps-coordinates.md`
   - `apps/mobile/specs/007-map-location.md`

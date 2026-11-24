@@ -1,14 +1,16 @@
 # Tareas · 027 · cancellation-review-signals
 
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
 - Spec: `apps/api/specs/027-cancellation-review-signals.md`
 - Plan: `apps/api/plan/027-cancellation-review-signals.md`
 - DBR: `docs/database/requests/DBR-026-cancellation-reviews.md`
 
-Estado (2026-11-21): T-02 a T-23 implementadas por backend y probadas con `php artisan test --filter=…` contra `arca_pruebas`. T-24 (medición de coste con datos reales), T-25 (docs hechas; falta enlazar en el PR) y T-26 (`/verify` completo) quedan abiertas para la sesión principal.
+Estado: T-02 a T-23 implementadas por backend y probadas con `php artisan test --filter=…` contra `arca_pruebas`. T-24 (medición de coste con datos reales), T-25 (docs hechas; falta enlazar en el PR) y T-26 (`/verify` completo) quedan abiertas para la sesión principal.
 
 ## Base de datos (responsable de BD)
 
-- [ ] **T-01** (parcial: aplicada en `arca_pruebas`; falta `down()` en MySQL aislado) (CA-17, CA-18, CA-20, CA-21): DBR-026 aprobada, migración Laravel idempotente con `down()` seguro, prueba en MySQL 8.0 aislado, `db:table cancellation_reviews` y `migrate:status` como evidencia; estado `Lista para backend`. Ninguna tarea de backend empieza antes.
+- [ ] **T-01** (parcial: aplicada en `arca_pruebas`; falta `down()` en MySQL aislado — fuera de alcance de esta entrega) (CA-17, CA-18, CA-20, CA-21): DBR-026 aprobada, migración Laravel idempotente con `down()` seguro, prueba en MySQL 8.0 aislado, `db:table cancellation_reviews` y `migrate:status` como evidencia; estado `Lista para backend`. Ninguna tarea de backend empieza antes.
 
 ## Configuración y dominio
 
@@ -52,24 +54,24 @@ Estado (2026-11-21): T-02 a T-23 implementadas por backend y probadas con `php a
 
 ## Calidad y entrega
 
-- [ ] **T-24**: medir el coste del semáforo con datos reales de `arca_pruebas` (tiempo de respuesta del reporte y de `pending-counts`) y registrar el resultado en la spec. Sin evidencia no se marca.
-- [ ] **T-25**: actualizar `apps/api/docs/administracion.md` y `apps/api/docs/tickets.md` con el contrato, la leyenda, los permisos y la demostración; enlazar spec, plan y tasks en el PR.
-- [ ] **T-26**: ejecutar `/verify` para `api` (Pint, PHPUnit contra `arca_pruebas`, `migrate:status`) y registrar resultados; verificar que cada CA de la tabla de `plan/027` tiene su test (búsqueda de `test_caNN_`). Sin evidencia no se marca.
+- [ ] **T-24** — Fuera de alcance de esta entrega (medición con shell): medir el coste del semáforo con datos reales de `arca_pruebas` (tiempo de respuesta del reporte y de `pending-counts`) y registrar el resultado en la spec. Sin evidencia no se marca.
+- [ ] **T-25** — Fuera de alcance de esta entrega (documentación pendiente): actualizar `apps/api/docs/administracion.md` y `apps/api/docs/tickets.md` con el contrato, la leyenda, los permisos y la demostración; enlazar spec, plan y tasks en el PR.
+- [ ] **T-26** — Fuera de alcance de esta entrega (verificación con shell): ejecutar `/verify` para `api` (Pint, PHPUnit contra `arca_pruebas`, `migrate:status`) y registrar resultados; verificar que cada CA de la tabla de `plan/027` tiene su test (búsqueda de `test_caNN_`). Sin evidencia no se marca.
 
 Cada CA-01 a CA-33 tiene al menos una tarea de implementación y al menos un test. Las tareas de BD (T-01) van separadas de las de backend, que inician solo con `Lista para backend`.
 
 
-## Evidencia de BD (sesión principal, 2026-11-21)
+## Evidencia de BD
 
 - T-01: migración `2026_11_21_000026_cancellation_reviews.php` aplicada en `arca_pruebas` (lote 16), idempotente; detalle en DBR-026 «Evidencia de aplicación». `down()` en MySQL aislado queda pendiente (rollback prohibido en `arca_pruebas`).
 
-## Revisión 2026-11-21 (c): folios y frase clara
+## Revisión (c): folios y frase clara
 
 - [x] **T-27** (CA-34): `folios[]` por señal en `BuildCancellationTrafficLightAction` y `PresentCancellationReasonsAction`.
 - [x] **T-28** (CA-35, CA-36): `reason_sentence` y etiquetas claras (`CancellationSignal::label()`, leyenda); ajustar tests de CA-13 y CA-11.
 - [x] **T-29** (CA-37): exportación con «Folios» y filtrada por cajero.
 
-## Revisión de calidad y seguridad 2026-11-21
+## Revisión de calidad y seguridad
 
 - [x] **T-30** (CA-11): `data.levels[]` con `condition` calculada de `attention_min_signals` (`PresentCancellationReasonsAction::levels()`). Test: `CancellationLevelTest::test_ca11_levels_describe_each_level_from_the_configured_threshold`.
 - [x] **T-31** (CA-29 a CA-32): la lógica de `arca:demo:cancellation-reviews` pasa a `SeedCancellationReviewDemoAction`; `test_ca31_*` ya no depende de datos reales (reloj +5 años y ventana de 28+7 días vaciada).

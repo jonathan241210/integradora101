@@ -1,7 +1,7 @@
 # Inventario inicial de base de datos · ARCA-NB
 
-- **Fecha de inventario:** 2026-10-11
-- **Responsable de base de datos:** Victor Adrian
+- **Fecha de inventario:**
+- **Responsable de base de datos:** Responsable de BD Adrian
 - **Instancia inspeccionada:** Aiven Cloud MySQL (`mysql-230c9986-arcannb.a.aivencloud.com:15280`)
 - **Base de datos:** `arca_pruebas`
 - **Feature SDD relacionada:** `apps/api/specs/002-initial-db-connection.md` (CA-03)
@@ -23,7 +23,7 @@
 
 ## 2. Política de compatibilidad: Aiven 8.4.x vs. Presidencia 8.0.x
 
-> **Regla de oro del responsable de BD (Victor Adrian):**
+> **Regla de oro del responsable de BD (Responsable de BD Adrian):**
 > Aunque la instancia de pruebas en Aiven corra **MySQL 8.4.11**, el entorno de producción institucional en Presidencia opera sobre **MySQL 8.0.x**.
 > 
 > Por lo tanto:
@@ -74,7 +74,7 @@ La instancia aloja dos esquemas con usos distintos:
 - **`arca_pruebas`:** base de **trabajo del equipo y de PHPUnit**; es la que configura el `.env` local de `apps/api`. Contiene las cuentas de prueba y **no se borra ni se reconstruye**: los tests usan `DatabaseTransactions` y están prohibidos `RefreshDatabase`, `migrate:fresh` y las migraciones desde los tests. El inventario de las secciones 1–3 se levantó sobre esta base.
 - **`arca_zoo`:** base de **producción**; ningún integrante del equipo de desarrollo, agente ni test la usa ni la modifica.
 
-Decisión de Jonathan (2026-10-15), registrada en [ADR 0013](../../../docs/adr/0013-aiven-managed-mysql.md). La política de compatibilidad con Presidencia (MySQL 8.0.x, sección 2) se mantiene.
+Decisión del responsable de backend, registrada en [ADR 0013](../../../docs/adr/0013-aiven-managed-mysql.md). La política de compatibilidad con Presidencia (MySQL 8.0.x, sección 2) se mantiene.
 
 La normalización del esquema a identificadores en inglés se solicita mediante [DBR-001 · english-schema-normalization](../../../docs/database/requests/DBR-001-english-schema-normalization.md); las columnas y tablas de autenticación del personal mediante DBR-002. Ambas están aplicadas y verificadas en `arca_pruebas` (`Lista para backend`).
 

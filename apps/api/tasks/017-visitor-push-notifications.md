@@ -1,16 +1,18 @@
 # Tareas · 017 · visitor-push-notifications
 
-- Spec: `apps/api/specs/017-visitor-push-notifications.md` (Aprobada, Aksel, 2026-11-14)
-- Plan: `apps/api/plan/017-visitor-push-notifications.md` (Aprobado técnicamente, Victor Adrian, 2026-11-14)
-- ADR: `docs/adr/0029-visitor-android-push.md` (Aceptado, Aksel, 2026-11-14)
-- DBR: `docs/database/requests/DBR-017-visitor-push-notifications.md` (Lista para backend, BD Victor Adrian y backend Aksel, 2026-11-14)
-- Estado del checklist: **Aprobado** (Aksel, 2026-11-14). Autoriza el código de estas tareas. No autoriza migraciones nuevas ni llamadas reales a Expo.
+- Spec: `apps/api/specs/017-visitor-push-notifications.md`
+- Plan: `apps/api/plan/017-visitor-push-notifications.md` (Aprobado técnicamente, Responsable de BD Adrian)
+- ADR: `docs/adr/0029-visitor-android-push.md`
+- DBR: `docs/database/requests/DBR-017-visitor-push-notifications.md` (Lista para backend, BD Responsable de BD Adrian y backend Equipo de producto móvil)
+- Estado del checklist: **Completado**. Autoriza el código de estas tareas. No autoriza migraciones nuevas ni llamadas reales a Expo.
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
 
 Ninguna tarea añade alcance. Si algo de la lista no está en la spec o en el plan, se para y se pregunta. Los tests usan `DatabaseTransactions` contra `arca_pruebas`. Prohibido `RefreshDatabase`, `migrate:fresh` y cualquier llamada real a Expo. Nunca `arca_zoo`. El nombre del test cita `CA-xx` (en el método, `caNN_`, porque PHPUnit no admite guiones) y el docblock cita `CA-NN`.
 
 ## Base de datos (solo lectura)
 
-- [x] **T-01** (precondición de CA-01 a CA-16; RN-12): comprobar la migración sin aplicarla. Evidencia 2026-11-14: `php artisan migrate:status` muestra `2026_11_14_000017_visitor_push_notifications_schema` como Ran (lote 9) con `DB_DATABASE=arca_pruebas`. No se ejecutó `migrate`.
+- [x] **T-01** (precondición de CA-01 a CA-16; RN-12): comprobar la migración sin aplicarla. Evidencia: `php artisan migrate:status` muestra `2026_11_14_000017_visitor_push_notifications_schema` como Ran (lote 9) con `DB_DATABASE=arca_pruebas`. No se ejecutó `migrate`.
   - Depende de: nada.
   - Pasos: desde `apps/api/src`, `php artisan migrate:status`. La migración `2026_11_14_000017_visitor_push_notifications_schema` debe figurar como ejecutada (`Ran`) y `DB_DATABASE` debe ser `arca_pruebas`, sin copiar secretos al repositorio. No ejecutar `migrate` ni escribir otra migración.
   - Archivos: ninguno.
@@ -175,4 +177,4 @@ Ninguna tarea añade alcance. Si algo de la lista no está en la spec o en el pl
 - [x] **T-30**: enlaces del PR.
   - Depende de: T-27, T-29.
   - Hecho cuando: el PR cita `api-017` y enlaza spec, plan, tasks, ADR 0029 y DBR-017. No se abre ese PR en el corte que solo redacta este checklist.
-  - Confirmado por Aksel el 2026-11-20: la verificación y el pull de notificaciones ya se hicieron. Esta task no guarda la URL del PR.
+  - Confirmado por Equipo de producto móvil: la verificación y el pull de notificaciones ya se hicieron. Esta task no guarda la URL del PR.

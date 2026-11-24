@@ -1,11 +1,13 @@
 # Plan técnico · 027 · cancellation-review-signals
 
-- Spec: `apps/api/specs/027-cancellation-review-signals.md` (Aprobada, Jonathan, 2026-11-21)
-- Spec de consumidor: `apps/dashboard/specs/021-cancellation-review-signals.md` (Aprobada, 2026-11-21); plan en `apps/dashboard/plan/021-cancellation-review-signals.md`
-- Estado de spec: Aprobada
-- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-21**. Las tareas de `tasks/027-cancellation-review-signals.md` se ejecutan en orden, condicionadas a DBR-026 en «Lista para backend» (T-01 de BD).
-- Responsable técnico: Jonathan (backend, según la spec).
-- Responsable de BD: Jonathan, por delegación de Víctor Adrián (DBR-026).
+- Spec: `apps/api/specs/027-cancellation-review-signals.md`
+- Spec de consumidor: `apps/dashboard/specs/021-cancellation-review-signals.md`; plan en `apps/dashboard/plan/021-cancellation-review-signals.md`
+- Estado de spec: Implementada
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Estado del plan: **Aprobado — aprobación técnica: el responsable funcional**. Las tareas de `tasks/027-cancellation-review-signals.md` se ejecutan en orden, condicionadas a DBR-026 en «Lista para backend» (T-01 de BD).
+- Responsable técnico: el responsable funcional (backend, según la spec).
+- Responsable de BD: Responsable de BD (DBR-026).
 - DBR relacionada: `docs/database/requests/DBR-026-cancellation-reviews.md` (tabla `cancellation_reviews`). Ninguna migración ni código que use la tabla se escribe antes de que la DBR esté en `Lista para backend`.
 - ADR relacionados: ninguno nuevo. ADR 0013 (portabilidad), ADR 0017 (exportación sin dependencia nueva), ADR 0021 (`Ticket` sin `BaseModel`, con SoftDeletes).
 
@@ -117,7 +119,7 @@ Enumeraciones de `status` y nivel en la respuesta: valores en inglés; etiquetas
 
 ## Datos de demostración
 
-Decisión de Jonathan (2026-11-21): los datos de demostración se quedan en `arca_pruebas`, no se excluyen de los reportes y se ven como datos normales. Se implementa así:
+Decisión del responsable funcional: los datos de demostración se quedan en `arca_pruebas`, no se excluyen de los reportes y se ven como datos normales. Se implementa así:
 
 - **Cajeros:** tres cuentas con rol `cashier` y correo `demo-cancel-1@arca.local`, `demo-cancel-2@arca.local`, `demo-cancel-3@arca.local`, con nombres claros. Contraseña solo desde `DEMO_STAFF_PASSWORD` en `.env`.
 - **Días:** para cada cajero, días de negocio recientes con actividad que cubran Normal, Revisar y Atención (cada uno al menos un cajero-día, CA-31). Los valores concretos se fijan en el seeder y se comprueban con la misma Action del reporte.
@@ -187,10 +189,10 @@ Regresión (sin relajar CA): `Feature/Admin/CancellationReportTest.php` y `Expor
 - **ADR requerido/aprobado:** ninguno.
 - **Dependencia bloqueante:** DBR-026 (BD). Sin `Lista para backend`, no hay código que escriba revisiones.
 - **Coherencia del semáforo:** la misma Action para reporte, exportación y conteo.
-- **Preguntas:** cerradas el 2026-11-21 (ver «Decisiones de Jonathan (2026-11-21)»). No quedan preguntas abiertas en este plan.
+- **Decisiones:** cerradas (ver «Decisiones»). No quedan preguntas abiertas en este plan.
 - **Alternativas descartadas:** semáforo guardado en tabla (contradice RN-15 y añade estado que puede quedar desfasado); borrado físico de demostración (Constitución V).
 
-## Decisiones de Jonathan (2026-11-21)
+## Decisiones
 
 - Reglas del semáforo S1 a S5, C1 y C2 tal como están en la spec, con los valores de la configuración: N = 4 semanas, 7 días para C2, mínimo de 10 boletos. Niveles: 0 Normal, 1 Revisar, 2 o más Atención.
 - `cashier_id` NOT NULL en DBR-026. «Sin cajero registrado» no lleva semáforo ni revisión.
@@ -198,7 +200,7 @@ Regresión (sin relajar CA): `Feature/Admin/CancellationReportTest.php` y `Expor
 - Repetir el mismo estado guarda una entrada nueva del historial (CA-19; test renombrado).
 - Sin permiso de escritura aparte; límite de revisiones de 20 por minuto; nota de 15 a 255 caracteres.
 - Ventana de C2 de 7 días que termina en el día evaluado; S2 literal (30 min antes de la última venta).
-- Evidencia de base: `users.id` es `int` y `activity_log` existe (consulta de solo lectura del 2026-11-21).
+- Evidencia de base: `users.id` es `int` y `activity_log` existe.
 - DBR-026 queda en Aprobada; la migración y la evidencia las aporta la sesión principal.
 
 ## Orden y aprobación
@@ -212,11 +214,11 @@ Regresión (sin relajar CA): `Feature/Admin/CancellationReportTest.php` y `Expor
 7. Medición de coste (T-24), documentación (T-25), `/verify` y PR (T-26).
 8. Cliente y dashboard en `plan/021`, tras los contratos de la API.
 
-- Revisión técnica: Jonathan, 2026-11-21 (aprobación técnica del plan).
-- Aprobador funcional: Jonathan (spec aprobada 2026-11-21).
+- Revisión técnica: el responsable funcional (aprobación técnica del plan).
+- Aprobador funcional: el responsable funcional.
 - Evidencias: pendientes de la sesión principal (migración de DBR-026, salida de `php artisan test --filter Cancellation` contra `arca_pruebas`, `migrate:status`). Esta sesión no tiene shell y no afirma que pasen.
 
-## Divergencias de implementación (2026-11-21)
+## Divergencias de implementación
 
 - **Cajero válido en revisión:** el Form Request reutiliza `ListCancellationCashiersAction::exists()` (rol `cashier` o con boletos, incluso eliminado lógicamente), la misma regla del filtro de `api-022`, en vez de exigir solo el rol. Es un superconjunto; la actividad del día se sigue exigiendo.
 - **`legend` y `disclaimer`** van al nivel de `data` del reporte, junto a `rows` (el plan no fijaba el sitio). `cashier_days[]` añade `sold_tickets`, `cancelled_tickets` y `cancel_percent` (aditivos).
@@ -228,6 +230,6 @@ Regresión (sin relajar CA): `Feature/Admin/CancellationReportTest.php` y `Expor
 - **Modelo:** `CancellationReview` extiende `Model` con SoftDeletes (no existe `BaseModel` en el repositorio; mismo criterio que `VisitorMemoryReview`).
 - **`config/arca.php`** reutiliza `cancellation_alerts` mediante una variable local para S1 y S5; añade `pending_days` = 7 (periodo del aviso).
 
-## Nota: revisión 2026-11-21 (c), folios y frase clara (aprobada por Jonathan)
+## Nota: revisión (c), folios y frase clara (aprobada por el responsable funcional)
 
 - `BuildCancellationTrafficLightAction::execute($from, $to, ?$cashierId)` añade los folios por señal (`tickets.id` como texto, orden numérico) y recorta por cajero solo al presentar. `PresentCancellationReasonsAction` genera «Se activaron N señales: …» y `folios[]`; las etiquetas viven en `CancellationSignal::label()`. En S1, C1 y C2 `count` es de boletos (cantidad) y los `folios` son pedidos: pueden diferir si un pedido trae varios boletos. Divergencia: el contrato citaba `qr_code`, pero el folio visible de todo el sistema es `tickets.id` (`qr_code` es oculto); se usa `tickets.id` para coincidir con `rows[].folio`.

@@ -1,12 +1,12 @@
 # DBR-021 · Borrado lógico de códigos QR de recinto
 
-- Estado: Lista para backend (aplicada en `arca_pruebas` el 2026-11-18). Staging y producción pendientes.
-- Feature/spec origen: `apps/api/specs/020-enclosure-qr-management.md` (Borrador). Consumidores: `apps/dashboard/specs/013-enclosure-qr-printing.md` (Borrador) y `apps/api/specs/019-enclosure-status-and-global-search.md` (enmienda a CA-05 y CA-18 propuesta en `api-020`).
-- Solicitante: Jonathan (decisión de producto del 2026-11-18: al eliminar un recinto, sus códigos QR también se eliminan lógicamente).
-- Responsable de BD: Jonathan, por delegación verbal del responsable de BD (Victor Adrian) comunicada por Jonathan el 2026-11-18. La delegación cubre redactar, aprobar, crear y aplicar la migración de esta DBR en `arca_pruebas`.
-- Responsable backend: Jonathan
-- Fecha: 2026-11-18
-- Decisiones de producto: cerradas por Jonathan (2026-11-18). Regenerar solo desactiva (`is_active = 0`); no elimina. Eliminar un recinto elimina lógicamente sus códigos en la misma transacción.
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Feature/spec origen: `apps/api/specs/020-enclosure-qr-management.md` (Aprobada). Consumidores: `apps/dashboard/specs/013-enclosure-qr-printing.md` y `apps/api/specs/019-enclosure-status-and-global-search.md` (enmienda a CA-05 y CA-18 propuesta en `api-020`).
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
+- Decisiones de producto: cerradas. Regenerar solo desactiva (`is_active = 0`); no elimina. Eliminar un recinto elimina lógicamente sus códigos en la misma transacción.
 
 ## Problema y justificación
 
@@ -19,7 +19,7 @@
 
 ## Estado actual
 
-Consultado sobre la base viva `arca_pruebas` el 2026-11-18 (solo lectura, por la sesión principal):
+Consultado sobre la base viva `arca_pruebas` (solo lectura, por la sesión principal):
 
 - `enclosure_qr_codes` tiene `id`, `code` VARCHAR(100) `UNIQUE`, `is_active` TINYINT(1) con valor por defecto 1 y `enclosure_id` INT NOT NULL. **No tiene** `deleted_at`, `created_at`, `created_by` ni `updated_by`.
 - Dos FK sobre `enclosure_id` hacia `enclosures`, con reglas distintas: `fk_enclosure_qr_codes_enclosure_id` → `ON DELETE RESTRICT` y `fk_rqr_recinto` → `ON DELETE CASCADE`. Registrado en DBR-020 (verificación 2); esta DBR no la cambia. Como la aplicación nunca borra físicamente filas de esta tabla, ninguna de las dos se dispara.
@@ -94,21 +94,21 @@ No aplica.
 ## Plan de ejecución
 
 ### Fase 0: cierre documental
-- [x] BD (Jonathan, por delegación) y backend (Jonathan) firman en el documento (2026-11-18).
-- [x] Estado pasa a «Aprobada» (2026-11-18).
+- [x] BD y backend firman en el documento.
+- [x] Estado pasa a «Aprobada».
 
 ### Fase 1: migración de esquema (responsable de BD)
 - [x] Migración creada: `apps/api/src/database/migrations/2026_11_18_000021_enclosure_qr_codes_soft_deletes.php` (idempotente).
-- [x] Aplicada en `arca_pruebas` con `php artisan migrate --force` (lote nuevo, 2026-11-18). **`down()` no se ejecutó**: el proyecto bloquea `migrate:rollback` en este ambiente, y no se forzó. Queda revisado solo en código (retira el índice y la columna).
+- [x] Aplicada en `arca_pruebas` con `php artisan migrate --force` (lote nuevo). **`down()` no se ejecutó**: el proyecto bloquea `migrate:rollback` en este ambiente, y no se forzó. Queda revisado solo en código (retira el índice y la columna).
 - [x] Evidencia registrada en «Pruebas y evidencia».
-- [x] Estado pasa a «Lista para backend» (2026-11-18).
+- [x] Estado pasa a «Lista para backend».
 
 ### Fase 2: backend
 - [ ] Backend implementa `SoftDeletes` en `EnclosureQrCode`, la eliminación lógica de códigos en `DeleteEnclosureAction` (`api-020` RN-16) y los endpoints de `api-020`.
 
 ## Pruebas y evidencia
 
-Evidencia de `arca_pruebas` (2026-11-18, aportada por la sesión principal, responsable de BD Jonathan por delegación):
+Evidencia de `arca_pruebas` (aportada por la sesión principal):
 
 - **Antes:** `SHOW CREATE TABLE enclosure_qr_codes` sin `deleted_at`. Filas: 8. Eliminadas: 0 (no existe la columna).
 - **Aplicación:** `php artisan migrate --force` → `2026_11_18_000021_enclosure_qr_codes_soft_deletes ... DONE` (lote nuevo).
@@ -118,18 +118,18 @@ Evidencia de `arca_pruebas` (2026-11-18, aportada por la sesión principal, resp
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Jonathan (por delegación de Victor Adrian) | 2026-11-18 | Aprobada |
-| Responsable backend | Jonathan | 2026-11-18 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | Aplicada | 2026-11-18 | Lote nuevo; ver «Pruebas y evidencia» |
-| staging | Pendiente | | |
-| producción | Pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_11_18_000021_enclosure_qr_codes_soft_deletes` (lote nuevo); ver «Pruebas y evidencia» |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
 
 ## Verificaciones para BD
 

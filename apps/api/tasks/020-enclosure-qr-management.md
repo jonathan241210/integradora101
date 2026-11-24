@@ -1,16 +1,18 @@
 # Tareas · 020 · enclosure-qr-management
 
-- Spec: `apps/api/specs/020-enclosure-qr-management.md` (Aprobada, 2026-11-18)
+- Spec: `apps/api/specs/020-enclosure-qr-management.md`
 - Plan: `apps/api/plan/020-enclosure-qr-management.md` (Borrador)
-- Estado de estas tareas: **Aprobadas** (Jonathan, 2026-11-18). Ninguna tarea de código se marca hecha sin evidencia de la sesión principal.
+- Estado de estas tareas: **Aprobadas**. Ninguna tarea de código se marca hecha sin evidencia de la sesión principal.
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
 
 ## Base de datos (responsable de BD)
 
-- [x] **T-01** (CA-19, CA-20, CA-24): DBR-021 aprobada, migración `2026_11_18_000021_enclosure_qr_codes_soft_deletes` creada, probada y aplicada en `arca_pruebas`; estado `Lista para backend`. Evidencia: `SHOW CREATE TABLE` con `deleted_at` e índice, 8 filas, 0 eliminadas (2026-11-18, aportada por la sesión principal, documento DBR-021). `down()` no ejecutado: bloqueado en el ambiente (DBR-021, Fase 1).
+- [x] **T-01** (CA-19, CA-20, CA-24): DBR-021 aprobada, migración `2026_11_18_000021_enclosure_qr_codes_soft_deletes` creada, probada y aplicada en `arca_pruebas`; estado `Lista para backend`. Evidencia: `SHOW CREATE TABLE` con `deleted_at` e índice, 8 filas, 0 eliminadas (, aportada por la sesión principal, documento DBR-021). `down` no ejecutado: bloqueado en el ambiente (DBR-021, Fase 1).
 
 ## Implementación (backend; inicia con DBR-021 en «Lista para backend», cumplido)
 
-- [x] **T-02** (CA-19, CA-20): `EnclosureQrCode` usa `SoftDeletes`, mantiene `timestamps = false` y no extiende `BaseModel` (ADR 0021). Añade `Enclosure::qrCodes()` (`hasMany`). No usar el trait `LogsActivity` en el modelo. Evidencia 2026-11-18: `EnclosureQrCode` con SoftDeletes, `Enclosure::qrCodes()`; `EnclosureQrTest` en verde.
+- [x] **T-02** (CA-19, CA-20): `EnclosureQrCode` usa `SoftDeletes`, mantiene `timestamps = false` y no extiende `BaseModel` (ADR 0021). Añade `Enclosure::qrCodes` (`hasMany`). No usar el trait `LogsActivity` en el modelo. Evidencia: `EnclosureQrCode` con SoftDeletes, `Enclosure::qrCodes`; `EnclosureQrTest` en verde.
 - [x] **T-03** (CA-08, CA-09): `EnclosureQrCodeGenerator` con alfabeto `ABCDEFGHJKMNPQRSTUVWXYZ23456789`, `random_int` por carácter, prefijo `ARCA-`, contrato `QrCodeValueGenerator` para tests y reintento máximo de 5 intentos ante colisión. Test de formato con 1000 códigos (CA-08) y test de colisión simulada (CA-09). Evidencia: `EnclosureQrCodeGenerator` y contrato `QrCodeValueGenerator` (enlazado en `AppServiceProvider`); `EnclosureQrCodeGeneratorTest` (CA-08) y `test_ca09_*` en verde.
 - [x] **T-04** (CA-01, CA-02, CA-11, CA-12): `GetEnclosureQrAction` (código de `id` mayor, RN-01), `RenderEnclosureQrSvgAction` (bacon, en memoria), `EnclosureQrResult`, `EnclosureQrResource`, `EnclosureQrController::show` y ruta `enclosures.qr.show`. Tests `test_ca01_*`, `test_ca02_*`, `test_ca11_*` (consulta), `test_ca12_*` (consulta). Evidencia: `GetEnclosureQrAction`, `RenderEnclosureQrSvgAction`, `EnclosureQrResult`, `EnclosureQrResource`, `EnclosureQrController::show`; tests ca01, ca02, ca11, ca12 en verde.
 - [x] **T-05** (CA-03, CA-04, CA-09, CA-10, CA-11, CA-12): `GenerateEnclosureQrAction` con `lockForUpdate` (RN-05), reutilización del activo (CA-04), creación con reintento (CA-09) y Activitylog solo al crear (CA-10, sin valor del código). `EnclosureQrController::generate` y ruta `enclosures.qr.generate` (201 o 200). Tests `test_ca03_*`, `test_ca04_*`, `test_ca09_*` (respuesta 500), `test_ca10_*`, `test_ca11_*`, `test_ca12_*` (generar). Evidencia: `GenerateEnclosureQrAction` y `generate`; tests ca03, ca04, ca09, ca10, ca11, ca12 en verde.
@@ -33,11 +35,11 @@
   - `apps/api/specs/019-enclosure-status-and-global-search.md`: CA-05 (eliminar también marca `deleted_at` en los códigos QR, RN-16), CA-10 (campo `has_active_qr`, CA-14), CA-18 (código de recinto eliminado → `invalid_code`, CA-20) y la línea «Fuera de alcance» sobre gestión de códigos QR (ahora en `api-020`).
   - `apps/api/specs/005-visitor-progress.md`: CA-12 (comando reutiliza el código activo y `--regenerate`) y «Fuera de alcance» (la hoja imprimible pasa a `dashboard-013`).
   - `apps/mobile/specs/006-qr-scan.md`: solo la nota de «Fuera de alcance» (la impresión queda en `dashboard-013`). Sin cambio de código móvil.
-- [x] **T-19** (CA-01 a CA-26): verificaciones de la API. Pint o el formateador del proyecto, `php artisan test` contra `arca_pruebas` (nunca `arca_zoo`) y `migrate:status`. Registrar resultados con salida real aportada por la sesión principal. Sin evidencia no se marca como hecho. Evidencia 2026-11-18 (backend, `arca_pruebas`): Pint passed en archivos tocados; `php artisan test` filtrado: 26 tests nuevos de api-020 (1 unit + 17 EnclosureQrTest + 1 comando + 7 ciclo de vida), más regresión `EnclosureScanTest`, `EnclosureDeleteTest`, `EnclosureAdminListTest` en verde; `migrate:status` con la 000021 Ran. Suite completa no ejecutada. `EnclosuresAdminTest::test_ca17` (api-007) falla por fixture sin `stay_status` en su propio insert (ajeno a api-020).
+- [x] **T-19** (CA-01 a CA-26): verificaciones de la API. Pint o el formateador del proyecto, `php artisan test` contra `arca_pruebas` (nunca `arca_zoo`) y `migrate:status`. Registrar resultados con salida real aportada por la sesión principal. Sin evidencia no se marca como hecho. Evidencia (backend, `arca_pruebas`): Pint passed en archivos tocados; `php artisan test` filtrado: 26 tests nuevos de api-020 (1 unit + 17 EnclosureQrTest + 1 comando + 7 ciclo de vida), más regresión `EnclosureScanTest`, `EnclosureDeleteTest`, `EnclosureAdminListTest` en verde; `migrate:status` con la 000021 Ran. Suite completa no ejecutada. `EnclosuresAdminTest::test_ca17` (api-007) falla por fixture sin `stay_status` en su propio insert (ajeno a api-020).
 
 ## Calidad y entrega
 
-- [ ] **T-20**: PR enlaza `apps/api/specs/020-enclosure-qr-management.md`, `apps/api/plan/020-enclosure-qr-management.md`, `apps/api/tasks/020-enclosure-qr-management.md` y DBR-021. El commit cita `api-020`. Los commits los hace Jonathan con el comando que indique él.
-- [ ] **T-21**: actualizar el estado de la spec a «En progreso» al iniciar la implementación y a «Implementada» solo con enlace a PR y resultados de tests de los CA-01 a CA-26.
+- [ ] **T-20** — Fuera de alcance de esta entrega (PR y commit): PR enlaza `apps/api/specs/020-enclosure-qr-management.md`, `apps/api/plan/020-enclosure-qr-management.md`, `apps/api/tasks/020-enclosure-qr-management.md` y DBR-021. El commit cita `api-020`. Los commits los hace el responsable funcional con el comando que indique él.
+- [ ] **T-21** — Fuera de alcance de esta entrega (estado de la spec tras el PR): actualizar el estado de la spec a «En progreso» al iniciar la implementación y a «Implementada» solo con enlace a PR y resultados de tests de los CA-01 a CA-26.
 
 Cada tarea de código nombra sus CA-xx y cada CA-xx tiene al menos una tarea de prueba. Las tareas de BD (T-01) son del responsable de BD y no las ejecuta backend. Las de backend (T-02 en adelante) inician con DBR-021 en «Lista para backend».

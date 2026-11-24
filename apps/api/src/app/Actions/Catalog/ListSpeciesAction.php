@@ -13,7 +13,7 @@ class ListSpeciesAction
     public function execute(): Collection
     {
         return Species::query()
-            ->with(['animals.enclosure'])
+            ->with(['animals' => fn ($query) => $query->publiclyVisible(), 'animals.enclosure'])
             ->orderBy('common_name')
             ->get();
     }

@@ -1,10 +1,12 @@
 # Plan técnico · 016 · PoC ARCore/ARKit con anclaje AR
 
 - Spec: `apps/mobile/specs/016-arcore-arkit-anchor-poc.md`
-- Estado de spec: Aprobada
+- Estado de spec: Implementada
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
 - ADR: `docs/adr/0032-viroreact-arcore-arkit-poc.md` (Aceptado)
 - Responsables: Equipo mobile
-- Aprobación técnica: Victor Adrian (2026-11-21, conversación)
+- Aprobación técnica: Aprobada
 
 ## Diseño de solución
 

@@ -1,8 +1,10 @@
 # Plan técnico · 004 · animal-registration (alineación DBR-014)
 
 - Spec: `apps/pwa/specs/004-animal-registration.md`
-- Estado de spec: Aprobada (Victor Adrian, 2026-11-13)
-- Responsable técnico: Victor Adrian (implementación asistida)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-13
+- Responsable técnico: Frontend y Backend (implementación asistida)
 
 ## Diseño de solución
 
@@ -29,7 +31,7 @@ Alinear el alta y la ficha de animales al contrato post DBR-014: la API pasa a s
   - `GET /api/v1/staff/animals`, `GET /api/v1/staff/animals/{animal}` (`staff.animals.index/show`): listado/perfil.
 - **Request alta (objetivo):** `name`, `species_id` (int, exists), `tag_number` (según decisión vigente), `enclosure_id`, `sex`, `birth_date` (date, nullable), `estimated_age` (string, nullable), `origin` (nullable), `notes`→`characteristics` (nullable). Reglas exactas supeditadas a Q1-Q4 de la spec.
 - **Response:** datos de animal con `birth_date`, `estimated_age`, `species` (incl. `feeding/longevity/reproduction`), sin campos retirados de `animals`.
-- **DBR:** DBR-014 “Lista para backend” (aplicada 2026-11-13, evidencia detallada pendiente). No se crean migraciones en este alcance.
+- **DBR:** DBR-014 “Lista para backend” (aplicada en `arca_pruebas`; evidencia detallada pendiente). No se crean migraciones en este alcance.
 - **Errores:** 401 sesión, 422 validación (mensajes en español), conflicto/unique por `tag_number`.
 
 ## Seguridad, offline y operación
@@ -64,11 +66,11 @@ Alinear el alta y la ficha de animales al contrato post DBR-014: la API pasa a s
 ## Riesgos y decisiones
 
 - Contrato breaking (`species` texto → `species_id`, `age` → `birth_date/estimated_age`): coordinar API+PWA en mismo cambio.
-- Decisiones abiertas Q1-Q4 deben resolverse antes de cerrar implementación.
+- Decisiones Q1-Q4 resueltas en la spec (1A, 2A, 3 y 4) y reflejadas en el código: sexo `macho`/`hembra` (`AnimalFormView.tsx`), alta con `birth_date` opcional sin `estimated_age`, e identificador `tag_number` tal como está.
 - DBR-014 evidencia detallada pendiente de adjuntar (no bloquea consumo si ya aplicado, pero debe completarse).
 
 ## Orden y aprobación
 
-1. Spec 004 aprobada (2026-11-13) y decisiones 1A/2A/3/4 cerradas. 2. Actualizar API (contrato/modelos/recursos/tests). 3. Actualizar PWA (form/perfil/cliente/tests). 4. Actualizar docs/evidencia DBR. 5. `/verify`.
+1. Spec 004 aprobada y decisiones 1A/2A/3/4 cerradas. 2. Actualizar API (contrato/modelos/recursos/tests). 3. Actualizar PWA (form/perfil/cliente/tests). 4. Actualizar docs/evidencia DBR. 5. `/verify`.
 
 Decisiones aplicadas: especie seleccionable del catálogo o nombre nuevo con `firstOrCreate` (sin datos extra de especie); sexo solo Macho/Hembra (`M/F`); `birth_date` y `estimated_age` separados y opcionales (cualquier combinación); `tag_number` sin cambios de comportamiento/texto.

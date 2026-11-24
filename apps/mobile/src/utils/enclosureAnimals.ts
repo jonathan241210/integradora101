@@ -1,3 +1,4 @@
+import { isMockDataEnabled } from '../config/runtime';
 import { MOCK_ANIMALS } from '../mocks/zoo';
 import { MapPlace } from '../models';
 
@@ -237,7 +238,18 @@ function getEmojiForSpecies(name?: string): string {
   return '🐾';
 }
 
-export function getEnclosureAnimalsList(place: MapPlace): EnclosureAnimalDetail[] {
+export const NO_ANIMALS_MESSAGE = 'Sin ejemplares para mostrar';
+
+/**
+ * Ejemplares de un recinto. Solo la API es fuente de datos (mobile-018 CA-07, RN-01):
+ * el catálogo de demostración y los mocks se usan únicamente con `allowMocks` (por defecto,
+ * `EXPO_PUBLIC_USE_MOCKS=true` o pruebas).
+ */
+export function getEnclosureAnimalsList(
+  place: MapPlace,
+  options: { allowMocks?: boolean } = {},
+): EnclosureAnimalDetail[] {
+  const allowMocks = options.allowMocks ?? isMockDataEnabled();
   // 1. PRIORIDAD MÁXIMA: Animales reales traídos desde la Base de Datos / API
   if (place.animals && place.animals.length > 0) {
     return place.animals.map((item, index) => {
@@ -257,13 +269,17 @@ export function getEnclosureAnimalsList(place: MapPlace): EnclosureAnimalDetail[
         diet: item.diet || 'Alimentación especializada balanceada',
         reproduction: item.reproduction || 'Bajo monitoreo reproductivo',
         veterinaryStatus: item.veterinaryStatus || 'Control veterinario regular al día',
-        funFact: item.characteristics || item.funFact || place.description,
+        funFact: item.funFact || place.description,
         iconEmoji: emoji,
       };
     });
   }
 
-  // 2. Si no hay datos en place.animals, buscar en catálogo mock enriquecido para modo offline / pruebas
+  if (!allowMocks) {
+    return [];
+  }
+
+  // 2. Si no hay datos en place.animals, buscar en catálogo mock enriquecido para pruebas / demostración
   const catalogList = ENCLOSURE_ANIMALS_CATALOG[place.id.toLowerCase()];
   if (catalogList && catalogList.length > 0) {
     return catalogList;
@@ -320,6 +336,17 @@ export function getEnclosureAnimalsList(place: MapPlace): EnclosureAnimalDetail[
 export function getAnimalCardData(place: MapPlace): AnimalCardData {
   const animalsList = getEnclosureAnimalsList(place);
   const first = animalsList[0];
+
+  if (!first) {
+    return {
+      title: place.name,
+      subtitle: NO_ANIMALS_MESSAGE,
+      categoryLabel: place.kind === 'animal' ? 'Recinto de fauna' : 'Punto de interés',
+      description: place.description ?? NO_ANIMALS_MESSAGE,
+      iconEmoji: place.kind === 'animal' ? '🐾' : '📍',
+      animalsCount: 0,
+    };
+  }
 
   const animalsSummary = animalsList
     .map((a) => `${a.nickname} (${a.sex})`)

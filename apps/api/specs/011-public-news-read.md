@@ -2,12 +2,13 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña: rutas, Actions, Resources, zona horaria de la vigencia pública y CORS por ambiente); `apps/web` (consumidor, spec `web-009`: portada, listado y detalle de noticia al expandir la tarjeta); `apps/mobile` (sin cambios; `GET /events` gana `limit` opcional, compatible); `packages/api-client` (sin cambios en esta spec).
-- Estado: Aprobada (Jonathan, 2026-11-07)
-- Solicitante / responsable funcional: Jonathan
-- Aprobación funcional: aprobada por Jonathan, 2026-11-07
+- Estado: Implementada
+- Solicitada: 2026-11-07
+- Aprobada: 2026-11-07
+- Aprobación funcional: Aprobada
 - Responsable de BD: no aplica. Esta feature no requiere DBR ni migración (RN-02).
 - Dependencias: `api-008` (`image_url` y `ResolveContentImageUrlAction`, ya presentes en el código), DBR-005 (`deleted_at` en `news` y `events`, debe estar aplicada en el ambiente), `api-006` (catálogo público de eventos; su RN-07 y su «Fuera de alcance» excluyen paginación: esta spec añade solo `limit` opcional a `GET /events`, ver «Dependencias, riesgos y preguntas»; su RN-12 cambia solo la zona horaria de «hoy», ver RN-14).
-- Decisiones del usuario (2026-11-07) incorporadas: (a) «hoy» para la visibilidad se calcula en `America/Mexico_City` sin cambiar la zona global (RN-14); (b) el origen de desarrollo del portal es `http://localhost:8080` y se añade a `CORS_ALLOWED_ORIGINS` (RN-12); (c) el listado de noticias no incluye `content` y el portal pide `GET /api/v1/news/{news}` al expandir la tarjeta (RN-07, «Flujos y errores»); (d) tamaño de página por defecto 10 y máximo 50 (RN-05); (e) `limit` o `page` no válidos responden `422` (CA-04); (f) `GET /api/v1/events` acepta `limit` opcional sin `page`; (g) la portada del portal pide 3 noticias y 3 eventos (`web-009`).
+- Decisiones incorporadas: (a) «hoy» para la visibilidad se calcula en `America/Mexico_City` sin cambiar la zona global (RN-14); (b) el origen de desarrollo del portal es `http://localhost:8080` y se añade a `CORS_ALLOWED_ORIGINS` (RN-12); (c) el listado de noticias no incluye `content` y el portal pide `GET /api/v1/news/{news}` al expandir la tarjeta (RN-07, «Flujos y errores»); (d) tamaño de página por defecto 10 y máximo 50 (RN-05); (e) `limit` o `page` no válidos responden `422` (CA-04); (f) `GET /api/v1/events` acepta `limit` opcional sin `page`; (g) la portada del portal pide 3 noticias y 3 eventos (`web-009`).
 
 ## Problema y contexto
 
@@ -80,16 +81,16 @@ Esta feature no crea permisos ni roles (RN-02).
 - **RN-02 (sin esquema nuevo):** No se crean migraciones ni DBR. Se usan las tablas existentes `news` y `events`, la columna `image_path` (`api-008`) y `deleted_at` (DBR-005).
 - **RN-03 (visibilidad):** Una noticia es visible si y solo si `is_active = true`, no tiene `deleted_at`, `published_date` es menor o igual a hoy y `end_date` es nulo o mayor o igual a hoy. «Hoy» se calcula según RN-14. La misma regla aplica al listado y al detalle.
 - **RN-04 (orden):** El listado de noticias se ordena por `published_date` descendente y `id` descendente. El listado de eventos conserva el orden de `api-006` (`start_date`, `start_time`).
-- **RN-05 (paginación y límites):** En noticias, `limit` por defecto es 10 y su máximo es 50; `page` por defecto es 1. `has_more` se calcula pidiendo un elemento más de los solicitados, sin contar el total. En eventos, `limit` es opcional, sin valor por defecto, y su máximo es 50. Los valores fuera de rango responden `422` (CA-04). Valores confirmados por el usuario el 2026-11-07 (pregunta 3).
+- **RN-05 (paginación y límites):** En noticias, `limit` por defecto es 10 y su máximo es 50; `page` por defecto es 1. `has_more` se calcula pidiendo un elemento más de los solicitados, sin contar el total. En eventos, `limit` es opcional, sin valor por defecto, y su máximo es 50. Los valores fuera de rango responden `422` (CA-04). Valores confirmados (pregunta 3).
 - **RN-06 (compatibilidad de eventos):** Sin `limit`, `GET /api/v1/events` no cambia de contrato. Con `limit`, la respuesta sigue siendo `{"data": [...]}` sin `meta`. Esta excepción a `api-006` RN-07 se registra como divergencia (ver «Dependencias, riesgos y preguntas»).
-- **RN-07 (campos públicos de noticias):** El listado expone `id`, `title`, `description`, `category`, `published_date`, `start_date`, `end_date` e `image_url`. **El listado no incluye `content`** (decisión de 2026-11-07): mantiene las respuestas pequeñas, porque `content` puede tener hasta 20 000 caracteres. El detalle añade `content`. No se exponen `author_id`, `is_active`, `image_path` ni fechas de auditoría. Los campos sin dato van en `null`.
+- **RN-07 (campos públicos de noticias):** El listado expone `id`, `title`, `description`, `category`, `published_date`, `start_date`, `end_date` e `image_url`. **El listado no incluye `content`** (decisión): mantiene las respuestas pequeñas, porque `content` puede tener hasta 20 000 caracteres. El detalle añade `content`. No se exponen `author_id`, `is_active`, `image_path` ni fechas de auditoría. Los campos sin dato van en `null`.
 - **RN-08 (errores en español):** Los mensajes visibles para el cliente van en español: «Noticia no encontrada.», «Evento no encontrado.» y los mensajes de validación de `limit` y `page`.
 - **RN-09 (identificadores):** Un identificador que no sea numérico responde `404` sin consultar la base de datos (mismo criterio que `api-006` CA-06).
 - **RN-10 (arquitectura):** Controladores HTTP delgados → Form Requests (validación de `limit` y `page`) → Actions (`ListPublishedNewsAction`, `GetPublishedNewsAction`, `ListEventsAction`) → API Resources. La regla de visibilidad vive en la capa de consulta de `News` y en las Actions, no en el controlador. El cálculo de «hoy» vive en un único punto (RN-14).
 - **RN-11 (rutas nombradas y en inglés):** Las rutas se declaran en inglés con `->name()`: `news.index`, `news.show`, `events.index` (ya existe), `events.show` (ya existe). No se usan Inertia ni Wayfinder.
 - **RN-12 (CORS por ambiente):** El origen del portal se añade a `CORS_ALLOWED_ORIGINS` en `.env` de cada ambiente, sin valores fijos en código ni en `config/cors.php`. En desarrollo, el origen es `http://localhost:8080` (exacto: esquema, host y puerto). El portal debe servirse en `localhost`, no en `127.0.0.1`, porque son orígenes distintos. El `.env.example` se actualiza solo con valores de muestra no sensibles.
 - **RN-13 (sin datos personales):** Las respuestas no contienen datos personales de visitantes ni de personal.
-- **RN-14 (zona horaria de «hoy», decisión de 2026-11-07):** La fecha «hoy» de la visibilidad pública (RN-03, `api-006` RN-12) se calcula en `America/Mexico_City` a través de un único punto (`App\Support\PublicCalendar::today()`, nuevo), que lee `config('arca.public_timezone')`. `config/app.php` no cambia: `timezone` sigue en `UTC`. Las Actions de noticias y de eventos (`ListEventsAction`, `GetEventAction`) usan ese punto. Otros cálculos de fecha de la API (reportes, boletos, progreso) no cambian.
+- **RN-14 (zona horaria de «hoy», decisión):** La fecha «hoy» de la visibilidad pública (RN-03, `api-006` RN-12) se calcula en `America/Mexico_City` a través de un único punto (`App\Support\PublicCalendar::today()`, nuevo), que lee `config('arca.public_timezone')`. `config/app.php` no cambia: `timezone` sigue en `UTC`. Las Actions de noticias y de eventos (`ListEventsAction`, `GetEventAction`) usan ese punto. Otros cálculos de fecha de la API (reportes, boletos, progreso) no cambian.
 
 ## Datos, privacidad y auditoría
 
@@ -131,17 +132,17 @@ Esta feature no crea permisos ni roles (RN-02).
   - **Paginación sin total:** `has_more` evita contar filas, pero no muestra «página X de Y». Suficiente para «Cargar más».
   - **Imágenes anteriores a `api-008`:** sin ruta gestionada, `image_url` es `null`; el portal y el dashboard muestran el marcador de sin imagen.
   - **Carga del detalle:** cada expansión del portal es una petición nueva al detalle; el portal la hace una vez por noticia y visita (`web-009` CA-14).
-- **Preguntas (estado tras la aprobación del 2026-11-07):**
-  1. **Resuelta (2026-11-07):** «hoy» usa `America/Mexico_City` solo para la visibilidad pública (RN-14); `config/app.php` no cambia.
-  2. **Parcialmente resuelta:** en desarrollo, el origen del portal es `http://localhost:8080`. **Pendiente, no bloquea (decisión del usuario, 2026-11-07):** origen de producción (no hay dominio definido).
-  3. **Resuelta (2026-11-07):** tamaño por defecto 10 y máximo 50 para la portada y la página de noticias (RN-05).
-  4. **Resuelta (2026-11-07):** ante `limit` o `page` inválidos se responde `422` (CA-04); no se ajusta el valor.
-  5. **Resuelta (2026-11-07):** `GET /api/v1/events` recibe `limit` opcional y no recibe `page`; la divergencia con `api-006` queda registrada en RN-06.
-  6. **Resuelta (2026-11-07):** el listado de noticias no incluye `content`; el detalle se pide al expandir la tarjeta (RN-07).
+- **Decisiones:**
+  1. **Resuelta:** «hoy» usa `America/Mexico_City` solo para la visibilidad pública (RN-14); `config/app.php` no cambia.
+  2. **Parcialmente resuelta:** en desarrollo, el origen del portal es `http://localhost:8080`. **Pendiente, no bloquea (decisión del usuario):** origen de producción (no hay dominio definido).
+  3. **Resuelta:** tamaño por defecto 10 y máximo 50 para la portada y la página de noticias (RN-05).
+  4. **Resuelta:** ante `limit` o `page` inválidos se responde `422` (CA-04); no se ajusta el valor.
+  5. **Resuelta:** `GET /api/v1/events` recibe `limit` opcional y no recibe `page`; la divergencia con `api-006` queda registrada en RN-06.
+  6. **Resuelta:** el listado de noticias no incluye `content`; el detalle se pide al expandir la tarjeta (RN-07).
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan, 2026-11-07 (aprobación explícita del usuario sobre spec, plan y tasks). Estado Aprobada.
-- Evidencia/enlaces: `apps/api/specs/006-public-catalog-read.md` (RN-07, RN-12, «Fuera de alcance», CA-03), `apps/api/specs/008-event-news-images.md` (CA-08, CA-11, `image_url`), `docs/database/requests/DBR-005-news-events-soft-deletes.md`, `apps/web/specs/009-dynamic-news-events.md` (consumidor; CA-14 detalle al expandir), `docs/adr/0024-web-static-portal-exception.md` (excepción de arquitectura del portal, Aceptado el 2026-11-07).
+- Aprobación: Aprobada (aprobación explícita sobre spec, plan y tasks). Estado Aprobada.
+- Evidencia/enlaces: `apps/api/specs/006-public-catalog-read.md` (RN-07, RN-12, «Fuera de alcance», CA-03), `apps/api/specs/008-event-news-images.md` (CA-08, CA-11, `image_url`), `docs/database/requests/DBR-005-news-events-soft-deletes.md`, `apps/web/specs/009-dynamic-news-events.md` (consumidor; CA-14 detalle al expandir), `docs/adr/0024-web-static-portal-exception.md` (excepción de arquitectura del portal, Aceptado).
 
-> **Nota de revisión (2026-11-20, sin renumerar, sin cambio de estado):** la RN-14 de esta spec (zona de «hoy» de la visibilidad pública) pasa a la llave única de `api-025`: `App\Support\PublicCalendar::today()` lee `config('arca.timezone')` (`ARCA_TIMEZONE`, por defecto `America/Mexico_City`) en lugar de `config('arca.public_timezone')`, que se retira. El valor por defecto no cambia y `config/app.php` sigue en `UTC`. CA-12 se mantiene con la nueva llave. Hasta que se implemente `api-025`, RN-14 sigue vigente con la llave anterior.
+> **Nota de revisión (sin renumerar, sin cambio de estado):** la RN-14 de esta spec (zona de «hoy» de la visibilidad pública) pasa a la llave única de `api-025`: `App\Support\PublicCalendar::today()` lee `config('arca.timezone')` (`ARCA_TIMEZONE`, por defecto `America/Mexico_City`) en lugar de `config('arca.public_timezone')`, que se retira. El valor por defecto no cambia y `config/app.php` sigue en `UTC`. CA-12 se mantiene con la nueva llave. Hasta que se implemente `api-025`, RN-14 sigue vigente con la llave anterior.

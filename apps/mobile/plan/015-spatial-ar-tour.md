@@ -1,9 +1,11 @@
 # Plan técnico · 015 · Recorrido AR location-based con recintos, `zoo_places` y ruteo por nodos
 
 - Spec: `apps/mobile/specs/015-spatial-ar-tour.md`
-- Estado de spec: Aprobada
+- Estado de spec: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
 - Responsable técnico: Por confirmar
-- Aprobación técnica: Victor Adrian (2026-11-20, confirmación en conversación)
+- Aprobación técnica: Aprobada
 
 ## Diseño de solución
 
@@ -90,4 +92,4 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos. Si algo no 
 7. Integrar `zoo_places`/`path_nodes` como datos; mantener fallback `zooPaths.ts` para ruteo.
 8. Ejecutar pruebas, revisar accesibilidad/privacidad, actualizar docs y registrar limitaciones de dispositivo real.
 
-- **Aprobación requerida:** técnica (equipo) y funcional (Victor Adrian). No implementar antes de aprobación del plan.
+- **Aprobación requerida:** técnica (equipo) y funcional (Backend). No implementar antes de aprobación del plan.

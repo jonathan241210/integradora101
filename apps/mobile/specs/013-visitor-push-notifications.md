@@ -2,12 +2,13 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile` (permiso de Android, preferencias en Ajustes, registro del token y apertura al tocar el aviso); `packages/api-client` (métodos y tipos, sin lógica de negocio); `api` (reglas, texto y envío, spec `api-017`).
-- Estado: En progreso
-- Solicitante / responsable funcional: Aksel
-- Aprobación funcional: Aksel, 2026-11-14
-- Decisiones de alcance confirmadas el 2026-11-14: el aviso sale en la barra del sistema, también con la app cerrada; sin correo y sin bandeja dentro de la app; dos interruptores en Ajustes. «Noticias y eventos» nace apagado y «Estado de mis momentos» nace encendido.
-- Dependencias de contrato: `api-017` (Aprobada; plan aprobado), ADR 0029 (Aceptado) y DBR-017 (Lista para backend). Las tasks están hechas. Aksel confirmó el 2026-11-20 la verificación manual de la barra y el pull.
-- Aprobar esta spec no autoriza implementar por sí sola. La implementación y la verificación ya quedaron confirmadas el 2026-11-20.
+- Estado: Implementada
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Aprobación funcional: Aprobada
+- Decisiones de alcance confirmadas: el aviso sale en la barra del sistema, también con la app cerrada; sin correo y sin bandeja dentro de la app; dos interruptores en Ajustes. «Noticias y eventos» nace apagado y «Estado de mis momentos» nace encendido.
+- Dependencias de contrato: `api-017` (Aprobada; plan aprobado), ADR 0029 (Aceptado) y DBR-017 (Lista para backend). Las tasks están hechas. La verificación manual de la barra y el pull quedó confirmada.
+- Aprobar esta spec no autoriza implementar por sí sola. La implementación y la verificación ya quedaron confirmadas.
 
 ## Problema y contexto
 
@@ -55,7 +56,7 @@ Esta spec hace que el teléfono muestre el push de `api-017` en la barra del sis
 - **CA-07 (cierre de sesión y borrado):** Dada una sesión que registró el token, cuando cierra sesión o borra la cuenta, entonces la app pide la baja de ese token y, al terminar el flujo de `mobile-004`, el teléfono ya no queda registrado con esa cuenta.
 - **CA-08 (barra del sistema):** Dado un push de `api-017`, cuando llega con la app en primer plano, en segundo plano o cerrada, entonces Android lo muestra en la barra del sistema con el título y el cuerpo recibidos, no con un texto armado en la app. Hay dos canales, «Noticias y eventos» y «Momentos», alineados con las dos preferencias. El aviso de un momento no añade motivo ni opinión.
 - **CA-09 (toque de noticia o evento):** Dado un aviso con `type` `news` o `event` y un `id`, cuando la persona lo toca, entonces la app abre `/news-detail` o `/event-detail` con ese `id`. Si esa ficha ya no existe, muestra «Ya no está disponible.» y permanece en el inicio.
-- **CA-10 (toque de momento):** Dado un aviso con `type` `memory` y un `id`, cuando la persona lo toca, entonces abre `/memory-form` con ese `id` (`mobile-010`). No muestra el motivo en el aviso; el motivo se ve dentro de la pantalla, con sesión. Enmienda 2026-11-18: si esa petición aún no está en memoria, la ruta espera la lista. Si la trae, se ve la ficha o la corrección. Si no, «Tu memoria» ofrece «Ver mis memorias» o «Reintentar». No se crea una bandeja de avisos.
+- **CA-10 (toque de momento):** Dado un aviso con `type` `memory` y un `id`, cuando la persona lo toca, entonces abre `/memory-form` con ese `id` (`mobile-010`). No muestra el motivo en el aviso; el motivo se ve dentro de la pantalla, con sesión. Enmienda: si esa petición aún no está en memoria, la ruta espera la lista. Si la trae, se ve la ficha o la corrección. Si no, «Tu memoria» ofrece «Ver mis memorias» o «Reintentar». No se crea una bandeja de avisos.
 - **CA-11 (sin bandeja):** Dado el código de las pantallas nuevas, cuando se revisa, entonces no hay una lista de avisos recibidos. El único aviso visible fuera de Ajustes es el del sistema.
 - **CA-12 (presentación):** Dado el código nuevo, cuando se revisa, entonces las pantallas no llaman a la API ni a `fetch`. El ViewModel usa `@arca/api-client`. La app no decide si una noticia «toca» enviarse.
 - **CA-13 (cobertura):** Dada la suite de Jest con cliente simulado, cuando se ejecuta, entonces hay al menos una prueba que nombra cada CA-01 a CA-07 y CA-09 a CA-12. CA-08 se prueba en lo que el runtime de Jest puede afirmar (canales, título y cuerpo del aviso que se entregaría al sistema). La barra real con la app cerrada queda como evidencia manual en el PR, porque Jest no muestra la barra de Android.
@@ -87,12 +88,12 @@ Esta spec hace que el teléfono muestre el push de `api-017` en la barra del sis
 
 ## Dependencias, riesgos y preguntas
 
-- Dependencias: `api-017`. El ADR 0029 está Aceptado (Aksel, 2026-11-14): `expo-notifications` se instala con las tasks. El plan de `api-017` fija el envío por HTTP al servicio push de Expo.
+- Dependencias: `api-017`. El ADR 0029 está Aceptado: `expo-notifications` se instala con las tasks. El plan de `api-017` fija el envío por HTTP al servicio push de Expo.
 - `mobile-010` tiene la pantalla de la petición. CA-10 abre `/memory-form` con el id y espera la lista antes de decir que falta.
 - Riesgos: en un build de desarrollo sin las credenciales FCM el aviso no llega; la evidencia de CA-08 con la app cerrada pide un build de distribución. Quien niega el permiso no verá la barra.
-- Preguntas pendientes: ninguna. Aksel confirmó el alcance y los valores iniciales el 2026-11-14.
+- Sin preguntas abiertas: el alcance y los valores iniciales quedaron confirmados.
 
 ## Revisión
 
-- Aprobadores y fecha: Aksel, 2026-11-14 (aprobación funcional). Plan aprobado técnicamente por Victor Adrian el 2026-11-14. Las tasks están hechas. Aksel confirmó el 2026-11-20 la verificación manual de la barra y el pull.
+- Aprobación: Aprobada (funcional). Plan aprobado técnicamente. Las tasks están hechas. La verificación manual de la barra y el pull quedó confirmada.
 - Evidencia/enlaces: `apps/api/specs/017-visitor-push-notifications.md`, `apps/mobile/plan/013-visitor-push-notifications.md`, `docs/adr/0029-visitor-android-push.md`, `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md` (CA-14), `apps/mobile/specs/004-visitor-account.md`, `apps/mobile/specs/010-visitor-memory-requests.md`, `docs/adr/0004-mobile-react-native.md`, `docs/adr/0012-android-distribution-channel.md`.

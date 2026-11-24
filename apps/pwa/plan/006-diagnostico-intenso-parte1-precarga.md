@@ -1,8 +1,10 @@
 # Plan técnico · 006 · diagnostico-intenso-parte1-precarga
 
 - Spec: `apps/pwa/specs/006-diagnostico-intenso-parte1-precarga.md`
-- Estado de spec: Aprobada (Victor Adrian, 2026-11-13)
-- Responsable técnico: Victor Adrian (implementación asistida)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-13
+- Responsable técnico: Frontend (implementación asistida)
 
 ## Diseño de solución
 

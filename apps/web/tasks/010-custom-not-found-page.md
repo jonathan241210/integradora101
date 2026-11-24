@@ -1,8 +1,10 @@
 # Tareas · 010 · custom-not-found-page
 
 - Spec: `apps/web/specs/010-custom-not-found-page.md` (Estado: **Implementada**)
-- Plan: `apps/web/plan/010-custom-not-found-page.md` (Estado técnico: **Implementado y verificado, 2026-11-10**)
-- Estado del checklist: Implementado y verificado, 2026-11-10
+- Plan: `apps/web/plan/010-custom-not-found-page.md` (Estado técnico: **Implementado y verificado**)
+- Estado del checklist: Implementado y verificado
+- Solicitada: 2026-11-10
+- Aprobada: 2026-11-10
 
 ## Trazabilidad
 

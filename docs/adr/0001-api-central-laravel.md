@@ -1,7 +1,8 @@
 # 0001 · API central Laravel
 
 - Estado: Aceptado
-- Fecha: 2026-10-03
+- Solicitada: 2026-10-03
+- Aprobada: 2026-10-03
 - Spec relacionada: Por definir al iniciar la implementación
 
 ## Contexto

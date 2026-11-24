@@ -2,7 +2,9 @@
 
 - Spec: `apps/web/specs/005-visit-info-icons-and-favicon.md` (Estado: **Implementada**)
 - Plan: `apps/web/plan/005-visit-info-icons-and-favicon.md` (Estado técnico: **Implementado y verificado**)
-- Estado del checklist: Incremento de desplazamiento aprobado por el solicitante el 2026-10-08; tareas implementadas y verificadas
+- Estado del checklist: Incremento de desplazamiento aprobado; tareas implementadas y verificadas
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
 
 ## Trazabilidad
 

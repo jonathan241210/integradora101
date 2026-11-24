@@ -2,7 +2,9 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard`
-- Estado: Aprobada
+- Estado: Implementada
+- Solicitada: 2026-11-19
+- Aprobada: 2026-11-19
 - Aprobación funcional: la persona solicitante pidió proceder con la paginación y confirmó la PWA veterinaria como referencia visual, después de solicitar tres avisos por página y retirar la campana.
 
 ## Problema y objetivos
@@ -38,7 +40,7 @@ Como parte del personal del zoológico, quiero recorrer Noticias por páginas y 
 - Paginación de Eventos en `dashboard-011` y avisos existentes del dashboard como referencias de interacción.
 - Referencia visual: `apps/pwa/src/views/SaveFeedback.tsx`, que usa el componente compartido `Alert`.
 
-## Nota de revisión (2026-11-21, dashboard-020)
+## Nota de revisión
 
 - La regla general de mensajes del dashboard queda en `dashboard-020` RN-07: éxito y error general de una acción fuera de diálogo son aviso emergente; errores de campo junto al campo; diálogos dentro del diálogo; carga y 403 de vista como estado de la vista.
 - CA-04 de esta spec se aplica a todo el dashboard y no solo a Noticias. Su texto y su número no cambian.

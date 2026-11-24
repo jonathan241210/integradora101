@@ -3,6 +3,8 @@
 - Spec: `apps/mobile/specs/009-expo-sdk57-dependency-alignment.md`
 - Plan: `apps/mobile/plan/009-expo-sdk57-dependency-alignment.md`
 - Estado: Aprobado; implementación en progreso
+- Solicitada: 2026-10-27
+- Aprobada: 2026-10-27
 
 ## Implementación
 
@@ -22,6 +24,6 @@
 
 ## Aprobación
 
-- Spec funcional aprobada por el usuario solicitante el 2026-10-27.
-- Plan técnico aprobado por el usuario solicitante el 2026-10-27.
-- Checklist y revisión técnica aprobados por el usuario solicitante el 2026-10-27.
+- Spec funcional aprobada.
+- Plan técnico aprobado.
+- Checklist y revisión técnica aprobados.

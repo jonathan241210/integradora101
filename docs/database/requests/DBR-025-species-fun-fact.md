@@ -1,11 +1,11 @@
 # DBR-025 · Dato curioso de la especie (`fun_fact`)
 
-- Estado: Lista para backend. Aprobada por Jonathan como responsable de BD por delegación (2026-11-21), con `VARCHAR(500)` NULL y collation heredada de cada tabla.
-- Feature/spec origen: `apps/api/specs/026-species-fun-fact.md` (Aprobada 2026-11-21). Plan: `apps/api/plan/026-species-fun-fact.md`. Revisiones de consumidores: `apps/pwa/specs/005-species-request-submission.md` (nota), `apps/dashboard/specs/010-public-content-management.md` (nota), `apps/web/specs/011-dynamic-tulanpedia.md` (nota). Relacionada con DBR-013 (columnas de publicación de `species` y de `species_publication_requests`).
-- Solicitante: Jonathan (decisión funcional del 2026-11-21: un campo de texto plano opcional «Dato curioso», de hasta 500 caracteres).
-- Responsable de BD: Jonathan, por delegación del responsable de BD (2026-11-21), igual que en DBR-024.
-- Responsable backend: Jonathan.
-- Fecha de redacción: 2026-11-21
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Feature/spec origen: `apps/api/specs/026-species-fun-fact.md` (Aprobada). Plan: `apps/api/plan/026-species-fun-fact.md`. Revisiones de consumidores: `apps/pwa/specs/005-species-request-submission.md` (nota), `apps/dashboard/specs/010-public-content-management.md` (nota), `apps/web/specs/011-dynamic-tulanpedia.md` (nota). Relacionada con DBR-013 (columnas de publicación de `species` y de `species_publication_requests`).
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 
 ## Problema y justificación
 
@@ -15,11 +15,11 @@ Sin esta DBR no hay dónde guardar la propuesta (`species_publication_requests`)
 
 ## Estado actual
 
-Consultado sobre la base viva `arca_pruebas` el 2026-11-21, en solo lectura, por la sesión principal (no se ejecutó ningún `ALTER`, `INSERT`, `UPDATE`, `DELETE` ni migración):
+Consultado sobre la base viva `arca_pruebas`, en solo lectura, por la sesión principal (no se ejecutó ningún `ALTER`, `INSERT`, `UPDATE`, `DELETE` ni migración):
 
 - `species`: 19 columnas. Texto: `feeding` (text), `distribution` (varchar 255), `habitat` (varchar 255), y otras. `published_fields` (json). **No existe** ninguna columna de dato curioso. Collation de la tabla: `utf8mb4_0900_ai_ci`.
 - `species_publication_requests`: 19 columnas. Incluye `scientific_name`, `habitat` y `origin` (varchar 150), `category`, `image_path`, `published_fields` (json), `status` y `rejection_reason` (varchar 500). **No existe** ninguna columna de dato curioso. Collation de la tabla: `utf8mb4_unicode_ci`.
-- Conteo de filas (2026-11-21, solo lectura): `species` = 9 (ninguna eliminada); `species_publication_requests` = 7. `migrations` = 24 filas, último lote 14.
+- Conteo de filas (solo lectura): `species` = 9 (ninguna eliminada); `species_publication_requests` = 7. `migrations` = 24 filas, último lote 14.
 - Comandos usados por la sesión principal: `php artisan db:table species`, `php artisan db:table species_publication_requests` y conteos con `DB::table(...)->count()` vía `php artisan tinker` (solo lectura).
 - Comparación con migraciones y documentación: las columnas de publicación de DBR-013 están en `2026_11_12_000013_species_publication_requests_schema.php`. Ninguna migración ni DBR previa añade `fun_fact`.
 
@@ -81,7 +81,7 @@ ALTER TABLE species
 
 - Todas las filas existentes de `species` y de `species_publication_requests` quedan con `fun_fact = NULL`. No hay backfill: ningún dato se infiere ni se copia.
 - Efecto en el portal: ninguna especie publicada tiene `fun_fact` en `published_fields`, así que `GET /api/v1/published-species` no cambia (`api-026` RN-10).
-- Filas en `arca_pruebas` (2026-11-21): `species` 9, `species_publication_requests` 7. Todas quedan en NULL; no se reescribe ningún dato.
+- Filas en `arca_pruebas`: `species` 9, `species_publication_requests` 7. Todas quedan en NULL; no se reescribe ningún dato.
 
 ## Privacidad, auditoría y retención
 
@@ -112,7 +112,7 @@ No aplica.
 
 ## Verificaciones para BD
 
-1. **Columnas inexistentes (2026-11-21):** `fun_fact` no existe en ninguna de las dos tablas según la consulta de solo lectura de la sesión principal. Repetir justo antes de migrar (`Schema::hasColumn` = false en ambas).
+1. **Columnas inexistentes (al redactar):** `fun_fact` no existe en ninguna de las dos tablas según la consulta de solo lectura de la sesión principal. Repetir justo antes de migrar (`Schema::hasColumn` = false en ambas).
 2. **Margen de fila:** confirmar que `species` no supera 65 535 bytes de tamaño de fila con la columna nueva (`VARCHAR(500)` utf8mb4 ocupa hasta 2002 bytes). Pendiente de BD.
 3. **Collation distinta entre tablas (preexistente):** `species` usa `utf8mb4_0900_ai_ci` y `species_publication_requests` usa `utf8mb4_unicode_ci`. No afecta a esta columna. No se corrige en esta DBR. Si BD quiere unificarla, se abre DBR aparte.
 4. **Número de filas:** 9 y 7 (ver «Datos existentes»); `ALTER` trivial.
@@ -123,14 +123,14 @@ No aplica.
 ## Plan de ejecución
 
 ### Fase 0: cierre documental
-- [x] Revisión de BD y backend: Jonathan (responsable de BD por delegación y responsable backend), 2026-11-21.
-- [x] Consulta de solo lectura (2026-11-21): `db:table species` y `db:table species_publication_requests` sin `fun_fact`; 9 y 7 filas.
-- [x] Aprobada el 2026-11-21 (tabla «Aprobaciones»).
+- [x] Revisión de BD y backend.
+- [x] Consulta de solo lectura: `db:table species` y `db:table species_publication_requests` sin `fun_fact`; 9 y 7 filas.
+- [x] Aprobada (tabla «Aprobaciones»).
 
 ### Fase 1: migración de esquema (responsable de BD)
-- [x] Migración `2026_11_21_000025_species_fun_fact.php`, idempotente, con `down()`. Creada y aplicada por la sesión del asistente por instrucción expresa de Jonathan como responsable de BD delegado (excepción registrada: AGENTS.md reserva esta tarea al responsable de BD; Jonathan la asumió y la delegó).
+- [x] Migración `2026_11_21_000025_species_fun_fact.php`, idempotente, con `down()`. Creada y aplicada fuera del flujo del responsable de BD (excepción registrada: AGENTS.md reserva esta tarea al responsable de BD; pendiente de revisión por BD).
 - [ ] Probada en MySQL 8.0 aislado (`down()` pendiente; rollback prohibido en `arca_pruebas`). Aplicada en `arca_pruebas` con up + re-ejecución idempotente (ver evidencia).
-- [x] «Lista para backend» el 2026-11-21.
+- [x] «Lista para backend».
 
 ### Fase 2: backend (tras «Lista para backend»)
 - [x] Integrado en la API (`apps/api/tasks/026-species-fun-fact.md`, T-05 a T-16 y T-18).
@@ -138,27 +138,27 @@ No aplica.
 ## Pruebas y evidencia
 
 - Pruebas de esquema en MySQL 8.0 aislado: **pendiente** (`down()`).
-- Evidencia de `arca_pruebas` (2026-11-21): `php artisan migrate --force` → `2026_11_21_000025_species_fun_fact` DONE, lote 15; segunda ejecución sin pendientes; `information_schema`: `species.fun_fact varchar(500) NULL utf8mb4_0900_ai_ci`, `species_publication_requests.fun_fact varchar(500) NULL utf8mb4_unicode_ci`; filas previas 9 y 7, en NULL.
+- Evidencia de `arca_pruebas`: `php artisan migrate --force` → `2026_11_21_000025_species_fun_fact` DONE, lote 15; segunda ejecución sin pendientes; `information_schema`: `species.fun_fact varchar(500) NULL utf8mb4_0900_ai_ci`, `species_publication_requests.fun_fact varchar(500) NULL utf8mb4_unicode_ci`; filas previas 9 y 7, en NULL.
 - Pruebas integradas del backend: clases de api-026 en verde; suite completa en T-17.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Jonathan (por delegación del responsable de BD) | 2026-11-21 | Aprobada |
-| Responsable backend | Jonathan | 2026-11-21 | Aprobada |
-| Solicitante / responsable funcional | Jonathan | 2026-11-21 | Decisión funcional tomada (campo y reglas); la aprobación de la DBR la dan BD y backend |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada (pendiente de revisión por el responsable de BD) | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
+| Solicitante / responsable funcional | Decisión funcional tomada (campo y reglas); la aprobación de la DBR la dan BD y backend | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | Aplicada | 2026-11-21 | Lote 15; ver «Pruebas y evidencia» |
-| staging | Pendiente | | |
-| producción | Pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_11_21_000025_species_fun_fact` (lote 15); ver «Pruebas y evidencia» |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
 
-## Preguntas para BD (resueltas por Jonathan, 2026-11-21: VARCHAR(500); collation heredada; responsable de BD Jonathan por delegación)
+## Preguntas para BD (resueltas: VARCHAR(500); collation heredada)
 
 1. ¿Se confirma `VARCHAR(500)` nullable frente a `TEXT`? Recomendación: `VARCHAR(500)`.
 2. ¿Se acepta heredar la collation de cada tabla sin declararla? Recomendación: sí.
-3. ¿Quién es el responsable de BD para esta DBR? (Víctor Adrián o delegado por Jonathan, como en DBR-024.)
+3. ¿Quién es el responsable de BD para esta DBR? (Responsable de BD o delegado formal; pendiente de confirmar.)

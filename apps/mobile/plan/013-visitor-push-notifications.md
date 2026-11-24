@@ -1,11 +1,12 @@
 # Plan técnico · 013 · visitor-push-notifications
 
 - Spec: `apps/mobile/specs/013-visitor-push-notifications.md`
-- Estado de spec: Aprobada (Aksel, 2026-11-14)
-- Estado del plan: Aprobado técnicamente (Victor Adrian, 2026-11-14). No autoriza código ni instalar `expo-notifications` hasta contar con tasks aprobadas. El ADR 0029 está Aceptado y DBR-017 está en `Lista para backend`.
-- Responsable técnico: por identificar
-- Solicitante funcional: Aksel
-- Dependencias: `api-017` (spec Aprobada; plan aprobado), ADR 0029 (Aceptado, Aksel, 2026-11-14), DBR-017 (Lista para backend)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Estado del plan: Aprobado técnicamente. No autoriza código ni instalar `expo-notifications` hasta contar con tasks aprobadas. El ADR 0029 está Aceptado y DBR-017 está en `Lista para backend`.
+- Responsable técnico: Frontend
+- Dependencias: `api-017` (spec Aprobada; plan aprobado), ADR 0029 (Aceptado), DBR-017 (Lista para backend)
 
 ## Diseño de solución
 
@@ -74,7 +75,7 @@ Al tocar:
 - `type` `news` abre `/news-detail` con `id`.
 - `type` `event` abre `/event-detail` con `id`.
 - Si el detalle responde que ya no existe, la app muestra «Ya no está disponible.» y se queda en el inicio (CA-09).
-- `type` `memory` abre `/memory-form` con `id` (`mobile-010`). Enmienda 2026-11-18: la ruta espera la lista si el id no está en memoria. Si sigue ausente, muestra «Tu memoria». No se crea otra pantalla de bandeja.
+- `type` `memory` abre `/memory-form` con `id` (`mobile-010`). Enmienda: la ruta espera la lista si el id no está en memoria. Si sigue ausente, muestra «Tu memoria». No se crea otra pantalla de bandeja.
 
 No se añade una pantalla de historial (CA-11). Las vistas no importan `fetch` ni el cliente HTTP (CA-12).
 
@@ -112,8 +113,8 @@ El flujo de `mobile-004` CA-11 y el de borrado de cuenta llaman antes a `DELETE 
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
-| I. Stack mínimo y portable | Sí | El ADR 0029 está Aceptado (Aksel, 2026-11-14). `expo-notifications` se instala con las tasks, no con este plan. El resto del cliente sigue en Expo (ADR 0004) |
-| II. La spec manda | Sí, en este documento | Spec Aprobada por Aksel el 2026-11-14. Plan aprobado por Victor Adrian el mismo día. Las tasks quedan en borrador hasta su aprobación. No hay código |
+| I. Stack mínimo y portable | Sí | El ADR 0029 está Aceptado. `expo-notifications` se instala con las tasks, no con este plan. El resto del cliente sigue en Expo (ADR 0004) |
+| II. La spec manda | Sí, en este documento | Spec aprobada. Plan aprobado. Las tasks quedan en borrador hasta su aprobación. No hay código |
 | III. Lógica separada de la interfaz | Sí | La pantalla no decide envíos ni redacta el aviso. El hook llama a `@arca/api-client` |
 | IV. Un test por criterio | Sí, al implementar | La tabla cubre los CA automatizables. CA-08 en dispositivo cerrado queda manual, como dice la spec |
 | V. Una sola fuente de verdad para los datos | Sí | No hay DBR móvil. Preferencias y tokens viven en la API (DBR-017) |
@@ -122,15 +123,15 @@ El flujo de `mobile-004` CA-11 y el de borrado de cuenta llaman antes a `DELETE 
 ## Riesgos y decisiones
 
 - El ADR 0029 ya está Aceptado. La dependencia y el plugin de `app.json` entran al implementar las tasks, no antes.
-- CA-10 abre `/memory-form` con `id`. Enmienda 2026-11-18: espera la lista antes de decir que la petición falta. No se crea otra bandeja.
+- CA-10 abre `/memory-form` con `id`. Enmienda: espera la lista antes de decir que la petición falta. No se crea otra bandeja.
 - Sin credenciales FCM en el build de EAS el teléfono no muestra la barra, aunque la API encole el job.
 - Quien niega el permiso conserva la preferencia de la cuenta y no recibe la barra (RN-02).
 
 ## Orden y aprobación
 
-1. El plan lo aprobó Victor Adrian y el ADR 0029 lo aceptó Aksel, ambos el 2026-11-14.
+1. El plan y el ADR 0029 quedaron aprobados y aceptados.
 2. `api-017` tiene su plan aprobado y DBR-017 en `Lista para backend`. Los endpoints se despliegan al implementar las tasks de la API.
 3. Las tasks de esta app se redactan en borrador. `expo-notifications`, los tests y la nota de permisos entran cuando esas tasks estén aprobadas.
 4. La evidencia manual de la barra con la app cerrada se adjunta al PR, con un build de distribución.
 
-Aprobación funcional de la spec: Aksel, 2026-11-14. Aprobación técnica de este plan: Victor Adrian, 2026-11-14.
+Aprobación funcional de la spec: Aprobada. Aprobación técnica de este plan: Aprobada.

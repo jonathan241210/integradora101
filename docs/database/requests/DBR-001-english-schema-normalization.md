@@ -1,11 +1,11 @@
 # DBR-001 · english-schema-normalization
 
-- Estado: Lista para backend
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-10-13
+- Aprobada: 2026-10-14
 - Feature/spec origen: `apps/api/specs/003-staff-authentication.md`
-- Solicitante: Jonathan (backend)
-- Responsable de BD: Victor Adrian
-- Responsable backend: Jonathan
-- Fecha: 2026-10-13
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 
 ## Problema y justificación
 
@@ -115,7 +115,7 @@ ALTER TABLE departments RENAME COLUMN id_area TO id;
 
 Todas las tablas están vacías (0 filas): no se requiere backfill ni transformación de datos; el cambio es solo de metadatos.
 
-**Pregunta abierta — defaults con texto en español:** existen valores por defecto en español: `animales.estatus_estancia` (→ `animals.stay_status`) con `Cuarentena_Ingreso` y `evaluaciones_clinicas.motivo_evaluacion` (→ `clinical_evaluations.evaluation_reason`) con `Revision_Rutinaria`. Se propone cambiarlos a códigos en inglés (`intake_quarantine`, `routine_check`) y mostrar la etiqueta en español en la UI. Queda como **pregunta abierta para el responsable de BD**.
+**Decisión sobre defaults con texto en español:** se optó por mantener los códigos en español (`Cuarentena_Ingreso` en `animals.stay_status` y `Revision_Rutinaria` en `clinical_evaluations.evaluation_reason`) sin cambiar sus valores en esta DBR, porque el código de la API y las restricciones CHECK de la migración `2026_10_14_000001` usan `Cuarentena_Ingreso`, y la migración no altera defaults. La etiqueta mostrada en la UI sigue en español. Si la base viva conserva defaults distintos, se confirma con la consulta de `information_schema` (pendiente de consulta a la base).
 
 ## Privacidad, auditoría y retención
 
@@ -156,15 +156,15 @@ No aplica.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Victor Adrian | 2026-10-14 | Aprobada |
-| Responsable backend | Jonathan | 2026-10-14 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Migración `2026_10_14_000001` |
+| Backend | Aprobada | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | aplicada | 2026-10-14 | Migración 2026_10_14_000001 ejecutada y verificada |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_10_14_000001` ejecutada y verificada |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

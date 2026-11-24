@@ -10,6 +10,10 @@ $cancellationAlerts = [
 
 return [
     'pwa_url' => env('PWA_URL'),
+    // api-028 CA-06: peticiones por minuto y usuario en /staff/*. La PWA sincroniza por lotes, 120 sobra.
+    'staff_api_limit' => (int) env('STAFF_API_LIMIT', 120),
+    // api-028 CA-11: proxies de confianza (IP o CIDR separados por coma, o `*`). Vacío: ninguno.
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
     // Roles con 2FA obligatorio (api-021 RN-09, api-023 RN-05). `veterinarian` no usa 2FA (trabajo de campo offline).
     'two_factor_roles' => ['admin', 'zoo-admin', 'cashier', 'executive', 'communications'],
     // Confirmación de contraseña por operación (api-021 RN-03, RN-07). Sin variables de entorno.

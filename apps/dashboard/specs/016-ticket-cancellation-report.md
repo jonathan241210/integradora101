@@ -2,11 +2,12 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard`, `packages/api-client` (llamadas al reporte de cancelaciones, exportación y catálogo de motivos); `packages/ui` (solo si falta un componente compartido); `api` (dependencia: `api-022`, dueña de la lógica, el permiso y el contrato; `api-009` y `api-021` como base de la cancelación; `api-025`, zona horaria)
-- Estado: Aprobada
-- Aprobación funcional: Jonathan, 2026-11-20
-- Solicitante / responsable funcional: Jonathan
-- Enmienda relacionada: `apps/dashboard/specs/005-ticket-sales.md` (nota de revisión 2026-11-20: el diálogo de cancelar pide un motivo de lista cerrada). Esta spec no cambia los CA de `dashboard-005`; el selector de motivo del diálogo de cancelar se define aquí (CA-18 a CA-21) y la nota de `dashboard-005` apunta a este documento.
-- Última edición: 2026-11-20 (preguntas abiertas cerradas por Jonathan; ver «Decisiones 2026-11-20»)
+- Estado: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Aprobación funcional: Aprobada
+- Enmienda relacionada: `apps/dashboard/specs/005-ticket-sales.md` (nota de revisión: el diálogo de cancelar pide un motivo de lista cerrada). Esta spec no cambia los CA de `dashboard-005`; el selector de motivo del diálogo de cancelar se define aquí (CA-18 a CA-21) y la nota de `dashboard-005` apunta a este documento.
+- Última edición: preguntas abiertas cerradas por el responsable funcional; ver «Decisiones»
 
 ## Problema y contexto
 
@@ -34,7 +35,7 @@ La taquilla (`dashboard-005`) ya deja cancelar un boleto del mismo día con un m
 - Cualquier cálculo de totales, conciliación, minutos, porcentajes o alertas en el cliente. Todo lo entrega `api-022`.
 - Reclasificar cancelaciones anteriores. Se muestran como «Sin clasificar (anterior)».
 - Deshacer, editar o reactivar una cancelación.
-- Reimpresión del boleto con marca «CANCELADO» (decisión 2026-11-20: fuera de alcance).
+- Reimpresión del boleto con marca «CANCELADO».
 - Reporte de cancelaciones para `zoo-admin`, `executive`, `cashier` o `veterinarian`. El cajero sigue con su historial (`dashboard-005`, CA-10).
 - Envío o programación del reporte por correo.
 - Cambios de estilo de marca o nuevas dependencias de UI (ver RN-7 de `dashboard-005`).
@@ -88,7 +89,7 @@ La página solo oculta opciones. La autorización real la aplica la API (RN-01).
 
 ### Señales de alerta
 
-- **CA-14 (sustituido por CA-35, revisión 2026-11-21 (c)):** Dada una fila o un cajero marcado con `alert: true` por la API (`api-022` CA-18), cuando se muestra, entonces aparece una señal visual (icono o etiqueta con texto «Revisar»), con el motivo que devuelve la API en texto accesible. La señal no cambia el orden, no oculta la fila ni bloquea la exportación.
+- **CA-14 (sustituido por CA-35, revisión (c)):** Dada una fila o un cajero marcado con `alert: true` por la API (`api-022` CA-18), cuando se muestra, entonces aparece una señal visual (icono o etiqueta con texto «Revisar»), con el motivo que devuelve la API en texto accesible. La señal no cambia el orden, no oculta la fila ni bloquea la exportación.
 - **CA-15 (se mantiene; el porcentaje y el conteo ya no van con un distintivo «Revisar»):** Dada la señal de un cajero, cuando el usuario la consulta, entonces ve el porcentaje de cancelación y el número de boletos que devuelve la API. La página no calcula el porcentaje ni aplica umbrales.
 
 ### Exportación
@@ -100,7 +101,7 @@ La página solo oculta opciones. La autorización real la aplica la API (RN-01).
 
 - **CA-18:** Dado un `cashier` con `tickets.cancel` y un boleto cancelable (`dashboard-005` CA-12), cuando pulsa «Cancelar», entonces el diálogo muestra un selector obligatorio «Motivo» con las opciones que devuelve `GET` del catálogo de `api-022` (CA-10). El diálogo no fija las etiquetas en código.
 - **CA-19:** Dado el diálogo de cancelar sin motivo elegido, cuando el cajero pulsa «Cancelar boleto», entonces no se llama a la API y se muestra «Elige un motivo de cancelación.» junto al selector.
-- **CA-20:** Dado un motivo elegido, cuando se muestra el diálogo, entonces aparece un campo de comentario. Para «Otro», el campo es obligatorio y se rotula «Describe el motivo»; para los demás motivos es opcional (decisión 2026-11-20). La página no fija el mínimo de caracteres: envía el texto y muestra el 422 de la API junto al campo (`api-022` CA-12 y CA-24).
+- **CA-20:** Dado un motivo elegido, cuando se muestra el diálogo, entonces aparece un campo de comentario. Para «Otro», el campo es obligatorio y se rotula «Describe el motivo»; para los demás motivos es opcional. La página no fija el mínimo de caracteres: envía el texto y muestra el 422 de la API junto al campo (`api-022` CA-12 y CA-24).
 - **CA-21:** Dada una cancelación confirmada con motivo (y contraseña cuando `api-021` la pida), cuando la API responde 200, entonces la lista del historial se refresca y se muestra el aviso accesible de cancelación. Un 422 de motivo, un 403 o un 429 se muestran en el diálogo con el mensaje de la API, sin reintento automático.
 - **CA-22:** Dada la página Cancelaciones en cualquier ancho de 360 a 1366 px, cuando se usa, entonces tiene foco visible, las tablas tienen desplazamiento propio o diseño apilado, y la página no tiene desbordamiento horizontal.
 
@@ -109,7 +110,7 @@ La página solo oculta opciones. La autorización real la aplica la API (RN-01).
 - **CA-23:** Dado el código de la página y del diálogo, cuando se revisa, entonces ningún componente de `views/` o `components/` llama `fetch` o `axios`, calcula totales, conciliación, minutos, porcentajes o alertas, ni decide permisos. Toda llamada pasa por `@arca/api-client` desde hooks ViewModel (un hook para el reporte, otro para el catálogo de motivos).
 - **CA-24:** Dada la página, cuando se revisa su estilo, entonces usa tokens semánticos y no fija hex de marca. El modo claro es el único que se valida (ver `dashboard-001`).
 - **CA-25:** Dada la suite de Vitest con un cliente simulado de `@arca/api-client`, cuando se ejecuta, entonces existe al menos una prueba que nombra cada CA de esta spec (CA-01 a CA-26).
-- **CA-26 (enmienda técnica 2026-11-20):** Dado el historial de boletos con una cancelación, cuando la taquilla o `admin` lo consulta, entonces la columna de motivo muestra la etiqueta que devuelve la API (`cancellation_reason_label`; «Sin clasificar (anterior)» si el código es nulo) junto con el comentario guardado. La página no deriva la etiqueta del código (RN-02).
+- **CA-26:** Dado el historial de boletos con una cancelación, cuando la taquilla o `admin` lo consulta, entonces la columna de motivo muestra la etiqueta que devuelve la API (`cancellation_reason_label`; «Sin clasificar (anterior)» si el código es nulo) junto con el comentario guardado. La página no deriva la etiqueta del código (RN-02).
 
 ## Reglas de negocio
 
@@ -122,11 +123,11 @@ La página solo oculta opciones. La autorización real la aplica la API (RN-01).
 - **RN-07:** Sin nuevas dependencias en el cliente. Las señales y la tabla se hacen con componentes de `@arca/ui`.
 - **RN-08:** El diseño no cambia por esta página (`dashboard-001` RN-09): se reutilizan patrones de las páginas de administración (`dashboard-003`).
 - **RN-09:** La página no guarda datos en `localStorage`, cookies ni caché persistente. Solo vive en la memoria de la sesión.
-- **RN-10:** Los periodos, la zona horaria del reporte y el tope de PDF son los de `api-022` y `api-007`, y la zona es la de negocio de `api-025` (decisión 2026-11-20). El dashboard no envía zona horaria: la API la ignora si llega.
+- **RN-10:** Los periodos, la zona horaria del reporte y el tope de PDF son los de `api-022` y `api-007`, y la zona es la de negocio de `api-025`. El dashboard no envía zona horaria: la API la ignora si llega.
 
 ## Datos, privacidad y auditoría
 
-- La página muestra folios, importes, fechas, nombres de cajeros y de quien canceló, motivos y comentarios. Los comentarios de «Otro» pueden contener datos del visitante; la página los muestra solo a `admin` (decisión 2026-11-20, `api-022`).
+- La página muestra folios, importes, fechas, nombres de cajeros y de quien canceló, motivos y comentarios. Los comentarios de «Otro» pueden contener datos del visitante; la página los muestra solo a `admin` (decisión, `api-022`).
 - La exportación la audita la API (`api-022` CA-21). La página no escribe auditoría.
 - No almacena reportes, filas ni archivos fuera de la memoria de la sesión.
 
@@ -146,45 +147,45 @@ La página solo oculta opciones. La autorización real la aplica la API (RN-01).
   - Si la API se despliega antes que el dashboard, la taquilla no puede cancelar hasta que se actualice el diálogo (422 de motivo). Hay que desplegar junto.
   - Una conciliación «No cuadra» se verá en pantalla; la página la muestra tal como la devuelve la API y no la corrige.
   - Las señales de alerta usan los umbrales de `api-022` (30 minutos; 10 % con al menos 20 boletos). Si cambian en configuración, la página no cambia.
-- **Decisiones 2026-11-20** (las preguntas de la versión Borrador quedan cerradas):
-  1. **Zona horaria del reporte.** Decisión 2026-11-20: la define `api-025` (zona única de negocio); el dashboard no envía zona (RN-10, CA-07).
-  2. **Umbrales de alerta.** Decisión 2026-11-20: los de `api-022` (más de 30 minutos entre venta y cancelación; cajero con más del 10 % de cancelaciones y al menos 20 boletos vendidos). La página no los fija.
-  3. **Reimpresión con «CANCELADO».** Decisión 2026-11-20: fuera de alcance.
+- **Decisiones** (las preguntas de la versión Borrador quedan cerradas):
+  1. **Zona horaria del reporte.** Decisión: la define `api-025` (zona única de negocio); el dashboard no envía zona (RN-10, CA-07).
+  2. **Umbrales de alerta.** Decisión: los de `api-022` (más de 30 minutos entre venta y cancelación; cajero con más del 10 % de cancelaciones y al menos 20 boletos vendidos). La página no los fija.
+  3. **Reimpresión con «CANCELADO».** Decisión: fuera de alcance.
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan (responsable funcional), 2026-11-20.
-- Enmienda técnica 2026-11-20: la columna de motivo del historial usa la etiqueta de la API (CA-26, con `api-022` CA-26 y RN-17). Sin cambio en los demás CA.
+- Aprobadores: responsable funcional.
+- Enmienda técnica: la columna de motivo del historial usa la etiqueta de la API (CA-26, con `api-022` CA-26 y RN-17). Sin cambio en los demás CA.
 - Evidencia/enlaces: `apps/api/specs/022-ticket-cancellation-report.md`, `apps/api/specs/009-ticket-sales.md`, `apps/dashboard/specs/005-ticket-sales.md`, `docs/database/requests/DBR-024-ticket-cancellation-reason-code.md`.
 
-## Nota de revisión (2026-11-21, dashboard-020)
+## Nota de revisión
 
 - La página Cancelaciones pasa a ser la pestaña «Cancelaciones» dentro de la entrada «Reportes» (`dashboard-020` CA-01, CA-02). Sigue solo con `reports.cancellations.view` (solo `admin`); `executive` no la ve (`dashboard-020` CA-07, RN-10). Esta nota reemplaza la entrada «Cancelaciones» de CA-01 en la navegación; el resto del CA-01 y CA-02 se mantiene.
 - CA-04: los periodos se muestran con las etiquetas «Semanal», «Mensual» y «Rango personalizado» (`dashboard-020` CA-15, D-5 pendiente de confirmación).
 - CA-05 y CA-17: los 422 de periodo se muestran junto al selector de periodo; el selector de formato de exportación pasa a botones «Exportar CSV», «Exportar Excel» y «Exportar PDF», y el 422 de formato se muestra junto a ese grupo. Un fallo de red o 5xx de exportación pasa a aviso emergente (`dashboard-020` CA-13, CA-14, CA-27; D-7 pendiente).
 - Los CA no cambian de número ni de criterio observable salvo lo indicado.
 
-## Nota de revisión (2026-11-21, dashboard-020 rev. (d))
+## Nota de revisión (, dashboard-020 rev. (d))
 
 - **CA-27:** Dadas más de 50 filas en el periodo, cuando se muestra el reporte, entonces las filas se paginan de 50 en 50 con el paginador compartido de `@arca/ui` (`meta` hermano de `data`: «Página N de M · T en total»); al cambiar filtros o periodo vuelve a la página 1; los totales y la conciliación no cambian entre páginas.
 - **CA-28:** Dada la exportación, cuando se descarga, entonces no se pagina (no envía `page`); `@arca/api-client` agrega `page` a `CancellationReportQuery` y `meta` a `CancellationReportDto` de forma aditiva. Contrato: `api-022` CA-27 a CA-31.
 
-## Nota de revisión (2026-11-21, dashboard-021 y api-027)
+## Nota de revisión (, dashboard-021 y api-027)
 
-- Esta spec no contiene la recomendación de entregar el boleto físico cancelado (verificado 2026-11-21); su texto no cambia. La corrección de procedimiento (el cajero entrega solo el dinero) queda en `api-022` (nota de revisión) y se aplica en los textos que devuelve la API.
+- Esta spec no contiene la recomendación de entregar el boleto físico cancelado; su texto no cambia. La corrección de procedimiento (el cajero entrega solo el dinero) queda en `api-022` (nota de revisión) y se aplica en los textos que devuelve la API.
 - La pestaña «Cancelaciones» gana la sección de semáforo por cajero y día, la leyenda, el registro de revisión y el historial: ver `apps/dashboard/specs/021-cancellation-review-signals.md`. Los datos vienen de `api-027`; esta spec no cambia sus CA-01 a CA-28.
-- El aviso de cancelaciones pendientes (`cancellation_days`) se añade en `dashboard-018` (nota de revisión 2026-11-21).
+- El aviso de cancelaciones pendientes (`cancellation_days`) se añade en `dashboard-018`.
 
-## Nota de revisión (2026-11-21, ajuste de conciliación)
+## Nota de revisión (, ajuste de conciliación)
 
-Aprobado por Jonathan el 2026-11-21. La columna «cuadra» confundía: parecía comparar contra el dinero entregado cuando solo comprueba que bruto = neto + cancelado (`api-022` RN-06). Sin renumerar; esta nota reemplaza el indicador «Cuadra / No cuadra» de CA-11 y el texto «No cuadra. Revisa con Informática.» de CA-12.
+Aprobado por el responsable funcional. La columna «cuadra» confundía: parecía comparar contra el dinero entregado cuando solo comprueba que bruto = neto + cancelado (`api-022` RN-06). Sin renumerar; esta nota reemplaza el indicador «Cuadra / No cuadra» de CA-11 y el texto «No cuadra. Revisa con Informática.» de CA-12.
 
 - **CA-29:** Dada la conciliación por día y por cajero, cuando se muestra, entonces no hay columna «Conciliación»/«cuadra» (la API sigue enviando `balanced`).
 - **CA-30:** Dada una fila con `balanced: false`, cuando se muestra, entonces aparece en esa fila y arriba de la tabla un `Alert` de error: «Error de datos en este día: el bruto no coincide con neto + cancelado. Repórtalo a sistemas.» (cajero: «…para este cajero…»).
 - **CA-31:** Dada la conciliación sin filtro de motivo, entonces se muestra la ayuda «Neto a entregar = vendido bruto − cancelado. Compáralo con el dinero que entregó el cajero.».
 - La exportación de archivos es de la API y no cambia.
 
-## Revisión 2026-11-21 (c) (aprobada por Jonathan)
+## Revisión (c) (aprobada)
 
 Contrato con `api-022`/`api-027` (revisión (c)): el semáforo es la única alerta; se retiran `alert` y `alert_reasons` de boletos y cajeros. Sin renumerar los CA anteriores.
 

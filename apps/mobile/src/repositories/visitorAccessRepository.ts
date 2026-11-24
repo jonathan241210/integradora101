@@ -1,3 +1,4 @@
+import { isMockDataEnabled } from '../config/runtime';
 import { InfoSection, VisitorAccountSummary, VisitorPreferenceKey, VisitorPreferences } from '../models';
 import {
   ABOUT_SECTIONS,
@@ -46,8 +47,9 @@ export const visitorAccessRepository = {
     preferences = { ...preferences, [key]: value };
     emit();
   },
-  getAccount(): VisitorAccountSummary {
-    return { ...MOCK_VISITOR_ACCOUNT };
+  /** Solo datos de demostración (mocks o pruebas). La cuenta real sale de `/visitor/me` vía `useVisitorProfile`. */
+  getDemoAccount(): VisitorAccountSummary | null {
+    return isMockDataEnabled() ? { ...MOCK_VISITOR_ACCOUNT } : null;
   },
   getAccountDeletionWarning(): string {
     return ACCOUNT_DELETION_WARNING;

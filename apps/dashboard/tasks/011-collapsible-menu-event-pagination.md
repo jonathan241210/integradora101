@@ -1,5 +1,7 @@
 # Tareas · 011 · collapsible-menu-event-pagination
 
+- Solicitada: 2026-11-12
+- Aprobada: 2026-11-12
 - Spec: `apps/dashboard/specs/011-collapsible-menu-event-pagination.md` (aprobada).
 - Plan: `apps/dashboard/plan/011-collapsible-menu-event-pagination.md` (aprobado para implementar por la persona solicitante; validación técnica del equipo pendiente).
 

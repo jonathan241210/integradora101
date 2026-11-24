@@ -1,10 +1,12 @@
 # Tareas · 021 · cancellation-review-signals
 
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
 - Spec: `apps/dashboard/specs/021-cancellation-review-signals.md`
 - Plan: `apps/dashboard/plan/021-cancellation-review-signals.md`
 - Dependencias de API: `apps/api/tasks/027-cancellation-review-signals.md` (T-13, T-16, T-17, T-19)
 
-Estado (2026-11-21): T-01 a T-12 implementadas con Vitest en verde (`npx vitest run`, 876 pruebas) y `tsc --noEmit` limpio. T-09 queda con la revisión visual de 360 a 1366 px pendiente y T-13 abierta (sin lint, sin `/verify` completo ni contrato real de `api-027`). No hay tareas de base de datos en esta app.
+Estado: T-01 a T-12 implementadas con Vitest en verde (`npx vitest run`, 876 pruebas) y `tsc --noEmit` limpio. T-09 queda con la revisión visual de 360 a 1366 px pendiente y T-13 abierta (sin lint, sin `/verify` completo ni contrato real de `api-027`). No hay tareas de base de datos en esta app.
 
 ## Cliente compartido
 
@@ -28,7 +30,7 @@ Estado (2026-11-21): T-01 a T-12 implementadas con Vitest en verde (`npx vitest 
 
 ## Calidad, accesibilidad y entrega
 
-- [x] **T-09** (CA-14; revisión visual de 360 a 1366 px pendiente de Jonathan): foco, Escape y devolución de foco en el diálogo; `caption` en las tablas; revisión de desbordamiento de 360 a 1366 px. Test: `test_ca14_dialog_focus_and_escape_and_no_horizontal_overflow`, más revisión visual registrada.
+- [x] **T-09** (CA-14; revisión visual de 360 a 1366 px pendiente): foco, Escape y devolución de foco en el diálogo; `caption` en las tablas; revisión de desbordamiento de 360 a 1366 px. Test: `test_ca14_dialog_focus_and_escape_and_no_horizontal_overflow`, más revisión visual registrada.
 - [x] **T-10** (CA-15): componentes nuevos sin hex de marca. Test: `test_ca15_new_components_use_semantic_tokens`.
 - [x] **T-11** (CA-16): test que comprueba que cada CA-01 a CA-17 tiene un test nombrado. Test: `test_ca16_every_ca_has_a_named_test`.
 - [x] **T-12** (CA-17): sin texto de procedimiento propio en las views nuevas. Test: `test_ca17_no_physical_ticket_text_in_new_views`.
@@ -36,21 +38,21 @@ Estado (2026-11-21): T-01 a T-12 implementadas con Vitest en verde (`npx vitest 
 
 Cada CA-01 a CA-17 tiene al menos una tarea de implementación y un test. Las tareas dependen de `api-027` para los contratos reales; mientras no estén, los tests usan mocks de `@arca/api-client` con la forma aprobada.
 
-## Revisión 2026-11-21: semáforo en tabla
+## Revisión: semáforo en tabla
 
 - [x] **T-14** (CA-18, CA-22): columnas en orden, celda de señales, botón con `aria-label`, grupo sin cajero con «No aplica» y estilos en rem. Tests: `test_ca18_traffic_light_table_columns_in_order`, `test_ca22_no_cashier_group_says_no_aplica_and_styles_use_rem`.
 - [x] **T-15** (CA-19, CA-21): `arrangeTrafficLightRows` (orden por nivel y fecha descendente, filtro). Tests: `test_ca19_order_by_level_then_date_descending_without_cashier_last`, `test_ca21_only_days_to_review_filter_hides_normal`.
 - [x] **T-16** (CA-20): fila de detalle «Ver detalle» con `action` e historial. Test: `test_ca20_detail_row_shows_action_and_history_only_when_expanded`.
-- [x] **T-17** (CA-16): cobertura de nombres ampliada a CA-01 a CA-22 y tests existentes ajustados al detalle expandible (sin relajar sus comprobaciones). Evidencia: `npx vitest run` 881 pruebas en verde y `tsc --noEmit` limpio. Revisión visual pendiente de Jonathan.
+- [x] **T-17** (CA-16): cobertura de nombres ampliada a CA-01 a CA-22 y tests existentes ajustados al detalle expandible (sin relajar sus comprobaciones). Evidencia: `npx vitest run` 881 pruebas en verde y `tsc --noEmit` limpio. Revisión visual pendiente.
 
-## Revisión 2026-11-21: legibilidad y leyenda
+## Revisión: legibilidad y leyenda
 
 - [x] **T-18** (CA-23 a CA-26): leyenda plegable en tabla con niveles y nota. Tests: `test_ca23_…`, `test_ca24_…`, `test_ca25_…`, `test_ca26_…`.
-- [x] **T-19** (CA-27, CA-28): tabla legible y detalle con títulos e historial en tabla. Tests: `test_ca27_…`, `test_ca28_…`; `test_ca16_every_ca_has_a_named_test` cubre CA-01 a CA-28. Evidencia: `npx vitest run` 889 pruebas en verde y `tsc --noEmit` limpio. Revisión visual pendiente de Jonathan.
+- [x] **T-19** (CA-27, CA-28): tabla legible y detalle con títulos e historial en tabla. Tests: `test_ca27_…`, `test_ca28_…`; `test_ca16_every_ca_has_a_named_test` cubre CA-01 a CA-28. Evidencia: `npx vitest run` 889 pruebas en verde y `tsc --noEmit` limpio. Revisión visual pendiente.
 
-## Revisión 2026-11-21 (c)
+## Revisión (c)
 
 - [x] **T-20** (CA-29, CA-30): `ticketFocus` y acciones `viewTickets`/`clearTicketFocus` en el ViewModel; banner con «Quitar filtro». Tests: `test_ca29_…`, `test_ca30_…`.
 - [x] **T-21** (CA-31): desplazamiento, foco al encabezado de la tabla y resaltado con icono, texto y borde. Test: `test_ca31_…`.
 - [x] **T-22** (CA-32, CA-33): señales con conteo y chips de folio en el detalle; chip lleva a su fila o aplica el filtro. Tests: `test_ca32_…`, `test_ca33_…`.
-- [x] **T-23** (CA-34): rem y tokens; cobertura CA-01 a CA-34. Evidencia: `npx vitest run` 899 en verde y `tsc --noEmit` limpio. Revisión visual pendiente de Jonathan.
+- [x] **T-23** (CA-34): rem y tokens; cobertura CA-01 a CA-34. Evidencia: `npx vitest run` 899 en verde y `tsc --noEmit` limpio. Revisión visual pendiente.

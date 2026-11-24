@@ -2,9 +2,10 @@
 
 - App dueña: `pwa`
 - Apps/paquetes afectados: `apps/pwa`
-- Estado: Aprobada
-- Solicitante / responsable funcional: Solicitante de esta conversación; responsable veterinario por identificar
-- Aprobación funcional: Solicitante, 2026-10-10; ampliación de instalación desde navegador aprobada por solicitante, 2026-10-10
+- Estado: Implementada
+- Solicitada: 2026-10-10
+- Aprobada: 2026-10-10
+- Aprobación funcional: Aprobada; ampliación de instalación desde navegador aprobada por el solicitante
 
 ## Problema y contexto
 
@@ -87,6 +88,6 @@ Solo se muestran datos ficticios estáticos. Las credenciales propuestas son pú
 
 ## Revisión
 
-- Aprobación funcional inicial: Solicitante, 2026-10-10 (login de demostración y responsive).
-- Aprobación funcional de instalación desde navegador: Solicitante, 2026-10-10; responsable veterinario por identificar.
+- Aprobación funcional inicial: Solicitante (login de demostración y responsive).
+- Aprobación funcional de instalación desde navegador: Solicitante; responsable veterinario por identificar.
 - Evidencia/enlaces: Referencia visual adjunta en la conversación.

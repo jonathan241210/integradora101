@@ -1,9 +1,11 @@
 # Tareas · 018 · visitor-favorite-species
 
-- Spec: `apps/api/specs/018-visitor-favorite-species.md` (Aprobada, Aksel, 2026-11-14)
-- Plan: `apps/api/plan/018-visitor-favorite-species.md` (Aprobado técnicamente, Aksel, 2026-11-16)
-- DBR: `docs/database/requests/DBR-018-visitor-favorite-species.md` (Lista para backend, BD Victor Adrian y backend Aksel, 2026-11-14)
-- Estado del checklist: **Aprobado** (Aksel, 2026-11-16). Autoriza el código de estas tareas. No autoriza `migrate` ni un PR.
+- Spec: `apps/api/specs/018-visitor-favorite-species.md`
+- Plan: `apps/api/plan/018-visitor-favorite-species.md` (Aprobado técnicamente, Equipo de producto móvil)
+- DBR: `docs/database/requests/DBR-018-visitor-favorite-species.md` (Lista para backend, BD Responsable de BD Adrian y backend Equipo de producto móvil)
+- Estado del checklist: **Completado**. Autoriza el código de estas tareas. No autoriza `migrate` ni un PR.
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
 
 Ninguna tarea añade alcance. Si algo de la lista no está en la spec o en el plan, se para y se pregunta. Los tests usan `DatabaseTransactions` contra `arca_pruebas`, vía `VisitorFeatureTestCase`. Prohibido `RefreshDatabase`, `migrate:fresh` y ejecutar `migrate`. Nunca `arca_zoo`. El nombre del test cita el criterio (`caNN_` en el método, porque PHPUnit no admite guiones) y el docblock cita `CA-NN`. `DeleteVisitorAccountAction` no se modifica.
 
@@ -14,7 +16,7 @@ Ninguna tarea añade alcance. Si algo de la lista no está en la spec o en el pl
   - Pasos: desde `apps/api/src`, `php artisan migrate:status`. La migración `2026_11_14_000018_visitor_favorite_species_schema` debe figurar como ejecutada (`Ran`) y `DB_DATABASE` debe ser `arca_pruebas`, sin copiar secretos al repositorio. No ejecutar `migrate` ni escribir otra migración.
   - Archivos: ninguno.
   - Hecho cuando: la salida de `migrate:status` está anotada en el PR. Si no figura como `Ran`, detenerse y reportarlo. El resto del checklist no empieza.
-  - Evidencia local 2026-11-16: `2026_11_14_000018_visitor_favorite_species_schema` figura `Ran` en el lote 9 y la base de trabajo es `arca_pruebas`. No se ejecutó `migrate`.
+  - Evidencia local: `2026_11_14_000018_visitor_favorite_species_schema` figura `Ran` en el lote 9 y la base de trabajo es `arca_pruebas`. No se ejecutó `migrate`.
 
 ## Implementación
 
@@ -95,15 +97,15 @@ Ninguna tarea añade alcance. Si algo de la lista no está en la spec o en el pl
   - Depende de: T-14.
   - Pasos: `php artisan test --filter=FavoriteSpecies` desde `apps/api/src`.
   - Hecho cuando: la salida queda registrada y los tests de T-06 a T-14 pasan.
-  - Evidencia 2026-11-16: `php artisan test --filter=FavoriteSpecies` — 9 pruebas, 119 aserciones, en verde.
+  - Evidencia: `php artisan test --filter=FavoriteSpecies` — 9 pruebas, 119 aserciones, en verde.
 
 - [x] **T-16**: estilo de los archivos de la feature.
   - Depende de: T-15.
   - Pasos: Pint sobre los archivos creados o tocados por T-02 a T-05.
   - Hecho cuando: Pint termina limpio en esos archivos.
-  - Evidencia 2026-11-16: `vendor/bin/pint --test` sobre modelo, acciones, request, resource, controller, rutas y los dos tests — `passed`.
+  - Evidencia: `vendor/bin/pint --test` sobre modelo, acciones, request, resource, controller, rutas y los dos tests — `passed`.
 
 - [x] **T-17**: enlaces del PR.
   - Depende de: T-15.
   - Hecho cuando: el PR cita `api-018` y enlaza spec, plan, tasks y DBR-018. No se abre ese PR en el corte que solo redacta este checklist. No se redacta el aviso de privacidad oficial.
-  - Confirmado por Aksel el 2026-11-20: la verificación y el pull de favoritos ya se hicieron. Esta task no guarda la URL del PR.
+  - Confirmado por Equipo de producto móvil: la verificación y el pull de favoritos ya se hicieron. Esta task no guarda la URL del PR.

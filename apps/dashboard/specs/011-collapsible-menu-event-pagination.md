@@ -2,8 +2,9 @@
 
 - App dueña: `dashboard`.
 - Apps/paquetes afectados: `dashboard`; sin cambios en API ni paquetes compartidos.
-- Estado: Aprobada por la persona solicitante, 2026-11-12.
-- Solicitante: persona usuaria.
+- Estado: Implementada
+- Solicitada: 2026-11-12
+- Aprobada: 2026-11-12
 - Relación: complementa la navegación de `dashboard-003` y el listado y las confirmaciones de eventos de `dashboard-004`; no sustituye sus permisos ni operaciones.
 
 ## Problema y objetivos
@@ -52,18 +53,18 @@ El menú lateral ocupa espacio en pantallas grandes y la lista de eventos muestr
 
 ## Aprobación
 
-La persona solicitante aprobó este alcance el 2026-11-12: menú de iconos al contraer y cuatro eventos por página, con confirmaciones visibles y sin cambiar la API.
+La persona solicitante aprobó este alcance: menú de iconos al contraer y cuatro eventos por página, con confirmaciones visibles y sin cambiar la API.
 
-El 2026-11-12 la persona solicitante pidió que el menú muestre inicialmente solo iconos y se despliegue al acercar el cursor; se conserva el acceso por teclado y el botón para fijarlo abierto.
+El la persona solicitante pidió que el menú muestre inicialmente solo iconos y se despliegue al acercar el cursor; se conserva el acceso por teclado y el botón para fijarlo abierto.
 
-El 2026-11-12 la persona solicitante pidió mejorar visualmente taquilla y aplicar el mismo menú; se conservan sus flujos y colores existentes.
+El la persona solicitante pidió mejorar visualmente taquilla y aplicar el mismo menú; se conservan sus flujos y colores existentes.
 
-El 2026-11-12 la persona solicitante pidió una animación más pausada del menú en administración y taquilla y una animación ligera al hacer una venta.
+El la persona solicitante pidió una animación más pausada del menú en administración y taquilla y una animación ligera al hacer una venta.
 
-El 2026-11-12 la persona solicitante pidió una palomita animada cada vez que se complete una venta.
+El la persona solicitante pidió una palomita animada cada vez que se complete una venta.
 
-El 2026-11-12 la persona solicitante pidió mejorar la animación, ralentizar un poco el menú y redondear sus bordes.
+El la persona solicitante pidió mejorar la animación, ralentizar un poco el menú y redondear sus bordes.
 
-El 2026-11-12 la persona solicitante pidió una animación de boletos más llamativa, de máximo tres segundos por venta.
+El la persona solicitante pidió una animación de boletos más llamativa, de máximo tres segundos por venta.
 
-- Nota 2026-11-21 (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.
+- Nota (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.

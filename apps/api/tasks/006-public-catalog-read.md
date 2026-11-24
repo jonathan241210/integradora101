@@ -2,6 +2,9 @@
 
 - Spec: `apps/api/specs/006-public-catalog-read.md`
 - Plan: `apps/api/plan/006-public-catalog-read.md`
+- Estado del checklist: Completado
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
 
 Todas las pruebas usan `DatabaseTransactions` sobre `arca_pruebas`; nunca `RefreshDatabase`, `migrate:fresh` ni migraciones. Ninguna tarea toca `arca_zoo`. No hay DBR ni cambio de esquema.
 
@@ -19,8 +22,8 @@ Todas las pruebas usan `DatabaseTransactions` sobre `arca_pruebas`; nunca `Refre
 
 - [x] **T-08**: ejecutar `php artisan test` (38 tests, 520 aserciones, verde) y `vendor/bin/pint --test`. Pint solo reporta archivos previos (`config/auth.php`, factory y migraciones); los archivos de esta feature pasan.
 - [x] **T-09**: prueba manual contra `php artisan serve`: `/api/v1/species`, `/species/1`, `/species/99`, `/events`, `/events/1`, `/events/99`, `/species/abc`.
-  - 2026-10-22: listados y detalles responden `200`; IDs inexistentes y `abc` responden `404`. Con `Accept: application/json`, el cuerpo es `{"message":"Especie no encontrada."}` o `{"message":"Evento no encontrado."}`. `APP_DEBUG=true` añade la traza en local; el cliente móvil solo usa `message`.
+  - Evidencia: listados y detalles responden `200`; IDs inexistentes y `abc` responden `404`. Con `Accept: application/json`, el cuerpo es `{"message":"Especie no encontrada."}` o `{"message":"Evento no encontrado."}`. `APP_DEBUG=true` añade la traza en local; el cliente móvil solo usa `message`.
 
 ## Evidencia
 
-- 2026-10-22: endpoints implementados en el working tree y probados de punta a punta contra `arca_pruebas` (5/5 casos reales). Pendiente el filtro de vigencia y la suite formal.
+- Evidencia previa: endpoints implementados y probados de punta a punta contra `arca_pruebas` (5/5 casos reales). El filtro de vigencia y la suite formal quedaron cubiertos en T-03 y T-08.

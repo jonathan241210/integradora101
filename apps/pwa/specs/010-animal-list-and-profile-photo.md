@@ -2,9 +2,10 @@
 
 - App dueña: `pwa`
 - Apps/paquetes afectados: `pwa`, `api` (paginación/orden del listado y carga/actualización de foto en perfil, según contrato), `packages/api-client` (si aplica)
-- Estado: Borrador
-- Solicitante / responsable funcional: Solicitante (usuario)
-- Aprobación funcional: Pendiente (persona y fecha)
+- Estado: Implementada (sin `plan/` ni `tasks/` de esta spec; la implementación se verificó contra `apps/pwa/src/views/AnimalsView.tsx`, `AnimalFormView.tsx` y `AnimalProfileView.tsx`, y sus pruebas)
+- Solicitada: 2026-11-19
+- Aprobada: 2026-11-23
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -73,18 +74,19 @@ Este cambio debe alinearse con `009-offline-first-sync`: las altas pueden sincro
 
 - **Dependencias/ADR:** `apps/pwa/specs/004-animal-registration.md`, `apps/pwa/specs/009-offline-first-sync.md`; endpoints actuales `GET/POST /api/v1/staff/animals`, `GET /api/v1/staff/animals/{id}`.
 - **Riesgos:** cambio de contrato de listado (paginación/orden) puede impactar consumidores actuales; definición de “más reciente creado” depende de campos disponibles; interacción hover debe tener alternativa accesible (teclado/táctil) en la implementación.
-- **Preguntas pendientes:**
-  - ¿“Más recientes creados” se implementa por `id` descendente u otro campo (`entry_date`/marca de creación) disponible en API/BD?
-  - ¿Paginación en servidor (recomendada, con `page`/`per_page` y total) o en cliente?
-  - ¿El formulario de registro elimina el campo de foto o lo mantiene opcional además del perfil?
-  - ¿Endpoint para foto de perfil: `POST/PATCH /api/v1/staff/animals/{animal}/photo` (o equivalente) y formato de respuesta? ¿permite reemplazo?
-  - ¿En dispositivos táctiles (sin hover), la acción de subir imagen será siempre visible o mediante botón explícito?
+## Decisiones
+
+- **Orden «Más recientes»:** Se optó por ordenar por `id` descendente, que es lo implementado (`AnimalsView.tsx`, `sort === 'recent'`), porque el identificador crece con cada alta y no requiere un campo nuevo.
+- **Paginación:** Se optó por paginación en cliente, de 10 por página, con el componente `Pagination` de `@arca/ui` (`AnimalsView.tsx`), porque el listado ya llega completo desde la búsqueda existente y no se cambió el contrato de listado.
+- **Campo de foto en el alta:** Se optó por mantener la foto opcional en el formulario de registro además de la acción en el perfil (`AnimalFormView.tsx`, la foto se adjunta solo si se elige), para no obligar a una imagen en el alta (CA-03).
+- **Endpoint de foto:** Se optó por `POST /api/v1/staff/animals/{id}/photo` con multipart (`services/apiClient.ts`, `uploadAnimalPhoto`); la API es la autoridad de validación y almacenamiento (RN-04).
+- **Acción sin hover:** Se optó por un botón con foco visible sobre el área de imagen (`profile-photo-trigger` en `AnimalProfileView.tsx`), que funciona con teclado y táctil sin depender del cursor (CA-04 y el riesgo de la interacción hover).
 
 ## Revisión
 
-- Aprobadores y fecha: Pendiente
+- Aprobación: Aprobada.
 - Evidencia/enlaces: `apps/pwa/src/views/AnimalsView.tsx`, `apps/pwa/src/views/AnimalFormView.tsx`, `apps/pwa/src/views/AnimalProfileView.tsx`, `apps/pwa/src/services/apiClient.ts`, specs `004`, `009`.
 
-## Nota de revisión (2026-11-21, paginador compartido)
+## Nota de revisión (paginador compartido)
 
 La paginación de 10 por página de CA-02 (RN-02) se presenta con `Pagination` de `@arca/ui` en modo con total y paginación en cliente (`page`, `lastPage`, `total`), en lugar de los botones «← Anterior» / «Siguiente →» y el texto «Página X de Y» hechos a mano con estilos en línea. El comportamiento no cambia: 10 por página, vuelve a la página 1 al buscar u ordenar, flechas siguiente/anterior (ahora «Anterior» y «Siguiente» más números de página). Cubierto por `apps/dashboard/src/tests/shared-components-and-total-pagination.test.tsx` (dashboard-020 CA-55), que además detecta paginadores hechos a mano en `dashboard` y `pwa`. Estado de la spec sin cambio.

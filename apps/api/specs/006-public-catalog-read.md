@@ -2,10 +2,11 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `mobile` (consumidor), `packages/api-client`
-- Estado: Aprobada
-- Nota de vigencia (2026-11-02): por `api-008` (P7), `GET /api/v1/events` añade `image_url` como campo aditivo (`null` si no hay imagen gestionada). No cambia ningún criterio de esta spec.
-- Solicitante / responsable funcional: Víctor Adrián
-- Aprobación funcional: Víctor Adrián (2026-10-22)
+- Estado: Implementada
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
+- Nota de vigencia: por `api-008` (P7), `GET /api/v1/events` añade `image_url` como campo aditivo (`null` si no hay imagen gestionada). No cambia ningún criterio de esta spec.
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -103,16 +104,16 @@ El esquema actual no guarda en `species` todos los campos que consume la ficha m
   - El contrato depende de que exista un animal con `photo_path`; una especie sin animales pierde foto y datos de ficha.
   - La latencia de `arca_pruebas` en Aiven puede superar 1 s por petición en frío.
   - Sin paginación, el listado crecerá con el catálogo; hoy son 5 especies.
-- **Decisiones acordadas el 2026-10-22 (Víctor Adrián):**
+- **Decisiones:**
   1. La foto, longevidad, dieta y curiosidades salen del **animal representativo** de la especie; no se crean columnas propias en `species` ni DBR.
   2. La cartelera y el detalle **ocultan eventos vencidos** (`end_date` anterior a hoy); `end_date` nulo se considera vigente.
   3. `/news` queda para una **spec futura**; el móvil conserva su fallback local y esta spec no lo implementa.
   4. El peso (`avg_weight`) y el dato curioso (`fun_fact`) se **ocultan en la UI** mientras no existan columnas; no se crea DBR.
-- Estas decisiones cierran las preguntas abiertas. La spec quedó **Aprobada** por Víctor Adrián el 2026-10-22.
+- Estas decisiones cierran las preguntas abiertas. La spec quedó **Aprobada**.
 
 ## Revisión
 
-- Aprobadores y fecha: Víctor Adrián (2026-10-22).
-- Evidencia/enlaces: `apps/api/plan/006-public-catalog-read.md`, `apps/api/tasks/006-public-catalog-read.md`, `apps/api/src/tests/Feature/Catalog/PublicCatalogTest.php`, `apps/mobile/specs/003-api-read-integration.md`, `docs/database/fixtures/sample-catalog-events.sql`. Implementación probada de punta a punta contra `arca_pruebas` el 2026-10-22 (8 tests, 74 aserciones) y verificación manual de listados, detalles y `404`.
+- Aprobación: Aprobada.
+- Evidencia/enlaces: `apps/api/plan/006-public-catalog-read.md`, `apps/api/tasks/006-public-catalog-read.md`, `apps/api/src/tests/Feature/Catalog/PublicCatalogTest.php`, `apps/mobile/specs/003-api-read-integration.md`, `docs/database/fixtures/sample-catalog-events.sql`. Implementación probada de punta a punta contra `arca_pruebas` (8 tests, 74 aserciones) y verificación manual de listados, detalles y `404`.
 
-> **Nota de revisión (2026-11-20, sin cambio de requisitos ni de estado):** `api-025` hace que «hoy» de RN-12 salga de `config('arca.timezone')` (`ARCA_TIMEZONE`) mediante `PublicCalendar::today()`; el valor por defecto sigue siendo `America/Mexico_City`.
+> **Nota de revisión (sin cambio de requisitos ni de estado):** `api-025` hace que «hoy» de RN-12 salga de `config('arca.timezone')` (`ARCA_TIMEZONE`) mediante `PublicCalendar::today()`; el valor por defecto sigue siendo `America/Mexico_City`.

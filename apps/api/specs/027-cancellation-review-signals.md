@@ -2,13 +2,14 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña: semáforo, señales, revisión auditada, conteo de días pendientes, demo); `dashboard` (`dashboard-021`, consumidor: sección del semáforo, registro de revisión y aviso; notas de revisión en `dashboard-016` y `dashboard-018`); `packages/api-client` (tipos y métodos; sin lógica); `docs/database/requests/DBR-026-cancellation-reviews.md` (tabla `cancellation_reviews`). Notas de revisión en `apps/api/specs/022-ticket-cancellation-report.md` y `apps/api/specs/024-pending-review-counts.md`.
-- Estado: Aprobada
-- Aprobación funcional: Jonathan, 2026-11-21. Decisiones de la sesión de 2026-11-21 registradas en «Decisiones de Jonathan (2026-11-21)», que cierran todas las preguntas de esta spec. Los valores de RN-04 quedan aprobados como configuración del servidor; cualquier cambio de valor se registra en «Revisión» sin renumerar.
-- Solicitante / responsable funcional: Jonathan
-- Responsable de BD: Jonathan, por delegación de Víctor Adrián (DBR-026).
-- Responsable backend: Jonathan.
+- Estado: Implementada
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Aprobación funcional: Aprobada. Decisiones de la sesión registradas en «Decisiones», que cierran todas las preguntas de esta spec. Los valores de RN-04 quedan aprobados como configuración del servidor; cualquier cambio de valor se registra en «Revisión» sin renumerar.
+- Responsable de BD: Responsable de BD (DBR-026).
+- Responsable backend: Backend.
 - Dependencias de esta spec: `api-022` (reporte de cancelaciones, catálogo de motivos, reglas de periodo y conciliación), `api-024` (conteos de pendientes, al que se añade una clave), `api-025` (zona de negocio `arca.timezone`), `api-021` (2FA y confirmación en el panel), `api-009` (cancelación; sin cambio), `api-007` (2FA de rutas admin y tope de exportación), DBR-024 (columna `cancellation_reason_code`, ya aplicada en `arca_pruebas`), DBR-026 (tabla nueva de revisiones).
-- Última edición: 2026-11-21 (notas de la revisión de calidad y seguridad).
+- Última edición: (notas de la revisión de calidad y seguridad).
 
 ## Problema y contexto
 
@@ -24,7 +25,7 @@ Esta spec agrega, en la API:
 
 El semáforo no bloquea nada: no cambia boletos, no cambia el reporte de `api-022` y no impide cancelar.
 
-Corrección de procedimiento (decisión 1 de 2026-11-21): el cajero entrega **solo el dinero** al cierre de la taquilla, no el boleto físico cancelado. Esta spec sustituye la recomendación de `api-022` RN-13 (ver «Revisión»). Ningún texto de «qué hacer» de esta spec ni de sus consumidores pide boletos físicos.
+Corrección de procedimiento: el cajero entrega **solo el dinero** al cierre de la taquilla, no el boleto físico cancelado. Esta spec sustituye la recomendación de `api-022` RN-13 (ver «Revisión»). Ningún texto de «qué hacer» de esta spec ni de sus consumidores pide boletos físicos.
 
 ## Objetivos
 
@@ -37,25 +38,25 @@ Corrección de procedimiento (decisión 1 de 2026-11-21): el cajero entrega **so
 ## Fuera de alcance
 
 - **Validación del QR en la entrada.** Es futura: no existe registro de entrada en el sistema. No hay señal por ese concepto.
-- **Método de pago.** En `arca_pruebas`, todos los boletos tienen `payment_method = cash` (consulta de 2026-11-21). La señal no aportaría nada y no se implementa.
+- **Método de pago.** En `arca_pruebas`, todos los boletos tienen `payment_method = cash`. La señal no aportaría nada y no se implementa.
 - Reclasificar cancelaciones anteriores a la feature (siguen como «Sin clasificar (anterior)», `api-022` CA-08).
 - Deshacer, editar o borrar una cancelación o una revisión. No hay ruta para ello.
 - Bloquear una cancelación, un reporte o una exportación por un nivel del semáforo.
-- Excluir los datos de demostración de los reportes (decisión de 2026-11-21, ver RN-16).
+- Excluir los datos de demostración de los reportes.
 - Notificaciones por correo, tiempo real o avisos fuera de `pending-counts`.
 - Permisos para `zoo-admin`, `executive`, `cashier` o `veterinarian`.
 - Cambios de la zona horaria, de la cancelación o del catálogo de motivos.
 
 ## Esquema vivo y verificación previa
 
-Consulta de solo lectura sobre `arca_pruebas`, aportada por la sesión principal el 2026-11-21 (`php artisan db:table`, `information_schema`; sin escrituras):
+Consulta de solo lectura sobre `arca_pruebas`, aportada por la sesión principal (`php artisan db:table`, `information_schema`; sin escrituras):
 
 - No existen `cancellation_reviews` ni `ticket_cancellation_reviews`.
 - `tickets`: 37 filas, 4 canceladas, 1 con `cancellation_reason_code`. Todas con `payment_method = cash`.
 - Zona de sesión de la base: `+00:00`. La zona de negocio la define `arca.timezone` (`America/Mexico_City`).
-- `users.id` y `tickets.cashier_id` son de tipo `int` (FK a `users`), confirmado en la consulta de solo lectura del 2026-11-21 por Jonathan.
-- Diferencia respecto a DBR-024 (2026-11-20: 34 boletos y 3 canceladas): crecimiento de datos de prueba, no una divergencia de esquema.
-- `activity_log` existe (confirmado en la consulta de solo lectura del 2026-11-21).
+- `users.id` y `tickets.cashier_id` son de tipo `int` (FK a `users`), confirmado en la consulta de solo lectura por el responsable funcional.
+- Diferencia respecto a DBR-024 (: 34 boletos y 3 canceladas): crecimiento de datos de prueba, no una divergencia de esquema.
+- `activity_log` existe (confirmado en la consulta de solo lectura).
 
 Resultado: el cambio necesita una tabla nueva (DBR-026). El resto usa columnas y datos existentes.
 
@@ -67,7 +68,7 @@ Resultado: el cambio necesita una tabla nueva (DBR-026). El resto usa columnas y
 | `zoo-admin`, `executive`, `cashier`, `veterinarian` | Sin acceso a semáforo, revisiones ni conteo de días pendientes | — (403) |
 | Responsable de BD | Crear, probar y aplicar la tabla de DBR-026 | Flujo DBR de `docs/database/` |
 
-Decisión 8 (2026-11-21): solo `admin` ve y hace todo esto, con `reports.cancellations.view`. No se crea un permiso de escritura aparte (pregunta 3 abierta, ver «Preguntas»).
+Decisión 8: solo `admin` ve y hace todo esto, con `reports.cancellations.view`. No se crea un permiso de escritura aparte (pregunta 3 abierta, ver «Preguntas»).
 
 ## Historias de usuario
 
@@ -140,7 +141,7 @@ Definiciones comunes (RN-02, RN-03): para un cajero `c` y un día de negocio `d`
 - **RN-01 (dueña):** Todo el cálculo de señales, niveles, porqué, textos de acción, pendientes y leyenda vive en Actions de la API (Constitución III). Los controladores solo delegan. El dashboard solo presenta.
 - **RN-02 (día y zona):** El día de cada boleto es el día de negocio de `purchased_at` en `arca.timezone` (`api-022` RN-06, RN-09, `api-025`). Un boleto cancelado cuenta en el día de su venta.
 - **RN-03 (unidades):** Los porcentajes se comparan sin redondear; se muestran con dos decimales. Las cantidades son adultos más niños.
-- **RN-04 (señales y umbrales):** Cada señal usa valores de `config/arca.php`, bloque `cancellation_review`, con valores por defecto; nunca se editan desde el panel. Valores aprobados el 2026-11-21 (N = 4 semanas para C1, 7 días para C2, mínimo de 10 boletos):
+- **RN-04 (señales y umbrales):** Cada señal usa valores de `config/arca.php`, bloque `cancellation_review`, con valores por defecto; nunca se editan desde el panel. Valores aprobados (N = 4 semanas para C1, 7 días para C2, mínimo de 10 boletos):
 
   | Señal (código) | Tipo | Regla | Clave de configuración (propuesta) |
   |---|---|---|---|
@@ -157,18 +158,18 @@ Definiciones comunes (RN-02, RN-03): para un cajero `c` y un día de negocio `d`
   - Normal: «Sin acción: no hay señales que revisar.»
   - Revisar: «Revisa las cancelaciones marcadas y pide al cajero que explique cada una.»
   - Atención: «Compara el neto con el dinero entregado y pide al cajero que explique las cancelaciones marcadas.»
-  Ningún texto pide boletos físicos (decisión 1 de 2026-11-21).
-- **RN-06 (independencia de filtros):** Ni `cashier_id` ni `reason_code` cambian el nivel de un cajero y día (CA-12). Las filas y los totales de `api-022` sí se filtran, como antes. El semáforo se muestra completo; cuando hay filtro de motivo, el dashboard lo indica con la nota de `api-022`. *Nota de revisión 2026-11-21 (calidad): RN-06 queda acotado por `api-022` CA-34: `cashier_id` recorta `cashier_days` a ese cajero (el nivel se calcula con todos los datos); `reason_code` no lo filtra.*
+  Ningún texto pide boletos físicos.
+- **RN-06 (independencia de filtros):** Ni `cashier_id` ni `reason_code` cambian el nivel de un cajero y día (CA-12). Las filas y los totales de `api-022` sí se filtran, como antes. El semáforo se muestra completo; cuando hay filtro de motivo, el dashboard lo indica con la nota de `api-022`. *Nota de revisión (calidad): RN-06 queda acotado por `api-022` CA-34: `cashier_id` recorta `cashier_days` a ese cajero (el nivel se calcula con todos los datos); `reason_code` no lo filtra.*
 - **RN-07 (revisión append-only):** Cada decisión es una fila nueva. Ninguna fila se edita ni se borra, ni física ni lógicamente, desde la API. La revisión vigente es la fila más reciente del par cajero-día (por `id`). La tabla tiene SoftDeletes por norma del modelo (Constitución V), pero no hay ruta que lo use.
 - **RN-08 (nota y decisiones):** `status` ∈ {`reviewed_ok` («Revisado: todo en orden»), `clarification_required` («Requiere aclaración»)}. La nota se recorta y tiene entre 15 y 255 caracteres (propuesta, igual que `api-022` RN-04). Repetir el mismo estado crea una entrada nueva del historial (CA-19).
 - **RN-09 (cajero eliminado):** Un cajero con `deleted_at` se puede revisar y su nombre aparece (`api-022` RN-12).
-- **RN-10 (sin cajero registrado):** Los boletos sin `cashier_id` forman el grupo «Sin cajero registrado» (`api-022`). Ese grupo no recibe semáforo ni se puede revisar (decisión de 2026-11-21; `cashier_id` NOT NULL en DBR-026).
-- **RN-11 (pendientes para el aviso):** `cancellation_days` cuenta pares cajero-día con nivel Atención dentro de los últimos 7 días de negocio cerrados (excluido hoy), sin revisión vigente o con `clarification_required`. Un día sale del aviso solo al cerrarse con «Revisado: todo en orden» (decisión de 2026-11-21). Revisar no entra en el aviso ni en el conteo; solo se ve en el reporte. La consulta usa la misma Action que el reporte.
+- **RN-10 (sin cajero registrado):** Los boletos sin `cashier_id` forman el grupo «Sin cajero registrado» (`api-022`). Ese grupo no recibe semáforo ni se puede revisar (decisión; `cashier_id` NOT NULL en DBR-026).
+- **RN-11 (pendientes para el aviso):** `cancellation_days` cuenta pares cajero-día con nivel Atención dentro de los últimos 7 días de negocio cerrados (excluido hoy), sin revisión vigente o con `clarification_required`. Un día sale del aviso solo al cerrarse con «Revisado: todo en orden». Revisar no entra en el aviso ni en el conteo; solo se ve en el reporte. La consulta usa la misma Action que el reporte.
 - **RN-12 (visibilidad):** Todo el semáforo, la leyenda, las revisiones y el conteo son solo de quien tiene `reports.cancellations.view` (`admin`). `executive` no los ve (`dashboard-020` RN-10).
 - **RN-13 (sin cambio de procedimiento en el sistema):** Entregar el dinero es un procedimiento fuera del sistema. La API no registra entregas de dinero ni boletos físicos.
 - **RN-14 (no bloquea):** El semáforo, las señales y los pendientes nunca responden error ni impiden cancelar, consultar o exportar.
 - **RN-15 (recalculo):** Los niveles se calculan al pedir la consulta. No hay tabla de niveles ni caché persistente en esta versión; la revisión sí se guarda (DBR-026).
-- **RN-16 (datos de demostración):** Se crean cajeros de demostración con correo `demo-cancel-*@arca.local`, sus boletos y sus cancelaciones, con días Normal, Revisar y Atención, en `arca_pruebas` únicamente. Decisión de 2026-11-21: se quedan en la base, **no** se excluyen de ningún reporte y se ven como datos normales. El comando se niega a correr si `DB_DATABASE` no es `arca_pruebas` o si `APP_ENV = production`, y nunca se ejecuta contra `arca_zoo`. Es idempotente (CA-30).
+- **RN-16 (datos de demostración):** Se crean cajeros de demostración con correo `demo-cancel-*@arca.local`, sus boletos y sus cancelaciones, con días Normal, Revisar y Atención, en `arca_pruebas` únicamente. Decisión: se quedan en la base, **no** se excluyen de ningún reporte y se ven como datos normales. El comando se niega a correr si `DB_DATABASE` no es `arca_pruebas` o si `APP_ENV = production`, y nunca se ejecuta contra `arca_zoo`. Es idempotente (CA-30).
 - **RN-17 (demostración sin borrado físico):** Las fechas relativas se regeneran agregando días nuevos hasta hoy (CA-32); no se borran ni se modifican filas existentes. Si alguna vez hace falta retirar datos de demostración, se hace con borrado lógico (`deleted_at`), nunca físico (Constitución V). Por eso el comando no tiene opción de borrado.
 - **RN-18 (generación de datos de demostración):** Las cancelaciones de demostración se escriben directamente en el seeder, no con `CancelTicketAction`, porque `api-009` RN-16 solo permite cancelar el mismo día y la demostración necesita días pasados. Cada cancelación de demostración cae en el mismo día de negocio de su venta (RN-02) y queda registrada en Activitylog con `ticket-cancelled` y la marca `demo = true`. Es una excepción acotada a la demostración, anotada aquí y en el plan.
 
@@ -198,7 +199,7 @@ Definiciones comunes (RN-02, RN-03): para un cajero `c` y un día de negocio `d`
   - Coste del aviso: `pending-counts` se consulta cada 15 s por el panel (`dashboard-018`); el conteo recalcula 7 días y el histórico. Mitigado por el límite de 60/min de `api-024` (RN-15 y pregunta 7).
   - Falsos positivos: señales basadas en pocos boletos. Mitigado por los mínimos de RN-04 y por la leyenda.
   - Datos de demostración mezclados con reales: aceptado por decisión (RN-16); se identifican por el correo y el prefijo `DEMO-CANCEL-`.
-- **Decisiones de Jonathan (2026-11-21):** todas las preguntas quedan cerradas.
+- **Decisiones:** todas las preguntas quedan cerradas.
   1. **Reglas del semáforo:** S1 a S5, C1 y C2 tal como están en RN-04; 0 señales = Normal, 1 = Revisar, 2 o más = Atención (RN-05). Valores en la configuración del servidor: N = 4 semanas, 7 días para C2 y mínimo de 10 boletos.
   2. **Aviso y punto:** cuentan los días en Atención sin revisar y los marcados «Requiere aclaración», hasta cerrarlos con «Revisado: todo en orden». Los días en Revisar solo se ven en el reporte (RN-11). El periodo es de los últimos 7 días de negocio cerrados.
   3. **Sin cajero registrado:** no lleva semáforo ni revisión; `cashier_id` NOT NULL en DBR-026 (RN-10).
@@ -209,10 +210,10 @@ Definiciones comunes (RN-02, RN-03): para un cajero `c` y un día de negocio `d`
      - No hay permiso aparte: la revisión usa `reports.cancellations.view` (decisión 8, RN-12).
      - El límite de revisiones es de 20 por minuto (CA-22).
      - La nota tiene de 15 a 255 caracteres (RN-08).
-  6. **Evidencia de base:** `users.id` es `int` y `activity_log` existe (consulta de solo lectura de 2026-11-21 en `arca_pruebas`).
+  6. **Evidencia de base:** `users.id` es `int` y `activity_log` existe (consulta de solo lectura en `arca_pruebas`).
   7. **DBR-026:** se queda en Aprobada; la sesión principal crea y aplica la migración y la pasa a «Lista para backend» con evidencia.
 
-- Preguntas cerradas (referencia de la versión de propuesta):
+- Decisiones (referencia de la versión de propuesta):
   1. **Comparación entre compañeros (C2):** ¿la ventana es de 7 días que terminan en el día evaluado (propuesta, mantiene el semáforo independiente del filtro) o el periodo del reporte (literal, pero el nivel cambiaría según el periodo elegido)?
   2. **Ventana de «final de jornada» (S2):** ¿`[L − 30 min, L]` con `L` la última venta del cajero (literal, propuesta) o una franja fija de cierre del zoológico?
   3. **Permiso de escritura:** ¿la revisión sigue con `reports.cancellations.view` (decisión 8) o se crea `reports.cancellations.review` aparte para separar lectura y escritura?
@@ -222,22 +223,22 @@ Definiciones comunes (RN-02, RN-03): para un cajero `c` y un día de negocio `d`
   7. **Límite de revisiones:** ¿20 por minuto por usuario (propuesta, CA-22) es suficiente?
   8. **Repetir decisión:** ¿repetir el mismo estado responde 422 (propuesta, CA-19) o se acepta como nueva fila con nota?
 
-### Revisión 2026-11-21 (c) (aprobada por Jonathan): folios, frase y etiquetas claras
+### Revisión (c) (aprobada por el responsable funcional): folios, frase y etiquetas claras
 
 - **CA-34:** Dado un día con señales, cuando se presenta, entonces cada razón trae `folios[]`: para S2, S3, S4 y S5 solo los boletos que cumplen la señal; para S1, C1 y C2 todos los cancelados del cajero y día. Test: `test_ca34_reasons_list_the_right_folios_per_signal`.
-- **CA-35:** Dado un día con una o más señales, cuando se presenta, entonces `reason_sentence` es «Se activó 1 señal: <etiqueta> (<n> boletos).» o «Se activaron N señales: <etiqueta> (<n> boletos); …». Esto cambia el texto de CA-13 (sustituye el ejemplo literal de CA-13). Test: `test_ca35_clear_sentence_with_one_and_two_signals`. *Nota de revisión 2026-11-21 (calidad): `count` de S1, C1 y C2 cuenta boletos (cantidad de adultos más niños), mientras `folios` lista boletos cancelados por folio; por eso `count` puede no coincidir con `folios.length` cuando un folio tiene varias cantidades.*
+- **CA-35:** Dado un día con una o más señales, cuando se presenta, entonces `reason_sentence` es «Se activó 1 señal: <etiqueta> (<n> boletos).» o «Se activaron N señales: <etiqueta> (<n> boletos); …». Esto cambia el texto de CA-13 (sustituye el ejemplo literal de CA-13). Test: `test_ca35_clear_sentence_with_one_and_two_signals`. *Nota de revisión (calidad): `count` de S1, C1 y C2 cuenta boletos (cantidad de adultos más niños), mientras `folios` lista boletos cancelados por folio; por eso `count` puede no coincidir con `folios.length` cuando un folio tiene varias cantidades.*
 - **CA-36:** Dada la respuesta, cuando se lee `legend[]`, entonces sus `label` son los mismos que los de `reasons[]` (clarificados). Test: `test_ca36_legend_uses_the_same_clear_labels`.
 - **CA-37:** Dada la exportación filtrada por cajero, cuando se genera, entonces el semáforo trae la columna «Folios» y solo al cajero filtrado (CA-25 se amplía). Test: `test_ca36_filtered_export_only_contains_filtered_cashier` (de `api-022` CA-36).
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan (responsable funcional), 2026-11-21.
-- Revisión 2026-11-21 (Jonathan): cierra las ocho preguntas (sección «Decisiones de Jonathan (2026-11-21)»). Cambios: CA-19 pasa a crear entrada nueva del historial en vez de rechazar el estado repetido; RN-11 incluye «Requiere aclaración» y excluye Revisar. Sin renumerar CA ni RN.
-- Nota de revisión sobre `api-022` (2026-11-21): RN-13 y «Fuera de alcance» de `api-022` se corrigen en su nota de revisión; el cajero entrega solo el dinero, no el boleto físico (decisión 1). Sin renumerar.
-- Nota de revisión sobre `api-024` (2026-11-21): añade la clave `cancellation_days` para quien tiene `reports.cancellations.view` (CA-23 y CA-24 de esta spec); ver la nota en `apps/api/specs/024-pending-review-counts.md`.
-- Nota de revisión de calidad y seguridad (2026-11-21): CA-11 gana `data.levels[]` (`{code, label, condition}`, con `condition` calculada de `attention_min_signals`: «0 señales», «1 señal», «2 o más señales» por defecto); el dashboard ya lo consume. Sin renumerar. Las lecturas del reporte (`reports/cancellations`, `/cashiers`, `/reviews`) tienen el límite `cancellation-report` (60 por minuto y usuario).
+- Aprobación: Equipo ARCA-NB.
+- Revisión (el responsable funcional): cierra las ocho preguntas (sección «Decisiones»). Cambios: CA-19 pasa a crear entrada nueva del historial en vez de rechazar el estado repetido; RN-11 incluye «Requiere aclaración» y excluye Revisar. Sin renumerar CA ni RN.
+- Nota de revisión sobre `api-022`: RN-13 y «Fuera de alcance» de `api-022` se corrigen en su nota de revisión; el cajero entrega solo el dinero, no el boleto físico (decisión 1). Sin renumerar.
+- Nota de revisión sobre `api-024`: añade la clave `cancellation_days` para quien tiene `reports.cancellations.view` (CA-23 y CA-24 de esta spec); ver la nota en `apps/api/specs/024-pending-review-counts.md`.
+- Nota de revisión de calidad y seguridad: CA-11 gana `data.levels[]` (`{code, label, condition}`, con `condition` calculada de `attention_min_signals`: «0 señales», «1 señal», «2 o más señales» por defecto); el dashboard ya lo consume. Sin renumerar. Las lecturas del reporte (`reports/cancellations`, `/cashiers`, `/reviews`) tienen el límite `cancellation-report` (60 por minuto y usuario).
 - Nota de revisión sobre `dashboard-016` y `dashboard-018`: ver sus notas; consumen esta spec en `dashboard-021`.
 - Evidencia/enlaces: `apps/api/specs/022-ticket-cancellation-report.md`, `apps/api/plan/022-ticket-cancellation-report.md`, `apps/api/specs/024-pending-review-counts.md`, `apps/api/specs/025-single-business-timezone.md`, `apps/dashboard/specs/020-unified-reports-and-feedback.md`, `docs/database/requests/DBR-024-ticket-cancellation-reason-code.md`, `docs/database/requests/DBR-026-cancellation-reviews.md`, `apps/api/src/app/Actions/Admin/Reports/BuildCancellationReportAction.php`, `apps/api/src/config/arca.php` (bloque `cancellation_alerts`), `apps/api/src/app/Actions/Admin/PendingReview/GetPendingReviewCountsAction.php`.
-- Consulta de esquema vivo: 2026-11-21, aportada por la sesión principal (ver «Esquema vivo y verificación previa»).
+- Consulta de esquema vivo:, aportada por la sesión principal (ver «Esquema vivo y verificación previa»).
 - Evidencia de CI, tests y migraciones: pendiente. Esta sesión no tiene shell y no afirma que pasen.
-- Revisión 2026-11-21 (c) (aprobada por Jonathan): añade CA-34 a CA-37 sin renumerar; `reasons[].folios`, frase y etiquetas claras, `cashier_days` con `cashier_id`. El ejemplo literal de CA-13 queda sustituido por CA-35. Ver `api-022`.
+- Revisión (c) (aprobada por el responsable funcional): añade CA-34 a CA-37 sin renumerar; `reasons[].folios`, frase y etiquetas claras, `cashier_days` con `cashier_id`. El ejemplo literal de CA-13 queda sustituido por CA-35. Ver `api-022`.

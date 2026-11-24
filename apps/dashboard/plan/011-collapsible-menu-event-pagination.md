@@ -1,7 +1,9 @@
 # Plan técnico · 011 · collapsible-menu-event-pagination
 
 - Spec: `apps/dashboard/specs/011-collapsible-menu-event-pagination.md`.
-- Estado: aprobado para implementación por la persona solicitante, 2026-11-12; validación técnica del equipo pendiente.
+- Estado: aprobado para implementación por la persona solicitante; validación técnica del equipo pendiente.
+- Solicitada: 2026-11-12
+- Aprobada: 2026-11-12
 - Dependencias: `dashboard-003` y `dashboard-004`; no requiere DBR ni nuevas dependencias.
 
 ## Solución

@@ -1,10 +1,12 @@
 # Plan técnico · 020 · unified-reports-and-feedback
 
 - Spec: `apps/dashboard/specs/020-unified-reports-and-feedback.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-21)
-- Estado del plan: Aprobado — aprobación técnica: Jonathan, 2026-11-21
+- Estado de spec: Implementada
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Estado del plan: Aprobado (aprobación técnica registrada)
 - Responsable técnico: por identificar
-- Nota de aprobación: las decisiones D-1 a D-5 y D-7 quedaron confirmadas por la sesión principal el 2026-11-21, sujetas a veto de Jonathan. Si las cambia, se revisan las tareas que dependen de ellas.
+- Nota de aprobación: las decisiones D-1 a D-5 y D-7 quedaron confirmadas por la sesión principal, sujetas a veto del responsable funcional. Si las cambia, se revisan las tareas que dependen de ellas.
 
 ## Diseño de solución
 
@@ -204,7 +206,7 @@ Lista obtenida por búsqueda de etiquetas y permisos (`Reporte de boletos`, `Can
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas. Componentes con `@arca/ui` y React existente. Sin cambios de conexión |
-| II. La spec manda | Sí | Spec Aprobada (Jonathan, 2026-11-21) con este plan y `tasks/020-unified-reports-and-feedback.md`, mismo slug |
+| II. La spec manda | Sí | Spec Aprobada con este plan y `tasks/020-unified-reports-and-feedback.md`, mismo slug |
 | III. Lógica separada de la interfaz | Sí | Decisiones de pestañas, permisos y mensajes en viewmodels puros. Componentes sin `fetch`/`axios`. Totales y periodos de la API. Cumplimiento verificado en CA-30 |
 | IV. Un test por criterio | Sí (previsto) | Mapeo de CA-01 a CA-32 arriba. Sin evidencia aún |
 | V. Una sola fuente de verdad para los datos | Sí | Sin cambios de datos ni de esquema. No aplica DBR |
@@ -223,9 +225,9 @@ Ninguna excepción propuesta.
   - Dependencia de `tickets.view-all` en `me` (T-01): si falta, es bloqueante para la pestaña Historial.
   - `NoticeBar` sin proveedor (M-29): algunos tests lo renderizan sin proveedor. Mitigación: T-12.
 - **Alternativas:**
-  - Mantener tres entradas de menú y solo unificar componentes: descartado por Jonathan (decisión 1).
+  - Mantener tres entradas de menú y solo unificar componentes: descartado (decisión 1).
   - Guardar la pestaña en la URL: descartado porque la navegación no tiene URL (ADR 0002 y patrón actual).
-  - Dejar errores de carga como aviso emergente: descartado en D-2 por ser estado de la vista. Si Jonathan lo prefiere, se cambia la categoría 4 de RN-07 y M-06, M-26.
+  - Dejar errores de carga como aviso emergente: descartado en D-2 por ser estado de la vista. Si el responsable funcional lo prefiere, se cambia la categoría 4 de RN-07 y M-06, M-26.
 
 ## Orden y aprobación
 
@@ -239,9 +241,9 @@ Secuencia recomendada:
 6. Migración por sección (T-12, T-13).
 7. Pruebas de cobertura, verificación y documentación (T-14 a T-18).
 
-Aprobador funcional: Jonathan, 2026-11-21 (spec y plan). Evidencia: ninguna todavía; las tareas se marcan solo con evidencia de la sesión principal.
+Aprobador funcional: responsable funcional (spec y plan). Evidencia: ninguna todavía; las tareas se marcan solo con evidencia de la sesión principal.
 
-## Divergencias de implementación (2026-11-21)
+## Divergencias de implementación
 
 - **M-09 y M-11 (texto exacto leído en T-02).** La entrada de `TicketPricesView` que pintaba `inline-alert` es el mensaje 2FA (M-10, estado de la sección, D-4); el error general de guardar precio ya era `ActionError` y pasa a aviso con M-01. En `TicketSaleView` la línea 195 es el fallo al cargar precios, con «Reintentar precios»: es estado de la vista (D-2) y se mantiene; el error de venta ya es `ActionError` (aviso).
 - **M-08.** El aviso «El evento ya no está en la lista.» pasa a aviso emergente con un `ActionError`; como un aviso no puede llevar botón, la confirmación huérfana se cierra sola (`closeAction` en un efecto). Se retira el botón «Cerrar confirmación».
@@ -255,7 +257,7 @@ Aprobador funcional: Jonathan, 2026-11-21 (spec y plan). Evidencia: ninguna toda
 - **Mensaje sin cambio de contrato.** No se tocó `packages/api-client` ni `apps/api`. La prueba de CA-29 comprueba por lectura de código (no por `git status`, porque el árbol trae cambios previos sin commit en `packages/api-client`).
 - **Lint.** El dashboard no define script de lint; se ejecutaron Vitest y `tsc`.
 
-## Nota de revisión 2026-11-21 (b) (CA-33 a CA-42)
+## Nota de revisión (b) (CA-33 a CA-42)
 
 - **Confirmaciones en modal.** `components/StaffActionDialog.tsx` (nuevo) monta un único `ConfirmDialog` para las acciones de Usuarios y trae el campo de contraseña nueva con sus errores por campo (`createPasswordResetHandlers` se mudó aquí). Noticias y Eventos montan un `ConfirmDialog` al final de la vista; `ContentCardActions` ya no tiene confirmación. `viewmodels/confirmation.ts` añade `confirmationFromCopy` (el título es el nombre accesible anterior; Noticias conserva «Confirmar cambio de estado» para el estado). Se eliminan `InlineConfirm` e `InlinePasswordReset`; el CSS `.inline-confirm*` queda sin uso y se retira en una limpieza posterior.
 - **Contraseña del administrador.** El diálogo de `dashboard-015` ya es único y modal (`StepUpProvider`); el diálogo de la acción conserva `pendingAction` mientras la petición está en curso, así que ambos coexisten (el de contraseña, encima). Mismo mecanismo que Precios.
@@ -263,11 +265,11 @@ Aprobador funcional: Jonathan, 2026-11-21 (spec y plan). Evidencia: ninguna toda
 - **Área y rol.** `viewmodels/staff-role-suggestion.ts` (nuevo, puro): `departmentSelectionChanges`, `roleSuggestionNotice`, `AREA_ROLE_HELP` y `suggestRole` (reexportado desde `staff-accounts.ts`). `StaffState.roleChosenManually` y la acción `role-chosen` registran la elección manual; se reinicia en `edit-started`, `edit-cancelled` y `saved` con reinicio de formulario. `staffDepartmentChanges` conserva el rol al editar (solo aviso suave) y sugiere en el alta salvo elección manual. `ListStaffOptionsAction` ya entrega `suggested_role` por área (solo si es asignable); sin cambios en API.
 - Pruebas: `tests/modal-confirmations-and-area-role.test.tsx` (CA-33 a CA-42) y ajustes en `staff-accounts`, `inline-content-forms`, `feedback-*` y `administration-quality`.
 
-## Nota 2026-11-21: TulanPedia adopta el patrón
+## Nota: TulanPedia adopta el patrón
 
 `ReportTabs` y `TulanpediaTabs` comparten `section-tabs`/`section-tab`/`section-tab-panel`; `tabForKey` es genérico y el panel usa `--content-gap`. Detalle en `plan/010-public-content-management.md` (CA-66 a CA-73).
 
-## Nota de revisión 2026-11-21 (c) (CA-43 a CA-48): paginación unificada
+## Nota de revisión (c) (CA-43 a CA-48): paginación unificada
 
 - `components/Pagination.tsx` (nuevo) sustituye a `PaginationBar` y `HasMorePaginationBar` (eliminados). Entrada: `page` y, o bien `lastPage` + `total`, o bien `hasMore`; más `busy` y `onPageChange`. La lógica (resumen, extremos deshabilitados, ventana de números con «…») vive en `viewmodels/pagination.ts` (`buildPagination`, `pageItems`).
 - Inventario: Usuarios, Historial y Boletos (`meta` con total) y Recintos, Noticias y Eventos (cliente, con total) usan el modo con total; TulanPedia (Solicitudes y Publicadas) y Momentos (`has_more`) usan el modo `hasMore`. Tamaños de página y reinicio al filtrar no cambian (siguen en sus viewmodels).
@@ -275,7 +277,7 @@ Aprobador funcional: Jonathan, 2026-11-21 (spec y plan). Evidencia: ninguna toda
 - CSS: se reutiliza `.pagination-bar*`; se añaden `.pagination-bar__gap` y foco `--ring`. No quedaba CSS de paginadores viejos sin uso.
 - Sin cambios en `packages/api-client`.
 
-## Nota de revisión 2026-11-21 (d) (CA-49 a CA-55): componentes compartidos y paginación con total
+## Nota de revisión (d) (CA-49 a CA-55): componentes compartidos y paginación con total
 
 - **`@arca/ui` (sin dependencias nuevas; el paquete no tiene runner, se prueba desde las apps).** `src/pagination.ts` (lógica pura, mismo `buildPagination`/`pageItems`), `src/countdown.ts` (puro) y `src/useCountdown.ts` (hook); `Pagination`, `LockoutNotice` y `ConfirmDialog` en `src/index.tsx`; estilos con tokens en `src/styles.css` (`.pagination-bar*`, `.arca-confirm-dialog*`, `.arca-visually-hidden`). Se eliminan las copias de `apps/dashboard` y `apps/pwa`.
 - **`LockoutNotice`.** Acepta `alertClassName` para que cada app ubique el aviso (dashboard: `auth-alert dialog-alert`; PWA: `login-error`); la región oculta usa `arca-visually-hidden`.
@@ -285,7 +287,7 @@ Aprobador funcional: Jonathan, 2026-11-21 (spec y plan). Evidencia: ninguna toda
 - **`@arca/api-client`.** `normalizeTotalPage` (exportada de `admin.ts`) rellena `meta` si la API aún no envía total; `cancellations()` copia el `meta` raíz al DTO; la exportación sigue sin `page`.
 - Pruebas: `tests/shared-components-and-total-pagination.test.tsx` (CA-49 a CA-55 y las notas de `dashboard-016`, `-010` y `-008`); `tests/pagination.test.tsx` y `tests/step-up-lockout-countdown.test.tsx` ahora importan de `@arca/ui`.
 
-## Nota de revisión 2026-11-21 (e) (CA-56 a CA-65): esqueletos de carga
+## Nota de revisión (e) (CA-56 a CA-65): esqueletos de carga
 
 - **`@arca/ui`.** `src/skeleton.tsx` (`Skeleton`, `SkeletonRegion`, `SkeletonTable`, `SkeletonCards`, `SkeletonForm`), `src/delayedFlag.ts` (lógica pura `startDelayedFlag` y `SKELETON_DELAY_MS` = 150) y `src/useDelayedFlag.ts`. Estilos con tokens y `rem` en `src/styles.css`; el brillo vive en `prefers-reduced-motion: no-preference` y hay un bloque `reduce` sin animación. Sin dependencias nuevas.
 - **Dashboard.** `components/LoadingSkeletons.tsx` compone los esqueletos por pantalla con las clases de la rejilla o la tabla reales (`table-scroll data-table-scroll`, `data-table`, `content-card-grid`, `event-card-grid`, `enclosure-grid`, `species-grid`). `Delayed` aplica el retraso y deja solo el aviso accesible antes de 150 ms. Los reportes guardan sus listas de encabezados como constantes que un test compara con las vistas.

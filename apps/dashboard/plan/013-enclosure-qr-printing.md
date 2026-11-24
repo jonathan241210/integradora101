@@ -1,9 +1,11 @@
 # Plan técnico · 013 · enclosure-qr-printing
 
 - Spec: `apps/dashboard/specs/013-enclosure-qr-printing.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-18)
-- Estado del plan: **Aprobado** (Jonathan, 2026-11-18). Autoriza la implementación según sus tasks.
-- Responsable técnico: Jonathan (frontend y backend)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Estado del plan: **Aprobado**. Autoriza la implementación según sus tasks.
+- Responsable técnico: Frontend y Backend
 - Dependencias de implementación: `api-020` (Aprobada). Esta implementación empieza cuando estén listos los endpoints de `api-020` (T-04 a T-07) y el cliente (`api-020` T-15). Enmienda (c) de `dashboard-012` (CA-32, CA-38, RN-07) y enmienda a su CA-03 se aplican en el mismo PR.
 - ADR: no requerido (sin dependencias nuevas; `bacon` vive en la API).
 
@@ -98,7 +100,7 @@ Ninguna excepción. La regla de accesibilidad y tokens (`dashboard/AGENTS.md`) s
 ## Riesgos y decisiones
 
 - **Impresión entre navegadores:** márgenes y escala varían. Mitigación: CA-10 con evidencia manual en Chrome y Edge, registrada por la sesión principal.
-- **Colisión de palabras en el buscador:** «qr» y «imprimir» coinciden con «Nueva venta» y con «QR del recinto». Decisión de Jonathan: se muestran ambas según permisos (CA-20). El orden lo fija el catálogo.
+- **Colisión de palabras en el buscador:** «qr» y «imprimir» coinciden con «Nueva venta» y con «QR del recinto». Decisión: se muestran ambas según permisos (CA-20). El orden lo fija el catálogo.
 - **Regenerar por error:** deja sin efecto los QR impresos. Mitigación: confirmación con aviso (CA-05).
 - **Foco por término:** la lógica de «imprimir» y «regenerar» vive en el catálogo (presentación), no en la API. No decide permisos.
 - **Divergencia de progreso:** no afecta a esta spec; la regla de `api-019` CA-35 sigue vigente (`api-020` CA-24).
@@ -112,11 +114,11 @@ Ninguna excepción. La regla de accesibilidad y tokens (`dashboard/AGENTS.md`) s
 4. Catálogo y enmiendas a `dashboard-012` (T-10); MVVM (T-11); cobertura (T-12).
 5. Documentación, verificaciones y PR (T-13 a T-15).
 
-- Revisión técnica: pendiente (Jonathan).
-- Aprobador funcional: Jonathan, 2026-11-18.
+- Revisión técnica: pendiente.
+- Aprobador funcional: responsable funcional (aprobada).
 - Evidencias: pendientes de la sesión principal (Vitest, lint, `tsc` y la impresión manual en Chrome y Edge). Esta sesión no tiene shell y no afirma que pasen.
 
-## Decisiones de implementación aceptadas por la sesión principal (2026-11-18)
+## Decisiones de implementación aceptadas por la sesión principal
 
 - **D-QR-1 (RN-11 de dashboard-012):** una palabra de 2 letras (p. ej. «qr») reconoce una acción solo por coincidencia exacta con la etiqueta o un sinónimo; las palabras de 3 o más letras siguen la tolerancia normal.
 - **D-QR-2:** al combinar acción y elemento, gana la acción con más palabras reconocidas (empate: orden del catálogo); corrige «imprimir qr recinto lobos» y «eliminar recinto lobos».

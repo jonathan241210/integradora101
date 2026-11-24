@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from '../config/runtime';
 import { createHttpClient, type HttpClient } from '@arca/api-client';
 import { MapPlace, MapSection, PathNode, ZooPlace } from '../models';
 import { MapRepository } from './index';
@@ -39,7 +40,7 @@ export class ApiMapRepository implements MapRepository {
     this.defaultTtl = customTtl;
     this.storage = customStorage;
     this.httpClient = customClient ?? createHttpClient({
-      baseUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8000/api/v1',
+      baseUrl: resolveApiBaseUrl(),
     });
   }
 

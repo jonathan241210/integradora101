@@ -1,7 +1,8 @@
 # 0014 · Caché offline y detección de conectividad en la app móvil
 
 - Estado: Aceptado
-- Fecha: 2026-10-22
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
 - Spec relacionada: `apps/mobile/specs/003-api-read-integration.md`
 
 ## Contexto
@@ -11,11 +12,11 @@
 - **CA-05 / RN-03:** la caché *Stale-While-Revalidate* debe persistir en `AsyncStorage` con TTL de 5 minutos. El código usa `MemoryKeyValueStorage` (un `Map`), así que la caché muere al cerrar la app.
 - **CA-04 / RN-04:** sin red y con caché disponible, la UI debe mostrar los datos guardados y el indicador «Modo sin conexión». `HomeScreen` acepta `isOffline`, pero ninguna ruta lo envía, así que el `OfflineBanner` es código muerto.
 
-El ADR 0011 (estado **Propuesto**) ya nombra `@react-native-async-storage/async-storage` como dependencia móvil pendiente de aprobación, para «cola de escaneos sin conexión y caché no sensible». Este ADR acota ese uso al catálogo público y resuelve la detección de conectividad, que ningún ADR cubre todavía.
+El ADR 0011 (estado **Aceptado**) ya nombra `@react-native-async-storage/async-storage` como dependencia móvil aprobada, para «cola de escaneos sin conexión y caché no sensible». Este ADR acota ese uso al catálogo público y resuelve la detección de conectividad, que ningún ADR cubre todavía.
 
 La app usa Expo SDK 57 / React Native 0.86 (ADR 0004).
 
-## Enmienda 2026-11-16 · Favoritos de la cuenta
+## Enmienda · Favoritos de la cuenta
 
 La lista de verdad es la cuenta (`mobile-014`, `api-018`). El teléfono guarda la última respuesta en `visitor.favorite-species-ids` para mostrarla sin red. La clave anterior `visitor.favorite-animal-ids` solo sirve para una subida única. El cache de catálogo y eventos de esta decisión no cambia.
 
@@ -53,14 +54,13 @@ La lista de verdad es la cuenta (`mobile-014`, `api-018`). El teléfono guarda l
 
 ### Riesgos o costos
 
-- ADR 0011 sigue en **Propuesto**: si se rechaza, hay que revisar el uso de AsyncStorage. Este ADR no aprueba por sí mismo la identidad del visitante.
+- ADR 0011 (Aceptado) define la identidad del visitante; este ADR no la altera ni la aprueba por sí mismo.
 - Toda dependencia nueva exige actualizar el `plan` y `tasks` de `mobile-003`, y agregar pruebas que simulen red caída.
 - `expo-network` debe verificarse en Expo Go antes de fijar la versión; si no está disponible, el equipo deberá optar por NetInfo o por un dev build.
 - La caché persistente puede mostrar datos obsoletos hasta que la revalidación termine; se mitiga con el TTL de 5 minutos y el indicador de modo offline.
 
 ## Validación y revisión
 
-- Elección de `expo-network` confirmada por Víctor Adrián el 2026-10-22. El ADR sigue en **Propuesto** hasta la aprobación explícita del conjunto (AsyncStorage + semántica offline).
-- Se aprueba explícitamente por el equipo antes de instalar cualquiera de las dos dependencias.
-- Al aprobarse: actualizar `apps/mobile/plan/003-api-read-integration.md` y `apps/mobile/tasks/003-api-read-integration.md`, reemplazar `MemoryKeyValueStorage` por AsyncStorage, conectar `isOffline` en las rutas de catálogo/eventos y agregar pruebas de CA-04/CA-05 con red simulada.
-- Responsable funcional propuesto: Víctor Adrián. Revisión móvil: Aksel.
+- Elección de `expo-network` confirmada por el equipo. El ADR se aprobó como conjunto (AsyncStorage + semántica offline) antes de instalar las dependencias.
+- La implementación se rige por `apps/mobile/plan/003-api-read-integration.md` y `apps/mobile/tasks/003-api-read-integration.md`: sustitución de `MemoryKeyValueStorage` por AsyncStorage, conexión de `isOffline` en las rutas de catálogo/eventos y pruebas de CA-04/CA-05 con red simulada.
+- Aprobación: Equipo ARCA-NB. Revisión móvil: Equipo móvil.

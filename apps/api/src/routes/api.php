@@ -38,13 +38,13 @@ use App\Http\Controllers\Api\ClinicalEvaluationController;
 use App\Http\Controllers\Api\StaffSyncController;
 use App\Http\Controllers\Auth\MeController;
 use App\Http\Controllers\Catalog\EnclosureController;
-use App\Http\Controllers\Catalog\PathNodeController;
-use App\Http\Controllers\Catalog\ZooPlaceController;
 use App\Http\Controllers\Catalog\EventController;
 use App\Http\Controllers\Catalog\NewsController as PublicNewsController;
+use App\Http\Controllers\Catalog\PathNodeController;
 use App\Http\Controllers\Catalog\PublicMemoryController;
 use App\Http\Controllers\Catalog\PublishedSpeciesController as PublicPublishedSpeciesController;
 use App\Http\Controllers\Catalog\SpeciesController;
+use App\Http\Controllers\Catalog\ZooPlaceController;
 use App\Http\Controllers\Veterinarian\SpeciesController as VeterinarianSpeciesController;
 use App\Http\Controllers\Veterinarian\SpeciesPublicationRequestController as VeterinarianSpeciesPublicationRequestController;
 use App\Http\Controllers\Visitor\PrivacyNoticeController;
@@ -68,15 +68,21 @@ Route::prefix('staff')->name('staff.')->group(function () {
     Route::middleware(['auth:sanctum', 'staff.user'])->group(function () {
         Route::get('auth/session', [AuthController::class, 'me'])->name('auth.session');
         Route::post('auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
-        Route::get('animals', [AnimalController::class, 'index'])->name('animals.index');
-        Route::post('animals', [AnimalController::class, 'store'])->name('animals.store');
-        Route::get('animals/{animal}', [AnimalController::class, 'show'])->whereNumber('animal')->name('animals.show');
-        Route::post('animals/{animal}/photo', [AnimalController::class, 'updatePhoto'])->whereNumber('animal')->name('animals.photo.update');
-        Route::post('clinical-evaluations', [ClinicalEvaluationController::class, 'store'])->name('clinical-evaluations.store');
 
-        Route::get('sync/bootstrap', [StaffSyncController::class, 'bootstrap'])->name('sync.bootstrap');
-        Route::get('sync/changes', [StaffSyncController::class, 'changes'])->name('sync.changes');
-        Route::post('sync/operations', [StaffSyncController::class, 'operations'])->name('sync.operations');
+        // api-028: lectura con medical-records.view, escritura con medical-records.create y límite por usuario.
+        Route::middleware(['permission:medical-records.view', 'throttle:staff-api'])->group(function () {
+            Route::get('animals', [AnimalController::class, 'index'])->name('animals.index');
+            Route::get('animals/{animal}', [AnimalController::class, 'show'])->whereNumber('animal')->name('animals.show');
+            Route::get('sync/bootstrap', [StaffSyncController::class, 'bootstrap'])->name('sync.bootstrap');
+            Route::get('sync/changes', [StaffSyncController::class, 'changes'])->name('sync.changes');
+        });
+
+        Route::middleware(['permission:medical-records.create', 'throttle:staff-api'])->group(function () {
+            Route::post('animals', [AnimalController::class, 'store'])->name('animals.store');
+            Route::post('animals/{animal}/photo', [AnimalController::class, 'updatePhoto'])->whereNumber('animal')->name('animals.photo.update');
+            Route::post('clinical-evaluations', [ClinicalEvaluationController::class, 'store'])->name('clinical-evaluations.store');
+            Route::post('sync/operations', [StaffSyncController::class, 'operations'])->name('sync.operations');
+        });
     });
 });
 
@@ -109,6 +115,7 @@ Route::prefix('visitor')->name('visitor.')->group(function () {
         ->middleware('throttle:visitor-register')
         ->name('auth.register');
     Route::post('auth/email/verify', [VisitorAuthenticationController::class, 'verify'])
+        ->middleware('throttle:visitor-verify')
         ->name('auth.email.verify');
     Route::post('auth/email/resend', [VisitorAuthenticationController::class, 'resend'])
         ->middleware('throttle:visitor-resend')
@@ -117,11 +124,13 @@ Route::prefix('visitor')->name('visitor.')->group(function () {
         ->middleware('throttle:visitor-login')
         ->name('auth.login');
     Route::post('auth/refresh', [VisitorAuthenticationController::class, 'refresh'])
+        ->middleware('throttle:visitor-refresh')
         ->name('auth.refresh');
     Route::post('auth/password/forgot', [VisitorAuthenticationController::class, 'forgot'])
         ->middleware('throttle:visitor-forgot')
         ->name('auth.password.forgot');
     Route::post('auth/password/reset', [VisitorAuthenticationController::class, 'reset'])
+        ->middleware('throttle:visitor-reset')
         ->name('auth.password.reset');
 
     Route::middleware(['auth:sanctum', 'visitor.token', 'throttle:visitor-session'])->group(function () {

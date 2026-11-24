@@ -10,9 +10,14 @@
  *   php docs/database/backups/reset-and-init.php
  *   o desde apps/api/src:
  *   php ../../docs/database/backups/reset-and-init.php
+ *
+ * Seguridad (api-028): no corre con APP_ENV=production ni contra `arca_zoo`; en otra base exige escribir
+ * su nombre para confirmar.
  */
 
 declare(strict_types=1);
+
+require __DIR__ . '/guard.php';
 
 $rootDir = dirname(__DIR__, 2);
 if (!file_exists($rootDir . '/apps/api/src/.env')) {
@@ -53,6 +58,10 @@ foreach ($envLines as $line) {
         $env[$k] = $v;
     }
 }
+
+// api-028 CA-13: se bloquea producción y se pide confirmar el nombre de la base antes de conectar.
+$env = arcaApplyProcessEnv($env);
+arcaGuardDestructiveTarget($env, 'BORRAR TODAS LAS TABLAS y recrear el esquema inicial');
 
 $host = $env['DB_HOST'] ?? '127.0.0.1';
 $port = (int) ($env['DB_PORT'] ?? 3306);

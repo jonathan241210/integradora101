@@ -1,7 +1,8 @@
 # 0004 · Aplicación móvil con React Native
 
-- Estado: Aprobado
-- Fecha: 2026-10-07
+- Estado: Aceptado
+- Solicitada: 2026-10-07
+- Aprobada: 2026-10-07
 - Spec relacionada: [`apps/mobile/specs/002-mobile-ui-base-visitor-journey.md`](../../apps/mobile/specs/002-mobile-ui-base-visitor-journey.md)
 
 ## Contexto
@@ -38,4 +39,4 @@ La decisión aprueba Expo como framework y entorno de compilación móvil. No au
 - **Dependencia de Infraestructura EAS:** Riesgo moderado por las cuotas gratuitas en EAS; mitigado con la directriz de contar con soporte de compilación local en los equipos del desarrollador.
 
 ## Validación y revisión
-Decisiones técnicas y matriz de hardware mínimo aprobadas formalmente por el equipo (2026-10-07). La spec 002 concreta el alcance UI inicial; cámara, GPS y renderizado 3D real siguen pendientes de specs aprobadas.
+Decisiones técnicas y matriz de hardware mínimo aprobadas formalmente por el equipo. La spec 002 concreta el alcance UI inicial; la cámara, el GPS y el renderizado 3D se rigen por sus propios ADR (0015, 0016, 0022 y 0025) y specs.

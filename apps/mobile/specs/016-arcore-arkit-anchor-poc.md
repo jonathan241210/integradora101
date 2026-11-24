@@ -2,9 +2,10 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `apps/mobile`, `docs/adr/0032-viroreact-arcore-arkit-poc.md`
-- Estado: Aprobada
-- Solicitante / responsable funcional: Victor Adrian
-- Aprobación funcional: Victor Adrian (2026-11-21, conversación)
+- Estado: Implementada
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 

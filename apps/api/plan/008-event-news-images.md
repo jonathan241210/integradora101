@@ -1,11 +1,13 @@
 # Plan técnico · 008 · event-news-images
 
 - Spec: `apps/api/specs/008-event-news-images.md`
-- Estado de spec: Aprobada (2026-11-02). Este plan no se ejecuta hasta su propia aprobación técnica.
-- Estado del plan: Aprobado (2026-11-02, Jonathan, al ordenar implementar el backend).
+- Estado de spec: Implementada.
+- Solicitada: 2026-11-01
+- Aprobada: 2026-11-01
+- Estado del plan: Aprobado.
 - Responsable técnico: por identificar (backend).
 - Consumidores: `dashboard-004`, mediante `@arca/api-client`; `api-006` (campo `image_url` aditivo en el catálogo público, P7).
-- Origen: plan de trabajo aprobado por el usuario el 2026-11-01 (fuera del repositorio). Las decisiones P1 a P8 se aplican tal como las comunicó la sesión principal el mismo día. La eliminación es lógica (`api-007` y DBR-005) y añade el borrado del archivo de imagen (P2). Cambios de ruta y de nombres frente a ese plan están en «Divergencias y correcciones».
+- Origen: plan de trabajo aprobado (fuera del repositorio). Las decisiones P1 a P8 se aplican tal como las comunicó la sesión principal el mismo día. La eliminación es lógica (`api-007` y DBR-005) y añade el borrado del archivo de imagen (P2). Cambios de ruta y de nombres frente a ese plan están en «Divergencias y correcciones».
 - Dependencias de BD: DBR-005 (`deleted_at`) aplicada en el ambiente. DBR-007 (borrado físico) está descartada; no bloquea ninguna tarea.
 
 ## Diseño de solución
@@ -48,7 +50,7 @@ El archivo anterior se borra **después** del commit, no antes: si la base de da
 - **Eliminación lógica con borrado de archivo (P2).** `delete()` con SoftDeletes dentro de la transacción, después de poner `image_path` en `null`. El archivo gestionado se borra después del commit a partir de la ruta capturada antes de la transacción. La fila conserva el resto de sus datos con `deleted_at`. La restauración por base de datos no recupera el archivo (riesgo en la spec).
 - **Modelos y SoftDeletes (RN-10, Constitución V).** `News` y `Event` conservan el trait `SoftDeletes` (`api-007`). No se cambia ningún modelo ni se requiere migración.
 - **Activitylog (CA-12, P6).** Eventos existentes `created`, `updated`, `deleted` del log `admin`, más `image-changed` cuando la imagen se crea, se reemplaza o se quita. Propiedades: como máximo `image_changed` (booleano) y `action` (`set`, `replaced`, `removed`); nunca el binario ni la ruta absoluta.
-- **Metadatos y HDR (P8, revertida el 2026-11-06).** `StripImageMetadataAction` recorta el contenedor antes de guardar, sin decodificar ni recomprimir, con una lista de lo que se conserva por formato. No se añade ninguna librería ni se requiere GD. Si la estructura no se puede procesar, responde 422 (CA-15).
+- **Metadatos y HDR (P8, revertida).** `StripImageMetadataAction` recorta el contenedor antes de guardar, sin decodificar ni recomprimir, con una lista de lo que se conserva por formato. No se añade ninguna librería ni se requiere GD. Si la estructura no se puede procesar, responde 422 (CA-15).
 - **Sin dependencias (RN-11).** Se usan `Storage`, `UploadedFile` y las reglas `image`, `mimes` y `max` de Laravel.
 - **Pruebas sin archivos reales.** Todas las pruebas usan `Storage::fake('public')` y `UploadedFile::fake()`.
 
@@ -105,7 +107,7 @@ No se crean endpoints `…/image` (P1 decidida).
 ### Datos y DBR
 
 - Subida, reemplazo, quitar imagen y eliminación: sin DBR y sin cambio de esquema (RN-10). Columnas usadas: `news.image_path`, `events.image_path` (VARCHAR(255) NULL) y `deleted_at` (DBR-005, aplicada en `arca_pruebas`).
-- Eliminación: borrado lógico con `deleted_at` (`api-007`). DBR-007 (borrado físico) descartada el 2026-11-01; no hay migración ni tarea de BD.
+- Eliminación: borrado lógico con `deleted_at` (`api-007`). DBR-007 (borrado físico) descartada; no hay migración ni tarea de BD.
 - Longitud: `events/` + UUID (36) + extensión cabe holgadamente en 255.
 - Precondición de despliegue: DBR-005 aplicada en el ambiente. Sin ella, `GET /api/v1/events` falla por columna inexistente (`apps/api/docs/administracion.md`).
 
@@ -122,7 +124,7 @@ No se crean endpoints `…/image` (P1 decidida).
 - **Validación de archivo.** Tipo y tamaño en servidor; el contenido se valida con las reglas de Laravel, no solo con la extensión. No se admiten SVG (pueden contener scripts) ni PDF.
 - **Nombres.** Nombre generado, sin nombre original ni rutas enviadas por el cliente; evita path traversal.
 - **Borrado acotado.** Solo se borran rutas gestionadas (CA-08).
-- **Datos públicos.** Las imágenes son públicas por diseño. Los metadatos y el HDR se quitan al guardar (CA-14, RN-13); las imágenes anteriores a la revisión de 2026-11-06 los conservan hasta volver a subirlas.
+- **Datos públicos.** Las imágenes son públicas por diseño. Los metadatos y el HDR se quitan al guardar (CA-14, RN-13); las imágenes anteriores a la revisión de metadatos los conservan hasta volver a subirlas.
 - **Privacidad y auditoría.** Activitylog sin binario ni ruta absoluta (CA-12).
 - **Secretos.** Ninguno nuevo. El disco `public` y `APP_URL` se configuran por `.env`.
 - **Portabilidad (ADR 0013).** No se usa ninguna función de base de datos ni servicio propietario. El almacenamiento es el disco local de Laravel. Un disco externo (p. ej. S3) requeriría ADR y se decidirá aparte.
@@ -155,7 +157,7 @@ Convención: `test_caNN_event_news_images_<descripción>()` en PHPUnit, bajo `ap
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí (propuesto) | Sin dependencias nuevas: `Storage` y validación de Laravel 12 sobre PHP 8.4. Configuración solo por `.env`. Sin servicios propietarios; el almacenamiento externo queda fuera y requeriría ADR. |
-| II. La spec manda | Sí (cumplido) | `api-008` está Aprobada (2026-11-02) y este plan Aprobado; el PR enlaza spec, plan y tasks. |
+| II. La spec manda | Sí (cumplido) | `api-008` está Aprobada y este plan Aprobado; el PR enlaza spec, plan y tasks. |
 | III. Lógica separada de la interfaz | Sí (propuesto) | Validación en Form Requests; archivos, borrados y transacción en Actions; controladores delgados; `dashboard-004` solo envía el archivo y presenta `image_url`. |
 | IV. Un test por criterio | Sí (propuesto) | La tabla de pruebas cubre CA-01 a CA-12; `ContentImageCoverageTest` lo verifica (CA-13). |
 | V. Una sola fuente de verdad para los datos | Sí (propuesto) | La subida no cambia esquema (RN-10). La base sigue siendo la única fuente de la ruta; el archivo es un recurso del disco referenciado por la base. La eliminación es lógica con SoftDeletes (`api-007`, DBR-005), conforme al verificable de la Constitución V. Sin excepción ni ADR. |
@@ -167,7 +169,7 @@ Ninguna excepción se propone. No se requiere ADR de dependencia ni de excepció
 
 - **ADR requerido/aprobado:** ninguno. Un almacenamiento en la nube, un reprocesado de imágenes (P8) o una librería nueva requerirían ADR aprobado antes de implementarse.
 - **Imagen tras el borrado lógico (P2):** al eliminar, el archivo se borra y `image_path` queda en `null`. Una restauración de la fila por base de datos no recupera la imagen. Riesgo aceptado como decisión explícita (spec, «Riesgos»).
-- **Archivo huérfano tras el commit:** si el borrado del archivo falla después del commit, queda un archivo sin referencia. Decisión pendiente: registrar el fallo en el log o añadir un comando de limpieza de huérfanos.
+- **Archivo huérfano tras el commit:** si el borrado del archivo falla después del commit, queda un archivo sin referencia. Se optó por no añadir un comando de limpieza de huérfanos en esta entrega, porque el código actual no lo implementa. Fuera de alcance de esta entrega.
 - **Alternativas y mitigaciones:**
   - Guardar el binario en MySQL: descartado; infla la base de datos y no encaja con el resto del diseño.
   - Almacenamiento externo (S3 u otro): fuera de alcance; requiere ADR. Mitiga el riesgo de disco local en varios servidores.
@@ -184,11 +186,11 @@ Ninguna excepción se propone. No se requiere ADR de dependencia ni de excepció
 5. **Actions adicionales.** Se añadieron `ResolveContentImageUrlAction` (decide si una ruta es gestionada y construye `image_url`; la expresión de ruta gestionada usa el modificador `D` para rechazar saltos de línea finales) y `ResolveContentImageChangeAction` (decide la ruta final y la acción `set`, `replaced` o `removed` para el log). No estaban en el plan aprobado; evitan duplicar la regla de ruta gestionada (CA-08) y la lógica de cambio en las cuatro Actions de contenido.
 6. **Mensajes de validación.** Los mensajes fijos de `mimes` y `max` de archivo («JPG, PNG o WebP», «5 MB») viven en `messages()` de `SaveNewsRequest` y `SaveEventRequest`, no en `lang/es/validation.php` global.
 
-## Divergencia registrada con api-013 (2026-11-12)
+## Divergencia registrada con api-013
 
-Registrada según `docs/05-flujo-sdd.md` (paso 7). `apps/api/specs/013-object-storage-images.md` está Aprobada (2026-11-12) y cambia el disco de medios de noticias y eventos. Esta sección no cambia el estado de este plan ni de la spec, y no marca ninguna casilla de `apps/api/tasks/008-event-news-images.md`. Las tareas nuevas (T-29 a T-33) están en ese archivo, sin marcar.
+Registrada según `docs/05-flujo-sdd.md` (paso 7). `apps/api/specs/013-object-storage-images.md` está Aprobada y cambia el disco de medios de noticias y eventos. Esta sección no cambia el estado de este plan ni de la spec, y no marca ninguna casilla de `apps/api/tasks/008-event-news-images.md`. Las tareas nuevas (T-29 a T-33) están en ese archivo, sin marcar.
 
-| # | Este plan (aprobado 2026-11-02) | api-013 (Aprobada 2026-11-12) | Resolución |
+| # | Este plan (aprobado) | api-013 (Aprobada) | Resolución |
 |---|---|---|---|
 | D8-1 | Las Actions `StoreContentImageAction`, `DeleteContentImageAction` y `ResolveContentImageUrlAction` usan `Storage::disk('public')` por nombre. | CA-02 y D-01: ninguna Action nombra el disco; el nombre sale de configuración (`PUBLIC_MEDIA_DISK`). | T-29 (api-008), con `ResolveMediaDiskAction` de api-013 (T-05). Valor por defecto sin cambio. |
 | D8-2 | URL de las imágenes: `APP_URL` + `/storage` (RN-03 y P5). | RN-04 y CA-17: en la carpeta compartida, `MEDIA_PUBLIC_URL` o `APP_URL` + `/media`; `public/media` por `storage:link`. | Sin cambio en la URL por defecto. El cambio de P5 requiere aprobación formal del equipo (T-33). Pregunta 1 de api-013. |
@@ -203,11 +205,11 @@ Sin cambio en las decisiones de este plan: el borrado sigue después del commit 
 
 ## Preguntas pendientes
 
-Sobre la subida: ninguna. P1 a P8 quedan decididas en la spec («Decisiones tomadas (2026-11-01)»).
+Sobre la subida: ninguna. P1 a P8 quedan decididas en la spec («Decisiones tomadas»).
 
-Sobre la eliminación: ninguna pregunta abierta. DBR-007 queda descartada y el borrado sigue siendo lógico. Pendiente de decisión no bloqueante: limpieza de archivos huérfanos si falla el borrado del archivo tras el commit (spec, «Riesgos»).
+Sobre la eliminación: ninguna pregunta abierta. DBR-007 queda descartada y el borrado sigue siendo lógico. Decisión no bloqueante, fuera de alcance de esta entrega: limpieza de archivos huérfanos si falla el borrado del archivo tras el commit (spec, «Riesgos»).
 
-La spec y este plan están aprobados (2026-11-02).
+La spec y este plan están aprobados.
 
 ## Orden y aprobación
 
@@ -230,8 +232,8 @@ La spec y este plan están aprobados (2026-11-02).
 
 | Rol | Aprueba | Estado |
 |---|---|---|
-| Responsable funcional | Spec (decisiones P1 a P8 registradas) | Aprobado: Jonathan, 2026-11-02 (al ordenar implementar) |
-| Equipo | Solución técnica y Constitution Check de este plan | Aprobado: Jonathan, 2026-11-02 (al ordenar implementar) |
+| Responsable funcional | Spec (decisiones P1 a P8 registradas) | Aprobada |
+| Equipo | Solución técnica y Constitution Check de este plan | Aprobado (al ordenar implementar) |
 | Responsable de BD | Subida y eliminación: no requerido (sin DBR). Confirmar que DBR-005 está aplicada en el ambiente de despliegue | Pendiente |
 
 Evidencias: `apps/api/specs/007-administration-management.md`, `apps/api/plan/007-administration-management.md`, `apps/api/docs/administracion.md`, `docs/database/requests/DBR-005-news-events-soft-deletes.md`, `docs/database/requests/DBR-007-news-events-hard-delete.md` (descartada, solo historial).

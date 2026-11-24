@@ -2,7 +2,7 @@
 
 ## 1. Control
 
-- **Estado:** Vigente al 2026-11-18. Cubre las specs **002** a **006**, las memorias de la **010**, el filtro de catálogo del visitante, los favoritos de la **014** y el cliente de avisos de la **013** tal como están en el código. No cierra el mapa (**007**), el recorrido 3D (**009**) ni la distribución (**008**). La barra con la app cerrada sigue siendo evidencia manual del APK.
+- **Estado:** Vigente con el código actual. Cubre las specs **002** a **006**, las memorias de la **010**, el filtro de catálogo del visitante, los favoritos de la **014** y el cliente de avisos de la **013** tal como están en el código. No cierra el mapa (**007**), el recorrido 3D (**009**) ni la distribución (**008**). La barra con la app cerrada sigue siendo evidencia manual del APK.
 - **Capacidades descritas:** rutas, catálogo filtrado, cuenta, progreso, salón de logros, misiones, QR con cámara, memorias y favoritos. El mapa y el 3D quedan fuera de este cierre.
 - **Specs de referencia:** [002](../specs/002-mobile-ui-base-visitor-journey.md), [003](../specs/003-api-read-integration.md), [004](../specs/004-visitor-account.md), [005](../specs/005-visitor-progress.md), [006](../specs/006-qr-scan.md), [010](../specs/010-visitor-memory-requests.md), [013](../specs/013-visitor-push-notifications.md) y [014](../specs/014-visitor-favorite-species.md).
 - **Decisiones tecnológicas:** [ADR 0004 · Mobile React Native](../../../docs/adr/0004-mobile-react-native.md), [ADR 0011 · Visitor identity and mobile session](../../../docs/adr/0011-visitor-identity-and-mobile-session.md) y [ADR 0014 · Mobile offline cache and connectivity](../../../docs/adr/0014-mobile-offline-cache-and-connectivity.md).
@@ -138,7 +138,7 @@ sequenceDiagram
 | Pendiente | Tratamiento |
 |---|---|
 | Icono de launcher y aviso | El PNG a color y la silueta blanca ya están en `src/assets/icon/`. La publicación en tienda sigue en la spec 008, en borrador |
-| Favoritos del visitante | El corazón y «Animales favoritos» usan la cuenta (`mobile-014`). Colección no filtra favoritos. Aksel confirmó el 2026-11-20 la verificación y el pull |
+| Favoritos del visitante | El corazón y «Animales favoritos» usan la cuenta (`mobile-014`). Colección no filtra favoritos. La verificación y el pull quedaron confirmados |
 | Mapa y recorrido 3D | Siguen abiertos (`mobile-007`, `mobile-009`). No se documentan aquí como terminados |
 | Retirar referencia visual temporal | `arca-ui-reference` no es una dependencia y se mantiene fuera de Git |
 | Confundir enmienda 002 con spec 004 | La cuenta de 004 vive en `src/session`. Sin `EXPO_PUBLIC_API_URL` sigue el mock. Con esa variable, el teléfono usa la API de pruebas y `expo-secure-store`. |

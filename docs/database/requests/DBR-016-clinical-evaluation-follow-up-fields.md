@@ -1,13 +1,12 @@
 # DBR-016 · clinical-evaluation-follow-up-fields
 
-- Estado: Lista para backend (aplicada en `arca_pruebas`, 2026-11-14; evidencia post-migración detallada pendiente de adjuntar)
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-14
 - Feature/spec origen: Seguimiento/revisiones clínicas con historial (spec PWA por definir, relacionada con 002/006/007)
-- Solicitante: Victor Adrian
-- Responsable de BD: Victor Adrian
-- Responsable backend: Victor Adrian
-- Fecha: 2026-11-13
-- Actualización/aprobación: 2026-11-14
-- Aprobación registrada: Victor Adrian (BD y backend), 2026-11-14
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
+- Aprobación registrada: Responsable de BD y backend
 
 ## Problema y justificación
 
@@ -89,10 +88,10 @@ ALTER TABLE clinical_evaluations
 
 ## Pruebas y evidencia
 
-- Aplicación confirmada por Victor Adrian (BD) en `arca_pruebas`, 2026-11-14. **Pendiente adjuntar:** `SHOW CREATE TABLE clinical_evaluations;` (confirmación de `follow_up_status`, `next_review_date`, `is_follow_up`).
+- Aplicación confirmada por el responsable de BD en `arca_pruebas`. **Pendiente adjuntar:** `SHOW CREATE TABLE clinical_evaluations;` (confirmación de `follow_up_status`, `next_review_date`, `is_follow_up`).
 - Pruebas integradas backend/PWA: pendientes (implementación de seguimiento/revisiones).
 
-## Decisiones registradas (2026-11-14)
+## Decisiones registradas
 
 1. **Catálogo:** `follow_up_status` valores iniciales `stable`, `monitoring`, `follow_up` (extensible); motivo de seguimiento como rutina/control de tratamiento/observación (alineado a flujo clínico).
 2. **`is_follow_up`:** se incluye columna booleana (`TINYINT(1) NOT NULL DEFAULT 0`).
@@ -103,20 +102,20 @@ ALTER TABLE clinical_evaluations
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Victor Adrian | 2026-11-14 | Aprobada |
-| Responsable backend | Victor Adrian | 2026-11-14 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
 
-> Aprobada y aplicada en `arca_pruebas` (2026-11-14, confirmación BD). Pasa a **“Lista para backend”** para implementación consumidora; evidencia post-migración detallada (`SHOW CREATE TABLE`) pendiente de adjuntar. Ningún agente crea ni aplica migraciones/SQL.
+> Aprobada y aplicada en `arca_pruebas` (confirmación BD). Pasa a **“Lista para backend”** para implementación consumidora; evidencia post-migración detallada (`SHOW CREATE TABLE`) pendiente de adjuntar. Ningún agente crea ni aplica migraciones/SQL.
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | aplicada (evidencia post-migración detallada pendiente) | 2026-11-14 | Aplicación confirmada por Victor Adrian (BD). Pendiente adjuntar `SHOW CREATE TABLE clinical_evaluations`. |
-| staging | pendiente | | |
-| producción (`arca_zoo`) | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas (evidencia post-migración detallada pendiente) | Aplicación confirmada por el responsable de BD. Pendiente adjuntar `SHOW CREATE TABLE clinical_evaluations`. |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
 
 ## Migración Laravel de referencia (DBR-016)
 

@@ -1,5 +1,7 @@
 # Tareas · 014 · news-pagination-and-feedback
 
+- Solicitada: 2026-11-19
+- Aprobada: 2026-11-19
 - Spec y plan: `014-news-pagination-and-feedback.md`.
 - Checklist derivado del plan aprobado para implementar.
 

@@ -1,13 +1,13 @@
 # DBR-018 · visitor-favorite-species
 
-- Estado: Aprobada y Lista para backend (BD Victor Adrian y backend Aksel, 2026-11-14). Migración probada en MySQL 8.0 aislado.
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
 - Feature/spec origen: `apps/api/specs/018-visitor-favorite-species.md` (Aprobada). Consumidor: `apps/mobile/specs/014-visitor-favorite-species.md` (Aprobada).
-- Solicitante: Aksel
-- Responsable de BD: Victor Adrian
-- Responsable backend: Aksel
-- Fecha: 2026-11-14
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Equipo móvil (backend de la feature)
 
-Aprobación de BD (Victor Adrian) y de backend (Aksel), 2026-11-14. La migración ya estaba probada en MySQL 8.0 aislado. Con las dos firmas queda Aprobada y Lista para backend. La evidencia sigue siendo ese MySQL aislado: esta firma no aplica la migración en `arca_pruebas` ni en `arca_zoo`.
+Aprobación de BD y de backend. La migración ya estaba probada en MySQL 8.0 aislado. Con las dos firmas queda Aprobada. La evidencia sigue siendo ese MySQL aislado: esta firma no aplica la migración en `arca_pruebas` ni en `arca_zoo`.
 
 ## Problema y justificación
 
@@ -92,21 +92,21 @@ No aplica. No se crean funciones, procedimientos, vistas ni triggers. La regla d
 
 ## Pruebas y evidencia
 
-- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: completadas (2026-11-14, Victor Adrian), sin errores.
-- Resultado y evidencia (sin secretos ni datos sensibles): migraci�n Laravel de DBR-018 creada y ejecutada en entorno MySQL 8.0 aislado sin errores (2026-11-14). Detalle de comandos/salida no adjuntado en este documento.
+- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: completadas, sin errores.
+- Resultado y evidencia (sin secretos ni datos sensibles): migración Laravel de DBR-018 creada y ejecutada en entorno MySQL 8.0 aislado sin errores. Detalle de comandos/salida no adjuntado en este documento.
 - Pruebas integradas del backend: pendiente. Empiezan cuando esta DBR esté en `Lista para backend`.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Victor Adrian | 2026-11-14 | Aprobado |
-| Responsable backend | Aksel | 2026-11-14 | Aprobado |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobado | Registro de esta DBR |
+| Backend | Aprobado | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas | aplicada/probada | 2026-11-14 | Migraci�n ejecutada en base MySQL 8.0 aislada sin errores (Victor Adrian) |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Pendiente de aplicar (migración probada en MySQL 8.0 aislada sin errores) | Pendiente de confirmar en `arca_pruebas` (`migrate:status`) |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

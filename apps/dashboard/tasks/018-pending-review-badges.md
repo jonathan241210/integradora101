@@ -1,11 +1,13 @@
 # Tareas · 018 · pending-review-badges
 
-- Spec: `apps/dashboard/specs/018-pending-review-badges.md` (Aprobada, 2026-11-20)
-- Plan: `apps/dashboard/plan/018-pending-review-badges.md` (Aprobado — aprobación técnica: Jonathan, 2026-11-20)
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Spec: `apps/dashboard/specs/018-pending-review-badges.md`
+- Plan: `apps/dashboard/plan/018-pending-review-badges.md` (Aprobado)
 - Contrato: `apps/api/plan/024-pending-review-counts.md` y `apps/api/tasks/024-pending-review-counts.md` (`GET /api/v1/admin/pending-counts`).
 - DBR: ninguna.
 
-Plan aprobado 2026-11-20. Implementación 2026-11-20: T-01 a T-10 hechas con Vitest completo (739 pruebas) y `tsc` verdes. T-11 a T-13 siguen abiertas (verificación final, PR e integración real con `api-024`).
+Plan aprobado. Implementación: T-01 a T-10 hechas con Vitest completo (739 pruebas) y `tsc` verdes. T-11 a T-13 siguen abiertas (verificación final, PR e integración real con `api-024`).
 
 ## Cliente y lógica de presentación
 
@@ -14,11 +16,11 @@ Plan aprobado 2026-11-20. Implementación 2026-11-20: T-01 a T-10 hechas con Vit
 
 ## Hook y estado
 
-- [x] **T-03** (CA-13, CA-16): crear `apps/dashboard/src/viewmodels/usePendingReviewCounts.ts`. Usa `adminApi` de `services/arca-api.ts`. Intervalo mínimo de 15 s entre consultas que tienen éxito (RN-07); sin `setInterval`; ignora respuestas de un perfil anterior; errores sin mensaje ni reintento en bucle. Decisión 2026-11-20 (pregunta 4): un fallo no cuenta para el intervalo.
+- [x] **T-03** (CA-13, CA-16): crear `apps/dashboard/src/viewmodels/usePendingReviewCounts.ts`. Usa `adminApi` de `services/arca-api.ts`. Intervalo mínimo de 15 s entre consultas que tienen éxito (RN-07); sin `setInterval`; ignora respuestas de un perfil anterior; errores sin mensaje ni reintento en bucle. Decisión (pregunta 4): un fallo no cuenta para el intervalo.
 
 ## Avisos
 
-- [x] **T-04** (CA-15): `viewmodels/dashboard-notifications.ts` añade el tono `"info"` y pasa a cola FIFO (decisión 2026-11-20, pregunta 1; RN-14). `components/DashboardNotifications.tsx` añade el tono `info` (icono y etiqueta «Aviso», decisión 2026-11-20, pregunta 2; RN-12) y exporta `usePublishNotice()`. `styles.css`: `.dashboard-notification[data-tone="info"]` con tokens semánticos; modo claro.
+- [x] **T-04** (CA-15): `viewmodels/dashboard-notifications.ts` añade el tono `"info"` y pasa a cola FIFO. `components/DashboardNotifications.tsx` añade el tono `info` y exporta `usePublishNotice`. `styles.css`: `.dashboard-notification[data-tone="info"]` con tokens semánticos; modo claro.
 - [x] **T-05** (CA-01, CA-02, CA-03, CA-04, CA-12): crear `apps/dashboard/src/components/PendingReviewNotices.tsx` (hijo de `DashboardNotifications`) que publica un aviso por cada tipo con pendientes, una vez por inicio de sesión, con `role="status"` y solo los textos de CA-01 y CA-03. Sin datos de personas ni de especies.
 
 ## Menú y cambio de pantalla
@@ -35,7 +37,7 @@ Plan aprobado 2026-11-20. Implementación 2026-11-20: T-01 a T-10 hechas con Vit
 
 ## Entrega
 
-- [ ] **T-12** (entrega): PR enlaza `apps/dashboard/specs/018-pending-review-badges.md`, `apps/dashboard/plan/018-pending-review-badges.md`, `apps/dashboard/tasks/018-pending-review-badges.md` y las tareas de `api-024`. El commit cita `dashboard-018`. Los commits los hace Jonathan con el comando que indique él. El cambio de estado de la spec solo con aprobación humana y enlace al PR.
+- [ ] **T-12** (entrega): PR enlaza `apps/dashboard/specs/018-pending-review-badges.md`, `apps/dashboard/plan/018-pending-review-badges.md`, `apps/dashboard/tasks/018-pending-review-badges.md` y las tareas de `api-024`. El commit cita `dashboard-018`. Los commits los hace el equipo con el comando acordado. El cambio de estado de la spec solo con aprobación humana y enlace al PR.
 - [ ] **T-13** (integración): ejecutar con la ruta `GET /api/v1/admin/pending-counts` real (`api-024` mergeada) en `arca_pruebas`, con `zoo-admin` y, cuando `api-023` esté mergeada, con «Comunicación». Registrar el resultado. Sin esta tarea el PR no se mergea.
 
 Cobertura: CA-01 a CA-16 tienen al menos una tarea de código y un test (T-02 a T-07 con tests en `pending-review-badges.test.tsx`; CA-13 en T-01 y T-09; CA-14 en T-09). Sin tareas de BD: no hay DBR.

@@ -1,9 +1,10 @@
 # 0031 · Búsqueda global del portal con HTML y JavaScript estático
 
-- Estado: Aceptado (Jonathan, 2026-11-18; aprobación explícita en esta conversación). Autoriza la excepción limitada a `web-012`, sujeta a spec, plan y tasks aprobados.
-- Fecha: 2026-11-18
-- Spec relacionada: `apps/web/specs/012-portal-search.md` (Aprobada 2026-11-18). Plan: `apps/web/plan/012-portal-search.md` (aprobado por Jonathan el 2026-11-18, condicionado a este ADR).
-- Aprobado por: Jonathan, 2026-11-18.
+- Estado: Aceptado. Autoriza la excepción limitada a `web-012`, sujeta a spec, plan y tasks aprobados.
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Spec relacionada: `apps/web/specs/012-portal-search.md` (Aprobada). Plan: `apps/web/plan/012-portal-search.md` (aprobado, condicionado a este ADR).
+- Aprobado por: Responsable de backend.
 
 ## Contexto
 
@@ -51,9 +52,9 @@ La decisión no cambia la Constitución ni `apps/web/AGENTS.md`; registra una ex
 
 ## Validación y revisión
 
-- Aprobación de la propuesta: Jonathan aceptó el ADR el 2026-11-18.
-- Responsable funcional: Jonathan aprobó la spec `web-012` el 2026-11-18.
-- Aprobador técnico: Jonathan, 2026-11-18.
+- Aprobación de la propuesta: aceptada por el responsable de backend.
+- Responsable funcional: aprobó la spec `web-012`.
+- Aprobador técnico: Responsable de backend.
 - Límites: autoriza el código de la función descrita por `web-012` una vez aprobados sus tasks; no autoriza dependencias, API nueva ni cambios a otras aplicaciones.
 - Constitución: no cambia. Las excepciones propuestas son solo para las Constituciones III y IV en el alcance de `web-012`.
 - Enlaces: `apps/web/specs/012-portal-search.md`, `apps/web/plan/012-portal-search.md`, ADR 0024, ADR 0027 y ADR 0028.

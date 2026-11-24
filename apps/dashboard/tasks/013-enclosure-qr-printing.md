@@ -1,12 +1,14 @@
 # Tareas · 013 · enclosure-qr-printing
 
-- Spec: `apps/dashboard/specs/013-enclosure-qr-printing.md` (Aprobada, 2026-11-18)
+- Spec: `apps/dashboard/specs/013-enclosure-qr-printing.md`
 - Plan: `apps/dashboard/plan/013-enclosure-qr-printing.md` (Borrador)
 - Dependencias: `apps/api/tasks/020-enclosure-qr-management.md` T-04 a T-07 y T-15 (endpoints y cliente). Ninguna tarea de esta lista empieza antes.
-- Estado de estas tareas: **Aprobadas** (Jonathan, 2026-11-18). Ninguna tarea se marca hecha sin evidencia de la sesión principal.
+- Estado de estas tareas: **Aprobadas**. Ninguna tarea se marca hecha sin evidencia de la sesión principal.
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
 
 ## Implementación
-Evidencia de implementación (2026-11-18, agente frontend): `npm test` en `apps/dashboard` = 61 archivos, 586 tests en verde; `npm run types` sin errores; `npm run build` correcto. Tests en `src/tests/enclosure-qr-printing.test.tsx` (CA-01 a CA-23) y registro en `src/tests/administration-coverage.test.tsx`. Pendientes: evidencia manual de impresión en Chrome y Edge (T-06, T-16) y lint (el dashboard no define script de lint).
+Evidencia de implementación: `npm test` en `apps/dashboard` = 61 archivos, 586 tests en verde; `npm run types` sin errores; `npm run build` correcto. Tests en `src/tests/enclosure-qr-printing.test.tsx` (CA-01 a CA-23) y registro en `src/tests/administration-coverage.test.tsx`. Pendientes: evidencia manual de impresión en Chrome y Edge (T-06, T-16) y lint (el dashboard no define script de lint).
 
 
 - [x] **T-01** (CA-01, CA-02): hook `src/viewmodels/useEnclosureQr.ts` (carga con `api.admin.enclosures.qr(id)`, estados) y botones «Ver QR» o «Generar QR» con insignia «Sin QR» en `src/views/EnclosuresView.tsx`, según `has_active_qr`. Nombres accesibles con el recinto. Solo con `enclosures.manage`. Tests `describe("CA-01 enclosure-qr-printing")` y `describe("CA-02 enclosure-qr-printing")`.
@@ -29,7 +31,7 @@ Evidencia de implementación (2026-11-18, agente frontend): `npm test` en `apps/
 ## Calidad y entrega
 
 - [x] **T-14**: documentación local: `apps/dashboard/docs/manual-demo.md` (flujo de QR, impresión) y `apps/dashboard/docs/arquitectura.md` (diálogo y hook), si cambia la referencia.
-- [ ] **T-15**: verificaciones del dashboard: lint, `tsc`, Vitest completo y la suite de cobertura. Registrar resultados con salida real aportada por la sesión principal. Sin evidencia no se marca como hecho. El PR enlaza `apps/dashboard/specs/013-enclosure-qr-printing.md`, su plan y sus tasks, y `apps/api/specs/020-enclosure-qr-management.md`. El commit cita `dashboard-013`. Los commits los hace Jonathan con el comando que indique él.
+- [ ] **T-15**: verificaciones del dashboard: lint, `tsc`, Vitest completo y la suite de cobertura. Registrar resultados con salida real aportada por la sesión principal. Sin evidencia no se marca como hecho. El PR enlaza `apps/dashboard/specs/013-enclosure-qr-printing.md`, su plan y sus tasks, y `apps/api/specs/020-enclosure-qr-management.md`. El commit cita `dashboard-013`. Los commits los hace el equipo con el comando acordado.
 - [ ] **T-16**: estado de la spec a «En progreso» al iniciar y «Implementada» solo con enlace a PR, resultados de Vitest y evidencia de impresión manual.
 
 Cada tarea de código nombra sus CA-xx y cada CA-xx tiene al menos un test. El panel no añade dependencias npm ni llama a `fetch` o `axios` desde componentes.

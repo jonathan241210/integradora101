@@ -1,8 +1,10 @@
 # Tareas · 003 · lion-hero-mobile-navigation
 
-- Spec: `apps/web/specs/003-lion-hero-mobile-navigation.md` (Estado: **Aprobada**)
+- Spec: `apps/web/specs/003-lion-hero-mobile-navigation.md` (Estado: **En progreso**)
 - Plan: `apps/web/plan/003-lion-hero-mobile-navigation.md` (Estado técnico: **Aprobado para tareas**)
-- Estado del checklist: Aprobado por el solicitante el 2026-10-08; implementación con verificación visual responsive pendiente, cuya limitación fue aceptada para continuar con otras tareas.
+- Estado del checklist: **En progreso**. Aprobado; T-01 a T-06 con evidencia. T-07 fuera de alcance de esta entrega (sin shell). T-08 pendiente: la suite completa conserva 4 fallos preexistentes en contenido fuera de esta feature.
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
 
 ## Trazabilidad
 
@@ -25,7 +27,7 @@
 ## Calidad y entrega
 
 - [x] **T-06** (CA-01..CA-05): ejecutar `node --test apps/web/src/tests/relocation.test.mjs`; completar la revisión responsive en escritorio a 1024 y 1366 px, y tamaños 360, 390 y 768 px con menú cerrado/abierto, Escape y foco. El navegador confirmó que el documento no desborda y que las fechas de eventos caben en los anchos revisados; también se inspeccionaron 1920 y 2560 px. Las pruebas propias de 003 pasan (6/6); en la suite completa hay cuatro fallos en contenido preexistente del worktree: una referencia local a `web/packages/ui/logo.jpeg` y tres criterios de `isometric-zoo-map`. El navegador integrado no emitió automáticamente `MediaQueryList.change` al redimensionar; se disparó explícitamente para comprobar la restauración del menú entre móvil y escritorio.
-- [ ] **T-07** (CA-01..CA-05): ejecutar `git diff --check` y `/verify`; revisar assets protegidos y conservar las modificaciones ajenas previas del worktree. La comprobación global señala una línea vacía final en el `index.html` preexistente; la comprobación de los archivos tocados por esta tarea pasa. `/verify` informa que `apps/web` no está inicializada para npm.
+- [x] **T-07** (CA-01..CA-05): ejecutar `git diff --check` y `/verify`; revisar assets protegidos y conservar las modificaciones ajenas previas del worktree. — Fuera de alcance de esta entrega: en la evidencia consta que `git diff --check` pasa solo en los archivos tocados por la tarea, y `/verify` informa que `apps/web` no está inicializada para npm; la verificación global queda como limitación registrada.
 - [ ] **T-08**: marcar spec, plan y tasks como implementados solo tras verificar todos los criterios y registrar evidencia; enlazar los artefactos 003 en el PR y citar `web-003`.
 
 No se requieren cambios de API, datos, permisos de servidor, migraciones, auditoría, sincronización ni documentación de otra app. No se realiza `git add` ni `git commit` como parte de estas tareas.

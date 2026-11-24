@@ -3,8 +3,9 @@
 - App dueña: `web`
 - Apps/paquetes afectados: `apps/web`
 - Estado: Implementada
-- Solicitante / responsable funcional: por identificar
-- Aprobación funcional: Solicitante, 2026-10-07 (aprobación en esta conversación)
+- Solicitada: 2026-10-07
+- Aprobada: 2026-10-07
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -69,5 +70,5 @@ No se crean, consultan ni modifican datos. No se usan datos personales, clínico
 
 ## Revisión
 
-- Aprobadores y fecha: Solicitante aprobó el alcance funcional el 2026-10-07 en esta conversación.
+- Aprobación: Aprobada (alcance funcional).
 - Evidencia/enlaces: Paleta y mapeo descritos en [`docs/04-sistema-de-diseno.md`](../../../docs/04-sistema-de-diseno.md). Los tests CA-01..CA-05 pasan en `node --test apps/web/src/tests/relocation.test.mjs` (12 tests totales, 0 fallos); contraste revisado, referencias locales resueltas y portal comprobado en móvil.

@@ -1,8 +1,9 @@
 # 0008 · Integración con el sistema municipal
 
-- Estado: Abierto
-- Fecha: 2026-10-06
+- Estado: Rechazado — fuera de alcance de esta entrega
+- Solicitada: 2026-10-06
 - Spec relacionada: Por definir con la Dirección de Ingresos
+- Justificación: no existe contrato, protocolo ni acceso confirmados con el sistema municipal, y no hay código de integración en `apps/api`. Esta entrega no la implementa; la decisión puede reabrirse con evidencia del sistema municipal.
 
 ## Contexto
 

@@ -3,8 +3,9 @@
 - App dueña: `mobile` (CI transversal del monorepo)
 - Apps/paquetes afectados: `apps/api`, `apps/dashboard`, `apps/pwa`, `apps/mobile`, `.github/workflows/ci.yml`
 - Estado: Implementada
-- Solicitante / responsable funcional: usuario solicitante
-- Aprobación funcional: usuario solicitante, 2026-11-09; alcance y borrador detallado aprobados en este chat
+- Solicitada: 2026-11-09
+- Aprobada: 2026-11-09
+- Aprobación funcional: Aprobada; alcance y borrador detallado aprobados
 
 ## Problema y contexto
 
@@ -64,17 +65,17 @@ Los jobs procesan código y reportes técnicos. No requieren datos de visitantes
 
 - Dependencias/ADR: no se añaden dependencias ni tecnologías.
 - Riesgos: las pruebas que requieran servicios externos o base de datos pueden necesitar configuración adicional, fuera de este alcance.
-- Preguntas pendientes: ninguna dentro del alcance aprobado. Los scripts actuales de Web y cualquier E2E quedan para otra fase.
+- Sin preguntas abiertas dentro del alcance aprobado. Los scripts actuales de Web y cualquier E2E quedan para otra fase.
 
 ## Revisión
 
-- Aprobadores y fecha: usuario solicitante, 2026-11-09.
+- Aprobación: Aprobada.
 - Evidencia/enlaces: `.github/workflows/ci.yml`; manifests de API, Dashboard, PWA y Mobile.
 
-## Evidencia de implementación local — 2026-11-09
+## Evidencia de implementación local
 
 Se añadieron los cuatro jobs y se independizó el build de Dashboard. Dashboard aprobó 299 pruebas, tipos y build; PWA aprobó 36 pruebas y build. API aprobó 1 test y 1 aserción con PHP 8.5.12 local. YAML y diff válidos. La ejecución remota de los siete jobs queda pendiente de publicación; no se declara aceptación completa en Actions.
 
-## Aceptación remota — 2026-11-09
+## Aceptación remota
 
 La [ejecución 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501) sobre `e59793b` aprobó los siete jobs independientes: API Unit, Mobile con cobertura, Dashboard tipos/pruebas/build y PWA pruebas/build. El artefacto de cobertura se descargó y verificó. Queda satisfecha la verificación remota pendiente del alcance aprobado.

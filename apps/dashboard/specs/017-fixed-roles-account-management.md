@@ -2,9 +2,10 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard`, `packages/api-client` (campos nuevos de `users`, `users/options` y avisos de consola)
-- Estado: Aprobada
-- Solicitante / responsable funcional: Jonathan
-- Aprobación funcional: Jonathan, 2026-11-20
+- Estado: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Aprobación funcional: Aprobada
 - Cambio 3 de 4. Depende de `api-023` (roles fijos, cuentas admin solo por consola, avisos de consola) y de `api-007` (gestión de usuarios, revisada por `api-023`). Cita `api-021` solo para la confirmación de contraseña, que esta spec no redefine (usa el diálogo de `dashboard-015`). Relacionada con `dashboard-003` (secciones de administración), `dashboard-002` (login) y `dashboard-004` (formularios en línea).
 
 ## Problema y contexto
@@ -33,7 +34,7 @@ La interfaz no toma decisiones: lo que muestra viene de la API (RN-02 de `dashbo
 - Cambio de contraseña propio y recuperación por correo. (El cambio de contraseña propia con contraseña actual es de `api-021`, CA-33; su pantalla no se diseña aquí.)
 - Comandos de consola y su salida (solo se muestra el resultado en el aviso).
 - Pantalla de inicio de Comunicación: decidida en `api-023` (Noticias); esta spec solo la consume.
-- Rediseño visual de la sección (ya cubierto por `dashboard-003`, revisión visual de 2026-11-12).
+- Rediseño visual de la sección (ya cubierto por `dashboard-003`, revisión visual).
 - Tiempo real, notificaciones push o correo.
 - Cambios en `apps/web`, `apps/pwa` y `apps/mobile`.
 - Autorización en el cliente: la interfaz oculta acciones; la API decide (RN-01 de `dashboard-003`).
@@ -43,7 +44,7 @@ La interfaz no toma decisiones: lo que muestra viene de la API (RN-02 de `dashbo
 | Actor/rol | Necesidad | Permisos requeridos |
 |---|---|---|
 | `admin` (Presidencia e Informática) | Gestionar cuentas no admin; ver cuentas admin en solo lectura; leer avisos de consola | Sesión válida + 2FA confirmado; `users.manage` |
-| `zoo-admin` | Sin sección Usuarios (decisión de 2026-11-05, `dashboard-003`) | Sin cambios |
+| `zoo-admin` | Sin sección Usuarios (decisión, `dashboard-003`) | Sin cambios |
 | `executive` («Consulta directiva») | Panel y Reporte en solo lectura; sin Usuarios | `dashboard.view`, `reports.view`, `public-content.view` |
 | `communications` («Comunicación») | Noticias, Eventos, Momentos y TulanPedia; sin Usuarios | `news.manage`, `events.manage`, `memories.review`, `species.review`, `public-content.view` |
 | `cashier`, `veterinarian` | Sin cambios | Sin cambios |
@@ -61,24 +62,24 @@ La interfaz no toma decisiones: lo que muestra viene de la API (RN-02 de `dashbo
 ### Alta y edición de cuentas
 
 - **CA-01:** Dado el formulario de alta, cuando se abre el selector de rol, entonces las opciones son exactamente las que devuelve `users/options` (`api-023` CA-10); no aparece «Administrador de Presidencia» ni el valor `admin` en el DOM, en el estado del ViewModel ni en las opciones.
-- **CA-02:** Dado un rol elegido en el alta o en la edición, cuando se muestra, entonces aparece en solo lectura **las secciones que abre** el rol (decisión 2026-11-20). Las secciones se derivan de la lista de permisos que entrega la API (`users/options`) con el mapa permiso → sección de `dashboard-003`, sin deducir nada del nombre del rol.
+- **CA-02:** Dado un rol elegido en el alta o en la edición, cuando se muestra, entonces aparece en solo lectura **las secciones que abre** el rol. Las secciones se derivan de la lista de permisos que entrega la API (`users/options`) con el mapa permiso → sección de `dashboard-003`, sin deducir nada del nombre del rol.
 - **CA-03:** Dado un rol con `two_factor_required: true` elegido en el alta, cuando se muestra el formulario, entonces aparece el texto «Esta cuenta deberá configurar su segundo factor (2FA) al iniciar sesión por primera vez.» sin bloquear el envío.
-- **CA-04:** Dada una cuenta con rol `admin` en la tabla, cuando se muestra, entonces aparece con la etiqueta «Gestionada desde la consola del servidor», sin ninguna acción (ni editar, activar o desactivar, eliminar, restablecer contraseña o 2FA), y su detalle es de solo lectura (`managed_by_console: true`). Decisión 2026-11-20: las cuentas admin aparecen sin acciones, ni deshabilitadas. También aparecen en los resultados de la búsqueda global, en solo lectura y sin acciones (decisión Q5 de `api-023`, 2026-11-20).
+- **CA-04:** Dada una cuenta con rol `admin` en la tabla, cuando se muestra, entonces aparece con la etiqueta «Gestionada desde la consola del servidor», sin ninguna acción (ni editar, activar o desactivar, eliminar, restablecer contraseña o 2FA), y su detalle es de solo lectura (`managed_by_console: true`). Decisión: las cuentas admin aparecen sin acciones, ni deshabilitadas. También aparecen en los resultados de la búsqueda global, en solo lectura y sin acciones (decisión Q5 de `api-023`).
 - **CA-05:** Dada una cuenta no admin, cuando se editan, activan o desactivan, eliminan o restablecen contraseña o 2FA, entonces se aplican las reglas de `dashboard-003` (CA-05, CA-06) y de `api-021` para la confirmación de contraseña (con el diálogo de `dashboard-015`); esta spec no las cambia.
 - **CA-06:** Dada una respuesta 403 de la API sobre una cuenta admin o por un rol `admin` pedido (`api-023` CA-11 y CA-12), cuando llega a la vista, entonces muestra el mensaje de la API en español en el propio formulario o diálogo, sin cambiar la lista ni cerrar la vista de forma inesperada.
 
 ### Navegación, inicio y etiquetas
 
 - **CA-07:** Dada una cuenta `executive` («Consulta directiva»), cuando inicia sesión, entonces su pantalla de inicio es el Panel principal y su navegación muestra solo Panel principal y Reporte de boletos, en solo lectura (`dashboard-003` CA-13).
-- **CA-08:** Dada una cuenta `communications`, cuando inicia sesión, entonces su navegación muestra solo Noticias, Eventos, Momentos y TulanPedia según sus permisos, y su pantalla de inicio es Noticias (decisión 2026-11-20, `api-023` CA-07). La interfaz no tiene ninguna pantalla de inicio por nombre de rol.
-- **CA-09:** Dada la interfaz de cuentas y de sesión, cuando muestra un rol, entonces usa la etiqueta que entrega la API («Consulta directiva», «Comunicación»). La cabecera del panel para el perfil `executive` muestra «Consulta directiva» (decisión 2026-11-20, en lugar de «Panel ejecutivo»). No aparece «Ejecutivo» ni «Panel ejecutivo» en ningún selector, tabla, cabecera ni mensaje.
+- **CA-08:** Dada una cuenta `communications`, cuando inicia sesión, entonces su navegación muestra solo Noticias, Eventos, Momentos y TulanPedia según sus permisos, y su pantalla de inicio es Noticias (decisión, `api-023` CA-07). La interfaz no tiene ninguna pantalla de inicio por nombre de rol.
+- **CA-09:** Dada la interfaz de cuentas y de sesión, cuando muestra un rol, entonces usa la etiqueta que entrega la API («Consulta directiva», «Comunicación»). La cabecera del panel para el perfil `executive` muestra «Consulta directiva» (decisión, en lugar de «Panel ejecutivo»). No aparece «Ejecutivo» ni «Panel ejecutivo» en ningún selector, tabla, cabecera ni mensaje.
 
 ### Aviso de cambios de consola
 
-- **CA-10:** Dada una cuenta `admin` con avisos de consola no leídos, cuando inicia sesión, entonces ve un aviso accesible (`role="status"` o `role="alert"` según su tono) con texto por cada aviso: «Cambio por consola: {acción} en {correo} el {fecha}. Motivo: {motivo}.». Si hay varios, se listan todos, con desplazamiento si no caben (decisión 2026-11-20). El aviso aparece sobre la pantalla de inicio y puede cerrarse. *Sustituido por CA-19 a CA-21 y CA-23 (revisión 2026-11-21): ya no es banner fijo; el texto de cada aviso no cambia.*
-- **CA-11:** Dado un aviso mostrado, cuando el administrador lo cierra, entonces la interfaz llama a `POST /api/v1/admin/console-notices/{notice}/read` (`api-023` CA-26), el aviso deja de mostrarse y no reaparece al iniciar otra sesión. *Sustituido por CA-19 y CA-22 (revisión 2026-11-21): se marca leído al mostrarse, no al cerrar.*
+- **CA-10:** Dada una cuenta `admin` con avisos de consola no leídos, cuando inicia sesión, entonces ve un aviso accesible (`role="status"` o `role="alert"` según su tono) con texto por cada aviso: «Cambio por consola: {acción} en {correo} el {fecha}. Motivo: {motivo}.». Si hay varios, se listan todos, con desplazamiento si no caben. El aviso aparece sobre la pantalla de inicio y puede cerrarse. *Sustituido por CA-19 a CA-21 y CA-23: ya no es banner fijo; el texto de cada aviso no cambia.*
+- **CA-11:** Dado un aviso mostrado, cuando el administrador lo cierra, entonces la interfaz llama a `POST /api/v1/admin/console-notices/{notice}/read` (`api-023` CA-26), el aviso deja de mostrarse y no reaparece al iniciar otra sesión. *Sustituido por CA-19 y CA-22: se marca leído al mostrarse, no al cerrar.*
 - **CA-12:** Dada una cuenta sin `users.manage`, cuando inicia sesión, entonces la interfaz no consulta los avisos de consola y no muestra ninguno.
-- **CA-13:** Dado un fallo al consultar los avisos de consola, cuando ocurre, entonces el panel carga igual y el aviso muestra un mensaje de error en español con opción de reintentar; no bloquea la navegación. *Sustituido por CA-25 (revisión 2026-11-21): el error sale como aviso emergente, sin banner ni reintento.*
+- **CA-13:** Dado un fallo al consultar los avisos de consola, cuando ocurre, entonces el panel carga igual y el aviso muestra un mensaje de error en español con opción de reintentar; no bloquea la navegación. *Sustituido por CA-25: el error sale como aviso emergente, sin banner ni reintento.*
 
 ### Calidad y transversales
 
@@ -88,11 +89,11 @@ La interfaz no toma decisiones: lo que muestra viene de la API (RN-02 de `dashbo
 - **CA-17:** Dada la interfaz, cuando se revisa su estilo, entonces usa tokens semánticos y no fija hex de marca.
 - **CA-18:** Dada la suite de Vitest con un cliente simulado de `@arca/api-client`, cuando se ejecuta, entonces existe al menos una prueba que nombra cada CA-01 a CA-17.
 
-### Revisión 2026-11-21 (aprobada por Jonathan): avisos de consola como emergentes
+### Revisión (aprobada): avisos de consola como emergentes
 
 Los avisos de cambios por consola dejan de ser un banner fijo en el Panel principal y salen como mensaje emergente de la cola de `DashboardNotifications`, la misma de los avisos de pendientes (`dashboard-018`). CA-12, CA-14 (en lo que no es del banner), CA-15, CA-16 y CA-17 se mantienen.
 
-Criterios sustituidos (nota 2026-11-21): CA-10, CA-11 y CA-13 (el banner con cierre y reintento) los sustituyen CA-19 a CA-25; la cobertura de CA-18 y CA-26 no los exige y su test los omite.
+Criterios sustituidos: CA-10, CA-11 y CA-13 (el banner con cierre y reintento) los sustituyen CA-19 a CA-25; la cobertura de CA-18 y CA-26 no los exige y su test los omite.
 
 - **CA-19:** Dada una cuenta con `users.manage` y avisos de consola no leídos, cuando inicia sesión, entonces cada aviso reciente sale una sola vez como emergente de tono `info` con el texto «Cambio por consola: {acción} en {correo} el {fecha}. Motivo: {motivo}.», y al mostrarse se marca como leído con `POST /api/v1/admin/console-notices/{notice}/read` para que no vuelva a salir.
 - **CA-20:** Dados avisos de distinta antigüedad, cuando se decide qué mostrar, entonces solo se muestran los de los últimos 7 días según `created_at`; los más viejos se marcan como leídos sin mostrarse.
@@ -143,20 +144,20 @@ Criterios sustituidos (nota 2026-11-21): CA-10, CA-11 y CA-13 (el banner con cie
   - `apps/dashboard/src/tests/admin-fixtures.ts`: roles fijos de prueba (se añaden `communications` y las etiquetas nuevas).
   - Vistas de la sección Usuarios (`views/`) y su ViewModel: selector de rol, tabla y formularios (no revisados línea a línea en esta redacción; el plan los localiza).
   - `packages/api-client`: `StaffHome` (`types.ts`) no cambia; se añaden tipos de avisos de consola y campos de cuentas.
-- **Decisiones 2026-11-20** (las preguntas de la versión Borrador quedan cerradas):
-  1. **Vista de solo lectura del rol.** Decisión 2026-11-20: mostrar las secciones que abre el rol (CA-02), no la lista completa de permisos.
-  2. **Cuentas `admin` en la tabla.** Decisión 2026-11-20: sin acciones y con la etiqueta de CA-04 (no acciones deshabilitadas).
-  3. **Varios avisos de consola no leídos.** Decisión 2026-11-20: se listan todos, con desplazamiento (CA-10); no se resumen en uno.
-  4. **Etiqueta del perfil `executive` en la cabecera.** Decisión 2026-11-20: «Consulta directiva» (CA-09), en sustitución de «Panel ejecutivo».
-  5. **Pantalla de inicio de Comunicación.** Decisión 2026-11-20: Noticias (CA-08; `api-023` pregunta 4).
+- **Decisiones** (las preguntas de la versión Borrador quedan cerradas):
+  1. **Vista de solo lectura del rol.** Decisión: mostrar las secciones que abre el rol (CA-02), no la lista completa de permisos.
+  2. **Cuentas `admin` en la tabla.** Decisión: sin acciones y con la etiqueta de CA-04 (no acciones deshabilitadas).
+  3. **Varios avisos de consola no leídos.** Decisión: se listan todos, con desplazamiento (CA-10); no se resumen en uno.
+  4. **Etiqueta del perfil `executive` en la cabecera.** Decisión: «Consulta directiva» (CA-09), en sustitución de «Panel ejecutivo».
+  5. **Pantalla de inicio de Comunicación.** Decisión: Noticias (CA-08; `api-023` pregunta 4).
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan (responsable funcional), 2026-11-20.
-- Enmienda técnica 2026-11-20: CA-04 incluye la búsqueda global (decisión Q5 de `api-023`). Las decisiones Q1 a Q4 y Q6 de `api-023` no cambian esta spec. Filtro «Todos los roles» aceptado (propuesta del plan).
+- Aprobadores: responsable funcional.
+- Enmienda técnica: CA-04 incluye la búsqueda global (decisión Q5 de `api-023`). Las decisiones Q1 a Q4 y Q6 de `api-023` no cambian esta spec. Filtro «Todos los roles» aceptado (propuesta del plan).
 - Evidencia/enlaces: `apps/api/specs/023-fixed-roles-and-console-admins.md`, `apps/api/specs/007-administration-management.md`, `apps/dashboard/specs/003-administration-sections.md`, `apps/dashboard/specs/002-real-staff-login.md`, `apps/dashboard/src/viewmodels/navigation.ts`, `apps/dashboard/src/App.tsx`.
-- Historial de estado: Borrador (2026-11-20); Aprobada (2026-11-20); revisión 2026-11-21 aprobada por Jonathan (avisos de consola como emergentes, CA-19 a CA-26).
-- Nota de revisión (2026-11-21, `dashboard-020`): la sección Usuarios aplica la regla de mensajes de `dashboard-020` RN-07 (CA-25). El error general de restablecer contraseña pasa a aviso emergente; el fallo al cargar roles (`optionsError`) pasa a estado de la vista con reintento. CA-06 y CA-13 de esta spec no cambian. La etiqueta de «Reporte de boletos» y «Cancelaciones» en las secciones que abre un rol pasa a «Reportes» (`dashboard-020` CA-01).
-- Nota de revisión (2026-11-21 (b), `dashboard-020` CA-33 a CA-42): las acciones sobre una cuenta (activar, desactivar, eliminar, restablecer contraseña y 2FA) se confirman en un diálogo modal (`ConfirmDialog`), no en línea; el diálogo de contraseña de `dashboard-015` se abre encima sin cerrarlo (CA-36). En el formulario, el área sugiere el rol (`suggested_role` de `users/options`), con ayuda fija y aviso suave si el rol difiere; el admin puede cambiarlo y no se le pisa. Esta nota no cambia los CA de esta spec. Ver `apps/dashboard/specs/020-unified-reports-and-feedback.md`.
+- Historial de estado: Borrador; Aprobada; revisión aprobada (avisos de consola como emergentes, CA-19 a CA-26).
+- Nota de revisión (, `dashboard-020`): la sección Usuarios aplica la regla de mensajes de `dashboard-020` RN-07 (CA-25). El error general de restablecer contraseña pasa a aviso emergente; el fallo al cargar roles (`optionsError`) pasa a estado de la vista con reintento. CA-06 y CA-13 de esta spec no cambian. La etiqueta de «Reporte de boletos» y «Cancelaciones» en las secciones que abre un rol pasa a «Reportes» (`dashboard-020` CA-01).
+- Nota de revisión ( (b), `dashboard-020` CA-33 a CA-42): las acciones sobre una cuenta (activar, desactivar, eliminar, restablecer contraseña y 2FA) se confirman en un diálogo modal (`ConfirmDialog`), no en línea; el diálogo de contraseña de `dashboard-015` se abre encima sin cerrarlo (CA-36). En el formulario, el área sugiere el rol (`suggested_role` de `users/options`), con ayuda fija y aviso suave si el rol difiere; el admin puede cambiarlo y no se le pisa. Esta nota no cambia los CA de esta spec. Ver `apps/dashboard/specs/020-unified-reports-and-feedback.md`.
 
-- Nota 2026-11-21 (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.
+- Nota (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.

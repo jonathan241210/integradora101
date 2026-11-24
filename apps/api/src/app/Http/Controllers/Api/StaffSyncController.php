@@ -8,6 +8,7 @@ use App\Models\Enclosure;
 use App\Models\Species;
 use App\Models\SyncOperation;
 use App\Models\User;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -15,10 +16,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use PDOException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class StaffSyncController extends Controller
 {
+    /** api-028 RN-03: tope de operaciones por lote. */
+    private const MAX_OPERATIONS = 100;
+
     private const SEX = [
         'hembra' => 'F',
         'macho' => 'M',
@@ -92,7 +97,7 @@ class StaffSyncController extends Controller
     public function changes(Request $request): JsonResponse
     {
         $request->validate([
-            'cursor' => ['nullable', 'string'],
+            'cursor' => ['nullable', 'date'],
             'since' => ['nullable', 'date'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:500'],
         ]);
@@ -187,7 +192,7 @@ class StaffSyncController extends Controller
     public function operations(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'operations' => ['required', 'array', 'min:1'],
+            'operations' => ['required', 'array', 'min:1', 'max:'.self::MAX_OPERATIONS],
             'operations.*.operation_uuid' => ['required', 'uuid'],
             'operations.*.entity_type' => ['required', 'string', 'in:animal,clinical_evaluation'],
             'operations.*.client_entity_id' => ['nullable', 'uuid'],
@@ -214,6 +219,10 @@ class StaffSyncController extends Controller
         $uuid = $operation['operation_uuid'];
 
         $existing = SyncOperation::query()->where('operation_uuid', $uuid)->first();
+        if ($existing && (int) $existing->user_id !== $userId) {
+            // api-028: un operation_uuid de otro usuario no revela su resultado ni se reprocesa.
+            return $this->foreignOperationResult($operation);
+        }
         if ($existing) {
             return $this->resultFromOperation($existing, $existing->status === 'completed' ? 'duplicate' : $existing->status);
         }
@@ -222,6 +231,9 @@ class StaffSyncController extends Controller
             return DB::transaction(function () use ($userId, $operation, $uuid) {
                 // Re-chequeo dentro de transacción por concurrencia
                 $existing = SyncOperation::query()->where('operation_uuid', $uuid)->lockForUpdate()->first();
+                if ($existing && (int) $existing->user_id !== $userId) {
+                    return $this->foreignOperationResult($operation);
+                }
                 if ($existing) {
                     return $this->resultFromOperation($existing, $existing->status === 'completed' ? 'duplicate' : $existing->status);
                 }
@@ -240,8 +252,18 @@ class StaffSyncController extends Controller
             $message = collect($e->errors())->flatten()->first() ?: 'Los datos enviados no son válidos.';
 
             return $this->recordRejected($userId, $operation, 'validation_error', $message);
+        } catch (QueryException|PDOException $e) {
+            // api-028 RN-04: un fallo de infraestructura no es un rechazo definitivo; no se guarda `rejected`
+            // para que el reintento con el mismo operation_uuid se procese de nuevo.
+            report($e);
+
+            return $this->retryResult($operation);
         } catch (\Throwable $e) {
-            return $this->recordRejected($userId, $operation, 'processing_error', 'No se pudo procesar la operación. Inténtalo de nuevo.');
+            // api-028 RN-04: un error inesperado que no es de infraestructura es definitivo; el cliente
+            // lo muestra como rechazo y no lo reintenta en bucle.
+            report($e);
+
+            return $this->recordRejected($userId, $operation, 'processing_error', 'No se pudo procesar la operación. Revisa los datos o contacta al administrador.');
         }
     }
 
@@ -426,6 +448,40 @@ class StaffSyncController extends Controller
 
             return $this->recordRejected($userId, $operation, $code, $message);
         }
+    }
+
+    /**
+     * @param  array<string,mixed>  $operation
+     * @return array<string,mixed>
+     */
+    /**
+     * @param  array<string,mixed>  $operation
+     * @return array<string,mixed>
+     */
+    private function foreignOperationResult(array $operation): array
+    {
+        return [
+            'operation_uuid' => $operation['operation_uuid'],
+            'status' => 'rejected',
+            'entity_type' => $operation['entity_type'] ?? 'unknown',
+            'server_id' => null,
+            'server_entity_type' => null,
+            'error_code' => 'operation_conflict',
+            'message' => 'El identificador de la operación ya está en uso.',
+        ];
+    }
+
+    private function retryResult(array $operation): array
+    {
+        return [
+            'operation_uuid' => $operation['operation_uuid'],
+            'status' => 'retry',
+            'entity_type' => $operation['entity_type'] ?? 'unknown',
+            'server_id' => null,
+            'server_entity_type' => null,
+            'error_code' => 'transient_error',
+            'message' => 'No se pudo procesar la operación por un problema temporal. Se reintentará.',
+        ];
     }
 
     private function resultFromOperation(SyncOperation $op, string $status): array

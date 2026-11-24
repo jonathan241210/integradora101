@@ -3,89 +3,104 @@
 
 Sistema multiplataforma para el Zoológico Municipal Nicolás Bravo, de la Presidencia Municipal de Tulancingo. El zoológico es un centro de rescate, conservación y rehabilitación de fauna silvestre, incluidos ejemplares decomisados por maltrato o tráfico ilegal.
 
-**Estado actual: fase inicial.** El repositorio contiene el análisis y la estructura documental, además de trabajo inicial en las aplicaciones. `apps/mobile` ya cuenta con una base React Native y Expo SDK 57 para Android. En V1 la venta de boletos es solo en efectivo. Payments queda FUTURO/INACTIVO: no está implementado ni activable y ahora no hay código, tablas, endpoints, SDK ni feature flag de pagos.
+**Estado actual: funcionalidad completa para pruebas reales.** Las cinco aplicaciones están implementadas bajo Spec-Driven Development, con pruebas automatizadas por criterio de aceptación y CI. En V1 la venta de boletos es solo en efectivo. Payments queda FUTURO/INACTIVO: no hay código, tablas, endpoints, SDK ni feature flag de pagos.
 
 ## Necesidades que atiende
-1. **Administración y finanzas:** venta digital de boletos en taquilla, cierre/arqueo diario automático e informes para la Dirección de Ingresos.
-2. **Atención médico-veterinaria:** expediente clínico digital respaldado en la nube para vacunas, dietas y tratamientos, sin interrumpir el trabajo de campo. El personal veterinario puede registrar en papel y transcribir después.
-3. **Experiencia del visitante (phygital y gamificación):** QR en recintos para consultar fichas pedagógicas y modelos 3D, conectados con Zoopedia, un juego educativo móvil de baja poligonización que desbloquea especies y hábitats durante la visita.
+1. **Administración y finanzas:** venta de boletos en taquilla, cancelaciones con motivo, reportes de cancelaciones con semáforo de revisión, y administración de cuentas y contenidos.
+2. **Atención médico-veterinaria:** registro de ejemplares y evaluaciones clínicas (diagnóstico rápido e intenso, con exportación a PDF) que funciona sin conexión y se sincroniza al volver la red.
+3. **Experiencia del visitante:** portal público con noticias, eventos, Tulanpedia y memorias; app móvil con mapa del zoológico, escaneo QR de recintos, recorrido con realidad aumentada, progreso, logros, especies favoritas, memorias y avisos push.
 
 ## Componentes
-- `apps/web`: portal institucional público con noticias, eventos y catálogo.
-- `apps/dashboard`: taquilla, cierre de caja, panel ejecutivo y administración.
-- `apps/pwa`: módulo veterinario con captura y sincronización de borradores offline.
-- `apps/mobile`: prototipo de interfaz móvil para visitantes; mapa, QR y recorrido 3D son visuales/mock en la etapa 002, sin cámara ni ubicación reales.
-- **Juego educativo:** decisión tecnológica pendiente (ADR 0005 abierto); todavía no tiene carpeta.
-- `apps/api`: API Laravel central, única autoridad de negocio y datos.
-- `packages/`: propuesta de tokens, UI compartida, cliente tipado de API, configuración y recursos institucionales autorizados (`assets`, solo documentación por ahora).
+| App | Público | Tecnología | Funciones principales |
+|---|---|---|---|
+| `apps/api` | Todas las apps | Laravel 12, PHP 8.4+ | Única autoridad de negocio y datos: autenticación, permisos, taquilla, expediente clínico, catálogo, contenidos, sincronización offline, avisos push |
+| `apps/dashboard` | Personal administrativo | React 19 + TS + Vite | Taquilla, reportes de cancelaciones, consola de cuentas, noticias, eventos, especies, recintos y QR, moderación de memorias, búsqueda global |
+| `apps/pwa` | Personal veterinario | React 19 + TS + Vite, offline | Registro y lista de ejemplares, diagnósticos, seguimiento, borradores offline sincronizados |
+| `apps/web` | Público | HTML/CSS/JS estático (ADR 0024, 0028, 0031) | Portal institucional: noticias, eventos, Tulanpedia, memorias, mapa, asistente de accesibilidad |
+| `apps/mobile` | Visitantes | React Native 0.86 + Expo SDK 57 (Android) | Mapa del zoológico, QR, realidad aumentada, cuenta, progreso, favoritos, memorias, avisos push |
+| `packages/` | Clientes | TypeScript | `@arca/api-client` (cliente tipado), `@arca/tokens` (tokens de diseño), `@arca/ui` (componentes); `config` y `assets` solo documentados |
+| `tools/zoo-mapper` | Equipo | Web estática | Herramienta para levantar coordenadas del mapa |
+
+El videojuego educativo Zoopedia quedó fuera de alcance de esta entrega (ADR 0005).
 
 ## Roles de negocio
-`admin` (Administrador General / Dirección de Informática), `executive` (Altos Directivos, métricas de solo lectura), `cashier` (Cajero), `veterinarian` (Médico Veterinario) y visitantes/niños desde 6 años como público anónimo. Los roles describen acceso al sistema, no asignan responsabilidades al equipo de desarrollo.
+`admin` (Administrador General), `zoo-admin` (administración del zoológico), `executive` (directivos, métricas de solo lectura), `communications` (contenidos públicos), `cashier` (taquilla) y `veterinarian` (expediente clínico). Los visitantes usan cuentas propias en la app móvil. Los roles con acceso al panel usan 2FA. Las definiciones completas están en [roles y permisos](docs/03-roles-y-permisos.md).
 
-## Arquitectura propuesta
+## Arquitectura
 
 ```mermaid
 flowchart LR
-  Visitor[Visitante] --> Mobile[apps/mobile<br/>React Native]
-  Visitor --> Web[apps/web<br/>React 19 + Vite]
+  Visitor[Visitante] --> Mobile[apps/mobile<br/>React Native + Expo]
+  Visitor --> Web[apps/web<br/>HTML/JS estático]
   Staff[Personal del zoológico] --> Dashboard[apps/dashboard<br/>React 19 + Vite]
   Vet[Personal veterinario] --> PWA[apps/pwa<br/>React 19 + Vite + offline]
-  Mobile --> Client["@arca/api-client"]
-  Web --> Client
-  Dashboard --> Client
+  Mobile --> API
+  Web --> API
+  Dashboard --> Client["@arca/api-client"]
   PWA --> Client
   Client --> API[apps/api<br/>Laravel 12 API]
   API --> MySQL[(MySQL 8.0.x<br/>Aiven administrado)]
-  API -.solo lectura.-> ThemeDB[(MySQL externo<br/>settings_colores / mysql2)]
-  API -.disco intercambiable.-> Storage[Almacenamiento por definir<br/>detrás de Laravel Filesystem]
-  Local[MySQL Server local] -->|Migración portable; solo cambia .env| API
+  API -.disco Laravel.-> Storage[Almacenamiento de imágenes<br/>local o compatible S3 · ADR 0026]
+  Local[MySQL Server local] -->|Portable; solo cambia .env| API
 ```
 
-La API centraliza autenticación, permisos y lógica; las SPAs usan Sanctum con cookie y la app móvil usa tokens. `settings_colores` se consulta con la conexión `mysql2` en solo lectura. La BD principal usa MySQL 8.0.x, con configuración exclusiva por `.env`; no se incorporan SDK de proveedores cloud a la lógica de negocio. La BD administrada es Aiven MySQL (ADR 0013); el hosting de la API queda por definir. Almacenamiento cloud, si se añade, queda detrás de un disco de Laravel intercambiable.
+La API centraliza autenticación, permisos y lógica de negocio (Actions). Dashboard y PWA usan Sanctum con cookie; la app móvil usa tokens guardados en `expo-secure-store`. La base de datos se configura solo por `.env` y es portable entre Aiven (ADR 0013) y MySQL Server local. Las imágenes se guardan en un disco de Laravel intercambiable (ADR 0026).
 
-## Stack y versiones de referencia
+## Stack y versiones
 
-| Área | Tecnología | Versión / criterio |
+| Área | Tecnología | Versión |
 |---|---|---|
-| API | PHP, Laravel | PHP 8.4+ (ADR 0018); Laravel 12 |
-| Autenticación | Sanctum, Fortify headless | cookie para SPA; tokens para mobile; Fortify ^1.30 |
+| API | PHP, Laravel | PHP 8.4+ (ADR 0018), Laravel 12 |
+| Autenticación | Sanctum, Fortify headless | cookie para SPA, tokens para mobile |
 | Permisos y auditoría | Spatie Permission / Activitylog | ^6.24 / ^4.12 |
-| Base de datos | MySQL | 8.0.x (revisión mínima pendiente del inventario inicial); Aiven administrado (ADR 0013), portable a MySQL Server local; cambios solo mediante DBR y migraciones del responsable de BD ([gobierno de BD](docs/database/README.md)) |
-| SPAs | React, React DOM, TypeScript | 19 / 19 / 5.7+ |
-| Tooling SPA | Vite, Tailwind CSS | 7 / 4 |
-| UI e iconos | shadcn/ui `new-york`, Radix, Lucide | componentes comunes propuestos en `@arca/ui` |
-| Calidad | Laravel Pint, PHPUnit, Prettier, ESLint, Vitest | Pint ^1.24; PHPUnit ^11.5; configuración en `docs/06-convenciones.md` |
-| Mobile | React Native | React Native 0.86.3 + Expo SDK 57; Android (ADR 0004 aprobado) |
-| PWA offline | IndexedDB con `idb`, `vite-plugin-pwa` | propuestas, ADR 0003 |
+| Base de datos | MySQL | MySQL 8.0.x (revisión mínima pendiente del inventario inicial); cambios solo mediante DBR aprobada y migraciones que crea y aplica el responsable de BD ([gobierno de BD](docs/database/README.md)) |
+| SPAs | React, TypeScript, Vite, Tailwind CSS | 19 / 5.8 / 7 / 4 |
+| Pruebas | PHPUnit, Vitest, Jest | PHPUnit ^11.5, Vitest 5, Jest 29 |
+| Mobile | React Native, Expo | 0.86.3 + SDK 57, TypeScript 6 (ADR 0004) |
+| PWA offline | IndexedDB propia y service worker propio | ADR 0003 |
 | Runtime JS | Node.js | 22 |
 
-Las versiones son decisiones de referencia salvo donde existe un manifiesto de app. Mobile fija las versiones compatibles con Expo SDK 57. React Router se propone para la navegación SPA; Laravel usa rutas con nombre y `@arca/api-client` tipado. No se usa Inertia ni Wayfinder.
+No se usa Inertia ni Wayfinder: las SPAs tienen rutas propias y la API usa rutas Laravel con nombre.
 
 ## Estructura del monorepo
 
 ```text
 apps/
   api/ dashboard/ pwa/ web/ mobile/
-    AGENTS.md
+    AGENTS.md   # reglas de la app
     docs/       # documentación local
-    specs/      # qué y por qué
+    specs/      # qué y por qué (CA-xx, RN-xx)
     plan/       # diseño técnico
     tasks/      # pasos implementables
-    src/        # único lugar de código de la app
-packages/
-  tokens/ ui/ api-client/ config/ assets/  # propuesta @arca/*; assets sin binarios
-docs/          # visión, arquitectura, permisos, SDD, convenciones, glosario
-  arquitectura/ adr/ templates/
-infra/         # diseño de infraestructura, todavía no implementado
-.agents/       # skills y hooks de agentes
-.devin/        # configuración de hooks
+    src/        # código de la app
+packages/       # @arca/api-client, tokens, ui (config y assets: solo README)
+tools/zoo-mapper/  # herramienta de coordenadas del mapa
+docs/           # visión, arquitectura, permisos, SDD, convenciones, glosario
+  adr/ arquitectura/ database/ propuestas/ pruebas/ templates/
+infra/          # checklist de despliegue
+.github/workflows/  # CI
+.claude/ .agents/   # skills, subagentes y hooks de agentes de IA
 ```
 
-Cada app numera sus features independientemente. Una feature usa el mismo `NNN-slug.md` en `specs/`, `plan/` y `tasks/`; el detalle está en [flujo SDD](docs/05-flujo-sdd.md).
+Cada app numera sus features de forma independiente; una feature usa el mismo `NNN-slug.md` en `specs/`, `plan/` y `tasks/` ([flujo SDD](docs/05-flujo-sdd.md)).
+
+## Puesta en marcha local
+
+Requisitos: Node.js 22 y npm; PHP 8.4+, Composer y las extensiones `pdo_mysql`, `mbstring`, `openssl`, `xml`, `ctype`, `fileinfo`, `tokenizer` y `bcmath`. Instala las dependencias JS con `npm ci` desde la raíz.
+
+| App | Comando | Detalle |
+|---|---|---|
+| API | `cd apps/api/src && composer install && php artisan serve` | [requisitos y conexión](apps/api/docs/requisitos-entorno.md) |
+| Dashboard | `npm run dev --workspace=@arca/dashboard` | |
+| PWA | `npm run dev --workspace=apps/pwa` | |
+| Web | `php -S localhost:8080 -t apps/web/src apps/web/src/router.php` | [README de web](apps/web/README.md) |
+| Mobile | `npm run start --workspace=apps/mobile` | [guía móvil](apps/mobile/README.md) |
+
+La guía completa, con puertos y variables, está en [guía de ejecución local](docs/09-guia-ejecucion-local.md).
 
 ## Comandos de base de datos (API)
 
-Se ejecutan desde `apps/api/src` con `.env` configurado para `arca_pruebas`. Los siguientes comandos de inspección son de solo lectura y ayudan a revisar el esquema antes de proponer una DBR:
+Se ejecutan desde `apps/api/src` con `.env` configurado para `arca_pruebas`. Son de solo lectura y sirven para revisar el esquema antes de proponer una DBR:
 
 | Comando | Qué muestra |
 |---|---|
@@ -94,44 +109,36 @@ Se ejecutan desde `apps/api/src` con `.env` configurado para `arca_pruebas`. Los
 | `php artisan db:table <tabla>` | Columnas, tipos e índices de una tabla (por ejemplo, `users`) |
 | `php artisan migrate:status` | Estado de las migraciones |
 
-Para preparar las cuentas demo, el responsable configura `DEMO_STAFF_PASSWORD` en su `.env` local y ejecuta `php artisan db:seed` en `arca_pruebas`. El comando crea las cinco áreas, roles/permisos y las seis cuentas de prueba de [credenciales de desarrollo](apps/api/docs/credenciales-desarrollo.md). Las cuentas `admin` y `zoo-admin` configuran 2FA en su primer acceso. Las cuentas reales se crean con `php artisan arca:create-staff`.
+- Cuentas demo: configurar `DEMO_STAFF_PASSWORD` y ejecutar `php artisan db:seed` en `arca_pruebas` ([credenciales de desarrollo](apps/api/docs/credenciales-desarrollo.md)). El seeder demo se bloquea en producción.
+- Cuentas de personal: `php artisan arca:create-staff`. Cuentas de administrador: comandos `php artisan arca:admin:*` (`arca:admin:help` lista todos).
+- Respaldos y restauración: [docs/database/backups](docs/database/backups/README.md). Los scripts se niegan a correr contra `arca_zoo` o producción.
 
 **Avisos:**
 
-- `arca_pruebas` es la base de trabajo y de PHPUnit; no se borra ni reconstruye. Tests usan `DatabaseTransactions`; no ejecutar `RefreshDatabase`, `migrate:fresh` ni migraciones desde tests.
-- `arca_zoo` es producción: ningún integrante ni agente la usa. No apuntar a ella comandos de lectura o escritura.
-- No ejecutar migraciones ni comandos destructivos. `db:seed` solo se ejecuta en `arca_pruebas` por el responsable de BD después de configurar la contraseña demo.
-- Los tests activan `DB::prohibitDestructiveCommands()` y verifican que su base sea `arca_pruebas`.
-- Consulta el [gobierno de BD](docs/database/README.md) para el flujo DBR y la aplicación de esquema por ambiente.
+- `arca_pruebas` es la base de trabajo y de PHPUnit; no se borra ni reconstruye. Los tests usan `DatabaseTransactions`, activan `DB::prohibitDestructiveCommands()` y verifican que su base sea `arca_pruebas`; no ejecutar `RefreshDatabase`, `migrate:fresh` ni migraciones desde tests.
+- `arca_zoo` es producción: ningún comando de desarrollo ni agente la usa.
+- Los cambios de esquema los crea y aplica solo el responsable de BD, tras una DBR aprobada ([gobierno de BD](docs/database/README.md)).
 
-## Flujo SDD resumido
+## Calidad y CI
 
-Antes de cambiar código, se aprueba una spec; después se redactan el plan con revisión de los seis principios de la Constitución y las tareas T-xx vinculadas a criterios CA-xx. Se implementa en `src/`, con al menos un test automatizado por CA-xx, y se verifica antes del PR. La guía normativa está en [docs/05-flujo-sdd.md](docs/05-flujo-sdd.md); los formatos están en `docs/templates/`.
+`.github/workflows/ci.yml` ejecuta en cada push y PR a `main` y `DevOps`: pruebas unitarias de la API, pruebas con cobertura de mobile, tipos, pruebas y build del dashboard, y pruebas y build de la PWA. Localmente, `php artisan test` (API), `npm test --workspace=<app>` y la skill `/verify`. El resultado de la revisión final de seguridad y rendimiento está en [auditoría final](docs/auditoria-final-entrega.md); el plan, los casos y la bitácora de pruebas están en `docs/pruebas/`.
+
+## Flujo SDD
+
+Antes de cambiar código se aprueba una spec; después se redactan el plan (con revisión de los seis principios de la [Constitución](CONSTITUTION.md)) y las tareas T-xx ligadas a criterios CA-xx. Se implementa en `src/` con al menos una prueba por CA-xx y se verifica antes del PR. Commits en Conventional Commits en inglés; las ramas de cambio siguen `feat|fix/<app>-<NNN>-<slug>`.
 
 ## Índice de documentación
 
-- [Visión y alcance](docs/01-vision-y-alcance.md)
-- [Arquitectura](docs/02-arquitectura.md)
-- [Roles y permisos](docs/03-roles-y-permisos.md)
-- [Sistema de diseño](docs/04-sistema-de-diseno.md)
-- [Flujo SDD](docs/05-flujo-sdd.md)
-- [Convenciones](docs/06-convenciones.md)
-- [Glosario](docs/07-glosario.md)
-- [Patrones arquitectónicos](docs/08-patrones-arquitectonicos.md)
-- [Vistas de arquitectura](docs/arquitectura/README.md)
-- [Gobierno de base de datos](docs/database/README.md)
-- [ADRs](docs/adr/README.md) · [Plantilla de spec](docs/templates/spec.md) · [Plantilla de arquitectura por app](docs/templates/arquitectura-app.md)
+- [Visión y alcance](docs/01-vision-y-alcance.md) · [Arquitectura](docs/02-arquitectura.md) · [Vistas de arquitectura](docs/arquitectura/README.md)
+- [Roles y permisos](docs/03-roles-y-permisos.md) · [Sistema de diseño](docs/04-sistema-de-diseno.md)
+- [Flujo SDD](docs/05-flujo-sdd.md) · [Convenciones](docs/06-convenciones.md) · [Glosario](docs/07-glosario.md) · [Patrones arquitectónicos](docs/08-patrones-arquitectonicos.md)
+- [Guía de ejecución local](docs/09-guia-ejecucion-local.md) · [Índice de docs](docs/README.md)
+- [Gobierno de base de datos](docs/database/README.md) · [ADRs](docs/adr/README.md) · [Propuestas opcionales](docs/propuestas/)
+- [Infraestructura y checklist de despliegue](infra/README.md)
+- Plantillas: [spec](docs/templates/spec.md) · [arquitectura por app](docs/templates/arquitectura-app.md)
 
 ## Agentes de IA
 
-- `AGENTS.md` y los `apps/<app>/AGENTS.md` establecen reglas breves por alcance; `CONSTITUTION.md` contiene los seis principios innegociables.
-- `.agents/skills/` contiene flujos invocables: `sdd-spec`, `sdd-plan`, `sdd-tasks`, `sdd-implement`, `constitution-check`, `api-endpoint`, `spa-page`, `ui-component`, `theme-colors` y `verify`.
-- `.agents/hooks/` aloja scripts Node ESM sin dependencias para contexto, guardarraíles, formato y control al finalizar.
-- `.devin/hooks.v1.json` conecta esos scripts a Devin CLI. Los hooks no sustituyen el SDD ni la revisión del equipo.
-
-## Trabajo y prerrequisitos
-
-El equipo de seis integrantes usa las ramas indicadas `jonathan`, `ian`, `victor`, `Diego`, `Esteban` y `Felipe`; no se asignan responsabilidades por nombre en esta documentación. Las ramas de integración son `develop` y `main`; las ramas de cambio siguen `feat|fix/<app>-<NNN>-<slug>`. Commits Conventional Commits en inglés; PRs enlazan spec, plan y tasks.
-
-
-Para desarrollo móvil se requiere Node.js 22 y npm; instala las dependencias del monorepo con `npm ci` desde la raíz y sigue la [guía de ejecución móvil](apps/mobile/README.md) para iniciar Expo Go y correr verificaciones. Para la API se requiere PHP 8.4+ (ADR 0018), Composer y las extensiones PHP `pdo_mysql`, `mbstring`, `openssl`, `xml`, `ctype`, `fileinfo`, `tokenizer` y `bcmath`; consulta la [guía de requisitos y conexión de la API](apps/api/docs/requisitos-entorno.md). MySQL 8.0.x es la versión normativa. Docker Compose local se incorporará más adelante. No instales dependencias ni guardes secretos en el repositorio sin una tarea aprobada. Consulta [convenciones](docs/06-convenciones.md) e [infraestructura](infra/README.md).
+- `AGENTS.md`, `apps/<app>/AGENTS.md` y `CONSTITUTION.md` fijan las reglas; `CLAUDE.md` las enlaza para Claude Code.
+- Skills del flujo (`sdd-spec`, `sdd-plan`, `sdd-tasks`, `sdd-implement`, `constitution-check`, `api-endpoint`, `spa-page`, `ui-component`, `theme-colors`, `verify`) en `.claude/skills/`, con fuentes en `.agents/skills/`. Subagentes por rol en `.claude/agents/`.
+- Los hooks de `.agents/hooks/` (Node ESM sin dependencias) no sustituyen el SDD ni la revisión del equipo.

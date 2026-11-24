@@ -1,10 +1,13 @@
 # Plan técnico · 009 · Recorrido Guiado 3D y Cámara AR con Senderos, Bifurcaciones y Modo Offline (`ar-3d-map-guide`)
 
 - Spec: `apps/mobile/specs/009-ar-3d-map-guide.md`
-- Estado de spec: Aprobada (Víctor Adrián, 2026-11-05)
-- Estado del plan: Aprobado (Víctor Adrián, 2026-11-05)
-- Responsable técnico: Víctor Adrián
+- Estado de spec: Implementada
+- Solicitada: 2026-11-05
+- Aprobada: 2026-11-05
+- Estado del plan: Aprobado
+- Responsable técnico: Frontend
 - ADR habilitador: `docs/adr/0025-mobile-ar-3d-camera-threejs.md` (Aceptado)
+- Nota de cierre: el código presente cubre `arMath.ts`, `tourPlanner.ts`, `useArTourViewModel.ts`, `ArTourOverlay.tsx`, el botón «Iniciar Recorrido 3D» en `MapScreen.tsx` y `__tests__/arMathAndTour.test.ts` (CA-04, CA-05, CA-06). `ThreeTourScene.tsx` no existe en `src/components/map/`: la escena la renderiza `LocationArScene.tsx` (ver `mobile-015`). Los tests de CA-01, CA-02, CA-03, CA-07 y CA-08 de esta feature no tienen nombre propio en el repositorio; `__tests__/arTourOverlay.test.tsx` corresponde a `mobile-015`. Ver las casillas sin marcar en `tasks/009-ar-3d-map-guide.md`.
 
 ---
 
@@ -111,4 +114,4 @@ La feature `mobile-009` añade un **Recorrido Guiado 3D y de Realidad Aumentada 
 5. Crear suites de pruebas `__tests__/arMathAndTour.test.ts` y `__tests__/arTourOverlay.test.tsx`.
 6. Ejecutar `tsc --noEmit` y Jest (`architecture.test.ts` incluido).
 
-- **Aprobador funcional y técnico:** Víctor Adrián (2026-11-05).
+- **Aprobación funcional y técnica:** Aprobada (Equipo ARCA-NB).

@@ -9,7 +9,12 @@ class Department extends Model
 {
     protected $table = 'departments';
 
-    protected $guarded = [];
+    protected $fillable = [
+        'name',
+        'code',
+        'description',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

@@ -2,9 +2,11 @@
 
 - Spec: `apps/web/specs/002-brand-color-refresh.md`
 - Estado de spec: Aprobada
-- Responsable técnico: por identificar
+- Solicitada: 2026-10-07
+- Aprobada: 2026-10-07
+- Responsable técnico: Frontend
 - Estado técnico: Implementado
-- Fecha del plan: 2026-10-07
+- Aprobación técnica: Aprobada
 
 ## Diseño de solución
 
@@ -97,6 +99,6 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos.
 4. Actualizar `styles.css` y el test persistente, sin modificar HTML, JavaScript, assets, API ni base de datos.
 5. Ejecutar `node --test apps/web/src/tests/relocation.test.mjs`, revisar contraste, comprobar `git diff --check` y abrir el portal en escritorio/móvil.
 6. Verificar la app con `/verify` y revisar que solo se hayan tocado los archivos declarados.
-7. Solicitante aprobó alcance y plan técnico el 2026-10-07 en esta conversación. No se infiere identidad nominal del aprobador ni se crea commit como parte del plan.
+7. Solicitante aprobó alcance y plan técnico en esta conversación. No se infiere identidad nominal del aprobador ni se crea commit como parte del plan.
 
-**Estado técnico:** Implementado. Plan aprobado por el solicitante el 2026-10-07; pruebas CA-01..CA-05 verificadas con el runner Node integrado, 12 tests totales y 0 fallos.
+**Estado técnico:** Implementado. Plan aprobado por el solicitante; pruebas CA-01..CA-05 verificadas con el runner Node integrado, 12 tests totales y 0 fallos.

@@ -38,7 +38,6 @@ class PublicCatalogTest extends FeatureTestCase
                 'photo_path',
                 'longevity',
                 'diet',
-                'characteristics',
                 'zone_name',
             ]],
         ]);
@@ -175,7 +174,7 @@ class PublicCatalogTest extends FeatureTestCase
             ->assertJsonPath('data.photo_path', $representative->photo_path)
             ->assertJsonPath('data.longevity', 'Longevidad del representante')
             ->assertJsonPath('data.diet', 'Dieta del representante')
-            ->assertJsonPath('data.characteristics', 'Características del representante')
+            ->assertJsonMissingPath('data.characteristics') // api-028 CA-01: observaciones internas
             ->assertJsonPath('data.zone_name', $secondEnclosure->name);
 
         $withoutAnimals = $this->createSpecies();
@@ -184,7 +183,7 @@ class PublicCatalogTest extends FeatureTestCase
             ->assertJsonPath('data.photo_path', null)
             ->assertJsonPath('data.longevity', null)
             ->assertJsonPath('data.diet', null)
-            ->assertJsonPath('data.characteristics', null)
+            ->assertJsonMissingPath('data.characteristics')
             ->assertJsonPath('data.zone_name', null);
 
         $withoutPhotos = $this->createSpecies();

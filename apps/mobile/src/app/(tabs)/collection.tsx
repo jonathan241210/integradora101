@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { AppText, ScreenContainer, TitledLoading } from '../../components/ui';
+import { ScreenContainer, TitledLoading, VisitorDataGate } from '../../components/ui';
 import { CollectionScreen } from '../../screens/CollectionScreen';
 import { Animal } from '../../models';
 import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
@@ -11,7 +11,7 @@ import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 export default function CollectionRoute() {
   const router = useRouter();
   const { getAnimals } = useAnimalViewModel();
-  const { user, error } = useUserViewModel();
+  const { user, error, status, refresh } = useUserViewModel();
   const progress = useVisitorProgress();
   const { isOffline } = useNetworkStatus();
   const [animals, setAnimals] = useState<Animal[]>([]);
@@ -32,11 +32,17 @@ export default function CollectionRoute() {
     };
   }, [getAnimals]);
 
-  if (error) {
+  if (status === 'guest' || status === 'error') {
     return (
-      <ScreenContainer>
-        <AppText variant="body" color="danger">No se pudo cargar la colección: {error}</AppText>
-      </ScreenContainer>
+      <VisitorDataGate
+        title="Mi Colección"
+        status={status}
+        error={error}
+        onLogin={() => router.replace('/login')}
+        onRetry={refresh}
+      >
+        {null}
+      </VisitorDataGate>
     );
   }
 

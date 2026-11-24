@@ -1,15 +1,16 @@
 # 0028 · Catálogo dinámico TulanPedia en el portal: excepción acotada a web-011
 
-- Estado: Aceptado (2026-11-12; aprobado por Jonathan, responsable de backend). Autoriza la excepción de `web-011` con sus límites; la implementación de `web-011` sigue a `api-015`. DBR-013 está en «Lista para backend» desde el 2026-11-12 (migración aplicada en `arca_pruebas`, lote 5).
-- Fecha: 2026-11-11
-- Spec relacionada: `apps/web/specs/011-dynamic-tulanpedia.md` (Aprobada 2026-11-12; plan y tasks pendientes). Relacionada con `apps/dashboard/specs/010-public-content-management.md` (Aprobada 2026-11-12, origen de las especies publicadas), con `apps/api/specs/015-public-species-read.md` (Aprobada 2026-11-12, lectura pública de especies publicadas) y con `apps/web/specs/010-dynamic-memories.md`. Extiende la excepción de `docs/adr/0024-web-static-portal-exception.md` del mismo modo que lo hace `docs/adr/0027-dynamic-public-memories-gallery.md`.
-- Aprobado por: Jonathan (responsable de backend), 2026-11-12
+- Estado: Aceptado. Autoriza la excepción de `web-011` con sus límites; la implementación de `web-011` sigue a `api-015`. DBR-013 está en «Lista para backend» (migración aplicada en `arca_pruebas`, lote 5).
+- Solicitada: 2026-11-11
+- Aprobada: 2026-11-12
+- Spec relacionada: `apps/web/specs/011-dynamic-tulanpedia.md` (Aprobada; plan y tasks pendientes). Relacionada con `apps/dashboard/specs/010-public-content-management.md` (Aprobada, origen de las especies publicadas), con `apps/api/specs/015-public-species-read.md` (Aprobada, lectura pública de especies publicadas) y con `apps/web/specs/010-dynamic-memories.md`. Extiende la excepción de `docs/adr/0024-web-static-portal-exception.md` del mismo modo que lo hace `docs/adr/0027-dynamic-public-memories-gallery.md`.
+- Aprobado por: Responsable de backend
 
 ## Contexto
 
 - `apps/web/AGENTS.md` define el portal institucional como SPA con React 19, TypeScript, Vite 7 y Tailwind CSS 4, que usa `@arca/api-client` y hooks. La Constitución III exige que la UI llame a `@arca/api-client` mediante hooks, y la IV exige un test automatizado por criterio.
-- El ADR 0024 (Aceptado el 2026-11-07) autoriza HTML y JavaScript estático para las páginas de `web-009`: portada, `noticias.html` y `eventos.html`. Su punto 4 limita la excepción a esas páginas y módulos, y dice que no se extiende a otros módulos sin un ADR nuevo.
-- El ADR 0027 (Aceptado 2026-11-12) cubre la galería de momentos de `web-010`, con las mismas condiciones.
+- El ADR 0024 (Aceptado) autoriza HTML y JavaScript estático para las páginas de `web-009`: portada, `noticias.html` y `eventos.html`. Su punto 4 limita la excepción a esas páginas y módulos, y dice que no se extiende a otros módulos sin un ADR nuevo.
+- El ADR 0027 (Aceptado) cubre la galería de momentos de `web-010`, con las mismas condiciones.
 - TulanPedia (`#animales` de `apps/web/src/index.html`) es hoy HTML fijo con cuatro fichas de muestra y un filtro en JavaScript clásico (`script.js`). Con `dashboard-010`, el zoológico publica especies existentes que el veterinario propone (`api-014`; la especie no se crea al publicar). `web-011` sustituye las fichas por la lista pública de especies publicadas, que sirve `api-015` (`GET /api/v1/published-species`).
 - La sección es de lectura pública, sin sesión, sin formularios y sin escritura, igual que la galería. Los datos los revisa el zoológico antes de publicarlos (`dashboard-010`).
 
@@ -24,12 +25,12 @@ Para la sección TulanPedia de la portada (`#animales`, `web-011`), el portal ma
 5. **URLs de imagen limitadas.** Solo `http:`, `https:` o rutas relativas del mismo origen. Cualquier otro esquema muestra el marcador decorativo (`web-011` RN-04, CA-09).
 6. **Sin estado en el navegador.** No hay cookies, `localStorage`, `sessionStorage` ni credenciales (`credentials: 'omit'`). Cada carga pide la lista a la API. Los filtros actúan sobre la lista recibida en memoria, y sus opciones salen de esa misma lista (`web-011` CA-04, RN-11).
 7. **Alcance acotado.** La excepción cubre solo la sección TulanPedia de la portada, con `GET {base}/published-species` (lectura pública de especies publicadas, `api-015`). No cubre una página propia por especie, un carrusel, un visor 3D, formularios ni ninguna otra página o app. Cualquier extensión requiere un ADR nuevo.
-8. **Campos publicados y estado vacío (2026-11-11).** El portal solo presenta lo que devuelve `api-015` (CA-13); no decide qué se publica (`web-011` RN-01 y RN-12). Sin especies publicadas, la sección muestra su estado vacío (`web-011` CA-20). La retirada del modelo 3D de la jirafa no cambia esta excepción.
+8. **Campos publicados y estado vacío.** El portal solo presenta lo que devuelve `api-015` (CA-13); no decide qué se publica (`web-011` RN-01 y RN-12). Sin especies publicadas, la sección muestra su estado vacío (`web-011` CA-20). La retirada del modelo 3D de la jirafa no cambia esta excepción.
 
 ## Justificación
 
 - El contenido es público, de solo lectura y de tamaño pequeño. Una lista de especies no justifica un build, dependencias ni un segundo modelo de trabajo en el portal.
-- El portal ya usa este patrón (`web-001`, Implementada; `web-008`, Implementada; `web-009`, Aprobada; `web-010`, Aprobada 2026-11-12 con ADR 0027 Aceptado 2026-11-12). Mantenerlo evita tener varios modelos de trabajo en el mismo sitio.
+- El portal ya usa este patrón (`web-001`, Implementada; `web-008`, Implementada; `web-009`, Aprobada; `web-010`, Aprobada, con ADR 0027 Aceptado). Mantenerlo evita tener varios modelos de trabajo en el mismo sitio.
 - Se separa de ADR 0024 y de ADR 0027 para que cada ADR registre lo que autoriza y cuándo. Ninguno de los dos cambia.
 
 ## Alternativas consideradas
@@ -58,23 +59,22 @@ Para la sección TulanPedia de la portada (`#animales`, `web-011`), el portal ma
 - **Dos formas de consumir la API en el repositorio** (`@arca/api-client` en los clientes y `api.js` en el portal), sin tipos compartidos para el portal.
 - **Sin tipado** en la capa de presentación del portal; se compensa con pruebas de forma (`web-011` CA-01 a CA-21).
 - **Riesgo de crecimiento de alcance:** la excepción podría usarse para más páginas o más lógica de cliente. Se mitiga con el alcance acotado de este ADR y con la reevaluación.
-- **Dependencia de contrato:** la sección no puede implementarse hasta que exista la lectura pública de especies publicadas (`api-015`, Aprobada el 2026-11-12), que a su vez depende de DBR-013 (`species.is_published`, decidido el 2026-11-11 con el modelo de publicación; BD aprobó el 2026-11-12 la opción 2a=A (`origin` se publica desde `species.distribution`) y la 2b (`species.image_path`)). Sin ese contrato, este ADR no tiene efecto práctico.
+- **Dependencia de contrato:** la sección no puede implementarse hasta que exista la lectura pública de especies publicadas (`api-015`, Aprobada), que a su vez depende de DBR-013 (`species.is_published`, decidido con el modelo de publicación; BD aprobó la opción 2a=A (`origin` se publica desde `species.distribution`) y la 2b (`species.image_path`)). Sin ese contrato, este ADR no tiene efecto práctico.
 - **Sin JavaScript no hay catálogo:** limitación aceptada y documentada, igual que en `web-009`.
 - **Variantes de hábitat:** las opciones de hábitat son texto libre normalizado; dos escrituras distintas generan dos opciones. Riesgo de calidad de datos, no de arquitectura (`web-011` riesgos).
 
-## Recomendación de almacenamiento de fotos (2026-11-11)
+## Recomendación de almacenamiento de fotos
 
 - La sección de TulanPedia consume `image_url` de `media/species/` (la foto de una especie publicada, pública por diseño). Esta sección no consume ninguna foto de `media/species-requests/`.
 - En pruebas, la foto **pendiente** de una solicitud de especie está en `media/species-requests/`, que el servidor publica por `/media`. Quien conozca su URL puede verla. La API no la devuelve (`api-014` CA-06). Es deuda y riesgo conocido (ADR 0026, riesgo m).
 - **Recomendación explícita antes de producción:** cambiar `species-requests/` a almacenamiento privado (ruta protegida con `species.review` o URL firmada) o migrar a otro almacenamiento (ver `docs/propuestas/almacenamiento-objetos-s3.md`). Se configurará entonces, en `.env` y en `infra/README.md`.
 
-## Decisión sobre campos extra de la ficha pública (DBR-013 pregunta 8; resuelta el 2026-11-12)
+## Decisión sobre campos extra de la ficha pública (DBR-013 pregunta 8; resuelta)
 
-- Estado: **resuelta el 2026-11-12, decisión del usuario: no por ahora.** No se añaden campos extra al formulario ni columnas a `species_publication_requests`; sin migración. La ficha pública usa solo los campos ya definidos. Se podrá retomar con una spec nueva. Las demás decisiones de BD ya están registradas en la tabla de abajo. Esta sección no cambia el estado Aceptado de este ADR.
-- Fecha de la pregunta: 2026-11-11.
+- Estado: **resuelta: no por ahora (decisión del usuario).** No se añaden campos extra al formulario ni columnas a `species_publication_requests`; sin migración. La ficha pública usa solo los campos ya definidos. Se podrá retomar con una spec nueva. Las demás decisiones de BD ya están registradas en la tabla de abajo. Esta sección no cambia el estado Aceptado de este ADR.
 - Enlaces: `docs/database/requests/DBR-013-species-requests.md` (pregunta 8); `apps/api/specs/014-species-requests.md` (pregunta 3, RN-13, CA-21); `docs/database/requests/DBR-013-species-requests.md` (pregunta 10, `category`); `apps/pwa/specs/005-species-request-submission.md` (CA-09 a CA-11); `apps/api/specs/015-public-species-read.md` (RN-06, CA-03, CA-13); `apps/web/specs/011-dynamic-tulanpedia.md` (RN-12); `apps/dashboard/specs/010-public-content-management.md` (CA-07, RN-14).
 
-### Decisiones de BD ya registradas (DBR-013, 2026-11-12)
+### Decisiones de BD ya registradas (DBR-013)
 
 | Decisión (DBR-013) | Resultado registrado por BD | Efecto en este ADR y en las specs |
 |---|---|---|
@@ -92,9 +92,9 @@ Para la sección TulanPedia de la portada (`#animales`, `web-011`), el portal ma
 
 ¿El formulario de la PWA debe pedir también estos campos de especie (estado de conservación, tamaño, gestación, alimentación, esperanza de vida, características) para poder publicarlos en TulanPedia?
 
-**`category` (tipo de animal): decidido por el usuario (2026-11-11), fuera de esta pregunta.** La columna ya existe en `species` (DBR-004). La solicitud la captura (lista cerrada; `api-014` CA-25 y DBR-013 pregunta 10), y TulanPedia la usa como filtro (`web-011` CA-22). Esta sección ya no incluye `category` en la decisión de BD. Efecto de `category` (decidido): las especies publicadas con tipo cuentan en las misiones de mobile (`category_species_count`, `api-005`). **Decidido (2026-11-11):** (1) el tipo de animal es obligatorio en la solicitud (`api-014` CA-25); (2) `category` se publica siempre cuando la especie lo tiene, sin ser desmarcable, y no entra en `published_fields`.
+**`category` (tipo de animal): decidido por el usuario, fuera de esta pregunta.** La columna ya existe en `species` (DBR-004). La solicitud la captura (lista cerrada; `api-014` CA-25 y DBR-013 pregunta 10), y TulanPedia la usa como filtro (`web-011` CA-22). Esta sección ya no incluye `category` en la decisión de BD. Efecto de `category` (decidido): las especies publicadas con tipo cuentan en las misiones de mobile (`category_species_count`, `api-005`). **Decidido:** (1) el tipo de animal es obligatorio en la solicitud (`api-014` CA-25); (2) `category` se publica siempre cuando la especie lo tiene, sin ser desmarcable, y no entra en `published_fields`.
 
-Situación: `pwa-005` envía nombre común, nombre científico, origen, hábitat y foto, y desde el 2026-11-11 también el tipo de animal (`category`, decidido). El `published_fields` predeterminado es `["scientific_name","origin","habitat"]` (`api-014` RN-13). Las seis casillas extra no tienen fuente en `species_publication_requests`, así que `pwa-005` CA-11 las oculta.
+Situación: `pwa-005` envía nombre común, nombre científico, origen, hábitat y foto, y desde esta decisión también el tipo de animal (`category`, decidido). El `published_fields` predeterminado es `["scientific_name","origin","habitat"]` (`api-014` RN-13). Las seis casillas extra no tienen fuente en `species_publication_requests`, así que `pwa-005` CA-11 las oculta.
 
 ### Qué existe realmente en la base
 
@@ -110,7 +110,7 @@ En el repositorio no encuentro migración que cree `species` ni `animals`: solo 
 | Características | `animals.characteristics` | TEXT NULL | individuo |
 | Tipo de animal (`category`) | `species.category` | VARCHAR(30) NULL, lista cerrada (`mammal`, `bird`, `reptile`, `amphibian`, `fish`, `invertebrate`; DBR-004) | especie |
 
-- `species` no tiene `origin`, `diet`, `longevity` ni `characteristics`. Sí tiene `habitat` (VARCHAR(255)), `distribution` y `category`; el origen de la solicitud se guarda en `species_publication_requests.origin` y, al aceptar, se copia a `species.distribution` (DBR-013 2a=A, aprobada por BD el 2026-11-12). `category` la leen `api-006` (CA-01) y las misiones de mobile (`category_species_count`, `api-005`). Desde el 2026-11-11 la solicitud de especie la captura (decisión del usuario). Verificada en `arca_pruebas` el 2026-11-12 (`db:table species`: `category` VARCHAR(30) NULL).
+- `species` no tiene `origin`, `diet`, `longevity` ni `characteristics`. Sí tiene `habitat` (VARCHAR(255)), `distribution` y `category`; el origen de la solicitud se guarda en `species_publication_requests.origin` y, al aceptar, se copia a `species.distribution` (DBR-013 2a=A, aprobada por BD). `category` la leen `api-006` (CA-01) y las misiones de mobile (`category_species_count`, `api-005`). La solicitud de especie la captura (decisión del usuario). Verificada en `arca_pruebas` (`db:table species`: `category` VARCHAR(30) NULL).
 - **Hallazgo:** `apps/api/src/app/Http/Resources/SpeciesResource.php`, que usa `api-006` (la app móvil), ya devuelve `conservation_status`, `size_cm` y `gestation_period` de `species`, y además `longevity`, `diet` y `characteristics` tomados de un animal representativo (`representativeAnimal()`, el primero con foto). Hoy, por tanto, datos de un individuo aparecen en la respuesta de especie.
 
 ### Opciones
@@ -118,7 +118,7 @@ En el repositorio no encuentro migración que cree `species` ni `animals`: solo 
 | Aspecto | (A) No ampliar por ahora | (B) Ampliar con los campos de `species` | (C) Ampliar también con los campos de `animals` |
 |---|---|---|---|
 | Migración | Ninguna adicional a DBR-013. | Ninguna sobre `species`, porque las columnas ya existen. Tres columnas en `species_publication_requests` dentro de la misma migración de DBR-013 (tabla nueva, sin datos). `category` va en esa migración por decisión aparte (DBR-013 pregunta 10), fuera de esta comparación. | (C1) Columnas nuevas en `species` (migración aparte, con DBR propia) y en `species_publication_requests`. (C2) Tabla hija o estructura clave-valor, con una DBR más grande. |
-| Columnas nuevas en `species_publication_requests` | Ninguna. | `conservation_status` VARCHAR(100) NULL, `size_cm` DECIMAL(8,2) NULL, `gestation_period` VARCHAR(100) NULL (mismos tipos que `species`). `category` no entra en esta comparación (decidido el 2026-11-11). | Las de B, más `diet` TEXT, `longevity` VARCHAR(50) y `characteristics` TEXT (C1), o una estructura propia (C2). |
+| Columnas nuevas en `species_publication_requests` | Ninguna. | `conservation_status` VARCHAR(100) NULL, `size_cm` DECIMAL(8,2) NULL, `gestation_period` VARCHAR(100) NULL (mismos tipos que `species`). `category` no entra en esta comparación (decidido). | Las de B, más `diet` TEXT, `longevity` VARCHAR(50) y `characteristics` TEXT (C1), o una estructura propia (C2). |
 | Qué se llena en `species` al aceptar | `common_name`, `scientific_name`, `habitat` y `distribution` u `origin` según 2a. Los tres campos de especie quedan NULL. | Lo anterior, más `conservation_status`, `size_cm` y `gestation_period` (`api-014` CA-08). `category` se copia en cualquier caso (decidido). Las especies existentes no cambian. | C1: lo anterior, y las tres claves de `animals` como columnas nuevas de `species`, que nacen vacías. C2: nada nuevo en `species`; las claves quedan en la solicitud o en la tabla hija. |
 | `api-014` | RN-13 sin cambio; las seis claves siguen sin implementarse. | RN-13 implementa tres claves; CA-06, CA-15 y CA-16 suman tres campos; CA-21 valida el tamaño como número positivo (a definir en el plan). `category` ya se captura y valida en CA-01, CA-15 y CA-25 de `api-014`, fuera de `published_fields`. | RN-13 implementa las seis; CA-06, CA-15, CA-16 y CA-21 se amplían; hay que definir cómo se valida el texto largo de `diet` y `characteristics`. |
 | `pwa-005` | CA-09 y CA-11 sin cambio; las casillas extra siguen ocultas. | CA-09 muestra tres casillas más con su campo (texto, número en cm y texto); CA-11 deja ocultas solo las tres de `animals`. El selector «Tipo de animal» (`pwa-005` CA-12) no depende de esta opción. | CA-11 queda vacío: las seis casillas visibles. |
@@ -134,7 +134,7 @@ En el repositorio no encuentro migración que cree `species` ni `animals`: solo 
 1. Los tres campos son de especie y ya existen en `species`. B no requiere migración sobre `species` y solo añade columnas a una tabla nueva, sin datos que migrar.
 2. Alimentación, esperanza de vida y características describen un ejemplar. Como ficha de especie duplican la fuente de `animals` (Constitución V) y ya hay un antecedente en `api-006`. Antes de incluirlos hay que decidir si son de especie (entonces, columnas propias de `species` con su DBR) o si quedan fuera de TulanPedia.
 3. El formulario crece en tres campos, sin textos largos.
-4. `category` queda fuera de esta recomendación: se decidió aparte el 2026-11-11 (DBR-013 pregunta 10). La recomendación (B) no cambia.
+4. `category` queda fuera de esta recomendación: se decidió aparte (DBR-013 pregunta 10). La recomendación (B) no cambia.
 
 Condiciones de B:
 - Avisar a `mobile` del cambio en `api-006`, que ya expone los tres campos y `category`.
@@ -144,9 +144,9 @@ Condiciones de B:
 
 ### Decisión
 
-La decisión es del responsable de BD. Lo que BD documente en DBR-013, y su aprobación separada de BD y backend (`docs/database/requests/README.md`, regla 4), define qué se implementa. Las specs se actualizarán según su respuesta: `api-014` RN-13 y CA-21, `pwa-005` CA-09 a CA-11, `api-015` RN-06 y `dashboard-010` CA-07; y `web-011` RN-11 y CA-22 (filtro por `category`, ya decidido). Respuesta registrada el 2026-11-12 (no por ahora): ninguna de las seis claves se implementa. `category` sí se implementa (decisión del usuario, 2026-11-11).
+La decisión es del responsable de BD. Lo que BD documente en DBR-013, y su aprobación separada de BD y backend (`docs/database/requests/README.md`, regla 4), define qué se implementa. Las specs se actualizarán según su respuesta: `api-014` RN-13 y CA-21, `pwa-005` CA-09 a CA-11, `api-015` RN-06 y `dashboard-010` CA-07; y `web-011` RN-11 y CA-22 (filtro por `category`, ya decidido). Respuesta registrada (no por ahora): ninguna de las seis claves se implementa. `category` sí se implementa (decisión del usuario).
 
-### Recálculo con el modelo de publicación (2026-11-11)
+### Recálculo con el modelo de publicación
 
 Con el modelo nuevo (`api-014`, DBR-013), la solicitud propone correcciones a una especie que ya existe. El análisis anterior cambia en estos puntos. La decisión sigue siendo del responsable de BD y ninguna de las seis claves se implementa hasta que la responda.
 
@@ -154,7 +154,7 @@ Con el modelo nuevo (`api-014`, DBR-013), la solicitud propone correcciones a un
 - **Las tres claves de individuo** (`diet`, `longevity`, `characteristics`) siguen describiendo un ejemplar. Una corrección de especie no puede tomarlas de un animal concreto. Para incluirlas en la ficha hace falta una decisión de producto sobre si son de especie (opción C1, con columnas nuevas en `species`) o si quedan fuera (opción A o B).
 - **Recomendación (B) sin cambio:** tres columnas de corrección en `species_publication_requests`, copiadas a `species` al publicar. No se añade nada a `species` para estos tres campos, porque ya existen.
 - **Efecto nuevo:** al publicar, los campos de especie cambian la fila compartida que lee `api-006` (`GET /api/v1/species`, app móvil). Ese endpoint ya los expone desde `species`; con el modelo nuevo el valor puede venir de una corrección aprobada por la Dirección.
-- **`category`** sigue fuera de esta comparación (decidido el 2026-11-11): la solicitud la captura, la publicación la escribe y `api-015` la publica siempre.
+- **`category`** sigue fuera de esta comparación (decidido): la solicitud la captura, la publicación la escribe y `api-015` la publica siempre.
 
 ## Reevaluación
 
@@ -164,8 +164,8 @@ Con el modelo nuevo (`api-014`, DBR-013), la solicitud propone correcciones a un
 
 ## Validación y revisión
 
-- Aprobación: **Aceptado el 2026-11-12, aprobado por Jonathan (responsable de backend).** Autoriza la excepción de `web-011`; su implementación sigue las condiciones de su spec (`api-015` aprobada y DBR-013 aplicada).
-- Historial: 2026-11-11, cambio de modelo en el catálogo de especies. La solicitud pasa de «especie nueva creada al aceptar» a «publicación de una especie existente» (`api-014`). Términos actualizados: `published-species` (antes `accepted-species`), «especies publicadas», `species_publication_requests`. Nueva subsección «Recálculo con el modelo de publicación» que rehace el análisis de campos extra. La decisión de BD sobre los campos extra (pregunta 8 de DBR-013) sigue abierta. Sin cambio en la decisión ni en su estado (Propuesto). **2026-11-12 (tercera ronda):** TulanPedia no muestra especies despublicadas, con publicación eliminada o con una solicitud `update` viva sobre una especie despublicada (`web-011` CA-24, `api-015` CA-18). Esta excepción no cambia: la visibilidad sigue siendo solo `species.is_published = 1`. La decisión de `category` queda en su estado decidido (2026-11-11). La pregunta de campos extra sigue abierta para BD. **2026-11-12 (BD, DBR-013 aprobada por BD):** se registran en este ADR las decisiones 2a, 2b, 2c, 7, 13, 14, 15, 16 y 17 (tabla «Decisiones de BD ya registradas»). Estado Propuesto sin cambio en esa fecha. **2026-11-12 (aceptación):** aceptado por Jonathan (responsable de backend); pregunta 8 de DBR-013 resuelta (no por ahora).
+- Aprobación: **Aceptado, aprobado por el responsable de backend.** Autoriza la excepción de `web-011`; su implementación sigue las condiciones de su spec (`api-015` aprobada y DBR-013 aplicada).
+- Historial: cambio de modelo en el catálogo de especies. La solicitud pasa de «especie nueva creada al aceptar» a «publicación de una especie existente» (`api-014`). Términos actualizados: `published-species` (antes `accepted-species`), «especies publicadas», `species_publication_requests`. Subsección «Recálculo con el modelo de publicación» que rehace el análisis de campos extra. TulanPedia no muestra especies despublicadas, con publicación eliminada o con una solicitud `update` viva sobre una especie despublicada (`web-011` CA-24, `api-015` CA-18); la visibilidad es solo `species.is_published = 1`. La decisión de `category` queda decidida. Las decisiones de BD 2a, 2b, 2c, 7, 13, 14, 15, 16 y 17 de DBR-013 quedan registradas en la tabla «Decisiones de BD ya registradas». La pregunta 8 de DBR-013 se resolvió como «no por ahora». Estado final: Aceptado.
 - Revisión obligatoria: al especificar el pago con tarjeta, al cambiar el alcance del portal, al pedir una página propia por especie y antes de producción (recomendación de almacenamiento de fotos).
 - Constitución: no cambia. Esta es una excepción por app, registrada según `AGENTS.md` raíz.
-- Enlaces: `apps/web/specs/011-dynamic-tulanpedia.md` (RN-02 a RN-07 y RN-11, CA-06, CA-08, CA-09, CA-11, CA-16, CA-17), `apps/web/specs/010-dynamic-memories.md`, `apps/web/specs/009-dynamic-news-events.md` (RN-05, RN-06, RN-08, CA-16), `apps/dashboard/specs/010-public-content-management.md` (CA-40 a CA-42, D-1, D-3), `apps/api/specs/015-public-species-read.md`, `apps/api/specs/014-species-requests.md`, `apps/api/specs/006-public-catalog-read.md`, `docs/adr/0024-web-static-portal-exception.md`, `docs/adr/0026-object-storage-s3-images.md` (enmienda de 2026-11-11), `docs/adr/0027-dynamic-public-memories-gallery.md`, `docs/adr/0009-pagos-electronicos-futuros.md`.
+- Enlaces: `apps/web/specs/011-dynamic-tulanpedia.md` (RN-02 a RN-07 y RN-11, CA-06, CA-08, CA-09, CA-11, CA-16, CA-17), `apps/web/specs/010-dynamic-memories.md`, `apps/web/specs/009-dynamic-news-events.md` (RN-05, RN-06, RN-08, CA-16), `apps/dashboard/specs/010-public-content-management.md` (CA-40 a CA-42, D-1, D-3), `apps/api/specs/015-public-species-read.md`, `apps/api/specs/014-species-requests.md`, `apps/api/specs/006-public-catalog-read.md`, `docs/adr/0024-web-static-portal-exception.md`, `docs/adr/0026-object-storage-s3-images.md` (enmienda de especies), `docs/adr/0027-dynamic-public-memories-gallery.md`, `docs/adr/0009-pagos-electronicos-futuros.md`.

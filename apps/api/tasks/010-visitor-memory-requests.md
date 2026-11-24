@@ -1,11 +1,13 @@
 # Tareas · 010 · visitor-memory-requests
 
-- Spec: `apps/api/specs/010-visitor-memory-requests.md` (Aprobada, 2026-11-12, Jonathan, responsable de backend)
-- Plan: `apps/api/plan/010-visitor-memory-requests.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
-- Estado del checklist: **En progreso** (actualizado 2026-11-13; plan y tasks aprobados por Jonathan, responsable de backend). Coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
-  - Avance S2 (2026-11-13): T-02 a T-17 (Fase 1 interna) hechas con evidencia: `php artisan test --filter='Memor|ca16'` → 49 pasados (587 aserciones), `pint` limpio sobre los archivos de la feature. T-02: disco `media` de `api-013` fusionado (H1); `storage:link` no se ejecutó en esta sesión (pendiente de integración (S1)). Fase 2 (2026-11-13): T-01, T-18 a T-24, T-27 y T-28 hechas; `php artisan test --filter='Memor|ca16'` → 88 pasados y 3 omitidos (los `ca32_` de T-25, bloqueados por P9), 1150 aserciones; repetición parcial por mi parte: 40 pasados y 3 omitidos. P6: `EnsureVisitorToken` no comprueba el correo verificado (solo `LoginVisitorAction`/`VerifyVisitorEmailAction` lo garantizan al emitir el token), así que se añadió `EnsureVisitorEmailVerified` a `visitor.memories.*` (403 `email_not_verified`). T-26 hecha con `api-012` (18 pasados en `MemoriesPublicReadIntegration|MemoriesCoverage|PublicMemories`). Pendientes: T-25 (P9), T-29 (verificación final y CI: pendiente de integración (S1)). Nombres de test con prefijo `test_` (convención del repo).
-- Fases: **Fase 1** = revisión y publicación (consumida por `dashboard-008`, `api-012` y `web-010`). **Fase 2** = envío y lista del visitante (consumida por `mobile-010`). El mapeo CA→fase quedó **aprobado** el 2026-11-13 tal como se propuso (plan, sección «Fases y mapeo CA→fase»).
-- Precondiciones: P4 (aprobación de plan y tasks) cumplida el 2026-11-13 (Jonathan). P8 (plan y tasks de `api-012`) cumplida el 2026-11-13; solo T-26. Bloqueos abiertos: P2 (disco de medios de `api-013`; plan y tasks aprobados el 2026-11-13, disco sin configurar), P3 (seeder compartido con `api-014` T-07), P5 (excepción de la Constitución V, D-M1), P6 (correo verificado en sesiones de visitante) y P9 (enmienda de `api-004` y `mobile-004`, solo para T-25).
+- Spec: `apps/api/specs/010-visitor-memory-requests.md` (Aprobada)
+- Plan: `apps/api/plan/010-visitor-memory-requests.md` (Estado: **Aprobado**).
+- Estado del checklist: **En progreso** (plan y tasks aprobados; pendientes: T-25 bloqueada por P9 y T-29). Coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+- Solicitada: 2026-11-12
+- Aprobada: 2026-11-12
+  - Avance S2: T-02 a T-17 (Fase 1 interna) hechas con evidencia: `php artisan test --filter='Memor|ca16'` → 49 pasados (587 aserciones), `pint` limpio sobre los archivos de la feature. T-02: disco `media` de `api-013` fusionado (H1); `storage:link` no se ejecutó en esta sesión (pendiente de integración (S1)). Fase 2: T-01, T-18 a T-24, T-27 y T-28 hechas; `php artisan test --filter='Memor|ca16'` → 88 pasados y 3 omitidos (los `ca32_` de T-25, bloqueados por P9), 1150 aserciones; repetición parcial por mi parte: 40 pasados y 3 omitidos. P6: `EnsureVisitorToken` no comprueba el correo verificado (solo `LoginVisitorAction`/`VerifyVisitorEmailAction` lo garantizan al emitir el token), así que se añadió `EnsureVisitorEmailVerified` a `visitor.memories.*` (403 `email_not_verified`). T-26 hecha con `api-012` (18 pasados en `MemoriesPublicReadIntegration|MemoriesCoverage|PublicMemories`). Pendientes: T-25 (P9), T-29 (verificación final y CI: pendiente de integración (S1)). Nombres de test con prefijo `test_` (convención del repo).
+- Fases: **Fase 1** = revisión y publicación (consumida por `dashboard-008`, `api-012` y `web-010`). **Fase 2** = envío y lista del visitante (consumida por `mobile-010`). El mapeo CA→fase quedó **aprobado** tal como se propuso (plan, sección «Fases y mapeo CA→fase»).
+- Precondiciones: P4 (aprobación de plan y tasks) cumplida (el responsable de backend). P8 (plan y tasks de `api-012`) cumplida; solo T-26. Bloqueos abiertos: P2 (disco de medios de `api-013`; plan y tasks aprobados, disco sin configurar), P3 (seeder compartido con `api-014` T-07), P5 (excepción de la Constitución V, D-M1), P6 (correo verificado en sesiones de visitante) y P9 (enmienda de `api-004` y `mobile-004`, solo para T-25).
 - Rutas de archivos: previstas, bajo `apps/api/src/` (no existen aún). Los tests van en `apps/api/src/tests/Feature/Memories/`, salvo `SeedersTest.php`.
 - Regla general: PHPUnit contra `arca_pruebas`, con `DatabaseTransactions`. Prohibido `RefreshDatabase`, `migrate:fresh` o migraciones desde los tests. Nunca `arca_zoo`.
 - Nombres de test: propuestos. Los métodos usan `caNN_` (PHPUnit no admite guiones) y cada docblock cita `CA-NN`. Los tests de `api-013` usan el prefijo `api013_caNN_`.
@@ -23,7 +25,7 @@
 
 - [x] **T-02** (precondición de CA-02, CA-08, CA-09, CA-10, CA-11, CA-12, CA-29; RN-05, RN-10): puerta de `api-013`.
   - Fase: 1 (imagen en revisión, aceptar, rechazar) y 2 (almacenamiento del envío).
-  - Pasos: confirmar que `apps/api/specs/013-object-storage-images.md` tiene plan y tasks aprobados (aprobados el 2026-11-13; comprobar que existen `apps/api/plan/013-*` y `apps/api/tasks/013-*`). Confirmar que `apps/api/src/config/filesystems.php` define la clave del disco privado de medios (carpeta `media/`) y que `storage:link` crea `public/media` en `arca_pruebas`. Confirmar la clave exacta que se usará para el nombre del disco privado (D-M5). Confirmar que `.env.example` tiene `PRIVATE_MEDIA_DISK` y `MEDIA_PUBLIC_URL`.
+  - Pasos: confirmar que `apps/api/specs/013-object-storage-images.md` tiene plan y tasks aprobados (aprobados; comprobar que existen `apps/api/plan/013-*` y `apps/api/tasks/013-*`). Confirmar que `apps/api/src/config/filesystems.php` define la clave del disco privado de medios (carpeta `media/`) y que `storage:link` crea `public/media` en `arca_pruebas`. Confirmar la clave exacta que se usará para el nombre del disco privado (D-M5). Confirmar que `.env.example` tiene `PRIVATE_MEDIA_DISK` y `MEDIA_PUBLIC_URL`.
   - Archivos: ninguno en esta tarea. La configuración del disco es de `api-013`.
   - Hecho cuando: la evidencia (plan y tasks de `api-013` aprobados, clave del disco y salida de `storage:link`) está en el PR. Sin esto, no se empieza T-10, T-12, T-14 ni T-19; si `api-013` no está lista, detenerse y reportarlo.
 
@@ -48,13 +50,13 @@
 - [x] **T-05** (RN-21, RN-23): configuración del plazo y de la versión de términos.
   - Fase: 1 (plazo) y 2 (términos). Depende de: T-01.
   - Archivos: `apps/api/src/config/memories.php` (nuevo: `publication_days` desde `MEMORIES_PUBLICATION_DAYS`, por defecto 7; `terms_version` desde `MEMORIES_TERMS_VERSION`); `apps/api/src/.env.example` (modificar, en el mismo cambio que `api-013` CA-06: añadir `MEMORIES_PUBLICATION_DAYS=7` y `MEMORIES_TERMS_VERSION=` sin valor secreto).
-  - Cambios: solo `config/` lee `env()`; las Actions leen `config('memories.…')`. El valor de `terms_version` por defecto es `v1` (Q2 del plan, resuelta el 2026-11-13), configurable por `.env`; se cambia cuando el zoológico publique otra versión de términos.
+  - Cambios: solo `config/` lee `env()`; las Actions leen `config('memories.…')`. El valor de `terms_version` por defecto es `v1` (Q2 del plan, resuelta), configurable por `.env`; se cambia cuando el zoológico publique otra versión de términos.
   - Tests: se prueban en T-11 (plazo) y T-20 (versión de términos guardada).
   - Hecho cuando: la configuración carga con los valores por defecto y `.env.example` no contiene secretos.
 
 - [x] **T-06** (CA-16; RN-07): permiso `memories.review` en el seeder, compartido con `api-014`.
   - Fase: 1. Depende de: T-01 y P3.
-  - Archivos: `apps/api/src/database/seeders/RolesAndPermissionsSeeder.php` (no se edita: lo modifica `api-014` T-07 el 2026-11-13; esta tarea solo añade el test); `apps/api/src/tests/Feature/Staff/SeedersTest.php` (ampliar).
+  - Archivos: `apps/api/src/database/seeders/RolesAndPermissionsSeeder.php` (no se edita: lo modifica `api-014` T-07; esta tarea solo añade el test); `apps/api/src/tests/Feature/Staff/SeedersTest.php` (ampliar).
   - Cambios: `memories.review` en `$permissions`; asignado a `zoo-admin`; excluido de `admin` con `array_diff($permissions, ['tickets.create', 'tickets.cancel', 'memories.review'])`, y con `species.review` si `api-014` lo añade en el mismo arreglo. `executive`, `cashier` y `veterinarian` no lo reciben. **No se duplica el cambio:** si `api-014` T-07 ya lo incluye, esta tarea solo añade el test.
   - Tests: `ca16_memories_review_only_zoo_admin` (en `SeedersTest.php`, comprueba `zoo-admin` con el permiso, `admin` sin él por exclusión explícita y los otros tres roles sin él).
   - Ejecución: `php artisan db:seed --class=RolesAndPermissionsSeeder` en `arca_pruebas`, por el equipo, con evidencia. Nunca sin `--class`; nunca contra `arca_zoo`.
@@ -72,14 +74,14 @@
 - [x] **T-08** (CA-07; RN-09, RN-11): lista de revisión con filtro por estado.
   - Fase: 1. Depende de: T-03, T-04, T-07.
   - Archivos: `apps/api/src/app/Http/Controllers/Admin/MemoryReviewController.php` (nuevo, `index`); `apps/api/src/app/Actions/Memories/Review/ListMemoriesForReviewAction.php` (nuevo); `apps/api/src/app/Http/Requests/Admin/ListMemoriesForReviewRequest.php` (nuevo); `apps/api/src/app/Http/Resources/Admin/MemoryReviewResource.php` (nuevo); `apps/api/src/tests/Feature/Memories/MemoriesReviewListTest.php` (nuevo).
-  - Cambios: `GET /api/v1/admin/memories` (`admin.memories.index`). Filtro `status` opcional (`submitted`, `in_review`, `accepted`, `rejected`). `page` por defecto 1; `limit` por defecto 10, máximo 50 (D-M11). Orden `created_at` descendente. `meta` `{page, limit, has_more}` con `has_more` calculado pidiendo un elemento más. El Resource no incluye URL de imagen ni datos del visitante. Campos de cada fila: `id`, `status`, `opinion`, `created_at` y `resubmitted_count` (M-1 de `dashboard-008`, 2026-11-13).
+  - Cambios: `GET /api/v1/admin/memories` (`admin.memories.index`). Filtro `status` opcional (`submitted`, `in_review`, `accepted`, `rejected`). `page` por defecto 1; `limit` por defecto 10, máximo 50 (D-M11). Orden `created_at` descendente. `meta` `{page, limit, has_more}` con `has_more` calculado pidiendo un elemento más. El Resource no incluye URL de imagen ni datos del visitante. Campos de cada fila: `id`, `status`, `opinion`, `created_at` y `resubmitted_count` (M-1 de `dashboard-008`).
   - Tests: `ca07_review_list_paginates_and_filters_by_status`; `ca07_invalid_status_or_page_returns_422` (mensajes en español).
   - Hecho cuando: los tests pasan y la ruta está en el data provider de T-07.
 
 - [x] **T-09** (CA-08, CA-09, CA-10; RN-02, RN-09, RN-12): apertura del detalle y paso a En proceso.
   - Fase: 1. Depende de: T-04, T-07, T-08.
   - Archivos: `apps/api/src/app/Actions/Memories/Review/ShowMemoryForReviewAction.php` (nuevo); `apps/api/src/app/Http/Resources/Admin/MemoryReviewDetailResource.php` (nuevo); `MemoryReviewController.php` (ampliar, `show`); `apps/api/src/tests/Feature/Memories/MemoriesReviewOpenTest.php` (nuevo).
-  - Cambios: `GET /api/v1/admin/memories/{id}` (`admin.memories.show`). Transición condicional: `UPDATE … WHERE id = ? AND status = 'submitted'`. Si afecta a una fila, registra `in-review` (Activitylog, log `admin`, con actor e identificador). Si no, relee el estado y no registra nada. Respuesta 200 con `id`, `status`, `opinion`, `created_at`, `resubmitted_count`, `rejection_reason`, `rejected_fields` (a partir de los booleanos), `reviewed_at`, `published_until`, `is_published`, `publication_days` (de `config`) y `published_at` (M-3 de `dashboard-008`, 2026-11-13). Sin URL de imagen. 404 «Petición no encontrada.» si no existe, desde la Action.
+  - Cambios: `GET /api/v1/admin/memories/{id}` (`admin.memories.show`). Transición condicional: `UPDATE … WHERE id = ? AND status = 'submitted'`. Si afecta a una fila, registra `in-review` (Activitylog, log `admin`, con actor e identificador). Si no, relee el estado y no registra nada. Respuesta 200 con `id`, `status`, `opinion`, `created_at`, `resubmitted_count`, `rejection_reason`, `rejected_fields` (a partir de los booleanos), `reviewed_at`, `published_until`, `is_published`, `publication_days` (de `config`) y `published_at` (M-3 de `dashboard-008`). Sin URL de imagen. 404 «Petición no encontrada.» si no existe, desde la Action.
   - Tests: `ca08_opening_submitted_moves_to_in_review_and_logs_once`; `ca08_detail_has_no_image_url_and_publication_days`; `ca09_reopening_in_review_accepted_or_rejected_changes_nothing`; `ca10_second_open_after_transition_logs_no_second_in_review` (secuencial, R5 del plan).
   - Hecho cuando: los tests pasan; ninguna respuesta incluye `image_path`, `published_image_path` ni una URL.
 
@@ -160,7 +162,7 @@
 - [x] **T-20** (CA-01, CA-05; RN-08, RN-12, RN-16, RN-23): envío base.
   - Fase: 2. Depende de: T-18, T-19, T-04, P6.
   - Archivos: `apps/api/src/app/Actions/Memories/Visitor/SubmitVisitorMemoryAction.php` (nuevo); `apps/api/src/app/Http/Controllers/Visitor/VisitorMemoryController.php` (nuevo, `store`); `apps/api/src/app/Http/Resources/Visitor/VisitorMemoryResource.php` (nuevo); `apps/api/src/routes/api.php` (modificar: `visitor.memories.store` dentro del grupo `visitor.`, con `auth:sanctum` y `visitor.token`); `apps/api/src/tests/Feature/Memories/VisitorMemorySubmitTest.php` (nuevo).
-  - Cambios: `POST /api/v1/visitor/memories` (`visitor.memories.store`), multipart. Orden de la Action: fila de `visitors` bloqueada (`lockForUpdate`); escritura del archivo limpio dentro de la transacción (T-19); inserción en `submitted` con `resubmitted_count = 0`, `opinion` (NULL si no se envía), `consent_at` = ahora, `terms_version` = `config('memories.terms_version')` (RN-23; por defecto `v1`, Q2 resuelta el 2026-11-13); commit. Si algo falla antes del commit, se borra el archivo nuevo. Respuesta 201 con `id`, `status` (`submitted`), `opinion`, `created_at` y `resubmitted_count`, sin URL. Los límites (CA-23 a CA-25) son de T-21; aquí la Action deja el punto de extensión después del bloqueo.
+  - Cambios: `POST /api/v1/visitor/memories` (`visitor.memories.store`), multipart. Orden de la Action: fila de `visitors` bloqueada (`lockForUpdate`); escritura del archivo limpio dentro de la transacción (T-19); inserción en `submitted` con `resubmitted_count = 0`, `opinion` (NULL si no se envía), `consent_at` = ahora, `terms_version` = `config('memories.terms_version')` (RN-23; por defecto `v1`, Q2 resuelta); commit. Si algo falla antes del commit, se borra el archivo nuevo. Respuesta 201 con `id`, `status` (`submitted`), `opinion`, `created_at` y `resubmitted_count`, sin URL. Los límites (CA-23 a CA-25) son de T-21; aquí la Action deja el punto de extensión después del bloqueo.
   - Pendiente antes de cerrar: P6. Si el token no garantiza correo verificado, añadir la comprobación y su test (403 `email_not_verified`, sin archivo ni petición).
   - Tests: `ca01_visitor_submits_memory_and_gets_201_without_url`; `ca05_no_session_401_and_unverified_email_403_write_nothing`.
   - Hecho cuando: los tests pasan; un 401 o 403 no escribe archivo ni fila.
@@ -193,9 +195,9 @@
   - Tests: `ca27_image_rejection_requires_different_photo_hash`; `ca27_content_rejection_requires_changed_opinion`; `ca27_content_only_keeps_or_replaces_image_and_deletes_previous_after_commit`.
   - Hecho cuando: los tests pasan; el hash se compara con el del archivo limpio.
 
-- [ ] **T-25** (CA-32; RN-22, RN-23): elección de borrado de cuenta. **BLOQUEADA** por P9.
+- [ ] **T-25** (CA-32; RN-22, RN-23): elección de borrado de cuenta. **BLOQUEADA** por P9. Fuera de alcance de esta entrega hasta la enmienda aprobada de `api-004` y `mobile-004`.
   - Fase: 2. Depende de: P9 (enmienda aprobada de `api-004` CA-14 y de `mobile-004` CA-10).
-  - Estado: **no se implementa** hasta que la enmienda de `api-004` (`DELETE /api/v1/visitor/me` con `memories_policy`) esté aprobada por Aksel y sus responsables estén avisados (pregunta 5 de la spec).
+  - Estado: **no se implementa** hasta que la enmienda de `api-004` (`DELETE /api/v1/visitor/me` con `memories_policy`) esté aprobada por el solicitante original y sus responsables estén avisados (pregunta 5 de la spec).
   - Archivos previstos (solo si se desbloquea): `apps/api/src/app/Actions/Memories/Visitor/ApplyVisitorMemoriesPolicyAction.php` (nuevo); `apps/api/src/app/Actions/Visitor/DeleteVisitorAccountAction.php` (`api-004`, modificar solo por la enmienda); `apps/api/src/tests/Feature/Memories/VisitorMemoryAccountDeletionTest.php` (nuevo).
   - Cambios previstos: `keep` (filas con `visitor_id` NULL, sin borrar archivos); `delete` (filas con `deleted_at` y `visitor_id` NULL; archivos borrados después del commit). Sin peticiones, el campo no se pide. Con peticiones y sin `memories_policy` válido: 422 en `errors.memories_policy`. Activitylog `visitor-memories-policy-applied`.
   - Tests: `ca32_policy_required_when_memories_exist_returns_422`; `ca32_keep_unlinks_rows_and_keeps_files_and_audits`; `ca32_delete_soft_deletes_rows_and_removes_files_after_commit`. **Mientras esté bloqueada, los tests existen con su nombre y se marcan `markTestSkipped` con el motivo «Pendiente de enmienda de api-004 (P9)».**
@@ -223,7 +225,7 @@
 - [x] **T-28** (documental; RN-05, RN-21, RN-23): `infra/README.md` y documentación de la API.
   - Fase: transversal. Depende de: T-05, T-06, T-19.
   - Archivos: `infra/README.md` (modificar, en el mismo PR); `apps/api/docs/` (solo si la arquitectura de la API se documenta con `docs/templates/arquitectura-app.md`; no se duplica la guía `momentos-contrato-para-mobile.md`, que es de referencia).
-  - Cambios en `infra/README.md`: variables `MEMORIES_PUBLICATION_DAYS` (7 por defecto, decisión del 2026-11-12) y `MEMORIES_TERMS_VERSION` (por defecto `v1`, Q2 resuelta el 2026-11-13); seeder `db:seed --class=RolesAndPermissionsSeeder` con `memories.review` solo para `zoo-admin`; datos de prueba únicamente (las fotos de visitantes no se versionan fuera de pruebas, `api-013` CA-22); el flujo de commit de `memories/` lo cubre `api-013` CA-20 (no se duplica); límites de subida de 5 MB (ya existentes) y mensajes 413 y 415 que la app muestra. Sin secretos.
+  - Cambios en `infra/README.md`: variables `MEMORIES_PUBLICATION_DAYS` y `MEMORIES_TERMS_VERSION` (por defecto `v1`, Q2 resuelta); seeder `db:seed --class=RolesAndPermissionsSeeder` con `memories.review` solo para `zoo-admin`; datos de prueba únicamente (las fotos de visitantes no se versionan fuera de pruebas, `api-013` CA-22); el flujo de commit de `memories/` lo cubre `api-013` CA-20 (no se duplica); límites de subida de 5 MB (ya existentes) y mensajes 413 y 415 que la app muestra. Sin secretos.
   - Si la Fase 2 se entrega, actualizar la guía `apps/api/docs/momentos-contrato-para-mobile.md` con las respuestas reales de `arca_pruebas` solo si el responsable de backend lo decide; no es obligatorio en este plan.
   - Hecho cuando: el checklist de `infra/README.md` menciona cada requisito nuevo (`MEMORIES_*`, seeder) y el PR lo incluye.
 
@@ -242,7 +244,7 @@
 - [ ] CI en verde.
 - [ ] Cada CA-01 a CA-32 tiene al menos un test automatizado con su nombre (verificado por T-27). CA-32 queda con su test omitido hasta P9.
 - [ ] Cada RN-01 a RN-23 aparece en al menos una tarea (tabla siguiente).
-- [ ] Constitution Check del plan resuelto, incluida la fila V (D-M1, aceptada el 2026-11-13; sin ADR nuevo).
+- [ ] Constitution Check del plan resuelto, incluida la fila V.
 - [ ] `infra/README.md` actualizado en el mismo PR (T-28).
 - [ ] Spec, plan y tasks enlazados en el PR; estado de la spec actualizado por decisión humana.
 - [ ] Fase 2: el contrato de la app está en `apps/api/docs/momentos-contrato-para-mobile.md` sin divergencias nuevas.
@@ -321,11 +323,11 @@
 - RN cubiertas: 23 de 23 (RN-01 a RN-23). RN-22 solo en T-25, bloqueada.
 - Tareas que no pueden empezar: T-10, T-12, T-14 y T-19 hasta P2 (`api-013`); T-06 y T-07 hasta P3 (compartido con `api-014`); T-20 hasta P6; T-25 hasta P9; T-26 hasta P8.
 
-## Verificación (2026-11-13)
+## Verificación
 
 - API (`arca_pruebas`, tests por archivo): todos verdes salvo fallos preexistentes de esquema ajenos a esta feature (`PublicCatalogTest` ca02–ca05, `EnclosuresAdminTest` ca17, `AnimalRegistrationTest` ca03: columnas `longevity`, `age` y `stay_status` de `animals` en `arca_pruebas`). `pint` OK.
 - CA-32 (`VisitorMemoryAccountDeletionTest`): 3 pruebas omitidas por P9; no cuenta como verde.
 - Casillas abiertas: T-25 (P9) y T-29 (CI y PR, integración S1). Todas las demás T-xx están marcadas con evidencia.
 - CI: no verificado en esta sesión.
 
-Estado final de estas tareas: **En progreso** (plan y tasks aprobados por Jonathan, 2026-11-13). La spec sigue **Aprobada**.
+Estado final de estas tareas: **En progreso** (plan y tasks aprobados). La spec sigue **Aprobada**.

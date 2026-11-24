@@ -48,7 +48,7 @@ Todo dato de la API se escribe como texto (`textContent`). Las URLs de imagen se
 
 ## 7. Excepción de arquitectura
 
-ADR 0028 (Aceptado 2026-11-12): sin React, TypeScript, Vite ni `@arca/api-client` para esta sección; sin `package.json` ni build. Se reevalúa con la spec de pagos o si el catálogo crece.
+ADR 0028: sin React, TypeScript, Vite ni `@arca/api-client` para esta sección; sin `package.json` ni build. Se reevalúa con la spec de pagos o si el catálogo crece.
 
 ## 8. Cómo probar
 

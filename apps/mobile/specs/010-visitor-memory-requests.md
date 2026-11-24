@@ -2,10 +2,11 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile` (envío, corrección y reenvío, y «Mis memorias», pantallas y ViewModels nuevos); `packages/api-client` (métodos y tipos del visitante para peticiones, sin lógica de negocio); `api` (contrato y reglas en `api-010`, dueña de estados, límites, archivo, publicación y vigencia); `dashboard` (revisión, `dashboard-008`); `web` (galería pública, `web-010`).
-- Estado: En progreso
-- Solicitante / responsable funcional: Aksel
-- Aprobación funcional: Aksel, 2026-11-14 (alcance, CA y RN, incluidas las tres decisiones de esa fecha)
-- Dependencias de contrato: `api-010` (Aprobada el 2026-11-12; En progreso), DBR-012 (Lista para backend, aplicada en `arca_pruebas` el 2026-11-11) y ADR 0030 (Aceptado, Aksel, 2026-11-14). Plan: `apps/mobile/plan/010-visitor-memory-requests.md` (Aprobado, Aksel, 2026-11-14).
+- Estado: Implementada
+- Solicitada: 2026-11-11
+- Aprobada: 2026-11-11
+- Aprobación funcional: Aprobada (alcance, CA y RN, incluidas las tres decisiones registradas)
+- Dependencias de contrato: `api-010` (Aprobada; En progreso), DBR-012 (Lista para backend, aplicada en `arca_pruebas`) y ADR 0030 (Aceptado). Plan: `apps/mobile/plan/010-visitor-memory-requests.md` (Aprobado).
 - Entrada: una sección dentro de Perfil. Sin pestaña nueva.
 
 ## Problema y contexto
@@ -16,7 +17,7 @@ Esta spec describe lo que el visitante ve y hace en la app: desde Perfil, elegir
 
 La foto la guarda la API en `apps/api/src/media/memories/` (`api-013`, ADR 0026). La app no escribe en esa carpeta. El portal lee la URL pública solo cuando el momento está aceptado y vigente (`web-010`).
 
-## Decisiones tomadas (2026-11-10)
+## Decisiones tomadas
 
 - **Una imagen y una opinión** por petición. Imagen JPG, PNG o WebP de máximo 5 MB. La opinión, si se envía, tiene de 1 a 300 caracteres (`api-010` RN-05, RN-06).
 - **Casilla de consentimiento obligatoria** en cada envío y en cada reenvío. Su texto completo, con la referencia a los términos y condiciones, lo aprueba el zoológico (`api-010` RN-08, RN-23).
@@ -30,23 +31,23 @@ La foto la guarda la API en `apps/api/src/media/memories/` (`api-013`, ADR 0026)
 - **Borrado de cuenta:** la elección de conservar o eliminar los momentos se pide en el flujo de borrado de cuenta. Esa pantalla pertenece a `mobile-004` y no se modifica aquí.
 - Fuera de alcance: cancelar peticiones, editarlas después del envío (salvo el reenvío de una rechazada) y la cola offline.
 
-## Decisiones tomadas (2026-11-14)
+## Decisiones tomadas
 
-Aksel, responsable funcional de la app:
+Responsable funcional de la app:
 
 - **Entrada:** una sección «Mis memorias» dentro de Perfil. No se añade una pestaña a la barra inferior ni un acceso en Inicio.
-- **Foto:** se elige de la galería del teléfono con `expo-image-picker`. El ADR 0030 quedó Aceptado por Aksel el 2026-11-14. La dependencia se instala en la implementación, no con esta aprobación, y no se abre la cámara.
-- **Opinión:** opcional, igual que la API (`api-010` RN-06, decisión del 2026-11-11). Se puede enviar la foto sin texto. Si hay texto, tiene de 1 a 300 caracteres.
+- **Foto:** se elige de la galería del teléfono con `expo-image-picker`. El ADR 0030 quedó Aceptado. La dependencia se instala en la implementación, no con esta aprobación, y no se abre la cámara.
+- **Opinión:** opcional, igual que la API (`api-010` RN-06). Se puede enviar la foto sin texto. Si hay texto, tiene de 1 a 300 caracteres.
 
-## Decisiones tomadas (2026-11-15)
+## Decisiones tomadas
 
-Aksel, responsable funcional de la app:
+Responsable funcional de la app:
 
 - **Estado al día:** cada vez que se abre «Mis memorias», y al volver a la app con esa pantalla abierta, se vuelve a pedir la lista. El estado que cambió el zoológico se ve sin cerrar el proceso. No es un canal en vivo mientras la pantalla se queda quieta en primer plano.
-- **Una sola entrada al alta:** con una petición abierta no se ofrece «Enviar un momento». Enmienda de Aksel, 2026-11-17: la lista ya no muestra el recuadro «Ya tienes una petición abierta.». La petición enviada se abre en una ficha de solo lectura, con lo enviado y su estado, sin campos ni botón de envío. Una rechazada sigue abriendo la corrección.
+- **Una sola entrada al alta:** con una petición abierta no se ofrece «Enviar un momento». Enmienda: la lista ya no muestra el recuadro «Ya tienes una petición abierta.». La petición enviada se abre en una ficha de solo lectura, con lo enviado y su estado, sin campos ni botón de envío. Una rechazada sigue abriendo la corrección.
 - **Corrección con confirmación:** al terminar la corrección, la app pregunta «¿Seguro que quieres enviar la corrección?». Cancelar deja el formulario. Confirmar reenvía y, al responder 200, vuelve a «Mis memorias». El formulario no se queda abierto, así que no se puede seguir modificando esa revisión.
 
-## Decisiones tomadas (2026-11-18)
+## Decisiones tomadas
 
 - **Aviso de momento:** el toque abre `/memory-form` con el id. Si esa petición no está en la copia en memoria, la ruta pide la lista una vez y muestra «Buscando tu memoria…». No declara que falta antes de esa lectura. Si la lista la trae, se ve la ficha o la corrección. Si no, la pantalla «Tu memoria» explica que no está en la cuenta, o pide reintentar si la lectura falló. Después de esa lectura, motivo y plazo salen de la copia cargada (CA-18).
 
@@ -88,7 +89,7 @@ Aksel, responsable funcional de la app:
 
 ## Criterios de aceptación
 
-- **CA-01 (acceso desde Perfil):** Dada la app con sesión y correo verificado, cuando el visitante abre Perfil y pulsa «Mis memorias», entonces entra al módulo, donde puede elegir una imagen de la galería, escribir su opinión si quiere, marcar el consentimiento y enviar. La app pide permiso de galería solo al elegir la imagen. No aparece una pestaña nueva. Enmienda de Aksel, 2026-11-17: el título de la sección es «Mis memorias».
+- **CA-01 (acceso desde Perfil):** Dada la app con sesión y correo verificado, cuando el visitante abre Perfil y pulsa «Mis memorias», entonces entra al módulo, donde puede elegir una imagen de la galería, escribir su opinión si quiere, marcar el consentimiento y enviar. La app pide permiso de galería solo al elegir la imagen. No aparece una pestaña nueva. Enmienda: el título de la sección es «Mis memorias».
 - **CA-02 (formulario):** Dado el formulario de envío, cuando se muestra, entonces tiene un control para elegir la imagen de la galería, un campo de opinión opcional con contador de caracteres (máximo 300, anunciado a lectores de pantalla), la casilla de consentimiento con su texto completo (RN-07) y el botón «Enviar petición». El botón está desactivado mientras falten la imagen o el consentimiento, o mientras haya un bloqueo de CA-14 o CA-15. Una opinión vacía deja el botón activo si la imagen y el consentimiento ya están.
 - **CA-03 (validación local como ayuda):** Dado un archivo que no es JPG, PNG o WebP, que pesa más de 5 MB, o una opinión de más de 300 caracteres, cuando se elige o se escribe, entonces la app avisa en español y no llama a la API. La opinión vacía no es un error. La API valida igualmente (`api-010` CA-02, CA-03).
 - **CA-04 (envío correcto):** Dado un envío que responde 201, cuando llega la respuesta, entonces la app muestra la petición como «Enviada» con el texto «Tu petición se envió. El zoológico la revisará; todavía no está publicada.». No dice que la foto ya está en el portal.
@@ -109,10 +110,10 @@ Aksel, responsable funcional de la app:
 - **CA-12 (accesibilidad):** Dado el módulo, cuando se usa con lector de pantalla, entonces los controles tienen nombre en español, el estado de envío, los errores, el límite semanal y los campos a corregir se anuncian, el consentimiento se activa con un toque y se anuncia su estado, y lo marcado en una rechazada se distingue por texto y no solo por color.
 - **CA-13 (pruebas):** Dada la suite de Jest, cuando se ejecuta, entonces existe al menos una prueba que nombra cada CA-01 a CA-18 con el cliente simulado, y se cumple la cobertura mínima de `mobile-011`.
 - **CA-14 (límite semanal visible):** Dado que la lista del visitante trae `meta.can_submit` falso y `meta.next_submission_at` (o que un envío responde 429 con esa fecha), cuando se abre el formulario, entonces muestra en texto «Podrás enviar otra memoria a partir del {fecha y hora}.», desactiva «Enviar petición» y no ofrece el formulario hasta esa hora. Si el reloj del teléfono no coincide con el servidor, la API decide: un 429 se muestra con el mismo texto (`api-010` CA-23).
-- **CA-15 (petición abierta):** Dado que la lista trae `meta.open_request_id` no nulo, cuando se muestra «Mis memorias», entonces no aparece el recuadro «Ya tienes una petición abierta.» ni «Enviar un momento». Al pulsar la petición, se ve lo enviado y el estado, sin campos de edición ni «Enviar petición». Un envío que responde 422 `open_request` sigue mostrando «Ya tienes una petición abierta.» junto al intento (`api-010` CA-24). Tras un envío o un reenvío correcto, la copia local marca esa petición como abierta para que «Enviar un momento» no vuelva a aparecer. Una rechazada sigue abriendo la corrección. Enmienda de Aksel, 2026-11-17.
+- **CA-15 (petición abierta):** Dado que la lista trae `meta.open_request_id` no nulo, cuando se muestra «Mis memorias», entonces no aparece el recuadro «Ya tienes una petición abierta.» ni «Enviar un momento». Al pulsar la petición, se ve lo enviado y el estado, sin campos de edición ni «Enviar petición». Un envío que responde 422 `open_request` sigue mostrando «Ya tienes una petición abierta.» junto al intento (`api-010` CA-24). Tras un envío o un reenvío correcto, la copia local marca esa petición como abierta para que «Enviar un momento» no vuelva a aparecer. Una rechazada sigue abriendo la corrección. Enmienda.
 - **CA-16 (corrección de rechazada):** Dada una petición Rechazada, cuando el visitante pulsa «Corregir y reenviar», entonces la app abre el formulario precargado con su opinión (vacío si no tenía), muestra el motivo (CA-07), resalta cada campo de `rejected_fields` con un texto («Cambia la foto: el zoológico no la aceptó.» si incluye `image`; «Cambia la opinión: el zoológico pide otro texto.» si incluye `content`) y el envío llama `POST /api/v1/visitor/memories/{id}/resubmit`. El consentimiento vuelve a pedirse. Al pulsar «Enviar petición» la app pregunta «¿Seguro que quieres enviar la corrección?» y no llama al reenvío hasta «Sí, enviar». «Cancelar» cierra la pregunta y deja el formulario. Un reenvío con 200 muestra la petición como «Enviada» con el texto de CA-04, quita los campos y vuelve a «Mis memorias».
 - **CA-17 (validación de la corrección):** Dada una corrección cuyo motivo incluye `image`, cuando el visitante no elige una foto nueva, entonces la app no envía y pide elegir otra foto (ayuda local). Dada una corrección cuyo motivo incluye `content`, cuando la opinión es igual a la anterior (sin contar espacios al inicio y al final), entonces la app desactiva el envío y pide cambiarla (ayuda local). Si la opinión anterior era vacía y el motivo incluye `content`, hace falta un texto de 1 a 300 caracteres. Si la API responde 422 en `errors.image` u `errors.opinion`, el mensaje aparece junto al campo. La API decide (`api-010` CA-27).
-- **CA-18 (plazo y reenvío sin consulta extra):** Dado que la app ya tiene la lista (CA-06), cuando el visitante llega a «Corregir y reenviar» o a la fecha de una aceptada, entonces la app usa los datos de esa lista y no pide otra vez la lista para mostrar el motivo, los campos o el plazo. Después de un envío o un reenvío correcto, la lista se actualiza con la respuesta. Enmienda 2026-11-18: si `/memory-form` se abre con un id que aún no está en memoria, pide la lista una vez antes de decidir que falta.
+- **CA-18 (plazo y reenvío sin consulta extra):** Dado que la app ya tiene la lista (CA-06), cuando el visitante llega a «Corregir y reenviar» o a la fecha de una aceptada, entonces la app usa los datos de esa lista y no pide otra vez la lista para mostrar el motivo, los campos o el plazo. Después de un envío o un reenvío correcto, la lista se actualiza con la respuesta. Enmienda: si `/memory-form` se abre con un id que aún no está en memoria, pide la lista una vez antes de decidir que falta.
 
 ## Reglas de negocio
 
@@ -125,7 +126,7 @@ Aksel, responsable funcional de la app:
 - **RN-07 (consentimiento):** La casilla es obligatoria en cada envío y en cada reenvío. Su texto es el de `api-010` RN-08: «Confirmo que tengo permiso de las personas que aparecen en la foto y, si hay menores, de sus madres, padres o tutores, y que acepto los términos y condiciones de «Momentos para recordar».» Ese texto es de referencia hasta que lo apruebe el zoológico. Hasta esa aprobación, la app no se publica con el texto de referencia.
 - **RN-08 (permiso del dispositivo):** El acceso a la galería se pide explícitamente y solo al elegir la imagen. La app no abre la cámara, no lee la galería completa y no guarda copias permanentes de la foto.
 - **RN-09 (textos):** Textos de la interfaz en español; identificadores, rutas y campos en inglés.
-- **RN-10 (selector):** Elegir la foto usa `expo-image-picker`, autorizado por el ADR 0030 (Aceptado, Aksel, 2026-11-14). Se instala en la implementación. El ADR 0004 no cubre este selector.
+- **RN-10 (selector):** Elegir la foto usa `expo-image-picker`, autorizado por el ADR 0030 (Aceptado). Se instala en la implementación. El ADR 0004 no cubre este selector.
 - **RN-11 (límite y textos desde la API):** La fecha de «puedes enviar otro» y el estado de la petición abierta vienen de la API (`meta` de la lista o el error 429). La app no calcula la ventana de 7 días (`api-010` RN-17, RN-18).
 - **RN-12 (corrección):** La app no inventa campos. Lo que resalta viene de `rejected_fields`. Un reenvío siempre es la misma petición (`api-010` RN-19).
 - **RN-13 (plazo de la foto):** La app muestra `published_until` y `is_published` tal como llegan. No calcula el plazo ni decide cuándo termina.
@@ -157,7 +158,7 @@ Aksel, responsable funcional de la app:
   - `mobile-004` (sesión, correo verificado, refresh, almacenamiento seguro y pantalla de borrado de cuenta; Implementada).
   - `api-004`: `DELETE /api/v1/visitor/me` necesita el parámetro `memories_policy` (`keep` o `delete`), que pide esta app cuando el visitante tiene peticiones. **Divergencia pendiente:** no se modifica ni `api-004` ni `mobile-004` desde esta spec (`api-010` pregunta 5). La elección de borrado y el aviso de `api-010` deben integrarse en esa pantalla cuando se autorice.
   - ADR 0004 (Expo y React Native). No autoriza el selector de imágenes.
-  - ADR 0030 (Aceptado, Aksel, 2026-11-14): `expo-image-picker` para elegir de la galería. Se instala en la implementación.
+  - ADR 0030 (Aceptado): `expo-image-picker` para elegir de la galería. Se instala en la implementación.
   - ADR 0026 y `api-013`: la API guarda el archivo en `media/memories/`. La app no toca esa carpeta.
 - **Riesgos:**
   - Prometer publicación al enviar: se evita con los textos de CA-04.
@@ -167,10 +168,10 @@ Aksel, responsable funcional de la app:
   - Texto de referencia del consentimiento publicado antes de su aprobación por el zoológico (`api-010` RN-23). La app no se publica con ese texto hasta entonces (RN-07).
   - Instalar el selector antes de las tasks.
   - Reloj del teléfono distinto del servidor: la API decide (CA-14).
-- **Preguntas pendientes:** ninguna de producto. El texto definitivo de la casilla y de los términos lo redacta el zoológico; hasta entonces se usa el de referencia y no se publica (RN-07).
+- **Sin preguntas de producto abiertas.** El texto definitivo de la casilla y de los términos lo redacta el zoológico; hasta entonces se usa el de referencia y no se publica (RN-07).
 
 ## Revisión
 
-- Aprobación funcional: Aksel, 2026-11-14. Alcance, CA y RN.
-- Historial: borrador del 2026-11-05 → revisión del 2026-11-10 con las respuestas de Jonathan → aprobación funcional del 2026-11-14 (entrada en Perfil, galería, opinión opcional) → el mismo día, ADR 0030 Aceptado, plan aprobado y tasks aprobadas por Aksel → implementación el 2026-11-14. La suite `visitor-memories` quedó en verde. Enmienda del 2026-11-15 (Aksel): la lista se vuelve a pedir al abrirla, el alta no se abre con una petición pendiente y la corrección pide confirmación antes de volver a la lista. Aksel confirmó el 2026-11-20 la verificación y el pull (T-29). No pasa a Implementada: el zoológico aún no redacta el texto de la casilla (RN-07).
+- Aprobación funcional: Aprobada. Alcance, CA y RN.
+- Historial: borrador → revisión con las respuestas del equipo → aprobación funcional (entrada en Perfil, galería, opinión opcional) → en la misma fecha, ADR 0030 Aceptado, plan aprobado y tasks aprobadas → implementación. La suite `visitor-memories` quedó en verde. Enmienda: la lista se vuelve a pedir al abrirla, el alta no se abre con una petición pendiente y la corrección pide confirmación antes de volver a la lista. La verificación y el pull (T-29) quedaron confirmados. No pasa a Implementada: el zoológico aún no redacta el texto de la casilla (RN-07).
 - Evidencia/enlaces: `apps/api/specs/010-visitor-memory-requests.md`, `apps/api/specs/012-public-memories-read.md`, `apps/api/specs/013-object-storage-images.md`, `apps/mobile/specs/004-visitor-account.md`, `apps/mobile/specs/013-visitor-push-notifications.md`, `docs/adr/0004-mobile-react-native.md`, `docs/adr/0026-object-storage-s3-images.md`, `docs/adr/0030-expo-image-picker-visitor-memories.md`, `apps/dashboard/specs/008-memory-moderation.md`, `apps/web/specs/010-dynamic-memories.md`, `docs/database/requests/DBR-012-visitor-memories.md`.

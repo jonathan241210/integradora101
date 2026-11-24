@@ -100,7 +100,7 @@ Ejemplo:
 }
 ```
 
-`EXPLAIN` de la consulta en `arca_pruebas` (solo lectura, 2026-11-13, MySQL 8.4.11 con 5 filas en la tabla): `type=ref`, `possible_keys` con `idx_visitor_memories_status_publication` e `idx_visitor_memories_status_created`, `key=idx_visitor_memories_status_created`, `rows=2`, `Extra: Using where; Using filesort`. Con tan pocas filas el optimizador eligió el índice por `status`; el filtro usa `status` como prefijo y el orden requiere `filesort`, aceptable con el volumen previsto. Riesgo anotado: reevaluar con volumen real; no se crea ningún índice sin DBR.
+`EXPLAIN` de la consulta en `arca_pruebas` (solo lectura, MySQL 8.4.11 con 5 filas en la tabla): `type=ref`, `possible_keys` con `idx_visitor_memories_status_publication` e `idx_visitor_memories_status_created`, `key=idx_visitor_memories_status_created`, `rows=2`, `Extra: Using where; Using filesort`. Con tan pocas filas el optimizador eligió el índice por `status`; el filtro usa `status` como prefijo y el orden requiere `filesort`, aceptable con el volumen previsto. Riesgo anotado: reevaluar con volumen real; no se crea ningún índice sin DBR.
 
 ## Precondición
 

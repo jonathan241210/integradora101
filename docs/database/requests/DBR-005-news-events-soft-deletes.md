@@ -1,11 +1,11 @@
 # DBR-005 · news-events-soft-deletes
 
-- Estado: Aplicada (`arca_pruebas`, 2026-10-30)
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-10-30
+- Aprobada: 2026-10-30
 - Feature/spec origen: `apps/api/specs/007-administration-management.md`
-- Solicitante: Jonathan
-- Responsable de BD: Víctor Adrián
-- Responsable backend: Jonathan
-- Fecha: 2026-10-30
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 - Depende de: DBR-001 (`english-schema-normalization`), ya aplicada
 
 ## Problema y justificación
@@ -104,15 +104,15 @@ No aplica.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Víctor Adrián | 2026-10-30 | Aprobada |
-| Responsable backend | Jonathan | 2026-10-30 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas | aplicada | 2026-10-30 | Migración `2026_10_30_000005` aplicada en `arca_pruebas` (Aiven) |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_10_30_000005` aplicada en `arca_pruebas` (Aiven) |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

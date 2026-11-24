@@ -12,7 +12,7 @@ return new class extends Migration
      * Historial de revisiones de cancelaciones por cajero y día de negocio (api-027): cada
      * decisión del admin es una fila nueva; la vigente es la de mayor `id`. Sin UNIQUE sobre
      * (cashier_id, business_date) para conservar el historial. `cashier_id` NOT NULL: el grupo
-     * «Sin cajero registrado» no se revisa (decisión de Jonathan, 2026-11-21). Idempotente.
+     * «Sin cajero registrado» no se revisa (decisión del equipo). Idempotente.
      */
     public function up(): void
     {

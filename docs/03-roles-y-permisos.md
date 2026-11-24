@@ -2,14 +2,14 @@
 
 Los nombres de roles, permisos, recursos y acciones son identificadores en inglés. Los textos visibles y sus descripciones son en español. La autorización se aplica en la API con Policies y Spatie Permission; ocultar una opción en la interfaz no protege un endpoint.
 
-> **Estado de esta versión.** Recoge los roles y permisos finales aprobados por Jonathan el 2026-11-20 (`api-021`, `api-022`, `api-023`). **Entra en vigor al implementarse `api-021`, `api-022` y `api-023`.** Hasta entonces, la matriz describe el estado objetivo y la base puede seguir con el estado anterior.
+> **Estado de esta versión.** Recoge los roles y permisos finales aprobados por el responsable de backend (`api-021`, `api-022`, `api-023`). **Entra en vigor al implementarse `api-021`, `api-022` y `api-023`.** Hasta entonces, la matriz describe el estado objetivo y la base puede seguir con el estado anterior.
 
 ## Roles
 
 Cada cuenta de personal tiene exactamente un rol (`api-023` RN-01). No hay roles ni permisos creados desde la interfaz.
 
 - `admin` — Administrador general (Presidencia e Informática). Control total de la administración y de los permisos de la matriz. Gestiona las cuentas **no admin** desde la administración (`users.manage`). Las cuentas `admin` **solo se gestionan desde la consola del servidor** (`arca:admin:*`): no se crean, promueven, editan, desactivan, eliminan ni restablecen desde la API ni el dashboard. Ve el reporte de cancelaciones (`reports.cancellations.view`). Requiere 2FA.
-- `zoo-admin` — Administrador del Zoológico (Dirección). Administra noticias, eventos y recintos; consulta boletos de todos los cajeros, cierres de caja, panel y reportes de boletos; revisa solicitudes de especie y momentos de visitantes. No administra cuentas del personal (desde el 2026-11-05, `api-007`). No ve el reporte de cancelaciones. Requiere 2FA.
+- `zoo-admin` — Administrador del Zoológico (Dirección). Administra noticias, eventos y recintos; consulta boletos de todos los cajeros, cierres de caja, panel y reportes de boletos; revisa solicitudes de especie y momentos de visitantes. No administra cuentas del personal (`api-007`). No ve el reporte de cancelaciones. Requiere 2FA.
 - `executive` — **Consulta directiva**. Panel y reporte de boletos en solo lectura. Código conservado; solo cambia la etiqueta (`api-023` RN-04). Requiere 2FA.
 - `communications` — **Comunicación**. Publica noticias, eventos, momentos y TulanPedia (solicitudes de especie). Sin panel, sin reportes y sin cuentas. Pantalla de inicio: Noticias. Requiere 2FA.
 - `cashier` — Cajero; venta de boletos, cancelación de boletos propios del mismo día con motivo, historial propio y cierre de caja. Requiere 2FA (obligatorio desde el despliegue de `api-021`).
@@ -57,13 +57,13 @@ Cada permiso usa `<resource>.<action>` en inglés, por ejemplo `tickets.create` 
 | `news.manage` | Administrar noticias | ✓ | ✓ | — | ✓ | — | — | — |
 | `events.manage` | Administrar eventos | ✓ | ✓ | — | ✓ | — | — | — |
 | `enclosures.manage` | Administrar recintos (regenerar QR y eliminar con contraseña en modo Ventana, `api-021`) | ✓ | ✓ | — | — | — | — | — |
-| `species.review` | Revisar, editar, publicar, aceptar sin publicar o rechazar solicitudes de publicación de especies existentes; despublicar, republicar y eliminar la publicación (con 2FA). Un único permiso (decidido 2026-11-12). Cola de pendientes: `api-024` | — | ✓ | — | ✓ | — | — | — |
+| `species.review` | Revisar, editar, publicar, aceptar sin publicar o rechazar solicitudes de publicación de especies existentes; despublicar, republicar y eliminar la publicación (con 2FA). Un único permiso (decidido). Cola de pendientes: `api-024` | — | ✓ | — | ✓ | — | — | — |
 | `memories.review` | Revisar y decidir momentos de visitantes (con 2FA). Cadena de momentos: `api-010` RN-07 y CA-16, `dashboard-008`. Cola de pendientes: `api-024` | — | ✓ | — | ✓ | — | — | — |
 | `public-content.view` | Consultar contenido público | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | Público |
 
 Notas de la matriz:
 
-- `operational-staff.manage` queda **sin efecto** (decisión de 2026-11-20, `api-023` H-01). Una fila de ese permiso que quede en `permissions` de bases existentes no tiene efecto; su limpieza es un cambio de datos aparte.
+- `operational-staff.manage` queda **sin efecto** (decisión registrada en `api-023` H-01). Una fila de ese permiso que quede en `permissions` de bases existentes no tiene efecto; su limpieza es un cambio de datos aparte.
 - El permiso `species.review` y `memories.review` se crean con `Permission::findOrCreate`. El seeder da a `admin` todos los permisos de su arreglo salvo los de boletos, así que `admin` se excluye de `species.review` y `memories.review` de forma explícita.
 - `tickets.create` y `tickets.cancel` son solo de `cashier`; `ticket-prices.manage` es solo de `admin`, con 2FA (`api-009`).
 

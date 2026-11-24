@@ -13,5 +13,14 @@ class AnimalRestraint extends Model
 
     public $timestamps = false;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'clinical_evaluation_id',
+        'mobilization_type',
+        'physical_method',
+        'drug',
+        'dose_mg_per_kg',
+        'dose_ml',
+        'administered_time',
+        'notes',
+    ];
 }

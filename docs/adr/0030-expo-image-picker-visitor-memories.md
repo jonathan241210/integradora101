@@ -1,11 +1,11 @@
 # 0030 · Selector de galería para momentos del visitante (expo-image-picker)
 
 - Estado: Aceptado
-- Fecha: 2026-11-14
-- Spec relacionada: `apps/mobile/specs/010-visitor-memory-requests.md` (Aprobada, Aksel, 2026-11-14)
-- Plan: `apps/mobile/plan/010-visitor-memory-requests.md` (Aprobado, Aksel, 2026-11-14)
-- Solicitante: Aksel
-- Aprobado por: Aksel, 2026-11-14
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Spec relacionada: `apps/mobile/specs/010-visitor-memory-requests.md` (Aprobada)
+- Plan: `apps/mobile/plan/010-visitor-memory-requests.md` (Aprobado)
+- Aprobado por: Equipo móvil
 
 Aceptado, este ADR autoriza instalar `expo-image-picker` en `apps/mobile` y declarar el permiso de galería cuando se implemente `mobile-010`. No autoriza código por sí solo: la implementación espera las tasks de ese plan. No abre la cámara.
 
@@ -40,5 +40,5 @@ La app usa `expo-image-picker` solo para elegir una imagen JPG, PNG o WebP de la
 
 ## Validación y revisión
 
-- Aprobado por: Aksel, 2026-11-14.
+- Aprobado por: Equipo móvil.
 - Evidencia: `apps/mobile/specs/010-visitor-memory-requests.md`, `docs/adr/0004-mobile-react-native.md`, `docs/adr/0022-expo-camera-qr-scan.md`, `apps/api/specs/010-visitor-memory-requests.md`.

@@ -2,13 +2,14 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `pwa`, `packages/api-client` (si aplica), `docs/database` (DBR)
-- Estado: Aprobada
-- Solicitante / responsable funcional: Solicitante (usuario)
-- Aprobación funcional: Solicitante (usuario), 2026-11-18 (aprobación para implementación; DBR-020/021 atendidas/aplicadas en `arca_pruebas`)
+- Estado: Implementada
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Aprobación funcional: Solicitante (usuario) (aprobación para implementación; DBR-020/021 atendidas/aplicadas en `arca_pruebas`)
 
 ## Problema y contexto
 
-La PWA veterinaria requiere modo offline-first (`apps/pwa/specs/009-offline-first-sync.md`, Aprobada y reaprobada 2026-11-18): bootstrap de catálogos al login, consulta offline, registro/encolado de altas de animales sin foto y evaluaciones clínicas, sincronización automática/manual con prioridad animales→diagnósticos, delta incremental con bajas y idempotencia por UUID con confirmación individual.
+La PWA veterinaria requiere modo offline-first (`apps/pwa/specs/009-offline-first-sync.md`, Aprobada y reaprobada): bootstrap de catálogos al login, consulta offline, registro/encolado de altas de animales sin foto y evaluaciones clínicas, sincronización automática/manual con prioridad animales→diagnósticos, delta incremental con bajas y idempotencia por UUID con confirmación individual.
 
 La API actual expone endpoints staff para animales y evaluaciones (`/api/v1/staff/animals`, `/api/v1/staff/clinical-evaluations`) pero no provee contratos explícitos de bootstrap/delta, tombstones uniformes para sync, ni idempotencia por UUID de operación.
 

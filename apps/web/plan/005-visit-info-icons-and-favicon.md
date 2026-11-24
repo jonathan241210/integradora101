@@ -2,9 +2,11 @@
 
 - Spec: `apps/web/specs/005-visit-info-icons-and-favicon.md`
 - Estado de spec: Implementada
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
 - Estado técnico: Implementado y verificado; iconos centrados con desplazamiento uniforme de 8 px
-- Responsable técnico: Por identificar
-- Fecha: 2026-10-08
+- Responsable técnico: Frontend
+- Aprobación técnica: Aprobada
 
 ## Diseño de solución
 
@@ -65,8 +67,8 @@ La revisión visual en el navegador medirá el ancho del documento y confirmará
 
 ## Orden y aprobación
 
-1. Plan y checklist iniciales aprobados por el solicitante el 2026-10-08; incremento CA-04/RN-04 aprobado funcionalmente en la conversación.
-2. El incremento del plan fue aprobado por el solicitante el 2026-10-08; aprobar el checklist actualizado antes de implementar.
+1. Plan y checklist iniciales aprobados por el solicitante; incremento CA-04/RN-04 aprobado funcionalmente en la conversación.
+2. El incremento del plan fue aprobado por el solicitante; aprobar el checklist actualizado antes de implementar.
 3. Aplicar solo `margin-top: 8px` a los iconos de `.infobar`; preservar HTML, contenido, enlaces y el logo de origen.
 4. Añadir test nombrado para CA-04; ejecutar tests dirigidos, suite completa, `git diff --check` y revisión visual en los viewports de CA-01.
 5. La implementación inicial y favicon local siguen verificados. `/verify` informa que `apps/web` no está inicializada al faltar `src/package.json`.

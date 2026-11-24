@@ -1,9 +1,11 @@
 # Tareas · 007 · diagnostico-intenso-parte1-guardado
 
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-13
 - Spec: `apps/pwa/specs/007-diagnostico-intenso-parte1-guardado.md`
 - Plan: `apps/pwa/plan/007-diagnostico-intenso-parte1-guardado.md`
 
-> **Decisiones registradas:** modalidad **B** (guardar solo cuando partes 1 y 2 completas), `patient_age` en `clinical_evaluations` y SoftDeletes clínicos vía **DBR-015 (Lista para backend, aplicada en `arca_pruebas` 2026-11-13; evidencia post-migración detallada pendiente)**.  
+> **Decisiones registradas:** modalidad **B** (guardar solo cuando partes 1 y 2 completas), `patient_age` en `clinical_evaluations` y SoftDeletes clínicos vía **DBR-015 (Lista para backend, aplicada en `arca_pruebas`; evidencia post-migración detallada pendiente)**.  
 > **Precondición:** cumplida para iniciar implementación consumidora (confirmación de aplicación BD). Pendiente adjuntar evidencia `SHOW CREATE TABLE` en DBR-015.
 
 ## Definición y contrato

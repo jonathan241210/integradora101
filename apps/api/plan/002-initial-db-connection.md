@@ -1,8 +1,10 @@
 # Plan técnico · 002 · initial-db-connection
 
 - Spec: `apps/api/specs/002-initial-db-connection.md`
-- Estado de spec: Aprobada
-- Responsable técnico: Victor Adrian (BD) / Jonathan (backend)
+- Estado de spec: Implementada
+- Solicitada: 2026-10-11
+- Aprobada: 2026-10-11
+- Responsable técnico: Responsable de BD (BD) / Backend (backend)
 
 ## Diseño de solución
 
@@ -17,8 +19,8 @@ inventario (versión, charset, collation, modo SQL, tablas) se documenta en
 `apps/api/docs/inventario-bd-inicial.md` sin incluir credenciales.
 
 Dos usuarios de Aiven:
-- `avnadmin` → Victor Adrian (responsable de BD, privilegios completos de administración)
-- `desarrollador` → resto del equipo (acceso de lectura/consulta; permisos exactos a definir por Victor Adrian en el panel de Aiven)
+- `avnadmin` → Responsable de BD (privilegios completos de administración)
+- `desarrollador` → resto del equipo (acceso de lectura/consulta; permisos exactos a definir por el Responsable de BD en el panel de Aiven)
 
 ## Cambios por área
 
@@ -38,8 +40,8 @@ Dos usuarios de Aiven:
   ruta referenciada en `.env` como `DB_SSL_CA=/ruta/absoluta/local/ca.pem`.
   El archivo **no se versiona**; se añade al `.gitignore`.
 - **Usuarios Aiven:**
-  - `avnadmin` para Victor Adrian (responsable de BD).
-  - `desarrollador` para el resto del equipo; Victor Adrian configura sus permisos en el panel.
+  - `avnadmin` para el Responsable de BD.
+  - `desarrollador` para el resto del equipo; el Responsable de BD configura sus permisos en el panel.
 
 ## Configuración `.env` y `database.php`
 
@@ -76,7 +78,7 @@ Esto activa SSL con el CA certificate de Aiven sin necesitar certificado de clie
 - `DB_PASSWORD` y `DB_SSL_CA` (ruta local) solo existen en el `.env` de cada integrante; nunca en el repo.
 - El archivo `ca.pem` se agrega a `.gitignore` raíz y a `apps/api/src/.gitignore`.
 - `apps/api/src/.env` se agrega a `.gitignore` (Laravel lo hace por defecto; verificar).
-- El usuario `avnadmin` es solo para Victor Adrian; los demás usan `desarrollador` con mínimo privilegio.
+- El usuario `avnadmin` es solo para el Responsable de BD; los demás usan `desarrollador` con mínimo privilegio.
 - No se ejecuta ninguna migración ni comando destructivo en esta feature.
 - Portabilidad: la configuración funciona igual en Aiven Cloud y con MySQL Server local cambiando solo `.env`.
 
@@ -98,7 +100,7 @@ Los tests son Feature tests con `RefreshDatabase` desactivado (solo se prueba co
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Laravel 12 / PHP 8.2+ / MySQL 8.0.x; configuración por `.env`; sin SDK propietario en código |
-| II. La spec manda | Sí | Spec `002` aprobada por Victor Adrian; plan y tasks con mismo identificador |
+| II. La spec manda | Sí | Spec `002` aprobada; plan y tasks con mismo identificador |
 | III. Lógica separada de la interfaz | Sí | No hay lógica de negocio en esta feature; solo configuración de infraestructura |
 | IV. Un test por criterio | Sí | Un test PHPUnit nombrado por cada CA-01 a CA-05 |
 | V. Una sola fuente de verdad para los datos | Sí | No se altera el esquema; MySQL de `apps/api` sigue siendo la autoridad |
@@ -108,8 +110,8 @@ Los tests son Feature tests con `RefreshDatabase` desactivado (solo se prueba co
 
 - **ADR requerido:** ninguno nuevo; esta feature usa ADR 0001, 0006 y 0010 ya aceptados.
 - **Riesgo principal:** commit accidental de `.env` o `ca.pem` con credenciales. Mitigación: `.gitignore` verificado en T-01 y hook `protect-paths.mjs` ya activo en el repo.
-- **SSL CA cert:** cada integrante descarga `ca.pem` del panel de Aiven. Victor Adrian comparte el enlace de descarga por canal externo; no se versiona el archivo.
-- **Permisos del usuario `desarrollador`:** Victor Adrian los configura en el panel de Aiven antes de compartir credenciales al equipo.
+- **SSL CA cert:** cada integrante descarga `ca.pem` del panel de Aiven. El Responsable de BD comparte el enlace de descarga por canal externo; no se versiona el archivo.
+- **Permisos del usuario `desarrollador`:** El Responsable de BD los configura en el panel de Aiven antes de compartir credenciales al equipo.
 
 ## Orden y aprobación
 
@@ -117,11 +119,11 @@ Los tests son Feature tests con `RefreshDatabase` desactivado (solo se prueba co
 2. T-02: inicializar Laravel 12 con `composer create-project`.
 3. T-03: crear `.env.example` con todas las claves.
 4. T-04: ajustar `config/database.php` para SSL CA.
-5. T-05: Victor Adrian configura su `.env` local (credenciales `avnadmin`) y verifica conectividad.
+5. T-05: el Responsable de BD configura su `.env` local (credenciales `avnadmin`) y verifica conectividad.
 6. T-06: ejecutar inventario y redactar `docs/inventario-bd-inicial.md`.
 7. T-07: escribir tests PHPUnit para CA-01 a CA-05.
 8. T-08: ejecutar `composer test` y verificar verde.
-9. T-09: Victor Adrian comparte credenciales de `desarrollador` por canal externo.
+9. T-09: el Responsable de BD comparte credenciales de `desarrollador` por canal externo.
 10. T-10: cada integrante configura su `.env` y verifica con `php artisan db:show`.
 
-Aprobación técnica: Victor Adrian, 2026-10-11.
+Aprobación técnica: Aprobada.

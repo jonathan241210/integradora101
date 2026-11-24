@@ -2,9 +2,10 @@
 
 - App dueña: `pwa`
 - Apps/paquetes afectados: `pwa`, `api` (lectura de sesión y catálogo de animales existente)
-- Estado: Aprobada
-- Solicitante / responsable funcional: Victor Adrian
-- Aprobación funcional: Victor Adrian, 2026-11-13 (confirmación de implementación de parte 1 según indicaciones)
+- Estado: Implementada
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-13
+- Aprobación funcional: Aprobada (confirmación de implementación de parte 1 según indicaciones)
 
 ## Problema y contexto
 
@@ -78,7 +79,7 @@ Como personal veterinario, quiero que al iniciar un diagnóstico intenso se prec
 
 - Dependencias: sesión staff activa, `GET /api/v1/auth/me`, `GET /api/v1/staff/animals`.
 - Riesgos: cambio de comportamiento respecto a spec 002 (campos antes editables/manuales pasan a precargados/bloqueados); depende de conectividad.
-- Decisiones confirmadas/ajustadas (2026-11-13): MVZ precargado desde usuario autenticado (`first_name` + `last_name` + `second_last_name` si existe) y **editable**; nombre, especie, identificación, sexo y edad precargados desde animal seleccionado y **editables**; edad precargada (calculada desde `birth_date` o `estimated_age`) y editable; peso y fecha editables. Ajuste posterior: se retira el sombreado visual de los campos precargados. No se modifica esquema de `animals` ni se agrega edad en `clinical_evaluations` (`evaluation_date` marca el momento). Se mantiene el modelo actual de `animals`.
+- Decisiones confirmadas/ajustadas: MVZ precargado desde usuario autenticado (`first_name` + `last_name` + `second_last_name` si existe) y **editable**; nombre, especie, identificación, sexo y edad precargados desde animal seleccionado y **editables**; edad precargada (calculada desde `birth_date` o `estimated_age`) y editable; peso y fecha editables. Ajuste posterior: se retira el sombreado visual de los campos precargados. No se modifica esquema de `animals` ni se agrega edad en `clinical_evaluations` (`evaluation_date` marca el momento). Se mantiene el modelo actual de `animals`.
 
 ## Revisión
 

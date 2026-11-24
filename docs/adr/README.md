@@ -5,21 +5,22 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 ## Estados
 
 - **Aceptado:** decisión acordada; implementar conforme a sus límites y SDD.
-- **Aceptado:** alternativa para revisión; no se considera aprobación.
+- **Rechazado:** alternativa descartada o fuera de alcance de la entrega actual; se indica la justificación en el propio ADR.
 - **Abierto:** falta una decisión de alcance/tecnología.
 - **Propuesto:** decisión redactada y pendiente de aprobación del equipo; no autoriza dependencias ni implementación.
+- **Superseded:** sustituida por otro ADR, que se indica en el documento.
 
 ## Índice
 
 - [0001 · API central Laravel](0001-api-central-laravel.md) — Aceptado
-- [0002 · SPAs React y Vite](0002-spas-react-vite.md) — Aceptado; router Aceptado
+- [0002 · SPAs React y Vite](0002-spas-react-vite.md) — Aceptado
 - [0003 · MySQL y PWA offline](0003-mysql-y-pwa-offline.md) — Aceptado
 - [0004 · Mobile React Native](0004-mobile-react-native.md) — Aceptado
-- [0005 · Videojuego pendiente](0005-videojuego-pendiente.md) — Abierto
+- [0005 · Videojuego pendiente](0005-videojuego-pendiente.md) — Rechazado — fuera de alcance de esta entrega
 - [0006 · Google Cloud portable](0006-hosting-google-cloud-portable.md) — Superseded por 0013
 - [0007 · Línea base de arquitectura general](0007-linea-base-arquitectura-general.md) — Aceptado
-- [0008 · Integración con el sistema municipal](0008-integracion-sistema-municipal.md) — Abierto
-- [0009 · Pagos electrónicos futuros](0009-pagos-electronicos-futuros.md) — Aceptado
+- [0008 · Integración con el sistema municipal](0008-integracion-sistema-municipal.md) — Rechazado — fuera de alcance de esta entrega
+- [0009 · Pagos electrónicos futuros](0009-pagos-electronicos-futuros.md) — Rechazado — fuera de alcance de esta entrega
 - [0010 · MySQL 8.0 y gobierno de cambios de base de datos](0010-mysql-8-0-database-change-governance.md) — Aceptado
 - [0011 · Identidad del visitante y sesión móvil](0011-visitor-identity-and-mobile-session.md) — Aceptado
 - [0012 · Canal de distribución Android](0012-android-distribution-channel.md) — Aceptado
@@ -30,27 +31,26 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0017 · Exportación del reporte a Excel y PDF](0017-report-export-excel-pdf.md) — Aceptado
 - [0018 · PHP mínimo de la API en 8.4](0018-php-minimum-8-4.md) — Aceptado
 - [0019 · Generación del QR del boleto en SVG desde la API](0019-qr-svg-generation-api.md) — Aceptado
-- [0020 · Notificaciones por correo electrónico de cambios de precio](0020-price-change-email-notifications.md) — Propuesto — diferido (2026-11-02)
-- [0021 · Excepciones a la Constitución en la feature de ventas de boletos](0021-ticket-sales-constitution-exceptions.md) — Aceptado (2026-11-02)
+- [0020 · Notificaciones por correo electrónico de cambios de precio](0020-price-change-email-notifications.md) — Rechazado — fuera de alcance de esta entrega (diferido)
+- [0021 · Excepciones a la Constitución en la feature de ventas de boletos](0021-ticket-sales-constitution-exceptions.md) — Aceptado
 - [0022 · Escaneo QR con expo-camera (mobile-006)](0022-expo-camera-qr-scan.md) — Aceptado
-- [0023 · Recorrido guiado 3D y realidad aumentada offline](0023-mobile-ar-3d-camera-threejs.md) — Propuesto
-- [0024 · Excepción de arquitectura para el portal público: HTML y JavaScript estático en apps/web](0024-web-static-portal-exception.md) — Aceptado (2026-11-07)
-- [0023 · Checklist de despliegue en la Constitución](0023-deployment-checklist-constitution.md) — Propuesto (2026-11-05)
-- [0025 · Recorrido guiado 3D y realidad aumentada offline](0025-mobile-ar-3d-camera-threejs.md) — Propuesto
-- [0026 · Almacenamiento de imágenes: carpeta de medios versionada para pruebas compartidas](0026-object-storage-s3-images.md) — Aceptado (2026-11-12; enmienda de especies 2026-11-11; riesgos (a), (b), (c), (g) y (m) confirmados por Jonathan, 2026-11-12, válidos para pruebas)
-- [0027 · Galería dinámica de «Momentos para recordar» en el portal (excepción acotada a web-010)](0027-dynamic-public-memories-gallery.md) — Aceptado (2026-11-12; aprobado por Jonathan, responsable de backend)
-- [0028 · Catálogo dinámico de TulanPedia en el portal (excepción acotada a web-011)](0028-dynamic-tulanpedia-catalog.md) — Aceptado (2026-11-12)
-- [0029 · Push de Android para el visitante (Expo sobre FCM)](0029-visitor-android-push.md) — Aceptado (Aksel, 2026-11-14; la dependencia entra con las tasks)
-- [0030 · Selector de galería para momentos del visitante (expo-image-picker)](0030-expo-image-picker-visitor-memories.md) — Aceptado (Aksel, 2026-11-14)
-- [0031 · Búsqueda global del portal con HTML y JavaScript estático](0031-global-portal-search-static-exception.md) — Aceptado (2026-11-18; autoriza `web-012` con spec, plan y tasks aprobados)
+- [0023 · Checklist de despliegue en la Constitución](0023-deployment-checklist-constitution.md) — Aceptado
+- [0024 · Excepción de arquitectura para el portal público: HTML y JavaScript estático en apps/web](0024-web-static-portal-exception.md) — Aceptado
+- [0025 · Recorrido guiado 3D y realidad aumentada offline](0025-mobile-ar-3d-camera-threejs.md) — Aceptado
+- [0026 · Almacenamiento de imágenes: carpeta de medios versionada para pruebas compartidas](0026-object-storage-s3-images.md) — Aceptado (incluye la enmienda de especies)
+- [0027 · Galería dinámica de «Momentos para recordar» en el portal (excepción acotada a web-010)](0027-dynamic-public-memories-gallery.md) — Aceptado
+- [0028 · Catálogo dinámico de TulanPedia en el portal (excepción acotada a web-011)](0028-dynamic-tulanpedia-catalog.md) — Aceptado
+- [0029 · Push de Android para el visitante (Expo sobre FCM)](0029-visitor-android-push.md) — Aceptado (la dependencia entra con las tasks)
+- [0030 · Selector de galería para momentos del visitante (expo-image-picker)](0030-expo-image-picker-visitor-memories.md) — Aceptado
+- [0031 · Búsqueda global del portal con HTML y JavaScript estático](0031-global-portal-search-static-exception.md) — Aceptado (autoriza `web-012` con spec, plan y tasks aprobados)
+- [0032 · Prueba de concepto ViroReact con ARCore y ARKit](0032-viroreact-arcore-arkit-poc.md) — Aceptado
 
 ## Plantilla
 
 ```markdown
 # NNNN · Título
 
-- Estado: Aceptado | Aceptado | Rechazado | Superseded
-- Fecha: AAAA-MM-DD
+- Estado: Aceptado | Abierto | Propuesto | Rechazado | Superseded
 - Spec relacionada: `apps/<app>/specs/NNN-slug.md` o N/A
 
 ## Contexto

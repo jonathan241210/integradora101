@@ -29,7 +29,6 @@ class SpeciesResource extends JsonResource
             'model_3d_path' => $this->model_3d_path ?? null,
             'image_url' => app(ResolvePublishedSpeciesImageUrlAction::class)->execute($this->image_path),
             'photo_path' => $animal?->photo_path,
-            'characteristics' => $animal?->characteristics,
             'zone_name' => $animal?->enclosure?->name,
         ];
     }

@@ -2,10 +2,11 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña de la lógica, las rutas, los permisos, la generación del SVG, el comando y el borrado lógico de códigos); `dashboard` (consumidor: `dashboard-013`); `packages/api-client` (métodos y tipos, sin lógica). `mobile` y `web` no cambian: el escaneo sigue regido por `api-005` y `api-019`, y la entrada manual por `mobile-006`.
-- Estado: Aprobada (Jonathan, 2026-11-18); implementación en progreso (api-020)
-- Solicitante / responsable funcional: Jonathan (decisiones de producto registradas el 2026-11-18)
-- Aprobación funcional: Jonathan, 2026-11-18.
-- Dependencias: `api-005` (generación de códigos y escaneo; enmiendas CA-12 y «Fuera de alcance» de esta spec); `api-019` (estado del recinto, 404 «Recinto no encontrado.», borrado de recinto y escaneo; enmiendas a CA-05, CA-10 y CA-18 y «Fuera de alcance» de esta spec); `api-007` (permisos y registro de actividad); `mobile-006` (entrada manual de códigos; sin cambios de código); ADR 0019 (precedente de SVG con `bacon/bacon-qr-code`; no se modifica); **DBR-021** (`enclosure_qr_codes.deleted_at` y su índice, «Lista para backend», aplicada en `arca_pruebas` el 2026-11-18).
+- Estado: Implementada (PR y verificación final fuera de alcance de esta entrega)
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Aprobación funcional: Aprobada.
+- Dependencias: `api-005` (generación de códigos y escaneo; enmiendas CA-12 y «Fuera de alcance» de esta spec); `api-019` (estado del recinto, 404 «Recinto no encontrado.», borrado de recinto y escaneo; enmiendas a CA-05, CA-10 y CA-18 y «Fuera de alcance» de esta spec); `api-007` (permisos y registro de actividad); `mobile-006` (entrada manual de códigos; sin cambios de código); ADR 0019 (precedente de SVG con `bacon/bacon-qr-code`; no se modifica); **DBR-021** (`enclosure_qr_codes.deleted_at` y su índice, «Lista para backend», aplicada en `arca_pruebas`).
 
 ## Problema y contexto
 
@@ -15,7 +16,7 @@ Los códigos QR de los recintos hoy solo se crean con `php artisan arca:generate
 - generar el código de un recinto que no tiene uno activo;
 - reemplazar el código si el QR físico se pierde o se daña.
 
-Además, el comando crea un código nuevo cada vez que se ejecuta, aunque el recinto ya tenga uno activo. El resultado puede ser varios códigos válidos a la vez. Verificado el 2026-11-18 en `arca_pruebas` (solo lectura, ver «Estado actual de datos»): 3 de 67 recintos no eliminados tienen un código activo, y los recintos 1, 2 y 3 tienen entre 2 y 3 códigos activos cada uno.
+Además, el comando crea un código nuevo cada vez que se ejecuta, aunque el recinto ya tenga uno activo. El resultado puede ser varios códigos válidos a la vez. Verificado en `arca_pruebas` (solo lectura, ver «Estado actual de datos»): 3 de 67 recintos no eliminados tienen un código activo, y los recintos 1, 2 y 3 tienen entre 2 y 3 códigos activos cada uno.
 
 `api-019` deja fuera de alcance la gestión de códigos QR y solo decide si un código se acepta según el estado de su recinto. Esta spec cubre esa gestión y añade el borrado lógico de los códigos cuando se elimina su recinto.
 
@@ -83,11 +84,11 @@ Además, el comando crea un código nuevo cada vez que se ejecuta, aunque el rec
 
 ### Listado, público, búsqueda y escaneo
 
-- **CA-14 (indicador en el listado admin):** Dado un usuario con `enclosures.manage`, cuando llama `GET /api/v1/admin/enclosures`, entonces cada recinto incluye `has_active_qr` (booleano), que es verdadero si tiene al menos un código activo y no eliminado. El listado no incluye `code` ni `svg`. Es una adición a `api-019` CA-10 (decisión de Jonathan, 2026-11-18).
+- **CA-14 (indicador en el listado admin):** Dado un usuario con `enclosures.manage`, cuando llama `GET /api/v1/admin/enclosures`, entonces cada recinto incluye `has_active_qr` (booleano), que es verdadero si tiene al menos un código activo y no eliminado. El listado no incluye `code` ni `svg`. Es una adición a `api-019` CA-10.
 - **CA-15 (sin exposición pública):** Dado un cliente anónimo, cuando llama `GET /api/v1/enclosures` o `GET /api/v1/enclosures/{enclosure}`, entonces ninguna respuesta contiene `code`, `svg`, `qr` ni `has_active_qr` (`api-005` RN-02).
 - **CA-16 (búsqueda global):** Dado un usuario con `enclosures.manage` y el código activo de un recinto, cuando busca ese código en `GET /api/v1/admin/search`, entonces ningún grupo devuelve el recinto por ese código. El código no se busca en ningún grupo (`api-019` CA-43 y CA-48).
 - **CA-17 (escaneo tras regenerar):** Dado un recinto regenerado, cuando un visitante escanea el código A (ya desactivado), entonces responde 422 con `inactive_code` y el mensaje «El código no está activo.», y no registra descubrimiento ni puntos. Cuando escanea el código B activo, entonces sigue el flujo de `api-005` CA-04.
-- **CA-18 (comando):** Dado `php artisan arca:generate-qr-codes {enclosure}`, cuando el recinto tiene un código activo, entonces imprime ese código sin crear otro. Cuando no tiene ninguno, entonces crea uno e imprime su valor. Con `--regenerate`, se comporta como `POST .../qr/regenerate` (CA-05). Si el recinto no existe o está eliminado, muestra «El recinto no existe.» y termina con código de fallo. Es una enmienda a `api-005` CA-12 (decisión de Jonathan, 2026-11-18).
+- **CA-18 (comando):** Dado `php artisan arca:generate-qr-codes {enclosure}`, cuando el recinto tiene un código activo, entonces imprime ese código sin crear otro. Cuando no tiene ninguno, entonces crea uno e imprime su valor. Con `--regenerate`, se comporta como `POST.../qr/regenerate` (CA-05). Si el recinto no existe o está eliminado, muestra «El recinto no existe.» y termina con código de fallo. Es una enmienda a `api-005` CA-12.
 
 ### Eliminación del recinto y escaneo
 
@@ -108,13 +109,13 @@ Además, el comando crea un código nuevo cada vez que se ejecuta, aunque el rec
 
 ## Reglas de negocio
 
-- **RN-01 (código visible):** Si un recinto tiene varios códigos activos, la consulta y la generación muestran el de `id` mayor (CA-07). Los demás siguen activos hasta que se regenere (decisión de Jonathan, 2026-11-18).
+- **RN-01 (código visible):** Si un recinto tiene varios códigos activos, la consulta y la generación muestran el de `id` mayor (CA-07). Los demás siguen activos hasta que se regenere.
 - **RN-02 (estable):** Consultar o generar con código activo no cambia el código. Un QR impreso sigue válido mientras sea un código activo de su recinto.
-- **RN-03 (generación):** Un código nuevo tiene el formato `ARCA-` seguido de 8 caracteres elegidos uno a uno con `random_int` (CSPRNG) sobre el alfabeto `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (31 caracteres, sin `0`, `O`, `1`, `I` ni `L`). Hay unas 8,5·10¹¹ combinaciones. La columna `code` es `UNIQUE` en la base. Si hay colisión, se reintenta hasta 5 veces (CA-09). Los códigos existentes con otros caracteres siguen válidos (decisión de Jonathan, 2026-11-18).
+- **RN-03 (generación):** Un código nuevo tiene el formato `ARCA-` seguido de 8 caracteres elegidos uno a uno con `random_int` (CSPRNG) sobre el alfabeto `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (31 caracteres, sin `0`, `O`, `1`, `I` ni `L`). Hay unas 8,5·10¹¹ combinaciones. La columna `code` es `UNIQUE` en la base. Si hay colisión, se reintenta hasta 5 veces (CA-09). Los códigos existentes con otros caracteres siguen válidos.
 - **RN-04 (regenerar desactiva, no elimina):** Regenerar desactiva todos los códigos activos del recinto (`is_active = 0`) y crea uno nuevo, en la misma transacción. Regenerar nunca marca ni borra filas (`deleted_at` queda nulo); el historial se conserva.
 - **RN-05 (concurrencia):** Generar, regenerar y eliminar un recinto se ejecutan en una transacción que bloquea la fila del recinto (`lockForUpdate`). Dos peticiones simultáneas no pueden crear dos códigos activos. El plan define cómo se verifica.
 - **RN-06 (aceptación del escaneo):** Un código se acepta en el escaneo solo si está activo, no tiene `deleted_at`, y su recinto está activo y no eliminado (`api-019` RN-05 y CA-17). Un código eliminado o inexistente responde `invalid_code` (CA-20). Desactivar un código no afecta a los demás códigos del recinto.
-- **RN-07 (SoftDeletes y excepción de BaseModel):** `enclosure_qr_codes` tiene `deleted_at` (DBR-021). El modelo `EnclosureQrCode` usa `SoftDeletes` y extiende `Model`, no `BaseModel` (que no existe en el repositorio). La tabla no tiene `created_at`, `created_by` ni `updated_by`; la trazabilidad queda en Activitylog. La excepción de `BaseModel` queda cubierta por ADR 0021, igual que `Enclosure`; no se requiere ADR nuevo (decisión de Jonathan, 2026-11-18).
+- **RN-07 (SoftDeletes y excepción de BaseModel):** `enclosure_qr_codes` tiene `deleted_at` (DBR-021). El modelo `EnclosureQrCode` usa `SoftDeletes` y extiende `Model`, no `BaseModel` (que no existe en el repositorio). La tabla no tiene `created_at`, `created_by` ni `updated_by`; la trazabilidad queda en Activitylog. La excepción de `BaseModel` queda cubierta por ADR 0021, igual que `Enclosure`; no se requiere ADR nuevo.
 - **RN-08 (SVG efímero):** El SVG se genera en memoria con `bacon/bacon-qr-code` (`SvgImageBackEnd`) en cada respuesta. No se guarda en la base de datos ni en disco (criterio de ADR 0019).
 - **RN-09 (datos devueltos):** Las rutas devuelven solo `enclosure` (`id`, `name`, `is_active`), `qr` (`code`, `svg`) y los contadores de la regeneración (`deactivated`). No devuelven animales ni datos de la persona que generó el código.
 - **RN-10 (tratamiento del código):** El código no es un secreto criptográfico, pero es un dato operativo restringido. Solo lo ven quienes tienen `enclosures.manage`. No aparece en listados públicos, búsqueda global, logs de la aplicación ni Activitylog.
@@ -123,12 +124,12 @@ Además, el comando crea un código nuevo cada vez que se ejecuta, aunque el rec
 - **RN-13 (lectura sin efectos):** `GET .../qr` no escribe en la base de datos ni en Activitylog.
 - **RN-14 (rutas):** Rutas en inglés, con nombre y bajo el grupo admin existente con `permission:enclosures.manage`: `enclosures.qr.show`, `enclosures.qr.generate` y `enclosures.qr.regenerate`.
 - **RN-15 (regenerar no toca el progreso):** Regenerar cambia solo `enclosure_qr_codes.is_active` y crea una fila nueva. No modifica `visitor_collections`, `visitor_point_entries`, `visitor_scans` ni `animals`. El progreso ya obtenido se conserva (CA-21 a CA-23). Un visitante que escanea el código nuevo de un recinto ya conocido recibe `already_discovered` (CA-22).
-- **RN-16 (eliminar el recinto elimina sus códigos):** Al eliminar un recinto (`api-019` CA-05, `DeleteEnclosureAction`), todos sus códigos en `enclosure_qr_codes`, activos o no, reciben `deleted_at` en la misma transacción. No se borra ninguna fila físicamente. Es una enmienda a `api-019` CA-05 (decisión de Jonathan, 2026-11-18).
+- **RN-16 (eliminar el recinto elimina sus códigos):** Al eliminar un recinto (`api-019` CA-05, `DeleteEnclosureAction`), todos sus códigos en `enclosure_qr_codes`, activos o no, reciben `deleted_at` en la misma transacción. No se borra ninguna fila físicamente. Es una enmienda a `api-019` CA-05.
 - **RN-17 (progreso intacto al eliminar):** `VisitorProgressQuery::enclosure_count` une `visitor_collections` con `enclosure_qr_codes` mediante un join crudo que no filtra `deleted_at`. Ese join se mantiene a propósito, para que el progreso ya obtenido se conserve (CA-24). No se debe añadir un filtro `deleted_at IS NULL` a esa consulta. La regla de `api-019` CA-35 para el numerador de especies sigue vigente y no se cambia aquí.
 
 ## Impacto de regenerar y de eliminar
 
-Verificado en código por la sesión principal, 2026-11-18.
+Verificado en código por la sesión principal.
 
 | Elemento | Efecto al regenerar | Efecto al eliminar el recinto | Criterio |
 |---|---|---|---|
@@ -149,11 +150,11 @@ Aviso de confirmación de regenerar en el panel (`dashboard-013` CA-05), texto a
 - **Auditoría:** generar, regenerar y eliminar el recinto quedan en Activitylog (CA-10 y `api-019` CA-08). Consultar no deja rastro (RN-13).
 - **Borrado:** la aplicación nunca borra físicamente códigos. Regenerar desactiva (RN-04). Eliminar el recinto marca `deleted_at` (RN-16). Cualquier borrado físico futuro requiere nueva DBR.
 - **Retención:** los códigos desactivados y eliminados se conservan. Propuesta: sin plazo hasta que exista una política; no se decide en esta spec.
-- **DBR:** DBR-021 «Lista para backend» (aplicada en `arca_pruebas` el 2026-11-18; staging y producción pendientes). La DBR no sustituye esta spec.
+- **DBR:** DBR-021 «Lista para backend» (aplicada en `arca_pruebas`; staging y producción pendientes). La DBR no sustituye esta spec.
 
 ### Estado actual de datos
 
-Consulta de la sesión principal, 2026-11-18, en solo lectura sobre `arca_pruebas`. No se ha consultado producción (`arca_zoo`).
+Consulta de la sesión principal, en solo lectura sobre `arca_pruebas`. No se ha consultado producción (`arca_zoo`).
 
 - Antes de DBR-021: `enclosure_qr_codes` sin `deleted_at`, `created_at`, `created_by` ni `updated_by`. 8 filas, todas con formato `ARCA-` + 8 caracteres `[A-Z0-9]`.
 - Recintos no eliminados: 67. De ellos, 3 tienen un código activo.
@@ -203,13 +204,13 @@ Consulta de la sesión principal, 2026-11-18, en solo lectura sobre `arca_prueba
   - **Concurrencia:** cubierta por RN-05; el plan define la prueba.
   - **Progreso y numerador de especies:** al eliminar un recinto, el numerador de especies puede bajar según `api-019` CA-35. Es una regla ya aprobada; esta spec la mantiene (CA-24).
   - **Join crudo en el progreso:** cualquier cambio futuro que añada `deleted_at IS NULL` a `VisitorProgressQuery` rompería el progreso ya obtenido (RN-17). Lo cubre CA-24.
-- **Preguntas:** ninguna pendiente. La excepción de `BaseModel` para `EnclosureQrCode` queda cubierta por ADR 0021, igual que `Enclosure` (decisión de la sesión principal, aprobada por Jonathan el 2026-11-18).
+- **Preguntas:** ninguna pendiente. La excepción de `BaseModel` para `EnclosureQrCode` queda cubierta por ADR 0021, igual que `Enclosure` (decisión de la sesión principal, aprobada por el responsable funcional).
 
-Decisiones cerradas el 2026-11-18 (Jonathan): alfabeto de 8 caracteres sin `0`, `O`, `1`, `I`, `L` en códigos nuevos (RN-03); el comando reutiliza el activo y solo regenera con `--regenerate` (CA-18); generar en recinto inactivo permitido (CA-11); `has_active_qr` en el listado (CA-14); eliminar recinto elimina sus códigos lógicamente (RN-16, CA-19); regenerar solo desactiva (RN-04).
+Decisiones cerradas (el responsable funcional): alfabeto de 8 caracteres sin `0`, `O`, `1`, `I`, `L` en códigos nuevos (RN-03); el comando reutiliza el activo y solo regenera con `--regenerate` (CA-18); generar en recinto inactivo permitido (CA-11); `has_active_qr` en el listado (CA-14); eliminar recinto elimina sus códigos lógicamente (RN-16, CA-19); regenerar solo desactiva (RN-04).
 
 ## Enmiendas propuestas
 
-Aprobadas por Jonathan el 2026-11-18 con esta spec. Se aplican en el mismo PR de implementación de `api-020` mediante tareas explícitas en `apps/api/tasks/020-enclosure-qr-management.md` (T-18). Hasta ese PR, `api-005`, `api-019` y `mobile-006` no cambian.
+Aprobadas por el responsable funcional con esta spec. Se aplican en el mismo PR de implementación de `api-020` mediante tareas explícitas en `apps/api/tasks/020-enclosure-qr-management.md` (T-18). Hasta ese PR, `api-005`, `api-019` y `mobile-006` no cambian.
 
 | Spec | Texto actual | Enmienda |
 |---|---|---|
@@ -223,5 +224,5 @@ Aprobadas por Jonathan el 2026-11-18 con esta spec. Se aplican en el mismo PR de
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan, 2026-11-18 (aprobada). Plan y tasks en Borrador: `apps/api/plan/020-enclosure-qr-management.md`, `apps/api/tasks/020-enclosure-qr-management.md`. Decisiones de producto de Jonathan, 2026-11-18: consulta sin efectos; generar solo si no hay activo; regenerar desactiva y no elimina; activitylog sin código; un activo visible (el de `id` mayor), desactivar los demás solo al regenerar; recinto inactivo visible con aviso; recinto eliminado 404; alfabeto sin `0`, `O`, `1`, `I`, `L`; comando reutiliza el activo; `has_active_qr` en el listado; eliminar recinto elimina sus códigos lógicamente; el progreso se conserva.
+- Aprobación: el responsable funcional (aprobada). Plan y tasks en Borrador: `apps/api/plan/020-enclosure-qr-management.md`, `apps/api/tasks/020-enclosure-qr-management.md`. Decisiones de producto del responsable funcional: consulta sin efectos; generar solo si no hay activo; regenerar desactiva y no elimina; activitylog sin código; un activo visible (el de `id` mayor), desactivar los demás solo al regenerar; recinto inactivo visible con aviso; recinto eliminado 404; alfabeto sin `0`, `O`, `1`, `I`, `L`; comando reutiliza el activo; `has_active_qr` en el listado; eliminar recinto elimina sus códigos lógicamente; el progreso se conserva.
 - Evidencia/enlaces: `docs/database/requests/DBR-021-enclosure-qr-codes-soft-deletes.md`; `apps/api/specs/005-visitor-progress.md` (CA-12, RN-02, fuera de alcance); `apps/api/specs/019-enclosure-status-and-global-search.md` (CA-05, CA-10, CA-17, CA-18, CA-35, RN-05); `apps/mobile/specs/006-qr-scan.md` (CA-03, fuera de alcance); `apps/dashboard/specs/012-enclosure-actions-global-search.md` (CA-32, CA-38); `docs/adr/0019-qr-svg-generation-api.md`; `apps/api/src/app/Console/Commands/GenerateQrCodesCommand.php`; `apps/api/src/app/Actions/Visitor/RecordVisitorDiscoveryAction.php`.

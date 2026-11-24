@@ -1,13 +1,13 @@
 # DBR-021 · offline-sync-delta-tombstones
 
-- Estado: Lista para backend (aplicada en `arca_pruebas`, 2026-11-18; aprobada por BD y backend, Victor Adrian, 2026-11-18)
-- Solicitante: PWA / Sync offline (`pwa-009`)
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
 - Apps afectadas: `api`, `pwa`
 - Spec relacionada: `apps/pwa/specs/009-offline-first-sync.md`, `apps/api/specs/019-offline-sync.md`
-- Responsable de BD: Victor Adrian
-- Responsable backend: Victor Adrian
-- Fecha: 2026-11-18
-- Decisión de diseño (2026-11-18): agregar `deleted_at` (tombstone/SoftDeletes) y `updated_at` nullable con índices en `animals` y `enclosures` para soportar delta (altas/modificaciones/bajas) y paginación por cursor/tiempo. `species` y `clinical_evaluations` ya cuentan con mecanismos de soft delete según estado actual; esta migración inicial se enfoca en `animals` y `enclosures`. Requiere alinear modelos/consultas en API (SoftDeletes/timestamps) sin romper comportamiento existente.
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
+- Decisión de diseño: agregar `deleted_at` (tombstone/SoftDeletes) y `updated_at` nullable con índices en `animals` y `enclosures` para soportar delta (altas/modificaciones/bajas) y paginación por cursor/tiempo. `species` y `clinical_evaluations` ya cuentan con mecanismos de soft delete según estado actual; esta migración inicial se enfoca en `animals` y `enclosures`. Requiere alinear modelos/consultas en API (SoftDeletes/timestamps) sin romper comportamiento existente.
 
 ## Problema y objetivo
 
@@ -60,16 +60,16 @@ La sincronización offline-first requiere **sincronización incremental (delta)*
 
 ## Aprobación
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Solicitante | Usuario | 2026-11-18 | Aprobada (delta con tombstones/timestamps para sync) |
-| Responsable de BD | Victor Adrian | 2026-11-18 | Aprobada (diseño propuesto: `animals`/`enclosures`) |
-| Responsable backend | Victor Adrian | 2026-11-18 | Aprobada (lista para implementación/consumo backend) |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Solicitante | Aprobada (delta con tombstones/timestamps para sync) | Registro de esta DBR |
+| Responsable de BD | Aprobada (diseño propuesto: `animals`/`enclosures`) | Registro de esta DBR |
+| Backend | Aprobada (lista para implementación/consumo backend) | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | Migración implementada | 2026-11-18 | `php artisan migrate`: `2026_11_18_000021_offline_sync_delta_tombstones ... 4s DONE` (Victor Adrian). Evidencia detallada (`SHOW CREATE TABLE animals/enclosures`) pendiente de adjuntar. |
-| staging | pendiente |  |  |
-| producción | pendiente |  |  |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | `php artisan migrate`: `2026_11_18_000021_offline_sync_delta_tombstones ... 4s DONE` (responsable de BD). Evidencia detallada (`SHOW CREATE TABLE animals/enclosures`) pendiente de adjuntar. |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) |  |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) |  |

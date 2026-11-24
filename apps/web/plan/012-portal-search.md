@@ -1,9 +1,11 @@
 # Plan técnico · 012 · portal-search
 
-- Spec: `apps/web/specs/012-portal-search.md` (Estado: **Aprobada**, Jonathan, 2026-11-18).
-- Estado: Implementado y verificado; corrección de envíos concurrentes CA-07 completada el 2026-11-18; ADR 0031 aceptado.
-- Responsable técnico: por identificar.
-- ADR de excepción: `docs/adr/0031-global-portal-search-static-exception.md` (Aceptado por Jonathan, 2026-11-18).
+- Spec: `apps/web/specs/012-portal-search.md` (Estado: **Implementada**).
+- Estado: Implementado y verificado; corrección de envíos concurrentes CA-07 completada; ADR 0031 aceptado.
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Responsable técnico: Frontend.
+- ADR de excepción: `docs/adr/0031-global-portal-search-static-exception.md` (Aceptado).
 
 ## Diseño de solución
 
@@ -30,7 +32,7 @@ Ajuste visual autorizado: el contenedor de acciones deja de ser el bloque de ref
 
 Corrección adicional autorizada: un helper `js/search-target.js` compartido por las tres páginas aplica una clase temporal al encabezado estático o tarjeta dinámica. La clase pulsa dos veces suavemente, se elimina a los 2400 ms y se reinicia al volver a elegir el mismo destino; `prefers-reduced-motion` conserva solo el borde. El buscador controla el submit en fase captura para impedir un manejador heredado que todavía desplace a Animales. Se evita que el enfoque inicial pendiente de especies interrumpa una búsqueda nueva. Las URLs de scripts modificados y CSS compartido incluyen una versión local para renovar recursos previamente cacheados, sin cambiar sus archivos físicos ni añadir dependencias.
 
-Corrección CA-04/CA-05 autorizada el 2026-11-18: `search.js` queda como único controlador del formulario; se elimina el envío heredado de `script.js`. El panel cierra al activar un resultado, al pulsar Escape en campo/panel o al hacer clic fuera; la finalización de cargas respeta el estado cerrado. Los enlaces conservan su navegación nativa y las anclas reciben foco; una especie oculta por filtros se revela antes de enfocar. La página de destino de noticias se calcula con el tamaño del listado (10), aunque el índice descargue páginas de 50. Los grupos de resultados anulan el padding global de las secciones para mantener el panel compacto.
+Corrección CA-04/CA-05 autorizada: `search.js` queda como único controlador del formulario; se elimina el envío heredado de `script.js`. El panel cierra al activar un resultado, al pulsar Escape en campo/panel o al hacer clic fuera; la finalización de cargas respeta el estado cerrado. Los enlaces conservan su navegación nativa y las anclas reciben foco; una especie oculta por filtros se revela antes de enfocar. La página de destino de noticias se calcula con el tamaño del listado (10), aunque el índice descargue páginas de 50. Los grupos de resultados anulan el padding global de las secciones para mantener el panel compacto.
 
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|
@@ -99,7 +101,7 @@ Se conserva la envoltura de `js/api.js`: `{ ok, data, meta }` o `{ ok: false, re
 | CA-07 | `test_ca07_empty_query_and_partial_or_total_source_failures`, `test_ca07_concurrent_submission_uses_latest_valid_query`, `test_ca07_empty_submission_during_load_keeps_empty_query_message` | `web/src/tests/search.test.mjs` |
 | CA-08 | `test_ca08_every_acceptance_criterion_has_named_automated_test` | `web/src/tests/search.test.mjs` |
 
-Cobertura adicional de la corrección autorizada (2026-11-18): CA-04 se verifica con `test_ca04_submit_with_portal_script_stays_in_place_and_result_uses_its_destination`, `test_ca04_news_after_first_ten_records_links_to_the_page_containing_the_card`, `test_ca04_species_link_locates_card_again_when_hash_is_unchanged` y «CA-04 portal-search: un resultado de especie oculto por filtros se revela, actualiza el contador y recibe foco» (`animals.test.mjs`). CA-05 se verifica con `test_ca05_outside_click_closes_panel_without_stealing_focus_and_inside_click_keeps_it_open`, `test_ca05_escape_from_result_or_input_closes_panel_and_returns_focus` y `test_ca05_closing_during_loading_or_retry_does_not_reopen_panel`.
+Cobertura adicional de la corrección autorizada: CA-04 se verifica con `test_ca04_submit_with_portal_script_stays_in_place_and_result_uses_its_destination`, `test_ca04_news_after_first_ten_records_links_to_the_page_containing_the_card`, `test_ca04_species_link_locates_card_again_when_hash_is_unchanged` y «CA-04 portal-search: un resultado de especie oculto por filtros se revela, actualiza el contador y recibe foco» (`animals.test.mjs`). CA-05 se verifica con `test_ca05_outside_click_closes_panel_without_stealing_focus_and_inside_click_keeps_it_open`, `test_ca05_escape_from_result_or_input_closes_panel_and_returns_focus` y `test_ca05_closing_during_loading_or_retry_does_not_reopen_panel`.
 
 La corrección adicional prueba CA-04 con `test_ca04_submit_ignores_legacy_animal_redirects_and_cancels_pending_catalog_focus`, `test_ca04_static_result_highlights_its_destination`, `test_ca04_all_pages_load_current_navigation_and_shared_highlight`, resaltado de noticias/eventos y la carga pendiente de especies. `search-target.test.mjs` cubre selección, repetición, limpieza temporal y preservación de foco (CA-04/CA-05); CA-05 de `search.test.mjs` verifica la regla CSS de movimiento reducido.
 
@@ -133,7 +135,7 @@ Las excepciones de III y IV quedan resueltas solo para esta feature por el ADR 0
 4. Implementar en el orden aprobado y sin ampliar alcance.
 5. Ejecutar `/verify` para `web`, registrar evidencia por CA y completar spec/plan/tasks. Hecho: la app aún no tiene `src/package.json`; se ejecutaron suites directas y se documentaron las limitaciones en tasks.
 
-- Aprobación funcional de la spec: Jonathan, 2026-11-18.
-- Aprobador técnico: Jonathan, 2026-11-18.
-- Estado de aprobación del plan: aprobado; Constitution Check III–IV resuelto por ADR 0031 aceptado. Tasks aprobados el 2026-11-18 y completados con evidencia en `apps/web/tasks/012-portal-search.md`.
-- Corrección CA-07 autorizada por Jonathan, 2026-11-18: los envíos concurrentes respetan la última consulta válida y los estados de validación invalidan las actualizaciones asíncronas obsoletas. Verificación: 21/21 pruebas directas de `search.test.mjs`, `node --check` y `git diff --check`; `/verify` no dispone de scripts npm porque `apps/web/src/package.json` no existe.
+- Aprobación funcional de la spec: Aprobada.
+- Aprobación técnica: Aprobada.
+- Estado de aprobación del plan: aprobado; Constitution Check III–IV resuelto por ADR 0031 aceptado. Tasks aprobados y completados con evidencia en `apps/web/tasks/012-portal-search.md`.
+- Corrección CA-07 autorizada: los envíos concurrentes respetan la última consulta válida y los estados de validación invalidan las actualizaciones asíncronas obsoletas. Verificación: 21/21 pruebas directas de `search.test.mjs`, `node --check` y `git diff --check`; `/verify` no dispone de scripts npm porque `apps/web/src/package.json` no existe.

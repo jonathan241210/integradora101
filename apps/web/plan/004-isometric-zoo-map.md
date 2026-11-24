@@ -2,17 +2,19 @@
 
 - Spec: `apps/web/specs/004-isometric-zoo-map.md`
 - Estado de spec: Implementada
-- Responsable técnico: Por identificar
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
+- Responsable técnico: Frontend
 - Estado técnico: Implementado. La enmienda vigente retira los marcadores interactivos y el zoom 2D. El marco mantiene el SVG completo y el visor 3D usa proporción 4:3 en móviles. Se conserva la rotación con `camera-controls` y se configuran `disable-zoom`, `disable-pan` y `touch-action="pan-y"` para permitir el desplazamiento vertical. Las referencias a selección y zoom corresponden a revisiones previas.
-- Fecha del plan: 2026-10-08
+- Aprobación técnica: Aprobada
 
 ## Diseño de solución
 
-**Enmienda aprobada 2026-11-18:** la superficie 2D pasa a usar la fotografía local `assets/mapa-2d.jpg`; el control alterna a `assets/mapacompleto.glb` mediante el `model-viewer` local existente. El estado de carga/error se anuncia en una región viva y, si falla el GLB, se restaura la vista 2D. Esta enmienda sustituye la ilustración dibujada descrita en el plan original, conserva los marcadores y controles de zoom, y no incorpora dependencias ni recursos externos.
+**Enmienda aprobada:** la superficie 2D pasa a usar la fotografía local `assets/mapa-2d.jpg`; el control alterna a `assets/mapacompleto.glb` mediante el `model-viewer` local existente. El estado de carga/error se anuncia en una región viva y, si falla el GLB, se restaura la vista 2D. Esta enmienda sustituye la ilustración dibujada descrita en el plan original, conserva los marcadores y controles de zoom, y no incorpora dependencias ni recursos externos.
 
 Mantener el portal estático aprobado en `apps/web/src/`; no migrar framework ni incorporar paquetes. Reemplazar el dibujo esquemático actual por una escena local compuesta por un SVG decorativo como superficie ilustrada y controles HTML semánticos superpuestos para las zonas. Dibujar una base en perspectiva elevada con caminos, vegetación y recintos de formas geométricas; usar sombras, niveles y proyección CSS moderada para sugerir profundidad, sin mapa, tiles, georreferenciación ni datos de otro proveedor.
 
-Representar Felinos, Aviario, Reptilario, Primates, Granja, Lago y Entrada en el mapa. Retirar la columna lateral aprobada en la enmienda del 2026-11-21. Cada control utiliza un SVG decorativo, un nombre accesible y `aria-pressed` sincronizado.
+Representar Felinos, Aviario, Reptilario, Primates, Granja, Lago y Entrada en el mapa. Retirar la columna lateral aprobada en la enmienda. Cada control utiliza un SVG decorativo, un nombre accesible y `aria-pressed` sincronizado.
 
 Reusar el estado de selección actual y la región `aria-live`; ampliar el controlador para activar igual desde mapa y leyenda, marcar todos los controles con el mismo `data-name` como seleccionados y retirar el estado anterior. Preservar activación nativa de botón con Enter/Espacio, orden de tabulación, foco visible y contenido alternativo en texto. Mantener el aviso de que el mapa es demostrativo y no está a escala.
 
@@ -88,7 +90,7 @@ No se requiere excepción constitucional ni ADR.
 
 ## Orden y aprobación
 
-1. Plan actualizado aprobado por el solicitante el 2026-10-08.
+1. Plan actualizado aprobado por el solicitante.
 2. Actualizar `apps/web/tasks/004-isometric-zoo-map.md` con tareas atómicas de zoom, selección y pruebas CA/RN; obtener aprobación del checklist actualizado.
 3. Agrupar arte SVG y marcadores existentes, e incorporar botones y estado accesibles de zoom en `index.html`.
 4. Refinar el relieve ilustrativo y los estilos responsive de la escena/controles en `styles.css`.
@@ -96,6 +98,6 @@ No se requiere excepción constitucional ni ADR.
 6. Añadir tests nombrados CA-01..CA-07, revisar los cinco viewports y el estado de selección, ejecutar suite protegida, `git diff --check` y `/verify`.
 7. Marcar tareas y spec como Implementadas solo después de superar criterios y registrar evidencia.
 
-La aprobación funcional del alcance ampliado fue otorgada por el solicitante el 2026-10-08. La aprobación técnica de este plan revisado y del checklist de tareas está pendiente. La revisión anterior de la escena tampoco pudo ejecutarse con navegador integrado; esta ampliación incluirá una revisión visual nueva de los viewports y no se marcará completa hasta registrarla.
+La aprobación funcional del alcance ampliado fue otorgada por el solicitante. La aprobación técnica de este plan revisado y del checklist de tareas está pendiente. La revisión anterior de la escena tampoco pudo ejecutarse con navegador integrado; esta ampliación incluirá una revisión visual nueva de los viewports y no se marcará completa hasta registrarla.
 
 El bot?n carga `assets/mapa_corregido.glb` bajo HTTP o HTTPS. El visor solicita el modelo al activarse, respeta el retorno a 2D durante la carga y permite volver a intentar despu?s de un error.

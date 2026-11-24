@@ -1,7 +1,7 @@
 import { Button, Card, Field, SelectField, TextAreaField } from '@arca/ui';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
-import { createAnimal, createAnimalWithPhoto } from '@/services/apiClient';
+import { useAnimalActions } from '@/viewmodels/useAnimalActions';
 import {
   formToRecord,
   useEnclosures,
@@ -16,6 +16,7 @@ import { Spinner } from '@/views/Spinner';
 
 export function AnimalFormView({ userScope }: { userScope?: string } = {}) {
   const save = useSaveRequest();
+  const { createAnimal, createAnimalWithPhoto } = useAnimalActions();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const {

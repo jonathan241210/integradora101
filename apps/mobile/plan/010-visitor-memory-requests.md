@@ -1,11 +1,12 @@
 # Plan técnico · 010 · visitor-memory-requests
 
 - Spec: `apps/mobile/specs/010-visitor-memory-requests.md`
-- Estado de spec: Aprobada (Aksel, 2026-11-14)
-- Estado del plan: Aprobado (Aksel, 2026-11-14). Tasks aprobadas por Aksel el 2026-11-14. Con el ADR 0030 aceptado, la implementación puede instalar `expo-image-picker`.
-- Responsable técnico: por identificar
-- Solicitante funcional: Aksel
-- Dependencias: `api-010` (Aprobada, En progreso; envío, lista y reenvío ya están en la API), DBR-012 (Lista para backend), ADR 0030 (Aceptado, Aksel, 2026-11-14)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Estado del plan: Aprobado. Tasks aprobadas. Con el ADR 0030 aceptado, la implementación puede instalar `expo-image-picker`.
+- Responsable técnico: Frontend
+- Dependencias: `api-010` (Aprobada, En progreso; envío, lista y reenvío ya están en la API), DBR-012 (Lista para backend), ADR 0030 (Aceptado)
 
 ## Diseño de solución
 
@@ -109,8 +110,8 @@ El ADR 0030 ya está Aceptado. Las pruebas del formulario usan un selector simul
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
-| I. Stack mínimo y portable | Sí | `expo-image-picker` queda autorizado por el ADR 0030, Aceptado por Aksel el 2026-11-14. Se instala en la implementación. El resto sigue en Expo (ADR 0004) |
-| II. La spec manda | Sí | Spec y este plan aprobados por Aksel el 2026-11-14. No hay tasks ni código |
+| I. Stack mínimo y portable | Sí | `expo-image-picker` queda autorizado por el ADR 0030, Aceptado. Se instala en la implementación. El resto sigue en Expo (ADR 0004) |
+| II. La spec manda | Sí | Spec y este plan aprobados. No hay tasks ni código |
 | III. Lógica separada de la interfaz | Sí | Las pantallas no calculan plazo, límite ni estado. Los hooks llaman a `@arca/api-client` |
 | IV. Un test por criterio | Sí, al implementar | La tabla nombra CA-01 a CA-18. El permiso real del teléfono queda como evidencia manual del PR |
 | V. Una sola fuente de verdad para los datos | Sí | No hay DBR móvil ni cola local. La fila y el archivo los guarda la API (DBR-012, `media/memories/`) |
@@ -120,14 +121,14 @@ El ADR 0030 ya está Aceptado. Las pruebas del formulario usan un selector simul
 
 - La dependencia y el permiso de `app.json` se añaden en la implementación, con el ADR 0030 ya Aceptado. No se añaden antes de las tasks.
 - El texto de la casilla no se publica hasta la redacción del zoológico (RN-07).
-- `mobile-013` CA-10 abre `/memory-form` con el id. Enmienda 2026-11-18: no es otra bandeja. Si la petición no está en memoria, se pide la lista una vez; si sigue ausente, se muestra «Tu memoria».
+- `mobile-013` CA-10 abre `/memory-form` con el id. Enmienda: no es otra bandeja. Si la petición no está en memoria, se pide la lista una vez; si sigue ausente, se muestra «Tu memoria».
 - Quien deja una rechazada sin corregir no puede enviar otra, porque la API lo trata como petición abierta. La app solo muestra el aviso (CA-15).
 
 ## Orden y aprobación
 
-1. Plan y ADR 0030 aprobados por Aksel el 2026-11-14.
-2. Las tasks están en `apps/mobile/tasks/010-visitor-memory-requests.md`, aprobadas por Aksel el 2026-11-14. Cada CA-01 a CA-18 tiene una prueba que lo nombra.
+1. Plan y ADR 0030 aprobados.
+2. Las tasks están en `apps/mobile/tasks/010-visitor-memory-requests.md`, aprobadas. Cada CA-01 a CA-18 tiene una prueba que lo nombra.
 3. En el corte de implementación se instala `expo-image-picker`, se añaden los métodos del api-client y se actualiza la nota del permiso.
-4. El push de un momento (`mobile-013` CA-10) abre `/memory-form` con el id. Enmienda 2026-11-18: la ruta espera la lista antes de decir que la petición falta.
+4. El push de un momento (`mobile-013` CA-10) abre `/memory-form` con el id. Enmienda: la ruta espera la lista antes de decir que la petición falta.
 
-Aprobación funcional de la spec: Aksel, 2026-11-14. Aprobación de este plan: Aksel, 2026-11-14. Enmienda del 2026-11-15, pedida por Aksel: refresco de la lista, alta bloqueada con petición abierta y confirmación de la corrección.
+Aprobación funcional de la spec: Aprobada. Aprobación de este plan: Aprobada. Enmienda: refresco de la lista, alta bloqueada con petición abierta y confirmación de la corrección.

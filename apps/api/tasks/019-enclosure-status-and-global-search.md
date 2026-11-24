@@ -1,9 +1,11 @@
 # Tareas · 019 · enclosure-status-and-global-search
 
-- Spec: `apps/api/specs/019-enclosure-status-and-global-search.md` (Aprobada, Jonathan, 2026-11-18)
-- Plan: `apps/api/plan/019-enclosure-status-and-global-search.md` (Borrador, 2026-11-18)
-- DBR: `docs/database/requests/DBR-020-enclosure-status-soft-delete.md` («Lista para backend» (aplicada en `arca_pruebas` el 2026-11-18, lote 12, por Jonathan como responsable de BD por delegación))
-- Estado del checklist: **Aprobado** (Jonathan, 2026-11-18). En implementación; cada T-xx se marca solo con evidencia.
+- Spec: `apps/api/specs/019-enclosure-status-and-global-search.md`
+- Plan: `apps/api/plan/019-enclosure-status-and-global-search.md`
+- DBR: `docs/database/requests/DBR-020-enclosure-status-soft-delete.md` («Lista para backend» (aplicada en `arca_pruebas`, lote 12, por el responsable funcional como responsable de BD por delegación))
+- Estado del checklist: **Aprobado**. En implementación; cada T-xx se marca solo con evidencia.
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
 
 Reglas de todas las tareas: los tests usan `DatabaseTransactions` sobre `arca_pruebas`; prohibido `RefreshDatabase`, `migrate:fresh` y `migrate` desde los tests o desde el código; nunca `arca_zoo`. Cada método de test se llama `test_caNN_...` y su docblock cita `CA-NN enclosure-status-and-global-search`.
 
@@ -13,8 +15,8 @@ Reglas de todas las tareas: los tests usan `DatabaseTransactions` sobre `arca_pr
   - Depende de: nada.
   - Pasos: `php artisan migrate:status` desde `apps/api/src` (sin ejecutar `migrate`). Por tabla (`users`, `news`, `events`, `tickets`, `visitor_memories`, `species`, `species_publication_requests`): `SHOW COLUMNS` y los valores distintos de `status`. Registrar en el plan, apartado «Estado actual de datos», con fecha. La realiza la sesión principal; este agente no tiene shell.
   - Test que lo cubre: ninguno (es evidencia previa). Los tests de T-05 a T-09 dependen de su resultado.
-  - Hecho cuando: cumplido (2026-11-18).
-  - Evidencia (2026-11-18, sesión principal, solo lectura, `arca_pruebas`): `tickets.status` = `completed` | `cancelled`; `visitor_memories.status` en datos = `accepted` | `in_review` | `rejected` (el enum `MemoryStatus` incluye `submitted`); `species_publication_requests.status` en datos = `accepted` | `approved` | `draft` | `rejected` (el enum `SpeciesRequestStatus` incluye `submitted`; `approved` y `draft` son valores heredados fuera del enum, anotados como riesgo); la tabla de solicitudes no tiene `common_name` (solo `scientific_name`) y el nombre se toma de `species.common_name` vía `species_id`. Registrado en el plan, apartado «Estado actual de datos».
+  - Hecho cuando: cumplido.
+  - Evidencia (, sesión principal, solo lectura, `arca_pruebas`): `tickets.status` = `completed` | `cancelled`; `visitor_memories.status` en datos = `accepted` | `in_review` | `rejected` (el enum `MemoryStatus` incluye `submitted`); `species_publication_requests.status` en datos = `accepted` | `approved` | `draft` | `rejected` (el enum `SpeciesRequestStatus` incluye `submitted`; `approved` y `draft` son valores heredados fuera del enum, anotados como riesgo); la tabla de solicitudes no tiene `common_name` (solo `scientific_name`) y el nombre se toma de `species.common_name` vía `species_id`. Registrado en el plan, apartado «Estado actual de datos».
   - Nota: en la evidencia recibida no consta la salida de `migrate:status` ni las columnas de `users`, `news`, `events` y `species`; quedan pendientes de confirmar antes de T-05 y T-06.
 
 ## Bloque A. Búsqueda global (sin DBR; tras aprobación de plan y tasks)
@@ -66,7 +68,7 @@ Reglas de todas las tareas: los tests usan `DatabaseTransactions` sobre `arca_pr
   - Hecho cuando: el test pasa; si `q` tiene letras, el grupo no aparece.
 
 - [x] **T-08** (CA-30; RN-07): grupo `tulanpedia`.
-  - Depende de: T-04, T-01 (confirmado el 2026-11-18).
+  - Depende de: T-04, T-01.
   - Archivos: `Actions/Admin/Search/Groups/SearchTulanpediaGroup.php` (nuevo).
   - Cambios: `species.review`; especies con `is_published = 1` y no eliminadas, más solicitudes con `status = 'submitted'` (solo esas; `approved` y `draft` no se buscan), con el nombre de `species.common_name` vía `species_id`; un solo grupo, máximo 5 en total; `kind` en cada elemento; `subtitle` «Publicada» o «Solicitud · Enviada»; orden título, `kind`, `id` (D-10).
   - Test: `Admin/GlobalSearchTulanpediaTest.php::test_ca30_tulanpedia_published_and_submitted_with_kind`.
@@ -90,15 +92,15 @@ Reglas de todas las tareas: los tests usan `DatabaseTransactions` sobre `arca_pr
   - Test: cubierto por el test de cliente de `dashboard-012` (CA-13, `describe("CA-13 enclosure-actions-global-search")`). Este backend no tiene test de paquete propio.
   - Hecho cuando: el paquete exporta `search` y los tipos; el dashboard los consume en su bloque A.
 
-## Bloque B. Recintos (desbloqueado: DBR-020 «Lista para backend» desde 2026-11-18)
+## Bloque B. Recintos (desbloqueado: DBR-020 «Lista para backend»)
 
-Condición de bloque B: cumplida el 2026-11-18. DBR-020 está «Lista para backend» (aplicada en `arca_pruebas` el 2026-11-18, lote 12, por Jonathan como responsable de BD por delegación). Evidencia en la propia DBR (`SHOW CREATE TABLE enclosures` con `is_active` TINYINT(1) NOT NULL DEFAULT 1; 67 de 67 filas activas; `deleted_at IS NOT NULL` = 0). `down()` no ejecutado: `migrate:rollback` está bloqueado en este ambiente.
+Condición de bloque B: cumplida. DBR-020 está «Lista para backend» (aplicada en `arca_pruebas`, lote 12, por el responsable funcional como responsable de BD por delegación). Evidencia en la propia DBR (`SHOW CREATE TABLE enclosures` con `is_active` TINYINT(1) NOT NULL DEFAULT 1; 67 de 67 filas activas; `deleted_at IS NOT NULL` = 0). `down` no ejecutado: `migrate:rollback` está bloqueado en este ambiente.
 
 - [x] **T-12** (BD, responsable de BD; CA-01 a CA-03, CA-05, CA-10 a CA-19, CA-35): DBR-020 y migración.
-  - Depende de: DBR-020 aplicada por Jonathan como responsable de BD por delegación (2026-11-18), con verificaciones 1 y 2 registradas.
+  - Depende de: DBR-020 aplicada por el responsable funcional como responsable de BD por delegación, con verificaciones 1 y 2 registradas.
   - Pasos (responsable de BD): migración Laravel con `is_active BOOLEAN NOT NULL DEFAULT 1` y registro idempotente de `updated_at` y `deleted_at` (solo si faltan); confirmar que todos los `deleted_at` son `NULL` antes de activar SoftDeletes; `up()` y `down()` probados en MySQL 8.0 aislado y en `arca_pruebas`; evidencia con `SHOW CREATE TABLE enclosures` y conteo de `is_active = 1`.
   - Test que lo cubre: los de T-14 a T-25 (dependen de la columna y del `deleted_at` registrado).
-  - Hecho cuando: DBR-020 marcada «Lista para backend» con evidencia. **Hecho 2026-11-18:** migración `2026_11_18_000020_enclosure_status_soft_delete.php` aplicada en `arca_pruebas` (lote 12); DBR-020 «Lista para backend».
+  - Hecho cuando: DBR-020 marcada «Lista para backend» con evidencia. **Hecho:** migración `2026_11_18_000020_enclosure_status_soft_delete.php` aplicada en `arca_pruebas` (lote 12); DBR-020 «Lista para backend».
 
 - [x] **T-13** (CA-05, CA-10; RN-01, RN-02, RN-13): modelo `Enclosure`.
   - Depende de: T-12.
@@ -197,7 +199,7 @@ Condición de bloque B: cumplida el 2026-11-18. DBR-020 está «Lista para backe
   - Hecho cuando: el test pasa.
 
 - [x] **T-27** (CA-01 a CA-35; enmiendas): enmiendas a specs ajenas.
-  - Depende de: decisión 5 aceptada (2026-11-18): las enmiendas se aplican en el PR del bloque B.
+  - Depende de: decisión 5 aceptada: las enmiendas se aplican en el PR del bloque B.
   - Archivos: `apps/api/specs/007-administration-management.md` (CA-18 y alcance de recintos), `apps/api/specs/010-public-enclosures-read.md` (fuera de alcance), `apps/api/specs/005-visitor-progress.md` (CA-06).
   - Test: ninguno. Revisión documental del PR del bloque B.
   - Hecho cuando: el texto enmendado está revisado y enlazado desde la spec 019.
@@ -215,31 +217,31 @@ Condición de bloque B: cumplida el 2026-11-18. DBR-020 está «Lista para backe
   - Test: ninguno (documental). Enlaza CA-34.
   - Hecho cuando: la referencia coincide con las rutas y los códigos de la tabla del plan.
 
-- [ ] **T-30**: enlaces del PR y commit.
+- [ ] **T-30** — Fuera de alcance de esta entrega: enlaces del PR y commit.
   - Depende de: T-28.
-  - Pasos: el PR enlaza spec, plan, tasks y DBR-020. El commit local cita `api-019`. Jonathan hace el commit final y el push.
+  - Pasos: el PR enlaza spec, plan, tasks y DBR-020. El commit local cita `api-019`. el responsable funcional hace el commit final y el push.
   - Test: ninguno. Enlaza CA-34 (cobertura).
   - Hecho cuando: el PR tiene los tres artefactos enlazados y la evidencia de T-28.
 
-## Evidencia de implementación (2026-11-18)
+## Evidencia de implementación
 
 - `php artisan test` sobre los archivos de esta spec en `arca_pruebas`: EnclosureStatus, EnclosureDelete, EnclosureAccess, EnclosureAdminList, EnclosureName, EnclosureAssignment, EnclosureVisibility, EnclosureScan (22 de 23 pasaron en la primera corrida; el fallo era un `update()` sobre `is_active`, no fillable, en el propio test de CA-35, corregido con `forceFill`), EnclosureProgress (CA-35 pasa tras la corrección), GlobalSearch* (CA-21 a CA-33), EnclosureStatusSearchCoverage (CA-34) y AdminCoverageTest: todos en verde.
 - Cliente: `packages/api-client` no tiene script propio. `tsc -b` en `apps/dashboard` solo falla en `src/tests/admin-fixtures.ts` (el fixture `enclosure()` no incluye el nuevo `is_active` obligatorio de `EnclosureDto`); corresponde a `dashboard-012`.
 - Fallos preexistentes ajenos (no tocados): `EnclosuresAdminTest::ca17` (animals.stay_status sin default en fixture), `PublicEnclosuresTest::ca01` (clave `age`), `PublicCatalogTest` ca02-ca05 (columna `longevity` en fixtures y eventos), `PublicNewsTest::ca07`, `Visitor\CoverageTest::ca21` (cadenas prohibidas en `FavoriteSpeciesCoverageTest`) y pruebas de imágenes de noticias y eventos.
 - T-28: Pint aplicado a los archivos tocados; suite completa no ejecutada por duración (la BD remota tarda ~8 s por test).
-- T-30 pendiente (PR y commit los hace Jonathan).
+- T-30 pendiente (PR y commit los hace el responsable funcional).
 
 ## Orden de ejecución
 
-1. Aprobación del plan y de las tasks. Decisiones 1 a 5 del plan aceptadas (2026-11-18).
-2. T-01 (consulta de solo lectura): hecho con evidencia (2026-11-18).
+1. Aprobación del plan y de las tasks. Decisiones 1 a 5 del plan aceptadas.
+2. T-01 (consulta de solo lectura): hecho con evidencia.
 3. Bloque A: T-02 a T-11 (sin DBR). Con esto, `dashboard-012` puede avanzar en su bloque A.
-4. Bloque B: desbloqueado (T-12 hecha, DBR-020 «Lista para backend» desde 2026-11-18).
+4. Bloque B: desbloqueado (T-12 hecha, DBR-020 «Lista para backend»).
 5. T-26 al cerrar el bloque B; T-28 a T-30 al final.
 
-## Enmienda 2026-11-18 (b), aprobada por Jonathan · Bloque C. Búsqueda tolerante
+## Enmienda (b), aprobada por el responsable funcional · Bloque C. Búsqueda tolerante
 
-Reglas: T-31 a T-46 hechas con la evidencia de abajo (2026-11-18); T-47 pendiente (PR y commit los hace Jonathan). Ninguna se marca sin evidencia (salida de pruebas en `arca_pruebas`). Sin DBR ni migraciones: solo lectura. Cada método de test se llama `test_caNN_...` y cita `CA-NN enclosure-status-and-global-search`. Las decisiones «propuesta» de la spec (preguntas 1 a 5) deben estar confirmadas antes de T-34, T-39 y T-40.
+Reglas: T-31 a T-46 hechas con la evidencia de abajo; T-47 pendiente (PR y commit los hace el responsable funcional). Ninguna se marca sin evidencia (salida de pruebas en `arca_pruebas`). Sin DBR ni migraciones: solo lectura. Cada método de test se llama `test_caNN_...` y cita `CA-NN enclosure-status-and-global-search`. Las decisiones «propuesta» de la spec (preguntas 1 a 5) deben estar confirmadas antes de T-34, T-39 y T-40.
 
 - [x] **T-31** (CA-36; RN-15): normalización y palabras de consulta.
   - Depende de: aprobación de la enmienda.
@@ -341,12 +343,12 @@ Reglas: T-31 a T-46 hechas con la evidencia de abajo (2026-11-18); T-47 pendient
   - Pasos: Pint sobre los archivos tocados; `php artisan test --filter=GlobalSearch` desde `apps/api/src`, en `arca_pruebas`. Salida registrada en «Evidencia del bloque C».
   - Hecho cuando: la salida queda registrada en el PR. Sin ese registro no se marca ninguna T-xx del bloque.
 
-- [ ] **T-47**: enlaces del PR y commit.
+- [ ] **T-47** — Fuera de alcance de esta entrega: enlaces del PR y commit.
   - Depende de: T-46.
-  - Pasos: el PR enlaza spec, plan y tasks, y cita `api-019` enmienda (b). Jonathan hace el commit final y el push.
+  - Pasos: el PR enlaza spec, plan y tasks, y cita `api-019` enmienda (b). el responsable funcional hace el commit final y el push.
   - Hecho cuando: el PR tiene los tres artefactos enlazados y la evidencia de T-46.
 
-### Evidencia del bloque C (2026-11-18)
+### Evidencia del bloque C
 
 - Esquema (solo lectura, `arca_pruebas`, `php artisan db:table`): `users`, `news`, `events`, `species`, `species_publication_requests`, `visitor_memories`, `tickets` y `departments` tienen todas las columnas de CA-43; `tickets.payment_method` solo contiene `cash`. Sin DBR, sin migraciones ni DDL.
 - `php artisan test --filter='GlobalSearch|EnclosureStatusSearchCoverage'` (primera corrida: 32 tests, 29 pasaron; los 3 fallos eran expectativas de los tests nuevos, corregidas, y una palabra con `%` o `_` ya no admite tolerancia a errores, para que sean literales según CA-32). Segunda corrida de `GlobalSearchFields`, `GlobalSearchRecords`, `GlobalSearchResults` y `EnclosureStatusSearchCoverage`: 15 tests en verde (244 aserciones). Los otros 17 (Typo, Normalization, Ranking, Match, Cap, Throttle, Security, Tulanpedia, Users, ReadOnly, Validation) pasaron en la primera corrida. `AdminCoverageTest` en verde.
@@ -355,7 +357,7 @@ Reglas: T-31 a T-46 hechas con la evidencia de abajo (2026-11-18); T-47 pendient
 - T-45: `packages/api-client/admin-types.ts` exporta `GlobalSearchMatch` y `GlobalSearchItem.match?`. El 429 llega como `ApiError.status` (sin cambio de código en `http.ts`).
 - Suite completa no ejecutada (duración).
 
-## Enmienda 2026-11-18 (d), aprobada por Jonathan · Bloque D. Relevancia
+## Enmienda (d), aprobada por el responsable funcional · Bloque D. Relevancia
 
 - [x] **T-48** (CA-54): tipo `GlobalSearchGroup.best_score?: number` en `packages/api-client/admin-types.ts`.
   - Hecho cuando: el tipo existe (hecho antes que el resto para el frontend).
@@ -366,9 +368,9 @@ Reglas: T-31 a T-46 hechas con la evidencia de abajo (2026-11-18); T-47 pendient
   - Test: `GlobalSearchRelevanceTest::test_ca54_group_best_score`.
 - [x] **T-51** (CA-34): cobertura CA-01 a CA-54 y Pint.
   - Test: `EnclosureStatusSearchCoverageTest`.
-- [ ] **T-52**: PR y commit (Jonathan).
+- [ ] **T-52** — Fuera de alcance de esta entrega: PR y commit.
 
-### Evidencia del bloque D (2026-11-18)
+### Evidencia del bloque D
 
 - `php artisan test` (desde `apps/api/src`, `arca_pruebas`, sin suite completa): primera corrida de `GlobalSearch|EnclosureStatusSearchCoverage|AdminCoverage` con 4 fallos esperados por el cambio (forma del grupo de CA-23, orden de CA-41 por una frase que coincidía dentro de una palabra, CA-37 con 3 palabras y un test nuevo de CA-52); corregidos: la frase debe empezar en el inicio de una palabra, y los tests se actualizaron.
 - Segunda corrida: `GlobalSearchRanking|Normalization|Relevance|Results|EnclosureStatusSearchCoverage` 15 tests en verde (210 aserciones); `GlobalSearchUsers|Records|Tulanpedia|ReadOnly|Typo|Match|Fields|Cap|Throttle|Security|Validation|AdminCoverage` 24 tests en verde (301 aserciones).

@@ -1,10 +1,13 @@
 # Tareas · 024 · pending-review-counts
 
-- Spec: `apps/api/specs/024-pending-review-counts.md` (Aprobada, 2026-11-20)
-- Plan: `apps/api/plan/024-pending-review-counts.md` (Aprobado — aprobación técnica: Jonathan, 2026-11-20)
+- Spec: `apps/api/specs/024-pending-review-counts.md` (Implementada)
+- Plan: `apps/api/plan/024-pending-review-counts.md` (Aprobado)
+- Estado del checklist: Completado (T-13 y T-14 fuera de alcance de esta entrega)
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
 - DBR: ninguna (la feature no cambia el esquema).
 
-Plan aprobado 2026-11-20. Implementación 2026-11-21: T-01 a T-12 hechas (con pruebas de `--filter=PendingReview` en verde). T-13 y T-14 quedan abiertas hasta la sesión principal (suite completa, PR).
+Implementación: T-01 a T-12 hechas (con pruebas de `--filter=PendingReview` en verde). T-13 y T-14 quedan abiertas hasta la sesión principal (suite completa, PR).
 
 ## Precondición
 
@@ -16,7 +19,7 @@ Plan aprobado 2026-11-20. Implementación 2026-11-21: T-01 a T-12 hechas (con pr
 - [x] **T-03** (CA-01, CA-02, CA-03, CA-04): tests en `tests/Feature/Admin/PendingReviewCountsTest.php`: `test_ca01_counts_both_keys_for_both_permissions`, `test_ca02_only_species_key_without_memories_permission`, `test_ca03_only_memories_key_without_species_permission`, `test_ca04_zero_when_nothing_pending`. Usuarios con `createAccount` y rol/permisos de prueba; cero pendientes devuelve `0`.
 - [x] **T-04** (CA-05, CA-06, CA-12): tests `test_ca05_counts_only_pending_states_and_matches_lists` (fixtures en `submitted`, `accepted`, `rejected` y, para momentos, `submitted`, `in_review`, `accepted`, `rejected`; compara con los listados `GET /api/v1/admin/species-publication-requests?status=submitted` y `GET /api/v1/admin/memories` con `submitted` e `in_review`, recorriendo páginas), `test_ca06_soft_deleted_rows_are_not_counted` y `test_ca12_species_request_of_soft_deleted_species_is_not_counted`.
 - [x] **T-05** (CA-01, CA-07): crear `app/Http/Controllers/Admin/PendingReviewCountsController.php` (invocable, delgado: `response()->json($action->execute($request->user()))`). En `routes/api.php`, dentro del grupo `admin`: `Route::get('pending-counts', PendingReviewCountsController::class)->middleware(['permission:species.review|memories.review', 'throttle:admin-pending-counts'])->name('pending-counts.show');`. Nombre resultante `admin.pending-counts.show`.
-- [x] **T-06** (CA-10): en `AppServiceProvider` añadir el limitador `admin-pending-counts`: `Limit::perMinute(60)` por identificador de usuario si tiene `species.review` o `memories.review`; `Limit::none()` en otro caso. Respuesta 429 JSON con `message` «Demasiadas consultas. Espera un minuto e inténtalo de nuevo.» en la raíz (sin `data`) y las cabeceras del middleware (`Retry-After`), como `admin-search`. Quien no tiene permiso usa `Limit::none()` (decisión 2026-11-20, preguntas 1 y 2).
+- [x] **T-06** (CA-10): en `AppServiceProvider` añadir el limitador `admin-pending-counts`: `Limit::perMinute(60)` por identificador de usuario si tiene `species.review` o `memories.review`; `Limit::none()` en otro caso. Respuesta 429 JSON con `message` «Demasiadas consultas. Espera un minuto e inténtalo de nuevo.» en la raíz (sin `data`) y las cabeceras del middleware (`Retry-After`), como `admin-search`. Quien no tiene permiso usa `Limit::none()` (decisión, preguntas 1 y 2).
 
 ## Pruebas
 
@@ -29,11 +32,11 @@ Plan aprobado 2026-11-20. Implementación 2026-11-21: T-01 a T-12 hechas (con pr
 ## Documentación y entrega
 
 - [x] **T-12**: actualizar `apps/api/docs/administracion.md` con `GET /api/v1/admin/pending-counts`, forma de la respuesta, permisos (`species.review|memories.review`), 401/403/429. Sin cambios en `infra/README.md` (no hay requisito de servidor).
-- [ ] **T-13** (`/verify`): Pint sobre los archivos tocados; `php artisan test --filter PendingReview` contra `arca_pruebas` (nunca `arca_zoo`); comprobar que no se creó ninguna migración (`migrate:status` sin cambios). Registrar la salida real aportada por la sesión principal. Sin evidencia no se marca.
-- [ ] **T-14** (entrega): PR enlaza `apps/api/specs/024-pending-review-counts.md`, `apps/api/plan/024-pending-review-counts.md`, `apps/api/tasks/024-pending-review-counts.md` y la tarea de cliente `apps/dashboard/tasks/018-pending-review-badges.md`. El commit cita `api-024`. Los commits los hace Jonathan con el comando que indique él. El cambio de estado de la spec (En progreso / Implementada) solo con aprobación humana y enlace al PR.
+- [ ] **T-13** (`/verify`; fuera de alcance de esta entrega, sin shell en esta sesión): Pint sobre los archivos tocados; `php artisan test --filter PendingReview` contra `arca_pruebas` (nunca `arca_zoo`); comprobar que no se creó ninguna migración (`migrate:status` sin cambios). Registrar la salida real aportada por la sesión principal. Sin evidencia no se marca.
+- [ ] **T-14** (entrega; fuera de alcance de esta entrega): PR enlaza `apps/api/specs/024-pending-review-counts.md`, `apps/api/plan/024-pending-review-counts.md`, `apps/api/tasks/024-pending-review-counts.md` y la tarea de cliente `apps/dashboard/tasks/018-pending-review-badges.md`. El commit cita `api-024`. Los commits los hace el responsable del repositorio. El cambio de estado de la spec (En progreso / Implementada) solo con aprobación humana y enlace al PR.
 
 Cada tarea de código nombra su CA-xx; todo CA-xx tiene al menos una tarea de test (CA-01 a CA-12 cubiertos por T-03, T-04, T-05, T-07, T-08, T-09, T-10). Sin tareas de BD: no hay DBR.
 
-## Revisión de seguridad 2026-11-21
+## Revisión de seguridad
 
 - [x] **T-30** (CA-10): el limitador `admin-pending-counts` cubre también `reports.cancellations.view`. Test: `PendingReviewCountsThrottleTest::test_ca10_throttle_also_applies_to_the_cancellations_permission`.

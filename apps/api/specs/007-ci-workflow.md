@@ -2,9 +2,10 @@
 
 - App dueña: `api` (cambio transversal de integración continua)
 - Apps/paquetes afectados: `api`, `mobile` y configuración de GitHub Actions
-- Estado: Aprobada
-- Solicitante / responsable funcional: usuario solicitante
-- Aprobación funcional: aprobada por el usuario solicitante el 2026-10-26; consolidación en `ci.yml` y retirada del workflow demostrativo solicitadas directamente el 2026-11-10
+- Estado: Implementada
+- Solicitada: 2026-10-26
+- Aprobada: 2026-10-26
+- Aprobación funcional: aprobada por el usuario solicitante; consolidación en `ci.yml` y retirada del workflow demostrativo solicitadas directamente
 
 ## Problema y contexto
 
@@ -71,18 +72,18 @@ Si falla la instalación o una prueba, el job termina con error y la ejecución 
 
 - Dependencias/ADR: GitHub Actions y runtimes compatibles con las versiones declaradas en los lockfiles; no se propone agregar dependencias de aplicación.
 - Riesgos: el conjunto actual de pruebas de una app podría fallar al ejecutarse en un entorno limpio; el workflow reflejará ese estado y no está autorizado corregir aplicaciones bajo esta spec.
-- Preguntas pendientes:
+- Decisiones (antes preguntas pendientes):
 - Ninguna. El usuario solicitante aprobó PHPUnit Unit de API y Jest móvil sin conexión a base de datos, activación en `main` y `DevOps`, y validará la especificación.
 
 ## Revisión
 
-- Aprobadores y fecha: usuario solicitante, 2026-10-26.
+- Aprobación: usuario solicitante.
 - Evidencia/enlaces: pendiente de primera ejecución en GitHub Actions.
 
-## Corrección de compatibilidad — 2026-11-09
+## Corrección de compatibilidad
 
 La copia residual `.github/workflows/main.yml` también se activa en `DevOps` y conservaba PHP 8.2. Se alinea a PHP 8.4, como ya establece el plan aprobado y el ADR 0018. Esta corrección aplica CA-02 sin agregar dependencias ni cambiar la suite o los lockfiles. El workflow ampliado `ci.yml` mantiene su configuración actual.
 
-## Consolidación solicitada — 2026-11-10
+## Consolidación solicitada
 
 El usuario solicitó conservar únicamente `ci.yml`. Esta instrucción sustituye el antiguo CA-06 de demostración manual y RN-04; se eliminan los otros tres workflows, sin cambiar el contenido de `ci.yml`. Los documentos de `mobile-011` y `mobile-012` siguen describiendo sus pruebas, cobertura, tipos y builds. Las referencias anteriores a los workflows eliminados se conservan como historial de su creación y correcciones.

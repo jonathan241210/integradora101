@@ -1,8 +1,9 @@
 # 0009 · Pagos electrónicos futuros
 
-- Estado: Propuesto
-- Fecha: 2026-10-06
+- Estado: Rechazado — fuera de alcance de esta entrega
+- Solicitada: 2026-10-06
 - Spec relacionada: Futura; no existe autorización de implementación
+- Justificación: V1 vende solo en efectivo. No hay código, tablas, endpoints, SDK ni feature flag de pagos, y `Payments` no se implementa sin spec, proveedor seleccionado y ADR de proveedor aprobado (Constitución I y ADR 0009).
 
 ## Contexto
 

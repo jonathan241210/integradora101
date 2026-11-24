@@ -1,8 +1,10 @@
 # Plan técnico · 011 · loading-notices-and-animal-view
 
 - Spec: `apps/pwa/specs/011-loading-notices-and-animal-view.md`
-- Estado de spec: Aprobada
-- Revisión técnica: aprobación del equipo confirmada por el solicitante el 2026-11-19.
+- Estado de spec: Implementada
+- Solicitada: 2026-11-19
+- Aprobada: 2026-11-19
+- Revisión técnica: aprobación del equipo confirmada por el solicitante.
 - Responsable técnico: por identificar
 
 ## Diseño de solución
@@ -45,4 +47,4 @@ Los cambios usan los contratos, permisos y datos que ya consume la PWA. El visor
 3. Mover el selector y agregar la ampliación. Verificar el foco del diálogo y su independencia del botón de subida.
 4. Ejecutar las pruebas y la compilación de la PWA con `/verify`. Revisar en navegador el ajuste de la foto, el foco, los avisos y el movimiento reducido.
 
-El solicitante aprobó el alcance funcional y confirmó la aprobación técnica el 2026-11-19.
+El solicitante aprobó el alcance funcional y confirmó la aprobación técnica.

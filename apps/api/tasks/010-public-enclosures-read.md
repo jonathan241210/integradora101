@@ -2,6 +2,9 @@
 
 - Spec: `apps/api/specs/010-public-enclosures-read.md`
 - Plan: `apps/api/plan/010-public-enclosures-read.md`
+- Estado del checklist: Completado
+- Solicitada: 2026-11-07
+- Aprobada: 2026-11-07
 
 ---
 

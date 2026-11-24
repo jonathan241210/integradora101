@@ -1,10 +1,12 @@
 # Plan técnico · 005 · visitor-progress
 
 - Spec: `apps/api/specs/005-visitor-progress.md`
-- Estado de spec: Implementada (2026-11-01; aprobación funcional Aksel, 2026-10-22)
-- Estado del plan: Aprobado (Aksel, 2026-10-22)
-- Responsable técnico: Aksel
-- Responsable de BD: Victor Adrian. DBR-004 está en `Lista para backend`. La migración `2026_10_15_000004_visitor_progress_schema.php` ya existe. Este plan no crea ni edita migraciones.
+- Estado de spec: Implementada
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
+- Estado del plan: Aprobado
+- Responsable técnico: Backend
+- Responsable de BD: Responsable de BD (rol). DBR-004 está en `Lista para backend`. La migración `2026_10_15_000004_visitor_progress_schema.php` ya existe. Este plan no crea ni edita migraciones.
 
 ## Diseño de solución
 
@@ -88,16 +90,16 @@ El visitante solo ve su progreso. El código QR no se registra en logs de aplica
 
 ## Orden y aprobación
 
-1. Spec aprobada por Aksel el 2026-10-22.
-2. Este plan, aprobado por Aksel el 2026-10-22.
+1. Spec aprobada.
+2. Este plan, aprobado.
 3. Checklist y después el código en `apps/api/src`.
 4. La app móvil consume el contrato cuando su propio plan esté aprobado.
 
-Aprobador funcional: Aksel. Fecha: 2026-10-22.
+Aprobación funcional: Aprobada.
 
 ## Enmienda · Logros y misiones de especies visitables
 
-Autorización registrada el 2026-11-21. `VisitorProgressQuery` reutiliza el criterio de exhibición y recinto activo del conteo de progreso. Para `species_keyword` añade la publicación de la especie y excluye animales y especies con baja lógica. Usa la misma consulta para el listado y para los nombres descubiertos por la cuenta. Conserva el reconocimiento por palabra completa y la transacción, el historial y la idempotencia de `EvaluateVisitorProgressAction`. Los endpoints autenticados mantienen su contrato JSON y el cliente móvil presenta el resultado de la API.
+Autorización registrada. `VisitorProgressQuery` reutiliza el criterio de exhibición y recinto activo del conteo de progreso. Para `species_keyword` añade la publicación de la especie y excluye animales y especies con baja lógica. Usa la misma consulta para el listado y para los nombres descubiertos por la cuenta. Conserva el reconocimiento por palabra completa y la transacción, el historial y la idempotencia de `EvaluateVisitorProgressAction`. Los endpoints autenticados mantienen su contrato JSON y el cliente móvil presenta el resultado de la API.
 
 | Criterio | Prueba en `tests/Feature/Visitor/ProgressTest.php` |
 |---|---|

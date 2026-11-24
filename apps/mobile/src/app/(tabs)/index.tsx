@@ -45,7 +45,7 @@ export default function HomeRoute() {
   const { profile } = useVisitorProfile();
   const { ids: favoriteIds } = useVisitorFavorites();
   const progress = useVisitorProgress();
-  const { missions } = useUserViewModel();
+  const { missions, status: userStatus, error: userError, refresh: refreshUser } = useUserViewModel();
   const params = useLocalSearchParams<{ panel?: string }>();
   const [pendingScans, setPendingScans] = useState<QueuedScan[]>([]);
   const [featuredAnimals, setFeaturedAnimals] = useState<Animal[]>(rememberedHome?.animals ?? []);
@@ -131,6 +131,9 @@ export default function HomeRoute() {
       missions={missionSource}
       missionsLoading={progress.loading && !progress.snapshot && missionSource.length === 0}
       pendingScans={pendingScans}
+      missionsAccess={userStatus === 'guest' || userStatus === 'error'
+        ? { status: userStatus, error: userError, onLogin: () => router.replace('/login'), onRetry: refreshUser }
+        : undefined}
       onMissionPress={(id) => router.push({ pathname: '/mission-detail', params: { id, returnTo: 'home' } })}
       onAchievementsPress={() => router.push({ pathname: '/achievements', params: { source: 'game', returnTo: 'home' } })}
       onRetryScansPress={() => { void scanQueue.retry().finally(reloadScans); }}

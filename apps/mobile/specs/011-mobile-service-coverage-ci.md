@@ -3,8 +3,9 @@
 - App dueña: `mobile`
 - Apps/paquetes afectados: `apps/mobile`, `.github/workflows/ci.yml`
 - Estado: Implementada
-- Solicitante / responsable funcional: usuario solicitante
-- Aprobación funcional: usuario solicitante, 2026-11-09
+- Solicitada: 2026-11-09
+- Aprobada: 2026-11-09
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -61,18 +62,17 @@ La cobertura contiene nombres de archivos, líneas ejecutadas y métricas técni
 
 - Dependencias/ADR: no se añaden dependencias; se usan Jest y `actions/upload-artifact@v4` ya disponibles en el proyecto.
 - Riesgos: los servicios no cubiertos todavía pueden tener pruebas insuficientes; incluirlos no aumenta por sí solo la cobertura real si no existen casos de prueba.
-- Preguntas pendientes: ninguna. Aprobado el alcance de `src/services/` y `src/repositories/` y el inicio sin umbral global bloqueante.
+- Sin preguntas abiertas. Aprobado el alcance de `src/services/` y `src/repositories/` y el inicio sin umbral global bloqueante.
 
 ## Revisión
 
-- Aprobadores y fecha: usuario solicitante, 2026-11-09.
+- Aprobación: Aprobada.
 - Evidencia/enlaces: [ejecución de GitHub Actions 42703309235](https://github.com/jonathan241210/integradora101/actions/runs/42703309235); workflow `.github/workflows/ci.yml`; configuración Jest `apps/mobile/jest.config.js`; servicios `apps/mobile/src/services/`.
 
 ## Enmienda funcional aprobada — requisito del 80 %
 
-- Fecha: 2026-11-09.
-- Decisión funcional aprobada por el usuario: conservar el 80 % como requisito; no se autoriza reducir umbrales para hacer pasar CI.
-- Alcance técnico y tasks aprobados por el usuario solicitante, 2026-11-09; solicitud de añadir los casos pendientes confirmada en este chat.
+- Decisión funcional aprobada: conservar el 80 % como requisito; no se autoriza reducir umbrales para hacer pasar CI.
+- Alcance técnico y tasks aprobados; solicitud de añadir los casos pendientes confirmada por el equipo.
 
 ### Criterios de aceptación de la enmienda
 
@@ -87,10 +87,10 @@ La cobertura contiene nombres de archivos, líneas ejecutadas y métricas técni
 
 La ejecución 42703309235 publicó el artefacto, pero falló por tres pruebas de mapa y por umbrales de cobertura existentes. Su resumen reportó 78,93 % de sentencias, 63,31 % de ramas, 83,43 % de funciones y 81,64 % de líneas en el conjunto medido. Los grupos de repositorios y servicios reportaron 56,42 % y 72 % de ramas, respectivamente. Los detalles se conservan en el registro de Actions enlazado arriba.
 
-## Evidencia local de CA-05 y CA-06 — 2026-11-09
+## Evidencia local de CA-05 y CA-06
 
 La suite con cobertura aprobó 62 suites, 310 pruebas y 1 snapshot (21,327 s). Resultado agregado: 98,03 % de sentencias, 94,51 % de ramas, 96,49 % de funciones y 98,61 % de líneas. Jest exige 80 % en las cuatro métricas por cada servicio y repositorio medidos y conserva todos los umbrales anteriores. Las pruebas añadidas se identifican como `mobile-011 CA-05` y cubren errores, permisos, desmontaje, cambios de cuenta, caché y navegación. La lógica funcional y las dependencias no cambiaron. Falta confirmar la nueva corrida y artefacto en Actions.
 
-## Aceptación remota — 2026-11-09
+## Aceptación remota
 
 La [ejecución 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501) del commit `e59793b` terminó en `success`: los siete jobs aprobaron, incluido Mobile con cobertura. Se descargó `mobile-coverage-report` a `/tmp/arca-mobile-coverage-e59793b` y se verificaron `lcov.info` y `lcov-report/index.html`. CA-05 y CA-06 y la verificación remota T-15 quedan satisfechos.

@@ -1,6 +1,6 @@
 import { Button, Card, Dialog, Field, SelectField, TextAreaField } from '@arca/ui';
 import { useEffect, useState, type FormEvent } from 'react';
-import { createEvaluation } from '@/services/apiClient';
+import { useAnimalActions } from '@/viewmodels/useAnimalActions';
 import { formToRecord, useSaveRequest } from '@/viewmodels/useApiData';
 import { AnimalPicker, type PickableAnimal } from '@/views/AnimalPicker';
 import { queueEvaluation } from '@/offline/sync-manager';
@@ -44,6 +44,7 @@ export function DiagnosisQuickView({ mvzName = '', userScope }: { mvzName?: stri
   const [sex, setSex] = useState('');
   const [age, setAge] = useState('');
   const save = useSaveRequest();
+  const { createEvaluation } = useAnimalActions();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pending, setPending] = useState<{ animalValue: string; values: Record<string, string> } | null>(null);
   const [followUpReason, setFollowUpReason] = useState('');

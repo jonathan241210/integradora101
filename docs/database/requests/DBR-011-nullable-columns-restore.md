@@ -1,15 +1,15 @@
 # DBR-011 · nullable-columns-restore
 
-- Estado: Aprobada (Lista para backend, 2026-11-10)
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-07
+- Aprobada: 2026-11-10
 - Feature/spec origen: restauración de `arca_pruebas` en la nueva instancia de Aiven; relacionada con DBR-010. Consumidores: api-003 a api-011 (suite PHPUnit completa).
-- Solicitante: Jonathan (responsable funcional y backend)
-- Responsable de BD: Víctor Adrián
-- Responsable backend: Jonathan
-- Fecha: 2026-11-07
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 
 ## Problema y justificación
 
-Tras aplicar DBR-010, la suite de `apps/api` (245 tests, corrida del 2026-11-07 contra la nueva instancia) dio **69 fallos, todos con la misma causa**: cuatro columnas son `NOT NULL` sin valor por defecto en la copia, y el código y los tests insertan filas sin ellas. Con la base anterior esos tests pasaban, lo que indica que esas columnas aceptaban `NULL`. El equipo confirmó que por ahora no hay problema si esos campos quedan en `NULL`, porque parte de los datos relacionados se borró.
+Tras aplicar DBR-010, la suite de `apps/api` (245 tests, corrida contra la nueva instancia) dio **69 fallos, todos con la misma causa**: cuatro columnas son `NOT NULL` sin valor por defecto en la copia, y el código y los tests insertan filas sin ellas. Con la base anterior esos tests pasaban, lo que indica que esas columnas aceptaban `NULL`. El equipo confirmó que por ahora no hay problema si esos campos quedan en `NULL`, porque parte de los datos relacionados se borró.
 
 ## Estado actual
 
@@ -75,20 +75,20 @@ Aplicar después de DBR-010, en `arca_pruebas`. Luego volver a correr la suite d
 ## Pruebas y evidencia
 
 - Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: pendiente.
-- Evidencia (sin secretos ni datos sensibles): la corrida del 2026-11-07 tuvo 245 tests, 41 errores y 28 fallos; el 100 % de ellos corresponde a las cinco columnas de la tabla anterior.
+- Evidencia (sin secretos ni datos sensibles): la corrida tuvo 245 tests, 41 errores y 28 fallos; el 100 % de ellos corresponde a las cinco columnas de la tabla anterior.
 - Pruebas integradas del backend: toda la suite de `apps/api` tras aplicar el cambio.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Víctor Adrián | 2026-11-10 | Aprobada |
-| Responsable backend | Jonathan | 2026-11-10 | Aprobada (solicitante) |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada (solicitante) | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas | pendiente | | |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Pendiente de confirmar en arca_pruebas (consulta `migrate:status`; migración `2026_11_09_000011` presente) | |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

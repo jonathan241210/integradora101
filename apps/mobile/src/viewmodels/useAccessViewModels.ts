@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { InfoSection, VisitorAccountSummary, VisitorPreferenceKey, VisitorPreferences } from '../models';
 import { visitorAccessRepository } from '../repositories/visitorAccessRepository';
+import { useVisitorProfile } from './useVisitorProfile';
 import { validateForgotPassword, validateLogin, validateRegister, validateResetPassword } from './authForm';
 
 const repository = visitorAccessRepository;
@@ -29,14 +30,19 @@ export function useVisitorPreferencesViewModel() {
 }
 
 export function useVisitorContentViewModel() {
-  const [account] = useState<VisitorAccountSummary>(repository.getAccount());
+  const { profile } = useVisitorProfile();
+  const demoAccount = repository.getDemoAccount();
+  const account: VisitorAccountSummary = profile
+    ? { displayName: profile.nickname?.trim() || profile.firstName, email: profile.email }
+    : demoAccount ?? { displayName: '', email: '' };
+  const hasAccount = profile !== null || demoAccount !== null;
   const [privacySections] = useState<InfoSection[]>(repository.getPrivacySections());
   const [helpSections] = useState<InfoSection[]>(repository.getHelpSections());
   const [aboutSections] = useState<InfoSection[]>(repository.getAboutSections());
   const [accountDeletionWarning] = useState(repository.getAccountDeletionWarning());
   const [forgotPasswordNotice] = useState(repository.getForgotPasswordNotice());
 
-  return { account, privacySections, helpSections, aboutSections, accountDeletionWarning, forgotPasswordNotice };
+  return { account, hasAccount, privacySections, helpSections, aboutSections, accountDeletionWarning, forgotPasswordNotice };
 }
 
 export function useLoginFormViewModel() {

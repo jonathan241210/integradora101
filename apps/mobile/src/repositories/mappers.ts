@@ -248,7 +248,7 @@ export interface ApiEnclosureAnimal {
   longevity?: string | null;
   diet?: string | null;
   reproduction?: string | null;
-  characteristics?: string | null;
+  fun_fact?: string | null;
   photo_path?: string | null;
   stay_status?: string | null;
   can_receive_visits?: boolean | number | null;
@@ -264,6 +264,7 @@ export interface ApiEnclosureAnimal {
     conservation_status?: string | null;
     habitat?: string | null;
     gestation_period?: string | null;
+    fun_fact?: string | null;
     size_cm?: number | null;
     model_3d_path?: string | null;
   } | null;
@@ -326,8 +327,7 @@ export function mapEnclosureToMapPlace(item: ApiEnclosureResponse): MapPlace {
           diet: a.diet ?? undefined,
           reproduction: a.reproduction ?? undefined,
           veterinaryStatus: a.stay_status ? `Estatus: ${a.stay_status}` : undefined,
-          characteristics: a.characteristics ?? undefined,
-          funFact: a.characteristics ?? undefined,
+          funFact: a.fun_fact ?? a.species?.fun_fact ?? undefined,
           photoPath: a.photo_path ?? undefined,
         };
       })

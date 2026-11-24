@@ -1,8 +1,10 @@
 # Tareas · 006 · qr-scan
 
-- Spec: `apps/mobile/specs/006-qr-scan.md` (Implementada, 2026-11-01; aprobación funcional Aksel, 2026-11-01)
-- Plan: `apps/mobile/plan/006-qr-scan.md` (Aprobado, Aksel, 2026-11-01)
-- Estado del checklist: Completado, 2026-11-01
+- Spec: `apps/mobile/specs/006-qr-scan.md` (Implementada)
+- Plan: `apps/mobile/plan/006-qr-scan.md` (Aprobado)
+- Estado del checklist: Completado
+- Solicitada: 2026-11-01
+- Aprobada: 2026-11-01
 
 ## Dependencias y manifest
 
@@ -25,9 +27,9 @@
 ## Calidad y entrega
 
 - [x] **T-10**: `npm test` en `apps/mobile` (suites qr + navegación relacionada).
-- [x] **T-11**: Actualizar roadmap y arquitectura; spec **Implementada** 2026-11-01.
-- [x] **T-12** (CA-02 de 005, enmienda 2026-11-01): Tras `discoveries` exitoso, invalidar el progreso compartido y refrescar colección, perfil y aventura al enfocar. Emparejar especies por id.
-- [x] **T-13** (CA-01): Enmienda visual 2026-11-11. La solicitud de permiso es una frase y «Permitir cámara». El marco `accent` y el fondo `primary` no cambian. Jest: `__tests__/qr/permissions.test.tsx` en verde el 2026-11-11.
-- [x] **T-14** (CA-04): Enmienda de Aksel, 2026-11-14. `ScanPresentation` incluye `empty_enclosure` y la pantalla de resultado de `mobile-005` lo muestra.
+- [x] **T-11**: Actualizar roadmap y arquitectura; spec **Implementada**.
+- [x] **T-12** (CA-02 de 005, enmienda): Tras `discoveries` exitoso, invalidar el progreso compartido y refrescar colección, perfil y aventura al enfocar. Emparejar especies por id.
+- [x] **T-13** (CA-01): Enmienda visual. La solicitud de permiso es una frase y «Permitir cámara». El marco `accent` y el fondo `primary` no cambian. Jest: `__tests__/qr/permissions.test.tsx` en verde.
+- [x] **T-14** (CA-04): Enmienda. `ScanPresentation` incluye `empty_enclosure` y la pantalla de resultado de `mobile-005` lo muestra.
 
 No hay tareas de API ni DBR.

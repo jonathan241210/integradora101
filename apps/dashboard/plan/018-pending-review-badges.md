@@ -1,8 +1,10 @@
 # Plan técnico · 018 · pending-review-badges
 
 - Spec: `apps/dashboard/specs/018-pending-review-badges.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-20)
-- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**. Preguntas 1 a 4 cerradas en «Decisiones 2026-11-20».
+- Estado de spec: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Estado del plan: **Aprobado** (aprobación técnica registrada). Preguntas 1 a 4 cerradas en «Decisiones».
 - Responsable técnico: `<por identificar>`
 - Dependencia de contrato: `apps/api/specs/024-pending-review-counts.md` y su plan `apps/api/plan/024-pending-review-counts.md` (endpoint `GET /api/v1/admin/pending-counts`, Borrador). Las pruebas de cliente pueden usar mocks; la integración real exige la ruta de `api-024` mergeada.
 - DBR relacionada: ninguna. No toca datos ni esquema.
@@ -110,7 +112,7 @@ Vitest, archivos en `apps/dashboard/src/tests/`. Nombre de cada caso: `it("CA-xx
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas; `@arca/api-client`, `@arca/ui` y React ya están. Sin variables de nube. |
-| II. La spec manda | Sí | Spec 018 Aprobada (2026-11-20). Plan y tasks con el mismo `018-pending-review-badges`. Borrador hasta aprobación. |
+| II. La spec manda | Sí | Spec 018 Aprobada. Plan y tasks con el mismo `018-pending-review-badges`. Borrador hasta aprobación. |
 | III. Lógica separada de la interfaz | Sí | Reglas de presentación en `viewmodels/`; la decisión de pendientes la toma la API (`api-024`). Componentes sin `fetch`, sin cálculo de negocio. |
 | IV. Un test por criterio | Sí (pendiente de evidencia) | Mapeo CA-01 a CA-16 con casos nombrados. Verde pendiente de evidencia de la sesión principal. |
 | V. Una sola fuente de verdad para los datos | Sí | No se guardan conteos fuera de la API. El último resultado solo vive en memoria del hook. |
@@ -130,7 +132,7 @@ Excepciones: ninguna. El tono `info` y la cola de avisos son cambios de `Dashboa
   - Sondeo con `setInterval`: prohibido por la spec (CA-08).
   - Mostrar el aviso desde `NoticeBar`: no es un aviso de tono informativo ni acepta cola.
 
-## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+## Decisiones (aprobación técnica)
 
 - **Pregunta 1 (cola de avisos):** cola FIFO para todos los tonos. `publish` añade a la cola; sale el siguiente al cerrarse (5 s o botón). Spec: RN-14. Tareas: T-04, T-07. Regresión de los avisos de éxito y error en `published-species-*` (T-08).
 - **Pregunta 2 (etiqueta del tono informativo):** «Aviso». Spec: RN-12 (enmendado).
@@ -158,11 +160,11 @@ Dependencias y secuencia:
 6. Documentación, verificación y PR (T-10 a T-12).
 7. Integración con `api-024` real (T-13) cuando la ruta esté mergeada. Hasta entonces, el PR no se mergea.
 
-- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan).
-- Aprobador funcional: Jonathan, spec aprobada el 2026-11-20.
+- Revisión técnica: aprobada (aprobación técnica del plan).
+- Aprobador funcional: responsable funcional (spec aprobada).
 - Evidencias: pendientes de la sesión principal (salida de `npm test`/Vitest, `tsc` y lint del dashboard). Esta sesión no tiene shell y no afirma que pasen.
 
-## Divergencias de implementación (2026-11-20)
+## Divergencias de implementación
 
 - Las pruebas del dashboard corren en Vitest con entorno `node` (sin DOM), así que la lógica de consulta (intervalo, fallo silencioso, una consulta en curso, aviso de inicio) vive en `viewmodels/pending-review.ts` como funciones y reducer puros (`refreshPendingCounts`, `pendingReviewReducer`) y el hook `usePendingReviewCounts` solo los conecta con React. Los casos prueban esas funciones y el marcado de `SidebarLink`; los CA-07, CA-08 y CA-13 además revisan el código fuente.
 - Se extrajo `components/SidebarLink.tsx` (botón del menú con puntito y nombre accesible) en lugar de editar el `button` en línea de `App.tsx`.

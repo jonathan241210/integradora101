@@ -1,7 +1,8 @@
 # 0010 · MySQL 8.0 y gobierno de cambios de base de datos
 
 - Estado: Aceptado
-- Fecha: 2026-10-09
+- Solicitada: 2026-10-09
+- Aprobada: 2026-10-09
 - Spec relacionada: `apps/api/specs/001-database-change-governance.md`
 
 ## Contexto

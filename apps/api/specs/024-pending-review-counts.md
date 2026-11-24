@@ -2,9 +2,10 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña: endpoint de conteos, permisos, cálculo desde estados existentes, pruebas); `dashboard` (`dashboard-018`, consumidor: aviso al iniciar sesión y puntito en el menú); `packages/api-client` (método y tipo de la respuesta; sin lógica de negocio).
-- Estado: Aprobada (2026-11-20). Sin plan, sin tasks, sin DBR: la feature no cambia el esquema.
-- Solicitante / responsable funcional: Jonathan (responsable funcional y de backend).
-- Aprobación funcional: Jonathan, 2026-11-20
+- Estado: Implementada. Con plan y tasks aprobados; sin DBR: la feature no cambia el esquema.
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Aprobación funcional: Aprobada
 - Responsable de BD: no requerido por esta spec (no crea índices nuevos; ver «Datos, privacidad y auditoría»).
 - Dependencias de contrato: `api-014` (estados de `species_publication_requests`), `api-010` (estados de `visitor_memories`), `api-007` (rutas bajo `/api/v1/admin` con 2FA), `api-023` (rol «Comunicación», solo citado: verá estos conteos porque tendrá `memories.review` y `species.review`).
 
@@ -48,7 +49,7 @@ Esta spec define un endpoint de conteos, de solo lectura, que devuelve cuántos 
 
 ## Criterios de aceptación
 
-- **CA-01 (ambos permisos):** Dado un usuario con sesión, 2FA confirmado y `species.review` y `memories.review`, cuando llama `GET /api/v1/admin/pending-counts`, entonces responde `200` con las dos claves `species_requests` y `memories`, cada una con un entero mayor o igual que 0, en la raíz del JSON y sin envoltorio `data` (enmienda técnica 2026-11-20, pregunta 3 del plan).
+- **CA-01 (ambos permisos):** Dado un usuario con sesión, 2FA confirmado y `species.review` y `memories.review`, cuando llama `GET /api/v1/admin/pending-counts`, entonces responde `200` con las dos claves `species_requests` y `memories`, cada una con un entero mayor o igual que 0, en la raíz del JSON y sin envoltorio `data` (enmienda técnica, pregunta 3 del plan).
   - Verificación: `test_ca01_counts_both_keys_for_both_permissions`.
 
 - **CA-02 (solo `species.review`):** Dado un usuario con `species.review` y sin `memories.review`, cuando llama la ruta, entonces responde `200` solo con la clave `species_requests`. La clave `memories` no aparece (ni como `null` ni como `0`).
@@ -75,35 +76,35 @@ Esta spec define un endpoint de conteos, de solo lectura, que devuelve cuántos 
 - **CA-09 (solo lectura):** Dada cualquier llamada a la ruta, cuando termina, entonces ninguna fila de `species_publication_requests`, `species`, `visitor_memories` o `visitor_memory_reviews` cambia, y Activitylog no registra nada.
   - Verificación: `test_ca09_read_only_no_rows_or_activity_changed`.
 
-- **CA-10 (frecuencia):** Dado un usuario autenticado, cuando hace más de 60 llamadas a la ruta en un minuto (decisión 2026-11-20: 60 por minuto y por usuario), entonces la llamada que supera el límite responde `429` con la cabecera `Retry-After`, y las llamadas dentro del límite responden normal. *Enmienda técnica 2026-11-20: quien no tiene `species.review` ni `memories.review` no consume cuota (`Limit::none()`; recibe el 403 de CA-07). El 429 lleva el mensaje «Demasiadas consultas. Espera un minuto e inténtalo de nuevo.» en la raíz del JSON, sin `data`.*
+- **CA-10 (frecuencia):** Dado un usuario autenticado, cuando hace más de 60 llamadas a la ruta en un minuto (decisión: 60 por minuto y por usuario), entonces la llamada que supera el límite responde `429` con la cabecera `Retry-After`, y las llamadas dentro del límite responden normal. *Enmienda técnica: quien no tiene `species.review` ni `memories.review` no consume cuota (`Limit::none`; recibe el 403 de CA-07). El 429 lleva el mensaje «Demasiadas consultas. Espera un minuto e inténtalo de nuevo.» en la raíz del JSON, sin `data`.*
   - Verificación: `test_ca10_throttle_per_user_returns_429`.
 
 - **CA-11 (cobertura):** Dada la suite PHPUnit, cuando se ejecuta contra `arca_pruebas` con `DatabaseTransactions`, entonces existe al menos un test que nombra cada CA-01 a CA-12 (Constitución IV). Ningún test usa `RefreshDatabase` ni migra.
   - Verificación: revisión de nombres de test por CA y ejecución de la suite; sin evidencia aún.
 
-- **CA-12 (solicitudes de especie de especies eliminadas):** Dada una solicitud de especie en `submitted` cuya especie (`species`) tiene `deleted_at` no nulo, cuando se llama la ruta, entonces no cuenta (decisión 2026-11-20), igual que no aparece en la cola de `api-014`.
+- **CA-12 (solicitudes de especie de especies eliminadas):** Dada una solicitud de especie en `submitted` cuya especie (`species`) tiene `deleted_at` no nulo, cuando se llama la ruta, entonces no cuenta (decisión), igual que no aparece en la cola de `api-014`.
   - Verificación: `test_ca12_species_request_of_soft_deleted_species_is_not_counted`.
 
 ## Reglas de negocio
 
 - **RN-01 (fuente de verdad):** Los conteos se calculan en una Action de lectura desde los estados existentes. No hay tabla, columna, contador persistente ni caché de conteos en esta versión.
 - **RN-02 (solicitudes de especie):** Una solicitud de especie está pendiente si `status = submitted`, sea de tipo `publish` o `update` (`api-014` RN-18 y tipos de envío). `accepted` y `rejected` no cuentan. Si la especie tiene `deleted_at`, la solicitud no cuenta (CA-12).
-- **RN-03 (momentos):** Un momento está pendiente de revisión si `status` es `submitted` o `in_review` (`api-010` RN-01 y RN-02; decisión 2026-11-20: `in_review` cuenta porque sigue esperando decisión). `accepted` (ya revisado) y `rejected` (esperando corrección del visitante) no cuentan.
+- **RN-03 (momentos):** Un momento está pendiente de revisión si `status` es `submitted` o `in_review` (`api-010` RN-01 y RN-02; decisión: `in_review` cuenta porque sigue esperando decisión). `accepted` (ya revisado) y `rejected` (esperando corrección del visitante) no cuentan.
 - **RN-04 (borrado lógico):** Las filas con `deleted_at` no cuentan (Constitución V; `api-010` CA-20 para `visitor_memories`), y tampoco las solicitudes cuya especie tiene `deleted_at` (RN-02, CA-12).
 - **RN-05 (permiso decide la clave):** `species.review` habilita `species_requests`; `memories.review` habilita `memories`. Una clave sin permiso no se incluye en la respuesta.
-- **RN-06 (sin permisos):** Si quien llama no tiene ninguno de los dos permisos, la respuesta es `403` sin cifras (CA-07). La decisión evita dar pistas sobre la existencia de colas a quien no las revisa (decisión 2026-11-20).
+- **RN-06 (sin permisos):** Si quien llama no tiene ninguno de los dos permisos, la respuesta es `403` sin cifras (CA-07). La decisión evita dar pistas sobre la existencia de colas a quien no las revisa (decisión).
 - **RN-07 (solo lectura):** La ruta no cambia estados, no crea filas y no escribe auditoría; no es una acción de negocio.
 - **RN-08 (roles):** Quien tiene los permisos ve los conteos, sin importar el nombre del rol. `admin` no tiene ninguno de los dos permisos y recibe `403` (`api-014` RN-10 y `api-010` RN-07).
 - **RN-09 (mínimo dato):** Solo cifras. Nunca se devuelven datos de solicitudes, momentos ni personas (`api-010` RN-09).
-- **RN-10 (nombre de la ruta):** La ruta es `GET /api/v1/admin/pending-counts` con nombre `admin.pending-counts.show` (decisión 2026-11-20).
+- **RN-10 (nombre de la ruta):** La ruta es `GET /api/v1/admin/pending-counts` con nombre `admin.pending-counts.show` (decisión).
 
 ## Datos, privacidad y auditoría
 
 - **Datos consultados (solo lectura):** `species_publication_requests` (`status`, `deleted_at`), `visitor_memories` (`status`, `deleted_at`) y `species` (`deleted_at`, para RN-02). Los valores de estado se toman del código: `SpeciesRequestStatus` (`submitted`, `accepted`, `rejected`) y `MemoryStatus` (`submitted`, `in_review`, `accepted`, `rejected`). Los modelos usan SoftDeletes.
-- **Esquema vivo de `arca_pruebas` (consulta en solo lectura con `php artisan db:table`, 2026-11-20):**
+- **Esquema vivo de `arca_pruebas` (consulta en solo lectura con `php artisan db:table`):**
   - `species_publication_requests`: `status varchar(20)` (default `submitted`) y `deleted_at timestamp` nullable existen. Índices `idx_species_publication_requests_status_created (status, created_at)` e `idx_species_publication_requests_species_status (species_id, status)`.
   - `visitor_memories`: `status varchar(20)` (default `submitted`) y `deleted_at timestamp` nullable existen. Índices `idx_visitor_memories_status_created (status, created_at)` e `idx_visitor_memories_status_publication (status, published_until, published_at, id)`.
-  - Conclusión: los conteos por `status` ya tienen índice que empieza por `status` en ambas tablas. **No hace falta DBR ni índice nuevo** (decisión 2026-11-20, pregunta 6).
+  - Conclusión: los conteos por `status` ya tienen índice que empieza por `status` en ambas tablas. **No hace falta DBR ni índice nuevo** (decisión, pregunta 6).
 - **Esquema:** esta spec no crea ni modifica esquema. Si el plan encuentra que el conteo necesita un índice nuevo, el plan abre una DBR en `docs/database/requests/` antes de cualquier migración; con la verificación de hoy, no es necesario.
 - **Clasificación:** los conteos no son datos personales ni clínicos ni financieros.
 - **Auditoría:** no se audita la lectura de conteos (no es una decisión). Las decisiones que cambian los conteos ya se auditan en `api-014` y `api-010`.
@@ -126,22 +127,22 @@ Esta spec define un endpoint de conteos, de solo lectura, que devuelve cuántos 
   - Cifras que no coinciden con los listados si un estado cambia de significado: mitigado con CA-05 y con la misma fuente de estados.
   - Cambios de permisos en `api-023`: si un rol gana o pierde `species.review` o `memories.review`, el aviso sigue sus permisos sin cambios en esta spec.
   - Pendientes de cuentas eliminadas con `keep` (`api-010` pregunta 8): cuentan igual, porque siguen en revisión.
-- **Decisiones 2026-11-20** (las preguntas de la versión Borrador quedan cerradas):
-  1. **¿`in_review` cuenta como pendiente de momentos?** Decisión 2026-11-20: sí (RN-03, CA-05).
-  2. **¿Límite de frecuencia?** Decisión 2026-11-20: 60 llamadas por minuto y por usuario (CA-10).
-  3. **¿Solicitud `submitted` de especie con `deleted_at` en la especie?** Decisión 2026-11-20: no cuenta (RN-02, RN-04, CA-12).
-  4. **¿`403` sin cifras cuando no hay ningún permiso?** Decisión 2026-11-20: sí, `403` (RN-06, CA-07).
-  5. **¿Ruta y nombre?** Decisión 2026-11-20: `GET /api/v1/admin/pending-counts` y `admin.pending-counts.show` (RN-10).
-  6. **¿Hace falta índice sobre `status`?** Decisión 2026-11-20: no. La consulta de solo lectura de 2026-11-20 confirma que ya hay índices que empiezan por `status` en ambas tablas; no se abre DBR (Datos, privacidad y auditoría).
+- **Decisiones** (las preguntas de la versión Borrador quedan cerradas):
+  1. **¿`in_review` cuenta como pendiente de momentos?** Decisión: sí (RN-03, CA-05).
+  2. **¿Límite de frecuencia?** Decisión: 60 llamadas por minuto y por usuario (CA-10).
+  3. **¿Solicitud `submitted` de especie con `deleted_at` en la especie?** Decisión: no cuenta (RN-02, RN-04, CA-12).
+  4. **¿`403` sin cifras cuando no hay ningún permiso?** Decisión: sí, `403` (RN-06, CA-07).
+  5. **¿Ruta y nombre?** Decisión: `GET /api/v1/admin/pending-counts` y `admin.pending-counts.show` (RN-10).
+  6. **¿Hace falta índice sobre `status`?** Decisión: no. La consulta de solo lectura confirma que ya hay índices que empiezan por `status` en ambas tablas; no se abre DBR (Datos, privacidad y auditoría).
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan, 2026-11-20.
-- Enmienda técnica 2026-11-20: aprobación técnica del plan `apps/api/plan/024-pending-review-counts.md`. Enmienda CA-01 (forma sin `data`) y CA-10 (cuota para quien no tiene permiso y texto del 429). Sin CA ni RN nuevos.
+- Aprobación: Aprobada.
+- Enmienda técnica: aprobación técnica del plan `apps/api/plan/024-pending-review-counts.md`. Enmienda CA-01 (forma sin `data`) y CA-10 (cuota para quien no tiene permiso y texto del 429). Sin CA ni RN nuevos.
 - Evidencia/enlaces: `apps/api/specs/014-species-requests.md`, `apps/api/specs/010-visitor-memory-requests.md`, `apps/dashboard/specs/008-memory-moderation.md`, `apps/dashboard/specs/009-species-request-review.md`, `apps/dashboard/specs/011-collapsible-menu-event-pagination.md`; código: `apps/api/src/app/Enums/SpeciesRequestStatus.php`, `apps/api/src/app/Enums/MemoryStatus.php`, `apps/api/src/app/Models/SpeciesPublicationRequest.php`, `apps/api/src/app/Models/VisitorMemory.php`, `apps/api/src/routes/api.php` (grupo `admin`, middleware `administrator.two-factor`, rutas `species.review` y `memories.review`), `apps/api/src/database/seeders/RolesAndPermissionsSeeder.php`.
-- Consulta de esquema vivo (`arca_pruebas`, solo lectura, 2026-11-20): realizada; resultados en «Datos, privacidad y auditoría».
+- Consulta de esquema vivo (`arca_pruebas`, solo lectura): realizada; resultados en «Datos, privacidad y auditoría».
 
-## Nota de revisión (2026-11-21, `api-027`)
+## Nota de revisión (`api-027`)
 
 - Se añade la clave `cancellation_days` (entero ≥ 0) para quien tiene `reports.cancellations.view` (solo `admin`). Cuenta los pares cajero-día en Atención de los últimos 7 días de negocio cerrados sin revisión vigente o con `clarification_required` (`api-027` CA-23, RN-11). Sin envoltorio `data`.
 - Excepción a «Fuera de alcance»: los avisos de cancelaciones dejan de estar fuera de alcance solo para esta clave. Los demás flujos (pagos, arqueo, cuentas, recuerdos sin revisar) siguen fuera.

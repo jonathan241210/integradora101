@@ -1,12 +1,12 @@
 # DBR-014 · species-feeding-and-animal-identity-fields
 
-- Estado: Lista para backend (aplicada en `arca_pruebas`, 2026-11-13; evidencia detallada pendiente de adjuntar)
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-13
 - Feature/spec origen: Alineación de alta de animales y perfil en PWA veterinaria (spec por definir; relacionado con `docs/database/alineacion-formularios-pwa-veterinaria.md`)
-- Solicitante: Usuario (alineación funcional veterinaria/PWA)
-- Responsable de BD: Victor Adrian
-- Responsable backend: Victor Adrian
-- Fecha: 2026-11-13
-- Aprobación registrada: Victor Adrian (BD y backend), 2026-11-13. Aplicación manual en `arca_pruebas` reportada por responsable de BD el 2026-11-13 (pendiente adjuntar `SHOW CREATE TABLE`/conteos de backfill/estado de `tag_number`).
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
+- Aprobación registrada: Responsable de BD y backend. Aplicación manual en `arca_pruebas` reportada por el responsable de BD (pendiente adjuntar `SHOW CREATE TABLE`/conteos de backfill/estado de `tag_number`).
 
 ## Problema y justificación
 
@@ -48,7 +48,7 @@ Según `docs/database/esquema-ingles.md` y comportamiento actual de la API/PWA:
 ### API/PWA (consumidores, posterior a “Lista para backend”)
 - Alta: aceptar `tag_number` nulo; enviar `birth_date` y/o `estimated_age` según corresponda (dejar de usar `age` ambiguo).
 - Perfil: leer `feeding/longevity/reproduction` desde `species`; mostrar edad calculada desde `birth_date` o `estimated_age`.
-- Diagnósticos: definir si la “edad” capturada en intenso/rápido es solo visual/derivada del animal o si debe persistirse como snapshot (ver decisiones abiertas).
+- Diagnósticos: Decisión: la “edad” capturada en intenso/rápido se persiste como snapshot de la evaluación en `clinical_evaluations.patient_age` (VARCHAR(50) NULL), según la migración `2026_11_13_000015`, y no se deriva del ejemplar.
 
 ## Elementos afectados
 
@@ -278,10 +278,10 @@ return new class extends Migration
 ## Pruebas y evidencia
 
 - Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: pendiente de registrar.
-- Resultado y evidencia (sin secretos ni datos sensibles): migración aplicada manualmente en `arca_pruebas` por Victor Adrian (2026-11-13), según confirmación. **Pendiente adjuntar:** `SHOW CREATE TABLE species;`, `SHOW CREATE TABLE animals;`, conteos de backfill (`birth_date`/`estimated_age` desde `age`), verificación de `tag_number` nullable/único y confirmación de columnas retiradas.
+- Resultado y evidencia (sin secretos ni datos sensibles): migración aplicada manualmente en `arca_pruebas` por el responsable de BD, según confirmación. **Pendiente adjuntar:** `SHOW CREATE TABLE species;`, `SHOW CREATE TABLE animals;`, conteos de backfill (`birth_date`/`estimated_age` desde `age`), verificación de `tag_number` nullable/único y confirmación de columnas retiradas.
 - Pruebas integradas del backend: pendientes tras alinear consumidores.
 
-## Decisiones registradas (aprobación 2026-11-13)
+## Decisiones registradas
 
 1. **`species.feeding`**: confirmado como nombre de columna para alimentación general de la especie.
 2. **Longevidad y reproducción**: se agregan en `species` (`longevity`, `reproduction`) y se eliminan de `animals` junto con `diet` (consolidación a nivel especie/señalética).
@@ -292,17 +292,17 @@ return new class extends Migration
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Victor Adrian | 2026-11-13 | Aprobada |
-| Responsable backend | Victor Adrian | 2026-11-13 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
 
 > Estado posterior a aprobación: pendiente de creación/prueba/aplicación de la migración por el responsable de BD y registro de evidencia en “Aplicación por ambiente”. Pasará a “Lista para backend” solo cuando exista evidencia de aplicación. Ningún agente crea ni aplica migraciones/SQL.
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | aplicada (evidencia detallada pendiente) | 2026-11-13 | Confirmación de aplicación manual por Victor Adrian; adjuntar `SHOW CREATE TABLE` y conteos de backfill |
-| staging | pendiente | | |
-| producción (`arca_zoo`) | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas (evidencia detallada pendiente) | Confirmación de aplicación manual por el responsable de BD; adjuntar `SHOW CREATE TABLE` y conteos de backfill |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

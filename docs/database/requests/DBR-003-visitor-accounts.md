@@ -1,11 +1,11 @@
 # DBR-003 · visitor-accounts
 
-- Estado: Lista para backend
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-10-13
+- Aprobada: 2026-10-15
 - Feature/spec origen: `apps/api/specs/004-visitor-authentication.md`
-- Solicitante: Aksel
-- Responsable de BD: Victor Adrian
-- Responsable backend: Por definir
-- Fecha: 2026-10-13
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 - Depende de: DBR-001 (`english-schema-normalization`), que debe aplicarse primero
 
 ## Problema y justificación
@@ -162,15 +162,15 @@ No aplica.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Victor Adrian | 2026-10-15 | Aprobada |
-| Solicitante / Backend | Aksel / Jonathan | 2026-10-15 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Solicitante / Backend | Aprobada | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | aplicada | 2026-10-15 | Migración 2026_10_15_000003 ejecutada y verificada |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_10_15_000003` ejecutada y verificada |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

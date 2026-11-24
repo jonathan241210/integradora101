@@ -1,13 +1,15 @@
 # Plan técnico · 007 · ci-workflow
+- Solicitada: 2026-10-26
+- Aprobada: 2026-10-26
 
-## Corrección de configuración residual — 2026-11-09
+## Corrección de configuración residual
 
 El workflow residual `main.yml` ejecuta el mismo job de API en `main` y `DevOps`, pero conservaba PHP 8.2. Se corrigen únicamente la versión y su nombre de paso a PHP 8.4 para aplicar el runtime ya aprobado en este plan (CA-02). `ci.yml` ya usa PHP 8.4. No cambian dependencias, permisos, comandos, datos ni criterios. Validación: parsear ambos YAML y comprobar que todos los jobs con Composer activos en `DevOps` preparan PHP 8.4. El resultado remoto queda pendiente de la nueva corrida.
 
 - Spec: `apps/api/specs/007-ci-workflow.md`
-- Estado de spec: Aprobada
-- Aprobación del plan: aprobada por el usuario solicitante el 2026-10-26
-- Actualización del plan: workflow manual de fallo controlado solicitado y autorizado por el usuario el 2026-10-26
+- Estado de spec: Implementada
+- Aprobación del plan: aprobada por el usuario solicitante
+- Actualización del plan: workflow manual de fallo controlado solicitado y autorizado por el usuario
 - Responsable técnico: pendiente de revisión del equipo
 
 ## Diseño de solución
@@ -80,9 +82,9 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos. Si algo no 
 1. Revisar y aprobar este plan técnico, en particular que las ejecuciones CI sirvan como validación automatizada de CA-01, CA-04 y CA-05.
 2. Tras aprobación, crear tasks atómicas para el workflow, su validación y verificación de jobs.
 3. Implementar únicamente después de aprobación de plan y tasks.
-4. Aprobar técnicamente por el equipo; la aceptación funcional de la spec ya fue dada por el usuario solicitante el 2026-10-26.
+4. Aprobar técnicamente por el equipo; la aceptación funcional de la spec ya fue dada por el usuario solicitante.
 
-## Enmienda de consolidación — 2026-11-10
+## Enmienda de consolidación
 
 - Autorización: solicitud directa del usuario de borrar los workflows distintos de `ci.yml`.
 - Esta enmienda sustituye las instrucciones anteriores de crear o conservar el workflow demostrativo; esas secciones quedan como historial.

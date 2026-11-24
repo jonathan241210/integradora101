@@ -1,18 +1,17 @@
 # 0011 · Identidad del visitante y sesión móvil
 
 - Estado: Aceptado
-- Fecha: 2026-10-13
-- Aceptado: 2026-10-21
-- Autor / solicitante: Aksel
+- Solicitada: 2026-10-13
+- Aprobada: 2026-10-21
 - Spec relacionada: `apps/api/specs/004-visitor-authentication.md`, `apps/mobile/specs/004-visitor-account.md`
 
 ## Contexto
 
-La app móvil (`apps/mobile`) muestra hoy un prototipo visual con datos simulados (spec `mobile-002`). Para que el público use la app con progreso real hay que decidir cómo se identifica al visitante y cómo se mantiene su sesión en el teléfono. El equipo confirmó el 12 de octubre de 2026 que habrá cuenta con inicio de sesión y que el progreso se guarda en el servidor bajo la cuenta; el 13 de octubre se confirmó el método de acceso y el modelo de sesión.
+La app móvil (`apps/mobile`) muestra hoy un prototipo visual con datos simulados (spec `mobile-002`). Para que el público use la app con progreso real hay que decidir cómo se identifica al visitante y cómo se mantiene su sesión en el teléfono. El equipo confirmó que habrá cuenta con inicio de sesión y que el progreso se guarda en el servidor bajo la cuenta; después se confirmaron el método de acceso y el modelo de sesión.
 
 Con cuenta, el visitante entrega datos personales (al menos correo y nombre), así que hacen falta aviso de privacidad, recuperación de acceso y almacenamiento seguro de la sesión en el teléfono. Sin premios ni tabla de líderes, no se muestra nada a otros visitantes y el riesgo se limita a proteger esos datos.
 
-Este ADR retoma el documento de decisiones previas de Aksel (2026-10-09) y las decisiones confirmadas del 2026-10-13.
+Este ADR recoge las decisiones previas sobre identidad del visitante y las decisiones confirmadas posteriormente.
 
 ## Decisión
 
@@ -70,9 +69,9 @@ Método de acceso — comparación registrada:
 
 ## Validación y revisión
 
-- Aceptado por Aksel el 2026-10-21, como responsable de `mobile-004` y `api-004`, antes de instalar dependencias móviles y antes de conectar la app a la API.
+- Aceptado por el equipo como responsable de `mobile-004` y `api-004`, antes de instalar dependencias móviles y antes de conectar la app a la API.
 - Esta aceptación autoriza `expo-secure-store` para los tokens del visitante y `@react-native-async-storage/async-storage` para la cola de escaneos y el caché no sensible.
-- `expo-secure-store` se instaló el 2026-10-21, cuando Aksel aprobó el checklist HTTP de `apps/mobile/tasks/004-visitor-account.md`. AsyncStorage queda para la spec `mobile-005` y no se instaló en este corte.
-- El módulo visitante de `@arca/api-client` y `HttpAuthRepository` pertenecen a ese checklist. Aksel lo aprobó el 2026-10-21 y quedó implementado ese día. No se edita `packages/api-client/auth.ts`.
-- La spec `api-004` quedó Implementada el 2026-10-21, sin dependencia nueva: Sanctum sigue en ADR 0001 y el correo sale por el mailer de Laravel.
+- `expo-secure-store` se instaló junto con el checklist HTTP de `apps/mobile/tasks/004-visitor-account.md`. AsyncStorage queda para la spec `mobile-005` y no se instaló en ese corte.
+- El módulo visitante de `@arca/api-client` y `HttpAuthRepository` pertenecen a ese checklist, y quedaron implementados con él. No se edita `packages/api-client/auth.ts`.
+- La spec `api-004` está Implementada, sin dependencia nueva: Sanctum sigue en ADR 0001 y el correo sale por el mailer de Laravel.
 - Las pruebas de rotación, reuso y concurrencia del refresh están en la API. La cola de escaneos sin conexión se prueba en `mobile-005`.

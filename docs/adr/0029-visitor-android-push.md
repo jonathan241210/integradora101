@@ -1,11 +1,11 @@
 # 0029 · Push de Android para el visitante (Expo sobre FCM)
 
 - Estado: Aceptado
-- Fecha: 2026-11-14
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
 - Spec relacionada: `apps/api/specs/017-visitor-push-notifications.md`, `apps/mobile/specs/013-visitor-push-notifications.md`
-- Planes: `apps/api/plan/017-visitor-push-notifications.md`, `apps/mobile/plan/013-visitor-push-notifications.md` (aprobados técnicamente, Victor Adrian, 2026-11-14)
-- Solicitante: Aksel
-- Aprobado por: Aksel, 2026-11-14
+- Planes: `apps/api/plan/017-visitor-push-notifications.md`, `apps/mobile/plan/013-visitor-push-notifications.md` (aprobados técnicamente)
+- Aprobado por: Equipo móvil
 
 Aceptado, este ADR autoriza instalar `expo-notifications` en `apps/mobile` cuando se implemente el push. No autoriza código por sí solo: faltan las tasks. No crea el proyecto FCM ni envía avisos reales.
 
@@ -48,6 +48,6 @@ Hace falta un canal hasta FCM y una librería en el teléfono que obtenga el tok
 
 ## Validación y revisión
 
-- Aprobación del equipo: Aksel, 2026-11-14. La dependencia se instala con las tasks. FCM sigue fuera del repositorio.
+- Aprobación del equipo: registrada. La dependencia se instala con las tasks. FCM sigue fuera del repositorio.
 - Revisión: al aceptar, el PR de implementación enlaza este ADR, las dos specs, los dos planes y DBR-017 en `Lista para backend`, y anota en `infra/README.md` el worker, el scheduler y `EXPO_ACCESS_TOKEN`.
 - Constitución I: la dependencia móvil no entra al repositorio antes de esta aceptación.

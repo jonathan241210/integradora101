@@ -1,19 +1,21 @@
 # Tareas · 023 · fixed-roles-and-console-admins
 
-- Spec: `apps/api/specs/023-fixed-roles-and-console-admins.md` (Aprobada, 2026-11-20)
-- Plan: `apps/api/plan/023-fixed-roles-and-console-admins.md` (Aprobado — aprobación técnica: Jonathan, 2026-11-20)
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Spec: `apps/api/specs/023-fixed-roles-and-console-admins.md`
+- Plan: `apps/api/plan/023-fixed-roles-and-console-admins.md` (Aprobado — aprobación técnica: el responsable funcional)
 - Contrato consumido por: `apps/dashboard/tasks/017-fixed-roles-account-management.md`
 
-Plan aprobado 2026-11-20. Implementación del backend hecha el 2026-11-20 (T-03 a T-19 marcadas con las pruebas de cada tarea ejecutadas en `arca_pruebas`; ver notas). Quedan abiertas T-01 y T-02 (responsable de BD / sesión principal: correr el seeder), T-20 a T-24 (revisión final, suite completa, PR) hasta contar con la evidencia de la sesión principal. Enmienda técnica de la spec: CA-32 a CA-36 y RN-19 a RN-21.
+Plan aprobado. Implementación del backend hecha (T-03 a T-19 marcadas con las pruebas de cada tarea ejecutadas en `arca_pruebas`; ver notas). Quedan abiertas T-01 y T-02 (responsable de BD / sesión principal: correr el seeder), T-20 a T-24 (revisión final, suite completa, PR) hasta contar con la evidencia de la sesión principal. Enmienda técnica de la spec: CA-32 a CA-36 y RN-19 a RN-21.
 
 Reglas de ejecución:
-- Las tareas T-01 y T-02 son del responsable de BD (Víctor Adrián). Ninguna crea SQL ni migraciones; no hay DBR en este cambio. Si T-01 encuentra un fallo de esquema, se detiene y se abre DBR antes de continuar.
-- Las tareas de backend (T-03 en adelante) empiezan tras la aprobación técnica del plan, hecha el 2026-11-20. Q1 a Q7 quedan respondidas en el plan.
+- Las tareas T-01 y T-02 son del responsable de BD (Responsable de BD). Ninguna crea SQL ni migraciones; no hay DBR en este cambio. Si T-01 encuentra un fallo de esquema, se detiene y se abre DBR antes de continuar.
+- Las tareas de backend (T-03 en adelante) empiezan tras la aprobación técnica del plan, hecha. Q1 a Q7 quedan respondidas en el plan.
 - El orden entre cambios es 021 → 025 → 022 → 023 → 024. Antes de T-03 se verifica que `two_factor_roles` y `RolesAndPermissionsSeeder` contienen los cambios de 021, 025 y 022 que ya estén fusionados.
 
 ## Base de datos (responsable de BD)
 
-- [x] **T-01** (CA-03, CA-18, CA-19, RN-09, RN-10; plan «Datos» y «Avisos»): consulta en solo lectura del esquema vivo de `arca_pruebas` (`php artisan db:table users`, `db:table staff_notifications`, `information_schema`), sin cambios. Confirmar: (a) `users.created_by` y `users.updated_by` admiten `NULL` (la consola no tiene usuario); (b) `staff_notifications.created_by` admite `NULL` (ya verificado el 2026-11-20; repetir); (c) `staff_notifications.type` varchar(40) admite `console_admin_change`; (d) la restricción `uk_staff_notif_user_price (user_id, ticket_price_id)` admite varias filas con `ticket_price_id` nulo. Resultado con fecha y salida en esta tarea. Sin resultado, las tareas T-12 y T-13 no empiezan.
+- [x] **T-01** (CA-03, CA-18, CA-19, RN-09, RN-10; plan «Datos» y «Avisos»): consulta en solo lectura del esquema vivo de `arca_pruebas` (`php artisan db:table users`, `db:table staff_notifications`, `information_schema`), sin cambios. Confirmar: (a) `users.created_by` y `users.updated_by` admiten `NULL` (la consola no tiene usuario); (b) `staff_notifications.created_by` admite `NULL`; (c) `staff_notifications.type` varchar(40) admite `console_admin_change`; (d) la restricción `uk_staff_notif_user_price (user_id, ticket_price_id)` admite varias filas con `ticket_price_id` nulo. Resultado con fecha y salida en esta tarea. Sin resultado, las tareas T-12 y T-13 no empiezan.
 - [x] **T-02** (CA-01, CA-02, CA-03): después de T-03 fusionado, ejecutar `RolesAndPermissionsSeeder` en `arca_pruebas` (nunca en `arca_zoo`). Evidencia: consultas a `roles` (existe `communications`), `role_has_permissions` (`executive` = 3 permisos; `communications` = 5; `zoo-admin` y `admin` con `tickets.view-all`), y a `users` y `model_has_roles` de la cuenta `executive` existente (mismo `id`, mismo rol, sin duplicados). Sin esta evidencia no se marca CA-01 a CA-03 en PR.
 
 ## Implementación (backend; inicia con la aprobación técnica del plan)
@@ -53,24 +55,24 @@ Reglas de ejecución:
 
 - [x] **T-19** (CA-27; RN-03): buscar en `src/app` y `src/routes` `operational-staff.manage`, `FULL_READ_ROLES`, `ResolveManageableRolesAction`, `LABELS` antiguo y decisiones por nombre de rol en `ResolveStaffHomeAction`, `CreateStaffCommand` y `ListTicketHistoryAction`; corregir los restos. Test `tests/Feature/Staff/LegacyRoleDecisionsTest.php` con `test_ca27_no_legacy_permission_or_role_name_decisions` (análisis estático). `GuardAdministratorContinuityAction` puede seguir usando `hasRole('admin')` como invariante de continuidad; el test lo excluye explícitamente y el PR lo justifica (confirmar en la revisión técnica del plan).
 - [x] **T-20** (CA-01 a CA-31; IV): actualizar las pruebas existentes que afirman el comportamiento anterior (lista en el plan): `StaffAccountsScopeTest`, `StaffAccountOptionsTest`, `StaffAccountGuardsTest`, `StaffAccountsStoreTest`, `StaffAccountsUpdateTest`, `StaffAccountStatusTest`, `StaffAccountDeleteTest`, `StaffAccountPasswordTest`, `StaffAccountTwoFactorTest`, `StaffAccountSessionsTest`, `MeTest`, `SeedersTest`, `AdministratorTwoFactorTest`. Actualizar `tests/Concerns/SeedsRolesWhenMissing.php` para incluir `communications` y `tickets.view-all`. Comprobar con búsqueda de `CA-` en `tests/` que cada CA-01 a CA-36 (salvo los que la spec declara fuera de alcance) tiene al menos un `test_caNN_`.
-- [ ] **T-21** (revisión de seguridad; Definición de terminado): checklist de PR: ninguna cuenta `admin` escribible desde la API; ningún secreto en argumentos, logs, `activity_log`, avisos o respuestas; `DB::prohibitDestructiveCommands` y `arca_zoo` fuera de los tests; permisos comprobados en servidor; auditoría de consola sin causante de usuario.
+- [ ] **T-21** (revisión de seguridad; Definición de terminado) — Fuera de alcance de esta entrega (checklist de PR): checklist de PR: ninguna cuenta `admin` escribible desde la API; ningún secreto en argumentos, logs, `activity_log`, avisos o respuestas; `DB::prohibitDestructiveCommands` y `arca_zoo` fuera de los tests; permisos comprobados en servidor; auditoría de consola sin causante de usuario.
 
 ## Calidad y entrega
 
 - [x] **T-22** (docs): actualizar `apps/api/docs/administracion.md` con las rutas nuevas y sus respuestas, `users/options` con permisos etiquetados y `two_factor_required`, `managed_by_console`, avisos y la tabla de comandos `arca:admin:*` (incluido el requisito de `--reason`). Verificar que `docs/03-roles-y-permisos.md` no necesita cambios (el plan dice que no); si encuentra diferencias, reportarlas sin editar. Si el equipo aprueba la propuesta, añadir a `infra/README.md` el requisito operativo de crear al menos dos administradores activos con `arca:admin:create` en cada ambiente (requiere aprobación; el cambio de ambiente se anota en el mismo PR).
-- [ ] **T-23** (CA-01 a CA-36): verificaciones de la API, con salida real aportada por la sesión principal: Pint sobre archivos tocados; `php artisan test` contra `arca_pruebas` (filtrado por `api-023` y suite completa); `php artisan list` (espacio `arca:admin`); `migrate:status` sin migraciones nuevas. Sin evidencia no se marca nada.
-- [ ] **T-24** (entrega): PR enlaza `apps/api/specs/023-fixed-roles-and-console-admins.md`, `apps/api/plan/023-fixed-roles-and-console-admins.md`, `apps/api/tasks/023-fixed-roles-and-console-admins.md` y `apps/dashboard/tasks/017-fixed-roles-account-management.md`; el commit cita `api-023` (los commits los hace Jonathan con el comando que indique). Estado de la spec: «En progreso» al empezar la implementación; «Implementada» solo con enlace al PR y resultados de los CA-01 a CA-36.
+- [ ] **T-23** (CA-01 a CA-36) — Fuera de alcance de esta entrega (verificaciones con shell): verificaciones de la API, con salida real aportada por la sesión principal: Pint sobre archivos tocados; `php artisan test` contra `arca_pruebas` (filtrado por `api-023` y suite completa); `php artisan list` (espacio `arca:admin`); `migrate:status` sin migraciones nuevas. Sin evidencia no se marca nada.
+- [ ] **T-24** (entrega) — Fuera de alcance de esta entrega (PR): PR enlaza `apps/api/specs/023-fixed-roles-and-console-admins.md`, `apps/api/plan/023-fixed-roles-and-console-admins.md`, `apps/api/tasks/023-fixed-roles-and-console-admins.md` y `apps/dashboard/tasks/017-fixed-roles-account-management.md`; el commit cita `api-023` (los commits los hace el responsable funcional con el comando que indique). Estado de la spec: «En progreso» al empezar la implementación; «Implementada» solo con enlace al PR y resultados de los CA-01 a CA-36.
 
 Cada tarea de código nombra sus CA-xx y cada CA-xx tiene al menos una tarea de prueba (ver el mapeo del plan). Las tareas de BD (T-01, T-02) son del responsable de BD; las de backend empiezan tras la aprobación técnica del plan.
 
-## Estado al retomar (2026-11-21)
+## Estado al retomar
 
 - T-20 hecha: `SeedersTest` (6 roles), `AdministratorTwoFactorTest` (roles con 2FA y `veterinarian` sin 2FA), `CashierTwoFactorTest` ca31 (`executive` y `communications` ahora con 2FA) y los tres `GlobalSearch*` de forma de item (`managed_by_console` en `users`).
 - Pasan: `SeedersTest`, `AdministratorTwoFactorTest`, `TicketHistoryScopeTest`, `StepUpWindowTest`, `StepUpStatusAndRoleTest`, `StaffTokenTwoFactorTest`, `DemoStaffSeederTest`, `CancellationReasonsTest` y los `GlobalSearch*` salvo dos.
 - Fallos previos, no causados por esta spec (matcher de búsqueda, enmienda (d) con 3 o más palabras): `GlobalSearchNormalizationTest::ca37` y `GlobalSearchRelevanceTest::ca37`.
 - Siguen abiertas T-01, T-02 (seeder, lo corre la sesión principal), T-21, T-23 y T-24; `infra/README.md` sin tocar (requiere aprobación).
 
-## Estado al pausar (2026-11-20)
+## Estado al pausar
 
 **Hecho y probado (en `arca_pruebas`, con `DatabaseTransactions`, sin correr la suite completa):**
 - T-03 a T-19 y T-22 (docs en `apps/api/docs/`: `administracion.md`, `arquitectura.md`, `credenciales-desarrollo.md`, `tickets.md`). Pint aplicado; `php -l` sin errores en todos los PHP tocados.
@@ -86,14 +88,14 @@ Cada tarea de código nombra sus CA-xx y cada CA-xx tiene al menos una tarea de 
 
 **Tests por correr (no ejecutados tras mis cambios):** `SeedersTest`, `AdministratorTwoFactorTest`, `TicketHistoryScopeTest` (incluye el nuevo `test_ca08_view_all_permission_scope_for_history`), `StepUpWindowTest` (test_ca38 ampliado), `StepUpStatusAndRoleTest`, `GlobalSearch*` (item de `users` ahora lleva `managed_by_console`), `CashierTwoFactorTest`, `StaffTokenTwoFactorTest`, `DemoStaffSeederTest`, y luego la suite completa.
 
-## Evidencia de la sesión principal (2026-11-21, `arca_pruebas`)
+## Evidencia de la sesión principal (, `arca_pruebas`)
 
 - **T-01** (solo lectura, `information_schema`): `users.created_by` y `users.updated_by` int NULL; `staff_notifications.created_by` int NULL; `staff_notifications.type` varchar(40) NOT NULL (cabe `console_admin_change`); `ticket_price_id` bigint NULL; `uk_staff_notif_user_price (user_id, ticket_price_id)` es UNIQUE y MySQL admite varias filas con `ticket_price_id` NULL.
 - **T-02**: antes de sembrar, los permisos de cada rol se leyeron en vivo; el seeder solo añadía (ningún rol perdía permisos; `operational-staff.manage` sin roles ni usuarios; `model_has_permissions` = 0). `php artisan db:seed --class=RolesAndPermissionsSeeder --force` → OK. Después: admin 18 permisos (incluye `reports.cancellations.view` y `tickets.view-all`), zoo-admin 11 (incluye `tickets.view-all`), executive 3, communications 5 (`news.manage`, `events.manage`, `public-content.view`, `species.review`, `memories.review`), cashier 6, veterinarian 6. La cuenta `executive` existente sigue con su rol (1 cuenta).
 
-## Revisión 2026-11-21: niveles de consola, titular y recuperación
+## Revisión: niveles de consola, titular y recuperación
 
-Spec: CA-37 a CA-49. Plan: «Revisión 2026-11-21». Sin DBR.
+Spec: CA-37 a CA-49. Plan: «Revisión». Sin DBR.
 
 - [x] **T-25** (CA-37, CA-38, CA-39, CA-45; RN-23, RN-24): `config/arca.php`, `.env.example`, `ResolvePrimaryAdminAction`, `VerifyPrimaryAdminPasswordAction`, `LogConsoleSecurityEventAction`, `authorizeHighLevel()` y `rejectPrimaryTarget()`. Tests: `ArcaAdminPrimaryTest`.
 - [x] **T-26** (CA-38, CA-44, CA-46; RN-22, RN-25): `create`, `promote`, `deactivate` y `reset-password` pasan a nivel alto; comandos `demote` y `delete`. Tests: `ArcaAdminPrimaryTest`, `ArcaAdminLevelsTest`, `ArcaAdminCreateTest` y demás clases actualizadas.
@@ -101,17 +103,17 @@ Spec: CA-37 a CA-49. Plan: «Revisión 2026-11-21». Sin DBR.
 - [x] **T-28** (CA-47, CA-48; RN-26): modo recuperación y aviso en todo `arca:admin:*`. Tests: `ArcaAdminRecoveryTest`.
 - [x] **T-29** (CA-49, CA-15, CA-34): lista de comandos y modo no interactivo actualizados en `ArcaAdminCommandsTest` y `ArcaAdminNonInteractiveTest`.
 - [x] **T-30** (docs): `apps/api/docs/administracion.md` («Comandos de consola»), `infra/README.md` y `.env.example`.
-- [ ] **T-31** (verificación final): suite completa de la sesión principal; revisión de PR.
+- [ ] **T-31** (verificación final) — Fuera de alcance de esta entrega: suite completa de la sesión principal; revisión de PR.
 
-## Revisión 2026-11-21 (b): `list` con filtros y `help`
+## Revisión (b): `list` con filtros y `help`
 
-Spec: CA-50 a CA-55. Plan: «Revisión 2026-11-21 (b)». Sin DBR.
+Spec: CA-50 a CA-55. Plan: «Revisión (b)». Sin DBR.
 
 - [x] **T-32** (CA-50, CA-51, CA-52, CA-53; RN-27): `arca:admin:list` con `--deleted`/`-d` y `--all`. Tests: `ArcaAdminListTest`.
 - [x] **T-33** (CA-54, CA-55; RN-28): constante `LEVEL` en cada comando y `arca:admin:help` generado. Tests: `ArcaAdminHelpTest`, `ArcaAdminCommandsTest::test_ca15_*`.
 - [x] **T-34** (docs): `apps/api/docs/administracion.md` («list» y «help»).
 
-## Revisión de calidad y seguridad 2026-11-21
+## Revisión de calidad y seguridad
 
 - [x] **T-35** (CA-42): `arca:admin:edit-email` revoca sesiones y tokens. Test: `ArcaAdminLevelsTest::test_ca42_edit_email_revokes_sessions_and_tokens`.
 - [x] **T-36** (CA-21): `arca:admin:create` valida los máximos (correo 255, nombres 100). Test: `ArcaAdminCreateTest::test_ca21_create_rejects_values_over_the_column_limits`.

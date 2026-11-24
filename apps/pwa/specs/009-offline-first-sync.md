@@ -2,9 +2,10 @@
 
 - App dueña: `pwa`
 - Apps/paquetes afectados: `pwa`, `api` (contratos de sincronización, delta, idempotencia y confirmaciones), `packages/api-client` (si requiere adaptación de cliente/sync), `docs/database` (DBR si hay cambios de esquema)
-- Estado: Aprobada
-- Solicitante / responsable funcional: Solicitante (usuario)
-- Aprobación funcional: Solicitante (usuario), 2026-11-18 (reaprobada con ajustes de interfaz Sync, prioridad animales→diagnósticos, mensajes efímeros y alcance de altas sin foto)
+- Estado: Implementada
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Aprobación funcional: Aprobada (reaprobada con ajustes de interfaz Sync, prioridad animales→diagnósticos, mensajes efímeros y alcance de altas sin foto)
 
 ## Problema y contexto
 
@@ -102,7 +103,7 @@ Se requiere habilitar un modo **offline-first** que permita consultar informaci�
 ## Dependencias, riesgos y preguntas
 
 - **Dependencias/ADR:**
-  - `docs/adr/0003-mysql-y-pwa-offline.md` (Propuesto): base de borradores offline e IndexedDB/Service Worker; mantener alineación sin sustituciones no justificadas.
+  - `docs/adr/0003-mysql-y-pwa-offline.md` (Aceptado): base de borradores offline e IndexedDB/Service Worker; mantener alineación sin sustituciones no justificadas.
   - ADR nuevo o actualización requerida para aprobar explícitamente **Dexie.js** y **UUID** como dependencias/decisiones de implementación y el diseño de Sync Manager/outbox (dado que ADR 0003 menciona `idb`/`vite-plugin-pwa` como candidatos).
   - Contratos API a definir/extender: bootstrap de catálogos, delta incremental con cursor/fecha y paginación, exposición de bajas (`deleted_at`/tombstone), recepción idempotente de operaciones con UUID y confirmación individual.
   - Posibles DBR para soportar delta, bajas consistentes y unicidad de idempotencia.
@@ -114,16 +115,16 @@ Se requiere habilitar un modo **offline-first** que permita consultar informaci�
   - Crecimiento de almacenamiento local (colas/borradores) sin limpieza tras confirmación/resolución.
   - Complejidad de dependencia padre→dependiente (altas de animales offline y diagnósticos asociados) y necesidad de mapeo correcto `local_id -> server_id`.
   - Catálogos sin `deleted_at`/SoftDeletes (p. ej. animales/recintos, según estado actual del esquema) pueden requerir DBR/contrato para exponer bajas de forma inequívoca en delta.
-- **Preguntas pendientes (para plan/ADR/contrato API):**
-  - Estructura exacta del endpoint/protocolo de delta (cursor, `updated_since`, formato de tombstones, paginación y orden) y soporte de bajas para **animales, recintos y especies** según permisos.
-  - Forma de confirmación individual de API (por operación/UUID) y semántica ante reenvíos parciales.
-  - Definición precisa de “datos asociados requeridos” a incluir en bootstrap para diagnósticos intenso/rápido y perfiles consultados offline.
-  - Comportamiento ante expiración de sesión en campo: ¿se permite seguir capturando offline y sincronizar tras reautenticación?
-  - Estrategia de limpieza de registros ya sincronizados/errores resueltos en almacenamiento local (conservando trazabilidad necesaria sin provocar pérdida).
-  - Contrato API de creación idempotente para **altas de animales offline (sin foto)** (confirmado en alcance MVP) y comportamiento de reintento/corrección de errores de validación desde la interfaz de sincronización (menú `Sync`).
-  - Flujo exacto de carga/actualización de fotografía en el perfil del animal (acción online, fuera de cola offline del MVP) y su impacto en specs/contratos de animales (`004`/`010`).
+- **Decisiones de contrato y de alcance (cerradas según el código):**
+  - **Delta:** se optó por un cursor de tiempo (`since` o `cursor`) con paginación, y por `deleted_at` como baja (tombstone) para animales, recintos y especies, según permisos (`apps/api/src/app/Http/Controllers/Api/StaffSyncController.php`, `sync/changes`).
+  - **Confirmación individual:** se optó por devolver un resultado por cada operación identificada por su UUID (`sync/operations`), de modo que un reenvío no duplica el registro (CA-08).
+  - **Datos del bootstrap:** se optó por perfil mínimo, animales, recintos y especies, que son los catálogos que usan los flujos clínicos offline (`apps/pwa/src/offline/bootstrap.ts`).
+  - **Sesión expirada en campo:** se optó por conservar la cola local y exigir reautenticación para sincronizar. La UX implementada vuelve al login con «Tu sesión expiró.» (`useStaffSession.ts`, `expiredSession`) sin borrar la cola.
+  - **Limpieza:** se optó por conservar las operaciones `synced` en el outbox como trazabilidad y limpiar el almacén del usuario solo al cambiar de cuenta (`apps/pwa/src/offline/session-cleanup.ts`).
+  - **Altas sin foto:** se optó por encolar altas de animales sin foto con UUID; el reintento y la corrección de errores de validación se muestran en la vista `Sync` (`SyncStatusView.tsx`).
+  - **Fotografía:** se optó por cargar o actualizar la foto desde el perfil del animal, en línea y fuera de la cola offline del MVP (`AnimalProfileView.tsx`, `POST /api/v1/staff/animals/{id}/photo`), en coherencia con `004` y `010`.
 
-## Revisión 2026-11-21 (corrección, aprobada por Jonathan): service worker solo en producción
+## Revisión (corrección de service worker, solo en producción)
 
 - **Problema:** `public/sw.js` responde «cache first» a todo GET del mismo origen. En desarrollo (Vite, módulos sin hash) servía versiones viejas del código tras cada cambio; por ejemplo, la PWA enviaba la solicitud de especie sin `fun_fact` (api-026) y la API respondía «Dato curioso: escribe al menos 20 caracteres.».
 - **CA-15:** Dado el entorno de desarrollo, cuando arranca la PWA, entonces no se registra `/sw.js`, se retiran los service workers previos y se vacían los cachés `arca-pwa-*`; en producción se registra `/sw.js` al cargar la página como antes. Test: `src/tests/service-worker-dev.test.ts`.
@@ -131,5 +132,5 @@ Se requiere habilitar un modo **offline-first** que permita consultar informaci�
 
 ## Revisión
 
-- Aprobadores y fecha: Solicitante (usuario), 2026-11-18 (aprobación funcional y reaprobación de ajustes)
-- Evidencia/enlaces: `apps/pwa/AGENTS.md`, `docs/adr/0003-mysql-y-pwa-offline.md`, `apps/pwa/specs/004-animal-registration.md`, `apps/pwa/specs/008-seguimiento-revisiones.md`, decisiones proporcionadas por el solicitante (2026-11-18)
+- Aprobación: Aprobada (aprobación funcional y reaprobación de ajustes del solicitante).
+- Evidencia/enlaces: `apps/pwa/AGENTS.md`, `docs/adr/0003-mysql-y-pwa-offline.md`, `apps/pwa/specs/004-animal-registration.md`, `apps/pwa/specs/008-seguimiento-revisiones.md`, decisiones proporcionadas por el solicitante.

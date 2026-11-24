@@ -1,9 +1,11 @@
 # Tareas · 010 · visitor-memory-requests
 
-- Spec: `apps/mobile/specs/010-visitor-memory-requests.md` (En progreso; aprobada por Aksel, 2026-11-14)
-- Plan: `apps/mobile/plan/010-visitor-memory-requests.md` (Aprobado, Aksel, 2026-11-14)
-- ADR: `docs/adr/0030-expo-image-picker-visitor-memories.md` (Aceptado, Aksel, 2026-11-14)
-- Estado del checklist: Aprobado (Aksel, 2026-11-14). Autoriza la implementación en el orden de abajo. Las casillas se marcan al completar cada tarea.
+- Spec: `apps/mobile/specs/010-visitor-memory-requests.md` (En progreso; aprobada)
+- Plan: `apps/mobile/plan/010-visitor-memory-requests.md` (Aprobado)
+- ADR: `docs/adr/0030-expo-image-picker-visitor-memories.md` (Aceptado)
+- Estado del checklist: Aprobado. Autoriza la implementación en el orden de abajo. Las casillas se marcan al completar cada tarea.
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
 - Base de datos: ninguna tarea. DBR-012 ya está Lista para backend. No hay esquema nuevo.
 
 ## Dependencias
@@ -21,7 +23,7 @@
 - [x] **T-05** (CA-02, CA-03, CA-04, CA-05, CA-09, CA-10, CA-16, CA-17, RN-04, RN-06): Crear `apps/mobile/src/viewmodels/useMemoryForm.ts`. Arma el alta y el reenvío, bloquea un segundo toque mientras viaja, y traduce 422, 429, 401, 403, 404, 413, 415 y la falta de red. La opinión vacía se puede enviar. Hecho cuando sin red no encola la imagen y ningún error dice que la petición se guardó.
 - [x] **T-06** (CA-01, RN-09): Añadir en `ProfileScreen` y en `apps/mobile/src/app/(tabs)/profile.tsx` la fila «Mis memorias». Registrar `memories` y `memory-form` en `_layout.tsx` con `href: null`, y en `AppTabBar` dejarlas asociadas a Perfil. Hecho cuando la barra inferior sigue con las cinco pestañas actuales.
 - [x] **T-07** (CA-06, CA-07, CA-08, CA-14, CA-15, RN-03, RN-13, RN-14): Crear `MemoriesScreen.tsx` y `apps/mobile/src/app/(tabs)/memories.tsx`. Cada fila muestra el estado en español. Una rechazada muestra «Motivo» y los textos de `image` y `content`. Una aceptada muestra el plazo vigente o el vencido. No muestra la foto. Hecho cuando el aviso de límite o de petición abierta sale de `meta` y no se ofrece un alta nueva en esos casos.
-- [x] **T-08** (CA-02, CA-03, CA-12, CA-16, CA-17, RN-07): Crear `MemoryFormScreen.tsx` y `apps/mobile/src/app/(tabs)/memory-form.tsx`. El formulario de alta y el de corrección son el mismo. El botón «Enviar petición» espera imagen y consentimiento; la opinión es opcional, con contador hasta 300. La casilla usa el texto de referencia de `api-010` RN-08 y se anuncia su estado. La corrección precarga la opinión de la lista, vuelve a pedir consentimiento y resalta `rejected_fields` con texto, no solo con color. Hecho cuando la pantalla no importa el cliente HTTP. Enmienda 2026-11-18: si el id no está en memoria, la ruta muestra «Buscando tu memoria…», pide la lista una vez y, si sigue ausente, usa `MemoryUnavailableScreen`.
+- [x] **T-08** (CA-02, CA-03, CA-12, CA-16, CA-17, RN-07): Crear `MemoryFormScreen.tsx` y `apps/mobile/src/app/(tabs)/memory-form.tsx`. El formulario de alta y el de corrección son el mismo. El botón «Enviar petición» espera imagen y consentimiento; la opinión es opcional, con contador hasta 300. La casilla usa el texto de referencia de `api-010` RN-08 y se anuncia su estado. La corrección precarga la opinión de la lista, vuelve a pedir consentimiento y resalta `rejected_fields` con texto, no solo con color. Hecho cuando la pantalla no importa el cliente HTTP. Enmienda: si el id no está en memoria, la ruta muestra «Buscando tu memoria…», pide la lista una vez y, si sigue ausente, usa `MemoryUnavailableScreen`.
 
 ## Pruebas
 
@@ -41,7 +43,7 @@ Archivo: `apps/mobile/__tests__/visitor-memories.test.tsx`. Cliente y selector s
 - [x] **T-20** (CA-12): El consentimiento, los errores, el límite semanal y los campos a corregir tienen nombre o texto visible, no solo color.
 - [x] **T-21** (CA-13): Los nombres de las pruebas de este archivo incluyen CA-01 a CA-18.
 - [x] **T-22** (CA-14): `can_submit` falso muestra «Podrás enviar otra memoria a partir del {fecha y hora}.» y no ofrece el alta. Un 429 usa el mismo texto.
-- [x] **T-23** (CA-15): Enmienda 2026-11-17. Con petición abierta no hay recuadro «Ya tienes una petición abierta.» ni alta nueva. La fila abre una ficha de solo lectura. Un 422 `open_request` sigue mostrando ese texto en el intento de envío.
+- [x] **T-23** (CA-15): Enmienda. Con petición abierta no hay recuadro «Ya tienes una petición abierta.» ni alta nueva. La fila abre una ficha de solo lectura. Un 422 `open_request` sigue mostrando ese texto en el intento de envío.
 - [x] **T-24** (CA-16): «Corregir y reenviar» precarga la opinión, vuelve a pedir consentimiento y llama a `POST /api/v1/visitor/memories/{id}/resubmit`. Un 200 muestra el texto de CA-04.
 - [x] **T-25** (CA-17): Si el motivo incluye `image` y no hay foto nueva, no se envía. Si incluye `content` y la opinión recortada no cambió, no se envía. Un 422 queda junto al campo.
 - [x] **T-26** (CA-18): El motivo y el plazo salen de la lista ya cargada. Tras un 200, esa fila se sustituye por la respuesta sin pedir otra vez la lista.
@@ -49,9 +51,9 @@ Archivo: `apps/mobile/__tests__/visitor-memories.test.tsx`. Cliente y selector s
 ## Documentación y entrega
 
 - [x] **T-27** (RN-07, RN-08): Escribir en `apps/mobile/docs/` la nota del permiso de galería: cuándo se pide, qué pasa si se niega y que el texto de la casilla es de referencia hasta que el zoológico lo apruebe. La app no se publica con ese texto antes. Hecho cuando la nota cita `mobile-010` y el ADR 0030.
-- [x] **T-28** (CA-13): Ejecutar la suite `visitor-memories` en `apps/mobile` y registrar el resultado. No hace falta la suite completa del monorepo para cerrar esta tarea. Resultado 2026-11-14: `npx jest __tests__/visitor-memories.test.tsx --no-coverage` — 19 pruebas en verde.
-- [x] **T-29**: En el PR, enlazar spec, plan y tasks. No incluye el toque del push de `mobile-013` CA-10: esa ruta se conecta cuando esta pantalla exista, en la implementación de `mobile-013`, no aquí. No se modifica el borrado de cuenta de `mobile-004`. Confirmado por Aksel el 2026-11-20: la verificación y el pull de memorias ya se hicieron. Esta task no guarda la URL del PR.
-- [x] **T-30** (CA-06, CA-15, CA-16, RN-15): Enmienda del 2026-11-15. La lista vuelve a pedirse al montar el hook. Tras guardar, `open_request_id` queda en la copia local. El formulario de alta no se pinta si hay petición abierta o si el id no está rechazado. La corrección pregunta «¿Seguro que quieres enviar la corrección?» y, con 200, oculta los campos y la ruta vuelve a «Mis memorias». Resultado 2026-11-15: `npx jest __tests__/visitor-memories.test.tsx --no-coverage` — 21 pruebas en verde.
+- [x] **T-28** (CA-13): Ejecutar la suite `visitor-memories` en `apps/mobile` y registrar el resultado. No hace falta la suite completa del monorepo para cerrar esta tarea. Resultado: `npx jest __tests__/visitor-memories.test.tsx --no-coverage` — 19 pruebas en verde.
+- [x] **T-29**: En el PR, enlazar spec, plan y tasks. No incluye el toque del push de `mobile-013` CA-10: esa ruta se conecta cuando esta pantalla exista, en la implementación de `mobile-013`, no aquí. No se modifica el borrado de cuenta de `mobile-004`. La verificación y el pull de memorias quedaron confirmados. Esta task no guarda la URL del PR.
+- [x] **T-30** (CA-06, CA-15, CA-16, RN-15): Enmienda. La lista vuelve a pedirse al montar el hook. Tras guardar, `open_request_id` queda en la copia local. El formulario de alta no se pinta si hay petición abierta o si el id no está rechazado. La corrección pregunta «¿Seguro que quieres enviar la corrección?» y, con 200, oculta los campos y la ruta vuelve a «Mis memorias». Resultado: `npx jest __tests__/visitor-memories.test.tsx --no-coverage` — 21 pruebas en verde.
 
 ## Trazabilidad
 
