@@ -165,7 +165,7 @@ export function mapMission(dto: VisitorCatalogItemDto): Mission {
     id: dto.code,
     title: dto.title,
     objective: dto.objective ?? dto.description,
-    progress: dto.progress,
+    progress: dto.state === 'completed' ? dto.rule_target : dto.progress,
     total: dto.rule_target,
     reward: `${dto.points} puntos`,
   };

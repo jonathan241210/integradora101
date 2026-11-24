@@ -121,14 +121,15 @@ class VisitorProgressQuery
             ->whereNull('enclosures.deleted_at');
     }
 
-    private function visitableSpecies(): Builder
+    public function visitableSpecies(?int $enclosureId = null): Builder
     {
         return DB::table('species')
             ->where('species.is_published', true)
             ->whereNull('species.deleted_at')
-            ->whereIn('species.id', function (Builder $query): void {
+            ->whereIn('species.id', function (Builder $query) use ($enclosureId): void {
                 $this->availableSpeciesIds($query);
-                $query->whereNull('animals.deleted_at');
+                $query->whereNull('animals.deleted_at')
+                    ->when($enclosureId !== null, fn (Builder $animals) => $animals->where('animals.enclosure_id', $enclosureId));
             });
     }
 
@@ -140,16 +141,21 @@ class VisitorProgressQuery
     {
         $owned = DB::table($table)->where('visitor_id', $visitor->id)->get()->keyBy($foreign);
         $metrics = $this->metrics($visitor);
-        $speciesNames = $this->visitableSpecies()->pluck('species.common_name')->map(strval(...))->all();
-        $visible = $rows->filter(function (Achievement|Mission $row) use ($speciesNames): bool {
-            if ($row->rule_type !== 'species_keyword') {
-                return true;
-            }
+        if ($mission) {
+            $achievementKeywords = Achievement::query()
+                ->where('is_active', true)
+                ->where('rule_type', 'species_keyword')
+                ->whereNotNull('rule_param')
+                ->get(['rule_target', 'rule_param'])
+                ->groupBy('rule_target')
+                ->map(fn (Collection $goals): array => $goals->pluck('rule_param')->all());
+            $speciesNames = $this->visitableSpecies()->pluck('species.common_name')->map(strval(...))->all();
+            $rows = $rows->filter(fn (Achievement|Mission $row): bool => $row->rule_type !== 'species_keyword'
+                || in_array($row->rule_param, $achievementKeywords->get($row->rule_target, []), true)
+                || $this->discoveredKeyword($speciesNames, (string) $row->rule_param))->values();
+        }
 
-            return $this->discoveredKeyword($speciesNames, (string) $row->rule_param);
-        })->values();
-
-        return $visible->map(function (Achievement|Mission $row) use ($owned, $when, $mission, $metrics): array {
+        return $rows->map(function (Achievement|Mission $row) use ($owned, $when, $mission, $metrics): array {
             $hit = $owned->get($row->id);
             $current = $this->metricFor($metrics, $row->rule_type, $row->rule_param);
 

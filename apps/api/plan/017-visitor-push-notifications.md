@@ -175,3 +175,12 @@ Ninguna excepción se implementa sin la aprobación de este plan y del ADR 0029.
 5. `mobile-013` consume el contrato. Su plan ya está aprobado y el ADR 0029 ya acepta `expo-notifications`. Faltan sus tasks, que se redactan en el mismo corte y no se ejecutan todavía.
 
 Aprobación funcional de la spec: Equipo de producto móvil. Aprobación técnica de este plan: Responsable de BD Adrian.
+
+## Enmienda de diagnóstico · 2026-11-24
+
+- Estado del plan de la enmienda: Aprobado por la persona solicitante, 2026-11-24.
+- Instrumentar `SendPushJob` y el gateway Expo existente. Registrar el ID de despacho, tipo de contenido y conteos agregados. Diferenciar configuración deshabilitada, cero destinos elegibles y tickets aceptados o rechazados por el proveedor. Validar la forma de los tickets para que una respuesta HTTP exitosa sin aceptación explícita no se describa como aceptación. Los tickets no comprueban la entrega al dispositivo.
+- Mantener preferencia explícita, rutas, persistencia, transiciones de la cola y reintentos existentes. Sin DBR. Sin tokens, identificadores de cuentas ni payloads en las trazas. Los logs usan la configuración de Laravel y funcionan con MySQL local o Aiven.
+- CA-17: PHPUnit con gateway doble para los escenarios del trabajo y HTTP simulado para tickets aceptados, rechazados y mal formados. Verificación Android de noticia y evento tras activar la preferencia.
+- Constitución I–VI: Laravel y Expo existentes, alcance y plan de CA-17 aprobados, diagnóstico en trabajo y gateway, cobertura PHPUnit, sin cambio de migraciones ni esquema, identificadores en inglés y mensajes de operación en español.
+- Orden aprobado: desglosar tareas, verificar en pruebas y corroborar la recepción en Android.

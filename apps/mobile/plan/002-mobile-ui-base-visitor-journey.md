@@ -144,3 +144,11 @@ El círculo de la pestaña activa se desliza hacia la elegida; en Escanear es do
 El corazón de la ficha usa los iconos ya registrados. En reposo se ve el contorno. Al marcarlo, el relleno crece por encima del contorno y se queda lleno, en `primary`, con el borde del botón en el mismo color. Al quitarlo, el relleno se reduce y queda otra vez solo el contorno. La animación vive en la vista.
 
 La lista de identificadores vive en el teléfono (`visitor.favorite-animal-ids`). Las frases anteriores de este plan que dicen que no hay persistencia local no cubren esta lista. No hay favorito de cuenta ni filtro en Colección. Pruebas: `CA-16 favoritos en el teléfono` en `__tests__/favorites.test.ts` y el anuncio del corazón en `__tests__/exploration.test.tsx`. El movimiento del relleno no tiene aserción de fotogramas.
+## Enmienda de arranque · 2026-11-24
+
+- Estado del plan de la enmienda: Aprobado por la persona solicitante, 2026-11-24.
+- Reproducir un arranque en frío en el APK con y sin sesión. Identificar si el círculo aparece antes de montar la raíz de React Native o durante la carga de Inicio, anotando el perfil del APK. Si pertenece a Inicio, renderizar su estructura primero y trasladar la carga a sus secciones. Si pertenece al arranque nativo, revisar el recurso del perfil Android y usar el fondo del tema, preservando el arranque hasta que Expo monte la vista de destino.
+- Contrato y datos: la compuerta de sesión y las rutas existentes determinan el destino. Se conservan el reintento y los datos cacheados sin conexión. Sin cambio de API, permisos, persistencia, dependencias o esquema.
+- CA-17: prueba de Inicio con carga para verificar que la estructura y el estado accesible se muestran juntos. Verificación manual del APK en arranque en frío con y sin sesión para cubrir el sistema nativo.
+- Constitución I–VI: Expo y tokens existentes, alcance y plan de CA-17 aprobados, solo presentación en móvil, prueba automatizada y evidencia Android, sin cambio de datos, identificadores en inglés y estados en español.
+- Orden aprobado: quitar el indicador central del Inicio identificado en el código y verificar el arranque en frío en el APK.

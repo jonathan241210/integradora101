@@ -1,17 +1,18 @@
 import { Alert } from 'react-native';
 import { createHttpClient } from '@arca/api-client';
 import { openPush, readPushData } from './openPush';
+import { signalPublicContentPush } from './publicContentPush';
 
-type PushResponse = {
-  notification?: {
-    request?: {
-      identifier?: string;
-      content?: {
-        data?: unknown;
-      };
+type PushNotification = {
+  request?: {
+    identifier?: string;
+    content?: {
+      data?: unknown;
     };
   };
 };
+
+type PushResponse = { notification?: PushNotification };
 
 type PushSubscription = { remove: () => void };
 
@@ -65,6 +66,7 @@ export function listenForPushOpens(router: {
 }): () => void {
   routerRef = router;
   const notifications = require('expo-notifications') as {
+    addNotificationReceivedListener: (listener: (notification: PushNotification) => void) => PushSubscription;
     addNotificationResponseReceivedListener: (listener: (response: PushResponse) => void) => PushSubscription;
     getLastNotificationResponse: () => PushResponse | null;
     clearLastNotificationResponseAsync: () => Promise<void>;
@@ -75,12 +77,19 @@ export function listenForPushOpens(router: {
     const key = responseKey(response);
     if (key === lastHandled) return;
     lastHandled = key;
+    signalPublicContentPush(response.notification?.request?.content?.data);
     void followPushResponse(response).finally(() => {
       void notifications.clearLastNotificationResponseAsync();
     });
   };
 
   const subscription = notifications.addNotificationResponseReceivedListener(handle);
+  const received = notifications.addNotificationReceivedListener((notification) => {
+    signalPublicContentPush(notification.request?.content?.data);
+  });
   handle(notifications.getLastNotificationResponse());
-  return () => subscription.remove();
+  return () => {
+    subscription.remove();
+    received.remove();
+  };
 }

@@ -89,3 +89,13 @@ T-07 a T-18 son las pruebas. T-01 a T-06 son la puerta y la implementación.
   - Depende de: T-19, T-20, T-21.
   - Hecho cuando: el PR cita `mobile-013` y enlaza spec, plan, tasks, ADR 0029, DBR-017 y las tasks de `api-017`. No se abre ese PR en el corte que solo redacta este checklist.
   - La verificación y el pull de notificaciones quedaron confirmados. Esta task no guarda la URL del PR.
+
+## Enmienda de actualización de Inicio · 2026-11-24
+
+Alcance y plan aprobados por la persona solicitante. Implementación autorizada en la conversación del 2026-11-24.
+
+- [x] **T-28** (CA-14) Conectar avisos públicos, primer plano y reconexión con la revalidación de noticias y eventos. Jest verifica las señales, la caché y la conservación de contenido.
+  - Jest cubre la respuesta pendiente al arrancar, la deduplicación al tocar un aviso, la ficha ausente, la respuesta temporal del servidor y la entrega de la señal antes de que Inicio se suscriba (CA-09 y CA-14).
+- [ ] **T-29** (CA-14) Comprobar recepción, navegación y actualización de Inicio en un teléfono con el APK de pruebas.
+
+Evidencia del 2026-11-24: 68 suites y 435 pruebas móviles en verde. La exportación Android de Expo terminó correctamente. El chequeo de tipos reporta cinco errores previos en mapa y realidad aumentada.

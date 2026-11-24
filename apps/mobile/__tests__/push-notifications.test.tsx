@@ -1,6 +1,6 @@
 import React from 'react';
-import { act, fireEvent, render } from '@testing-library/react-native';
-import { Text } from 'react-native';
+import { act, fireEvent, render, waitFor } from '@testing-library/react-native';
+import { Alert, Text } from 'react-native';
 import { SettingsScreen } from '../src/screens/SettingsScreen';
 import { useNotificationPreferences, type NotificationClient } from '../src/viewmodels/useNotificationPreferences';
 import {
@@ -13,8 +13,17 @@ import {
 } from '../src/push/pushRegistration';
 import { clearNotificationPreferences } from '../src/push/notificationPreferences';
 import { openPush, readPushData, UNAVAILABLE_PUSH_TEXT } from '../src/push/openPush';
+import { followPushResponse, listenForPushOpens } from '../src/push/pushNavigation';
+import { listenForPublicContentPush, signalPublicContentPush } from '../src/push/publicContentPush';
 import { accountSession } from '../src/session/accountSession';
 import { authRepository } from '../src/repositories/mockAuthRepository';
+
+jest.mock('expo-notifications', () => ({
+  addNotificationReceivedListener: jest.fn(),
+  addNotificationResponseReceivedListener: jest.fn(),
+  getLastNotificationResponse: jest.fn(() => null),
+  clearLastNotificationResponseAsync: jest.fn(async () => undefined),
+}));
 
 declare const __dirname: string;
 
@@ -78,6 +87,24 @@ function client(overrides: Partial<NotificationClient> = {}): NotificationClient
     registerPushToken: async () => ({ platform: 'android' }),
     deletePushToken: async () => undefined,
     ...overrides,
+  };
+}
+
+function notification(type: string, id: string) {
+  return {
+    date: 0,
+    request: {
+      identifier: `${type}-${id}`,
+      trigger: null,
+      content: {
+        title: null,
+        subtitle: null,
+        body: null,
+        categoryIdentifier: null,
+        sound: null,
+        data: { type, id },
+      },
+    },
   };
 }
 
@@ -339,5 +366,154 @@ describe('avisos push del visitante', () => {
     const source = fs.readFileSync(path.join(__dirname, '../src/screens/SettingsScreen.tsx'), 'utf8');
     expect(source).not.toContain('@arca/api-client');
     expect(source).not.toContain('fetch(');
+  });
+
+  it('CA-14: conecta los avisos de Expo con Inicio y libera las suscripciones', () => {
+    const notifications = jest.requireMock<typeof import('expo-notifications')>('expo-notifications');
+    const onReceive = jest.mocked(notifications.addNotificationReceivedListener);
+    const onOpen = jest.mocked(notifications.addNotificationResponseReceivedListener);
+    const removeReceive = jest.fn();
+    const removeOpen = jest.fn();
+    onReceive.mockReturnValue({ remove: removeReceive });
+    onOpen.mockReturnValue({ remove: removeOpen });
+    const refresh = jest.fn();
+    const endRefresh = listenForPublicContentPush(refresh);
+    const router = { push: jest.fn(), replace: jest.fn() };
+    const stop = listenForPushOpens(router);
+
+    try {
+      const emit = onReceive.mock.calls[0][0];
+      for (const type of ['memory', 'event', 'news']) {
+        emit(notification(type, '8'));
+      }
+      expect(refresh).toHaveBeenCalledTimes(2);
+      expect(router.push).not.toHaveBeenCalled();
+    } finally {
+      stop();
+      endRefresh();
+    }
+    expect(removeReceive).toHaveBeenCalledTimes(1);
+    expect(removeOpen).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('apertura de avisos de Expo', () => {
+  const notifications = jest.requireMock<typeof import('expo-notifications')>('expo-notifications');
+  const onOpen = jest.mocked(notifications.addNotificationResponseReceivedListener);
+  const lastResponse = jest.mocked(notifications.getLastNotificationResponse);
+  const clearResponse = jest.mocked(notifications.clearLastNotificationResponseAsync);
+  const apiUrl = process.env.EXPO_PUBLIC_API_URL;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.EXPO_PUBLIC_API_URL = 'https://zoo.example/api/v1';
+    lastResponse.mockReturnValue(null);
+    onOpen.mockReturnValue({ remove: jest.fn() });
+    jest.mocked(notifications.addNotificationReceivedListener).mockReturnValue({ remove: jest.fn() });
+  });
+
+  afterEach(() => {
+    if (apiUrl === undefined) delete process.env.EXPO_PUBLIC_API_URL;
+    else process.env.EXPO_PUBLIC_API_URL = apiUrl;
+    jest.restoreAllMocks();
+  });
+
+  it('CA-09 y CA-14 comprueba y abre una noticia al arrancar, y omite el mismo aviso repetido', async () => {
+    const fetchDetail = jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ data: { id: 21 } }), {
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    const response = { actionIdentifier: 'default', notification: notification('news', '21') };
+    lastResponse.mockReturnValue(response);
+    const refresh = jest.fn();
+    const unsubscribe = listenForPublicContentPush(refresh);
+    const router = { push: jest.fn(), replace: jest.fn() };
+    const stop = listenForPushOpens(router);
+
+    try {
+      onOpen.mock.calls[0][0](response);
+      await waitFor(() => expect(clearResponse).toHaveBeenCalledTimes(1));
+      expect(fetchDetail).toHaveBeenCalledTimes(1);
+      expect(fetchDetail).toHaveBeenCalledWith('https://zoo.example/api/v1/news/21', expect.objectContaining({ method: 'GET' }));
+      expect(refresh).toHaveBeenCalledTimes(1);
+      expect(router.push).toHaveBeenCalledTimes(1);
+      expect(router.push).toHaveBeenCalledWith({ pathname: '/news-detail', params: { id: '21' } });
+    } finally {
+      stop();
+      unsubscribe();
+    }
+  });
+
+  it.each([
+    { id: '22', status: 404, unavailable: true },
+    { id: '23', status: 200, unavailable: true },
+    { id: '24', status: 503, unavailable: false },
+  ])('CA-09 resuelve la apertura de un evento cuando el servidor devuelve $status', async ({ id, status, unavailable }) => {
+    const fetchDetail = jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({}), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    );
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const unsubscribe = listenForPublicContentPush(jest.fn());
+    const router = { push: jest.fn(), replace: jest.fn() };
+    const stop = listenForPushOpens(router);
+
+    try {
+      onOpen.mock.calls[0][0]({ actionIdentifier: 'default', notification: notification('event', id) });
+      await waitFor(() => expect(clearResponse).toHaveBeenCalledTimes(1));
+      expect(fetchDetail).toHaveBeenCalledWith(`https://zoo.example/api/v1/events/${id}`, expect.objectContaining({ method: 'GET' }));
+      if (unavailable) {
+        expect(router.replace).toHaveBeenCalledWith('/');
+        expect(alert).toHaveBeenCalledWith(UNAVAILABLE_PUSH_TEXT);
+        expect(router.push).not.toHaveBeenCalled();
+      } else {
+        expect(router.push).toHaveBeenCalledWith({ pathname: '/event-detail', params: { id } });
+        expect(alert).not.toHaveBeenCalled();
+      }
+    } finally {
+      stop();
+      unsubscribe();
+    }
+  });
+
+  it('CA-09 deja que el detalle se abra sin una URL remota configurada', async () => {
+    delete process.env.EXPO_PUBLIC_API_URL;
+    const fetchDetail = jest.spyOn(globalThis, 'fetch');
+    const router = { push: jest.fn(), replace: jest.fn() };
+    const stop = listenForPushOpens(router);
+
+    try {
+      await followPushResponse(null);
+      expect(router.push).not.toHaveBeenCalled();
+      await followPushResponse({ notification: notification('news', '25') });
+      expect(fetchDetail).not.toHaveBeenCalled();
+      expect(router.push).toHaveBeenCalledWith({ pathname: '/news-detail', params: { id: '25' } });
+    } finally {
+      stop();
+    }
+  });
+
+  it('CA-14 entrega solo una vez a Inicio un aviso válido recibido antes de suscribirse', () => {
+    signalPublicContentPush({ type: 'news', id: '26' });
+    const refresh = jest.fn();
+    const unsubscribe = listenForPublicContentPush(refresh);
+    unsubscribe();
+    const nextRefresh = jest.fn();
+    const stop = listenForPublicContentPush(nextRefresh);
+    try {
+      expect(refresh).toHaveBeenCalledTimes(1);
+      expect(nextRefresh).not.toHaveBeenCalled();
+      signalPublicContentPush({ type: 'event', id: '0' });
+      signalPublicContentPush({ type: 'news' });
+      expect(nextRefresh).not.toHaveBeenCalled();
+      signalPublicContentPush({ type: 'event', id: '27' });
+      expect(nextRefresh).toHaveBeenCalledTimes(1);
+      expect(refresh).toHaveBeenCalledTimes(1);
+    } finally {
+      stop();
+    }
   });
 });

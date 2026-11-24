@@ -8,6 +8,9 @@ use App\Jobs\SendPushJob;
 use App\Models\Event;
 use App\Models\News;
 use App\Models\PushDispatch;
+use App\Push\ExpoPushGateway;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ContentPushDispatchTest extends PushFeatureTestCase
 {
@@ -127,6 +130,46 @@ class ContentPushDispatchTest extends PushFeatureTestCase
         foreach ($this->push->messages as $message) {
             $this->assertPayloadPrivate($message);
         }
+    }
+
+    /** CA-17 */
+    public function test_ca17_push_distinguishes_disabled_and_no_eligible_phones(): void
+    {
+        $visitor = $this->verifiedVisitor();
+        $this->registerPhone($visitor);
+        Log::spy();
+
+        config(['push.enabled' => false]);
+        $this->saveNews();
+        Log::shouldHaveReceived('info')->with('Envío push deshabilitado.', \Mockery::subset(['subject_type' => 'news']))->once();
+
+        config(['push.enabled' => true]);
+        $this->saveEvent();
+        Log::shouldHaveReceived('info')->with('Sin destinos elegibles para el aviso push.', \Mockery::subset(['subject_type' => 'event']))->once();
+        $this->assertSame([], $this->push->messages);
+
+        $this->setNewsPreference($visitor, true);
+        $this->saveNews();
+        Log::shouldHaveReceived('info')->with('Solicitando envío al proveedor push.', \Mockery::subset([
+            'subject_type' => 'news', 'destinations' => 1,
+        ]))->once();
+        $this->assertCount(1, $this->push->messages);
+    }
+
+    /** CA-17 */
+    public function test_ca17_gateway_reports_only_confirmed_tickets_as_accepted(): void
+    {
+        Log::spy();
+        Http::fake(['*' => Http::response(['data' => [
+            ['status' => 'ok', 'id' => 'ticket-1'],
+            ['status' => 'error', 'message' => 'Dato privado excluido del log'],
+            ['status' => 'ok'],
+        ]])]);
+
+        app(ExpoPushGateway::class)->send(array_fill(0, 4, ['to' => 'mock']));
+        Log::shouldHaveReceived('info')->with('Tickets del proveedor push.', [
+            'accepted' => 1, 'rejected' => 1, 'unconfirmed' => 2,
+        ])->once();
     }
 
     private function saveNews(array $override = []): News

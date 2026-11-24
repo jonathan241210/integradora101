@@ -78,7 +78,7 @@ class EnclosureScanTest extends VisitorFeatureTestCase
     {
         [$token, $visitor] = $this->visitor();
         $enclosure = $this->makeEnclosure(['is_active' => 0]);
-        $this->makeAnimal($enclosure);
+        $this->makeAnimal($enclosure, $this->makeSpeciesId(['is_published' => true]));
         $code = $this->makeQr($enclosure);
 
         $this->withVisitorToken($token)->postJson('/api/v1/visitor/discoveries', $this->scan($code))->assertUnprocessable();

@@ -8,6 +8,8 @@
 
 ## Diseño de solución
 
+Para CA-05, el repositorio entrega de inmediato la lista cacheada de noticias o eventos y pasa el resultado de una revalidación exitosa al ViewModel. Inicio sustituye cada lista cuando llega y descarta resultados anteriores a una actualización manual. Se conserva el esquema de caché local de cinco minutos y se usan los endpoints públicos existentes. La consulta del esquema de `arca_pruebas` del 2026-11-24 confirmó las tablas `news` y `events` mediante `db:table` y `migrate:status`. La corrección no requiere DBR.
+
 Este plan técnico implementa la integración de lectura entre la aplicación móvil (`apps/mobile`) y la API central Laravel (`apps/api`) para el catálogo de especies/animales y eventos del zoológico, conforme a la spec aprobada `mobile-003` y los estándares de arquitectura móvil (`apps/mobile/docs/estandares-integracion-api.md`).
 
 ### Flujo desacoplado MVVM y Stale-While-Revalidate (SWR):

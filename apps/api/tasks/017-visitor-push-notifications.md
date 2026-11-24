@@ -178,3 +178,10 @@ Ninguna tarea añade alcance. Si algo de la lista no está en la spec o en el pl
   - Depende de: T-27, T-29.
   - Hecho cuando: el PR cita `api-017` y enlaza spec, plan, tasks, ADR 0029 y DBR-017. No se abre ese PR en el corte que solo redacta este checklist.
   - Confirmado por Equipo de producto móvil: la verificación y el pull de notificaciones ya se hicieron. Esta task no guarda la URL del PR.
+
+## Enmienda de diagnóstico · 2026-11-24
+
+Alcance y plan aprobados por la persona solicitante. Implementación autorizada en la conversación del 2026-11-24.
+
+- [x] **T-31** (CA-17) Registrar los resultados del trabajo y del proveedor sin datos privados. Las siete pruebas de `ContentPushDispatchTest` pasaron en `arca_pruebas`.
+- [ ] **T-32** (CA-17) Corroborar en Android el envío de una noticia y un evento nuevos con una cuenta suscrita.

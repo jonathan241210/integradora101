@@ -135,3 +135,12 @@ El flujo de `mobile-004` CA-11 y el de borrado de cuenta llaman antes a `DELETE 
 4. La evidencia manual de la barra con la app cerrada se adjunta al PR, con un build de distribución.
 
 Aprobación funcional de la spec: Aprobada. Aprobación técnica de este plan: Aprobada.
+
+## Enmienda de actualización de Inicio · 2026-11-24
+
+- Estado del plan de la enmienda: Aprobado por la persona solicitante, 2026-11-24.
+- En la capa móvil de push, observar recepción y apertura de avisos públicos con `type` e `id` validados. Conectar la señal al ViewModel de Inicio mediante una suscripción que se retire al desmontar. Respetar la navegación existente de las aperturas. Usar las señales existentes de primer plano y reconexión para comprobar la vigencia de noticias y eventos.
+- Reutilizar `ZooRepository` y las rutas públicas `GET /api/v1/news?limit=3` y `GET /api/v1/events?limit=3`. La respuesta de la API determina la vigencia. Al recibir un aviso público, pedir datos recientes aunque la caché siga vigente. El regreso a primer plano y la reconexión respetan la vigencia de caché. Agrupar señales simultáneas y conservar las listas visibles si falla la consulta. Los avisos de momentos siguen su navegación y no provocan esa recarga.
+- CA-14: Jest para recepción y apertura de aviso público, regreso a primer plano, reconexión, preferencia apagada, aviso de momento y error de red. Verificación Android con suscripción activa y APK de pruebas.
+- Constitución I–VI: Expo Notifications, AppState y conectividad existentes, alcance y plan de CA-14 aprobados, consultas en repositorio y control de sesión existente, pruebas de señales y estado, sin cambio de persistencia ni DBR, identificadores en inglés y estados en español.
+- Orden aprobado: desglosar tareas, implementar y probar con el APK y la API de pruebas.

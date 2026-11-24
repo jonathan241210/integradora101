@@ -1,5 +1,16 @@
 # 017 · visitor-push-notifications
 
+## Enmienda · Diagnóstico de envíos
+
+- Estado: Aprobada
+- Aprobación funcional: persona solicitante, 2026-11-24. La comprobación en teléfono usa una cuenta que haya activado «Noticias y eventos» y un dispositivo Android registrado.
+- **CA-17.** En el diagnóstico de un trabajo de noticia o evento se distingue entre ausencia de destinatarios elegibles, envío deshabilitado y una solicitud aceptada por el proveedor. La evidencia no expone tokens ni datos privados.
+- **RN-15.** Se conserva la adhesión explícita a «Noticias y eventos». La constancia del trabajo de la cola y la aceptación de Expo son señales distintas de la recepción en el teléfono.
+
+### Estado actual, 2026-11-24
+
+`php artisan migrate:status` y `php artisan db:table` en `arca_pruebas` confirman DBR-017. La consulta agregada encontró cuatro trabajos de noticias y dos de eventos con estado `sent` y ninguna fila de preferencias. Las lecturas públicas del servidor tienen cinco noticias y cuatro eventos visibles. El trabajo puede terminar en `sent` sin llamar al proveedor. El diagnóstico propuesto usa el esquema actual.
+
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña de cuándo se avisa, a quién, el texto, las preferencias y los tokens); `mobile` (permiso de Android, registro del teléfono y aviso en la barra del sistema, spec `mobile-013`); `packages/api-client` (métodos y tipos del visitante, sin lógica de negocio).
 - Estado: Implementada

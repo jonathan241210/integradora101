@@ -13,9 +13,10 @@ export const UNAVAILABLE_PUSH_TEXT = 'Ya no está disponible.';
 export function readPushData(data: unknown): PushData {
   if (!data || typeof data !== 'object') return {};
   const record = data as Record<string, unknown>;
+  const id = record.id;
   return {
     type: typeof record.type === 'string' ? record.type : undefined,
-    id: record.id == null ? undefined : String(record.id),
+    id: typeof id === 'string' || typeof id === 'number' ? String(id) : undefined,
   };
 }
 

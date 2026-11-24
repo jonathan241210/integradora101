@@ -1,5 +1,11 @@
 # 002 · mobile-ui-base-visitor-journey
 
+## Enmienda · Arranque
+
+- Estado: Aprobada
+- Aprobación funcional: persona solicitante, 2026-11-24. Queda identificar en el teléfono si la pantalla reportada pertenece al arranque nativo o a la vista de carga de Inicio.
+- **CA-17.** En un arranque en frío, la app muestra el acceso o el Inicio según la sesión, sin interponer una pantalla con el círculo de carga. Si las secciones de Inicio siguen consultando datos, conservan sus estados de carga accesibles en la pantalla de destino.
+
 - App dueña: `mobile`
 - Apps/paquetes afectados: `@arca/tokens`, `@arca/api-client`
 - Estado: Implementada
