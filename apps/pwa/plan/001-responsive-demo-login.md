@@ -1,7 +1,9 @@
 # Plan técnico · 001 · responsive-demo-login
 
 - Spec: `apps/pwa/specs/001-responsive-demo-login.md`
-- Estado de spec: Aprobada
+- Estado de spec: Implementada
+- Solicitada: 2026-10-10
+- Aprobada: 2026-10-10
 - Responsable técnico: Por identificar
 
 ## Diseño de solución
@@ -90,6 +92,6 @@ La UI consume componentes disponibles de `@arca/ui` y tokens de `@arca/tokens`; 
 6. Ejecutar pruebas, build, validación de tipos, `/verify` y recorrido visual en los cinco anchos acordados; verificar el manifiesto y contexto HTTPS de instalación.
 
 - Dependencias: los pasos 2 y 3 dependen de la configuración del paso 1; la acción de instalación depende del manifiesto; pruebas y documentación verifican todas las vistas.
-- Aprobación funcional: Solicitante, 2026-10-10.
-- Aprobación técnica inicial del plan: Solicitante, 2026-10-10.
-- Aprobación técnica de la ampliación de instalación: Solicitante, 2026-10-10.
+- Aprobación funcional: Solicitante.
+- Aprobación técnica inicial del plan: Solicitante.
+- Aprobación técnica de la ampliación de instalación: Solicitante.

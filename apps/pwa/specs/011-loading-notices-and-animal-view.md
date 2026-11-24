@@ -2,9 +2,10 @@
 
 - App dueña: `pwa`
 - Apps/paquetes afectados: `pwa`
-- Estado: En progreso
-- Solicitante: usuario de esta petición
-- Aprobación funcional: confirmada por el solicitante en la conversación, 2026-11-19.
+- Estado: Implementada
+- Solicitada: 2026-11-19
+- Aprobada: 2026-11-19
+- Aprobación funcional: Aprobada (confirmada por el solicitante en la conversación).
 
 ## Problema y objetivos
 
@@ -52,5 +53,5 @@ Cuando una carga termina, la pantalla presenta su contenido o el error y las acc
 
 ## Revisión
 
-- El solicitante confirmó el alcance de los avisos internos y la ubicación propuesta del control «Orden» el 2026-11-19.
+- El solicitante confirmó el alcance de los avisos internos y la ubicación propuesta del control «Orden».
 - Implementación y verificaciones locales registradas en `apps/pwa/tasks/011-loading-notices-and-animal-view.md`. Queda pendiente enlazar el PR de entrega.

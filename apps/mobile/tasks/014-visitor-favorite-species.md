@@ -1,9 +1,11 @@
 # Tareas · 014 · visitor-favorite-species
 
-- Spec: `apps/mobile/specs/014-visitor-favorite-species.md` (Aprobada, Aksel, 2026-11-14)
-- Plan: `apps/mobile/plan/014-visitor-favorite-species.md` (Aprobado técnicamente, Aksel, 2026-11-16)
+- Spec: `apps/mobile/specs/014-visitor-favorite-species.md` (Aprobada)
+- Plan: `apps/mobile/plan/014-visitor-favorite-species.md` (Aprobado técnicamente)
 - Depende de: `apps/api/tasks/018-visitor-favorite-species.md` y de DBR-018 en `Lista para backend`
-- Estado del checklist: **Aprobado** (Aksel, 2026-11-16). Autoriza el código de estas tareas. No autoriza un PR. La app no empieza hasta que `api-018` tenga los dos métodos y la suite en verde.
+- Estado del checklist: **Aprobado**. Autoriza el código de estas tareas. No autoriza un PR. La app no empieza hasta que `api-018` tenga los dos métodos y la suite en verde.
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
 
 Ninguna tarea añade alcance. Las pantallas no importan `@arca/api-client` ni `fetch`. El cliente, el almacén y `isOffline` se simulan en Jest. No se instala ninguna dependencia. No se toca el cache de catálogo, noticias, eventos ni imágenes (`apiAnimalRepository`, `apiZooRepository`, `mediaImageCache`). Colección no gana filtro. No se redacta el aviso de privacidad oficial.
 
@@ -88,7 +90,7 @@ Ninguna tarea añade alcance. Las pantallas no importan `@arca/api-client` ni `f
 - [x] **T-14** (CA-08): suite.
   - Depende de: T-07 a T-13.
   - Pasos: Jest sobre `__tests__/favorites.test.tsx`, con el comando que ya usa esta app.
-  - Hecho cuando: la salida queda registrada y esa suite pasa. 2026-11-16: 8 pruebas, incluida CA-01 a CA-08, en verde.
+  - Hecho cuando: la salida queda registrada y esa suite pasa. Verificación: 8 pruebas, incluida CA-01 a CA-08, en verde.
 
 - [x] **T-15**: notas de la app y del ADR.
   - Depende de: T-14.
@@ -99,4 +101,4 @@ Ninguna tarea añade alcance. Las pantallas no importan `@arca/api-client` ni `f
 - [x] **T-16**: enlaces del PR.
   - Depende de: T-14, T-15.
   - Hecho cuando: el PR cita `mobile-014` y enlaza spec, plan y tasks. No se abre ese PR en el corte que solo redacta este checklist.
-  - Confirmado por Aksel el 2026-11-20: la verificación y el pull de favoritos ya se hicieron. Esta task no guarda la URL del PR.
+  - La verificación y el pull de favoritos quedaron confirmados. Esta task no guarda la URL del PR.

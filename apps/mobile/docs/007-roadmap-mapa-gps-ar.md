@@ -1,9 +1,8 @@
 # Evolución Técnica · Mapa Móvil: GPS, Rutas por Senderos y Guía AR
 
 - **Documento:** Referencia de evolución técnica para `mobile-007` y futuras fases
-- **Fecha:** 2026-11-04
-- **Autor / Responsable:** Víctor Adrián
-- **Estado actual:** V1, V2, V2.1 y V2.2 implementadas y probadas en Jest
+- **Responsable:** Frontend
+- **Estado actual:** V1 a V4 y las enmiendas implementadas y probadas en Jest
 
 ---
 
@@ -37,7 +36,7 @@ Para la evolución continua del Mapa 2D se han consolidado cuatro frentes estrat
 ### Frente 1: Conexión con Datos Reales y Backend (DBR-008 & API)
 - **Objetivo:** Superar el fixture local en memoria (`src/mocks/zoo.ts`) y centralizar las coordenadas en la base de datos MySQL 8.0 (`enclosures`).
 - **Acciones:**
-  - Solicitud [DBR-008](file:///c:/Users/vic22/OneDrive/Escritorio/ARCA-NB/docs/database/requests/DBR-008-enclosure-gps-coordinates.md) aprobada y migración Laravel `2026_11_03_000008_enclosure_gps_coordinates.php` creada.
+  - Solicitud `docs/database/requests/DBR-008-enclosure-gps-coordinates.md` aprobada y migración Laravel `2026_11_03_000008_enclosure_gps_coordinates.php` creada.
   - Exposición de endpoint `GET /api/v1/map/enclosures` en `apps/api`.
   - Integración en `apps/mobile` mediante `HttpMapRepository` con persistencia/caché offline en `AsyncStorage`.
 

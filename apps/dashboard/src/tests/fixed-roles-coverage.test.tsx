@@ -18,7 +18,7 @@ const last = Math.max(...specCriteria);
  * CA-10, CA-11 y CA-13 lo sustituyen CA-19 a CA-25.
  */
 const substituted = [
-  ...(spec.match(/Criterios sustituidos \(nota [\d-]+\): ([^(]*)\(/)?.[1] ?? "").matchAll(/CA-(\d+)/g),
+  ...(spec.match(/Criterios sustituidos(?: \(nota [\d-]+\))?: ([^(]*)\(/)?.[1] ?? "").matchAll(/CA-(\d+)/g),
 ].map((match) => Number(match[1]));
 
 describe("CA-18 fixed-roles-account-management", () => {

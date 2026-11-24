@@ -1,15 +1,17 @@
 # Plan técnico · 011 · dynamic-tulanpedia
 
 - Spec: `apps/web/specs/011-dynamic-tulanpedia.md`
-- Estado de spec: Aprobada (Jonathan, responsable de backend, 2026-11-12). Aprobar la spec no autoriza implementar: la implementación espera a `api-015` implementada (DBR-013 ya está en «Lista para backend» desde el 2026-11-12).
-- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
-  - Aviso vigente: la implementación espera a `api-015` implementada. No se marca ninguna T-xx sin evidencia. Las preguntas 1 a 8 del plan quedan resueltas el 2026-11-13 (sección «Preguntas»).
-- Tasks: `apps/web/tasks/011-dynamic-tulanpedia.md` (Aprobado, Jonathan, 2026-11-13; mismo NNN-slug).
-- ADR de excepción: `docs/adr/0028-dynamic-tulanpedia-catalog.md` (Aceptado 2026-11-12). Extiende la excepción de `docs/adr/0024-web-static-portal-exception.md` (Aceptado; no se modifica). `docs/adr/0027-dynamic-public-memories-gallery.md` (Aceptado 2026-11-12) no aplica.
-- Responsable técnico de implementación: Jonathan (coordina las sesiones de Claude Code). Plan y tasks aprobados por él, en nombre del equipo, el 2026-11-13.
+- Estado de spec: Implementada
+- Solicitada: 2026-11-12
+- Aprobada: 2026-11-12
+- Estado: **Aprobado** (Backend). Implementación en curso; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: la implementación espera a `api-015` implementada. No se marca ninguna T-xx sin evidencia. Las preguntas 1 a 8 del plan quedan resueltas (sección «Preguntas»).
+- Tasks: `apps/web/tasks/011-dynamic-tulanpedia.md` (Aprobado; mismo NNN-slug).
+- ADR de excepción: `docs/adr/0028-dynamic-tulanpedia-catalog.md`. Extiende la excepción de `docs/adr/0024-web-static-portal-exception.md` (Aceptado; no se modifica). `docs/adr/0027-dynamic-public-memories-gallery.md` no aplica.
+- Responsable técnico de implementación: Backend (coordina las sesiones de implementación). Plan y tasks aprobados por el equipo.
 - Dependencias bloqueantes de implementación:
-  - `api-015` (`GET /api/v1/published-species`): Aprobada 2026-11-12, **sin implementar**. No se puede verificar contra la API real hasta que exista. Hasta entonces, las pruebas usan respuestas simuladas.
-  - DBR-013 (`docs/database/requests/DBR-013-species-requests.md`): Aprobada por BD y backend; migración **aplicada en `arca_pruebas`** (lote 5), verificada el 2026-11-12; «Lista para backend». Pendiente de BD: EXPLAIN y registro de fecha y responsable.
+  - `api-015` (`GET /api/v1/published-species`): Aprobada, **sin implementar**. No se puede verificar contra la API real hasta que exista. Hasta entonces, las pruebas usan respuestas simuladas.
+  - DBR-013 (`docs/database/requests/DBR-013-species-requests.md`): Aprobada por BD y backend; migración **aplicada en `arca_pruebas`** (lote 5), verificada; «Lista para backend». Pendiente de BD: EXPLAIN y registro de fecha y responsable.
   - `web-009` (módulo `js/api.js`, meta `arca-api-base`): reutilizado; su implementación está parcial según su tasks.
   - `api-014` y `dashboard-010`: origen de las especies publicadas. No bloquean el desarrollo del portal con respuestas simuladas.
 
@@ -88,7 +90,7 @@ Expuestos en `ArcaTulanpedia.helpers` para las pruebas:
 |---|---|
 | `safeImageUrl(value)` | Devuelve la URL si es `http:` o `https:` absoluta (se parsea con `new URL`), o una ruta que empieza por `/` y no por `//` ni `/\`. Cualquier otro valor (`null`, `javascript:`, `data:`, ruta sin `/`, no string) devuelve `null`. |
 | `categoryLabel(key)` | Busca en la tabla de presentación con `Object.prototype.hasOwnProperty.call` (evita claves heredadas como `constructor`). Si la clave no existe, devuelve la clave tal como llega (RN-11). |
-| `habitatKey(value)` | `value.trim().toLocaleLowerCase('es')`. No quita acentos (decisión 2026-11-11). Vacío o no string → `null`. |
+| `habitatKey(value)` | `value.trim.toLocaleLowerCase('es')`. No quita acentos. Vacío o no string → `null`. |
 | `fieldRows(species)` | Devuelve las filas `{ label, text }` en el orden de la ficha, solo para valores válidos (ver tabla abajo). |
 | `countText(n)` | `1 especie encontrada` o `N especies encontradas`. |
 | `sortByLabel(list)` | Orden alfabético con `localeCompare(b, 'es')`. |
@@ -295,24 +297,24 @@ Regla de estado: un CA sin prueba automatizada o sin evidencia manual no puede m
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Parcial | HTML, CSS y JavaScript estáticos, sin dependencias ni servicios propietarios, sin build ni `package.json`. La stack declarada para el portal es React 19 + TS + Vite (`apps/web/AGENTS.md`). **Excepción:** ADR 0028, decisión 1 a 3 (sección TulanPedia de la portada), que extiende ADR 0024. |
-| II. La spec manda | Sí, con condición de dependencias | Spec `web-011` Aprobada el 2026-11-12, con plan y tasks aprobados el 2026-11-13. No hay código hasta cumplir la dependencia de `api-015` implementada (DBR-013 ya cumple «Lista para backend»). |
+| II. La spec manda | Sí, con condición de dependencias | Spec `web-011` Aprobada, con plan y tasks aprobados. No hay código hasta cumplir la dependencia de `api-015` implementada (DBR-013 ya cumple «Lista para backend»). |
 | III. Lógica separada de la interfaz | Parcial | Sin reglas de negocio en el portal: la visibilidad, el orden y los campos los decide la API (RN-01). Los filtros son presentación sobre la lista recibida (RN-07) y la tabla de etiquetas es presentación (RN-11). `fetch` solo en `js/api.js`. **Excepción:** no hay `@arca/api-client` ni hooks (ADR 0028, decisión 1). |
 | IV. Un test por criterio | Sí, con runner distinto | Un test por CA-01 a CA-24 con `node --test` y nombres `CA-NN dynamic-tulanpedia`. Vitest no se usa (ADR 0028, decisión 3). CA-16 comprueba la cobertura. Este plan no afirma que ninguna prueba pase: el resultado se registra en T-16 con evidencia de ejecución. |
 | V. Una sola fuente de verdad para los datos | Sí | El portal no guarda ni cachea datos de negocio. La API es la fuente. Sin escritura. Datos públicos, sin datos clínicos ni financieros. |
 | VI. Código en inglés, personas en español | Sí | Identificadores en inglés (`animals.js`, `getSpecies`, `published-species`, `categoryFilter`, `tp-media`), claves de `category` en inglés (valores de DBR-004). Textos visibles, de estado y de error en español. |
 
-Excepciones registradas: ADR 0028 (aceptado el 2026-11-12). Si el ADR no se aprueba o se revoca, este plan no se implementa.
+Excepciones registradas: ADR 0028. Si el ADR no se aprueba o se revoca, este plan no se implementa.
 
 ## Riesgos y decisiones
 
-- **ADR requerido/aprobado:** ADR 0028 Aceptado (2026-11-12). No se requiere ADR de dependencia: no hay paquetes nuevos.
+- **ADR requerido/aprobado:** ADR 0028 Aceptado. No se requiere ADR de dependencia: no hay paquetes nuevos.
 - **Bloqueo de contrato:** sin `api-015` implementada no hay datos reales. Mitigación: desarrollo con respuestas simuladas; la verificación real queda en T-15 y no se declara antes.
-- **Bloqueo de BD (resuelto el 2026-11-12):** DBR-013 está aplicada en `arca_pruebas` con evidencia de solo lectura (`api-015` RN-02). La verificación real sigue bloqueada por `api-015` implementada.
-- **Portal vacío hasta la primera publicación:** aceptado (spec, decisión de 2026-11-11). Se muestra «Aún no hay especies publicadas.».
+- **Bloqueo de BD:** DBR-013 está aplicada en `arca_pruebas` con evidencia de solo lectura (`api-015` RN-02). La verificación real sigue bloqueada por `api-015` implementada.
+- **Portal vacío hasta la primera publicación:** aceptado. Se muestra «Aún no hay especies publicadas.».
 - **Pérdida del contenido de las fichas de muestra:** dieta, longevidad, características y curiosidades no tienen fuente en la solicitud; se retiran (spec, riesgos).
 - **Campos extra no llegan:** con «no por ahora», la ficha muestra nombre, foto, nombre científico, área de distribución natural, hábitat y tipo de animal cuando la Dirección los publica. El mapeo de los demás campos se prueba con respuestas simuladas.
 - **Tabla de `category`:** un tipo nuevo en DBR-004 exige actualizar la API y la tabla. Sin tabla, la clave se muestra tal cual.
-- **Variantes de hábitat:** «Bosque» y «bosque» son una sola opción, pero «Bosque» y «Bósque» son dos (no se quitan acentos, decisión 2026-11-11). Es calidad de datos.
+- **Variantes de hábitat:** «Bosque» y «bosque» son una sola opción, pero «Bosque» y «Bósque» son dos. Es calidad de datos.
 - **Nombres repetidos:** dos especies con el mismo `common_name` comparten la opción «Especie» y se filtran juntas. Riesgo bajo; el zoológico debe distinguir los nombres.
 - **Bionic Reading (`008`) con contenido dinámico:** el contenido llega después de cargar la página y puede quedar sin formato de `accessibility.js`. Verificación manual (T-15). Cambiar `accessibility.js` requiere aprobación separada.
 - **Imágenes grandes:** `lazy` y caja fija; coste en la verificación manual.
@@ -335,16 +337,16 @@ Excepciones registradas: ADR 0028 (aceptado el 2026-11-12). Si el ADR no se apru
 - **D-5:** la spec no fija el `id` del nuevo selector «Tipo de animal». El plan propone `categoryFilter` (pregunta 7).
 - **D-6:** la spec pide `#animalCount` (`aria-live`). El plan mantiene el `id` existente.
 
-## Preguntas (resueltas el 2026-11-13)
+## Preguntas
 
-1. **Cabecera.** El formulario de búsqueda de la cabecera (`#searchForm`, `#searchInput`, «Buscar un animal...») filtraba las tarjetas. Sin tarjetas, ¿qué debe hacer? Propuesta del plan: conservar los IDs (los exige `web-009` CA-11 y `relocation.test.mjs`), que al enviar solo lleve a `#animales` sin filtrar. Alternativas: ocultarlo, o dejarlo sin cambio (sin efecto). **Resuelta (2026-11-13, Jonathan): se adopta la propuesta.** Se conservan los IDs y el buscador; al enviar solo lleva a `#animales`, sin filtrar. Afecta a T-09.
-2. **Bloque «Conocer más».** ¿Se muestra visible (propuesta) o como `details` colapsable? La spec deja fuera el detalle expandible. **Resuelta (2026-11-13): visible** (propuesta, supuesto S-1).
-3. **Texto sin resultados.** ¿Se mantiene «No encontramos especies con esos filtros. Prueba con otra búsqueda.» (spec)? «Otra búsqueda» no tiene campo de búsqueda en esta sección. Propuesta: mantener el texto de la spec hasta aprobar un cambio. **Resuelta (2026-11-13): se mantiene el texto de la spec.**
-4. **Especie inválida.** Si llega una especie sin `common_name` o un elemento que no es objeto, ¿se omite (propuesta) o se trata como error de carga? **Resuelta (2026-11-13): se omite** (propuesta, igual que `web-010`).
-5. **Unidad de `size_cm`.** ¿Se muestra con ` cm` (propuesta, supuesto S-3) o tal como llega? **Resuelta (2026-11-13): con ` cm`** (propuesta, supuesto S-3).
-6. **Orden de la ficha.** ¿«Tipo de animal» primero (propuesta) o al final, como en la lista de CA-19? **Resuelta (2026-11-13): primero** (propuesta).
-7. **Id del selector «Tipo de animal».** ¿`categoryFilter` (propuesta) o otro nombre? **Resuelta (2026-11-13): `categoryFilter`.**
-8. **Alcance de CA-16.** ¿Confirmas que el test de cobertura cubre CA-01 a CA-24 (texto de CA-16), y no CA-01 a CA-18 («Cambios por área»)? **Resuelta (2026-11-13): sí, CA-01 a CA-24**, el texto de CA-16. La incoherencia de «Cambios por área» (CA-01 a CA-18) queda para corregir en la spec; no se toca aquí.
+1. **Cabecera.** El formulario de búsqueda de la cabecera (`#searchForm`, `#searchInput`, «Buscar un animal...») filtraba las tarjetas. Sin tarjetas, ¿qué debe hacer? Propuesta del plan: conservar los IDs (los exige `web-009` CA-11 y `relocation.test.mjs`), que al enviar solo lleve a `#animales` sin filtrar. Alternativas: ocultarlo, o dejarlo sin cambio (sin efecto). **Resuelta: se adopta la propuesta.** Se conservan los IDs y el buscador; al enviar solo lleva a `#animales`, sin filtrar. Afecta a T-09.
+2. **Bloque «Conocer más».** ¿Se muestra visible (propuesta) o como `details` colapsable? La spec deja fuera el detalle expandible. **Resuelta: visible** (propuesta, supuesto S-1).
+3. **Texto sin resultados.** ¿Se mantiene «No encontramos especies con esos filtros. Prueba con otra búsqueda.» (spec)? «Otra búsqueda» no tiene campo de búsqueda en esta sección. Propuesta: mantener el texto de la spec hasta aprobar un cambio. **Resuelta: se mantiene el texto de la spec.**
+4. **Especie inválida.** Si llega una especie sin `common_name` o un elemento que no es objeto, ¿se omite (propuesta) o se trata como error de carga? **Resuelta: se omite** (propuesta, igual que `web-010`).
+5. **Unidad de `size_cm`.** ¿Se muestra con ` cm` (propuesta, supuesto S-3) o tal como llega? **Resuelta: con ` cm`** (propuesta, supuesto S-3).
+6. **Orden de la ficha.** ¿«Tipo de animal» primero (propuesta) o al final, como en la lista de CA-19? **Resuelta: primero** (propuesta).
+7. **Id del selector «Tipo de animal».** ¿`categoryFilter` (propuesta) o otro nombre? **Resuelta: `categoryFilter`.**
+8. **Alcance de CA-16.** ¿Confirmas que el test de cobertura cubre CA-01 a CA-24 (texto de CA-16), y no CA-01 a CA-18 («Cambios por área»)? **Resuelta: sí, CA-01 a CA-24**, el texto de CA-16. La incoherencia de «Cambios por área» (CA-01 a CA-18) queda para corregir en la spec; no se toca aquí.
 
 ## Supuestos del plan
 
@@ -359,7 +361,7 @@ Excepciones registradas: ADR 0028 (aceptado el 2026-11-12). Si el ADR no se apru
 
 Secuencia de implementación (detalle en `apps/web/tasks/011-dynamic-tulanpedia.md`):
 
-1. T-01 precondiciones y línea base (`api-015` implementada con evidencia; DBR-013 «Lista para backend», cumplido el 2026-11-12; regresión registrada).
+1. T-01 precondiciones y línea base (`api-015` implementada con evidencia; DBR-013 «Lista para backend», cumplido; regresión registrada).
 2. T-02 `getSpecies()` en `js/api.js`.
 3. T-03 helpers puros de `js/animals.js`.
 4. T-04 marcado de `index.html` (sin tarjetas de muestra, IDs, estado inicial).
@@ -380,10 +382,10 @@ Aprobaciones requeridas:
 
 | Rol | Aprueba | Estado |
 |---|---|---|
-| Responsable funcional | Spec `web-011` | Aprobada (Jonathan, 2026-11-12) |
-| Equipo técnico | Este plan, Constitution Check, excepción ADR 0028 y respuestas a las preguntas 1 a 8 | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
-| Responsable de BD | DBR-013 en «Lista para backend» (migración aplicada en `arca_pruebas` con evidencia) | **Cumplido** el 2026-11-12 (migración aplicada, lote 5). Pendiente de BD: EXPLAIN y registro de fecha y responsable |
+| Responsable funcional | Spec `web-011` | Aprobada |
+| Equipo técnico | Este plan, Constitution Check, excepción ADR 0028 y respuestas a las preguntas 1 a 8 | Aprobado por Backend, en nombre del equipo |
+| Responsable de BD | DBR-013 en «Lista para backend» (migración aplicada en `arca_pruebas` con evidencia) | **Cumplido** (migración aplicada, lote 5). Pendiente de BD: EXPLAIN y registro de fecha y responsable |
 | Backend | `api-015` implementada con evidencia (`curl` y pruebas PHPUnit) | **Pendiente** |
-| Equipo (ADR) | ADR 0028 | Aceptado (2026-11-12) |
+| Equipo (ADR) | ADR 0028 | Aceptado |
 
 Evidencias requeridas para marcar la spec como Implementada: las de T-16 y los resultados de T-15. Este plan no cambia el estado de la spec ni de las tasks.

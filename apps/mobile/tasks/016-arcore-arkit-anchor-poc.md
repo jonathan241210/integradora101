@@ -1,13 +1,15 @@
 # Tareas · 016 · PoC ARCore/ARKit con anclaje AR
 
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
 - Spec: `apps/mobile/specs/016-arcore-arkit-anchor-poc.md` (Aprobada)
 - Plan: `apps/mobile/plan/016-arcore-arkit-anchor-poc.md` (Aprobado)
 - ADR: `docs/adr/0032-viroreact-arcore-arkit-poc.md` (Aceptado)
 
 ## SDD / decisión
 
-- [x] **T-01** (CA-01, RN-04): ADR 0032 aprobado por Victor Adrian (2026-11-21).
-- [x] **T-02** (CA-01): Spec/plan/tasks 016 aprobados por Victor Adrian (2026-11-21).
+- [x] **T-01** (CA-01, RN-04): ADR 0032 aprobado.
+- [x] **T-02** (CA-01): Spec/plan/tasks 016 aprobados.
 
 ## Configuración build
 

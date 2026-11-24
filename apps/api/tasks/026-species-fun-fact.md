@@ -1,16 +1,18 @@
 # Tareas · 026 · species-fun-fact
 
-- Spec: `apps/api/specs/026-species-fun-fact.md` (Aprobada, Jonathan, 2026-11-21)
-- Plan: `apps/api/plan/026-species-fun-fact.md` (Aprobado — aprobación técnica: Jonathan, 2026-11-21)
-- DBR: `docs/database/requests/DBR-025-species-fun-fact.md` (Lista para backend, 2026-11-21)
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Spec: `apps/api/specs/026-species-fun-fact.md`
+- Plan: `apps/api/plan/026-species-fun-fact.md` (Aprobado — aprobación técnica: el responsable funcional)
+- DBR: `docs/database/requests/DBR-025-species-fun-fact.md`
 
 Ninguna tarea está marcada. Una casilla se marca solo con evidencia aportada por la sesión principal (salida de comando, enlace a PR o resultado de test). Las tareas de backend (T-05 en adelante) no empiezan hasta que DBR-025 esté en **«Lista para backend»** (T-04).
 
 ## Base de datos (responsable de BD)
 
-- [x] **T-01** (CA-16): revisar DBR-025 con BD (responsable por confirmar) y backend (Jonathan); repetir la consulta de solo lectura de `arca_pruebas` justo antes de aprobar (`fun_fact` inexistente en `species` y en `species_publication_requests`; `information_schema.COLUMNS` de ambas tablas); resolver «Verificaciones para BD» de la DBR (margen de fila, collation); estado `Aprobada` con fecha y firma en la DBR.
+- [x] **T-01** (CA-16): revisar DBR-025 con BD (responsable por confirmar) y backend (el responsable funcional); repetir la consulta de solo lectura de `arca_pruebas` justo antes de aprobar (`fun_fact` inexistente en `species` y en `species_publication_requests`; `information_schema.COLUMNS` de ambas tablas); resolver «Verificaciones para BD» de la DBR (margen de fila, collation); estado `Aprobada` con fecha y firma en la DBR.
 - [x] **T-02** (CA-07, CA-11): crear la migración idempotente de `species.fun_fact` y `species_publication_requests.fun_fact` (`VARCHAR(500) NULL`, sin default, sin índice, sin FK) con `down()`, bajo `apps/api/src/database/migrations/`. La crea BD según DBR-025. Evidencia: archivo de migración y revisión de BD.
-- [ ] **T-03** (CA-07, CA-11): probar la migración en MySQL 8.0 aislado y en `arca_pruebas` (up, re-ejecución idempotente, `down()` en entorno aislado). Evidencia: salida de `migrate:status` y `SHOW CREATE TABLE` de ambas tablas. `migrate:rollback` no se ejecuta en `arca_pruebas`.
+- [ ] **T-03** (CA-07, CA-11) — Fuera de alcance de esta entrega (MySQL 8.0 aislado): probar la migración en MySQL 8.0 aislado y en `arca_pruebas` (up, re-ejecución idempotente, `down()` en entorno aislado). Evidencia: salida de `migrate:status` y `SHOW CREATE TABLE` de ambas tablas. `migrate:rollback` no se ejecuta en `arca_pruebas`.
 - [x] **T-04** (gate): cambiar el estado de DBR-025 a **«Lista para backend»** con evidencia de T-03. Sin este paso no inician T-05 a T-18.
 
 ## Implementación (backend; inicia con DBR-025 en «Lista para backend»)
@@ -30,25 +32,25 @@ Ninguna tarea está marcada. Una casilla se marca solo con evidencia aportada po
 
 ## Calidad, documentación y entrega
 
-- [ ] **T-17** (CA-16): verificaciones de la API. Pint sobre los archivos tocados; `php artisan test` filtrado a los tests de esta spec y a la regresión de `api-014` y `api-015`, contra `arca_pruebas` (nunca `arca_zoo`, sin `RefreshDatabase`); `migrate:status`. Búsqueda de `test_ca01` a `test_ca15` en `apps/api/src/tests/` con su salida. Registrar la salida real aportada por la sesión principal. Sin evidencia, no se marca.
+- [ ] **T-17** (CA-16) — Fuera de alcance de esta entrega (verificación en sesión con shell): verificaciones de la API. Pint sobre los archivos tocados; `php artisan test` filtrado a los tests de esta spec y a la regresión de `api-014` y `api-015`, contra `arca_pruebas` (nunca `arca_zoo`, sin `RefreshDatabase`); `migrate:status`. Búsqueda de `test_ca01` a `test_ca15` en `apps/api/src/tests/` con su salida. Registrar la salida real aportada por la sesión principal. Sin evidencia, no se marca.
 - [x] **T-18** (CA-11, CA-14): actualizar la documentación de la API: `apps/api/docs/contenido-publico.md` (campo `fun_fact` en la lectura pública y en el selector) y `apps/api/docs/administracion.md` (edición y aceptación con el campo). Sin cambio de `docs/`.
-- [ ] **T-19** (CA-16): PR que enlaza `apps/api/specs/026-species-fun-fact.md`, `apps/api/plan/026-species-fun-fact.md`, `apps/api/tasks/026-species-fun-fact.md` y DBR-025, y los PR de `api-014` y `api-015` si siguen abiertos. El commit cita `api-026`. Los commits los hace Jonathan con el comando que indique.
-- [ ] **T-20** (CA-16): actualizar el estado de la spec a «En progreso» al iniciar la implementación y a «Implementada» solo con enlace a PR y resultados de tests de CA-01 a CA-15.
+- [ ] **T-19** (CA-16) — Fuera de alcance de esta entrega (PR): PR que enlaza `apps/api/specs/026-species-fun-fact.md`, `apps/api/plan/026-species-fun-fact.md`, `apps/api/tasks/026-species-fun-fact.md` y DBR-025, y los PR de `api-014` y `api-015` si siguen abiertos. El commit cita `api-026`. Los commits los hace el responsable funcional con el comando que indique.
+- [ ] **T-20** (CA-16) — Fuera de alcance de esta entrega (PR): actualizar el estado de la spec a «En progreso» al iniciar la implementación y a «Implementada» solo con enlace a PR y resultados de tests de CA-01 a CA-15.
 
 ## Consumidores (fuera de este documento)
 
-Las revisiones de `pwa-005`, `dashboard-010` y `web-011` (enlazadas en la spec, sección «Cambios por área») y sus tipos en `packages/api-client` no tienen plan ni tareas aquí. Se crean cuando Jonathan confirme la forma del plan por app (pregunta 2 del plan). No empiezan antes de que la API esté implementada (T-13 y T-15).
+Las revisiones de `pwa-005`, `dashboard-010` y `web-011` (enlazadas en la spec, sección «Cambios por área») y sus tipos en `packages/api-client` no tienen plan ni tareas aquí. Se crean cuando el responsable funcional confirme la forma del plan por app (pregunta 2 del plan). No empiezan antes de que la API esté implementada (T-13 y T-15).
 
 Cada tarea de código nombra sus CA-xx y todos los CA-01 a CA-15 tienen al menos una tarea de test (T-05 a T-16). Las tareas de BD (T-01 a T-04) son del responsable de BD y no las ejecuta backend.
 
-## Evidencia de BD (sesión principal, 2026-11-21, `arca_pruebas`)
+## Evidencia de BD (sesión principal, `arca_pruebas`)
 
-- T-01: consulta previa de solo lectura (`db:table species`, `db:table species_publication_requests`): sin columna `fun_fact`; 9 y 7 filas. DBR-025 aprobada por Jonathan como responsable de BD por delegación.
+- T-01: consulta previa de solo lectura (`db:table species`, `db:table species_publication_requests`): sin columna `fun_fact`; 9 y 7 filas. DBR-025 aprobada por el responsable funcional como responsable de BD por delegación.
 - T-02: `database/migrations/2026_11_21_000025_species_fun_fact.php` (idempotente con `Schema::hasColumn`, `down()` que retira ambas columnas).
 - `php artisan migrate --force` → DONE en lote 15; segunda ejecución → «Nothing to migrate» (idempotencia). `information_schema`: `species.fun_fact varchar(500) NULL utf8mb4_0900_ai_ci`, `species_publication_requests.fun_fact varchar(500) NULL utf8mb4_unicode_ci`.
 - T-03 queda parcial: `down()` sin probar en MySQL aislado (rollback prohibido en `arca_pruebas`), igual que DBR-024.
 - T-04: DBR-025 en «Lista para backend».
 
-## Revisión de calidad 2026-11-21
+## Revisión de calidad
 
 - [x] **T-30** (CA-01, CA-16): los docblocks de los tests citan el slug `species-fun-fact`; `FunFactValidationTest::test_ca01_unknown_published_field_returns_422_with_message` cubre la clave desconocida y `Unit/FunFactCoverageTest` cubre CA-16.

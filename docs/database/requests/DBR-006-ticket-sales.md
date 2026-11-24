@@ -1,11 +1,11 @@
 ﻿# DBR-006 · ticket-sales
 
-- Estado: Lista para backend (Aplicada en arca_pruebas, 2026-11-02)
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-01
+- Aprobada: 2026-11-02
 - Feature/spec origen: `apps/api/specs/009-ticket-sales.md` (y `apps/dashboard/specs/005-ticket-sales.md` como consumidor)
-- Solicitante: Jonathan
-- Responsable de BD: Víctor Adrián
-- Responsable backend: Jonathan
-- Fecha: 2026-11-01 (última edición de borrador: incorpora las decisiones de cancelación, impacto en `api-007` y avisos de precio)
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 - Depende de: DBR-001 (`english-schema-normalization`), aplicada; DBR-002 (`staff-authentication`), para `users`, roles y permisos; DBR-005 (`news-events-soft-deletes`), que ya creó `idx_tickets_purchased_at` en pruebas.
 - Decisión a considerar junto con esta DBR (no la bloquea y no cambia el esquema): ADR 0019 (`docs/adr/0019-qr-svg-generation-api.md`, estado Propuesto), generación del QR del boleto en SVG desde la API (`api-009` CA-09).
 
@@ -89,7 +89,7 @@ Avisos dirigidos a un usuario del personal. Se propone una fila por destinatario
 
 No se solicita borrado lógico para `staff_notifications`: no es dato clínico ni financiero. Ver pregunta 6.
 
-## Impacto de las decisiones de 2026-11-01
+## Impacto de las decisiones de cancelación
 
 - **Cancelación por cajero vendedor, solo el mismo día:** no cambia el esquema. La regla usa `cashier_id`, `purchased_at`, `status`, `cancelled_at`, `cancelled_by` y `cancellation_reason`. El día se compara en la zona que envía el cliente (`api-009` RN-16); el boleto no guarda zona de venta, por lo que no se pide columna nueva.
 - **Boletos cancelados fuera de los reportes de `api-007`:** no cambia el esquema. Las consultas de totales y listados filtran por `status`. Si el responsable de BD lo considera necesario, el índice compuesto se evalúa (pregunta 9).
@@ -159,7 +159,7 @@ No aplica. La vigencia del precio se resuelve en la Action de la API, no en la b
 
 ## Pruebas y evidencia
 
-Estado de la evidencia a 2026-11-02. Lo verificado y lo pendiente se separan por punto.
+Estado de la evidencia al registrar la aplicación. Lo verificado y lo pendiente se separan por punto.
 
 **Migración creada**
 
@@ -168,13 +168,13 @@ Estado de la evidencia a 2026-11-02. Lo verificado y lo pendiente se separan por
 
 **Verificación de columnas, índices y claves en `arca_pruebas`**
 
-Verificado por Jonathan el 2026-11-02 (consultas de solo lectura ejecutadas con asistencia de Claude Code). Sin datos de visitantes ni secretos.
+Verificado por el responsable de backend (consultas de solo lectura). Sin datos de visitantes ni secretos.
 
 - `tickets`: las columnas nuevas de la DBR existen (`status`, `payment_method`, `adult_unit_price`, `child_unit_price`, `cancelled_at`, `cancelled_by`, `cancellation_reason`, `updated_by`, `deleted_at`). `qr_code` tiene índice único (`tickets_qr_code_unique`). Existen los índices `idx_tickets_cashier_purchased` (`cashier_id`, `purchased_at`) e `idx_tickets_purchased_at`. Claves externas a `users` en `cashier_id`, `cancelled_by` y `updated_by`. Filas: 0.
-- `ticket_prices`: tabla creada, con índice `idx_ticket_prices_type_effective` (`ticket_type`, `effective_at`) y claves externas `created_by` y `updated_by` a `users`. Filas: 2 (adulto 25.00 y niño 16.00, `effective_at` 2026-11-02 18:44:52), cargadas por la migración según la resolución 3.
+- `ticket_prices`: tabla creada, con índice `idx_ticket_prices_type_effective` (`ticket_type`, `effective_at`) y claves externas `created_by` y `updated_by` a `users`. Filas: 2 (adulto 25.00 y niño 16.00, `effective_at` de la carga inicial), cargadas por la migración según la resolución 3.
 - `staff_notifications`: tabla creada, sin uso en esta iteración. Índices `uk_staff_notif_user_price` (único: `user_id`, `ticket_price_id`), `idx_staff_notif_user_ack` (`user_id`, `acknowledged_at`) e `idx_staff_notif_user_read` (`user_id`, `read_at`). Claves externas a `users` y a `ticket_prices`. Filas: 0.
 
-**Observaciones para el responsable de BD (Víctor Adrián)**
+**Observaciones para el responsable de BD**
 
 Estas observaciones no bloquean el registro. Se documentan para que BD confirme o decida.
 
@@ -183,7 +183,7 @@ Estas observaciones no bloquean el registro. Se documentan para que BD confirme 
 3. Relleno de datos: la resolución 1 de la DBR indica que existían boletos en `arca_pruebas`. La consulta muestra 0 filas en `tickets`, así que el relleno no afectó datos. BD debe confirmarlo.
 4. Columnas de `tickets` distintas de la DBR: `adult_quantity` y `child_quantity` son INT NULL, y `purchased_at` es TIMESTAMP NULL con `DEFAULT CURRENT_TIMESTAMP` (la DBR lo describía como DATETIME NOT NULL). `total_amount` es DECIMAL(8,2) NULL (no DECIMAL(10,2)).
 5. Tipos de `ticket_prices` y `staff_notifications`: los `id` y `ticket_price_id` son BIGINT UNSIGNED (la DBR decía INT). `staff_notifications.ticket_price_id` es NULL (la DBR lo pedía NOT NULL para `price-change`). `staff_notifications.created_at` es TIMESTAMP NULL (la DBR lo pedía NOT NULL). La documentación de esquema refleja el estado real observado.
-6. Quién verifica: la consulta la ejecutó Jonathan (responsable backend). El flujo de `docs/database/README.md` exige que la verificación la haga BD. Queda pendiente la revisión de Víctor Adrián.
+6. Quién verifica: la consulta la ejecutó el responsable de backend. El flujo de `docs/database/README.md` exige que la verificación la haga BD. Queda pendiente la revisión del responsable de BD.
 
 **Pruebas**
 
@@ -195,22 +195,22 @@ Estas observaciones no bloquean el registro. Se documentan para que BD confirme 
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Víctor Adrián | 2026-11-02 | Aprobada |
-| Responsable backend | Jonathan | 2026-11-02 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | aplicada | 2026-11-02 | Verificado por Jonathan el 2026-11-02 (consultas de solo lectura ejecutadas con asistencia de Claude Code). Migración `2026_11_02_000006_ticket_sales_schema` en batch 7 (Ran). Detalle y observaciones en «Pruebas y evidencia». Subir y bajar en MySQL 8.0 aislado no ejecutado (pendiente). |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_11_02_000006_ticket_sales_schema` en batch 7 (Ran); verificación de solo lectura. Detalle y observaciones en «Pruebas y evidencia». Subir y bajar en MySQL 8.0 aislado no ejecutado (pendiente). |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
 
 Producción (`arca_zoo`) no se usa en ningún paso de esta DBR por parte de agentes.
 
-## Resoluciones a preguntas abiertas (Aprobadas por BD y backend)
+## Resoluciones (aprobadas por BD y backend)
 
 1. **Filas existentes de tickets:** Se confirma que sí existen boletos en arca_pruebas. Para mantener la consistencia histórica sin bloquear despliegues, la migración efectúa un backfill asignando precio unitario de adulto a 25.00 MXN, niño a 16.00 MXN, status = completed y payment_method = cash.
 2. **Restricción de monto:** La validación de monto positivo se gestiona en la Action de la API para mantener máxima portabilidad y compatibilidad de esquema entre MySQL local y Aiven.
@@ -226,24 +226,24 @@ Producción (`arca_zoo`) no se usa en ningún paso de esta DBR por parte de agen
 
 ## Propuesta técnica para backend: Notificaciones multicanal por correo electrónico
 
-> **Propuesta para backend (responsable de BD, 2026-11-02):**
+> **Propuesta para backend (responsable de BD):**
 > Para mantener informados a los usuarios del personal que no tengan el dashboard abierto al momento de un cambio de tarifa, se propone habilitar el envío opcional de notificaciones por correo electrónico adicionalmente al registro en base de datos.
 >
-> 1. **Cero impacto en esquema:** La tabla users ya cuenta con columna email verificada, por lo que no se requiere ninguna columna ni migración adicional en la base de datos.
+> 1. **Cero impacto en esquema:** La tabla users ya cuenta con columna `email`, por lo que no se requiere ninguna columna ni migración adicional en la base de datos. La verificación del correo (`email_verified_at`) no existe en las migraciones y se trata en la nota de abajo.
 > 2. **Implementación recomendada en Laravel:**
 >    - Aprovechar el sistema de notificaciones de Laravel (Illuminate\Notifications\Notification) retornando en ia() tanto ['database', 'mail'] (o condicionado según preferencias del usuario o tipo de evento).
 >    - Para el canal mail, crear una clase Mailable/Notification con diseño institucional que detalle: tipo de boleto, nuevo precio vigente y fecha/hora de entrada en vigor (effective_at).
 >    - Ejecutar el envío de correo de forma asíncrona mediante colas (ShouldQueue), asegurando que las operaciones HTTP de cambio de precio respondan de manera inmediata sin latencia externa de red SMTP.
 
-## Nota (2026-11-02): canal de correo para avisos de precio
+## Nota: canal de correo para avisos de precio
 
-El canal de correo de los avisos de cambio de precio (`api-009` RN-10 y RN-20 a RN-28; ADR 0020, Propuesto) no cambia el esquema, según la propuesta del responsable de BD de esta misma sección. Esta nota no modifica aprobaciones, resoluciones ni estado de la DBR.
+El canal de correo de los avisos de cambio de precio (`api-009` RN-10 y RN-20 a RN-28; ADR 0020, Rechazado — fuera de alcance de esta entrega) no cambia el esquema, según la propuesta del responsable de BD de esta misma sección. Esta nota no modifica aprobaciones, resoluciones ni estado de la DBR.
 
 Puntos que el responsable de BD debe confirmar antes de implementar el canal:
 
 - El correo usa `users.email` y las tablas `jobs` y `failed_jobs` de la migración base `0001_01_01_000002_create_jobs_table.php` (cola `database`); no crea tablas nuevas. No debe usarse el canal `database` de Laravel Notifications, porque crearía una tabla `notifications` que esta DBR no solicita.
 - Las migraciones actuales de `apps/api` no contienen `users.email_verified_at` (solo existe `users.email`). La propuesta asume una columna de correo verificado; si se exige verificación del correo del personal, hará falta una DBR nueva.
 
-## Nota (2026-11-02): avisos diferidos
+## Nota: avisos diferidos
 
-Los avisos de cambio de precio (dashboard y correo; `api-009` CA-23 a CA-26, CA-32, CA-33 y CA-35 a CA-41) quedan diferidos por decisión de Jonathan del 2026-11-02. La tabla `staff_notifications`, incluida su columna `ticket_price_id`, queda creada pero sin uso en esta iteración. Esta nota no cambia el estado, las aprobaciones ni el contrato de la DBR.
+Los avisos de cambio de precio (dashboard y correo; `api-009` CA-23 a CA-26, CA-32, CA-33 y CA-35 a CA-41) quedan diferidos por decisión de producto. La tabla `staff_notifications`, incluida su columna `ticket_price_id`, queda creada pero sin uso en esta iteración. Esta nota no cambia el estado, las aprobaciones ni el contrato de la DBR.

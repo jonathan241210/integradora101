@@ -1,10 +1,11 @@
 # 0015 · Renderizado del mapa SVG en la app móvil
 
 - Estado: Aceptado
-- Fecha: 2026-10-22
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
 - Spec relacionada: `apps/mobile/specs/007-map-location.md`
-- Aprobación funcional registrada: Víctor Adrián (2026-10-22)
-- Revisión técnica: Aksel (equipo móvil), pendiente de firma
+- Aprobación funcional: Equipo ARCA-NB
+- Revisión técnica: Equipo móvil, pendiente de firma
 
 ## Contexto
 
@@ -56,7 +57,7 @@ El mapa actual de `mobile-002` usa `View`s y posiciones porcentuales. Para la V1
 
 ## Validación y revisión
 
-- Aprobación funcional de la dependencia registrada por Víctor Adrián el 2026-10-22.
-- ADR aprobado por Víctor Adrián el 2026-10-22; la revisión técnica de Aksel queda registrada como pendiente de firma.
+- Aprobación funcional de la dependencia registrada por el equipo.
+- ADR aprobado por el equipo; la revisión técnica del equipo móvil queda registrada como pendiente de firma.
 - Al aprobarse: instalar `react-native-svg` con `npx expo install`, crear `ZooMapSvg.tsx`, integrar el mapa y ejecutar pruebas de CA-01 a CA-08.
 - Si el equipo rechaza la dependencia, la V1 debe replantearse con un PNG estático y perderá el resaltado dinámico de secciones.

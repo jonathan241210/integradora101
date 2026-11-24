@@ -15,9 +15,26 @@ class Species extends Model
 
     public $timestamps = false;
 
-    // Kept open until AnimalController::store (firstOrCreate) is reviewed.
-    // Actions assign explicit attributes; request data is never mass-assigned.
-    protected $guarded = [];
+    protected $fillable = [
+        'common_name',
+        'scientific_name',
+        'category',
+        'distribution',
+        'conservation_status',
+        'habitat',
+        'fun_fact',
+        'feeding',
+        'longevity',
+        'reproduction',
+        'gestation_period',
+        'size_cm',
+        'model_3d_path',
+        'is_published',
+        'published_at',
+        'unpublished_at',
+        'image_path',
+        'published_fields',
+    ];
 
     protected function casts(): array
     {

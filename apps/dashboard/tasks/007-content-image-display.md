@@ -1,8 +1,10 @@
 # Tareas · 007 · content-image-display
 
-- Spec: `apps/dashboard/specs/007-content-image-display.md` (Estado: **Aprobada**, Jonathan, 2026-11-07)
-- Plan: `apps/dashboard/plan/007-content-image-display.md` (Estado: **Aprobado**, Jonathan, 2026-11-07)
-- Checklist: aprobado por Jonathan, 2026-11-07. Ninguna tarea está marcada como hecha; cada T-xx se marca solo con evidencia.
+- Solicitada: 2026-11-07
+- Aprobada: 2026-11-07
+- Spec: `apps/dashboard/specs/007-content-image-display.md` (Estado: **Aprobada**)
+- Plan: `apps/dashboard/plan/007-content-image-display.md` (Estado: **Aprobado**)
+- Checklist: aprobado. Ninguna tarea está marcada como hecha; cada T-xx se marca solo con evidencia.
 
 Sin datos, sin DBR, sin cambios de API ni de permisos. Solo marcado y CSS de presentación.
 

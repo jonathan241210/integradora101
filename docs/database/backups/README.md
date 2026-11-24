@@ -4,16 +4,24 @@ Esta carpeta contiene los scripts automatizados para respaldar los datos de desa
 
 > **Seguridad:** Los archivos `.sql` generados están ignorados en `.gitignore` para prevenir que datos de prueba o credenciales se suban al repositorio.
 >
-> **Vigencia del respaldo más reciente (2026-11-23):** El respaldo más reciente (carpeta `2026-11-23_06-45-13/` con `backup_arca_pruebas_full_2026-11-23_06-45-13.sql`, `arca_pruebas_data_only_2026-11-23_06-45-13.sql`, `backup_arca_pruebas_schema_only_2026-11-23_06-45-13.sql` y sus copias `*_latest.sql` en la raíz de `backups/`) corresponde al estado actual de `arca_pruebas` al momento de la exportación. Incluye la estructura y/o datos vigentes hasta las últimas DBR y migraciones presentes en el repositorio en ese momento (p. ej. DBR-019 a DBR-021 y migraciones `2026_11_17_000019_*`, `2026_11_18_000020_*` y `2026_11_18_000021_*` en `apps/api/src/database/migrations/`). Futuros respaldos reflejarán el estado de la base en la fecha en que se generen.
+> **Vigencia del respaldo más reciente:** El respaldo más reciente (carpeta `2026-11-23_06-45-13/` con `backup_arca_pruebas_full_2026-11-23_06-45-13.sql`, `arca_pruebas_data_only_2026-11-23_06-45-13.sql`, `backup_arca_pruebas_schema_only_2026-11-23_06-45-13.sql` y sus copias `*_latest.sql` en la raíz de `backups/`) corresponde al estado actual de `arca_pruebas` al momento de la exportación. Incluye la estructura y/o datos vigentes hasta las últimas DBR y migraciones presentes en el repositorio en ese momento (p. ej. DBR-019 a DBR-021 y migraciones `2026_11_17_000019_*`, `2026_11_18_000020_*` y `2026_11_18_000021_*` en `apps/api/src/database/migrations/`). Futuros respaldos reflejarán el estado de la base en la fecha en que se generen.
 
 ## Historial de respaldos
 
 | Fecha y hora (local) | Base de datos | Tipo(s) | Archivos (conjunto) | Alcance (DBR/migraciones) | Notas |
 |---|---|---|---|---|---|
-| 2026-11-19 23:09:49 | `arca_pruebas` | Completo, solo datos, solo estructura | `2026-11-19_23-09-49/` (`backup_arca_pruebas_full_2026-11-19_23-09-49.sql`, `arca_pruebas_data_only_2026-11-19_23-09-49.sql`, `backup_arca_pruebas_schema_only_2026-11-19_23-09-49.sql`) + `*_latest.sql` en raíz | Hasta las últimas DBR y migraciones presentes en el repo al momento (p. ej. DBR-019 a DBR-021; migraciones `2026_11_17_000019_*`, `2026_11_18_000020_*`, `2026_11_18_000021_*`) | 50 tablas, 1060 filas exportadas. Primer respaldo con dump de solo estructura. Respaldos intermedios del 2026-11-19 23:06:04 (sin esquema separado) eliminados por ser supersedidos. Los `.sql` están ignorados por Git. |
-| 2026-11-23 06:45:13 | `arca_pruebas` | Completo, solo datos, solo estructura | `2026-11-23_06-45-13/` (`backup_arca_pruebas_full_2026-11-23_06-45-13.sql`, `arca_pruebas_data_only_2026-11-23_06-45-13.sql`, `backup_arca_pruebas_schema_only_2026-11-23_06-45-13.sql`) + `*_latest.sql` en raíz | Hasta las últimas DBR y migraciones presentes en el repo al momento (p. ej. DBR-019 a DBR-021; migraciones `2026_11_17_000019_*`, `2026_11_18_000020_*`, `2026_11_18_000021_*`) | 51 tablas, 2423 filas exportadas. Refleja crecimiento de datos y cambios de esquema presentes en `arca_pruebas` respecto al respaldo anterior (p. ej. tabla `cancellation_reviews`, 26 migraciones registradas). Los `.sql` están ignorados por Git. |
+| — | `arca_pruebas` | Completo, solo datos, solo estructura | `2026-11-19_23-09-49/` (`backup_arca_pruebas_full_2026-11-19_23-09-49.sql`, `arca_pruebas_data_only_2026-11-19_23-09-49.sql`, `backup_arca_pruebas_schema_only_2026-11-19_23-09-49.sql`) + `*_latest.sql` en raíz | Hasta las últimas DBR y migraciones presentes en el repo al momento (p. ej. DBR-019 a DBR-021; migraciones `2026_11_17_000019_*`, `2026_11_18_000020_*`, `2026_11_18_000021_*`) | 50 tablas, 1060 filas exportadas. Primer respaldo con dump de solo estructura. Respaldos intermedios (sin esquema separado) eliminados por ser supersedidos. Los `.sql` están ignorados por Git. |
+| — | `arca_pruebas` | Completo, solo datos, solo estructura | `2026-11-23_06-45-13/` (`backup_arca_pruebas_full_2026-11-23_06-45-13.sql`, `arca_pruebas_data_only_2026-11-23_06-45-13.sql`, `backup_arca_pruebas_schema_only_2026-11-23_06-45-13.sql`) + `*_latest.sql` en raíz | Hasta las últimas DBR y migraciones presentes en el repo al momento (p. ej. DBR-019 a DBR-021; migraciones `2026_11_17_000019_*`, `2026_11_18_000020_*`, `2026_11_18_000021_*`) | 51 tablas, 2423 filas exportadas. Refleja crecimiento de datos y cambios de esquema presentes en `arca_pruebas` respecto al respaldo anterior (p. ej. tabla `cancellation_reviews`, 26 migraciones registradas). Los `.sql` están ignorados por Git. |
 
 ---
+
+## Protección de los scripts destructivos (api-028)
+
+`reset-and-init.php` (borra todas las tablas de la base) y `restore.php` (importa datos con claves foráneas deshabilitadas) comparten la guarda de `guard.php`:
+
+- Terminan con código 1, sin conectarse a la base, si `APP_ENV=production` o `DB_DATABASE=arca_zoo`. Las variables del proceso tienen prioridad sobre `apps/api/src/.env`.
+- En cualquier otra base piden escribir por teclado el nombre de la base; si no coincide exactamente, no tocan nada.
+- La producción (`arca_zoo`) no se reinicia ni se restaura con estos scripts: toda carga a producción la hace el responsable de BD por el procedimiento aprobado.
 
 ## 1. ¿Cómo hacer el respaldo antes del corte de Aiven?
 

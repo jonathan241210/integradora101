@@ -122,32 +122,24 @@ export * from './storage';
 import { ApiAnimalRepository } from './apiAnimalRepository';
 import { ApiZooRepository } from './apiZooRepository';
 import { ApiMapRepository } from './apiMapRepository';
+import { isMockDataEnabled } from '../config/runtime';
 
 export function createAnimalRepository(): AnimalRepository {
-  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
-    return new AnimalRepositoryImpl();
-  }
-  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+  if (isMockDataEnabled()) {
     return new AnimalRepositoryImpl();
   }
   return new ApiAnimalRepository();
 }
 
 export function createZooRepository(): ZooRepository {
-  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
-    return new ZooRepositoryImpl();
-  }
-  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+  if (isMockDataEnabled()) {
     return new ZooRepositoryImpl();
   }
   return new ApiZooRepository();
 }
 
 export function createMapRepository(): MapRepository {
-  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
-    return new MapRepositoryImpl();
-  }
-  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+  if (isMockDataEnabled()) {
     return new MapRepositoryImpl();
   }
   return new ApiMapRepository();

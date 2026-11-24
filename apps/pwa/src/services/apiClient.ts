@@ -167,29 +167,29 @@ export async function createAnimal(animal: NewAnimal): Promise<AnimalSummary> {
   })).data;
 }
 
+/** Mensaje de la API cuando existe; si no, el texto por defecto en español. */
+function apiMessage(error: unknown, fallback: string): string {
+  const genericShared = 'No fue posible completar la solicitud.';
+  if (error instanceof Error && error.message && error.message !== genericShared) return error.message;
+  return fallback;
+}
+
+function errorStatus(error: unknown): number {
+  return typeof error === 'object' && error !== null && 'status' in error && typeof error.status === 'number'
+    ? error.status
+    : 0;
+}
+
 export async function createAnimalWithPhoto(formData: FormData): Promise<AnimalSummary> {
+  // Pasa por el cliente compartido: cookie de sesión y X-XSRF-TOKEN (pwa-012 CA-01).
   try {
-    const response = await globalThis.fetch('/api/v1/staff/animals', {
+    return (await http.request<{ data: AnimalSummary }>('/api/v1/staff/animals', {
       method: 'POST',
       body: formData,
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new ApiError(
-        errorData.message || 'No se pudo guardar el animal con foto.',
-        response.status,
-      );
-    }
-
-    const data = await response.json();
-    return data.data;
+    })).data;
   } catch (error) {
-    if (error instanceof ApiError) throw error;
-    throw new ApiError('No se pudo guardar el animal con foto.', 0);
+    const status = errorStatus(error);
+    throw new ApiError(apiMessage(status === 0 ? null : error, 'No se pudo guardar el animal con foto.'), status);
   }
 }
 
@@ -197,27 +197,17 @@ export async function uploadAnimalPhoto(animalId: number, file: File): Promise<{
   const formData = new FormData();
   formData.append('photo', file);
   try {
-    const response = await globalThis.fetch(`/api/v1/staff/animals/${animalId}/photo`, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const message = response.status === 404 || response.status === 405
-        ? 'La carga de foto desde el perfil aún no está disponible en el servidor.'
-        : (errorData.message || 'No se pudo actualizar la foto del animal.');
-      throw new ApiError(message, response.status);
-    }
-
-    const data = await response.json().catch(() => ({}));
-    return data.data ?? data;
+    const data = await http.request<{ data?: { photo_path: string | null } } & { photo_path?: string | null }>(
+      `/api/v1/staff/animals/${animalId}/photo`,
+      { method: 'POST', body: formData },
+    );
+    return (data?.data ?? data ?? { photo_path: null }) as { photo_path: string | null };
   } catch (error) {
-    if (error instanceof ApiError) throw error;
-    throw new ApiError('No se pudo actualizar la foto del animal.', 0);
+    const status = errorStatus(error);
+    const message = status === 404 || status === 405
+      ? 'La carga de foto desde el perfil aún no está disponible en el servidor.'
+      : apiMessage(status === 0 ? null : error, 'No se pudo actualizar la foto del animal.');
+    throw new ApiError(message, status);
   }
 }
 
@@ -262,7 +252,7 @@ export type SyncOperationInput = {
 
 export type SyncOperationResult = {
   operation_uuid: string;
-  status: 'completed' | 'duplicate' | 'rejected' | string;
+  status: 'completed' | 'duplicate' | 'rejected' | 'retry' | string;
   entity_type?: string;
   server_id?: number | null;
   server_entity_type?: string | null;

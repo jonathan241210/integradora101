@@ -1,16 +1,18 @@
 # Plan técnico · 019 · enclosure-status-and-global-search
 
-- Spec: `apps/api/specs/019-enclosure-status-and-global-search.md` (Aprobada, Jonathan, 2026-11-18)
-- Estado del plan: **Aprobado** (Jonathan, 2026-11-18). Autoriza la implementación según sus tasks.
+- Spec: `apps/api/specs/019-enclosure-status-and-global-search.md`
+- Estado del plan: **Aprobado**. Autoriza la implementación según sus tasks.
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
 - Tasks: `apps/api/tasks/019-enclosure-status-and-global-search.md` (Borrador, mismo NNN-slug).
-- Responsable técnico: por confirmar (backend). Aprobador funcional de la spec: Jonathan.
-- DBR: `docs/database/requests/DBR-020-enclosure-status-soft-delete.md` («Lista para backend» (aplicada en `arca_pruebas` el 2026-11-18, lote 12, por Jonathan como responsable de BD por delegación)). El bloque B está desbloqueado.
+- Responsable técnico: por confirmar (backend). Aprobador funcional de la spec: el responsable funcional.
+- DBR: `docs/database/requests/DBR-020-enclosure-status-soft-delete.md` («Lista para backend» (aplicada en `arca_pruebas`, lote 12, por el responsable funcional como responsable de BD por delegación)). El bloque B está desbloqueado.
 - Dependencias: `api-004`, `api-005` (CA-04 y CA-06, este enmendado), `api-007` (CA-18 y CA-26, enmendados), `api-009` (folio = `tickets.id`), `api-010`, `api-014` y DBR-013, DBR-012, DBR-005, DBR-006, ADR 0021 (excepción de `BaseModel`). Consumidor: `dashboard-012`.
 
 ## Bloques de implementación
 
 - **Bloque A, búsqueda global** (CA-21 a CA-27, CA-29 a CA-33). Solo lee; no requiere DBR. Puede implementarse con plan y tasks aprobados. Excepción: el grupo `enclosures` (CA-28) necesita `is_active` y `deleted_at` filtrado; ese grupo va en el bloque B (T-24).
-- **Bloque B, recintos** (CA-01 a CA-20, CA-35 y CA-28). Desbloqueado el 2026-11-18: DBR-020 está «Lista para backend» con evidencia.
+- **Bloque B, recintos** (CA-01 a CA-20, CA-35 y CA-28). Desbloqueado: DBR-020 está «Lista para backend» con evidencia.
 
 ## Diseño de solución
 
@@ -53,18 +55,18 @@ Progreso (api-005): VisitorProgressQuery cuenta solo especies con un animal en e
 | D-5 | Actions nuevas en `Actions/Admin/Enclosures/` con el patrón de `Actions/Admin/Content/SetEventStatusAction.php` (`LogAdminActivityAction`). | RN-12 y el patrón ya existente. |
 | D-6 | Regla de asignabilidad en un único punto: `Enclosure::assignableRule()` devuelve `Rule::exists('enclosures', 'id')` con `is_active = 1` y `deleted_at IS NULL`. | RN-04 y CA-16: reutilizable en cualquier escritura futura. |
 | D-7 | Unicidad: `SaveEnclosureRequest` conserva su consulta Eloquent. Con SoftDeletes, los eliminados quedan fuera. Se conserva la comparación sin distinguir mayúsculas que ya existe. | RN-06 y CA-11. El mensaje «Ya existe un recinto con ese nombre.» no cambia. |
-| D-8 | Escaneo: el guard va en `RecordVisitorDiscoveryAction` después de la comprobación de `is_active` del código. El rechazo guarda fila en `visitor_scans` con `result` = `inactive_enclosure` y responde 422 con ese mismo código en `code`. La reproducción (`replay`) devuelve el mismo código y mensaje. | CA-17 a CA-20. Decisión aceptada por Jonathan (2026-11-18). |
+| D-8 | Escaneo: el guard va en `RecordVisitorDiscoveryAction` después de la comprobación de `is_active` del código. El rechazo guarda fila en `visitor_scans` con `result` = `inactive_enclosure` y responde 422 con ese mismo código en `code`. La reproducción (`replay`) devuelve el mismo código y mensaje. | CA-17 a CA-20. Decisión aceptada por el responsable funcional. |
 | D-9 | Progreso: una sola subconsulta de «especies disponibles» (animales con `can_receive_visits = 1` en recintos activos y no eliminados). La usan el total y el numerador. | CA-35 y RN-14. Evita dos criterios distintos. |
 | D-10 | Orden del grupo `tulanpedia`: título, después `kind`, después `id`. | `species.id` y `species_publication_requests.id` son espacios de identificadores distintos; sin `kind` el desempate no es determinista. |
 | D-11 | Títulos y subtítulos no fijados por la spec (propuesta): boleto → `title` «Boleto #N», `subtitle` «Comprado el dd/mm/aaaa · Vigente|Cancelado» (fecha en `config('app.timezone')`); usuario → nombre completo y correo; momento → «Momento #N». | Pendiente de revisión; no altera CA. |
 | D-12 | Mensajes de validación propuestos (pendientes de revisión): búsqueda «Escribe entre 2 y 100 caracteres para buscar.»; estado «El estado del recinto debe ser verdadero o falso.». | La spec pide mensaje en español sin texto fijo. |
 | D-13 | No se añade `throttle` a la búsqueda ni a las rutas de recintos. | El grupo admin no lo tiene; la spec no lo pide. Riesgo registrado. |
 | D-14 | `staff/animals` mantiene su validación inline en el controlador. Solo cambia la regla de `enclosure_id`. | Cambio mínimo. Mover la validación a un Form Request es una tarea aparte. |
-| D-15 | El dashboard reabre historial de boletos con el filtro `folio` que ya existe en `GET /api/v1/admin/tickets` (`ListTicketsRequest`). No hay endpoint nuevo. | Evita contrato nuevo. Decisión aceptada (2026-11-18). |
-| D-16 | Escaneo de recinto cerrado: se guarda con `result` = `inactive_enclosure` (ver D-8). | Decisión 1 aceptada por Jonathan (2026-11-18). |
+| D-15 | El dashboard reabre historial de boletos con el filtro `folio` que ya existe en `GET /api/v1/admin/tickets` (`ListTicketsRequest`). No hay endpoint nuevo. | Evita contrato nuevo. Decisión aceptada. |
+| D-16 | Escaneo de recinto cerrado: se guarda con `result` = `inactive_enclosure` (ver D-8). | Decisión 1 aceptada por el responsable funcional. |
 | D-17 | Logros (`species_count`, `category_species_count`, `enclosure_count`) y `collection()` no cambian: siguen contando especies de recintos cerrados. La diferencia queda registrada en Riesgos. | Decisión 2 aceptada. CA-35 solo cubre total y numerador. |
 | D-18 | Mensaje del 422 de `staff/animals` para recinto cerrado: «Este recinto no está disponible para asignar animales.». | Decisión 3 aceptada. |
-| D-19 | El grupo `enclosures` de la búsqueda sale del bloque A y se implementa en el bloque B (T-24). El bloque A se entrega sin ese grupo hasta que DBR-020 esté «Lista para backend» (cumplido el 2026-11-18; el grupo se implementa con el bloque B). | Decisión 4 aceptada. |
+| D-19 | El grupo `enclosures` de la búsqueda sale del bloque A y se implementa en el bloque B (T-24). El bloque A se entrega sin ese grupo hasta que DBR-020 esté «Lista para backend» (cumplido; el grupo se implementa con el bloque B). | Decisión 4 aceptada. |
 | D-20 | Las enmiendas a `api-005`, `api-007` y `api-010` se aplican en el PR del bloque B (T-27). | Decisión 5 aceptada. |
 
 ## Divergencias detectadas
@@ -75,8 +77,8 @@ Progreso (api-005): VisitorProgressQuery cuenta solo especies con un animal en e
 
 ## Estado actual de datos (consulta de solo lectura)
 
-- **`enclosures`** (verificado en `arca_pruebas` el 2026-11-18 por la sesión principal, consulta de solo lectura, recogido en DBR-020 «Estado actual»): `id`, `name VARCHAR(100)`, `gps_lat`, `gps_lon`, `map_x`, `map_y`, `updated_at` y `deleted_at` (existen, sin versionar, con índices). **Falta `is_active`.** No hay `UNIQUE` sobre `name`. `animals.enclosure_id` es `INT NOT NULL` con FK `ON DELETE RESTRICT`. `enclosure_qr_codes` tiene dos FK sobre `enclosure_id` con reglas distintas (DBR-020, verificación 2).
-- **Consulta de solo lectura en `arca_pruebas` (2026-11-18, sesión principal) para las tablas de la búsqueda:**
+- **`enclosures`** (verificado en `arca_pruebas` por la sesión principal, consulta de solo lectura, recogido en DBR-020 «Estado actual»): `id`, `name VARCHAR(100)`, `gps_lat`, `gps_lon`, `map_x`, `map_y`, `updated_at` y `deleted_at` (existen, sin versionar, con índices). **Falta `is_active`.** No hay `UNIQUE` sobre `name`. `animals.enclosure_id` es `INT NOT NULL` con FK `ON DELETE RESTRICT`. `enclosure_qr_codes` tiene dos FK sobre `enclosure_id` con reglas distintas (DBR-020, verificación 2).
+- **Consulta de solo lectura en `arca_pruebas` para las tablas de la búsqueda:**
   - `tickets.status` = `completed` | `cancelled`. Subtítulo: Vigente / Cancelado.
   - `visitor_memories.status` en datos = `accepted` | `in_review` | `rejected`. El enum `MemoryStatus` incluye además `submitted`. Subtítulos: Aceptado, En revisión, Rechazado y Enviado.
   - `species_publication_requests.status` en datos = `accepted` | `approved` | `draft` | `rejected`. El enum `SpeciesRequestStatus` incluye `submitted`, que es el único valor que busca la búsqueda. `approved` y `draft` son valores heredados fuera del enum (riesgo, ver Riesgos).
@@ -225,7 +227,7 @@ Convención: cada método se llama `test_caNN_<descripcion>` y su docblock cita 
 | Principio | Cumple | Evidencia o excepción |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Laravel 12, Sanctum y MySQL 8.0.x. Sin dependencias nuevas. Sin SQL propietario. Conexión por `.env` |
-| II. La spec manda | Sí, con condición | Spec 019 Aprobada (2026-11-18). Plan y tasks en Borrador: no hay código hasta su aprobación. DBR-020 «Lista para backend» (2026-11-18); el bloque B puede implementarse cuando se aprueben plan y tasks |
+| II. La spec manda | Sí, con condición | Spec 019 Aprobada. Plan y tasks en Borrador: no hay código hasta su aprobación. DBR-020 «Lista para backend»; el bloque B puede implementarse cuando se aprueben plan y tasks |
 | III. Lógica separada de la interfaz | Sí | Visibilidad, asignación, búsqueda y escaneo en Actions. Controladores delgados. Clientes sin reglas |
 | IV. Un test por criterio | Sí, al implementar | La tabla de mapeo cubre CA-01 a CA-35 con un método por criterio |
 | V. Una sola fuente de verdad para los datos | Sí, con excepción documentada | MySQL es la autoridad. `is_active` llegó por la migración de DBR-020 (`2026_11_18_000020`, aplicada en `arca_pruebas`). `Enclosure` sin `BaseModel` según RN-13 y ADR 0021. Recintos eliminados con SoftDeletes; nada se borra físicamente. Activitylog en las acciones |
@@ -239,30 +241,30 @@ Excepciones: `Enclosure` sin `BaseModel` (RN-13, ADR 0021). Ninguna excepción n
 - **Consultas sin SoftDeletes:** el join de `VisitorProgressQuery` con `animals` y `enclosures` debe filtrar `enclosures.deleted_at IS NULL` a mano. Revisar cualquier `DB::table('enclosures')` del repositorio al implementar.
 - **Timestamps:** `Enclosure` mantiene `$timestamps = false`. `updated_at` existe en la base y no se escribe (DBR-020 no lo pide).
 - **Replay de escaneos:** un escaneo guardado como rechazo debe reproducirse con el mismo mensaje y código; si no, un reintento cambia la respuesta.
-- **Métricas de logros:** `VisitorProgressQuery::metrics()` y `collection()` siguen contando especies de recintos cerrados. CA-35 solo cubre total y numerador. Decisión 2 aceptada (2026-11-18): no cambian; se registra la diferencia.
+- **Métricas de logros:** `VisitorProgressQuery::metrics` y `collection` siguen contando especies de recintos cerrados. CA-35 solo cubre total y numerador. Decisión 2 aceptada: no cambian; se registra la diferencia.
 - **Validación inline en `staff/animals`:** cambio mínimo (D-14).
 - **Estados heredados de solicitudes:** `species_publication_requests` tiene valores `approved` y `draft` fuera del enum `SpeciesRequestStatus`. La búsqueda solo lee `submitted`, así que no los devuelve. Riesgo de calidad de datos y de consistencia del enum; sin acción en esta spec.
 
-## Decisiones aceptadas (2026-11-18)
+## Decisiones aceptadas
 
 1. **Escaneo de recinto cerrado:** se guarda con `result` = `inactive_enclosure` (D-16).
 2. **Logros y colección:** no cambian; siguen contando especies de recintos cerrados. Se registra (D-17).
 3. **Mensaje del 422 en `staff/animals`:** «Este recinto no está disponible para asignar animales.» (D-18).
-4. **Bloque A sin grupo `enclosures`:** resuelto; DBR-020 está «Lista para backend» desde 2026-11-18 y el grupo se implementa con el bloque B (D-19).
+4. **Bloque A sin grupo `enclosures`:** resuelto; DBR-020 está «Lista para backend» y el grupo se implementa con el bloque B (D-19).
 5. **Enmiendas a `api-005`, `api-007` y `api-010`:** se aplican en el PR del bloque B (D-20).
 
 ## Orden y aprobación
 
-1. Aprobación técnica de este plan y de sus tasks por el equipo. Las decisiones 1 a 5 están aceptadas (2026-11-18).
-2. Consulta de solo lectura registrada en «Estado actual de datos» (2026-11-18: `tickets`, `visitor_memories`, `species_publication_requests`).
+1. Aprobación técnica de este plan y de sus tasks por el equipo. Las decisiones 1 a 5 están aceptadas.
+2. Consulta de solo lectura registrada en «Estado actual de datos» (: `tickets`, `visitor_memories`, `species_publication_requests`).
 3. Bloque A (búsqueda): puede empezar tras la aprobación de plan y tasks. No necesita DBR.
-4. Bloque B (recintos): desbloqueado. DBR-020 «Lista para backend» desde 2026-11-18 (Jonathan, responsable de BD por delegación).
-5. Aprobación funcional de la spec: Jonathan (2026-11-18). Revisión técnica del plan: pendiente.
+4. Bloque B (recintos): desbloqueado. DBR-020 «Lista para backend» (el responsable funcional, responsable de BD por delegación).
+5. Aprobación funcional de la spec: el responsable funcional. Revisión técnica del plan: pendiente.
 
-## Enmienda 2026-11-18 (b), aprobada por Jonathan
+## Enmienda (b), aprobada por el responsable funcional
 
-- Spec: «Enmienda 2026-11-18 (b)» en `apps/api/specs/019-enclosure-status-and-global-search.md` (CA-23, CA-24, CA-26 a CA-32, CA-34, CA-36 a CA-49; RN-09, RN-10, RN-12, RN-15 a RN-19).
-- Dashboard afectado: `apps/dashboard/specs/012-enclosure-actions-global-search.md` («Enmienda 2026-11-18 (b)»). Solo consume `match` y el límite de peticiones.
+- Spec: «Enmienda (b)» en `apps/api/specs/019-enclosure-status-and-global-search.md` (CA-23, CA-24, CA-26 a CA-32, CA-34, CA-36 a CA-49; RN-09, RN-10, RN-12, RN-15 a RN-19).
+- Dashboard afectado: `apps/dashboard/specs/012-enclosure-actions-global-search.md` («Enmienda (b)»). Solo consume `match` y el límite de peticiones.
 - DBR: no requerida. Solo lectura de columnas existentes. Sin migraciones ni cambios de esquema.
 - Las decisiones marcadas «propuesta» en la spec (preguntas 1 a 5) deben confirmarse antes de implementar el bloque C.
 
@@ -306,13 +308,13 @@ GET /api/v1/admin/search?q=  (grupo admin; throttle:admin-search, 30/min por usu
 | D-24 | Puntuación del elemento = peor nivel de sus palabras. | Pregunta 2 (propuesta). |
 | D-25 | `match` = primer campo no-título donde coincide una palabra; fragmento centrado en la primera coincidencia de ese campo. Sin `match` si todas las coincidencias están en el título. | Pregunta 3 (propuesta); CA-42. |
 | D-26 | Boletos: estado `completed` → «Vigente» y «Completado»; `cancelled` → «Cancelado»; `cash` → «Efectivo»; fecha en `config('app.timezone')` dd/mm/aaaa. Otro valor de `payment_method` se muestra tal cual y no se traduce. | CA-43; en código solo existe `cash` (`RegisterTicketSaleAction`). |
-| D-27 | Momentos: el número solo busca `visitor_memories.id` exacto (no prefijo ni contiene). Opinión y motivo de rechazo se buscan y solo salen en `match` por el permiso del grupo. | Decisión de Jonathan (CA-29, CA-44). |
+| D-27 | Momentos: el número solo busca `visitor_memories.id` exacto (no prefijo ni contiene). Opinión y motivo de rechazo se buscan y solo salen en `match` por el permiso del grupo. | Decisión del responsable funcional (CA-29, CA-44). |
 | D-28 | Rol: se busca la etiqueta en español de `ResolveManageableRolesAction::LABELS` (o el nombre si no hay etiqueta), no el identificador interno. | Pregunta 4 (propuesta). Coincide con lo que muestra Usuarios. |
-| D-29 | Limitador `admin-search` por usuario (30/min) en la ruta `admin.search`. Reemplaza D-13 solo para esta ruta. | CA-47; Jonathan. |
+| D-29 | Limitador `admin-search` por usuario (30/min) en la ruta `admin.search`. Reemplaza D-13 solo para esta ruta. | CA-47; el responsable funcional. |
 | D-30 | La Action de búsqueda no escribe en logs ni Activitylog; no recibe el logger. Las columnas se declaran por grupo (sin `SELECT *`). | CA-48, CA-49, RN-09. |
 | D-31 | Usuarios: consulta de candidatos con `LEFT JOIN departments` y lectura de roles con `model_has_roles` (`model_type` = `App\Models\User`) solo para los candidatos. | CA-43 sin consultas N+1. |
 
-Decisiones técnicas de la sesión principal sobre las preguntas 1 a 5 de la spec (2026-11-18), registradas al implementar el bloque C:
+Decisiones técnicas de la sesión principal sobre las preguntas 1 a 5 de la spec, registradas al implementar el bloque C:
 
 | # | Decisión técnica de la sesión principal | Aplica |
 |---|---|---|
@@ -326,16 +328,16 @@ Decisiones técnicas de la sesión principal sobre las preguntas 1 a 5 de la spe
 
 ### Estado actual de datos (enmienda (b))
 
-- Registrado por la sesión principal (consulta de solo lectura en `arca_pruebas`, 2026-11-18, según la petición): `users` (`first_name`, `last_name`, `second_last_name`, `email`, `department_id`); `news` y `events` (`title`, `description`, `content`, `category`, `location`, `name`); `species` (`common_name`, `scientific_name`, `category`, `habitat`, `distribution`, `conservation_status`); `visitor_memories` (`opinion`, `rejection_reason`, `status`); `tickets` (`payment_method`, `cancellation_reason`, `purchased_at`, `status`).
-- Verificado en código (2026-11-18): `departments` tiene `name` (`2026_10_14_000001`); `users.department_id` es FK a `departments`; los roles usan `model_has_roles` y `roles` (`2026_10_14_000002`); las etiquetas de rol están en `ResolveManageableRolesAction::LABELS` (`cashier` = Cajero, `veterinarian` = Veterinario); en código solo se escribe `payment_method = 'cash'`.
-- Consulta de solo lectura en `arca_pruebas` (2026-11-18): `tickets.payment_method` solo contiene `cash`; las columnas de `users`, `news`, `events`, `species`, `visitor_memories`, `tickets` y `departments` coinciden con la lista anterior. D-26 cubre `cash`.
+- Registrado por la sesión principal (consulta de solo lectura en `arca_pruebas`, según la petición): `users` (`first_name`, `last_name`, `second_last_name`, `email`, `department_id`); `news` y `events` (`title`, `description`, `content`, `category`, `location`, `name`); `species` (`common_name`, `scientific_name`, `category`, `habitat`, `distribution`, `conservation_status`); `visitor_memories` (`opinion`, `rejection_reason`, `status`); `tickets` (`payment_method`, `cancellation_reason`, `purchased_at`, `status`).
+- Verificado en código: `departments` tiene `name` (`2026_10_14_000001`); `users.department_id` es FK a `departments`; los roles usan `model_has_roles` y `roles` (`2026_10_14_000002`); las etiquetas de rol están en `ResolveManageableRolesAction::LABELS` (`cashier` = Cajero, `veterinarian` = Veterinario); en código solo se escribe `payment_method = 'cash'`.
+- Consulta de solo lectura en `arca_pruebas`: `tickets.payment_method` solo contiene `cash`; las columnas de `users`, `news`, `events`, `species`, `visitor_memories`, `tickets` y `departments` coinciden con la lista anterior. D-26 cubre `cash`.
 
 ### Constitution Check (enmienda (b))
 
 | Principio | Cumple | Evidencia |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias ni extensiones nuevas (D-22). Sin SQL propietario. |
-| II. La spec manda | Sí | Enmienda aprobada por Jonathan (2026-11-18 (b)). Tasks T-31 a T-47 pendientes de implementación. |
+| II. La spec manda | Sí | Enmienda aprobada por el responsable funcional ( (b)). Tasks T-31 a T-47 pendientes de implementación. |
 | III. Lógica separada de la interfaz | Sí | Todo el matching y el orden en Actions. El cliente no decide resultados (RN-11 de 012). |
 | IV. Un test por criterio | Sí, al implementar | Mapeo de CA-23 a CA-49 abajo. |
 | V. Una sola fuente de verdad | Sí | Solo lectura. Sin escritura ni auditoría de búsquedas. |
@@ -381,9 +383,9 @@ Convención: `test_caNN_<descripcion>`; el docblock cita `CA-NN enclosure-status
 
 Todas las pruebas usan `DatabaseTransactions` sobre `arca_pruebas`, sin `RefreshDatabase` ni `migrate`.
 
-## Enmienda 2026-11-18 (d), aprobada por Jonathan
+## Enmienda (d), aprobada por el responsable funcional
 
-- Spec: «Enmienda 2026-11-18 (d)» en `apps/api/specs/019-enclosure-status-and-global-search.md` (CA-37 y CA-41 modificados; CA-50 a CA-54; RN-16).
+- Spec: «Enmienda (d)» en `apps/api/specs/019-enclosure-status-and-global-search.md` (CA-37 y CA-41 modificados; CA-50 a CA-54; RN-16).
 - DBR: no requerida; sin migraciones. Dashboard: solo consume `best_score` (`packages/api-client` `GlobalSearchGroup.best_score?: number`).
 
 | # | Decisión | Aplica |
@@ -394,12 +396,12 @@ Todas las pruebas usan `DatabaseTransactions` sobre `arca_pruebas`, sin `Refresh
 
 Mapeo de pruebas: CA-37 `GlobalSearchNormalizationTest::test_ca37_all_words_any_order_across_fields` (actualizado) y `::test_ca37_partial_words_after_complete`; CA-41 `GlobalSearchRankingTest::test_ca41_score_then_title_kind_id` (actualizado); CA-50 `::test_ca50_literal_title_first`; CA-51 `::test_ca51_contiguous_phrase_before_loose_words`; CA-52 `::test_ca52_phrase_in_other_field`; CA-53 `::test_ca53_words_and_levels_two_words_require_both`; CA-54 `::test_ca54_group_best_score` (todos en `GlobalSearchRelevanceTest`).
 
-## Enmienda 2026-11-19 (e), aprobada por Jonathan
+## Enmienda (e), aprobada por el responsable funcional
 
-Pedida por Jonathan: «busco una noticia y salen primero eventos; solo toma algunas palabras».
+Pedida por el responsable funcional: «busco una noticia y salen primero eventos; solo toma algunas palabras».
 
 - **Palabras vacías** (a, al, con, de, del, el, en, es, la, las, lo, los, o, para, por, que, se, su, sus, un, una, unas, unos, y): no se exigen ni cuentan como coincidencia; sí forman parte de la frase literal (CA-50 a CA-52). Si la consulta solo tiene palabras vacías, se usan todas. Implementado en `ItemMatcher` (API) y `search-tolerance.ts` (cliente, paridad).
 - **Coincidencia parcial más estricta** (modifica CA-37 y la regla de ceil(n/2) de la enmienda d): con 1 a 3 palabras con contenido se exigen todas; con 4 o más, al menos 3 y al menos el 75 % (redondeado hacia arriba).
 - **Sección nombrada en la consulta** (dashboard, `viewmodels/search-intent.ts`): si la consulta incluye una palabra de sección (noticia/s, nota/s; evento/s, actividad/es; recinto/s; usuario/s, cuenta/s, empleado/s, personal; momento/s, recuerdo/s; especie/s, tulanpedia; boleto/s, folio/s), esa palabra no se envía a la API (si queda texto suficiente) y el grupo de esa sección se muestra primero, antes que el de la sección actual.
 - **Palabras de sección y vacías no son acciones** (dashboard, `splitSearchQuery`): antes una palabra como «noticia» se reconocía como parte de una acción («Publicar noticia») y se quitaba de la consulta enviada a la API, por lo que la búsqueda usaba una sola palabra. Ahora esas palabras siempre llegan a la búsqueda.
-- **Tests:** pendientes por indicación de Jonathan (no correrlos en esta ronda). Afectan a CA-37, CA-41, CA-43 (dashboard) y CA-50 a CA-54 (API); deben actualizarse antes del PR.
+- **Tests:** pendientes por indicación del responsable funcional (no correrlos en esta ronda). Afectan a CA-37, CA-41, CA-43 (dashboard) y CA-50 a CA-54 (API); deben actualizarse antes del PR.

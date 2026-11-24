@@ -2,13 +2,14 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña: validación, Actions, almacenamiento y Resources); `packages/api-client` (tipos y envío con archivo); `dashboard` (consumidor, `dashboard-004`); `api-006` (catálogo público de eventos: campo `image_url` aditivo, decidido en P7).
-- Estado: En progreso
-- Solicitante / responsable funcional: Jonathan
+- Estado: Implementada (fuera de alcance de esta entrega: verificación manual y decisión formal de P5)
+- Solicitada: 2026-11-01
+- Aprobada: 2026-11-02
 - Responsable de BD: no aplica. Esta feature no requiere DBR (ver «Datos, privacidad y auditoría»).
-- Aprobación funcional: aprobada por Jonathan el 2026-11-02.
+- Aprobación funcional: Aprobada.
 - Relación con otras specs: complementa `api-007` (reemplaza su exclusión de subida de imágenes) y acompaña a `dashboard-004` (formularios en línea con imagen).
-- Revisión 2026-11-06 (aprobada por Jonathan el 2026-11-06): la API quita metadatos y HDR de las imágenes al guardarlas (CA-14, CA-15, RN-13; revierte P8). Ver «Revisión 2026-11-06».
-- Nota de vigencia (2026-11-01): la eliminación de noticias y eventos sigue siendo **lógica** (`deleted_at`, DBR-005; `api-007` CA-15 y RN-09 vigentes). Esta spec no reemplaza esas reglas: solo añade el borrado del archivo de imagen al eliminar (CA-07, P2). La subida, el reemplazo y quitar la imagen tampoco requieren DBR adicional. DBR-007 (borrado físico) queda descartada (`docs/database/requests/DBR-007-news-events-hard-delete.md`).
+- Revisión de metadatos (aprobada): la API quita metadatos y HDR de las imágenes al guardarlas (CA-14, CA-15, RN-13; revierte P8). Ver «Revisión de metadatos».
+- Nota de vigencia: la eliminación de noticias y eventos sigue siendo **lógica** (`deleted_at`, DBR-005; `api-007` CA-15 y RN-09 vigentes). Esta spec no reemplaza esas reglas: solo añade el borrado del archivo de imagen al eliminar (CA-07, P2). La subida, el reemplazo y quitar la imagen tampoco requieren DBR adicional. DBR-007 (borrado físico) queda descartada (`docs/database/requests/DBR-007-news-events-hard-delete.md`).
 
 ## Problema y contexto
 
@@ -27,11 +28,11 @@ Afectados: `admin` y `zoo-admin` (publican y editan), `executive` (solo consulta
 ## Fuera de alcance
 
 - GitHub Actions, workflows de CI y pruebas automáticas de CI: las atiende otro compañero. No se tocan `.github/workflows` ni la configuración de CI.
-- Almacenamiento en la nube u otro proveedor de objetos. Requiere un ADR aprobado (Constitución I) y queda fuera de alcance. Para pruebas compartidas, la carpeta versionada `media/` de `api-013` y el ADR 0026 (Aceptado 2026-11-12) (ver «Nota de almacenamiento 2026-11-10»). Opción futura: `docs/propuestas/almacenamiento-objetos-s3.md`.
+- Almacenamiento en la nube u otro proveedor de objetos. Requiere un ADR aprobado (Constitución I) y queda fuera de alcance. Para pruebas compartidas, la carpeta versionada `media/` de `api-013` y el ADR 0026 (Aceptado) (ver «Nota de almacenamiento»). Opción futura: `docs/propuestas/almacenamiento-objetos-s3.md`.
 - Varias imágenes o galería por registro.
 - Recorte, redimensionado o generación de miniaturas en el servidor.
 - Formatos distintos de JPG, PNG y WebP (GIF, SVG, PDF, HEIC, etc.).
-- Carga masiva o migración de imágenes para registros existentes. Tampoco se limpian los metadatos de las imágenes ya guardadas: se limpian al volver a subirlas (Revisión 2026-11-06).
+- Carga masiva o migración de imágenes para registros existentes. Tampoco se limpian los metadatos de las imágenes ya guardadas: se limpian al volver a subirlas (Revisión de metadatos).
 - Restauración de noticias o eventos desde la aplicación: no se incluye en esta spec (`api-007`). Tras el borrado lógico, la fila puede recuperarse por base de datos (`deleted_at`), pero el archivo de imagen borrado no se recupera (ver «Riesgos», P2).
 - Cambios en `apps/web`, `apps/pwa` y `apps/mobile`. Pueden usar `image_url` cuando lo decidan en su propia spec.
 - Aceptar `image_path` como texto editable desde la petición (se ignora, CA-09).
@@ -87,7 +88,7 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
 - **CA-12:** Dada una acción que crea, reemplaza, quita o elimina una imagen, cuando se registra en Activitylog, entonces: (a) el alta con imagen, el reemplazo y el quitar registran además el evento `image-changed`, junto al `created` o `updated` que corresponda (P6); (b) la eliminación registra `deleted`; y (c) ninguna propiedad registrada incluye el contenido binario del archivo ni la ruta absoluta del disco.
 - **CA-13:** Dada la suite de PHPUnit, cuando se ejecuta `php artisan test` contra `arca_pruebas`, entonces existe al menos un test que nombra cada CA-01 a CA-12 y que usa `Storage::fake('public')` y `DatabaseTransactions` (sin `RefreshDatabase` ni migraciones desde los tests).
 
-### Metadatos y HDR (revisión 2026-11-06)
+### Metadatos y HDR
 
 - **CA-14:** Dado un JPG, PNG o WebP con metadatos (EXIF con GPS, fecha y modelo; XMP; comentarios; textos) o datos HDR (mapa de ganancia, imágenes adicionales, señalización HDR de PNG), cuando se guarda en una noticia o un evento, entonces el archivo guardado no contiene esos datos, conserva los píxeles comprimidos sin cambios, conserva el perfil de color y, si la orientación no es la normal, conserva solo esa etiqueta.
 - **CA-15:** Dado un archivo que pasa la validación de tipo y tamaño pero cuya estructura no se puede procesar (por ejemplo, truncado), cuando se envía, entonces la API responde 422 en `errors.image` con «No se pudo procesar la imagen. Prueba con otro archivo.», no escribe ningún archivo y no guarda el registro.
@@ -106,7 +107,7 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
 - **RN-10 (sin DBR para la subida ni la eliminación):** La subida, el reemplazo, quitar la imagen y la eliminación no crean ni modifican esquema: `image_path` (VARCHAR(255), NULL) y `deleted_at` (DBR-005) ya existen. No requieren DBR ni migración. Sí requieren que DBR-005 esté aplicada en el ambiente de despliegue. DBR-007 queda descartada.
 - **RN-11 (dependencias):** No añade dependencias PHP ni JavaScript. Usa el sistema de archivos y `Storage` de Laravel, por lo que no requiere ADR de dependencia.
 - **RN-12 (archivo y quitar a la vez):** Si una petición trae un archivo nuevo válido y `remove_image` verdadero, el archivo nuevo sustituye la imagen y `remove_image` se ignora (P4).
-- **RN-13 (metadatos y HDR, revisión 2026-11-06):** Antes de guardar, la API recorta del contenedor todo lo que no sea imagen, perfil de color u orientación, sin decodificar ni recomprimir. Lo que no se reconoce se descarta. Si el archivo no se puede procesar, no se guarda nada (CA-15).
+- **RN-13 (metadatos y HDR):** Antes de guardar, la API recorta del contenedor todo lo que no sea imagen, perfil de color u orientación, sin decodificar ni recomprimir. Lo que no se reconoce se descarta. Si el archivo no se puede procesar, no se guarda nada (CA-15).
 
 ## Datos, privacidad y auditoría
 
@@ -135,11 +136,11 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
 - **Dependencias/ADR:**
   - `api-007` (rutas, permisos, Form Requests, SoftDeletes y Activitylog).
   - DBR-005 (`deleted_at` en `news` y `events`): aplicada en `arca_pruebas`; debe estar aplicada en cada ambiente antes de desplegar este código. Es la base del borrado lógico de noticias y eventos.
-  - DBR-007 (borrado físico de noticias y eventos, `docs/database/requests/DBR-007-news-events-hard-delete.md`): **Descartada** el 2026-11-01. El equipo mantiene el borrado lógico por la Constitución V. No bloquea esta spec ni deja tareas pendientes.
+  - DBR-007 (borrado físico de noticias y eventos, `docs/database/requests/DBR-007-news-events-hard-delete.md`): **Descartada**. El equipo mantiene el borrado lógico por la Constitución V. No bloquea esta spec ni deja tareas pendientes.
   - `api-006` (catálogo público): impacto decidido (P7): `GET /api/v1/events` añade `image_url` como campo nuevo. Es un cambio aditivo; la spec `api-006` se anota cuando esta spec se apruebe (T-23).
   - `dashboard-004` (consumidor de la subida con archivo).
-  - ADR: ninguno para esta versión. Un almacenamiento externo o una biblioteca de procesamiento de imágenes requerirían ADR; el recorte de metadatos no añade dependencias (RN-11, RN-13). La eliminación lógica cumple la Constitución V sin excepción. Para la carpeta compartida, ver ADR 0026 (Aceptado 2026-11-12) y `api-013` (Aprobada 2026-11-12). Un almacenamiento externo, si se decide, tendría su propio ADR.
-- **Decisiones tomadas (2026-11-01, por la sesión principal con la decisión del usuario):**
+  - ADR: ninguno para esta versión. Un almacenamiento externo o una biblioteca de procesamiento de imágenes requerirían ADR; el recorte de metadatos no añade dependencias (RN-11, RN-13). La eliminación lógica cumple la Constitución V sin excepción. Para la carpeta compartida, ver ADR 0026 (Aceptado) y `api-013` (Aprobada). Un almacenamiento externo, si se decide, tendría su propio ADR.
+- **Decisiones tomadas:**
   - **P1 (ruta de actualización con archivo):** `POST` multipart con `_method=PATCH` sobre las mismas rutas `admin.news.update` y `admin.events.update`. No se crean endpoints `…/image`. Las rutas de `api-007` no cambian de nombre.
   - **P2 (campo tras eliminar, decisión del usuario):** al eliminar se borra el archivo de imagen y `image_path` queda en `null`; el resto de la fila se conserva con `deleted_at` (borrado lógico, DBR-005). Es una decisión explícita, con el riesgo de «Imagen tras el borrado lógico» en «Riesgos».
   - **P3 (valor externo):** `image_url` es `null` si `image_path` no es una ruta gestionada. El valor externo no se devuelve en `image_url`; los Resources siguen devolviendo `image_path` tal cual (CA-11).
@@ -147,7 +148,7 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
   - **P5 (ruta pública):** mismo dominio de la API mediante `storage:link`. No hay CDN ni dominio distinto por ahora.
   - **P6 (auditoría):** sí, evento propio `image-changed` en Activitylog (CA-12).
   - **P7 (catálogo público):** sí, `image_url` se añade a `GET /api/v1/events`. Impacto: `api-006` gana un campo aditivo; los clientes que ignoran campos desconocidos no se ven afectados. Se anota en `api-006` cuando esta spec se apruebe (T-23).
-  - **P8 (EXIF):** *revertida el 2026-11-06.* Decisión original: no quitar metadatos EXIF. Ahora la API los quita (Revisión 2026-11-06).
+  - **P8 (EXIF):** *revertida.* Decisión original: no quitar metadatos EXIF. Ahora la API los quita (Revisión de metadatos).
 - **Riesgos:**
   - **Límites de la capa HTTP:** `upload_max_filesize`, `post_max_size` y el límite del servidor web pueden rechazar el archivo antes de llegar a Laravel. En ese caso la respuesta no es el 422 en español de CA-02. Mitigación: configuración de despliegue y prueba manual con un archivo de más de 5 MB.
   - **PATCH con archivo:** PHP no entrega el cuerpo multipart en peticiones PATCH; por eso se usa `POST` con `_method=PATCH` (P1). Los clientes deben usar esa forma para subir archivos.
@@ -158,32 +159,32 @@ Esta feature no crea permisos ni roles nuevos (RN-07).
   - **Espacio en disco:** no hay límite de cantidad de imágenes; el crecimiento se vigila en operación.
   - **Desarrollo local:** sin `storage:link` la URL pública no resuelve.
   - **Imagen tras el borrado lógico (P2):** al eliminar, el archivo se borra y `image_path` queda en `null`. Si BD restaura la fila (`deleted_at = NULL`), la noticia o el evento vuelve sin imagen. Esta pérdida se asume como decisión explícita; recuperar el archivo solo sería posible desde una copia de seguridad del disco, fuera de esta spec.
-  - **Archivo tras el commit:** si el borrado del archivo falla después del commit, queda un archivo sin referencia en la base de datos. Decisión pendiente: basta registrar el fallo en el log o se requiere un comando de limpieza de huérfanos.
+  - **Archivo tras el commit:** si el borrado del archivo falla después del commit, queda un archivo sin referencia en la base de datos. Se optó por no añadir un comando de limpieza de huérfanos en esta entrega, porque el código actual no lo implementa. Fuera de alcance de esta entrega.
 
-## Revisión 2026-11-06 (aprobada por Jonathan el 2026-11-06)
+## Revisión de metadatos (aprobada)
 
-Decisión de Jonathan tras revisar una foto de iPhone guardada con sus coordenadas GPS y un mapa de ganancia HDR: quitar metadatos y HDR al guardar.
+Decisión del responsable funcional tras revisar una foto de iPhone guardada con sus coordenadas GPS y un mapa de ganancia HDR: quitar metadatos y HDR al guardar.
 
 - **Revierte P8.** Añade CA-14, CA-15 y RN-13. Los CA-01 a CA-13 no cambian.
 - **Recorte, no recompresión.** Volver a generar la imagen con GD perdería calidad y el perfil de color. El recorte no añade dependencias ni requiere ADR, DBR ni cambios en clientes.
 - **Orientación.** Se conserva esa única etiqueta porque, sin ella, las fotos de teléfono pueden verse giradas.
 - **Imágenes existentes.** No se limpian; hay que volver a subirlas.
 
-## Nota de almacenamiento (2026-11-10, decisión del responsable pendiente de aprobación formal del equipo)
+## Nota de almacenamiento (decisión pendiente de aprobación formal del equipo)
 
-Petición del 2026-11-10: las imágenes de noticias y eventos deben verse desde cualquier equipo, no solo desde la máquina donde se subieron. La propuesta está en `api-013` (Aprobada 2026-11-12) y en el ADR 0026 (Aceptado 2026-11-12). La decisión vigente es una carpeta de medios versionada en git (`apps/api/src/media/`, con `news/`, `events/` y `memories/`) para pruebas compartidas. Un almacenamiento de objetos queda como opción futura, sin fecha ni aprobación (`docs/propuestas/almacenamiento-objetos-s3.md`). Esta nota no cambia ningún CA-01 a CA-15 ni el estado de la spec (En progreso).
+Petición: las imágenes de noticias y eventos deben verse desde cualquier equipo, no solo desde la máquina donde se subieron. La propuesta está en `api-013` (Aprobada) y en el ADR 0026 (Aceptado). La decisión vigente es una carpeta de medios versionada en git (`apps/api/src/media/`, con `news/`, `events/` y `memories/`) para pruebas compartidas. Un almacenamiento de objetos queda como opción futura, sin fecha ni aprobación (`docs/propuestas/almacenamiento-objetos-s3.md`). Esta nota no cambia ningún CA-01 a CA-15 ni el estado de la spec (En progreso).
 
 - **Qué no cambia:** la subida, el reemplazo, quitar la imagen, el borrado, los errores y los CA de esta spec siguen igual. Con la configuración por defecto, la API sigue usando el disco `public` y `Storage::fake('public')` (CA-13) sigue siendo válido.
 - **Disco.** Hoy `StoreContentImageAction`, `DeleteContentImageAction` y `ResolveContentImageUrlAction` llaman a `Storage::disk('public')` por nombre. `FILESYSTEM_DISK` no lo cambia. Con `api-013`, el nombre del disco sale de la configuración (`api-013` CA-02) y cada equipo de pruebas lo fija en `.env` con `PUBLIC_MEDIA_DISK=media`. Esa es la forma de cambiar de disco; no se cambia `FILESYSTEM_DISK`. En la carpeta compartida, las imágenes de noticias y eventos no usan `storage/` (`api-013` D-03).
-- **Ruta pública (P5).** El cuerpo de P5 (2026-11-01, «mismo dominio mediante `storage:link`») sigue siendo el valor por defecto con `PUBLIC_MEDIA_DISK=public`. Con la decisión del responsable del 2026-11-10 (`api-013` D-01), en la carpeta compartida la URL de noticias y eventos sale de `MEDIA_PUBLIC_URL` o de `APP_URL` más `/media` (carpeta `apps/api/src/media/`, `api-013` CA-17), en vez de `/storage`. El cambio de P5 queda pendiente de aprobación formal del equipo.
-- **Riesgo «disco local en varios servidores»:** para pruebas compartidas queda cubierto por la carpeta `media/` (`api-013`, Aprobada el 2026-11-12). En producción sigue abierto.
-- **Imágenes existentes:** las imágenes ya subidas (incluidas las anteriores a la revisión del 2026-11-06) se vuelven a subir desde el dashboard antes de versionarlas (`api-013` D-04; confirmado por Jonathan el 2026-11-10); la nueva subida cambia la ruta de la fila. Las filas anteriores apuntan a `storage/` de la máquina que subió la imagen y no se ven en otros equipos hasta esa nueva subida.
+- **Ruta pública (P5).** El cuerpo de P5 («mismo dominio mediante `storage:link`») sigue siendo el valor por defecto con `PUBLIC_MEDIA_DISK=public`. Con la decisión del responsable (`api-013` D-01), en la carpeta compartida la URL de noticias y eventos sale de `MEDIA_PUBLIC_URL` o de `APP_URL` más `/media` (carpeta `apps/api/src/media/`, `api-013` CA-17), en vez de `/storage`. El cambio de P5 queda pendiente de aprobación formal del equipo.
+- **Riesgo «disco local en varios servidores»:** para pruebas compartidas queda cubierto por la carpeta `media/` (`api-013`, Aprobada). En producción sigue abierto.
+- **Imágenes existentes:** las imágenes ya subidas (incluidas las anteriores a la revisión de metadatos) se vuelven a subir desde el dashboard antes de versionarlas (`api-013` D-04; confirmado); la nueva subida cambia la ruta de la fila. Las filas anteriores apuntan a `storage/` de la máquina que subió la imagen y no se ven en otros equipos hasta esa nueva subida.
 - **Infraestructura:** el checklist de `infra/README.md` describe los medios de prueba (carpeta `media/`, enlace `public/media` con `storage:link`). `storage:link` y el disco persistente del servidor siguen aplicando al disco `public` por defecto y al disco local de desarrollo.
-- **Plan y tareas:** `apps/api/plan/008-event-news-images.md` y `apps/api/tasks/008-event-news-images.md` no se actualizan con esta nota. Como `api-013` quedó Aprobada el 2026-11-12, la divergencia se registra en plan y tasks en el mismo cambio (`docs/05-flujo-sdd.md`, paso 7).
+- **Plan y tareas:** `apps/api/plan/008-event-news-images.md` y `apps/api/tasks/008-event-news-images.md` no se actualizan con esta nota. Como `api-013` quedó Aprobada, la divergencia se registra en plan y tasks en el mismo cambio (`docs/05-flujo-sdd.md`, paso 7).
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan (solicitante / responsable funcional), 2026-11-02.
+- Aprobación: Aprobada (responsable funcional).
 - Evidencia/enlaces: `apps/api/specs/007-administration-management.md`, `apps/api/plan/007-administration-management.md`, `apps/api/docs/administracion.md`, `apps/dashboard/specs/003-administration-sections.md`, `apps/dashboard/specs/004-inline-content-forms.md`, `docs/database/requests/DBR-005-news-events-soft-deletes.md`, `docs/database/requests/DBR-007-news-events-hard-delete.md` (descartada, solo historial).
-- Preguntas abiertas: ninguna sobre la eliminación (DBR-007 descartada). La decisión de limpieza de archivos huérfanos (ver «Riesgos») queda pendiente.
-- Origen: plan de trabajo aprobado por el usuario el 2026-11-01 (fuera del repositorio), decisiones de P1 a P8 comunicadas por la sesión principal el mismo día, y revisión del borrado el mismo día (decisión del usuario: borrado lógico).
+- Preguntas abiertas: ninguna sobre la eliminación (DBR-007 descartada). La limpieza de archivos huérfanos (ver «Riesgos») queda fuera de alcance de esta entrega.
+- Origen: plan de trabajo aprobado por el usuario (fuera del repositorio), decisiones de P1 a P8 comunicadas por la sesión principal el mismo día, y revisión del borrado el mismo día (decisión del usuario: borrado lógico).

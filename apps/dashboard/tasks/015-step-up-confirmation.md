@@ -1,10 +1,12 @@
 # Tareas · 015 · step-up-confirmation
 
-- Spec: `apps/dashboard/specs/015-step-up-confirmation.md` (Aprobada, 2026-11-20)
-- Plan: `apps/dashboard/plan/015-step-up-confirmation.md` (Aprobado — aprobación técnica: Jonathan, 2026-11-20)
-- Dependencias: `apps/api/tasks/021-staff-step-up-confirmation.md` (contrato y endpoints; T-06, T-08 a T-14 para integración real). Las brechas B-1, B-3, B-4 y B-8 de api-021 quedan resueltas el 2026-11-20.
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Spec: `apps/dashboard/specs/015-step-up-confirmation.md`
+- Plan: `apps/dashboard/plan/015-step-up-confirmation.md` (Aprobado)
+- Dependencias: `apps/api/tasks/021-staff-step-up-confirmation.md` (contrato y endpoints; T-06, T-08 a T-14 para integración real). Las brechas B-1, B-3, B-4 y B-8 de api-021 quedan resueltas.
 
-Plan aprobado 2026-11-20. Implementación (agente frontend, 2026-11-20): T-01 a T-15 marcadas con evidencia de Vitest del dashboard (64 archivos, 637 pruebas) y `tsc --noEmit`; todas contra respuestas simuladas. Pendientes: T-16 (faltan `npm run types` y `npm run build` con las herramientas del propio dashboard: `typescript` no está instalado en `apps/dashboard`; se usó el `tsc` de `apps/pwa` y `vite build` a un directorio temporal), T-17 (PR y estado de la spec) e integración contra la API real (api-021 T-06, T-08 a T-14) sin verificar. Ninguna tarea se marca hecha sin evidencia. No se hace ninguna llamada real a la API en las pruebas: todas usan respuestas simuladas.
+Plan aprobado. Implementación: T-01 a T-15 marcadas con evidencia de Vitest del dashboard (64 archivos, 637 pruebas) y `tsc --noEmit`; todas contra respuestas simuladas. Pendientes: T-16 (faltan `npm run types` y `npm run build` con las herramientas del propio dashboard: `typescript` no está instalado en `apps/dashboard`; se usó el `tsc` de `apps/pwa` y `vite build` a un directorio temporal), T-17 (PR y estado de la spec) e integración contra la API real (api-021 T-06, T-08 a T-14) sin verificar. Ninguna tarea se marca hecha sin evidencia. No se hace ninguna llamada real a la API en las pruebas: todas usan respuestas simuladas.
 
 ## Cliente (packages/api-client)
 
@@ -24,7 +26,7 @@ Plan aprobado 2026-11-20. Implementación (agente frontend, 2026-11-20): T-01 a 
 
 - [x] **T-05** (CA-01, CA-02, CA-05, CA-08): cancelar boleto desde Historial. `useTicketHistory.ts` y `ticket-history.ts` (línea 234, `history.cancel`) envuelven la llamada con `runProtected` (Ventana, sin contraseña en la llamada). `CancelTicketDialog.tsx` no cambia de lógica. Tests `describe("CA-01 …")` en el flujo de Historial, `describe("CA-02 …")` (cancelación reintentada una vez), `describe("CA-05 …")` (segunda cancelación dentro de la ventana sin diálogo) y `describe("CA-08 …")` (cancelar el diálogo no cancela el boleto). Verificar `ticket-history.test.tsx` (regresión).
 - [x] **T-06** (CA-06, CA-08): precios. `useTicketPrices.ts` y `ticket-prices.ts` (línea 320, `prices.schedule`) con `runProtected` en modo Siempre; la contraseña va solo en el cuerpo del reenvío. Sustituir `isTwoFactorRequired` por el manejador común de `onTwoFactorSetupRequired` (T-09). Tests `describe("CA-06 …")` en `ticket-prices.test.tsx` y regresión.
-- [x] **T-07** (CA-06, CA-12, CA-17): usuarios (dashboard-017). `useStaffAccounts.ts` y `staff-accounts.ts`: `create` (Ventana, línea 301), `update` (dinámico: Siempre si cambia `role`, Ventana si no; línea 300), `setStatus` (Ventana; línea 339), `remove` (Ventana), `resetTwoFactor` (Siempre; línea 351). `resetPassword` (línea 346) con `current_password` (B-1 resuelta 2026-11-20; `describe("CA-17 …")`). Tests `describe("CA-06 …")` para cambio de rol y restablecer 2FA, y `describe("CA-12 …")` para los flujos sin diálogo. Excepción de dashboard-004 RN-01 aplicada solo al diálogo. Verificar `staff-accounts.test.tsx` (regresión).
+- [x] **T-07** (CA-06, CA-12, CA-17): usuarios (dashboard-017). `useStaffAccounts.ts` y `staff-accounts.ts`: `create` (Ventana, línea 301), `update` (dinámico: Siempre si cambia `role`, Ventana si no; línea 300), `setStatus` (Ventana; línea 339), `remove` (Ventana), `resetTwoFactor` (Siempre; línea 351). `resetPassword` (línea 346) con `current_password` (B-1 resuelta; `describe("CA-17 …")`). Tests `describe("CA-06 …")` para cambio de rol y restablecer 2FA, y `describe("CA-12 …")` para los flujos sin diálogo. Excepción de dashboard-004 RN-01 aplicada solo al diálogo. Verificar `staff-accounts.test.tsx` (regresión).
 - [x] **T-08** (CA-02, CA-05, CA-12): recintos. `enclosure-qr.ts` (`regenerateQr`, línea 217): Ventana si el recinto tiene QR; sin diálogo cuando la API responde 201/200 sin pedir confirmación (B-3). `enclosures-management.ts` (`remove`, línea 245): Ventana. `create` (línea 86), `rename` (línea 77) y `setStatus` (línea 229) sin diálogo (No pide, decisión B-4; CA-12). `generateQr` (primera generación) no abre el diálogo (CA-12). Tests `describe("CA-02 …")`, `describe("CA-05 …")` y `describe("CA-12 …")` (generar QR por primera vez). Ajustar `enclosure-qr-printing.test.tsx` (regenerar con QR ahora pasa por el diálogo).
 
 ## Enrolamiento y sesión
@@ -42,17 +44,17 @@ Plan aprobado 2026-11-20. Implementación (agente frontend, 2026-11-20): T-01 a 
 - [x] **T-14** (regresión): actualizar los mocks de cajeros sin 2FA de dashboard-005 (`ticket-history.test.tsx`, `ticket-prices.test.tsx`, `ticket-sales-api-client.test.tsx`, `ticket-sales-coverage.test.tsx`) y las firmas cambiadas (`api-client-admin.test.tsx`, `staff-accounts.test.tsx`, `enclosure-qr-printing.test.tsx`). No relajar aserciones.
 - [x] **T-15**: documentación local. `apps/dashboard/docs/manual-demo.md` (cajero: enrolamiento obligatorio y aviso; diálogo de contraseña en cancelar, precios, usuarios y recintos) y `apps/dashboard/docs/arquitectura.md` (`step-up.ts`, hook `useStepUpConfirmation`, diálogo y frontera con `@arca/api-client`).
 - [ ] **T-16**: verificaciones del dashboard y del paquete, con salida real aportada por la sesión principal: `npm test` en `apps/dashboard` (todas las suites), `npm run types`, `npm run build`. El dashboard no define lint; registrarlo. Sin evidencia no se marca como hecho.
-- [ ] **T-17**: PR que enlaza `apps/dashboard/specs/015-step-up-confirmation.md`, `apps/dashboard/plan/015-step-up-confirmation.md`, `apps/dashboard/tasks/015-step-up-confirmation.md` y `apps/api/specs/021-staff-step-up-confirmation.md`. Cita `dashboard-015` en el commit (los commits los hace Jonathan con el comando que indique). Estado de la spec a «En progreso» al iniciar y «Implementada» solo con enlace al PR y resultados de Vitest para CA-01 a CA-16.
+- [ ] **T-17**: PR que enlaza `apps/dashboard/specs/015-step-up-confirmation.md`, `apps/dashboard/plan/015-step-up-confirmation.md`, `apps/dashboard/tasks/015-step-up-confirmation.md` y `apps/api/specs/021-staff-step-up-confirmation.md`. Cita `dashboard-015` en el commit (los commits los hace el equipo con el comando acordado). Estado de la spec a «En progreso» al iniciar y «Implementada» solo con enlace al PR y resultados de Vitest para CA-01 a CA-16.
 
 Cada tarea de código nombra sus CA-xx y cada CA-xx (CA-01 a CA-17) tiene al menos un test automatizado: CA-01 a CA-08 en T-02 a T-05; CA-09 a CA-11 y CA-14 en T-09 y T-12; CA-12 en T-07, T-08 y T-10; CA-13, CA-15 y CA-07 en T-11; CA-16 en T-13; CA-17 en T-07. Sin tests reales de API en esta app.
 
-## Revisión 2026-11-20 (salida desde 2FA y PWA)
+## Revisión (salida desde 2FA y PWA)
 
 - [x] **T-18** (CA-18): botón «Cerrar sesión y volver al inicio» en `TwoFactorSetupView.tsx` (QR y código; oculto con códigos de recuperación; desactivado con `submitting`), conectado en `App.tsx`. Test `describe("CA-18 …")` en `step-up-two-factor.test.tsx`.
 - [x] **T-19** (CA-19): mismo botón en `PwaRedirectView.tsx` conectado a `session.logout`. Test `describe("CA-19 …")` en `step-up-two-factor.test.tsx`. Firmas de vistas actualizadas en `real-staff-login.test.tsx`.
 - [x] **T-20** (CA-20): `PwaRedirectView` recibe `error` (conectado en `App.tsx`) y lo muestra con `Alert`; `TwoFactorSetupView` ya mostraba el error. Test `describe("CA-20 …")` en `step-up-two-factor.test.tsx`.
 
-## Revisión 2026-11-21 (contador de bloqueo)
+## Revisión (contador de bloqueo)
 
 - [x] **T-21** (CA-21, CA-22, CA-25): `viewmodels/countdown.ts` (`formatCountdown`, `rateLimitText`, `startCountdown`), `viewmodels/useCountdown.ts` y `components/LockoutNotice.tsx`. Tests `describe("CA-21 …")`, `CA-22` y `CA-25` en `step-up-lockout-countdown.test.tsx`.
 - [x] **T-22** (CA-21, CA-23, CA-24): `retryAfterSeconds` en `auth-session.ts`; `LoginView`, `TwoFactorChallengeView` y `StepUpConfirmationDialog` con contador, botón deshabilitado y fallback al mensaje de la API; `App.tsx` conecta la prop. Tests `CA-23` y `CA-24`.

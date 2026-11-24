@@ -1,13 +1,14 @@
 # 0012 · Canal de distribución Android
 
-- Estado: Propuesto
-- Fecha: 2026-10-13
-- Autor / solicitante: Aksel
-- Spec relacionada: `apps/mobile/specs/008-build-distribution.md`
+- Estado: Aceptado
+- Solicitada: 2026-10-09
+- Aprobada: 2026-10-09
+- Spec relacionada: `apps/mobile/specs/008-build-distribution.md` (Implementada) y `apps/mobile/specs/018-production-build-hardening.md`
+- Implementación: `apps/mobile/eas.json` define los perfiles `preview` (APK de respaldo) y `production` (build firmado para Play Store). La publicación en Play Console es un paso de despliegue, no de código.
 
 ## Contexto
 
-La app móvil es solo Android (confirmado el 12 de octubre de 2026) y Expo Go no se puede entregar a los visitantes: hace falta un build firmado y un canal de distribución. Este ADR complementa ADR 0004 (React Native/Expo aprobado) y retoma el documento de decisiones previas de Aksel (2026-10-09).
+La app móvil es solo Android y Expo Go no se puede entregar a los visitantes: hace falta un build firmado y un canal de distribución. Este ADR complementa ADR 0004 (React Native/Expo aceptado) y recoge las decisiones previas sobre distribución.
 
 ## Decisión
 
@@ -37,8 +38,8 @@ Distribuir con **Play Store en pruebas** (cerradas o abiertas) como canal princi
 - Hay que fijar y respaldar la clave de firma desde el primer build público, porque cambiarla después rompe las actualizaciones.
 - La estrategia de actualización (reinstalar o actualizar sin reinstalar) debe quedar decidida antes del primer build público.
 - Una política o aviso de privacidad es necesario en Play Store y recomendable en los otros dos canales.
-- La persona responsable de la firma y del build se define al final del ciclo (pendiente).
+- La firma y el build de producción quedan a cargo del responsable de despliegue.
 
 ## Validación y revisión
 
-Se aprueba junto con la spec `mobile-008`. El primer build público registra la clave de firma usada y su respaldo, y verifica los requisitos vigentes de Play Console.
+Su aceptación depende de la spec `mobile-008`. El primer build público registra la clave de firma usada y su respaldo, y verifica los requisitos vigentes de Play Console.

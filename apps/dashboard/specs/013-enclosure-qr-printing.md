@@ -2,10 +2,11 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` (Recintos, diálogo del QR, hoja de impresión, catálogo de acciones y estilos); `api` (proveedor: `api-020`); `packages/api-client` (métodos y tipos de `api-020`, sin lógica). `mobile`, `web` y `pwa` no cambian.
-- Estado: Aprobada (Jonathan, 2026-11-18)
-- Solicitante / responsable funcional: Jonathan (decisiones de producto registradas el 2026-11-18)
-- Aprobación funcional: Jonathan, 2026-11-18.
-- Dependencias: `api-020` (Aprobada 2026-11-18; contrato del QR: consulta, generación y regeneración; su implementación backend es precondición de `dashboard-013`); `dashboard-012` (Aprobada; enmienda (c) a CA-32, CA-38 y RN-07, registrada en esa spec y aplicada con esta); `dashboard-003` (`ConfirmDialog` de regeneración); `api-019` (listado admin y 404 de recintos). No hay dependencias npm nuevas. No requiere ADR.
+- Estado: Implementada
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Aprobación funcional: Aprobada.
+- Dependencias: `api-020` (Aprobada; contrato del QR: consulta, generación y regeneración; su implementación backend es precondición de `dashboard-013`); `dashboard-012` (Aprobada; enmienda (c) a CA-32, CA-38 y RN-07, registrada en esa spec y aplicada con esta); `dashboard-003` (`ConfirmDialog` de regeneración); `api-019` (listado admin y 404 de recintos). No hay dependencias npm nuevas. No requiere ADR.
 
 ## Problema y contexto
 
@@ -56,7 +57,7 @@ Ocultar un botón no reemplaza la autorización del servidor (`apps/dashboard/AG
 - **CA-04 (generar sin confirmación):** Dado un recinto sin código activo, cuando se pulsa «Generar QR» (en la tarjeta o en el diálogo), entonces se llama una sola vez a `api.admin.enclosures.generateQr(id)` sin pedir confirmación, porque no desactiva nada. El diálogo muestra el QR generado y la tarjeta pasa a «Ver QR» sin cambiar de página ni de orden.
 - **CA-05 (confirmar regenerar):** Dado un recinto con QR, cuando se pulsa «Regenerar QR», entonces se abre `ConfirmDialog` con variante de peligro, el título «¿Regenerar el QR del recinto «X»?» y el texto «Los QR impresos anteriormente dejarán de funcionar, incluidos los escaneos pendientes de sincronizar. El progreso que los visitantes ya obtuvieron se conserva. Tendrás que imprimir y colocar el nuevo.». Hasta confirmar no se llama a la API. Cancelar no cambia nada y devuelve el foco a «Regenerar QR».
 - **CA-06 (regenerado):** Dada la confirmación, cuando la API responde, entonces se llama una sola vez a `api.admin.enclosures.regenerateQr(id)`. El diálogo muestra el código nuevo y el aviso «Código QR regenerado. Imprime y coloca el nuevo.» en `role="status"`. El código anterior no vuelve a mostrarse.
-- **CA-07 (recinto inactivo):** Dado un recinto inactivo, cuando se abre el diálogo, entonces muestra el aviso «Este recinto está inactivo. Los visitantes no podrán escanear este código hasta que lo actives.» (texto confirmado por Jonathan, 2026-11-18). Los botones funcionan igual.
+- **CA-07 (recinto inactivo):** Dado un recinto inactivo, cuando se abre el diálogo, entonces muestra el aviso «Este recinto está inactivo. Los visitantes no podrán escanear este código hasta que lo actives.» (texto confirmado por el responsable funcional). Los botones funcionan igual.
 
 ### Impresión
 
@@ -81,7 +82,7 @@ Ocultar un botón no reemplaza la autorización del servidor (`apps/dashboard/AG
 
 - **CA-18 (acción «QR del recinto»):** Dado el catálogo de acciones de `dashboard-012` (enmienda (c), CA-32), cuando se busca «qr», «código qr», «qr recinto», «imprimir qr» o «regenerar qr», entonces aparece la acción «QR del recinto» de la sección Recintos con el permiso `enclosures.manage`. Elegirla abre el diálogo del recinto (sí abre). El foco va a «Imprimir» si la consulta contiene «imprimir», a «Regenerar QR» si contiene «regenerar», y a «Ver QR» en los demás casos. No genera, no imprime ni regenera sola. Un test comprueba que no se llama a `generateQr` ni a `regenerateQr` y que no se llama a `window.print()`.
 - **CA-19 (permisos del catálogo):** Dado un perfil sin `enclosures.manage`, cuando busca «qr del recinto», entonces no aparece ninguna acción de QR de recinto (`dashboard-012` CA-33).
-- **CA-20 («qr» en dos acciones):** Dada la consulta «qr», cuando se buscan acciones, entonces aparece «QR del recinto» si el perfil tiene `enclosures.manage` y «Nueva venta» si tiene `tickets.create`, según los permisos del perfil (decisión de Jonathan, 2026-11-18). Un perfil con un solo permiso ve solo su acción. Un test cubre los cuatro casos de permisos.
+- **CA-20 («qr» en dos acciones):** Dada la consulta «qr», cuando se buscan acciones, entonces aparece «QR del recinto» si el perfil tiene `enclosures.manage` y «Nueva venta» si tiene `tickets.create`, según los permisos del perfil (decisión del responsable funcional). Un perfil con un solo permiso ve solo su acción. Un test cubre los cuatro casos de permisos.
 
 ### Cobertura
 
@@ -107,7 +108,7 @@ Ocultar un botón no reemplaza la autorización del servidor (`apps/dashboard/AG
 
 ## Impacto de regenerar en el panel
 
-Verificado por la sesión principal en el código (2026-11-18). Coincide con la tabla de impacto de `api-020`:
+Verificado por la sesión principal en el código. Coincide con la tabla de impacto de `api-020`:
 
 - Un QR impreso con el código anterior deja de funcionar. El aviso de CA-05 lo dice antes de confirmar.
 - Los escaneos pendientes de sincronizar del código anterior también se rechazan. El aviso de CA-05 lo dice antes de confirmar.
@@ -152,7 +153,7 @@ Verificado por la sesión principal en el código (2026-11-18). Coincide con la 
   - **Colisión en el buscador:** «qr» y «imprimir» también son sinónimos de «Nueva venta» (boletos). Se muestran ambas acciones según permisos (CA-20); el orden lo decide el catálogo.
   - **Diferencias de impresión:** los márgenes y el escalado varían entre navegadores. Se verifica a mano con Chrome y Edge (CA-10).
   - **Carga del código:** el SVG viaja en la respuesta JSON. Un QR de este tipo pesa pocos KB; no se pagina.
-- **Preguntas:** ninguna pendiente. Resueltas por Jonathan el 2026-11-18: «qr» muestra «QR del recinto» y «Nueva venta» según permisos (CA-18 a CA-20), y se confirma el texto del aviso de recinto inactivo (CA-07).
+- **Preguntas:** ninguna pendiente. Resueltas por el responsable funcional: «qr» muestra «QR del recinto» y «Nueva venta» según permisos (CA-18 a CA-20), y se confirma el texto del aviso de recinto inactivo (CA-07).
 
 ## Cambios por área
 
@@ -169,7 +170,7 @@ Nombres de métodos: el panel usa `api.admin.enclosures.qr(id)`, `api.admin.encl
 
 ## Enmiendas
 
-Aprobadas por Jonathan el 2026-11-18 con esta spec. Se aplican en el mismo PR de implementación (tareas de `apps/dashboard/tasks/013-enclosure-qr-printing.md`).
+Aprobadas con esta spec. Se aplican en el mismo PR de implementación (tareas de `apps/dashboard/tasks/013-enclosure-qr-printing.md`).
 
 | Spec | Texto actual | Enmienda |
 |---|---|---|
@@ -179,6 +180,6 @@ Aprobadas por Jonathan el 2026-11-18 con esta spec. Se aplican en el mismo PR de
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan, 2026-11-18 (aprobada), junto con `api-020` y la enmienda (c) de `dashboard-012`. Plan y tasks en Borrador: `apps/dashboard/plan/013-enclosure-qr-printing.md`, `apps/dashboard/tasks/013-enclosure-qr-printing.md`. Decisiones de la sesión principal aprobadas: excepción `BaseModel` cubierta por ADR 0021; texto de eliminar con «Sus códigos QR dejarán de funcionar.» (CA-23); divergencia de progreso según `api-019` CA-35.
-- Decisiones de producto de Jonathan, 2026-11-18: ver, generar, regenerar e imprimir desde Recintos; hoja limpia con QR grande, nombre y código en texto; regenerar con confirmación y el aviso del CA-05; recinto inactivo visible con aviso; recinto eliminado 404.
+- Aprobadores: responsable funcional (aprobada), junto con `api-020` y la enmienda (c) de `dashboard-012`. Plan y tasks en Borrador: `apps/dashboard/plan/013-enclosure-qr-printing.md`, `apps/dashboard/tasks/013-enclosure-qr-printing.md`. Decisiones de la sesión principal aprobadas: excepción `BaseModel` cubierta por ADR 0021; texto de eliminar con «Sus códigos QR dejarán de funcionar.» (CA-23); divergencia de progreso según `api-019` CA-35.
+- Decisiones de producto: ver, generar, regenerar e imprimir desde Recintos; hoja limpia con QR grande, nombre y código en texto; regenerar con confirmación y el aviso del CA-05; recinto inactivo visible con aviso; recinto eliminado 404.
 - Evidencia/enlaces: `apps/api/specs/020-enclosure-qr-management.md` (CA-01 a CA-26, impacto de regenerar y de eliminar; `docs/database/requests/DBR-021-enclosure-qr-codes-soft-deletes.md`); `apps/dashboard/specs/012-enclosure-actions-global-search.md` (CA-09, CA-32, CA-33, CA-38, RN-07, RN-13, CA-41); `apps/dashboard/specs/003-administration-sections.md` (RN-03); `apps/mobile/specs/006-qr-scan.md` (CA-03); `apps/api/specs/019-enclosure-status-and-global-search.md`.

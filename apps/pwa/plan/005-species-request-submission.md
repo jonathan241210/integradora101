@@ -1,11 +1,12 @@
 # Plan técnico · 005 · species-request-submission
 
 - Spec: `apps/pwa/specs/005-species-request-submission.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-19; alineación de CA-03, CA-13, CA-14, CA-18 y CA-19 aprobada el mismo día)
-- Estado de este plan: **Aprobado** (aprobación técnica de Jonathan, 2026-11-19). Siguiente paso: `/sdd-tasks pwa 005-species-request-submission`.
-- Responsable técnico: Jonathan (decisión de 2026-11-19)
-- Fecha del plan: 2026-11-19 (revisión con decisiones del mismo día)
-- Dependencias de API: `apps/api/specs/014-species-requests.md` (En progreso; enmienda de 2026-11-19 con `published_fields` en el selector, tarea T-30 de `api-014`) y DBR-013 (Lista para backend)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-19
+- Aprobada: 2026-11-19
+- Estado de este plan: **Aprobado** (aprobación técnica registrada). Siguiente paso: `/sdd-tasks pwa 005-species-request-submission`.
+- Responsable técnico: Frontend (PWA), con decisiones registradas en este plan
+- Dependencias de API: `apps/api/specs/014-species-requests.md` (En progreso; enmienda con `published_fields` en el selector, tarea T-30 de `api-014`) y DBR-013 (Lista para backend)
 
 ## Diseño de solución
 
@@ -26,8 +27,8 @@ Límites de responsabilidad:
 
 ## Consulta previa del esquema vivo (`docs/database/README.md`)
 
-- **Consulta realizada el 2026-11-19 (solo lectura, `arca_pruebas`), por la sesión principal:** `php artisan migrate:status` muestra `2026_11_12_000013_species_publication_requests_schema` en lote 5, `Ran`. `php artisan db:table species_publication_requests` muestra 19 columnas (incluye `request_type`, `origin`, `category`, `image_path`, `published_fields` json, `status` por defecto `submitted`, `rejection_reason` varchar(500) y `submitted_species_id` generada), el índice único `uq_species_publication_requests_submitted_species` y los índices compuestos por `species_id, status` y `status, created_at`. Coincide con DBR-013.
-- **Referencia documental:** DBR-013 registra la verificación de solo lectura del 2026-11-12. El archivo de migración existe en el repositorio.
+- **Consulta realizada (solo lectura, `arca_pruebas`), por la sesión principal:** `php artisan migrate:status` muestra `2026_11_12_000013_species_publication_requests_schema` en lote 5, `Ran`. `php artisan db:table species_publication_requests` muestra 19 columnas (incluye `request_type`, `origin`, `category`, `image_path`, `published_fields` json, `status` por defecto `submitted`, `rejection_reason` varchar(500) y `submitted_species_id` generada), el índice único `uq_species_publication_requests_submitted_species` y los índices compuestos por `species_id, status` y `status, created_at`. Coincide con DBR-013.
+- **Referencia documental:** DBR-013 registra la verificación de solo lectura. El archivo de migración existe en el repositorio.
 - **Conclusión sobre DBR:** esta feature no cambia el esquema (usa `species`, `species_publication_requests` y `users` ya existentes). No requiere DBR nueva. La enmienda de `published_fields` en el selector lee la columna `species.published_fields`, que ya existe por la migración `2026_11_12_000013` (su modelo `Species` la castea como `array`): cambio aditivo de API sin migración.
 
 ## Cambios por área
@@ -38,7 +39,7 @@ Límites de responsabilidad:
 | Paquetes/api-client | `packages/api-client/veterinarian.ts` (nuevo), `packages/api-client/veterinarian-types.ts` (nuevo), `packages/api-client/index.ts` (exports) | `createVeterinarianApi(http)` con `species.list()`, `publicationRequests.list(page)` y `publicationRequests.submit(input)`. Construye el `FormData` del envío en una función exportada para poder probarla. Reutiliza tipos de `admin-types.ts` (`SpeciesCategory`, `SpeciesRequestType`, `SpeciesFichaField`, `SpeciesPublicationStatus`) sin moverlos. Sin dependencias nuevas |
 | Cliente PWA · servicios | `apps/pwa/src/services/veterinarianApi.ts` (nuevo) | Instancia de `createVeterinarianApi(createHttpClient({ baseUrl: '' }))` con manejador de 401 que lleva a inicio de sesión. No usa el wrapper `request` de `apiClient.ts` (ver B-3) |
 | Cliente PWA · ViewModels | `apps/pwa/src/viewmodels/speciesRequestForm.ts` (reglas puras y etiquetas), `speciesRequestSubmit.ts` (flujo puro de envío), `useSpeciesSelector.ts`, `useOwnSpeciesRequests.ts`, `useSpeciesRequestForm.ts` (hooks), `pwaDemo.ts` (nueva sección `species-request` en una lista propia, fuera de `pwaSections`), `useStaffSession.ts` (función para expulsar la sesión tras 401, CA-19) | Reglas, flujo y estado de la feature |
-| Cliente PWA · vistas | `apps/pwa/src/views/SpeciesRequestView.tsx` (contenedor con dos pestañas), `SpeciesRequestFormView.tsx` (contenedor), `SpeciesRequestFormPresenter.tsx` (presentación pura), `SpeciesSelectorField.tsx` (lista de opciones tipo radio, CA-13), `OwnSpeciesRequestsView.tsx`, `AppShell.tsx` (registro de la sección y ítem de menú por rol, decisión 5 revisada el 2026-11-19), `HomeView.tsx` (acceso por rol, RN-01 y única entrada, decisión 5; su estructura no se revisó en esta sesión) | Presentación de formulario, selector y «Mis solicitudes» |
+| Cliente PWA · vistas | `apps/pwa/src/views/SpeciesRequestView.tsx` (contenedor con dos pestañas), `SpeciesRequestFormView.tsx` (contenedor), `SpeciesRequestFormPresenter.tsx` (presentación pura), `SpeciesSelectorField.tsx` (lista de opciones tipo radio, CA-13), `OwnSpeciesRequestsView.tsx`, `AppShell.tsx` (registro de la sección y ítem de menú por rol, decisión 5 revisada), `HomeView.tsx` (acceso por rol, RN-01 y única entrada, decisión 5; su estructura no se revisó en esta sesión) | Presentación de formulario, selector y «Mis solicitudes» |
 | Cliente PWA · pruebas | `apps/pwa/src/tests/species-request-rules.test.ts`, `species-request-submit.test.ts`, `species-request-list.test.ts`, `species-request-presenters.test.tsx`, `species-request-api.test.ts` | Cobertura por CA-xx (sección de mapeo) |
 | Documentación | `apps/pwa/docs/` (nota de flujo, si el equipo la pide) | Referencia local de la pantalla |
 | Infra | Ninguna en código. Operación: verificar límites de subida del servidor (ver «Seguridad») | Cumplir el checklist de `infra/README.md` sin añadir requisitos nuevos |
@@ -84,16 +85,16 @@ Errores y compatibilidad: la PWA trata cada código como indica CA-03, CA-06, CA
 - **Sesión y CSRF:** el cliente HTTP de `@arca/api-client` envía cookies con `credentials: 'include'` y el cabecero `X-XSRF-TOKEN` en métodos no seguros. No se guarda ningún token ni credencial en `localStorage` o `sessionStorage` (RN-04). `useStaffSession` ya elimina `zoohealth.token` al iniciar.
 - **Autorización:** la PWA oculta el acceso si el perfil no incluye `veterinarian` en `roles` (RN-01, visibilidad, no seguridad). La autorización real es de la API (`role:veterinarian`). La PWA no tiene rutas de URL (navegación por estado en `AppShell`), así que el caso «por URL» de RN-01 se cubre con el `403` de la API y el mensaje de CA-19 al abrir la sección.
 - **Foto:** en la PWA se valida tipo (`image/jpeg`, `image/png`; `accept` del input) y tamaño (5 × 1 024 × 1 024 bytes) antes de enviar. Se usa `File` en memoria. No se muestra ninguna URL de la foto (RN-03). No se genera vista previa en esta v1 porque CA no la pide (no se añade alcance).
-- **Foto pendiente pública en pruebas:** la carpeta `media/species-requests/` se publica en `/media` durante pruebas (ADR 0026, enmienda 2026-11-11). Riesgo aceptado por la spec; la PWA no expone la ruta.
+- **Foto pendiente pública en pruebas:** la carpeta `media/species-requests/` se publica en `/media` durante pruebas (ADR 0026, enmienda). Riesgo aceptado por la spec; la PWA no expone la ruta.
 - **Límites de subida:** para que 5 MB más el cuerpo multipart no se corten antes de llegar a la validación de Laravel, el servidor debe tener `upload_max_filesize` y `post_max_size` por encima de 5 MB. `api-014` T-28 ya lo exige en `infra/README.md`; esta feature no añade requisitos nuevos. Si el servidor corta antes, el error no sería un 422 de la API.
 - **Datos personales:** la solicitud contiene datos de la especie y la identidad del veterinario en `created_by`. La lista solo muestra solicitudes propias (RN-08, filtro en la API). No se recogen datos de visitantes.
 - **Dispositivos compartidos:** el estado de formulario y lista vive solo en memoria de React. Al cerrar sesión, `App` vuelve a la pantalla de login y el estado se pierde. Cambiar de sección también lo descarta.
 - **Doble envío:** el botón de envío se deshabilita mientras hay una petición en curso. Es una medida de UX, no una regla nueva.
 - **Límite de peticiones:** la spec no define límites de frecuencia para estos endpoints. No se inventan; queda como verificación para la API (ver B-6 y «Riesgos»).
-- **Offline:** **no aplica** (decisión 7 de Jonathan, 2026-11-19). No hay borradores ni cola de envío, ni IndexedDB, ni `idb`, ni `vite-plugin-pwa`, ni service worker nuevo. Ante error de red, muestra error genérico sin limpiar (CA-03); los datos viven solo en memoria hasta cambiar de sección o cerrar sesión. Un borrador sin conexión sería una spec nueva con su ADR (ADR 0003).
+- **Offline:** **no aplica** (decisión 7 de la aprobación técnica). No hay borradores ni cola de envío, ni IndexedDB, ni `idb`, ni `vite-plugin-pwa`, ni service worker nuevo. Ante error de red, muestra error genérico sin limpiar (CA-03); los datos viven solo en memoria hasta cambiar de sección o cerrar sesión. Un borrador sin conexión sería una spec nueva con su ADR (ADR 0003).
 - **Accesibilidad:**
   - Carga del selector y de la lista: texto con `role="status"` («Cargando especies…», «Cargando tus solicitudes…»).
-  - El selector es un desplegable (`SelectField`, rediseño aprobado 2026-11-19). Las especies no elegibles son opciones `disabled` con su estado en texto («· Pendiente de revisión»); el estado de la especie elegida se repite en un badge con texto y el motivo de rechazo, si aplica, se lee en un bloque de alerta bajo el desplegable.
+  - El selector es un desplegable (`SelectField`, rediseño aprobado). Las especies no elegibles son opciones `disabled` con su estado en texto («· Pendiente de revisión»); el estado de la especie elegida se repite en un badge con texto y el motivo de rechazo, si aplica, se lee en un bloque de alerta bajo el desplegable.
   - Errores de envío y de carga: `role="alert"`, y cada error de campo junto a su control con `aria-invalid="true"` y `aria-describedby` que apunta al hint y al error. `Field` de `@arca/ui` aplica `aria-describedby` antes de `{...props}`, así que el componente debe pasar los dos ids combinados. No hace falta cambiar `@arca/ui`.
   - Al recibir 422, el foco va al primer campo con error.
   - Pestañas «Solicitar» y «Mis solicitudes»: botones con `aria-pressed` (decidido en tasks, T-18).
@@ -143,7 +144,7 @@ Pruebas de API (`api-014`, PHPUnit en `apps/api`): no forman parte de este plan,
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | React 19, TypeScript, Vite 7, Tailwind 4 y `@arca/api-client` ya en `apps/pwa/package.json`. Sin dependencias nuevas (`packages/api-client` no añade paquetes). Sin ADR nuevo (decisión 6, opción A). |
-| II. La spec manda | Sí | Spec 005 Aprobada (2026-11-19), con la alineación de CA-03, CA-13, CA-14, CA-18 y CA-19 aprobada el mismo día (historial de la spec). El plan cita CA-01 a CA-19 y RN-01 a RN-10. `tasks/005-species-request-submission.md` se crea después de aprobar este plan y se marca al implementar. |
+| II. La spec manda | Sí | Spec 005 Aprobada, con la alineación de CA-03, CA-13, CA-14, CA-18 y CA-19 aprobada (historial de la spec). El plan cita CA-01 a CA-19 y RN-01 a RN-10. `tasks/005-species-request-submission.md` se crea después de aprobar este plan y se marca al implementar. |
 | III. Lógica separada de la interfaz | Sí | Elegibilidad, tipo de envío, filtrado, valores NULL y criterio del motivo de rechazo en la API (`ListSelectableSpeciesAction`, `SubmitSpeciesPublicationRequestAction`). La PWA lee `next_request_type` (RN-07) y solo aplica formato (tamaño, tipo, obligatorio). Vistas puras (presentadores); hooks como ViewModels; llamadas solo en `@arca/api-client`. Observación: `apps/pwa/src/services/apiClient.ts` tiene un `fetch` directo en `createAnimalWithPhoto`. Es anterior a esta feature y queda fuera de alcance, pero no se replica (B-3). |
 | IV. Un test por criterio | Sí, planificado | Mapeo completo de CA-01 a CA-19 con `describe('CA-xx ...')` y ubicación. Límite: entorno `node` sin DOM; las comprobaciones de foco e interacción con radios quedan como verificación manual, marcada como tal. Ejecución de Vitest, `tsc -b` y lint pendiente de la sesión principal (esta sesión no tiene shell). |
 | V. Una sola fuente de verdad para los datos | Sí | MySQL vía API es la autoridad. La PWA no guarda borradores ni copias locales. Sin cambios de esquema; `published_fields` del selector se lee de `species.published_fields`. Eliminación lógica en `species` y solicitudes (SoftDeletes, DBR-013) respetada por la API; la PWA no borra nada. |
@@ -154,10 +155,10 @@ Ninguna excepción se propone. Si en tasks aparece alguna, se detiene y se resue
 ## Riesgos y decisiones
 
 - **ADR requerido/aprobado:** ninguno (sin dependencias nuevas; pruebas sin jsdom ni `@testing-library`).
-- **Brechas y divergencias: estado tras las decisiones de 2026-11-19:**
+- **Brechas y divergencias: estado tras las decisiones registradas:**
   - **B-1 (resuelta):** el selector devuelve `published_fields`. Enmienda aditiva de `api-014` CA-26, tarea T-30 de `api-014`, antes de implementar CA-09 y CA-14 en actualizaciones y despublicadas.
   - **D-1 (resuelta):** manda la API. El motivo de rechazo en el selector solo para `not_published`. CA-18 de `pwa-005` alineado.
-  - **B-2 (resuelta, revisada 2026-11-19 con aprobación de Jonathan):** selector como desplegable (`SelectField`) con resumen de la especie elegida; sustituye la lista de radios de la primera decisión (poco práctica de usar).
+  - **B-2 (resuelta, con aprobación técnica):** selector como desplegable (`SelectField`) con resumen de la especie elegida; sustituye la lista de radios de la primera decisión (poco práctica de usar).
   - **B-3 (abierta, fuera de alcance):** `apps/pwa/src/services/apiClient.ts` descarta `errors` del 422 y reescribe el mensaje de 401. Esta feature usa `createVeterinarianApi` directamente. No se corrige el wrapper en este cambio. Se anota como deuda previa (incluido el `fetch` directo de `createAnimalWithPhoto`) para un cambio aparte.
   - **B-4 (resuelta):** ante 401, llevar a inicio de sesión con el aviso «Tu sesión expiró.»; CA-03 y CA-19 alineados.
   - **B-5 (resuelta):** el texto de ayuda sobre correcciones está en CA-14; no hay CA nuevo.
@@ -171,16 +172,16 @@ Ninguna excepción se propone. Si en tasks aparece alguna, se detiene y se resue
   - Requisito de rol: `roles` viene en el perfil, pero la visibilidad se decide en el cliente. La autorización real está en la API.
 - **Alternativas y mitigaciones (cerradas):**
   - Para B-1: se eligió añadir el campo al selector (alternativa B, mostrar solo predeterminados, descartada porque incumple CA-09).
-  - Para B-2: primero radios; el 2026-11-19 se cambió a desplegable por usabilidad (Jonathan).
+  - Para B-2: primero radios; después se cambió a desplegable por usabilidad.
   - Para la prueba de interacción: se eligió la opción A (sin dependencias).
 
-## Rediseño de usabilidad (Jonathan, 2026-11-19)
+## Rediseño de usabilidad
 
 - Formulario con la maqueta de «Registrar animal» (`animal-form-card`, `animal-form-container`, `image-upload-area`, `form-grid`, `form-actions`): foto con vista previa local (`URL.createObjectURL`, sin URL de servidor, RN-03) a la izquierda y rejilla de dos columnas a la derecha; en móvil una columna con la foto arriba. Ficha pública como chips. Pie con «Limpiar» y «Enviar solicitud». Sección de datos deshabilitada con «Elige una especie para continuar.» hasta elegir especie.
 - Pestañas como control segmentado, botones con `aria-pressed`.
-- Menú lateral de escritorio: `:focus-within` se sustituye por `:has(:focus-visible)` y se suelta el foco (`blur`) tras navegar con ratón o toque (`event.detail > 0`); al cambiar de sección el contenido vuelve arriba (`scrollTo`). Ninguna spec previa de la PWA define el menú contraíble; se registra aquí como alcance aprobado por Jonathan (T-53).
+- Menú lateral de escritorio: `:focus-within` se sustituye por `:has(:focus-visible)` y se suelta el foco (`blur`) tras navegar con ratón o toque (`event.detail > 0`); al cambiar de sección el contenido vuelve arriba (`scrollTo`). Ninguna spec previa de la PWA define el menú contraíble; se registra aquí como alcance aprobado (T-53).
 
-## Revisión 2026-11-21 (aprobada por Jonathan)
+## Revisión (aprobada)
 
 - Formulario en secciones numeradas con «Qué mostrar» antes de los datos (CA-20). `speciesRequestForm.ts` expone `fichaFieldOptions` (clave, etiqueta, límite) como única configuración de chips y campos condicionales; `visibleFichaOptions`, `visibleTextFields` y `notPublishedLine` derivan de ella. Un campo oculto no se envía; `validateDraft` y `needsChangeConfirmation` lo ignoran. «Dato curioso» (spec de `api` aparte, tras su DBR) se sumará con una entrada más en la configuración, su clave en el borrador y en `FichaTextKey`; no se implementa aquí.
 - «Limpiar» confirma con un `Dialog` si `needsChangeConfirmation` (CA-21). «Enviar de nuevo» (CA-22) lo coordina `SpeciesRequestView` con `initialSpeciesId`; sin cambios de API.
@@ -189,16 +190,16 @@ Ninguna excepción se propone. Si en tasks aparece alguna, se detiene y se resue
 
 ## Orden y aprobación
 
-Decisiones registradas (Jonathan, 2026-11-19):
+Decisiones registradas:
 
 1. **B-1, `published_fields` en el selector:** sí. Enmienda aditiva de `api-014` CA-26 (tarea T-30), fuente `species.published_fields`, sin cambio de esquema.
 2. **D-1, motivo de rechazo en el selector:** manda la API (solo `not_published`). CA-18 de `pwa-005` alineado.
-3. **B-2, forma del selector:** desplegable (revisada el 2026-11-19, Jonathan; antes lista de radios).
+3. **B-2, forma del selector:** desplegable (revisada; antes lista de radios).
 4. **B-4, 401:** llevar a inicio de sesión con el aviso «Tu sesión expiró.». CA-03 y CA-19 alineados.
-5. **Entrada de navegación (revisada, Jonathan, 2026-11-19):** la sección es accesible desde la tarjeta de «Inicio» y también desde el menú lateral (y la barra móvil), con ícono `paw` y etiqueta accesible «Solicitar publicación de especie», solo para el rol `veterinarian` (`canRequestSpeciesPublication`). Sigue fuera de `pwaSections` (el test de cinco secciones no cambia): `pwaDemo.ts` expone `speciesRequestNavItem` y `getNavigationSections(roles)`, que `AppShell` usa para el menú. Sustituye la decisión original «solo desde Inicio».
+5. **Entrada de navegación (revisada):** la sección es accesible desde la tarjeta de «Inicio» y también desde el menú lateral (y la barra móvil), con ícono `paw` y etiqueta accesible «Solicitar publicación de especie», solo para el rol `veterinarian` (`canRequestSpeciesPublication`). Sigue fuera de `pwaSections` (el test de cinco secciones no cambia): `pwaDemo.ts` expone `speciesRequestNavItem` y `getNavigationSections(roles)`, que `AppShell` usa para el menú. Sustituye la decisión original «solo desde Inicio».
 6. **Estrategia de pruebas:** opción A, sin dependencias nuevas. Lógica en funciones puras, markup con `renderToStaticMarkup` e interacción real como verificación manual.
 7. **Offline:** no aplica. Sin borradores ni cola sin conexión; los datos viven solo en memoria hasta cambiar de sección o cerrar sesión.
-8. **Consulta del esquema vivo y responsable técnico:** la consulta de solo lectura de 2026-11-19 está registrada en «Consulta previa del esquema vivo» (sin divergencias con DBR-013). Responsable técnico: Jonathan.
+8. **Consulta del esquema vivo y responsable técnico:** la consulta de solo lectura está registrada en «Consulta previa del esquema vivo» (sin divergencias con DBR-013). Responsable técnico: Frontend (PWA).
 
 Observación de spec resuelta: el texto de ayuda de «Riesgos» (B-5) quedó en CA-14.
 
@@ -211,8 +212,8 @@ Secuencia propuesta (después de aprobar este plan):
 
 Dependencias: `api-014` (selector con `published_fields`, envío, lista propia y reglas), `api-013` (almacenamiento de imágenes), DBR-013 (aplicada en `arca_pruebas`, lote 5), `pwa-004` (alta de animal, seguimiento aparte; el texto de CA-15 lo menciona).
 
-Aprobación técnica: **Jonathan, 2026-11-19**. Plan Aprobado; se avanza a tasks.
+Aprobación técnica: **Aprobada**. Plan Aprobado; se avanza a tasks.
 
-## Nota 2026-11-21 (dashboard-020 rev. (d)): paginador compartido
+## Nota (dashboard-020 rev. (d)): paginador compartido
 
 `OwnSpeciesRequestsView` usa `Pagination` de `@arca/ui` (con `lastPage` y `total`; respaldo `hasMore`); `useOwnSpeciesRequests` guarda `lastPage` y `total` y expone `goToPage`. El CSS de `.own-requests__pager` se sustituye por ajustes de `.own-requests .pagination-bar` (50 % por botón a 360 px).

@@ -1,10 +1,12 @@
 # Plan técnico · 009 · dynamic-news-events
 
 - Spec: `apps/web/specs/009-dynamic-news-events.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-07; cambios del 2026-11-08 aprobados por Jonathan, 2026-11-08). Las tasks T-xx se marcan solo con evidencia.
-- Estado del plan: Aprobado (Jonathan, 2026-11-07), con las decisiones de puerto de desarrollo, contenido completo por tarjeta, imagen completa, reintento en las tres páginas y 3 noticias y 2 eventos en la portada (la versión del 2026-11-07 tenía 3 eventos). Los cambios del 2026-11-08 quedan **aprobados por Jonathan el 2026-11-08** (incluida la pregunta 9: peticiones de detalle a la vez).
-- ADR de excepción: `docs/adr/0024-web-static-portal-exception.md` (Aceptado el 2026-11-07).
-- Responsable técnico: por identificar (frontend del portal)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-07
+- Aprobada: 2026-11-07
+- Estado del plan: Aprobado, con las decisiones de puerto de desarrollo, contenido completo por tarjeta, imagen completa, reintento en las tres páginas y 3 noticias y 2 eventos en la portada (una versión anterior tenía 3 eventos). Los cambios de la revisión quedan **aprobados** (incluida la pregunta 9: peticiones de detalle a la vez).
+- ADR de excepción: `docs/adr/0024-web-static-portal-exception.md`.
+- Responsable técnico: Frontend (portal)
 - Dependencias de API: `api-011` (`GET /api/v1/news`, `GET /api/v1/news/{news}`, `GET /api/v1/events?limit=`) y `api-006` (`GET /api/v1/events`).
 
 ## Diseño de solución
@@ -22,20 +24,20 @@ Flujo de la portada: cada sección se marca como «cargando» en el HTML inicial
 
 Flujo de `noticias.html`: pide la página 1 con `limit=10`; «Cargar más» pide la página siguiente solo si `meta.has_more` es `true`, y añade tarjetas sin borrar las anteriores. Cada tarjeta nueva pide su detalle al mostrarse.
 
-Flujo del contenido completo por noticia (CA-14, cambio del 2026-11-08 aprobado): al mostrar una tarjeta de noticia, `news-events.js` llama una vez a `ArcaApi.getNewsItem(id)`, muestra «Cargando contenido…» dentro del bloque de la tarjeta y, al llegar, escribe `content` como texto en ese bloque. Si falla, muestra el mensaje de error y un botón «Reintentar» que vuelve a pedir solo ese detalle. El resultado se guarda solo en una variable de la tarjeta (memoria); no se vuelve a pedir mientras la página esté abierta. Las peticiones de detalle de una página se lanzan **todas a la vez**, una por tarjeta, sin cola ni serialización (pregunta 9, resuelta el 2026-11-08).
+Flujo del contenido completo por noticia: al mostrar una tarjeta de noticia, `news-events.js` llama una vez a `ArcaApi.getNewsItem(id)`, muestra «Cargando contenido…» dentro del bloque de la tarjeta y, al llegar, escribe `content` como texto en ese bloque. Si falla, muestra el mensaje de error y un botón «Reintentar» que vuelve a pedir solo ese detalle. El resultado se guarda solo en una variable de la tarjeta (memoria); no se vuelve a pedir mientras la página esté abierta. Las peticiones de detalle de una página se lanzan **todas a la vez**, una por tarjeta, sin cola ni serialización.
 
-### Decisión: detalle por noticia al mostrarse la tarjeta (decisión 7 de 2026-11-08, aprobada el 2026-11-08)
+### Decisión: detalle por noticia al mostrarse la tarjeta
 
-Sustituye a la decisión de 2026-11-07 («detalle al expandir»), que queda sin efecto. Jonathan pide que el contenido completo se vea en la tarjeta sin acción del visitante, así que el detalle se pide al mostrar cada tarjeta de noticia, con estado de carga y error propios. Razones:
+Sustituye a la decisión («detalle al expandir»), que queda sin efecto. El equipo pide que el contenido completo se vea en la tarjeta sin acción del visitante, así que el detalle se pide al mostrar cada tarjeta de noticia, con estado de carga y error propios. Razones:
 
 1. **Listado ligero:** `api-011` RN-07 excluye `content` del listado. Incluirlo multiplicaría el peso de cada respuesta (hasta 50 noticias por página, cada una con hasta 20 000 caracteres). Se mantiene el listado sin `content`.
 2. **Sin cambio en la API:** `GET /api/v1/news/{news}` ya existe en `api-011` (CA-05). No se cambia el contrato del listado.
 3. **Sin almacenamiento:** el contenido vive solo en memoria de la página (RN-03).
-4. **Coste aceptado:** una petición extra por noticia mostrada y visita, a cambio de no requerir interacción. El coste y su mitigación se describen en «Riesgos y decisiones» (aprobados el 2026-11-08).
+4. **Coste aceptado:** una petición extra por noticia mostrada y visita, a cambio de no requerir interacción. El coste y su mitigación se describen en «Riesgos y decisiones».
 
-Alternativas descartadas: incluir `content` en el listado (requiere cambiar `api-011` RN-07); pedir el detalle solo al pulsar un botón (decisión del 2026-11-08); mantener el botón «Ver todo el contenido» y la expansión (decisión del 2026-11-08).
+Alternativas descartadas: incluir `content` en el listado (requiere cambiar `api-011` RN-07); pedir el detalle solo al pulsar un botón; mantener el botón «Ver todo el contenido» y la expansión.
 
-### Decisión: imagen completa y centrada (decisión 3 de 2026-11-07)
+### Decisión: imagen completa y centrada
 
 Las imágenes se muestran dentro de una caja de proporción fija (`ne-media`), con el archivo completo, centrado y sin recorte:
 
@@ -50,18 +52,18 @@ Esta regla se aplica en la portada y en las dos páginas. El dashboard aplica el
 
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|
-| Portal (HTML) | `apps/web/src/index.html` | Reemplazar tarjetas de muestra de `#noticias` y `#eventos` por contenedores con estado inicial de carga y enlaces «Ver todas»; `#eventGrid` con `data-ne-limit="2"` (cambio del 2026-11-08); añadir `<meta name="arca-api-base" content="…">` (valor por ambiente, ver CA-16); cargar `news-events.css`, `js/api.js` y `js/news-events.js` con `defer`. Eliminar la nota «Las noticias son contenido de muestra». |
-| Portal (HTML) | `apps/web/src/noticias.html` (nuevo) | Listado paginado de noticias con «Cargar más» y, en cada tarjeta, el bloque de contenido completo (CA-14, cambio del 2026-11-08). Misma meta que `index.html`. |
+| Portal (HTML) | `apps/web/src/index.html` | Reemplazar tarjetas de muestra de `#noticias` y `#eventos` por contenedores con estado inicial de carga y enlaces «Ver todas»; `#eventGrid` con `data-ne-limit="2"`; añadir `<meta name="arca-api-base" content="…">` (valor por ambiente, ver CA-16); cargar `news-events.css`, `js/api.js` y `js/news-events.js` con `defer`. Eliminar la nota «Las noticias son contenido de muestra». |
+| Portal (HTML) | `apps/web/src/noticias.html` (nuevo) | Listado paginado de noticias con «Cargar más» y, en cada tarjeta, el bloque de contenido completo. Misma meta que `index.html`. |
 | Portal (HTML) | `apps/web/src/eventos.html` (nuevo) | Listado completo de eventos vigentes con estados. Misma meta que `index.html`. |
-| Portal (JS) | `apps/web/src/js/api.js` (nuevo) | `fetch` centralizado: base URL desde la meta (vacía → `/api/v1`), `Accept: application/json`, `credentials: 'omit'`, sin `Authorization` ni CSRF, `AbortController` de 10 s, validación de `data`, normalización de errores y `getNewsItem(id)` con validación de entero positivo. Expone `ArcaApi.getNews({ limit, page })`, `ArcaApi.getEvents({ limit })` y `ArcaApi.getNewsItem(id)`. Sin cambios por el 2026-11-08. |
-| Portal (JS) | `apps/web/src/js/news-events.js` (nuevo) | Renderizadores de tarjetas de noticias y eventos; estados `loading`, `empty`, `error`; bloque de contenido por noticia con carga automática, error y «Reintentar» (CA-14, cambio del 2026-11-08); caja de imagen y placeholder; formateadores de fecha en español. Sin `fetch`, sin `innerHTML`. |
+| Portal (JS) | `apps/web/src/js/api.js` (nuevo) | `fetch` centralizado: base URL desde la meta (vacía → `/api/v1`), `Accept: application/json`, `credentials: 'omit'`, sin `Authorization` ni CSRF, `AbortController` de 10 s, validación de `data`, normalización de errores y `getNewsItem(id)` con validación de entero positivo. Expone `ArcaApi.getNews({ limit, page })`, `ArcaApi.getEvents({ limit })` y `ArcaApi.getNewsItem(id)`. Sin cambios por. |
+| Portal (JS) | `apps/web/src/js/news-events.js` (nuevo) | Renderizadores de tarjetas de noticias y eventos; estados `loading`, `empty`, `error`; bloque de contenido por noticia con carga automática, error y «Reintentar»; caja de imagen y placeholder; formateadores de fecha en español. Sin `fetch`, sin `innerHTML`. |
 | Portal (CSS) | `apps/web/src/news-events.css` (nuevo) | Estados (`role="status"`), `aria-busy`, caja de imagen `ne-media` (CA-15), placeholder, bloque de contenido `ne-content` con `white-space: pre-line` para los saltos de línea de `content`, foco visible y ajustes para 360 px. Solo clases nuevas con prefijo `ne-`. |
 | Pruebas | `apps/web/src/tests/news-events.test.mjs` (nuevo) | Tests `CA-01` a `CA-16` con `node:test`, `node:vm`, DOM y `fetch` simulados, y lectura de `news-events.css` para las reglas de imagen. Sin red real. |
 | Pruebas existentes | `apps/web/src/tests/relocation.test.mjs` | Solo revisión. Si una comprobación depende de las tarjetas de muestra, se informa antes de cambiarla. |
 | Documentación | `apps/web/docs/portal-noticias-eventos.md` (por crear) | Cómo configurar la base URL por página y ambiente, orígenes, cómo ejecutar local en `localhost:8080`, carga automática del contenido por noticia, y la excepción de arquitectura con enlace al ADR 0024. |
 | Documentación | `apps/web/README.md` | Solo como tarea (T-22): cambiar el comando a `php -S localhost:8080 -t apps/web/src`. No se edita en esta spec. |
 | Infraestructura | `infra/README.md` | Sección «Portal público (noticias y eventos)» (ver la spec). |
-| ADR | `docs/adr/0024-web-static-portal-exception.md` | ADR de excepción (Aceptado el 2026-11-07 por el equipo). Esta spec solo lo referencia. |
+| ADR | `docs/adr/0024-web-static-portal-exception.md` | ADR de excepción. Esta spec solo lo referencia. |
 | API | Ninguno | Consume `api-011` y `api-006`; no cambia el backend. |
 
 ## Contrato y datos
@@ -73,7 +75,7 @@ Esta regla se aplica en la portada y en las dos páginas. El dashboard aplica el
 | Portada, noticias | `GET {base}/news?limit=3` | `{"data":[…],"meta":{…}}` | `#noticias` (CA-01) |
 | Listado de noticias | `GET {base}/news?page=N&limit=10` | Igual | `noticias.html` (CA-10) |
 | Detalle de noticia | `GET {base}/news/{id}` | `{"data":{…,"content":"…"}}` | Bloque de contenido de cada tarjeta de noticia, al mostrarse (CA-14) |
-| Portada, eventos | `GET {base}/events?limit=2` | `{"data":[…]}` | `#eventos` (CA-02, cambio del 2026-11-08: antes `limit=3`) |
+| Portada, eventos | `GET {base}/events?limit=2` | `{"data":[…]}` | `#eventos` (CA-02, cambio: antes `limit=3`) |
 | Listado de eventos | `GET {base}/events` | `{"data":[…]}` | `eventos.html` (CA-10) |
 
 ### Forma de los datos que consume la UI
@@ -89,7 +91,7 @@ Evento (`api-006`, `EventResource`): `id`, `name`, `description`, `image_path`, 
 - `api.js` lee `document.querySelector('meta[name="arca-api-base"]')?.content`. Si está vacía o ausente, usa `/api/v1` (ruta relativa, requiere proxy en el mismo origen).
 - La base no incluye barra final. `api.js` normaliza la barra final y construye `…/news?…` con `URLSearchParams`.
 - Cada una de las tres páginas tiene la misma meta. Cada ambiente define el valor (pregunta 2 de la spec). No hay valores fijos en el código del módulo.
-- Desarrollo: el portal se sirve en `http://localhost:8080` (origen en `CORS_ALLOWED_ORIGINS`, `api-011` RN-12). El valor de la meta en desarrollo apunta a la API en su puerto (ejemplo: `http://localhost:8000/api/v1`); valor de desarrollo aprobado en el plan el 2026-11-07.
+- Desarrollo: el portal se sirve en `http://localhost:8080` (origen en `CORS_ALLOWED_ORIGINS`, `api-011` RN-12). El valor de la meta en desarrollo apunta a la API en su puerto (ejemplo: `http://localhost:8000/api/v1`); valor de desarrollo aprobado en el plan.
 
 ### Interfaz de `api.js` (resultado uniforme)
 
@@ -110,13 +112,13 @@ Evento (`api-006`, `EventResource`): `id`, `name`, `description`, `image_path`, 
 - Sin `image_url` → placeholder con icono Bootstrap (`bi bi-newspaper` o `bi bi-calendar-event`) con `aria-hidden="true"`, en la misma caja.
 - Reglas CSS de `ne-media` (CA-15): `aspect-ratio` fijo; `background: var(--surface-subtle)`; `display: grid; place-items: center` en la caja; en la imagen, `object-fit: contain; object-position: center; width: auto; height: auto; max-width: 100%; max-height: 100%`. Ninguna regla de imagen de contenido usa `cover` ni `fill`.
 
-### Bloque de contenido completo por noticia (CA-14, cambio del 2026-11-08, aprobado el 2026-11-08)
+### Bloque de contenido completo por noticia (CA-14, cambio, aprobado)
 
 - Markup dentro de cada tarjeta de noticia: un `div.ne-content` con `<p class="ne-content-label">Contenido:</p>` (texto, no encabezado), un elemento con `role="status"` para «Cargando contenido…» y para el error, un `<p class="ne-content-text">` para el texto (con `white-space: pre-line`, CSS en T-07/T-19) y, solo en estado de error, un `button type="button"` «Reintentar». No hay `aria-expanded`, `aria-controls` ni botón de expansión. No necesita `id` propio.
 - Estados del bloque: `loading` («Cargando contenido…», `role="status"`), `ready` (texto de `content`), `error` («No pudimos cargar el contenido de esta noticia. Inténtalo más tarde.», `role="status"`, con «Reintentar») y `empty` (bloque oculto: `content` vacío o solo con espacios).
 - Transiciones: al mostrarse la tarjeta → `loading` y una llamada a `ArcaApi.getNewsItem(id)`. Éxito con `content` no vacío → `ready`. Éxito con `content` vacío → `empty`. Fallo (`ok: false`, incluido `404` y JSON no válido) → `error`. «Reintentar» → `loading` y una nueva llamada solo para ese detalle; el resultado sigue las mismas transiciones. Una petición en curso no se duplica.
-- El botón «Reintentar» es nativo: Enter y Espacio funcionan sin código extra. El foco se mueve según la pregunta 8 de la spec (resuelta 2026-11-08): igual que CA-05, solo tras activar «Reintentar».
-- Orden de las peticiones de detalle de una página: **a la vez** (pregunta 9 de la spec, resuelta por Jonathan el 2026-11-08). Cada tarjeta lanza su `getNewsItem(id)` al mostrarse, sin esperar a las demás ni a una cola. La ráfaga máxima es de 3 peticiones en la portada y de 10 por página de `noticias.html` (más 10 por cada «Cargar más»).
+- El botón «Reintentar» es nativo: Enter y Espacio funcionan sin código extra. El foco se mueve según la pregunta 8 de la spec: igual que CA-05, solo tras activar «Reintentar».
+- Orden de las peticiones de detalle de una página: **a la vez** (pregunta 9 de la spec, resuelta). Cada tarjeta lanza su `getNewsItem(id)` al mostrarse, sin esperar a las demás ni a una cola. La ráfaga máxima es de 3 peticiones en la portada y de 10 por página de `noticias.html` (más 10 por cada «Cargar más»).
 
 ### Errores y compatibilidad
 
@@ -136,7 +138,7 @@ Evento (`api-006`, `EventResource`): `id`, `name`, `description`, `image_path`, 
 - **Datos del visitante:** no se envían. No hay analíticas nuevas.
 - **Contenido de muestra:** se elimina del HTML; no hay respaldo estático que pueda confundirse con contenido real (RN-02).
 - **Accesibilidad:** `role="status"` para estados, `aria-busy` en contenedores, `alt` en imágenes informativas, placeholders decorativos, `button` nativo para «Reintentar», etiqueta «Contenido:» como texto (no encabezado), foco visible y encabezados en orden (`h2` de sección y `h3` de tarjeta). Las transformaciones de `008` se revisan con contenido dinámico (ver riesgos).
-- **Rendimiento:** imágenes diferidas (`loading="lazy"`), `content-visibility` existente, sin bibliotecas. Por visita a la portada: 2 listados y hasta 3 detalles de noticia; en `noticias.html`, 1 listado por página y un detalle por tarjeta mostrada (cambio del 2026-11-08, ver riesgos).
+- **Rendimiento:** imágenes diferidas (`loading="lazy"`), `content-visibility` existente, sin bibliotecas. Por visita a la portada: 2 listados y hasta 3 detalles de noticia; en `noticias.html`, 1 listado por página y un detalle por tarjeta mostrada.
 - **Portabilidad:** HTML, CSS y JS estáticos; funcionan igual en local y en cualquier servidor estático. La API es la única dependencia (ADR 0013 no aplica al portal).
 - **Operación:** la base URL (meta por página) y el origen en CORS se configuran por ambiente (`infra/README.md`). Sin secretos.
 
@@ -169,29 +171,29 @@ Las pruebas usan un `fetch` simulado y nunca llaman a la API real. La prueba de 
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
-| I. Stack mínimo y portable | Parcial | HTML, CSS y JavaScript estáticos, sin dependencias ni servicios propietarios; el stack declarado para el portal es React 19 + TS + Vite (`apps/web/AGENTS.md`). **Excepción:** mantener HTML y JS estático para estas páginas, ADR 0024 (Aceptado el 2026-11-07). |
-| II. La spec manda | Sí | Spec 009 Aprobada (Jonathan, 2026-11-07; cambios del 2026-11-08 aprobados el 2026-11-08), con este plan, sus tasks y el ADR 0024 Aceptado. |
+| I. Stack mínimo y portable | Parcial | HTML, CSS y JavaScript estáticos, sin dependencias ni servicios propietarios; el stack declarado para el portal es React 19 + TS + Vite (`apps/web/AGENTS.md`). **Excepción:** mantener HTML y JS estático para estas páginas, ADR 0024. |
+| II. La spec manda | Sí | Spec 009 Aprobada (con los cambios de la revisión aprobados), con este plan, sus tasks y el ADR 0024 Aceptado. |
 | III. Lógica separada de la interfaz | Parcial | No hay reglas de negocio en el portal (visibilidad, vigencia, orden y «hoy» en la API; RN-01). No hay `fetch` en componentes de presentación: el `fetch` vive solo en `js/api.js`. **Excepción:** la UI no usa `@arca/api-client` ni hooks. ADR 0024. |
 | IV. Un test por criterio | Sí, con runner distinto | Tests `CA-01` a `CA-16` con `node --test`, como `web-001` y `web-008`. El AGENTS de `web` pide Vitest: la excepción de runner está en el ADR 0024. |
 | V. Una sola fuente de verdad para los datos | Sí | El portal no guarda datos de negocio ni cachea contenido; la API es la única fuente. Sin escritura. |
 | VI. Código en inglés, personas en español | Sí | Identificadores y nombres de archivo en inglés (`news-events.js`, `api.js`, `ArcaApi`, `ne-media`, `ne-content`); textos visibles, de estado y de error en español. |
 
-**Excepciones registradas en el ADR 0024 (Aceptado el 2026-11-07):** (1) arquitectura estática sin `@arca/api-client` ni build para `apps/web` (`AGENTS.md` de `web`, Constitución III); (2) runner `node --test` en lugar de Vitest para este módulo (Constitución IV, con precedente en `web-001` y `web-008`). Si el ADR no se aprueba, no se implementa esta spec.
+**Excepciones registradas en el ADR 0024:** (1) arquitectura estática sin `@arca/api-client` ni build para `apps/web` (`AGENTS.md` de `web`, Constitución III); (2) runner `node --test` en lugar de Vitest para este módulo (Constitución IV, con precedente en `web-001` y `web-008`). Si el ADR no se aprueba, no se implementa esta spec.
 
 ## Riesgos y decisiones
 
-- **ADR requerido:** sí, `docs/adr/0024-web-static-portal-exception.md` (Aceptado el 2026-11-07). No se requiere ADR de dependencia.
+- **ADR requerido:** sí, `docs/adr/0024-web-static-portal-exception.md`. No se requiere ADR de dependencia.
 - **Alternativas consideradas:**
   - Migrar ahora a React + Vite + `@arca/api-client`: descartada en esta spec; la migración se reevalúa con la spec de pagos y su ADR (ADR 0024).
   - Generar el HTML en build-time con datos de la API: descartada porque el contenido debe reflejar publicaciones sin redeploy.
   - Contenido de muestra como respaldo si la API falla: descartada (RN-02).
   - Usar módulos ES (`type="module"`): descartada para no depender de la detección de módulos de Node en `node --test`; se usa el patrón de `accessibility.js`.
   - Incluir `content` en el listado: descartada (ver «Decisión: detalle por noticia»); requiere cambiar `api-011` RN-07.
-  - Pedir el detalle solo al pulsar un botón «Ver todo el contenido» y expandir la tarjeta (decisión de 2026-11-07): descartada el 2026-11-08 por decisión de Jonathan.
-  - Recortar la imagen con `object-fit: cover` (estado actual en el dashboard): descartada por la decisión 3 de 2026-11-07.
-- **Más peticiones (cambio del 2026-11-08, aprobado el 2026-11-08):** cada noticia mostrada pide su detalle. Por visita a la portada: 5 peticiones (2 listados y 3 detalles). En `noticias.html`: 1 listado por página y hasta 10 detalles por página, más 10 por cada «Cargar más». Mitigación: un detalle por tarjeta, sin repetirlo (RN-11; CA-14 a y h); la carga de una tarjeta no bloquea el listado ni a las demás; un fallo queda aislado en su tarjeta con «Reintentar» solo de ese detalle (CA-14 d); no hay caché persistente (RN-03), así que cada visita vuelve a pedirlos.
-- **Ráfaga de peticiones simultáneas (pregunta 9, decisión 2026-11-08: a la vez):** al no serializar, una página de `noticias.html` lanza hasta 10 detalles a la vez, y la portada hasta 3. Riesgo: si la API o una capa intermedia limita la frecuencia de peticiones y responde con un código distinto de `2xx`, esa tarjeta muestra su error (CA-14 d) y se reintenta solo ese detalle. No se añade cola ni límite de concurrencia en esta spec; si la ráfaga da problemas en pruebas (T-11), se abre una spec de operación para limitar la concurrencia.
-- **Bionic Reading (`008`) con contenido dinámico:** `accessibility.js` aplica las transformaciones al cargar el DOM. Las tarjetas y el contenido de noticias que llegan después podrían no recibir el formato. Mitigación: al terminar el render, `news-events.js` dispara un evento `CustomEvent` que `accessibility.js` puede escuchar si el modo está activo. Requiere un cambio en `008`; se propone como tarea. No está incluido en la aprobación del 2026-11-08 y requiere aprobación separada (T-12 abierta).
+  - Pedir el detalle solo al pulsar un botón «Ver todo el contenido» y expandir la tarjeta: descartada por decisión del equipo.
+  - Recortar la imagen con `object-fit: cover` (estado actual en el dashboard): descartada por la decisión 3.
+- **Más peticiones:** cada noticia mostrada pide su detalle. Por visita a la portada: 5 peticiones (2 listados y 3 detalles). En `noticias.html`: 1 listado por página y hasta 10 detalles por página, más 10 por cada «Cargar más». Mitigación: un detalle por tarjeta, sin repetirlo (RN-11; CA-14 a y h); la carga de una tarjeta no bloquea el listado ni a las demás; un fallo queda aislado en su tarjeta con «Reintentar» solo de ese detalle (CA-14 d); no hay caché persistente (RN-03), así que cada visita vuelve a pedirlos.
+- **Ráfaga de peticiones simultáneas:** al no serializar, una página de `noticias.html` lanza hasta 10 detalles a la vez, y la portada hasta 3. Riesgo: si la API o una capa intermedia limita la frecuencia de peticiones y responde con un código distinto de `2xx`, esa tarjeta muestra su error (CA-14 d) y se reintenta solo ese detalle. No se añade cola ni límite de concurrencia en esta spec; si la ráfaga da problemas en pruebas (T-11), se abre una spec de operación para limitar la concurrencia.
+- **Bionic Reading (`008`) con contenido dinámico:** `accessibility.js` aplica las transformaciones al cargar el DOM. Las tarjetas y el contenido de noticias que llegan después podrían no recibir el formato. Mitigación: al terminar el render, `news-events.js` dispara un evento `CustomEvent` que `accessibility.js` puede escuchar si el modo está activo. Requiere un cambio en `008`; se propone como tarea. No está incluido en la aprobación y requiere aprobación separada (T-12 abierta).
 - **Puerto de desarrollo:** resuelto en 8080. Hay que arrancar el servidor en `localhost`, no en `127.0.0.1`, porque el origen cuenta el host (`api-011` RN-12). Corrección del README: T-22.
 - **Meta repetida en tres páginas:** un cambio de ambiente debe hacerse en las tres. CA-16 evita que se desalineen.
 - **Fallo de CORS:** el mensaje de error del portal es genérico; el diagnóstico se hace con `curl` (`infra/README.md`).
@@ -200,9 +202,9 @@ Las pruebas usan un `fetch` simulado y nunca llaman a la API real. La prueba de 
 
 ## Orden y aprobación
 
-0. **Aprobado (2026-11-08):** Jonathan aprueba los cambios de spec, plan y tasks del 2026-11-08 y responde las preguntas 8 (foco tras «Reintentar» igual que CA-05) y 9 (peticiones de detalle a la vez). Se cumple P-04 de las tasks.
-1. ADR 0024 aceptado el 2026-11-07 (requisito cumplido).
-2. Spec 009, este plan y su Constitution Check aprobados el 2026-11-07. La pregunta 2 de la spec (producción) queda pendiente y no bloquea.
+0. **Aprobado:** el equipo aprueba los cambios de spec, plan y tasks y responde las preguntas 8 (foco tras «Reintentar» igual que CA-05) y 9 (peticiones de detalle a la vez). Se cumple P-04 de las tasks.
+1. ADR 0024 aceptado (requisito cumplido).
+2. Spec 009, este plan y su Constitution Check aprobados. La pregunta 2 de la spec (producción) queda pendiente y no bloquea.
 3. Confirmar que `api-011` está Implementada y disponible en el ambiente de pruebas con `CORS_ALLOWED_ORIGINS` que incluye `http://localhost:8080`.
 4. `js/api.js` (incluye `getNewsItem`) y pruebas de CA-09.
 5. `js/news-events.js`: escapado, imágenes, fechas, estados; pruebas de CA-03 a CA-08.
@@ -214,12 +216,12 @@ Las pruebas usan un `fetch` simulado y nunca llaman a la API real. La prueba de 
 11. Verificación: `node --test apps/web/src/tests/news-events.test.mjs`, `node --test apps/web/src/tests/relocation.test.mjs`, `git diff --check`, prueba manual con API local en `localhost:8080`, `/verify` (apps/web sigue sin `package.json`; se reporta como no inicializada).
 12. Documentación `apps/web/docs/portal-noticias-eventos.md` (por crear), corrección de `apps/web/README.md` (T-22) y sección en `infra/README.md`.
 
-**Dependencias:** `api-011` (Aprobada el 2026-11-07; debe estar Implementada antes de probar el portal; incluye `news/{id}`), `api-006` (eventos), ADR 0024 (Aceptado el 2026-11-07), `008` (cambio opcional de integración de la lectura asistida, sujeto a aprobación separada), `dashboard-007` (mismo criterio de imagen; independiente).
+**Dependencias:** `api-011` (Aprobada; debe estar Implementada antes de probar el portal; incluye `news/{id}`), `api-006` (eventos), ADR 0024, `008` (cambio opcional de integración de la lectura asistida, sujeto a aprobación separada), `dashboard-007` (mismo criterio de imagen; independiente).
 
 **Aprobaciones requeridas:**
 
 | Rol | Aprueba | Estado |
 |---|---|---|
-| Responsable funcional | Spec 009 (preguntas resueltas el 2026-11-07; producción pendiente, no bloquea) | Aprobado (Jonathan, 2026-11-07). Cambios del 2026-11-08 (incluidas preguntas 8 y 9): aprobado por Jonathan, 2026-11-08 |
-| Equipo técnico | Este plan, Constitution Check y excepciones | Aprobado (Jonathan, 2026-11-07). Cambios del 2026-11-08: aprobado por Jonathan, 2026-11-08 |
-| Equipo (ADR) | ADR 0024: excepción de arquitectura y runner | Aceptado (2026-11-07) |
+| Responsable funcional | Spec 009 (preguntas resueltas; producción pendiente, no bloquea) | Aprobado. Cambios de la revisión (incluidas preguntas 8 y 9): aprobados |
+| Equipo técnico | Este plan, Constitution Check y excepciones | Aprobado. Cambios de la revisión: aprobados |
+| Equipo (ADR) | ADR 0024: excepción de arquitectura y runner | Aceptado |

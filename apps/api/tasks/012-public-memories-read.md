@@ -1,20 +1,22 @@
 # Tareas · 012 · public-memories-read
 
-- Spec: `apps/api/specs/012-public-memories-read.md` (Estado: **Aprobada**, Jonathan, responsable de backend, 2026-11-12).
-- Plan: `apps/api/plan/012-public-memories-read.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
-- Estado del checklist: **En progreso** (actualizado 2026-11-13; plan y tasks aprobados por Jonathan, responsable de backend). Coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
-  - Avance S2 (2026-11-13): T-00 a T-22, T-24 y T-25 hechas. Evidencia: `php artisan test --filter='PublicMemories|MemoriesPublicReadIntegration|MemoriesCoverage'` → 18 pasados (337 aserciones), `pint` limpio. T-00: MySQL de `arca_pruebas` es 8.4.11 (no 8.0.x), divergencia informativa. T-22: con pocas filas el optimizador usó `idx_visitor_memories_status_created` (`Using filesort`); reevaluar con volumen real, sin crear índices. Pendientes: T-23 (suite completa y regresión: «pendiente de integración (S1)»; nota: 4 tests de `PublicCatalogTest` fallan por `Unknown column 'longevity'` en `animals`, ajeno a api-012) y T-26 (PR y estado de la spec, S1).
+- Spec: `apps/api/specs/012-public-memories-read.md` (Estado: **Aprobada**).
+- Plan: `apps/api/plan/012-public-memories-read.md` (Estado: **Aprobado**).
+- Estado del checklist: **Completado** (T-26 fuera de alcance de esta entrega). Coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+- Solicitada: 2026-11-12
+- Aprobada: 2026-11-12
+  - Avance S2: T-00 a T-22, T-24 y T-25 hechas. Evidencia: `php artisan test --filter='PublicMemories|MemoriesPublicReadIntegration|MemoriesCoverage'` → 18 pasados (337 aserciones), `pint` limpio. T-00: MySQL de `arca_pruebas` es 8.4.11 (no 8.0.x), divergencia informativa. T-22: con pocas filas el optimizador usó `idx_visitor_memories_status_created` (`Using filesort`); reevaluar con volumen real, sin crear índices. Pendientes: T-23 (suite completa y regresión: «pendiente de integración (S1)»; nota: 4 tests de `PublicCatalogTest` fallan por `Unknown column 'longevity'` en `animals`, ajeno a api-012) y T-26 (PR y estado de la spec, S1).
 
 ## Puerta de entrada
 
 **No se empieza ninguna tarea de implementación (T-01 en adelante) hasta que:**
 
-1. el plan `apps/api/plan/012-public-memories-read.md` esté aprobado técnicamente (cumplido el 2026-11-13, Jonathan);
+1. el plan `apps/api/plan/012-public-memories-read.md` esté aprobado técnicamente (cumplido, el responsable de backend);
 2. T-00 esté marcada con evidencia (solo lectura en `arca_pruebas`);
-3. el modelo `VisitorMemory` exista (lo crea `api-010` T-04; pregunta 1 del plan resuelta el 2026-11-13);
-4. la clave del disco público de `api-013` esté configurada (clave resuelta el 2026-11-13: `filesystems.media_scopes.public`; la configuración sigue pendiente). Sin ella, T-05, T-15, T-16 (tramo de imagen) y T-25 quedan bloqueadas.
+3. el modelo `VisitorMemory` exista (lo crea `api-010` T-04; pregunta 1 del plan resuelta);
+4. la clave del disco público de `api-013` esté configurada (clave resuelta: `filesystems.media_scopes.public`; la configuración sigue pendiente). Sin ella, T-05, T-15, T-16 (tramo de imagen) y T-25 quedan bloqueadas.
 
-DBR-012 está en «Lista para backend» y aplicada en `arca_pruebas` desde el 2026-11-11. Esta feature no tiene DBR propia ni migraciones.
+DBR-012 está en «Lista para backend» y aplicada en `arca_pruebas` desde. Esta feature no tiene DBR propia ni migraciones.
 
 Todas las pruebas usan `DatabaseTransactions` sobre `arca_pruebas`; nunca `RefreshDatabase`, `migrate:fresh` ni migraciones desde los tests. Ninguna tarea toca `arca_zoo`. Ninguna tarea crea índices, SQL ni migraciones.
 
@@ -62,8 +64,8 @@ Cobertura: todos los CA-01 a CA-12 y RN-01 a RN-11 tienen al menos una tarea. **
   - [x] Columnas de `visitor_memories` presentes: `id`, `visitor_id`, `status`, `opinion`, `image_path`, `image_sha256`, `published_image_path`, `consent_at`, `terms_version`, `rejection_reason`, `rejected_image`, `rejected_content`, `resubmitted_count`, `reviewed_by`, `reviewed_at`, `published_at`, `published_until`, `created_at`, `updated_at`, `deleted_at`.
   - [x] Índice `idx_visitor_memories_status_publication` sobre `(status, published_until, published_at, id)` (`SHOW INDEX FROM visitor_memories`).
   - [x] Recuento de filas de `visitor_memories` por `status` (solo cifras). Registrar si hay filas `accepted` con `published_until` posterior a ahora en el ambiente. Los tests no asumen tabla vacía (ver plan, «Reglas de diseño de los tests»).
-  - [x] Modelo `App\Models\VisitorMemory` y clase base: **hoy no existen** (comprobado el 2026-11-12). Registrar si `api-010` ya los creó. Si no, T-01 y T-02 quedan bloqueadas (pregunta 1 del plan).
-  - [x] Estado de `api-013`: clave de configuración del disco público, `MEDIA_PUBLIC_URL` y entrada `links` para `public/media`. **Hoy no está configurado** (comprobado el 2026-11-12). Si no lo está, T-05, T-15 y el tramo de imagen de T-16 quedan bloqueadas (pregunta 2 del plan).
+  - [x] Modelo `App\Models\VisitorMemory` y clase base: **hoy no existen**. Registrar si `api-010` ya los creó. Si no, T-01 y T-02 quedan bloqueadas (pregunta 1 del plan).
+  - [x] Estado de `api-013`: clave de configuración del disco público, `MEDIA_PUBLIC_URL` y entrada `links` para `public/media`. **Hoy no está configurado**. Si no lo está, T-05, T-15 y el tramo de imagen de T-16 quedan bloqueadas (pregunta 2 del plan).
   - [x] Versión de MySQL (`SELECT VERSION()`, debe ser 8.0.x) y collation de `visitor_memories` (dato informativo; la consulta no compara texto).
   - **Criterio de hecho:** salida registrada en esta tarea con fecha y responsable de la comprobación. Si falta algo, la tarea queda abierta y el plan se revisa.
 
@@ -94,7 +96,7 @@ Cobertura: todos los CA-01 a CA-12 y RN-01 a RN-11 tienen al menos una tarea. **
 
 - [x] **T-05** (CA-06, CA-07; RN-06): **crear `ResolvePublishedMemoryImageUrlAction`** con `execute(?string $publishedImagePath): ?string`. Devuelve `null` si la ruta es `null`, si no empieza por `memories/`, si empieza por `/`, si contiene `..` o `\`, o si el archivo no existe en el disco público configurado (`exists()` por fila, máximo 50 por respuesta; pregunta 3 del plan resuelta). Si existe, devuelve `Storage::disk(...)->url($ruta)`. Si la URL del disco no está configurada, devuelve `null` y registra un error de configuración en el log (`api-013` RN-04). El nombre del disco sale de configuración; no se escribe `'public'` ni `'media'` como literal (`api-013` CA-02). No usa `ResolveContentImageUrlAction` de `api-008`.
   - Rutas: `apps/api/src/app/Actions/Catalog/ResolvePublishedMemoryImageUrlAction.php` (nuevo).
-  - Bloqueada por: `api-013` implementada en la configuración del disco (pregunta 2: clave resuelta el 2026-11-13).
+  - Bloqueada por: `api-013` implementada en la configuración del disco.
   - **Criterio de hecho:** nunca devuelve una URL con ruta fuera de `memories/`; con `MEDIA_PUBLIC_URL` vacía la URL empieza por `APP_URL` más `/media/`; si el archivo falta, `null` sin error ni `500`.
   - Tests que lo cubren: T-15, T-16.
 
@@ -110,7 +112,7 @@ Cobertura: todos los CA-01 a CA-12 y RN-01 a RN-11 tienen al menos una tarea. **
   - **Criterio de hecho:** `route('memories.index')` termina en `/api/v1/memories`; la ruta es `GET`; no tiene middleware de autenticación.
   - Tests que lo cubren: T-17, T-19.
 
-- [x] **T-08** (CA-09; RN-09): **verificar la configuración de CORS** sin cambiar código. `apps/api/src/config/cors.php` no cambia: `paths` ya incluye `api/*` y `allowed_origins` lee `CORS_ALLOWED_ORIGINS`. `apps/api/src/.env.example` ya incluye `http://localhost:8080` (comprobado el 2026-11-12). No añadir origen fijo en código.
+- [x] **T-08** (CA-09; RN-09): **verificar la configuración de CORS** sin cambiar código. `apps/api/src/config/cors.php` no cambia: `paths` ya incluye `api/*` y `allowed_origins` lee `CORS_ALLOWED_ORIGINS`. `apps/api/src/.env.example` ya incluye `http://localhost:8080`. No añadir origen fijo en código.
   - Rutas: `apps/api/src/config/cors.php` (sin cambio), `apps/api/src/.env.example` (sin cambio).
   - **Criterio de hecho:** `grep` confirma que `allowed_origins` viene de `.env`; T-18 pasa.
   - Tests que lo cubren: T-18.
@@ -171,7 +173,7 @@ Archivos: `apps/api/src/tests/Feature/Catalog/PublicMemoriesTest.php` y `apps/ap
 
 - [x] **T-23** (CA-11; regresión): **ejecutar `php artisan test` contra `arca_pruebas`** y `vendor/bin/pint --test` sobre los archivos tocados. Incluir como regresión `PublicCatalogTest.php` (`api-006`), `PublicNewsTest.php` y `PublicEventsLimitTest.php` (`api-011`), que no deben cambiar. Registrar número de tests, aserciones y fallos preexistentes por separado.
   - **Criterio de hecho:** todos los tests de `PublicMemoriesTest` y `PublicMemoriesCoverageTest` en verde; `pint` sin errores en los archivos nuevos; evidencia pegada en el PR. Sin esta evidencia, ninguna tarea se marca. Este documento no puede verificar el CI: lo aporta quien ejecuta.
-  - Evidencia (2026-11-13, `arca_pruebas`): `--filter='PublicMemories|MemoriesPublicReadIntegration|MemoriesCoverage'`, 18 pruebas pasadas (337 aserciones); `pint` limpio. Regresión por archivo: `PublicNewsTest` y `PublicEventsLimitTest` verdes; `PublicCatalogTest` con 4 fallos preexistentes por `longevity` en `animals`, ajenos a esta feature. Pendiente de integración (S1): evidencia pegada en el PR.
+  - Evidencia (, `arca_pruebas`): `--filter='PublicMemories|MemoriesPublicReadIntegration|MemoriesCoverage'`, 18 pruebas pasadas (337 aserciones); `pint` limpio. Regresión por archivo: `PublicNewsTest` y `PublicEventsLimitTest` verdes; `PublicCatalogTest` con 4 fallos preexistentes por `longevity` en `animals`, ajenos a esta feature. Pendiente de integración (S1): evidencia pegada en el PR.
 
 - [x] **T-24** (RN-05, RN-06, RN-07; documentación): **documentar el endpoint** en `apps/api/docs/contenido-publico.md` (el archivo ya existe; añadir la sección «Momentos publicados»). Incluir: ruta y nombre, parámetros y defaults, mensajes 422, lista de campos (lista blanca), formato de `image_url` (disco `media`, `MEDIA_PUBLIC_URL` o `APP_URL` más `/media`, `null` si falta el archivo), regla de vigencia (`published_until`), y ejemplo de respuesta.
   - Rutas: `apps/api/docs/contenido-publico.md` (ajuste).
@@ -179,10 +181,10 @@ Archivos: `apps/api/src/tests/Feature/Catalog/PublicMemoriesTest.php` y `apps/ap
 
 - [x] **T-25** (RN-09, RN-10; infraestructura): **anotar en `infra/README.md`** un bloque «Portal público: momentos para recordar (api-012, web-010)» en el mismo PR de implementación, con líneas y casillas para: DBR-012 aplicada en el ambiente; disco de medios y carpeta `memories/` persistentes (`api-013`); `storage:link` para `public/media`; `CORS_ALLOWED_ORIGINS` con el origen exacto del portal (en desarrollo, `http://localhost:8080`); y la prueba `curl -i -H "Origin: <origen del portal>" <API>/api/v1/memories`, con `Access-Control-Allow-Origin` igual a ese origen. Sin valores reales ni secretos. La spec indica que este documento no edita `infra/README.md`; la edición la hace el PR de implementación.
   - Rutas: `infra/README.md` (ajuste).
-  - Bloqueada por: `api-013` implementada (pregunta 2 del plan: clave resuelta el 2026-11-13; sigue pendiente la configuración).
+  - Bloqueada por: `api-013` implementada (pregunta 2 del plan: clave resuelta; sigue pendiente la configuración).
   - **Criterio de hecho:** el bloque existe y cada línea tiene su casilla y su evidencia pendiente.
 
-- [ ] **T-26** (CA-11; DoD): **enlazar spec, plan y tasks en el PR** y citar `api-012` en el commit. Actualizar el estado de la spec a En progreso o Implementada solo con evidencia de T-23 y T-22. No marcar Implementada si algún CA no tiene un test en verde. Marcar cada T-xx solo con su evidencia.
+- [ ] **T-26** (CA-11; DoD): **enlazar spec, plan y tasks en el PR** y citar `api-012` en el commit. Fuera de alcance de esta entrega: el PR. Actualizar el estado de la spec a En progreso o Implementada solo con evidencia de T-23 y T-22. No marcar Implementada si algún CA no tiene un test en verde. Marcar cada T-xx solo con su evidencia.
   - **Criterio de hecho:** PR con los tres artefactos enlazados; estado y casillas coherentes con la evidencia.
   - Pendiente: PR, commit citando `api-012` y estado de la spec (integración S1). La spec sigue Aprobada.
 
@@ -201,24 +203,24 @@ Archivos: `apps/api/src/tests/Feature/Catalog/PublicMemoriesTest.php` y `apps/ap
 
 Las preguntas completas están en el plan (`apps/api/plan/012-public-memories-read.md`, sección «Preguntas abiertas»). Las que afectan a estas tareas:
 
-- Pregunta 1 (modelo `VisitorMemory` y `BaseModel`, de `api-010`): resuelta el 2026-11-13 (`api-010` crea el modelo; sin `BaseModel`). T-01 y T-02 siguen bloqueadas hasta implementar `api-010`.
-- Pregunta 2 (clave del disco público y estado de `api-013`): clave resuelta el 2026-11-13; T-05, T-15, T-16 (tramo de imagen) y T-25 siguen bloqueadas hasta implementar `api-013`.
-- Pregunta 3 (`image_url` con archivo ausente): resuelta el 2026-11-13: `exists()` por fila, máximo 50 (T-05 y T-15).
-- Pregunta 4 (máximo de `page`): resuelta el 2026-11-13: sin tope; una página fuera de rango devuelve lista vacía con la forma normal (T-03 y T-12).
-- Pregunta 5 (`opinion` nula): resuelta el 2026-11-13: clave `opinion` siempre presente, en `null` si falta (T-04 y T-14).
+- Pregunta 1 (modelo `VisitorMemory` y `BaseModel`, de `api-010`): resuelta (`api-010` crea el modelo; sin `BaseModel`). T-01 y T-02 siguen bloqueadas hasta implementar `api-010`.
+- Pregunta 2 (clave del disco público y estado de `api-013`): clave resuelta; T-05, T-15, T-16 (tramo de imagen) y T-25 siguen bloqueadas hasta implementar `api-013`.
+- Pregunta 3 (`image_url` con archivo ausente): resuelta: `exists` por fila, máximo 50 (T-05 y T-15).
+- Pregunta 4 (máximo de `page`): resuelta: sin tope; una página fuera de rango devuelve lista vacía con la forma normal (T-03 y T-12).
+- Pregunta 5 (`opinion` nula): resuelta: clave `opinion` siempre presente, en `null` si falta (T-04 y T-14).
 
-## Verificación (2026-11-13)
+## Verificación
 
 - Tests de la feature (`arca_pruebas`): `PublicMemoriesTest`, `PublicMemoriesCoverageTest` y `MemoriesPublicReadIntegrationTest`: 18 pruebas pasadas, 337 aserciones; `pint` limpio.
 - Regresión: `PublicNewsTest` y `PublicEventsLimitTest` verdes; `PublicCatalogTest` con 4 fallos preexistentes (`longevity` en `animals`), ajenos a esta feature.
-- Observación de T-00 (no corregida aquí): MySQL de `arca_pruebas` registrado como 8.4.11, distinto del 8.0.x que pide la Constitución I y el checklist. Decisión pendiente del responsable de BD.
+- Observación de T-00 (no corregida aquí): MySQL de `arca_pruebas` registrado como 8.4.11, distinto del 8.0.x que pide la Constitución I y el checklist. Decisión: el requisito mínimo es MySQL 8.0; `arca_pruebas` corre 8.4.11, compatible con ese requisito.
 - Casillas abiertas: T-26 (PR y estado de la spec, integración S1).
 - CI: no verificado en esta sesión.
 
-Estado final de estas tareas: **En progreso** (plan y tasks aprobados por Jonathan, 2026-11-13). La spec sigue **Aprobada**.
+Estado final de estas tareas: **En progreso** (plan y tasks aprobados por el responsable de backend). La spec sigue **Aprobada**.
 
-## Revisión 2026-11-21: paginación con total (lista de moderación)
+## Revisión: paginación con total (lista de moderación)
 
-- [x] **T-27** (CA-13; plan, nota 2026-11-21): `ListMemoriesForReviewAction` con `paginate`, `PaginationMeta` y controlador. Test: `test_ca13_review_list_meta_has_total_and_keeps_has_more` (`MemoriesReviewListTest`).
+- [x] **T-27**: `ListMemoriesForReviewAction` con `paginate`, `PaginationMeta` y controlador. Test: `test_ca13_review_list_meta_has_total_and_keeps_has_more` (`MemoriesReviewListTest`).
 - [x] **T-28** (CA-14): página absurda con `total` real y `limit` máximo 50. Test: `test_ca14_absurd_page_returns_empty_list_with_real_total`.
 - [x] **T-29** (CA-13; documental): `apps/api/docs/administracion.md` y ajuste de los tests que afirmaban `meta.page` y `meta.limit`.

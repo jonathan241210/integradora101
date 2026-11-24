@@ -1,11 +1,13 @@
 # Tareas · 016 · ticket-cancellation-report
 
-- Spec: `apps/dashboard/specs/016-ticket-cancellation-report.md` (Aprobada, Jonathan, 2026-11-20)
-- Plan: `apps/dashboard/plan/016-ticket-cancellation-report.md` (Aprobado — aprobación técnica: Jonathan, 2026-11-20; pregunta P-016-1 abierta)
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Spec: `apps/dashboard/specs/016-ticket-cancellation-report.md` (Aprobada)
+- Plan: `apps/dashboard/plan/016-ticket-cancellation-report.md` (Aprobado; pregunta P-016-1 resuelta)
 - API (dueña de la lógica): `apps/api/specs/022-ticket-cancellation-report.md`, `apps/api/plan/022-ticket-cancellation-report.md`, `apps/api/tasks/022-ticket-cancellation-report.md`
-- Enmienda: `apps/dashboard/specs/005-ticket-sales.md` (nota de 2026-11-20; sin cambio de CA)
+- Enmienda: `apps/dashboard/specs/005-ticket-sales.md`
 
-Plan aprobado 2026-11-20. Ninguna tarea está marcada. Una casilla se marca solo con evidencia aportada por la sesión principal (salida de Vitest, de lint o de tipos, o enlace a PR). Prerrequisitos antes de T-01: `dashboard-015` y `dashboard-019` implementadas (evidencia de sus PR). Para cancelar y consultar, la API `api-022` debe estar desplegada o las pruebas usan cliente simulado. El despliegue va junto con la API (DBR-024 → API → dashboard).
+Plan aprobado. Ninguna tarea está marcada. Una casilla se marca solo con evidencia aportada por la sesión principal (salida de Vitest, de lint o de tipos, o enlace a PR). Prerrequisitos antes de T-01: `dashboard-015` y `dashboard-019` implementadas (evidencia de sus PR). Para cancelar y consultar, la API `api-022` debe estar desplegada o las pruebas usan cliente simulado. El despliegue va junto con la API (DBR-024 → API → dashboard).
 
 ## Cliente (`packages/api-client`)
 
@@ -30,7 +32,7 @@ Plan aprobado 2026-11-20. Ninguna tarea está marcada. Una casilla se marca solo
 - [x] **T-10** (CA-18): `src/components/CancelTicketDialog.tsx` añade un `SelectField` obligatorio «Motivo» con las opciones de `useCancellationReasons()` (no etiquetas fijas en código). `src/viewmodels/ticket-history.ts` guarda `reasonCode` y las opciones. Tests `src/tests/cancel-ticket-reason.test.tsx`: `test_ca18`.
 - [x] **T-11** (CA-19, CA-20): sin motivo elegido, «Cancelar boleto» no llama a la API y muestra «Elige un motivo de cancelación.» junto al selector (sustituye el texto de `dashboard-005`, según la nota de la enmienda). Con «Otro», el campo de comentario es obligatorio y se rotula «Describe el motivo»; con los demás motivos es opcional. La SPA no fija el mínimo de caracteres: envía el texto y muestra el 422 de la API junto al campo. Tests `src/tests/cancel-ticket-reason.test.tsx`: `test_ca19`, `test_ca20`.
 - [x] **T-12** (CA-21): tras confirmar (y la contraseña de `dashboard-015` cuando la API la pida), 200 refresca la lista del historial y muestra el aviso accesible de cancelación; 422 de motivo, 403 y 429 se muestran en el diálogo con el mensaje de la API, sin reintento automático. Tests `src/tests/cancel-ticket-reason.test.tsx`: `test_ca21`.
-- [x] **T-13** (CA-26 de esta spec; pregunta 3 de `api-022` cerrada el 2026-11-20): la columna «Motivo» de `src/views/TicketHistoryView.tsx` muestra la etiqueta que devuelve la API (`cancellation_reason_label`) y el comentario, no el texto libre. Desbloqueada por la decisión del 2026-11-20. Evidencia: test de `ticket-history.test.tsx` actualizado con `test_ca26_…`.
+- [x] **T-13** (CA-26 de esta spec; pregunta 3 de `api-022` cerrada): la columna «Motivo» de `src/views/TicketHistoryView.tsx` muestra la etiqueta que devuelve la API (`cancellation_reason_label`) y el comentario, no el texto libre. Desbloqueada por la decisión. Evidencia: test de `ticket-history.test.tsx` actualizado con `test_ca26_…`.
 
 ## Calidad, cobertura y entrega
 
@@ -39,7 +41,7 @@ Plan aprobado 2026-11-20. Ninguna tarea está marcada. Una casilla se marca solo
 - [x] **T-16** (CA-25): `src/tests/cancellation-report-coverage.test.tsx`: comprueba que existe al menos una prueba que nombra cada CA-01 a CA-26 de esta spec, por búsqueda de los identificadores en `src/tests/`.
 - [x] **T-17**: actualizar la documentación local del dashboard si existe `apps/dashboard/docs/` con la página o el historial; si no existe, anotarlo en el PR. La enmienda de `dashboard-005` ya apunta a esta spec: no se edita `docs/` sin autorización expresa.
 - [ ] **T-18**: verificaciones del dashboard: lint, comprobación de tipos y `vitest run` sobre los archivos de esta spec y la regresión. Registrar la salida real aportada por la sesión principal. Sin evidencia, no se marca.
-- [ ] **T-19**: PR enlaza `apps/dashboard/specs/016-ticket-cancellation-report.md`, `apps/dashboard/plan/016-ticket-cancellation-report.md`, `apps/dashboard/tasks/016-ticket-cancellation-report.md` y `apps/api/specs/022-ticket-cancellation-report.md` (con su PR). El commit cita `dashboard-016`. Los commits los hace Jonathan con el comando que indique. Estado de la spec: «En progreso» al iniciar y «Implementada» solo con enlace a PR y resultados de CA-01 a CA-25.
+- [ ] **T-19**: PR enlaza `apps/dashboard/specs/016-ticket-cancellation-report.md`, `apps/dashboard/plan/016-ticket-cancellation-report.md`, `apps/dashboard/tasks/016-ticket-cancellation-report.md` y `apps/api/specs/022-ticket-cancellation-report.md` (con su PR). El commit cita `dashboard-016`. Los commits los hace el equipo con el comando acordado. Estado de la spec: «En progreso» al iniciar y «Implementada» solo con enlace a PR y resultados de CA-01 a CA-25.
 
 Cada tarea de código nombra sus CA-xx; cada CA-xx tiene al menos una tarea de prueba (T-01 a T-12, T-14 y T-16; CA-26 en T-13). Las tareas de la API y de BD están en `apps/api/tasks/022-ticket-cancellation-report.md`; esta lista no las ejecuta.
 
@@ -47,8 +49,8 @@ Cada tarea de código nombra sus CA-xx; cada CA-xx tiene al menos una tarea de p
 
 - [x] **T-21** (CA-29, CA-30, CA-31): conciliación sin columna `balanced`, aviso de error por fila y por tabla, línea de ayuda. Tests `cancellation-report-reconciliation.test.tsx`: `test_ca29`, `test_ca30`, `test_ca31`; CA-11 y CA-12 ajustados por diseño; `cancellation-report-coverage.test.tsx` cubre CA-01 a CA-31.
 
-## Revisión 2026-11-21 (c)
+## Revisión (c)
 
 - [x] **T-22** (CA-35): tipos de `@arca/api-client` sin `alert`/`alert_reasons`, con `late_cancellation`, `signal_codes`, `days_to_review` y `folios`; se elimina `CancellationAlertBadge`; test CA-14/CA-15 ajustados. Test: `test_ca35_old_alerts_are_removed_everywhere`.
 - [x] **T-23** (CA-32, CA-33): columnas «Tardía», «Señales» y «Días por revisar». Tests: `test_ca32_…`, `test_ca33_…`.
-- [x] **T-24** (CA-34): aviso «Se exportará con los filtros aplicados». Test: `test_ca34_export_note_lists_applied_filters`. Cobertura CA-01 a CA-35 y evidencia: `npx vitest run` 899 en verde y `tsc --noEmit` limpio. Revisión visual pendiente de Jonathan.
+- [x] **T-24** (CA-34): aviso «Se exportará con los filtros aplicados». Test: `test_ca34_export_note_lists_applied_filters`. Cobertura CA-01 a CA-35 y evidencia: `npx vitest run` 899 en verde y `tsc --noEmit` limpio. Revisión visual pendiente.

@@ -4,8 +4,8 @@
 >
 > Esta guía **no es una fase del plan de implementación**. No tiene CA ni RN en ninguna spec, no requiere ADR ahora y no autoriza dependencias, proveedor, buckets ni llaves. Describe qué habría que hacer **si** se quiere usar un almacenamiento de objetos. Quien continúe el proyecto elegirá la alternativa que mejor le parezca.
 
-- Estado: opción futura (sin fecha). Decisión del responsable (Jonathan, 2026-11-10): sale del plan de implementación.
-- Decisión vigente: la carpeta de medios versionada `apps/api/src/media/` (`docs/adr/0026-object-storage-s3-images.md`, Aceptado 2026-11-12; spec `apps/api/specs/013-object-storage-images.md`, Aprobada 2026-11-12).
+- Estado: opción futura (sin fecha). Decisión del responsable de backend: sale del plan de implementación.
+- Decisión vigente: la carpeta de medios versionada `apps/api/src/media/` (`docs/adr/0026-object-storage-s3-images.md`, Aceptado; spec `apps/api/specs/013-object-storage-images.md`, Aprobada).
 - Si alguien decide adoptarlo, se crea un ADR propio (servicio externo y dependencia), una spec nueva o enmienda de `api-013`, y su plan y tareas. Esta guía no sustituye a ninguno de esos documentos.
 - Relacionado: ADR 0013 (almacenamiento detrás de discos de Laravel Filesystem), Constitución I (stack portable) y V (la base de datos es la fuente de verdad).
 
@@ -142,17 +142,19 @@ Notas sobre el cambio de base de datos:
 5. **Binarios en MySQL (BLOB).** Descartada: infla la base administrada (ADR 0013), complica respaldos y exige DBR (Constitución V).
 6. **Otros proveedores de nube con interoperabilidad S3.** El ADR 0013 dejó Google Cloud fuera como destino del sistema. Cualquier otro proveedor es una decisión aparte.
 
-## 8. Preguntas que decidir al adoptarlo
+## 8. Decisiones al adoptarlo
 
-1. ¿Qué proveedor se elige (Cloudflare R2, Amazon S3, DigitalOcean Spaces u otro) y cuáles son sus condiciones vigentes en esa fecha?
-2. ¿Hay requisito de ubicación de los datos (país o región) para las fotos de visitantes?
-3. ¿Cuánto dura la URL temporal de revisión (propuesta: 10 minutos como máximo) o se usa una ruta autenticada que entregue el binario?
-4. Al aceptar, ¿la foto se mueve del bucket privado al público o se copia? (propuesta: mover)
-5. ¿Se limpian los metadatos de las imágenes existentes al copiarlas? (propuesta: sí)
-6. ¿Quién crea los buckets y las llaves, y se usan llaves separadas para el bucket público y el privado si el proveedor lo permite? (propuesta: infraestructura; dos buckets por ambiente)
-7. ¿Qué retención de versiones y qué copia de respaldo fuera del proveedor se exigen?
-8. ¿Qué procedimiento se aplica para retirar `media/memories/` del historial de git antes de producción?
-9. ¿Se acepta la tensión con la Constitución I (protocolo S3 de origen de proveedor) o requiere enmienda?
+Estas decisiones solo aplican si la opción se adopta con un ADR propio. Hoy no hay código ni proveedor elegido.
+
+1. **Proveedor.** Fuera de alcance de esta entrega: no hay proveedor elegido ni condiciones verificadas.
+2. **Ubicación de los datos.** Fuera de alcance de esta entrega: el requisito de región no está definido.
+3. **Vigencia de la URL temporal de revisión.** Se optó por la propuesta del documento (10 minutos como máximo) como punto de partida. No se implementa.
+4. **Mover o copiar al aceptar.** Se optó por mover la foto del bucket privado al público, según la propuesta del documento.
+5. **Metadatos de imágenes existentes.** Se optó por limpiar los metadatos al copiarlas, según la propuesta del documento.
+6. **Buckets y llaves.** Se optó por que la infraestructura cree los buckets y las llaves, con dos buckets por ambiente, según la propuesta del documento.
+7. **Retención y respaldo.** Fuera de alcance de esta entrega: la retención de versiones y la copia fuera del proveedor no están definidas.
+8. **Retirada de `media/memories/` del historial de git.** Fuera de alcance de esta entrega: el procedimiento se decide antes de producción (ADR 0026, riesgo a).
+9. **Constitución I.** Fuera de alcance de esta entrega: si se adopta el protocolo S3, la tensión con la Constitución I requiere un ADR de enmienda o una excepción registrada.
 
 ## Referencias
 

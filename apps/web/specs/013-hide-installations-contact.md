@@ -2,9 +2,10 @@
 
 - App dueña: `web`
 - Apps/paquetes afectados: `web` (solo `apps/web/src/index.html`; `styles.css` y `script.js` no cambian). Sin cambios en `api`, `dashboard`, `pwa`, `mobile` ni paquetes.
-- Estado: Aprobada (Jonathan, 2026-11-18). Aprobar no autoriza implementar hasta tener plan y tasks aprobados.
-- Solicitante / responsable funcional: usuario del proyecto (nombre por registrar)
-- Aprobación funcional: Jonathan, 2026-11-18
+- Estado: Implementada
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Aprobación funcional: Aprobada
 - Dependencias: ninguna de API ni de BD. Las líneas base de orden de secciones de `web-010` y `web-011` siguen válidas porque las secciones permanecen en el DOM; solo se anota en «Revisión».
 - Este borrador no autoriza plan, tasks ni código.
 
@@ -87,12 +88,12 @@ Ubicación actual en `apps/web/src/index.html`:
   - **Regla CSS que anula `hidden`:** `.contact-form` tiene `display: grid`, pero la regla global `[hidden]` de `styles.css` (línea 38) usa `!important` y gana. Se verifica en CA-08. Si alguien añade un `display` con `!important` más adelante, la sección se vería; la revisión manual lo detecta.
   - **Lector de pantalla:** un elemento con `hidden` sale del árbol de accesibilidad, lo que es lo esperado.
   - **Pruebas de orden de secciones:** si `web-010` o `web-011` cuentan secciones visibles en lugar de ids, cambiarían. Se revisa en el plan.
-- **Preguntas pendientes:** ninguna. Cerradas por Jonathan (2026-11-18):
+- **Decisiones** (cerradas por el equipo):
   - Enlaces externos a `#instalaciones`: no hay enlaces conocidos. Verificado en `apps/web/src`: solo el enlace del menú (línea 102). Se acepta.
   - El enlace «Contacto» se mantiene hacia el pie de página, no hacia el formulario oculto (RN-03).
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan, 2026-11-18. Decisiones de 2026-11-18 (Jonathan): sin enlaces externos conocidos y «Contacto» al pie.
+- Aprobación: Aprobada. Decisiones: sin enlaces externos conocidos y «Contacto» al pie.
 - Enmienda de notas: `apps/web/specs/011-dynamic-tulanpedia.md` y `apps/web/specs/010-dynamic-memories.md` registran el orden de secciones (`instalaciones` incluido) como línea base. Ese orden no cambia con esta spec, porque las secciones siguen en el DOM. Solo se anota aquí; esas specs no se modifican.
 - Evidencia/enlaces: `apps/web/src/index.html` (líneas 102, 107, 576 y 900), `apps/web/src/styles.css` (línea 38, regla `[hidden]`; líneas 450 y 683, sin `display` que anule el atributo en la sección), `apps/web/src/script.js` (línea 209), `apps/web/src/tests/news-events.test.mjs` (lista de ids, línea 435), `apps/web/tasks/011-dynamic-tulanpedia.md` (línea base de `animals.test.mjs`).

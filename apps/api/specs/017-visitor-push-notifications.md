@@ -2,12 +2,13 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña de cuándo se avisa, a quién, el texto, las preferencias y los tokens); `mobile` (permiso de Android, registro del teléfono y aviso en la barra del sistema, spec `mobile-013`); `packages/api-client` (métodos y tipos del visitante, sin lógica de negocio).
-- Estado: En progreso
-- Solicitante / responsable funcional: Aksel
-- Aprobación funcional: Aksel, 2026-11-14
-- Decisiones de alcance confirmadas el 2026-11-14: solo push a la barra del sistema; sin correo; un momento se avisa al aceptarlo o al rechazarlo; noticias y eventos solo a cuentas con sesión que activaron ese aviso; dos preferencias distintas. `news_and_events` nace en `false` y `memory_status` nace en `true`.
-- Dependencias: `api-004` (sesión de visitante y borrado de cuenta), `api-010` (transiciones de un momento), `api-011` (cuándo una noticia es visible) y `api-006` (cuándo un evento es visible). El plan y el ADR 0029 ya están aceptados, y DBR-017 está Lista para backend (Aksel, 2026-11-14). Las tasks están hechas. Aksel confirmó el 2026-11-20 la verificación y el pull.
-- Aprobar esta spec no autoriza implementar por sí sola. La implementación y la verificación ya quedaron confirmadas el 2026-11-20.
+- Estado: Implementada
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Aprobación funcional: Equipo de producto móvil
+- Decisiones de alcance confirmadas: solo push a la barra del sistema; sin correo; un momento se avisa al aceptarlo o al rechazarlo; noticias y eventos solo a cuentas con sesión que activaron ese aviso; dos preferencias distintas. `news_and_events` nace en `false` y `memory_status` nace en `true`.
+- Dependencias: `api-004` (sesión de visitante y borrado de cuenta), `api-010` (transiciones de un momento), `api-011` (cuándo una noticia es visible) y `api-006` (cuándo un evento es visible). El plan y el ADR 0029 ya están aceptados, y DBR-017 está Lista para backend. Las tasks están hechas. Equipo de producto móvil confirmó la verificación y el pull.
+- Aprobar esta spec no autoriza implementar por sí sola. La implementación y la verificación ya quedaron confirmadas.
 
 ## Problema y contexto
 
@@ -75,7 +76,7 @@ Afecta a quien tiene cuenta de visitante en la app Android. El portal, el dashbo
 
 - **RN-01 (la API redacta y decide):** La API decide si un aviso corresponde, a qué cuenta y con qué texto. El teléfono solo lo muestra. El texto visible va en el payload porque la app puede estar cerrada.
 - **RN-02 (dos preferencias):** `news_and_events` cubre noticias y eventos. `memory_status` cubre la aceptación y el rechazo de un momento. Una no enciende la otra.
-- **RN-03 (valores iniciales):** Al crear las preferencias, `news_and_events` nace en `false` y `memory_status` nace en `true`. Confirmado por Aksel el 2026-11-14.
+- **RN-03 (valores iniciales):** Al crear las preferencias, `news_and_events` nace en `false` y `memory_status` nace en `true`. Confirmado por Equipo de producto móvil.
 - **RN-04 (visibilidad):** Una noticia se puede avisar solo cuando es visible según `api-011` RN-03, con «hoy» en `America/Mexico_City` (`api-011` RN-14). Un evento, solo cuando es visible según `api-006`. El aviso espera a ese momento si al guardar todavía no lo es.
 - **RN-05 (una vez por contenido):** Cada noticia y cada evento generan como máximo un push, el de la primera vez que fueron visibles. Editar, ocultar o volver a publicar no genera otro.
 - **RN-06 (transiciones del momento):** Solo el paso a `accepted` y el paso a `rejected` generan push. Cada transición genera uno. En proceso, el envío, el reenvío y el vencimiento no generan push.
@@ -108,14 +109,14 @@ Afecta a quien tiene cuenta de visitante en la app Android. El portal, el dashbo
 
 ## Dependencias, riesgos y preguntas
 
-- Dependencias y ADR: el ADR 0029 está Aceptado (Aksel, 2026-11-14). El envío es HTTP de Laravel hacia Expo, sin paquete nuevo en la API. `expo-notifications` se instala con las tasks. Credenciales solo en `.env`. El PR de implementación anota el requisito en `infra/README.md` (scheduler, worker de cola, credenciales y build de Play Store: el push no funciona en Expo Go).
+- Dependencias y ADR: el ADR 0029 está Aceptado. El envío es HTTP de Laravel hacia Expo, sin paquete nuevo en la API. `expo-notifications` se instala con las tasks. Credenciales solo en `.env`. El PR de implementación anota el requisito en `infra/README.md` (scheduler, worker de cola, credenciales y build de Play Store: el push no funciona en Expo Go).
 - Divergencia: `api-010` y `mobile-010` citan esta spec en su «Fuera de alcance». `mobile-002` CA-14 cita los interruptores de `mobile-013`.
 - Riesgos: sin el permiso de Android o sin token, la persona no se entera hasta abrir la app. Una noticia con `published_date` futuro espera a ese día y el ambiente necesita el pase programado encendido. El título que viaja es el de ese momento; una edición posterior no actualiza el aviso ya enviado.
-- Preguntas pendientes: ninguna. El alcance y los valores iniciales quedaron confirmados por Aksel el 2026-11-14.
+- Decisiones: ninguna pendiente. El alcance y los valores iniciales quedaron confirmados por Equipo de producto móvil.
 
 ## Revisión
 
-- Aprobadores y fecha: Aksel, 2026-11-14 (aprobación funcional). Plan aprobado técnicamente por Victor Adrian el 2026-11-14. Faltan las tasks.
+- Aprobación: Equipo de producto móvil (aprobación funcional). Plan aprobado técnicamente por Responsable de BD Adrian. Faltan las tasks.
 - Evidencia/enlaces: `apps/mobile/specs/013-visitor-push-notifications.md`, `apps/api/plan/017-visitor-push-notifications.md`, `docs/database/requests/DBR-017-visitor-push-notifications.md`, `docs/adr/0029-visitor-android-push.md`, `apps/api/specs/010-visitor-memory-requests.md`, `apps/api/specs/011-public-news-read.md`, `apps/api/specs/006-public-catalog-read.md`, `apps/api/specs/004-visitor-authentication.md`, `docs/adr/0004-mobile-react-native.md`, `docs/adr/0011-visitor-identity-and-mobile-session.md`, `docs/adr/0012-android-distribution-channel.md`.
 
-> **Nota de revisión (2026-11-20, sin cambio de requisitos ni de estado):** `api-025` no cambia esta spec: no calcula días ni horas de negocio. Sin cambio.
+> **Nota de revisión (, sin cambio de requisitos ni de estado):** `api-025` no cambia esta spec: no calcula días ni horas de negocio. Sin cambio.

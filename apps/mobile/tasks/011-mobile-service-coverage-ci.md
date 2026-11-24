@@ -3,7 +3,9 @@
 - Spec: `apps/mobile/specs/011-mobile-service-coverage-ci.md`
 - Plan: `apps/mobile/plan/011-mobile-service-coverage-ci.md`
 - Estado: Implementada — enmienda del 80 % validada localmente y en Actions
-- Plan aprobado: usuario solicitante, 2026-11-09
+- Solicitada: 2026-11-09
+- Aprobada: 2026-11-09
+- Plan aprobado: Aprobada
 
 ## Implementación
 
@@ -24,9 +26,9 @@
 
 ## Aprobación
 
-- Spec aprobada por el usuario solicitante, 2026-11-09.
-- Plan aprobado por el usuario solicitante, 2026-11-09.
-- Aprobación de tasks: usuario solicitante, 2026-11-09.
+- Spec aprobada.
+- Plan aprobado.
+- Aprobación de tasks: Aprobada.
 
 ## Estado y evidencia
 
@@ -37,7 +39,7 @@
 
 ## Enmienda de tasks aprobada — requisito del 80 %
 
-- Estado: tasks aprobadas por el usuario solicitante, 2026-11-09.
+- Estado: tasks aprobadas.
 - Se conserva la implementación original documentada arriba; las siguientes tasks cubren el nuevo alcance aprobado funcionalmente.
 
 ### Pruebas de cobertura y fallos actuales
@@ -52,10 +54,10 @@
 
 ### Aprobación de la enmienda
 
-- Requisito funcional del 80 %: aprobado por el usuario solicitante, 2026-11-09.
-- Alcance técnico y tasks T-09 a T-15: aprobados por el usuario solicitante, 2026-11-09.
+- Requisito funcional del 80 %: aprobado.
+- Alcance técnico y tasks T-09 a T-15: aprobados.
 
-## Evidencia local de T-09 a T-14 — 2026-11-09
+## Evidencia local de T-09 a T-14
 
 - `npm run test:coverage --workspace=apps/mobile -- --runInBand --silent`: exit 0; 62 suites, 310 pruebas y 1 snapshot aprobados; 21,327 s. No se excluyeron pruebas, fuentes ni se redujeron umbrales.
 - Sentencias: **98,03 %**; ramas: **94,51 %**; funciones: **96,49 %**; líneas: **98,61 %**. Todos los archivos con código instrumentado cumplen el mínimo del 80 % en cada métrica.
@@ -64,7 +66,7 @@
 - `/verify`: Mobile declara `test` y `test:coverage` en `apps/mobile/package.json`; se ejecutó el segundo y TypeScript disponible. No hay scripts lint/format/types declarados. No se instalaron dependencias, no cambiaron lockfiles ni se accedió a BD.
 - Reporte HTML y LCOV presentes en `apps/mobile/coverage/`, sin versionar archivos generados. La evidencia remota de T-15 queda pendiente.
 
-## Evidencia remota de T-15 — 2026-11-09
+## Evidencia remota de T-15
 
 - Commit de implementación: `e59793b`, publicado en `DevOps`.
 - [Actions 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501): conclusión `success`; siete jobs en verde, incluido el job móvil con cobertura.

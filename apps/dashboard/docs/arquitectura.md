@@ -30,7 +30,7 @@ Los permisos efectivos se aplican en la API. La navegación del dashboard solo p
 | `TwoFactorSetupView` | Mostrar QR, confirmar TOTP y presentar códigos de recuperación una sola vez |
 | `PwaRedirectView` | Informar y redirigir a veterinaria cuando `pwa_url` está configurada |
 | `useAuthSession` | ViewModel de sesión: comprobación inicial, login, reto, enrolamiento, expiración y logout |
-| `navigation` | Traducir `home` y permisos a las secciones que se pueden presentar (Usuarios solo con `users.manage` desde el 2026-11-05); `sectionsForPermissions` describe las secciones que abre un rol (`dashboard-017`) |
+| `navigation` | Traducir `home` y permisos a las secciones que se pueden presentar (Usuarios solo con `users.manage` desde); `sectionsForPermissions` describe las secciones que abre un rol (`dashboard-017`) |
 | `console-notices` / `useConsoleNotices` | Avisos de cambios de cuentas admin por consola: carga solo con `users.manage`, cierre = marcar como leído (`dashboard-017`) |
 | `pending-review` / `usePendingReviewCounts`, `PendingReviewNotices`, `SidebarLink` | Pendientes de revisión (`dashboard-018`): consulta `GET /api/v1/admin/pending-counts` solo con `species.review` o `memories.review`, al iniciar y al cambiar de sección (mínimo 15 s entre consultas con éxito; sin sondeo). Puntito decorativo en «TulanPedia» y «Momentos» (nombre accesible con el estado) y un aviso informativo por tipo, una vez por inicio. Un fallo es silencioso |
 | `useDashboardShell` / `dashboard-shell` | Sección activa, menú móvil y aviso; navega solo a secciones de la lista de `navigation` (sin datos de demostración) |

@@ -2,8 +2,10 @@
 
 - Spec: `apps/web/specs/001-relocate-static-portal.md`
 - Estado de spec: Implementada
-- Responsable técnico: `<por identificar>`
-- Fecha del plan: 2026-10-06
+- Solicitada: 2026-10-06
+- Aprobada: 2026-10-06
+- Responsable técnico: Frontend
+- Aprobación técnica: Aprobada
 
 ## Diseño de solución
 
@@ -77,7 +79,7 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos. La excepci�
 2. **Preparar `tasks/001-relocate-static-portal.md`** con pasos T-xx atómicos (T-01 inventariar, T-02 mover, T-03 ajustar `index.php`, T-04 eliminar `.gitkeep`, T-05 verificar, T-06 eliminar origen, T-07 eliminar Docker, T-08 `git status`).
 3. **Ejecutar tareas** en orden; no eliminar `portal-web/` ni el `index.php` raíz hasta que las verificaciones CA-01, CA-02 y CA-05 pasen.
 4. **Revisión técnica** con `git diff`, `git status` y los scripts de verificación.
-5. **Aprobador funcional:** Jonathan (2026-10-06). **Aprobación técnica:** Jonathan (2026-10-06).
+5. **Aprobador funcional:** Aprobada. **Aprobación técnica:** Aprobada.
 
 **Estado técnico:** Aprobado para implementar.
 

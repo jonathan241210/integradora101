@@ -3,8 +3,9 @@
 - App dueña: `web`
 - Apps/paquetes afectados: `apps/web`
 - Estado: Implementada
-- Solicitante / responsable funcional: Solicitante de esta conversación; nombre por identificar
-- Aprobación funcional: Solicitante, 2026-10-08 (aprobación en esta conversación)
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -12,7 +13,7 @@ La sección actual del mapa es un esquema de zonas con formas simples y una list
 
 La persona solicitante confirmó que acepta una ilustración aproximada hecha con código, sin proveedor externo ni fotografía satelital, y que deben conservarse las zonas y servicios existentes. También eligió SVG incluidos directamente en el portal con una estética similar a Bootstrap Icons, sin instalar la biblioteca Bootstrap Icons ni otras dependencias. El mapa será demostrativo y no describirá con exactitud la distribución real del zoológico.
 
-El 2026-10-08 la persona solicitante pidió mejorar el relieve visual 3D e incorporar controles para acercar, alejar y restablecer la vista, además de conservar la selección interactiva de las zonas. Confirmó que se mantenga una ilustración 3D aproximada, no un mapa geográfico real, y aprobó el alcance ampliado.
+El la persona solicitante pidió mejorar el relieve visual 3D e incorporar controles para acercar, alejar y restablecer la vista, además de conservar la selección interactiva de las zonas. Confirmó que se mantenga una ilustración 3D aproximada, no un mapa geográfico real, y aprobó el alcance ampliado.
 
 ## Objetivos
 
@@ -86,15 +87,15 @@ No se crean, consultan ni modifican datos. No se utiliza ubicación del disposit
 
 ## Revisión
 
-- Aprobadores y fecha: Solicitante, 2026-10-08; aprobó el alcance ampliado en esta conversación.
-- Ampliación aprobada por el solicitante el 2026-11-18: sustituir el dibujo SVG por la fotografía aérea local y cargar un GLB exportado desde Blender.
-- Evidencia/enlaces: La persona solicitante confirmó el 2026-10-08 que prefiere conservar la ilustración, mejorar su aspecto 3D y añadir zoom/restablecimiento, no un mapa geográfico real. La spec `003-lion-hero-mobile-navigation` cubre separadamente el cambio del hero y menú adaptable.
+- Aprobación: Aprobada (alcance ampliado).
+- Ampliación aprobada por el solicitante: sustituir el dibujo SVG por la fotografía aérea local y cargar un GLB exportado desde Blender.
+- Evidencia/enlaces: La persona solicitante confirmó que prefiere conservar la ilustración, mejorar su aspecto 3D y añadir zoom/restablecimiento, no un mapa geográfico real. La spec `003-lion-hero-mobile-navigation` cubre separadamente el cambio del hero y menú adaptable.
 
 La corrección del visor mantiene el contrato de la enmienda aprobada y utiliza el modelo local existente `assets/mapa_corregido.glb`. El portal indica cómo abrirlo cuando se accede directamente como archivo.
 
 ## Enmienda aprobada · mapa sin columna lateral
 
-- Aprobación funcional: solicitante, 2026-11-21, en esta conversación.
+- Aprobación funcional: Aprobada.
 - Objetivo: dar todo el ancho de la sección al mapa público y usar la foto suministrada en la vista 2D.
 - **CA-01:** La vista 2D usa la imagen suministrada en `apps/web/src/assets/MAPA_2D.svg`.
 - **CA-02 / RN-02:** Desaparecen la columna «Zonas y servicios», su lista y el mensaje inicial «Elige una zona o servicio del mapa». Permanecen los siete marcadores que ya están sobre el mapa. Baños, Alimentos, Bebederos, Áreas de descanso, Enfermería y Tiendas salen de esta sección porque solo figuran en la columna.
@@ -103,5 +104,5 @@ La corrección del visor mantiene el contrato de la enmienda aprobada y utiliza 
 
 ## Enmienda aprobada · plano limpio y desplazamiento
 
-- Aprobación funcional: solicitante, en esta conversación.
+- Aprobación funcional: Aprobada.
 - Se retiran los botones sobre el plano y los controles de zoom 2D. El botón de alternar permanece accesible. El visor permite la rotación y cede el desplazamiento vertical a la página.

@@ -2,9 +2,10 @@
 
 - App dueña: `web`
 - Apps/paquetes afectados: `apps/web` (buscador, fuentes y navegación). La API y `packages/api-client` no cambian; se consumen los endpoints públicos existentes.
-- Estado: Implementada (corrección de envíos concurrentes CA-07 autorizada y verificada el 2026-11-18).
-- Solicitante / responsable funcional: Jonathan
-- Aprobación funcional: aprobada por Jonathan en esta conversación, 2026-11-18. Alcance: todas las secciones públicas de la portada, especies publicadas, noticias y eventos publicados, incluyendo sus páginas de listado; panel bajo el buscador; resultados parciales con aviso por fuente si alguna carga falla.
+- Estado: Implementada (corrección de envíos concurrentes CA-07 autorizada y verificada).
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Aprobación funcional: Aprobada. Alcance: todas las secciones públicas de la portada, especies publicadas, noticias y eventos publicados, incluyendo sus páginas de listado; panel bajo el buscador; resultados parciales con aviso por fuente si alguna carga falla.
 
 ## Problema y contexto
 
@@ -74,15 +75,15 @@ Las fuentes dinámicas se consultan de forma independiente. Si alguna falla, el 
 
 ## Dependencias, riesgos y preguntas
 
-- Dependencias/ADR: `web-009` (noticias y eventos dinámicos), `web-010` (momentos dinámicos), `web-011` (TulanPedia dinámica), ADR 0024, 0027, 0028 y ADR 0031 (Aceptado, 2026-11-18).
+- Dependencias/ADR: `web-009` (noticias y eventos dinámicos), `web-010` (momentos dinámicos), `web-011` (TulanPedia dinámica), ADR 0024, 0027, 0028 y ADR 0031 (Aceptado).
 - Riesgos: recorrer noticias y momentos paginados y obtener detalles publicados de noticias puede requerir varias solicitudes. Los fallos se aíslan por fuente y se muestran como resultados parciales.
-- Preguntas pendientes: ninguna funcional. Plan aprobado el 2026-11-18; ADR 0031 aceptado.
+- Sin preguntas funcionales abiertas. Plan aprobado; ADR 0031 aceptado.
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan aprobó alcance y criterios funcionales el 2026-11-18.
-- Corrección autorizada por Jonathan, 2026-11-18: cerrar al hacer clic fuera, retirar el desplazamiento automático a Animales y abrir el destino del resultado seleccionado (CA-04/CA-05).
-- Corrección adicional autorizada por Jonathan, 2026-11-18: hacer parpadear brevemente el destino y resolver el desplazamiento persistente a Animales en `http://localhost:8080/index.html`.
-- Ajuste visual autorizado por Jonathan, 2026-11-18: mejorar aviso, reintentos, tarjetas y posicionamiento del panel mostrado en la captura.
-- Corrección autorizada por Jonathan, 2026-11-18: mientras una carga sigue activa, respetar la última consulta válida y mantener el mensaje de validación para una consulta vacía (CA-07).
+- Aprobación: Aprobada (alcance y criterios funcionales).
+- Corrección autorizada: cerrar al hacer clic fuera, retirar el desplazamiento automático a Animales y abrir el destino del resultado seleccionado (CA-04/CA-05).
+- Corrección adicional autorizada: hacer parpadear brevemente el destino y resolver el desplazamiento persistente a Animales en `http://localhost:8080/index.html`.
+- Ajuste visual autorizado: mejorar aviso, reintentos, tarjetas y posicionamiento del panel mostrado en la captura.
+- Corrección autorizada: mientras una carga sigue activa, respetar la última consulta válida y mantener el mensaje de validación para una consulta vacía (CA-07).
 - Evidencia/enlaces: `apps/web/src/js/search.js`, `apps/web/src/tests/search.test.mjs` y `apps/web/tasks/012-portal-search.md`; retirado el envío heredado de `script.js`. Las consultas muestran resultados sin desplazar a Animales y los enlaces conservan su destino.

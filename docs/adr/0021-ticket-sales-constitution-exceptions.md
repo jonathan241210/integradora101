@@ -1,10 +1,11 @@
 # 0021 · Excepciones a la Constitución en la feature de ventas de boletos
 
 - Estado: Aceptado
-- Fecha: 2026-11-02
+- Solicitada: 2026-11-02
+- Aprobada: 2026-11-02
 - Spec relacionada: `apps/api/specs/009-ticket-sales.md` (principio V, CA-13 y RN-13). Planes que lo enlazan en su Constitution Check: `apps/api/plan/009-ticket-sales.md` y `apps/dashboard/plan/005-ticket-sales.md`.
 
-> Estado **Aceptado** (2026-11-02, Jonathan): Jonathan, responsable funcional y técnico de backend de `api-009`, acepta las excepciones de este ADR y la decisión de no crear `BaseModel` en esta feature. La Constitución exige además el acuerdo del equipo para cambiar sus principios. No consta en el repositorio un acuerdo expreso del resto del equipo. **El equipo debe enterarse leyendo este documento.** Cualquier objeción se registra como revisión de este mismo ADR, sin borrarlo.
+> Estado **Aceptado**: el responsable funcional y técnico de backend de `api-009` acepta las excepciones de este ADR y la decisión de no crear `BaseModel` en esta feature. La Constitución exige además el acuerdo del equipo para cambiar sus principios. No consta en el repositorio un acuerdo expreso del resto del equipo. **El equipo debe enterarse leyendo este documento.** Cualquier objeción se registra como revisión de este mismo ADR, sin borrarlo.
 
 ## Contexto
 
@@ -51,7 +52,7 @@ La feature deja fuera de alcance varios elementos que podrían parecer parte de 
 
 1. **Avisos de cambio de precio en el dashboard.** Afecta a `api-009` CA-23 a CA-26, CA-32, CA-33; RN-10, RN-11, RN-19; y a `dashboard-005` CA-18 a CA-20, CA-26, RN-04 y RN-11.
    - Cómo retomarlo: una revisión de `api-009` los reactiva. Antes hay que resolver su pregunta 10 (deduplicación por `ticket_price_id` y destinatario) y la idempotencia de la creación de avisos al consultar, que la spec marca como riesgo. Si `staff_notifications` se usa, se revisa la excepción b).
-2. **Correo de avisos de precio.** Afecta a ADR 0020 (Propuesto), `api-009` CA-35 a CA-41, RN-20 a RN-28 y `dashboard-005` CA-30 y RN-14.
+2. **Correo de avisos de precio.** Afecta a ADR 0020 (Rechazado — fuera de alcance de esta entrega), `api-009` CA-35 a CA-41, RN-20 a RN-28 y `dashboard-005` CA-30 y RN-14.
    - Cómo retomarlo: aprobar ADR 0020 con su proveedor SMTP, remitente, retención de `failed_jobs` y operación de la cola (preguntas 11 a 17 de `api-009`) antes de cualquier código. Sin ADR aprobado no se implementa.
 3. **`BaseModel` unificado.** Afecta a `Ticket`, `TicketPrice` y a los modelos de negocio existentes; `News` y `Event` extienden `Model` (DBR-007).
    - Cómo retomarlo: el equipo decide si crea `BaseModel` y lo aplica a los modelos de negocio. Cualquier columna nueva, como `created_by` en `tickets`, exige DBR aprobada. Hasta entonces, la excepción a) sigue vigente.
@@ -83,15 +84,15 @@ La feature deja fuera de alcance varios elementos que podrían parecer parte de 
 
 ## Validación y revisión
 
-- Aprobación: Jonathan, 2026-11-02 (responsable funcional y técnico de backend en `api-009`; planes aprobados el mismo día).
+- Aprobación: Responsable funcional y técnico de backend en `api-009` (planes aprobados en la misma entrega).
 - Acuerdo del equipo: pendiente de lectura por el equipo. No consta en el repositorio un acuerdo expreso adicional.
-- Responsable de BD: DBR-006, aprobada por BD el 2026-11-02, ya refleja la falta de `created_by` en `tickets` y `staff_notifications` sin SoftDeletes (resolución 6). Este ADR no cambia el esquema.
+- Responsable de BD: DBR-006, aprobada por BD, ya refleja la falta de `created_by` en `tickets` y `staff_notifications` sin SoftDeletes (resolución 6). Este ADR no cambia el esquema.
 - Revisión obligatoria: al reactivar cualquiera de los diferidos, o al decidir crear `BaseModel`.
 - Enlaces: `apps/api/plan/009-ticket-sales.md` (Constitution Check y decisiones 1 y 5), `apps/api/tasks/009-ticket-sales.md` (T-05 y T-56), `apps/dashboard/plan/005-ticket-sales.md` (enlaza este ADR por el alcance de `api-009`; no tiene excepción propia), `docs/adr/0019-qr-svg-generation-api.md` y `docs/adr/0020-price-change-email-notifications.md`.
 
-## Nota de revisión (2026-11-20, excepción b) reactivada por `api-023`)
+## Nota de revisión (excepción b reactivada por `api-023`)
 
-- Jonathan autorizó el 2026-11-20 añadir esta nota. `apps/api/specs/023-fixed-roles-and-console-admins.md` reactiva `staff_notifications` para los avisos de cambios por consola (tipo `console_admin_change`), sin modelo `BaseModel` ni SoftDeletes. El modelo `StaffNotification` extiende `Model`.
-- Revisión exigida por este ADR: se revisa la excepción b) y se mantiene. La verificación de esquema de 2026-11-20 (solo lectura en `arca_pruebas`) indica que `staff_notifications.created_by` admite `NULL`, así que no hace falta columna nueva ni DBR para `api-023`. Si la tarea de verificación del responsable de BD (`apps/api/tasks/023-fixed-roles-and-console-admins.md`, T-01) encuentra lo contrario, se abre DBR antes de cualquier código.
+- Se autorizó añadir esta nota. `apps/api/specs/023-fixed-roles-and-console-admins.md` reactiva `staff_notifications` para los avisos de cambios por consola (tipo `console_admin_change`), sin modelo `BaseModel` ni SoftDeletes. El modelo `StaffNotification` extiende `Model`.
+- Revisión exigida por este ADR: se revisa la excepción b) y se mantiene. La verificación de esquema en `arca_pruebas` (solo lectura) indica que `staff_notifications.created_by` admite `NULL`, así que no hace falta columna nueva ni DBR para `api-023`. Si la tarea de verificación del responsable de BD (`apps/api/tasks/023-fixed-roles-and-console-admins.md`, T-01) encuentra lo contrario, se abre DBR antes de cualquier código.
 - Los avisos de consola no llevan SoftDeletes. Su contenido es mínimo (acción, correo afectado, origen, motivo y fecha) y no contiene contraseñas ni secretos 2FA.
 - Este ADR sigue en estado Aceptado; esta nota no cambia la decisión de a) ni de c).

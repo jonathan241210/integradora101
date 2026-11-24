@@ -2,9 +2,10 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile`
-- Estado: Implementada (2026-11-01; aprobación funcional 2026-11-01)
-- Solicitante / responsable funcional: Aksel
-- Aprobación funcional: Aksel, 2026-11-01
+- Estado: Implementada
+- Solicitada: 2026-11-01
+- Aprobada: 2026-11-01
+- Aprobación funcional: Aprobada
 - Equivalencia en el documento de decisiones previas: 005
 
 ## Problema y contexto
@@ -45,10 +46,10 @@ Sin sesión autenticada, la pestaña redirige al flujo de inicio de sesión (ADR
 
 ## Criterios de aceptación
 
-- **CA-01:** Dada la pestaña Escanear con sesión activa, cuando el visitante la abre por primera vez en el dispositivo, entonces la app solicita permiso de cámara con una sola frase en español y el botón «Permitir cámara» antes de mostrar la vista en vivo. El campo para escribir el código sigue en la misma pantalla. Enmienda visual, 2026-11-11.
+- **CA-01:** Dada la pestaña Escanear con sesión activa, cuando el visitante la abre por primera vez en el dispositivo, entonces la app solicita permiso de cámara con una sola frase en español y el botón «Permitir cámara» antes de mostrar la vista en vivo. El campo para escribir el código sigue en la misma pantalla. Enmienda visual.
 - **CA-02:** Dado permiso concedido, cuando la cámara decodifica un QR, entonces la app normaliza el contenido a código opaco del zoológico: acepta texto plano con el formato vigente o extrae el código desde una URL (último segmento de ruta o parámetro `code`) cuando corresponda; ignora lecturas duplicadas del mismo código durante ~2 s (debounce). Si el contenido no es válido, la app muestra un mensaje genérico sin revelar el formato esperado.
 - **CA-03:** Dado permiso denegado o revocado, cuando el visitante usa Escanear, entonces muestra mensaje accesible en español, opción de abrir ajustes del sistema si está disponible, y un formulario de **entrada manual** (campo + botón «Registrar código») que usa el mismo flujo que CA-02.
-- **CA-04:** Dado un código normalizado, cuando se envía, entonces la app llama `submitScan(code)` una sola vez por intento de usuario (indicador de carga mientras procesa); al resolver, navega a `scan-result` con los datos de `ScanPresentation` (`discovered`, `already_discovered`, `empty_enclosure`, `invalid_code`, `inactive_code`, `expired_scan`, `pending`, `rate_limited`). `empty_enclosure` es el aviso de `mobile-005` CA-07 cuando el recinto no tiene animales en exhibición (Aksel, 2026-11-14).
+- **CA-04:** Dado un código normalizado, cuando se envía, entonces la app llama `submitScan(code)` una sola vez por intento de usuario (indicador de carga mientras procesa); al resolver, navega a `scan-result` con los datos de `ScanPresentation` (`discovered`, `already_discovered`, `empty_enclosure`, `invalid_code`, `inactive_code`, `expired_scan`, `pending`, `rate_limited`). `empty_enclosure` es el aviso de `mobile-005` CA-07 cuando el recinto no tiene animales en exhibición (enmienda aprobada).
 - **CA-05:** Dado el código de la app, cuando se revise, entonces cumple MVVM: ruta/pantalla → ViewModel de escaneo → `submitScan`; la pantalla no llama a la API ni escribe en la cola directamente.
 - **CA-06:** Dada la suite Jest, cuando se ejecute, entonces hay pruebas que nombran cada CA-xx: permisos simulados, normalización de payload, envío a `submitScan` mockeado y navegación; el README o comentario de prueba documenta que el simulador no valida la cámara real.
 - **CA-07:** Dada la app sin sesión autenticada, cuando el visitante abre Escanear, entonces redirige al inicio de sesión sin abrir la cámara.
@@ -78,10 +79,14 @@ La cámara procesa el QR en el dispositivo; no se suben imágenes al servidor. E
 
 - **Dependencias/ADR:** `mobile-004` (sesión), `mobile-005` (`submitScan`, cola, resultados), `api-005` (contrato `discoveries`), ADR 0004, **ADR 0022** (`expo-camera`).
 - **Riesgos:** variación de cámara entre dispositivos; QR físicos deben existir y estar activos en BD.
-- **Preguntas cerradas (Aksel, 2026-11-01):** entrada manual **sí**; dependencia **`expo-camera`**; impresión/colocación QR fuera de alcance; no se crea spec API adicional.
+- **Decisiones:**
+  - Se optó por incluir entrada manual del código, porque el visitante debe poder registrar un hallazgo si la cámara no está disponible.
+  - Se optó por la dependencia `expo-camera` (ADR 0022).
+  - La impresión y colocación de códigos QR quedan fuera de alcance.
+  - No se creó spec de API adicional, porque `api-005` cubre el contrato.
 
 ## Revisión
 
-- Aprobadores y fecha: Aksel, 2026-11-01.
-- Cierre: Implementada el 2026-11-01. Suites `__tests__/qr/` y escaneo en navegación en verde; `expo-camera` instalado (ADR 0022). Sin cambios API (`api-005`).
+- Aprobación: Aprobada.
+- Cierre: Implementada. Suites `__tests__/qr/` y escaneo en navegación en verde; `expo-camera` instalado (ADR 0022). Sin cambios API (`api-005`).
 - Evidencia/enlaces: `apps/mobile/specs/005-visitor-progress.md`, `apps/api/specs/005-visitor-progress.md`, `docs/adr/0022-expo-camera-qr-scan.md`.

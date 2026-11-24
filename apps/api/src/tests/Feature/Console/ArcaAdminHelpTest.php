@@ -29,7 +29,7 @@ class ArcaAdminHelpTest extends ConsoleAdminTestCase
             $this->assertStringContainsString($option, $output);
         }
 
-        // Solo comandos y niveles (Jonathan, 2026-11-21): variables y procedimiento quedan en docs/administracion.md.
+        // Solo comandos y niveles: variables y procedimiento quedan en docs/administracion.md.
         foreach (['lectura', 'bajo', 'medio', 'alto', '-r, --reason', '-y, --yes'] as $text) {
             $this->assertStringContainsString($text, $output);
         }

@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from '../config/runtime';
 import { createHttpClient, type HttpClient } from '@arca/api-client';
 import { ZooEvent, News } from '../models';
 import { ZooRepository } from './index';
@@ -32,7 +33,7 @@ export class ApiZooRepository implements ZooRepository {
     this.defaultTtl = customTtl;
     this.storage = customStorage;
     this.httpClient = customClient ?? createHttpClient({
-      baseUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8000/api/v1',
+      baseUrl: resolveApiBaseUrl(),
     });
   }
 

@@ -1,11 +1,12 @@
 # Plan técnico · 004 · visitor-account
 
 - Spec: `apps/mobile/specs/004-visitor-account.md`
-- Estado de spec: **Implementada** (2026-10-21; aprobación funcional de Aksel, 2026-10-20)
-- Solicitante / responsable funcional: Aksel
-- Responsable técnico: Aksel
-- Estado del plan: **Aprobado** — Aksel, 2026-10-20
-- Dependencias documentales: `apps/api/specs/004-visitor-authentication.md` (Implementada el 2026-10-21), `docs/adr/0011-visitor-identity-and-mobile-session.md` (**Aceptado**, Aksel, 2026-10-21), spec **002** (prototipo visual integrado en la fase simulada)
+- Estado de spec: **Implementada**
+- Solicitada: 2026-10-20
+- Aprobada: 2026-10-20
+- Responsable técnico: Frontend
+- Estado del plan: **Aprobado**
+- Dependencias documentales: `apps/api/specs/004-visitor-authentication.md` (Implementada), `docs/adr/0011-visitor-identity-and-mobile-session.md` (**Aceptado**), spec **002** (prototipo visual integrado en la fase simulada)
 
 ## Diseño de solución
 
@@ -31,8 +32,8 @@ Las rutas **no** importan repositorios ni `@arca/api-client`. Un **SessionProvid
 ### Flujo de datos y sesión
 
 1. **Arranque (CA-01, CA-05):** Si no hay tokens en Secure Store → pantalla Bienvenida. Si hay par válido → intentar `GET me` (o confiar en refresh si access expirado) → tabs.
-2. **Registro → verificación (CA-02, CA-03):** `register` → 201 sin tokens → pantalla código 6 dígitos + reenvío con cooldown UI según 429/202 de API. El mismo 201 abre esa pantalla si el correo ya tiene cuenta. El código de aviso (`email_already_registered`) muestra «Ese correo ya está registrado.» y «Ir a iniciar sesión», sin guardar tokens. Enmienda de Aksel, 2026-11-05.
-3. **Login (CA-04, CA-05):** Guardar access + refresh en Secure Store; `email_not_verified` → verificación con el correo del formulario. Enmienda de Aksel, 2026-11-05.
+2. **Registro → verificación (CA-02, CA-03):** `register` → 201 sin tokens → pantalla código 6 dígitos + reenvío con cooldown UI según 429/202 de API. El mismo 201 abre esa pantalla si el correo ya tiene cuenta. El código de aviso (`email_already_registered`) muestra «Ese correo ya está registrado.» y «Ir a iniciar sesión», sin guardar tokens. Enmienda aprobada.
+3. **Login (CA-04, CA-05):** Guardar access + refresh en Secure Store; `email_not_verified` → verificación con el correo del formulario. Enmienda aprobada.
 4. **401 en cualquier llamada autenticada (CA-06):** Las instancias comparten una renovación en vuelo cuando usan el mismo token de renovación. Ante un 401 tardío, el cliente puede reintentar con el token vigente, con un límite de tres cambios de token por petición. Secure Store ordena la lectura, escritura y limpieza del par y solo limpia si el token de acceso que originó el fallo sigue guardado.
 5. **Recuperación (CA-07), perfil (CA-08), contraseña (CA-09), borrado (CA-10), logout (CA-11).**
 6. **Caché de perfil (escenario 7, CA-08).** `accountSession` guarda el perfil en memoria con una sola petición en vuelo. `bootstrap` (HTTP), `login` y `verifyEmail` la llenan. `peekProfile()` la lee sin red. `getProfile()` devuelve la copia si existe. `PATCH` exitoso la sustituye con el perfil del cuerpo de la respuesta y avisa a los suscriptores antes de que vuelvan a pintar. `logout`, `deleteAccount`, un refresh fallido y `resetForTests` la vacían. El hook `useVisitorProfile` pinta desde esa copia. Ajustes no usa la ficha de demostración como estado inicial.
@@ -67,7 +68,7 @@ Grupo **`(tabs)`** existente (002), accesible solo con sesión:
 
 ### Avatar y RN-02
 
-Catálogo fijo en código (`src/constants/avatarCatalog.ts`) con los 8 códigos aceptados. Enmienda 2026-11-18: el arte vigente está en `src/assets/avatars/<código>.png` y `AVATAR_IMAGES` lo muestra en perfil, edición y selector. Los códigos no cambian. El registro y `PATCH me` envían `avatar_code` validado en cliente contra el catálogo antes de llamar API. En editar cuenta el catálogo no se lista en la pantalla: un círculo con el avatar actual y la leyenda «Editar imagen» abre una ventana con `AvatarPicker`. Guardar perfil es el único botón grande; cambiar contraseña y borrar cuenta son filas. En el registro, la barra de progreso queda en dorado y las flechas laterales en vino. En la verificación, «Confirmar código» es un botón compacto, alineado con el círculo vino de reenviar. La leyenda «Reenviar» o el conteo quedan debajo de ese círculo, no como un pie de toda la fila. El nombre accesible sigue siendo «Reenviar código» o «Espera N segundos». Enmienda de Aksel, 2026-11-05.
+Catálogo fijo en código (`src/constants/avatarCatalog.ts`) con los 8 códigos aceptados. Enmienda: el arte vigente está en `src/assets/avatars/<código>.png` y `AVATAR_IMAGES` lo muestra en perfil, edición y selector. Los códigos no cambian. El registro y `PATCH me` envían `avatar_code` validado en cliente contra el catálogo antes de llamar API. En editar cuenta el catálogo no se lista en la pantalla: un círculo con el avatar actual y la leyenda «Editar imagen» abre una ventana con `AvatarPicker`. Guardar perfil es el único botón grande; cambiar contraseña y borrar cuenta son filas. En el registro, la barra de progreso queda en dorado y las flechas laterales en vino. En la verificación, «Confirmar código» es un botón compacto, alineado con el círculo vino de reenviar. La leyenda «Reenviar» o el conteo quedan debajo de ese círculo, no como un pie de toda la fila. El nombre accesible sigue siendo «Reenviar código» o «Espera N segundos». Enmienda aprobada.
 
 ### Integración `@arca/api-client`
 
@@ -144,43 +145,43 @@ Mobile **no** define migraciones ni SQL. Consume el contrato de **`apps/api/spec
 - **Rate limits:** UI respeta 429 (deshabilitar botones reenvío/registro temporalmente).
 - **Privacidad:** Aviso desde API; versión aceptada en registro (`privacy_notice_version`).
 - **Observabilidad:** Sin PII en logs de consola en producción.
-- **Dependencias nuevas (ADR 0011, Aceptado el 2026-10-21):** `expo-secure-store` se instala en el checklist HTTP, no en este documento. `@react-native-async-storage/async-storage` queda para `mobile-005`. El puerto de la cola sigue sin implementación en 004.
+- **Dependencias nuevas (ADR 0011, Aceptado):** `expo-secure-store` se instala en el checklist HTTP, no en este documento. `@react-native-async-storage/async-storage` queda para `mobile-005`. El puerto de la cola sigue sin implementación en 004.
 
 ## Mapeo de criterios a pruebas
 
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
-| CA-01 | `test-ca-01-auth-login-redirect` | Guest → login; sin tabs. Enmienda UX 2026-10-23. |
+| CA-01 | `test-ca-01-auth-login-redirect` | Guest → login; sin tabs. Enmienda UX. |
 | CA-02 | `test-ca-02-register-form` | Campos, checkboxes, avatar picker, enlace aviso |
-| CA-03 | `test-ca-03-verify-email-flow`, `test-ca-03-registered-email-after-code` | Tras mock 201 register → verify UI; resend cooldown. El correo ya usado muestra la leyenda solo tras el código. La pantalla no muestra un código de prueba. Enmienda 2026-11-05. |
-| CA-04 | `test-ca-04-auth-errors` | 422 mensajes; 403 → verify con el correo; 429 espera. Enmienda 2026-11-05. |
-| CA-05 | `test-ca-05-login-stores-tokens`, `test-ca-05-login-ignores-a-second-tap` | Mock Secure Store; navegación a tabs una sola vez. El indicador tapa la pantalla mientras la petición sigue. Enmienda 2026-10-23. |
+| CA-03 | `test-ca-03-verify-email-flow`, `test-ca-03-registered-email-after-code` | Tras mock 201 register → verify UI; resend cooldown. El correo ya usado muestra la leyenda solo tras el código. La pantalla no muestra un código de prueba. Enmienda aprobada. |
+| CA-04 | `test-ca-04-auth-errors` | 422 mensajes; 403 → verify con el correo; 429 espera. Enmienda aprobada. |
+| CA-05 | `test-ca-05-login-stores-tokens`, `test-ca-05-login-ignores-a-second-tap` | Mock Secure Store; navegación a tabs una sola vez. El indicador tapa la pantalla mientras la petición sigue. Enmienda. |
 | CA-06 | `test-ca-06-refresh-single-flight` | Cliente simulado: N requests + 401 → 1 refresh → retry |
-| CA-07 | `test-ca-07-password-recovery-flow` | Forgot 202 → reset (sin leyenda `123456`) → login. Enmienda 2026-11-04. |
-| CA-08 | `test-ca-08-profile-patch`, `test-ca-08-profile-unchanged`, `test-ca-08-profile-focus-reset`, `test-ca-08-profile-ignores-a-second-tap`, `test-ca-08-profile-single-load`, `test-ca-08-settings-sin-ficha-demo` | PATCH mock; sin cambios sin PATCH; blur limpia avisos. Una sola lectura de perfil para varias pantallas; el PATCH actualiza la copia sin otro GET. Ajustes no muestra la ficha de demostración. Enmienda UX 2026-10-23. |
-| CA-09 | `test-ca-09-change-password`, `test-ca-09-password-focus-reset`, `test-ca-09-password-ignores-a-second-tap` | PUT password mock; blur limpia campos y avisos. Enmienda UX 2026-10-23. |
-| CA-10 | `test-ca-10-delete-account`, `test-ca-10-delete-ignores-a-second-tap` | DELETE + clear storage + login una sola vez. Enmienda UX 2026-10-23. |
-| CA-11 | `test-ca-11-logout`, `test-ca-11-logout-ignores-a-second-tap` | Logout + clear + login una sola vez. Enmienda UX 2026-10-23. |
+| CA-07 | `test-ca-07-password-recovery-flow` | Forgot 202 → reset (sin leyenda `123456`) → login. Enmienda aprobada. |
+| CA-08 | `test-ca-08-profile-patch`, `test-ca-08-profile-unchanged`, `test-ca-08-profile-focus-reset`, `test-ca-08-profile-ignores-a-second-tap`, `test-ca-08-profile-single-load`, `test-ca-08-settings-sin-ficha-demo` | PATCH mock; sin cambios sin PATCH; blur limpia avisos. Una sola lectura de perfil para varias pantallas; el PATCH actualiza la copia sin otro GET. Ajustes no muestra la ficha de demostración. Enmienda UX. |
+| CA-09 | `test-ca-09-change-password`, `test-ca-09-password-focus-reset`, `test-ca-09-password-ignores-a-second-tap` | PUT password mock; blur limpia campos y avisos. Enmienda UX. |
+| CA-10 | `test-ca-10-delete-account`, `test-ca-10-delete-ignores-a-second-tap` | DELETE + clear storage + login una sola vez. Enmienda UX. |
+| CA-11 | `test-ca-11-logout`, `test-ca-11-logout-ignores-a-second-tap` | Logout + clear + login una sola vez. Enmienda UX. |
 | CA-12 | `test-ca-12-auth-mvvm` (ampliar `architecture.test.ts`) | Sin fetch en screens/viewmodels; AuthRepository único |
 | CA-13 | `test-ca-13-android-cleartext-config` | Assert `app.json` / config Expo |
 | CA-14 | Meta: suite `__tests__/auth/` nombrada por CA | Jest + RTL |
 
 Pruebas manuales complementarias: registro feliz y refresh en dispositivo Android (Expo Go o dev build) contra API de pruebas en F2.
 
-Enmienda 2026-10-23: si `accountSession` ya está en `authenticated`, `bootstrap()` no vuelve a llamar `GET /api/v1/visitor/me`. La misma enmienda deja una sola copia del perfil para perfil, ajustes y edición; el `PATCH` la actualiza sin otro `GET`. La prueba de arranque vive en `__tests__/auth/http-bootstrap.test.ts` y la de la copia compartida en `__tests__/auth/profile-single-load.test.tsx`. El teclado y el atrás de las pestañas quedan anotados en la spec 002.
+Enmienda: si `accountSession` ya está en `authenticated`, `bootstrap()` no vuelve a llamar `GET /api/v1/visitor/me`. La misma enmienda deja una sola copia del perfil para perfil, ajustes y edición; el `PATCH` la actualiza sin otro `GET`. La prueba de arranque vive en `__tests__/auth/http-bootstrap.test.ts` y la de la copia compartida en `__tests__/auth/profile-single-load.test.tsx`. El teclado y el atrás de las pestañas quedan anotados en la spec 002.
 
 ## Constitution Check
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | **Conforme al diseño** | Expo/RN ADR 0004; dependencias nuevas limitadas a ADR 0011 (`expo-secure-store`; AsyncStorage diferido a puerto 005). |
-| II. La spec manda | **Conforme** | Spec mobile-004 **Implementada** el 2026-10-21 (aprobación funcional de Aksel, 2026-10-20). Este plan no amplía OAuth, iOS ni progreso (005). |
+| II. La spec manda | **Conforme** | Spec mobile-004 **Implementada** (aprobación funcional registrada). Este plan no amplía OAuth, iOS ni progreso (005). |
 | III. Lógica separada de la interfaz | **Conforme al diseño** | MVVM + AuthRepository; SessionProvider delgado; reglas de negocio en API. |
 | IV. Un test por criterio | **Conforme al diseño** | Tabla CA-01–CA-14; refresh concurrente con test dedicado CA-06. |
 | V. Una sola fuente de verdad | **Conforme al diseño** | Con `EXPO_PUBLIC_API_URL`, el perfil y los tokens salen de la API; el teléfono solo guarda el par. Sin esa variable, y en Jest, sigue el mock de la fase simulada. |
 | VI. Código en inglés, personas en español | **Conforme** | Rutas/archivos en inglés; copy UI en español. |
 
-**Código HTTP:** ADR 0011 está aceptado y el checklist T-31 a T-44 lo aprobó Aksel el 2026-10-21. `api-004` quedó Implementada el mismo día. El módulo visitante vive en `@arca/api-client` sin tocar `auth.ts`. Las DBR ya están aplicadas en `arca_pruebas`.
+**Código HTTP:** ADR 0011 está aceptado y el checklist T-31 a T-44 quedó aprobado. `api-004` quedó Implementada en el mismo corte. El módulo visitante vive en `@arca/api-client` sin tocar `auth.ts`. Las DBR ya están aplicadas en `arca_pruebas`.
 
 ## Riesgos y decisiones
 
@@ -194,29 +195,29 @@ Enmienda 2026-10-23: si `accountSession` ya está en `authenticated`, `bootstrap
 | Expo Go vs dev build | Auth no requiere cámara; Secure Store funciona en Expo Go; validar en dispositivo real. |
 | Perfil 002 mezcla gamificación y cuenta | Separar **Account settings** (004) de **Profile** (005); botón configuración → edición CA-08. |
 
-**ADR requeridos:** 0004 (aprobado), **0011 (Aceptado, Aksel, 2026-10-21)**.
+**ADR requeridos:** 0004 (aprobado), **0011 (Aceptado)**.
 
 ## Orden y aprobación
 
 ### Secuencia de implementación (tasks derivarán T-xx)
 
-1. **Hecho:** spec mobile-004, spec api-004 y este plan, por Aksel el 2026-10-20. El plan, las tasks y los endpoints de `api-004` quedaron listos el 2026-10-21. Ambas specs quedaron Implementadas el 2026-10-21.
+1. **Hecho:** spec mobile-004, spec api-004 y este plan, aprobados. El plan, las tasks y los endpoints de `api-004` quedaron listos. Ambas specs quedaron Implementadas.
 2. **Primer corte de tasks:** sesión, login y logout sobre las pantallas 002 (`TokenStorage`, `SessionProvider`, guards, `MockAuthRepository`). Se retira el acceso de invitado en este corte.
 3. **Resto de la misma spec:** registro, verificación, recuperación, aviso, perfil, contraseña y borrado.
 4. **Pruebas CA-01–CA-14** y ampliación del test de arquitectura, repartidas en esos cortes.
 5. **Config CA-13** y documentación README/arquitectura.
-6. **Checklist HTTP** en `tasks/004-visitor-account.md` (T-31 en adelante): módulo visitante de `@arca/api-client`, sin editar `auth.ts`, y `HttpAuthRepository`. Aprobado por Aksel el 2026-10-21.
+6. **Checklist HTTP** en `tasks/004-visitor-account.md` (T-31 en adelante): módulo visitante de `@arca/api-client`, sin editar `auth.ts`, y `HttpAuthRepository`. Aprobado.
 7. **Implementar F2** tras esa aprobación. Smoke manual contra la API de pruebas, nunca contra `arca_zoo`.
 
 ### Aprobaciones
 
 | Paso | Responsable | Estado |
 |---|---|---|
-| Aprobación funcional spec mobile-004 | Aksel | Aprobada, 2026-10-20. Implementada, 2026-10-21 |
-| Aprobación funcional spec api-004 | Aksel | Aprobada, 2026-10-20. Plan y tasks aprobados el 2026-10-21. Implementada, 2026-10-21 |
-| Aprobación técnica plan mobile-004 | Aksel | Aprobado, 2026-10-20 |
-| Aprobación ADR 0011 | Aksel | Aceptado, 2026-10-21. Autoriza las dependencias. Este documento no las instala |
-| Tasks fase simulada (T-01 a T-30) | Aksel | Aprobadas, 2026-10-20, e integradas |
-| Tasks fase HTTP (T-31 en adelante) | Aksel | Aprobadas, 2026-10-21, e implementadas |
+| Aprobación funcional spec mobile-004 | Equipo ARCA-NB | Aprobada. Implementada |
+| Aprobación funcional spec api-004 | Backend | Aprobada. Plan y tasks aprobados. Implementada |
+| Aprobación técnica plan mobile-004 | Frontend | Aprobado |
+| Aprobación ADR 0011 | Equipo ARCA-NB | Aceptado. Autoriza las dependencias. Este documento no las instala |
+| Tasks fase simulada (T-01 a T-30) | Frontend | Aprobadas e integradas |
+| Tasks fase HTTP (T-31 en adelante) | Frontend | Aprobadas e implementadas |
 
-**La fase simulada está integrada.** La fase HTTP quedó aprobada e implementada el 2026-10-21. `apps/web` y `apps/dashboard` quedan fuera.
+**La fase simulada está integrada.** La fase HTTP quedó aprobada e implementada. `apps/web` y `apps/dashboard` quedan fuera.

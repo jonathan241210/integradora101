@@ -2,11 +2,12 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` (sección del semáforo en la pestaña «Cancelaciones», diálogo de revisión, historial, aviso y puntito); `api` (`api-027`, dueña de las señales, niveles, textos, revisiones y conteo; `api-024` para la clave `cancellation_days`; `api-022` para el reporte); `packages/api-client` (tipos y métodos del semáforo, de la revisión, del historial y de la clave nueva; sin lógica).
-- Estado: Aprobada
-- Aprobación funcional: Jonathan, 2026-11-21
-- Solicitante / responsable funcional: Jonathan
+- Estado: Implementada
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Aprobación funcional: Aprobada
 - Dependencias de esta spec: `dashboard-016` (página de cancelaciones, dentro de «Reportes», `dashboard-020`), `dashboard-018` (aviso y puntito; amplía su clave de pendientes), `dashboard-020` (pestañas de Reportes y paginación), `api-027`, `api-024`, `api-022`, DBR-026.
-- Última edición: 2026-11-21
+- Última edición:
 
 ## Problema y contexto
 
@@ -27,7 +28,7 @@ El dashboard **no calcula nada**: no decide niveles, no interpreta señales, no 
 - Editar o borrar una revisión (no hay ruta).
 - Notificaciones por correo, tiempo real o sondeo nuevo (el aviso sigue la regla de `dashboard-018`).
 - Acceso para `zoo-admin`, `executive`, `cashier` o `veterinarian`.
-- Cambios de texto de procedimiento fuera de los que devuelve la API. Esta página no pide entregar boletos físicos (decisión 1 de 2026-11-21).
+- Cambios de texto de procedimiento fuera de los que devuelve la API. Esta página no pide entregar boletos físicos.
 - Cambios en `apps/web`, `apps/pwa` y `apps/mobile`.
 
 ## Actores y permisos
@@ -77,9 +78,9 @@ La página solo oculta opciones; la API autoriza (RN-01).
 - **CA-16 (cobertura de tests):** Cada CA-01 a CA-15 tiene al menos un test Vitest que lo nombra (Constitución IV). Test de cobertura: `test_ca16_every_ca_has_a_named_test`.
 - **CA-17 (sin texto de procedimiento propio):** Ninguna view ni hook de esta spec escribe texto de «qué hacer» ni de procedimiento: solo muestra el que devuelve la API, y el diálogo no pide entregar boletos físicos. Test: `test_ca17_no_physical_ticket_text_in_new_views`.
 
-## Revisión 2026-11-21 (aprobada por Jonathan): semáforo en tabla
+## Revisión (aprobada): semáforo en tabla
 
-Jonathan pidió que la sección «Semáforo por cajero y día» se vea como una tabla clara. Solo cambia la presentación; la API sigue decidiendo niveles, señales, textos y revisiones (RN-01). Los CA-01 a CA-17 siguen vigentes; donde su redacción nombra «Ver historial» o el «qué hacer» en la fila, ahora se leen en la fila de detalle («Ver detalle»).
+El responsable funcional pidió que la sección «Semáforo por cajero y día» se vea como una tabla clara. Solo cambia la presentación; la API sigue decidiendo niveles, señales, textos y revisiones (RN-01). Los CA-01 a CA-17 siguen vigentes; donde su redacción nombra «Ver historial» o el «qué hacer» en la fila, ahora se leen en la fila de detalle («Ver detalle»).
 
 - **CA-18 (columnas):** La tabla usa el estilo de tabla de Reportes (`DataTable`, `.table-card`, encabezado fijo y desplazamiento horizontal propio) con las columnas, en este orden: Fecha, Cajero, Nivel (`Badge` con icono y texto), Vendidos, Cancelados, % cancelado, Señales (`signals_count` y debajo `reason_sentence` en texto pequeño muted), Revisión vigente (estado y fecha, o «Sin revisar») y Acción (botón «Registrar revisión» con `aria-label` por cajero y fecha). Las cifras son las de la API (`sold_tickets`, `cancelled_tickets`, `cancel_percent`). Test: `test_ca18_traffic_light_table_columns_in_order`.
 - **CA-19 (orden):** Por defecto, primero Atención, luego Revisar, luego Normal; dentro de cada nivel, fecha descendente; el grupo «Sin cajero registrado» va al final. Es orden de presentación sobre el nivel que manda la API. Test: `test_ca19_order_by_level_then_date_descending_without_cashier_last`.
@@ -96,7 +97,7 @@ Fuera de alcance de esta revisión: cambios en `apps/api`, en la leyenda, el di�
 - **RN-03 (sin escritura local):** La revisión se guarda solo en la API. No hay `localStorage` ni caché persistente (`dashboard-016` RN-09).
 - **RN-04 (validación local):** El cliente valida la longitud de la nota solo para dar un aviso temprano (CA-06). La regla de la API (`api-027` RN-08) es la autoridad y su 422 se muestra tal cual.
 - **RN-05 (refresco):** Después de registrar una revisión, la página vuelve a pedir el reporte con los mismos filtros para que el semáforo muestre la revisión vigente (no recalcula en el cliente).
-- **RN-06 (decisión 2026-11-21):** Solo `admin` ve y registra revisiones (`api-027` decisión 8). La decisión de un permiso de escritura aparte queda como pregunta en `api-027`.
+- **RN-06:** Solo `admin` ve y registra revisiones (`api-027` decisión 8). La decisión de un permiso de escritura aparte queda como pregunta en `api-027`.
 - **RN-07 (fuera de la cola de avisos):** El aviso de cancelaciones usa la cola FIFO de `dashboard-018` (RN-14) y no tiene estado de «leído».
 - **RN-08 (estilo):** Tokens semánticos y componentes de `@arca/ui`; sin dependencias nuevas (`dashboard-016` RN-07).
 
@@ -125,7 +126,7 @@ Fuera de alcance de esta revisión: cambios en `apps/api`, en la leyenda, el di�
   - Sondeo del aviso: sigue la regla de 15 s de `dashboard-018` (RN-07 de esa spec).
 - **Preguntas:** las de `api-027` (preguntas 1 a 8) afectan a esta spec; no se abren preguntas nuevas aquí.
 
-## Decisiones de Jonathan (2026-11-21)
+## Decisiones
 
 - El aviso y el puntito de «Reportes» cuentan los días en Atención sin revisar y los marcados «Requiere aclaración», hasta cerrarlos con «Revisado: todo en orden». Los días en Revisar solo se ven en el reporte (`api-027` RN-11, CA-10 y CA-11).
 - Un día sin cajero registrado no muestra semáforo ni botón de revisión (`api-027` RN-10).
@@ -134,13 +135,13 @@ Fuera de alcance de esta revisión: cambios en `apps/api`, en la leyenda, el di�
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan (responsable funcional), 2026-11-21.
+- Aprobadores: responsable funcional.
 - Evidencia/enlaces: `apps/api/specs/027-cancellation-review-signals.md`, `apps/api/plan/027-cancellation-review-signals.md`, `apps/dashboard/specs/016-ticket-cancellation-report.md`, `apps/dashboard/specs/018-pending-review-badges.md`, `apps/dashboard/specs/020-unified-reports-and-feedback.md`, `docs/database/requests/DBR-026-cancellation-reviews.md`.
 - Evidencia de tests, lint y CI: pendiente. Esta sesión no tiene shell y no afirma que pasen.
 
-## Nota de revisión (2026-11-21, legibilidad y leyenda)
+## Nota de revisión (, legibilidad y leyenda)
 
-Aprobado por Jonathan el 2026-11-21. Sin renumerar CA-01 a CA-22.
+Aprobado por el responsable funcional. Sin renumerar CA-01 a CA-22.
 
 - **CA-23:** La leyenda es una tabla con columnas Señal, Qué significa y Límite, a partir de `legend[]` de la API (reemplaza el formato de lista de CA-03).
 - **CA-24:** Arriba de esa tabla hay una tabla de niveles con `Badge` y texto: Normal (0 señales), Revisar (1 señal), Atención (2 o más).
@@ -149,7 +150,7 @@ Aprobado por Jonathan el 2026-11-21. Sin renumerar CA-01 a CA-22.
 - **CA-27:** En la tabla del semáforo, el porqué, el «qué hacer» y el detalle usan 0.9375rem con contraste normal; columnas numéricas a la derecha con ancho mínimo, Nivel con `Badge` visible, Señales con más espacio, más relleno y botón sin partirse.
 - **CA-28:** «Ver detalle» es un bloque con títulos «Qué hacer» e «Historial de revisiones»; el historial es una tabla pequeña (fecha, estado, nota, quién).
 
-## Revisión 2026-11-21 (c) (aprobada por Jonathan)
+## Revisión (c) (aprobada)
 
 El semáforo es la única alerta; se retiran las alertas viejas de `dashboard-016` (CA-14, sustituido por CA-35 de esa spec). Contrato: `api-022`/`api-027` revisión (c). Sin renumerar CA-01 a CA-28; la frase clara (`reason_sentence`) y las etiquetas se muestran tal cual llegan de la API (CA-02, RN-01).
 
@@ -162,7 +163,7 @@ El semáforo es la única alerta; se retiran las alertas viejas de `dashboard-01
 
 Los CA-01 a CA-34 se verifican en `test_ca16_every_ca_has_a_named_test`. Nota: el aviso «Una alerta no prueba nada» (CA-25) se mantiene; «alerta» aquí significa solo el semáforo.
 
-## Notas de revisión de calidad (2026-11-21)
+## Notas de revisión de calidad
 
 No cambian el estado de la spec ni agregan CA; aclaran contradicciones y precisan comportamiento.
 

@@ -17,8 +17,8 @@ class DbConnectionTest extends FeatureTestCase
 
         $content = file_get_contents($envExamplePath);
         $this->assertStringContainsString('DB_CONNECTION=mysql', $content);
-        $this->assertStringContainsString('DB_HOST=mysql-230c9986-arcannb.a.aivencloud.com', $content);
-        $this->assertStringContainsString('DB_PORT=15280', $content);
+        $this->assertStringContainsString('DB_HOST=your-mysql-host.example.com', $content);
+        $this->assertStringContainsString('DB_PORT=3306', $content);
         $this->assertStringContainsString('DB_DATABASE=arca_pruebas', $content);
         $this->assertStringContainsString('DB_SSL_CA=', $content);
         $this->assertMatchesRegularExpression('/^DB_PASSWORD=\s*$/m', $content);

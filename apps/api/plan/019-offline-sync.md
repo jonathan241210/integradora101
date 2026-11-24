@@ -1,9 +1,11 @@
 # Plan técnico · 019 · offline-sync
 
 - Spec: `apps/api/specs/019-offline-sync.md`
-- Estado de spec: Aprobada (Solicitante, 2026-11-18)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
 - Responsable técnico: Por definir (API + coordinación con PWA/BD)
-- Precondiciones: DBR-020 y DBR-021 aprobadas y aplicadas en `arca_pruebas` (Lista para backend, 2026-11-18). ADR 0003 aceptado. Spec PWA `009` aprobada.
+- Precondiciones: DBR-020 y DBR-021 aprobadas y aplicadas en `arca_pruebas`. ADR 0003 aceptado. Spec PWA `009` aprobada.
 
 ## Diseño de solución
 

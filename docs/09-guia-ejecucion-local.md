@@ -1,6 +1,6 @@
 # 09 · Guía de ejecución local
 
-Cómo levantar en desarrollo la API, la PWA veterinaria, el dashboard y el portal público, de forma que el flujo entre ellos funcione. Todo lo que aparece como comando o valor se verificó contra los archivos citados el 2026-11-11. Lo que no pudo verificarse se marca como tal.
+Cómo levantar en desarrollo la API, la PWA veterinaria, el dashboard y el portal público, de forma que el flujo entre ellos funcione. Todo lo que aparece como comando o valor se verificó contra los archivos citados en la última revisión de esta guía. Lo que no pudo verificarse se marca como tal.
 
 Esta guía es operativa. No define requisitos: los requisitos viven en cada `specs/` y en `CONSTITUTION.md`.
 
@@ -76,7 +76,7 @@ php artisan storage:link
 
 Sin el enlace `public/storage`, las imágenes no se ven ([infra/README.md](../infra/README.md), sección de imágenes). Además, `php.ini` debe permitir subidas mayores de 5 MB (`upload_max_filesize` y `post_max_size`), según el mismo checklist.
 
-**Pendiente, no aplicar todavía:** la infra prevé `PUBLIC_MEDIA_DISK=media` y `PRIVATE_MEDIA_DISK=media` para los medios de prueba compartidos ([ADR 0026](adr/0026-object-storage-s3-images.md), aceptado el 2026-11-12; [api-013](../apps/api/specs/013-object-storage-images.md), Aprobada el 2026-11-12). Hoy estas variables no tienen efecto: no se leen en `apps/api/src/config/`. Las imágenes van a `storage/` y el enlace es `public/storage`. Cuando se implementen, esta sección cambiará.
+**Pendiente de adoptar en cada `.env` de prueba:** la infra prevé `PUBLIC_MEDIA_DISK=media` y `PRIVATE_MEDIA_DISK=media` para los medios de prueba compartidos ([ADR 0026](adr/0026-object-storage-s3-images.md), Aceptado; [api-013](../apps/api/specs/013-object-storage-images.md), Aprobada). `apps/api/src/config/filesystems.php` lee estas variables; sin ellas, los valores por defecto son `public` y `local`, y las imágenes van a `storage/` con el enlace `public/storage`. Cuando cada equipo adopte el valor `media`, esta sección cambiará.
 
 ### Usuarios demo y seeders
 
@@ -198,7 +198,7 @@ Después de cambiar `.env` de la API, reinicia `php artisan serve`. Después de 
 | `PWA_URL` | `apps/api/src/.env` | `http://localhost:5173` | API (redirección del rol veterinario) |
 | `ARCA_API_PROXY_TARGET` | Entorno de Vite (PWA, dashboard) | PWA: `http://127.0.0.1:8000`; dashboard: `http://localhost:8000` (defaults) | Vite (proxy `/api` y `/sanctum`) |
 | `meta arca-api-base` | `apps/web/src/*.html` | `http://localhost:8000/api/v1` | Portal (`js/api.js`) |
-| `PUBLIC_MEDIA_DISK`, `PRIVATE_MEDIA_DISK` | `apps/api/src/.env` | `media` (**pendiente**, sin efecto hoy) | API (api-013, Aprobada 2026-11-12; sin implementar) |
+| `PUBLIC_MEDIA_DISK`, `PRIVATE_MEDIA_DISK` | `apps/api/src/.env` | `media` (**pendiente**, sin efecto hoy) | API (api-013, Aprobada; pendiente de adoptar en `.env`) |
 
 Orígenes de navegador (los que ve el usuario): `http://localhost:5173` (PWA), `http://localhost:5174` (dashboard), `http://localhost:8080` (portal). La API escucha en `http://127.0.0.1:8000`.
 
@@ -213,13 +213,13 @@ Caso: la especie ya existe (se crea hoy al registrar un animal en la PWA). El ve
 | Paso | Quién / dónde | Qué debe pasar | Estado |
 |---|---|---|---|
 | 1 | `veterinario@arca.local` en `http://localhost:5173` | Inicia sesión y entra a la PWA (`home = pwa`). | Implementado: [pwa-003](../apps/pwa/specs/003-staff-login.md), Aprobada. |
-| 2 | Veterinario en la PWA | Elige una especie existente y envía la solicitud de publicación o de actualización (también sobre una especie despublicada); consulta «Mis solicitudes». | **Por crear.** [pwa-005](../apps/pwa/specs/005-species-request-submission.md) en Borrador. Depende de [api-014](../apps/api/specs/014-species-requests.md) (Aprobada 2026-11-12) y de [DBR-013](database/requests/DBR-013-species-requests.md) (aprobada por BD y backend el 2026-11-12; migración aplicada en `arca_pruebas`, lote 5, verificada el 2026-11-12; «Lista para backend»). |
-| 3 | `direccion_zoo@arca.local` en `http://localhost:5174` | Inicia sesión con 2FA, revisa la solicitud y la publica (o la acepta sin publicar, si la especie está despublicada). Después gestiona la publicación en «Especies publicadas». | **Por crear.** [dashboard-010](../apps/dashboard/specs/010-public-content-management.md) Aprobada el 2026-11-12 (absorbe dashboard-009). Requiere `species.review`, que [api-014](../apps/api/specs/014-species-requests.md) asigna en su tarea futura T-SEED; hoy el seeder no lo define. |
-| 4 | Visitante en `http://localhost:8080` | La especie publicada aparece en TulanPedia. | **Por crear.** [web-011](../apps/web/specs/011-dynamic-tulanpedia.md) Aprobada el 2026-11-12. Depende de [ADR 0028](adr/0028-dynamic-tulanpedia-catalog.md) (Aceptado 2026-11-12). Hoy TulanPedia muestra fichas de muestra fijas en `index.html`. |
+| 2 | Veterinario en la PWA | Elige una especie existente y envía la solicitud de publicación o de actualización (también sobre una especie despublicada); consulta «Mis solicitudes». | **Por crear.** [pwa-005](../apps/pwa/specs/005-species-request-submission.md) en Borrador. Depende de [api-014](../apps/api/specs/014-species-requests.md) (Aprobada) y de [DBR-013](database/requests/DBR-013-species-requests.md) (aprobada por BD y backend; migración aplicada en `arca_pruebas`, lote 5, verificada; «Lista para backend»). |
+| 3 | `direccion_zoo@arca.local` en `http://localhost:5174` | Inicia sesión con 2FA, revisa la solicitud y la publica (o la acepta sin publicar, si la especie está despublicada). Después gestiona la publicación en «Especies publicadas». | **Por crear.** [dashboard-010](../apps/dashboard/specs/010-public-content-management.md) Aprobada (absorbe dashboard-009). Requiere `species.review`, que [api-014](../apps/api/specs/014-species-requests.md) asigna en su tarea futura T-SEED; hoy el seeder no lo define. |
+| 4 | Visitante en `http://localhost:8080` | La especie publicada aparece en TulanPedia. | **Por crear.** [web-011](../apps/web/specs/011-dynamic-tulanpedia.md) Aprobada. Depende de [ADR 0028](adr/0028-dynamic-tulanpedia-catalog.md) (Aceptado). Hoy TulanPedia muestra fichas de muestra fijas en `index.html`. |
 
 Partes que sí puedes probar hoy: el login del veterinario en la PWA, la lectura pública de especies (`GET /api/v1/species`, [api-006](../apps/api/specs/006-public-catalog-read.md), Aprobada) y las noticias y eventos del portal ([web-009](../apps/web/specs/009-dynamic-news-events.md)).
 
-Dependencia: [`api-015`](../apps/api/specs/015-public-species-read.md) (lectura pública de especies publicadas, Aprobada el 2026-11-12) ya tiene spec, pero aún no tiene plan, tasks ni código.
+Dependencia: [`api-015`](../apps/api/specs/015-public-species-read.md) (lectura pública de especies publicadas, Aprobada) ya tiene spec, pero aún no tiene plan, tasks ni código.
 
 ## 9. Solución de problemas
 
@@ -245,21 +245,23 @@ Dependencia: [`api-015`](../apps/api/specs/015-public-species-read.md) (lectura 
 - No verificado ejecutando: ningún comando de esta guía se corrió (no hay shell en esta sesión). No se probó conectividad con Aiven, ni `php -S` en macOS, ni `npm ci` en las apps.
 - No verificado: `php artisan log` (aparece en la guía de la PWA, ver §11), dependencias Node de `apps/api/src` para `composer dev`, puerto de Metro de Expo, y el comportamiento exacto de `GET /api/v1/species` sin datos.
 
-## 11. Contradicciones entre documentos (no corregidas aquí)
+## 11. Resolución de contradicciones entre documentos
 
-- [apps/pwa/README.md](../apps/pwa/README.md) y [apps/pwa/docs/GUIA_EJECUCION.md](../apps/pwa/docs/GUIA_EJECUCION.md) pide abrir `http://127.0.0.1:5173` y añadir `127.0.0.1:5173` a `SANCTUM_STATEFUL_DOMAINS`. Contradice el `.env.example` y esta guía (§1, §9).
-- La guía de la PWA crea usuarios de prueba con `password('password')` en tinker. Contradice la política de `DemoStaffSeeder` y el checklist de secretos.
-- La guía de la PWA dice «Puedes ver y editar diagnósticos (local)» y «Los datos guardados se envían a la API». El README de la PWA dice que los diagnósticos y revisiones no envían datos al servidor.
-- La guía de la PWA menciona «Google Cloud» como opción de despliegue. `infra/README.md` dice que Google Cloud dejó de ser el destino.
-- La guía de la PWA usa `php artisan log`, que no está verificado como comando de Artisan.
-- El README de la PWA dice «Sin modo sin conexión», mientras `apps/pwa/AGENTS.md` describe borradores offline como parte del alcance. Puede ser estado actual vs. alcance futuro; no se resolvió.
-- [apps/api/docs/requisitos-entorno.md](../apps/api/docs/requisitos-entorno.md) pide PHP 8.2 o posterior. `composer.json` y `AGENTS.md` piden PHP 8.4 o posterior.
-- Dos rutas de login en la API: `POST /api/v1/auth/login` (Fortify, usado por api-client, PWA y dashboard) y `POST /api/v1/staff/auth/login` (`routes/api.php`, `AuthController::login`, sin consumidor en los clientes revisados). Posible duplicado; lo revisa backend.
-- `infra/README.md` describe `PUBLIC_MEDIA_DISK` y `PRIVATE_MEDIA_DISK` como requisitos de `.env`, pero no hay código que los lea. La sección está marcada como pendiente de aprobación; conviene que lo indique en el propio checklist.
-- La PWA tiene dos lockfiles, `pnpm-lock.yaml` y `package-lock.json`. El README acepta ambos instaladores, pero no dice cuál es la fuente de verdad.
-- Los valores por defecto del proxy difieren: la PWA usa `127.0.0.1:8000` y el dashboard `localhost:8000`.
-- `apps/web/src/index.html` apunta la meta a `http://localhost:8000/api/v1`, mientras la sección de origen de `web-009` habla de `8080`. No es contradicción de valor (8080 es el portal, 8000 la API), pero el texto de `web-009` CA-16 puede confundir. `web-011` ya lo marca como pregunta 8.
-- [apps/dashboard/README.md](../apps/dashboard/README.md) sigue con las credenciales `administrador@demo.local` / `taquilla@demo.local` y «Perfiles de demostración» del prototipo (ver §12).
+Cada punto se resuelve según el código y los ADR vigentes. Los documentos de las apps que contradicen esta guía se corrigen en su propia carpeta de documentación, fuera de esta entrega.
+
+- **Guía de la PWA y `SANCTUM_STATEFUL_DOMAINS`:** se optó por la configuración de `.env.example` y de §1 y §9 de esta guía. La referencia a `127.0.0.1:5173` de la guía de la PWA queda como dato del entorno local, no como requisito.
+- **Usuarios de prueba con contraseña fija:** se optó por no usar contraseñas fijas en tinker. Se siguen `DemoStaffSeeder` y el checklist de secretos.
+- **Diagnósticos locales frente a envío al servidor:** se optó por el modelo offline de `pwa-009` (ADR 0003). Los borradores se guardan localmente y se sincronizan con la API; la API confirma cada registro y no sobrescribe evaluaciones confirmadas.
+- **Google Cloud como destino de despliegue:** se optó por Aiven MySQL administrado y un despliegue portable (ADR 0013). ADR 0006 está Superseded; la mención de la guía de la PWA queda obsoleta.
+- **Comando `php artisan log`:** Fuera de alcance de esta entrega. El comando no está verificado en el repositorio.
+- **«Sin modo sin conexión» en el README de la PWA:** se optó por el alcance offline de ADR 0003 y `pwa-009`, que es la decisión vigente. El README de la PWA queda desactualizado.
+- **PHP mínimo (8.2 frente a 8.4):** se optó por PHP 8.4 o posterior, según ADR 0018 y `composer.json`. El requisito de `apps/api/docs/requisitos-entorno.md` queda obsoleto.
+- **Dos rutas de login de la API:** se optó por `POST /api/v1/auth/login` (Fortify, cookie) como único login del personal, porque es el que usan los clientes. `POST /api/v1/staff/auth/login` no tiene consumidores y emite tokens sin reto 2FA; su retirada la gestiona `api-021`.
+- **`PUBLIC_MEDIA_DISK` y `PRIVATE_MEDIA_DISK`:** se optó por considerarlos requisitos vigentes, porque `apps/api/src/config/filesystems.php` los lee con los valores por defecto `public` y `local`. Ya no están pendientes de aprobación.
+- **Dos lockfiles de la PWA:** se optó por `package-lock.json` como fuente de verdad, porque es el que usa el CI (`.github/workflows/ci.yml`). `pnpm-lock.yaml` queda como artefacto de instalación local.
+- **Valores por defecto del proxy:** se optó por `127.0.0.1:8000` en la PWA y `localhost:8000` en el dashboard. Ambos apuntan a la API en el puerto 8000 y no son contradictorios.
+- **Meta de `apps/web` frente a `web-009`:** se optó por `localhost:8000` para la API y `8080` para el portal. Son puertos de servicios distintos, no contradicción de valor.
+- **Credenciales demo del dashboard:** se optó por no documentar credenciales demo en el README. Su corrección queda fuera de esta entrega.
 
 ## 12. Cambios en documentos relacionados
 

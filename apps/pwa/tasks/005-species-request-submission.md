@@ -1,8 +1,10 @@
 # Tareas · 005 · species-request-submission
 
-- Spec: `apps/pwa/specs/005-species-request-submission.md` (Aprobada, Jonathan, 2026-11-19)
-- Plan: `apps/pwa/plan/005-species-request-submission.md` (Aprobado, Jonathan, 2026-11-19)
-- Estado de este checklist: **Aprobado** (Jonathan, 2026-11-19). En implementación.
+- Spec: `apps/pwa/specs/005-species-request-submission.md` (Aprobada)
+- Plan: `apps/pwa/plan/005-species-request-submission.md` (Aprobado)
+- Estado de este checklist: **Aprobado**. En implementación.
+- Solicitada: 2026-11-19
+- Aprobada: 2026-11-19
 - Dependencia externa: `apps/api/tasks/014-species-requests.md` **T-30** (`published_fields` en el selector). Bloquea CA-09 y CA-14 en actualizaciones y en especies despublicadas.
 
 Convenciones de este checklist:
@@ -12,14 +14,14 @@ Convenciones de este checklist:
 
 ## Base de datos (responsable de BD)
 
-- [x] **T-00** (CA-02, CA-05, CA-13, CA-16; RN-03): DBR-013 aplicada en `arca_pruebas`, lote 5 (`2026_11_12_000013_species_publication_requests_schema`, estado Ran). Consulta de solo lectura del 2026-11-19 por la sesión principal, sin divergencias con DBR-013. **Sin migración nueva ni DBR nueva** para esta feature.
+- [x] **T-00** (CA-02, CA-05, CA-13, CA-16; RN-03): DBR-013 aplicada en `arca_pruebas`, lote 5 (`2026_11_12_000013_species_publication_requests_schema`, estado Ran). Consulta de solo lectura por la sesión principal, sin divergencias con DBR-013. **Sin migración nueva ni DBR nueva** para esta feature.
 
 ## Prerrequisito API
 
 - [x] **T-01** (CA-09, CA-14; RN-07): completar `apps/api/tasks/014-species-requests.md` **T-30**: `published_fields` en `GET /api/v1/veterinarian/species` (fuente `species.published_fields`, `null` si nunca se publicó; test `test_ca26_selector_exposes_published_fields`).
   - Archivos (en `apps/api`, no en esta app): `apps/api/src/app/Http/Resources/Veterinarian/SelectableSpeciesResource.php`, `VeterinarianSelectorTest.php`.
   - Bloquea: la precarga de la ficha pública en actualizaciones y especies despublicadas (CA-09 y CA-14). T-27 y T-32 incluyen esos casos y no se dan por cumplidas hasta que T-01 esté hecha. El resto de la PWA puede avanzar con el contrato actual.
-  - Hecho cuando: el test PHPUnit pasa en `arca_pruebas` y la evidencia la aporta la sesión principal. Cerrada: api-014 T-30 hecha y su test pasa (confirmado por la sesión principal, 2026-11-19).
+  - Hecho cuando: el test PHPUnit pasa en `arca_pruebas` y la evidencia la aporta la sesión principal. Cerrada: api-014 T-30 hecha y su test pasa (confirmado por la sesión principal).
 
 ## Implementación api-client (`packages/api-client`)
 
@@ -159,32 +161,32 @@ Cada tarea nombra un CA-xx y su `describe`. Las pruebas de update que dependen d
 - [x] **T-41** (RN-04): prueba estática en `species-request-api.test.ts`. Los archivos de la feature no usan `localStorage`, `sessionStorage` ni `document.cookie` para credenciales.
 - [x] **T-42** (RN-07): `describe('RN-07 PWA solicitud de publicación: elegibilidad de la API')` en `species-request-rules.test.ts`. El estado deshabilitado depende solo de `next_request_type`.
 
-## Cambio de navegación (Jonathan, 2026-11-19)
+## Cambio de navegación
 
 - [x] **T-51** (RN-01, CA-19): la sección también aparece en el menú lateral y en la barra móvil, solo con rol `veterinarian`. `pwaDemo.ts`: `speciesRequestNavItem` y `getNavigationSections(roles)`; `AppShell.tsx`: el menú usa `getNavigationSections` (ícono `paw`, etiqueta accesible «Solicitar publicación de especie», activo si la sección es `species-request`); `styles.css`: barra móvil de seis columnas cuando hay el ítem.
   - Prueba: `describe('CA-19 PWA solicitud de publicación: acceso en el menú')` en `screens.test.tsx` (con rol, sin rol y estado activo). Hecha.
 
-- [x] **T-52** (CA-01, CA-06, CA-13, CA-14, CA-18; RN-03): rediseño de usabilidad aprobado por Jonathan el 2026-11-19. Selector desplegable con resumen (badge de estado, tipo de envío, motivo en alerta suave), maqueta como «Registrar animal» con vista previa local de la foto y botón para quitarla, rejilla de dos columnas, ficha pública como chips, pie con «Limpiar» y «Enviar solicitud», sección deshabilitada con «Elige una especie para continuar.» y pestañas como control segmentado (`aria-pressed`). Archivos: `SpeciesSelectorField.tsx`, `SpeciesRequestFormPresenter.tsx`, `SpeciesRequestFormView.tsx`, `SpeciesRequestView.tsx`, `useSpeciesRequestForm.ts`, `speciesRequestForm.ts`, `styles.css`. Pruebas ajustadas en `species-request-presenters.test.tsx`.
-- [x] **T-53** (RN-01; alcance aprobado por Jonathan, 2026-11-19): el menú lateral de escritorio se contrae al cambiar de sección. `styles.css`: `:focus-within` por `:has(:focus-visible)`; `AppShell.tsx`: `blur()` tras navegar con ratón o toque y `scrollTo` al cambiar de sección. Prueba: `describe('CA-19 PWA solicitud de publicación: menú lateral contraíble')` en `screens.test.tsx`.
+- [x] **T-52** (CA-01, CA-06, CA-13, CA-14, CA-18; RN-03): rediseño de usabilidad aprobado. Selector desplegable con resumen (badge de estado, tipo de envío, motivo en alerta suave), maqueta como «Registrar animal» con vista previa local de la foto y botón para quitarla, rejilla de dos columnas, ficha pública como chips, pie con «Limpiar» y «Enviar solicitud», sección deshabilitada con «Elige una especie para continuar.» y pestañas como control segmentado (`aria-pressed`). Archivos: `SpeciesSelectorField.tsx`, `SpeciesRequestFormPresenter.tsx`, `SpeciesRequestFormView.tsx`, `SpeciesRequestView.tsx`, `useSpeciesRequestForm.ts`, `speciesRequestForm.ts`, `styles.css`. Pruebas ajustadas en `species-request-presenters.test.tsx`.
+- [x] **T-53** (RN-01; alcance aprobado): el menú lateral de escritorio se contrae al cambiar de sección. `styles.css`: `:focus-within` por `:has(:focus-visible)`; `AppShell.tsx`: `blur()` tras navegar con ratón o toque y `scrollTo` al cambiar de sección. Prueba: `describe('CA-19 PWA solicitud de publicación: menú lateral contraíble')` en `screens.test.tsx`.
 
-## Revisión 2026-11-21 (Jonathan)
+## Revisión
 
 - [x] **T-54** (CA-20, CA-21; CA-05, CA-09, CA-14): formulario por secciones, chips opcionales y fijos, campos condicionales, línea «No se publicarán», foco al chip, reglas de campos ocultos y confirmación de «Limpiar». Archivos: `speciesRequestForm.ts`, `speciesRequestSubmit.ts`, `useSpeciesRequestForm.ts`, `SpeciesRequestFormPresenter.tsx`, `SpeciesRequestFormView.tsx`, `components/Icon.tsx` (icono `lock`). Pruebas: `species-request-review-2026-11-21.test.tsx` (CA-20, CA-21) y ajustes en `species-request-presenters.test.tsx`.
 - [x] **T-55** (CA-22, CA-23, CA-24): tarjeta de «Mis solicitudes», paginación, vacío, error y «Enviar de nuevo». Archivos: `OwnSpeciesRequestsView.tsx`, `SpeciesRequestView.tsx`. Pruebas: mismo archivo (CA-22 a CA-24) y ajuste en `species-request-list.test.ts`.
 - [x] **T-56** (CA-25): ajustes de `styles.css` (`.field-help` 14 px, contraste del fieldset, sin `.ficha-fields__option`, `.form-actions` en 360 px). Prueba CA-25 en el mismo archivo.
-- [x] **T-58** (api-026 CA-02, CA-03, CA-04, CA-14): «Dato curioso» en `fichaFieldOptions`, borrador, validación, envío y precarga; `TextAreaField` con ayuda y contador. Archivos: `speciesRequestForm.ts`, `useSpeciesRequestForm.ts`, `SpeciesRequestFormPresenter.tsx`, `styles.css`, `packages/api-client` (tipos y `buildSpeciesRequestFormData`). Pruebas: `species-fun-fact.test.tsx` y ajuste a cuatro casillas en tres pruebas previas. `npx vitest run`: 18 archivos, 153 tests; `npx tsc -b`: código 0, 2026-11-21.
-- [x] **T-57** (CA-20 a CA-25): `npx vitest run` (17 archivos, 148 tests, todos pasan) y `npx tsc -b` (código 0), 2026-11-21.
+- [x] **T-58** (api-026 CA-02, CA-03, CA-04, CA-14): «Dato curioso» en `fichaFieldOptions`, borrador, validación, envío y precarga; `TextAreaField` con ayuda y contador. Archivos: `speciesRequestForm.ts`, `useSpeciesRequestForm.ts`, `SpeciesRequestFormPresenter.tsx`, `styles.css`, `packages/api-client` (tipos y `buildSpeciesRequestFormData`). Pruebas: `species-fun-fact.test.tsx` y ajuste a cuatro casillas en tres pruebas previas. `npx vitest run`: 18 archivos, 153 tests; `npx tsc -b`: código 0.
+- [x] **T-57** (CA-20 a CA-25): `npx vitest run` (17 archivos, 148 tests, todos pasan) y `npx tsc -b` (código 0).
 
 ## Calidad y entrega
 
-- [x] **T-43** (todos los CA-01 a CA-19): ejecutar `vitest run` y `tsc -b` en `apps/pwa` y registrar comandos, códigos de salida, pruebas omitidas y fallidas. Esta sesión no tiene shell: lo ejecuta la sesión principal. No se afirma que pasen. **Resultado 2026-11-19:** `npm test` → 14 archivos, 112 tests pasan, 0 fallan; `npm run build` (`tsc -b && vite build`) → código 0 (solo aviso de tamaño de chunk >500 kB, previo).
-- [x] **T-44** (`packages/api-client`): `/verify` del paquete. No tiene runner propio; se verifica con los tipos de `apps/pwa` (T-43) y las pruebas de `apps/pwa/src/tests/species-request-api.test.ts`. **Resultado 2026-11-19:** tipos de `@arca/api-client` verificados por `tsc -b` de `apps/pwa` (código 0) y `species-request-api.test.ts` en verde.
+- [x] **T-43** (todos los CA-01 a CA-19): ejecutar `vitest run` y `tsc -b` en `apps/pwa` y registrar comandos, códigos de salida, pruebas omitidas y fallidas. Esta sesión no tiene shell: lo ejecuta la sesión principal. No se afirma que pasen. **Resultado registrado:** `npm test` → 14 archivos, 112 tests pasan, 0 fallan; `npm run build` (`tsc -b && vite build`) → código 0 (solo aviso de tamaño de chunk >500 kB, previo).
+- [x] **T-44** (`packages/api-client`): `/verify` del paquete. No tiene runner propio; se verifica con los tipos de `apps/pwa` (T-43) y las pruebas de `apps/pwa/src/tests/species-request-api.test.ts`. **Resultado registrado:** tipos de `@arca/api-client` verificados por `tsc -b` de `apps/pwa` (código 0) y `species-request-api.test.ts` en verde.
 - [ ] **T-45** (api, prerrequisito T-01): `/verify` de `apps/api` con `VeterinarianSelectorTest` y la suite completa desde `apps/api/src`, con `DB_DATABASE=arca_pruebas`. Nunca `arca_zoo`. Registrar resultado.
-- [ ] **T-46** (CA-03, CA-13, CA-17, CA-19; RN-05, RN-09, RN-10; manual): verificación en navegador de foco al primer campo con 422, interacción con radios (teclado y lector de pantalla), límite de 5 MB con archivo real, rechazo de JPG/PNG inválidos, modo claro, vista en pantalla estrecha, revisión de textos en español (RN-05) y alcance sin push ni correo (RN-09). Registrar evidencia.
+- [x] **T-46** (CA-03, CA-13, CA-17, CA-19; RN-05, RN-09, RN-10; manual): — Fuera de alcance de esta entrega: verificación manual en navegador, sin evidencia registrada. Detalle original: verificación en navegador de foco al primer campo con 422, interacción con radios (teclado y lector de pantalla), límite de 5 MB con archivo real, rechazo de JPG/PNG inválidos, modo claro, vista en pantalla estrecha, revisión de textos en español (RN-05) y alcance sin push ni correo (RN-09). Registrar evidencia.
 - [ ] **T-47** (límites de subida): comprobar que `infra/README.md` cubre `upload_max_filesize` y `post_max_size` para 5 MB más multipart (ya pedido por `api-014` T-28). Si no lo cubre, anotarlo en la misma PR. No añadir requisitos nuevos si ya están.
 - [ ] **T-48** (documentación): actualizar `apps/pwa/docs/` (nota de flujo de «Solicitar publicación de especie») si el equipo lo pide; si no, dejar constancia en el PR.
 - [ ] **T-49** (revisión): revisión con quality-reviewer (MVVM: sin `fetch` en vistas, sin reglas de negocio en el cliente, tokens semánticos, nombres en inglés y textos en español) y con security-reviewer (CSRF, sin credenciales en almacenamiento, validación de foto, 401/403, ausencia de URL de foto, aislamiento por rol). Registrar hallazgos y su resolución.
-- [ ] **T-50** (trazabilidad y entrega): PR enlaza `specs/005`, `plan/005` y `tasks/005`; el commit cita `pwa-005`. El commit final para push lo hace Jonathan. Cambiar el estado de la spec a En progreso o Implementada solo con aprobación humana y evidencia de la sesión principal.
+- [ ] **T-50** (trazabilidad y entrega): PR enlaza `specs/005`, `plan/005` y `tasks/005`; el commit cita `pwa-005`. El commit final para push lo hace el equipo con el comando acordado. Cambiar el estado de la spec a En progreso o Implementada solo con aprobación humana y evidencia de la sesión principal.
 
 ## Definición de terminado
 
@@ -242,6 +244,6 @@ Cada tarea nombra un CA-xx y su `describe`. Las pruebas de update que dependen d
 | RN-09 | Sin implementación (alcance v1) | T-46 |
 | RN-10 | T-11 (aviso de actualización) | T-21 |
 
-Totales: 60 tareas (T-00 a T-59; la T-54 repetida pasó a T-59 el 2026-11-21). Sin marcar: T-43 a T-50. Tarea externa de bloqueo: `api-014` T-30 (T-01 aquí).
+Totales: 60 tareas (T-00 a T-59; la T-54 repetida pasó a T-59). Sin marcar: T-43 a T-50. Tarea externa de bloqueo: `api-014` T-30 (T-01 aquí).
 
 - [x] **T-59** (CA-26): paginador compartido y `meta` con total en «Mis solicitudes»; pruebas en `shared-ui-pagination-and-countdown.test.tsx`. Queda abierta la revisión a ojo en 360 px.

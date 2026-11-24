@@ -1,10 +1,12 @@
 # Plan técnico · 021 · cancellation-review-signals
 
-- Spec: `apps/dashboard/specs/021-cancellation-review-signals.md` (Aprobada, Jonathan, 2026-11-21)
+- Spec: `apps/dashboard/specs/021-cancellation-review-signals.md` (Aprobada)
 - Spec de la API: `apps/api/specs/027-cancellation-review-signals.md`; plan de la API en `apps/api/plan/027-cancellation-review-signals.md`
-- Estado de spec: Aprobada
-- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-21**. Las tareas de `tasks/021-cancellation-review-signals.md` se ejecutan tras los contratos de la API (`api-027` T-13, T-16, T-17, T-19) y tras `dashboard-016` y `dashboard-018` en su estado actual.
-- Responsable técnico: Jonathan (según la spec).
+- Estado de spec: Implementada
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Estado del plan: **Aprobado** (aprobación técnica registrada). Las tareas de `tasks/021-cancellation-review-signals.md` se ejecutan tras los contratos de la API (`api-027` T-13, T-16, T-17, T-19) y tras `dashboard-016` y `dashboard-018` en su estado actual.
+- Responsable técnico: según la spec.
 - DBR relacionada: DBR-026 (solo API; el dashboard no toca esquema).
 - ADR relacionados: ninguno.
 
@@ -107,7 +109,7 @@ Convención: `test_caNN_…` en el nombre del test de Vitest. Mocks de `@arca/ap
 - **Textos de la API en la UI:** la página muestra lo que llega; si la API cambia el porqué, la UI cambia sin tocar código.
 - **Preguntas abiertas:** las de `api-027`; esta spec no añade preguntas.
 
-## Decisiones de Jonathan (2026-11-21)
+## Decisiones
 
 - Aviso y puntito cuentan Atención sin revisar y «Requiere aclaración» (`api-027` RN-11). Revisar no entra en el aviso.
 - Sin cajero registrado: sin semáforo ni botón de revisión (`api-027` RN-10).
@@ -123,11 +125,11 @@ Convención: `test_caNN_…` en el nombre del test de Vitest. Mocks de `@arca/ap
 5. Accesibilidad, tokens y pruebas de arquitectura (T-09, T-10, T-12).
 6. Cobertura Vitest (T-11), `/verify` y documentación (T-13).
 
-- Revisión técnica: Jonathan, 2026-11-21 (aprobación técnica del plan).
-- Aprobador funcional: Jonathan (spec aprobada 2026-11-21).
+- Revisión técnica: aprobada (aprobación técnica del plan).
+- Aprobador funcional: responsable funcional (spec aprobada).
 - Evidencias: pendientes de la sesión principal (salida de Vitest, lint y tipos). Esta sesión no tiene shell y no afirma que pasen.
 
-## Divergencias de implementación (2026-11-21)
+## Divergencias de implementación
 
 - Estructura real del dashboard: no existe `hooks/`; los ViewModels viven en `viewmodels/` (`cancellation-review.ts` y `useCancellationReview.ts`). Los componentes están en `components/` y las pruebas en `src/tests/` (`cancellation-review-table|dialog|pending|architecture.test.tsx`) en vez de junto al archivo.
 - Tabla: se usa el `DataTable` local del dashboard (`components/DataTable.tsx`) con `rowDetail` para el historial; no se añadió nada a `@arca/ui`.
@@ -138,7 +140,7 @@ Convención: `test_caNN_…` en el nombre del test de Vitest. Mocks de `@arca/ap
 - El conteo de pendientes no se refresca al guardar una revisión; sigue la regla de `dashboard-018` (al cambiar de sección, mínimo 15 s).
 - Pendiente de contraste con la API real: valores de `traffic_light` (`normal`, `review`, `attention`) y `status` (`reviewed_ok`, `clarification_required`), tomados del plan de `api-027`.
 
-## Nota 2026-11-21: semáforo en tabla (CA-18 a CA-22)
+## Nota: semáforo en tabla (CA-18 a CA-22)
 
 - `CancellationTrafficLightTable` pasa a nueve columnas (Fecha, Cajero, Nivel, Vendidos, Cancelados, % cancelado, Señales, Revisión vigente, Acción) sobre el mismo `DataTable`; el encabezado fijo y el desplazamiento vienen de `.cancellation-card .data-table-scroll`.
 - «Ver detalle» usa `rowDetail` de `DataTable`: muestra `row.action` y el historial (se pide al abrir y se cierra al plegar, vía `onToggleHistory`). El estado abierto/cerrado y el filtro son estado local de presentación.
@@ -146,14 +148,14 @@ Convención: `test_caNN_…` en el nombre del test de Vitest. Mocks de `@arca/ap
 - `packages/api-client/admin-types.ts`: `sold_tickets`, `cancelled_tickets` y `cancel_percent` opcionales en `CancellationTrafficLightDto` (los devuelve `api-027`); solo tipos.
 - La celda de revisión muestra estado y fecha; la nota y el autor van en el detalle. Estilos en rem dentro del bloque `cancellation-review-signals`.
 
-## Nota 2026-11-21: legibilidad y leyenda (CA-23 a CA-28)
+## Nota: legibilidad y leyenda (CA-23 a CA-28)
 
 `CancellationLegend` pasa a `<details>` con dos tablas; niveles y preferencia (`localStorage` con try/catch) en `viewmodels/cancellation-legend.ts`. `DataTable` gana `className` opcional por columna (`traffic-col*`) para alineación y anchos en rem (solo desde 40.0625rem; apilado en móvil). El porqué usa `.cancellation-signals__reason` (0.9375rem, color de texto). El detalle usa `<h4>` por bloque y `CancellationReviewHistory` pasa de lista a tabla (`CancellationCurrentReview` queda sin uso en el historial). Tests en `cancellation-review-table.test.tsx`; ajustados CA-01, CA-04, CA-18 y CA-20 por diseño, sin relajarlos.
 
-## Revisión 2026-11-21 (c): «Ver boletos» y folios por señal (CA-29 a CA-34)
+## Revisión (c): «Ver boletos» y folios por señal (CA-29 a CA-34)
 
 - Estado en el ViewModel (`cancellation-report.ts`): `ticketFocus` (día, cajero y `previousQuery`) y acciones `ticket-focus-applied` / `ticket-focus-cleared`; `useCancellationReport` expone `viewTickets` y `clearTicketFocus`. «Ver boletos» pasa a `loading` de inmediato para que el desplazamiento espere al reporte nuevo. `query-changed` descarta el filtro salvo que solo cambie la página.
 - Vista: `CancellationReportView` mantiene solo estado de presentación (solicitud de desplazamiento y folio marcado) y mueve el foco al encabezado `#cancellation-tickets-heading` o a la fila `#cancellation-ticket-<folio>`. `CancellationTrafficLightTable` añade «Ver boletos» y, en el detalle, señales con conteo y chips de folio (botones).
 - Helpers puros en `viewmodels/cancellation-ticket-focus.ts`. Estilos en el bloque `cancellation-ticket-focus` de `styles.css` (rem y tokens).
 - No se recompone la frase de la API ni se calcula qué boletos participan (`signal_codes` y `folios` vienen de la API).
-- Pendiente: revisión visual de Jonathan (360 a 1366 px) y contraste con la API real de la revisión (c).
+- Pendiente: revisión visual (360 a 1366 px) y contraste con la API real de la revisión (c).

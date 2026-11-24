@@ -1,8 +1,10 @@
 # Tareas · 011 · loading-notices-and-animal-view
 
+- Solicitada: 2026-11-19
+- Aprobada: 2026-11-19
 - Spec: `apps/pwa/specs/011-loading-notices-and-animal-view.md`
 - Plan: `apps/pwa/plan/011-loading-notices-and-animal-view.md`
-- Aprobación del checklist: implementación autorizada por el solicitante el 2026-11-19.
+- Aprobación del checklist: implementación autorizada por el solicitante.
 
 ## Implementación y pruebas
 

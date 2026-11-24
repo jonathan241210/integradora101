@@ -1,10 +1,11 @@
 # Plan técnico · 018 · visitor-favorite-species
 
 - Spec: `apps/api/specs/018-visitor-favorite-species.md`
-- Estado de spec: Aprobada (Aksel, 2026-11-14, con conformidad del equipo)
-- Estado del plan: Aprobado técnicamente (Aksel, 2026-11-16). Autoriza las tasks. No autoriza código hasta que esas tasks estén aprobadas.
-- Responsable técnico: Aksel
-- Solicitante funcional: Aksel
+- Estado de spec: Implementada
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Estado del plan: Aprobado técnicamente. Autoriza las tasks. No autoriza código hasta que esas tasks estén aprobadas.
+- Responsable técnico: Equipo de producto móvil
 - Dependencias: `api-004` (sesión, ability `visitor`, borrado físico de la cuenta), `api-015` (especie visible), DBR-018 (Lista para backend). Consumidor: `mobile-014`.
 - Este documento no aplica migraciones y no modifica `src/`. Las tasks viven en `apps/api/tasks/018-visitor-favorite-species.md`.
 
@@ -99,7 +100,7 @@ La pareja única la garantiza `uk_visitor_favorite_species_pair`. Si dos altas c
 
 - DBR-018 está Aprobada y Lista para backend. La migración `apps/api/src/database/migrations/2026_11_14_000018_visitor_favorite_species_schema.php` ya existe. Este plan no la edita ni la ejecuta.
 - Tabla `visitor_favorite_species`: `id`, `visitor_id`, `species_id`, `created_at`, `updated_at`. Sin `deleted_at`, sin `created_by` y sin `updated_by`.
-- Modelo `VisitorFavoriteSpecies`. No extiende `BaseModel` y no usa SoftDeletes. La excepción ya está aceptada en DBR-018 (Victor Adrian y Aksel, 2026-11-14): es una preferencia de la cuenta, no un dato clínico ni financiero. `updated_at` queda el de la migración; la lista no lo lee.
+- Modelo `VisitorFavoriteSpecies`. No extiende `BaseModel` y no usa SoftDeletes. La excepción ya está aceptada en DBR-018 (Responsable de BD Adrian y Equipo de producto móvil): es una preferencia de la cuenta, no un dato clínico ni financiero. `updated_at` queda el de la migración; la lista no lo lee.
 - `visitors.id` y `species.id` son INT. La migración ya declara esas columnas como `integer`. No se cambia el tipo.
 - `ON DELETE CASCADE` hacia `visitors`. `ON DELETE RESTRICT` hacia `species`.
 - Los tests crean especies con `Species::query()->create` dentro de `DatabaseTransactions`, como `ProgressTest`, y fijan `is_published` en `1`. No son una migración.
@@ -161,10 +162,10 @@ Todas en `apps/api/src/tests/Feature/Visitor/FavoriteSpeciesTest.php`, sobre `Vi
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Laravel, Sanctum y MySQL 8.0. Sin paquete nuevo. Sin SQL propietario. `.env` no cambia |
-| II. La spec manda | Sí, en este documento | Spec Aprobada por Aksel el 2026-11-14. Plan aprobado por Aksel el 2026-11-16. Las tasks quedan pendientes de su propia aprobación. No hay código de la feature |
+| II. La spec manda | Sí, en este documento | Spec Aprobada por Equipo de producto móvil. Plan aprobado por Equipo de producto móvil. Las tasks quedan pendientes de su propia aprobación. No hay código de la feature |
 | III. Lógica separada de la interfaz | Sí | Visibilidad, unicidad y borrado viven en Actions. El controlador delega. `@arca/api-client` solo declara los dos métodos |
 | IV. Un test por criterio | Sí, al implementar | La tabla cubre CA-01 a CA-09. Los tests no se escriben en este corte |
-| V. Una sola fuente de verdad para los datos | Excepción ya aceptada | DBR-018 está Lista para backend. La tabla no usa SoftDeletes ni `BaseModel`. BD (Victor Adrian) y backend (Aksel) lo aceptaron el 2026-11-14. No es dato clínico ni financiero. La autoridad de la lista es esta API |
+| V. Una sola fuente de verdad para los datos | Excepción ya aceptada | DBR-018 está Lista para backend. La tabla no usa SoftDeletes ni `BaseModel`. BD (Responsable de BD Adrian) y backend (Equipo de producto móvil) lo aceptaron. No es dato clínico ni financiero. La autoridad de la lista es esta API |
 | VI. Código en inglés, personas en español | Sí | Rutas, clases y columnas en inglés. «Especie no encontrada.» y el `422` en español |
 
 Ninguna excepción nueva. La de SoftDeletes ya está firmada en DBR-018. El plan ya está aprobado. El código espera la aprobación de las tasks.
@@ -180,9 +181,9 @@ Ninguna excepción nueva. La de SoftDeletes ya está firmada en DBR-018. El plan
 
 ## Orden y aprobación
 
-1. Aprobación técnica de este plan: Aksel, 2026-11-16.
+1. Aprobación técnica de este plan: Equipo de producto móvil.
 2. Tasks de `api-018`, con la puerta de `migrate:status` en `arca_pruebas` y sin `migrate`. Esperan su propia aprobación antes del código.
 3. Implementación de la API y de los dos métodos del cliente, solo con esas tasks aprobadas.
 4. El plan de `mobile-014` consume ese contrato y espera, para su código, a que los métodos existan.
 
-La aprobación funcional de la spec es de Aksel (2026-11-14). La aprobación técnica de este plan es de Aksel (2026-11-16).
+La aprobación funcional de la spec es de Equipo de producto móvil. La aprobación técnica de este plan es de Equipo de producto móvil.

@@ -123,7 +123,7 @@ class DemoCancellationReviewsCommandTest extends FeatureTestCase
     /** CA-32 cancellation-review-signals */
     public function test_ca32_demo_extends_days_without_changing_existing_rows(): void
     {
-        // arca_pruebas ya conserva datos demo reales (decisión de Jonathan, 2026-11-21): se mueve el
+        // arca_pruebas ya conserva datos demo reales (decisión del equipo): se mueve el
         // reloj a fechas sin demo para que el test no dependa de lo ya cargado.
         $this->travelTo(now()->addYears(3));
 

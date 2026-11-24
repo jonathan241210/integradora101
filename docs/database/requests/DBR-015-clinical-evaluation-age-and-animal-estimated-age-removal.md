@@ -1,12 +1,12 @@
 # DBR-015 · clinical-evaluation-age-and-animal-estimated-age-removal
 
-- Estado: Lista para backend (aplicada en `arca_pruebas`, 2026-11-13; evidencia post-migración detallada pendiente de adjuntar)
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-13
 - Feature/spec origen: Guardado de diagnóstico intenso parte 1 y modelo de edad clínica (`apps/pwa/specs/007-diagnostico-intenso-parte1-guardado.md`, Borrador; relacionado con `apps/pwa/specs/006-diagnostico-intenso-parte1-precarga.md`, DBR-014)
-- Solicitante: Victor Adrian
-- Responsable de BD: Victor Adrian
-- Responsable backend: Victor Adrian
-- Fecha: 2026-11-13
-- Aprobación registrada: Victor Adrian (BD y backend), 2026-11-13
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
+- Aprobación registrada: Responsable de BD y backend
 
 ## Problema y justificación
 
@@ -21,7 +21,7 @@ Se requiere: persistir la edad en cada evaluación clínica (`patient_age`), ret
 
 ## Estado actual
 
-- **`animals`**: `birth_date DATE NULL`, `estimated_age VARCHAR(50) NULL`. En `arca_pruebas` se reporta **1 solo registro** con `estimated_age` (2026-11-13).
+- **`animals`**: `birth_date DATE NULL`, `estimated_age VARCHAR(50) NULL`. En `arca_pruebas` se reporta **1 solo registro** con `estimated_age`.
 - **`clinical_evaluations`** (tabla 10): sin columna de edad del paciente; sin `deleted_at`.
 - **`clinical_evaluation_findings`** (tabla 11), **`animal_restraints`** (tabla 12), **`lab_samples`** (tabla 13): sin `deleted_at`.
 
@@ -95,11 +95,11 @@ ALTER TABLE animals DROP COLUMN estimated_age;
 
 ## Datos existentes y migración de datos
 
-- **`animals.estimated_age`**: se identificó **1 registro** con valor en `arca_pruebas` (2026-11-13). **Backfill/decisión:** antes de `DROP`, el responsable de BD debe registrar ese valor (evidencia). Dado que es un único dato y puede no existir una evaluación histórica equivalente, no se exige copia automática a evaluaciones pasadas; puede preservarse manualmente (p. ej. en la próxima evaluación/diagnóstico de ese ejemplar en `patient_age`) y luego eliminar la columna. No se realiza borrado físico de datos clínicos.
+- **`animals.estimated_age`**: se identificó **1 registro** con valor en `arca_pruebas`. **Backfill/decisión:** antes de `DROP`, el responsable de BD debe registrar ese valor (evidencia). Dado que es un único dato y puede no existir una evaluación histórica equivalente, no se exige copia automática a evaluaciones pasadas; puede preservarse manualmente (p. ej. en la próxima evaluación/diagnóstico de ese ejemplar en `patient_age`) y luego eliminar la columna. No se realiza borrado físico de datos clínicos.
 - **`clinical_evaluations` existentes:** `patient_age` quedará `NULL` salvo actualización manual acordada.
 - **`deleted_at`**: nulo en registros existentes.
 
-**Evidencia registrada (pre-drop, 2026-11-13, `arca_pruebas`):**
+**Evidencia registrada (pre-drop, `arca_pruebas`):**
 ```sql
 SELECT id, name, birth_date, estimated_age
 FROM animals
@@ -225,10 +225,10 @@ return new class extends Migration
 ## Pruebas y evidencia
 
 - Pruebas de esquema en MySQL 8.0 aislada: pendiente de registrar detalle por responsable de BD.
-- Evidencia (sin secretos): **pre-drop registrado** — `animals.estimated_age` (1 registro en `arca_pruebas`, 2026-11-13): `id=5, name='Juan', birth_date=NULL, estimated_age='1000'`. **Aplicación:** confirmada por Victor Adrian (BD) en `arca_pruebas`, 2026-11-13. **Pendiente adjuntar:** `SHOW CREATE TABLE` post-migración de `clinical_evaluations`, `clinical_evaluation_findings`, `animal_restraints`, `lab_samples`, `animals`.
+- Evidencia (sin secretos): **pre-drop registrado** — `animals.estimated_age` (1 registro en `arca_pruebas`): `id=5, name='Juan', birth_date=NULL, estimated_age='1000'`. **Aplicación:** confirmada por el responsable de BD en `arca_pruebas`. **Pendiente adjuntar:** `SHOW CREATE TABLE` post-migración de `clinical_evaluations`, `clinical_evaluation_findings`, `animal_restraints`, `lab_samples`, `animals`.
 - Pruebas integradas backend/PWA: pendientes (implementación 007).
 
-## Decisiones registradas (2026-11-13)
+## Decisiones registradas
 
 1. **Columna:** `patient_age VARCHAR(50) NULL` en `clinical_evaluations` (confirmado).
 2. **`animals.estimated_age`:** se elimina; `birth_date` se mantiene como referencia del ejemplar.
@@ -238,17 +238,17 @@ return new class extends Migration
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Victor Adrian | 2026-11-13 | Aprobada |
-| Responsable backend | Victor Adrian | 2026-11-13 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
 
-> Aprobada y aplicada en `arca_pruebas` (2026-11-13, confirmación BD). Pasa a **“Lista para backend”** para implementación consumidora; evidencia post-migración detallada (`SHOW CREATE TABLE`) pendiente de adjuntar. Ningún agente crea ni aplica migraciones/SQL.
+> Aprobada y aplicada en `arca_pruebas` (confirmación BD). Pasa a **“Lista para backend”** para implementación consumidora; evidencia post-migración detallada (`SHOW CREATE TABLE`) pendiente de adjuntar. Ningún agente crea ni aplica migraciones/SQL.
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | aplicada (evidencia post-migración detallada pendiente) | 2026-11-13 | Pre-drop: `id=5, name='Juan', birth_date=NULL, estimated_age='1000'`. Aplicación confirmada por Victor Adrian (BD). Pendiente adjuntar `SHOW CREATE TABLE` post-migración. |
-| staging | pendiente | | |
-| producción (`arca_zoo`) | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas (evidencia post-migración detallada pendiente) | Pre-drop: `id=5, name='Juan', birth_date=NULL, estimated_age='1000'`. Aplicación confirmada por el responsable de BD. Pendiente adjuntar `SHOW CREATE TABLE` post-migración. |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

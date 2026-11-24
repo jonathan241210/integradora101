@@ -2,7 +2,10 @@
 
 - Spec: `apps/mobile/specs/003-api-read-integration.md`
 - Plan: `apps/mobile/plan/003-api-read-integration.md`
-- ADR de caché y conectividad: `docs/adr/0014-mobile-offline-cache-and-connectivity.md` (Aceptado, 2026-10-22)
+- Estado del checklist: Completado
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
+- ADR de caché y conectividad: `docs/adr/0014-mobile-offline-cache-and-connectivity.md` (Aceptado)
 
 ## Base de datos y datos de prueba (Responsable de BD)
 
@@ -16,7 +19,7 @@
 - [x] **T-04** (CA-03, CA-05, RN-01, RN-03): Implementar `ApiZooRepository` en `apps/mobile/src/repositories/apiZooRepository.ts` ampliando la interfaz con `getEvents()` y `getEventById(id: string)` consumiendo la API y manejando caché local en `AsyncStorage`.
 - [x] **T-05** (CA-01, CA-03, RN-01): Actualizar `apps/mobile/src/repositories/index.ts` para exponer interfaces extendidas y alternar entre implementaciones mock y API según la variable `EXPO_PUBLIC_USE_MOCKS`.
 - [x] **T-06** (CA-05, ADR 0014): Reemplazar el almacenamiento en memoria por `AsyncStorage` real en `apps/mobile/src/repositories/storage.ts`; conservar `MemoryKeyValueStorage` solo para inyección en pruebas.
-  - 2026-10-22: `npx expo install @react-native-async-storage/async-storage expo-network` (4 paquetes); `defaultStorage` apunta a `AsyncStorage`.
+  - Instalación: `npx expo install @react-native-async-storage/async-storage expo-network` (4 paquetes); `defaultStorage` apunta a `AsyncStorage`.
 
 ### Fase 2: Componentes Reutilizables de Presentación
 - [x] **T-07** (CA-04, RN-04, RN-06): Crear componente de banner offline `apps/mobile/src/components/ui/OfflineBanner.tsx` para advertir sutilmente al usuario cuando la información proviene de caché local sin conexión.
@@ -28,7 +31,7 @@
 - [x] **T-11** (CA-02, CA-04, CA-06): Actualizar `useAnimalViewModel` y `AnimalDetailScreen` en `apps/mobile/src/viewmodels/useAnimalViewModel.ts` y `apps/mobile/src/screens/AnimalDetailScreen.tsx` para soportar consumo del detalle vía API con manejo de 404, fallback de imagen y estados visuales.
 - [x] **T-12** (CA-03, CA-04): Actualizar la pantalla de detalle de evento `apps/mobile/src/app/(tabs)/event-detail.tsx` para consultar `getEventById` desde `ZooRepository`, soportando estados de carga, error y visualización completa.
 - [x] **T-13** (CA-04, ADR 0014): Crear `apps/mobile/src/viewmodels/useNetworkStatus.ts` con `expo-network`; mostrar `OfflineBanner` en Inicio, Colección, Búsqueda y detalles de animal y evento.
-  - 2026-10-22: `isOffline` se pasa desde `(tabs)/index.tsx`, `(tabs)/collection.tsx`, `(tabs)/search.tsx`, `animal/[id].tsx` y `(tabs)/event-detail.tsx`.
+  - Verificación: `isOffline` se pasa desde `(tabs)/index.tsx`, `(tabs)/collection.tsx`, `(tabs)/search.tsx`, `animal/[id].tsx` y `(tabs)/event-detail.tsx`.
 - [x] **T-14** (CA-02, UX): ocultar la tarjeta «Peso» y cualquier estadística vacía en `AnimalDetailScreen` en lugar de mostrar un valor en blanco.
 
 ### Fase 4: Pruebas Automatizadas Unitarias (Jest)
@@ -36,34 +39,34 @@
 - [x] **T-16** (CA-03, CA-05, CA-07): Crear suite de pruebas `apps/mobile/__tests__/apiZooRepository.test.ts` verificando listado y detalle de eventos y fallback a caché.
 - [x] **T-17** (CA-04, CA-06, CA-07): Crear suite de pruebas `apps/mobile/__tests__/catalogUiStates.test.tsx` validando el renderizado de los 5 estados (`loading`, `empty`, `error` con reintento, `success` y banner `offline`) y fallback de imágenes.
 - [x] **T-18** (CA-04, ADR 0014): Verificar en `apps/mobile/__tests__/networkStatus.test.tsx` la detección offline, el banner en los detalles y la recuperación aunque Expo siga reportando el estado anterior y falle una comprobación de red.
-  - 2026-10-22: 5 tests en verde (3 del hook y 2 de los detalles).
+  - Verificación: 5 tests en verde (3 del hook y 2 de los detalles).
 - [x] **T-19** (CA-05): Ajustar `jest.setup.js` con los mocks oficiales de `AsyncStorage` y `expo-network`, y limpiar la caché entre pruebas.
 
 ## Calidad y entrega
 
 - [x] **T-20** (CA-07): Ejecutar la suite completa de pruebas unitarias de la app móvil con `--runInBand` y `npx tsc --noEmit`; confirmar todo en verde.
-  - 2026-10-22: 15 suites y 86 tests en verde; `tsc --noEmit` sin errores.
+  - Verificación: 15 suites y 86 tests en verde; `tsc --noEmit` sin errores.
 - [x] **T-21**: Ejecutar verificación con `/verify` sin instalar dependencias no autorizadas y validar que no existan violaciones constitucionales.
-  - 2026-10-22: `npm test -- --runInBand` (15 suites, 86 tests) y `npx tsc --noEmit` en verde; `pint --test` dirigido a los archivos de `api-006` pasa; `git diff --check` sin errores (solo avisos LF/CRLF). `apps/mobile/package.json` no define `format:check`, `lint` ni `types`; se ejecutó `tsc` directamente.
+  - Verificación: `npm test -- --runInBand` (15 suites, 86 tests) y `npx tsc --noEmit` en verde; `pint --test` dirigido a los archivos de `api-006` pasa; `git diff --check` sin errores (solo avisos LF/CRLF). `apps/mobile/package.json` no define `format:check`, `lint` ni `types`; se ejecutó `tsc` directamente.
 - [x] **T-22**: Actualizar la documentación local de la app en `apps/mobile/docs/` para reflejar AsyncStorage, `expo-network` y el contrato real de `api-006`.
-  - 2026-10-22: actualizados `arquitectura.md`, `estandares-integracion-api.md` y `003-008-roadmap-y-asignacion.md`.
+  - Actualizados `arquitectura.md`, `estandares-integracion-api.md` y `003-008-roadmap-y-asignacion.md`.
 
-## Enmienda 2026-11-10 · inicio de noticias y eventos
+## Enmienda · inicio de noticias y eventos
 
 - [x] **T-23** (CA-03, CA-08, CA-10, RN-02, RN-08): En `mappers.ts`, resolver la foto usable y mapear la noticia. En `ApiZooRepository`, pedir `/events?limit=3` y `/news?limit=3`, y agregar `getNewsById`.
 - [x] **T-24** (CA-03, CA-08, CA-09, RN-06, RN-07): En el inicio, titular «Noticias actuales» y «Próximos eventos», mostrar uno y desplegar hasta tres, avisar antes de abrir el portal y agregar el detalle de la noticia. Las tarjetas muestran la imagen.
 - [x] **T-25** (CA-03, CA-08, CA-09, CA-10, CA-07): Pruebas Jest que nombran esos criterios, y ajuste de las pruebas que esperaban `GET /events` sin límite o una sola noticia de muestra.
 - [x] **T-26** (CA-07): Ejecutar la suite de la app móvil que cubre estos criterios y `tsc --noEmit` sobre los archivos tocados.
-  - 2026-11-10: `npx jest --runInBand` con 63 suites y 315 tests en verde; `tsc --noEmit` sin errores.
+  - Verificación: `npx jest --runInBand` con 63 suites y 315 tests en verde; `tsc --noEmit` sin errores.
 - [x] **T-27** (CA-11, RN-03, RN-09): Deslizar el inicio vuelve a pedir noticias y eventos aunque la caché esté vigente, sin recargar animales ni progreso. Las secciones usan los colores del tema.
-  - 2026-11-10: `homeNewsEvents.test.tsx` y `apiZooRepository.test.ts` en verde; `tsc --noEmit` sin errores.
+  - Verificación: `homeNewsEvents.test.tsx` y `apiZooRepository.test.ts` en verde; `tsc --noEmit` sin errores.
 - [x] **T-28** (CA-08, CA-12): En el inicio, «Inicio» y «Misiones» se tocan. Misiones ocupa la misma pantalla y la tarjeta de aventura sale de entre noticias y eventos.
-  - 2026-11-10: `homeNewsEvents`, `navigation` y `scan-queue` en verde; `tsc --noEmit` sin errores.
+  - Verificación: `homeNewsEvents`, `navigation` y `scan-queue` en verde; `tsc --noEmit` sin errores.
 - [x] **T-29** (CA-12): La frase de las misiones conserva el margen lateral del encabezado.
-  - 2026-11-11: `homeNewsEvents` CA-12 en verde.
+  - Verificación: `homeNewsEvents` CA-12 en verde.
 - [x] **T-30** (CA-01, CA-02, CA-05, CA-06): Reusar la foto pública de la especie en catálogo y ficha, mantener la caché anterior durante la actualización y verificar con Jest los casos de URL inválida, ficha en caché y apertura sin conexión.
 
 ## Evidencia
 
-- 2026-10-20: spec aprobada y primeras fases implementadas con almacenamiento en memoria.
-- 2026-10-22: ADR 0014 aceptado; `AsyncStorage` y `expo-network` instalados, hook de conectividad y banner integrados; pendiente cerrar pruebas y verificación.
+- Spec aprobada y primeras fases implementadas con almacenamiento en memoria.
+- ADR 0014 aceptado; `AsyncStorage` y `expo-network` instalados, hook de conectividad y banner integrados. Las pruebas y la verificación se registraron después en esta misma lista.

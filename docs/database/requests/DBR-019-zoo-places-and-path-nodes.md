@@ -1,12 +1,12 @@
 # DBR-019 · Lugares del zoológico y red de nodos de ruta
 
-- Estado: Migración implementada
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-17
+- Aprobada: 2026-11-17
 - Feature/spec origen: pendiente de vincular (contexto relacionado: `apps/mobile/specs/007-map-location.md`, `docs/database/requests/DBR-008-enclosure-gps-coordinates.md`)
-- Solicitante: usuario (levantamiento de coordenadas de campo)
-- Responsable de BD: Victor Adrian
-- Responsable backend: por asignar
-- Fecha: 2026-11-17
-- Decisiones confirmadas (2026-11-17, solicitante): nombres físicos `zoo_places`/`path_nodes` e `INT UNSIGNED` (PK) correctos; `place_type` y `node_type` como catálogos cerrados documentados (validación en app; en BD según defina el responsable: ENUM, CHECK o tabla catálogo), sin unicidad por `name` (hay repetidos en puntos distintos) y unicidad por `id` estable; `name_original` y soft deletes (`deleted_at`) correctos; `path_edges` diferido a fase 2.
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
+- Decisiones confirmadas (solicitante): nombres físicos `zoo_places`/`path_nodes` e `INT UNSIGNED` (PK) correctos; `place_type` y `node_type` como catálogos cerrados documentados (validación en app; en BD según defina el responsable: ENUM, CHECK o tabla catálogo), sin unicidad por `name` (hay repetidos en puntos distintos) y unicidad por `id` estable; `name_original` y soft deletes (`deleted_at`) correctos; `path_edges` diferido a fase 2.
 
 ## Problema y justificación
 
@@ -114,7 +114,7 @@ CREATE TABLE path_nodes (
 -- Fase 2 (fuera de esta migración inicial): path_edges cuando existan aristas del levantamiento.
 ```
 
-**Código de migración Laravel (referencia):** preparado el 2026-11-17 para el solicitante. No se crea archivo en `apps/api/src/database/migrations/` ni se ejecuta desde este flujo: la migración la crea, prueba y aplica el responsable de BD tras aprobar la DBR (Constitución V, `docs/database/README.md`). Ver el bloque «Migración Laravel de referencia (DBR-019)» entregado junto con esta solicitud.
+**Código de migración Laravel (referencia):** preparado para el solicitante. No se crea archivo en `apps/api/src/database/migrations/` ni se ejecuta desde este flujo: la migración la crea, prueba y aplica el responsable de BD tras aprobar la DBR (Constitución V, `docs/database/README.md`). Ver el bloque «Migración Laravel de referencia (DBR-019)» entregado junto con esta solicitud.
 
 ## Datos existentes y migración de datos
 
@@ -155,7 +155,7 @@ No aplica en esta solicitud. Las reglas de negocio y exposición de datos deben 
 - [ ] Revisar dataset normalizado: depurar nombres/typos, validar reclasificaciones, conservar `name_original`, decidir `is_visible` inicial y mantener `map_x/map_y` en NULL.
 
 ### Fase 1 — Migración de esquema (responsable de BD)
-- [ ] Responsable de BD crea la migración Laravel (referencia preparada 2026-11-17) y la prueba en base MySQL 8.0 aislada / `arca_pruebas`.
+- [ ] Responsable de BD crea la migración Laravel (referencia preparada) y la prueba en base MySQL 8.0 aislada / `arca_pruebas`.
 - [ ] Evidencia: `SHOW CREATE TABLE zoo_places`, `SHOW CREATE TABLE path_nodes`, verificación de tipos decimales, índices, `deleted_at`, y prueba de `down()` en entorno de prueba sin datos productivos.
 - [ ] Registrar resultado en «Pruebas y evidencia» y «Aplicación por ambiente»; pasar DBR a `Verificada por BD en desarrollo/pruebas` y luego `Lista para backend` según flujo.
 - [ ] **No** ejecutar SQL manual directo ni migraciones desde tests.
@@ -183,22 +183,22 @@ No aplica en esta solicitud. Las reglas de negocio y exposición de datos deben 
 ## Pruebas y evidencia
 
 - Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: pendiente de detallar (se recomienda adjuntar `SHOW CREATE TABLE zoo_places;`, `SHOW CREATE TABLE path_nodes;`, validación de índices/`deleted_at`/decimales y prueba de `down()` en entorno de prueba).
-- Resultado y evidencia (sin secretos ni datos sensibles): migración aplicada en `arca_pruebas` por Victor Adrian (2026-11-17). Salida reportada:
+- Resultado y evidencia (sin secretos ni datos sensibles): migración aplicada en `arca_pruebas` por el responsable de BD. Salida reportada:
   - `php artisan migrate` → `INFO Running migrations.` / `2026_11_17_000019_zoo_places_and_path_nodes_schema ... 1s DONE`
 - Pruebas integradas del backend: pendiente (tras `Lista para backend` y spec/implementación asociada).
 - Validación de datos fuente: conteo 105, clasificación propuesta 63/18/24, duplicados nominales identificados (`Recinto codorniz 4` x2, `Fuente` x2) como puntos distintos por coordenadas; catálogos propuestos desde dataset (`zoo_places.place_type`: access, amenity, common_area, food, landmark, restroom, ticketing, viewpoint; `path_nodes.node_type`: intersection, path, path_node, turn). Carga/importación de datos: pendiente (fase 2 del plan).
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Victor Adrian | 2026-11-17 | Migración implementada en `arca_pruebas` (aprobación formal de diseño pendiente de registrar si aplica) |
-| Responsable backend |  |  | pendiente |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Migración implementada en `arca_pruebas` (aprobación formal de diseño pendiente de registrar si aplica) | Registro de esta DBR |
+| Backend | Pendiente | |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | Migración implementada | 2026-11-17 | `php artisan migrate`: `2026_11_17_000019_zoo_places_and_path_nodes_schema ... 1s DONE` (Victor Adrian). Detalle de esquema (`SHOW CREATE TABLE`) pendiente de adjuntar. |
-| staging | pendiente |  |  |
-| producción | pendiente |  |  |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | `php artisan migrate`: `2026_11_17_000019_zoo_places_and_path_nodes_schema ... 1s DONE` (responsable de BD). Detalle de esquema (`SHOW CREATE TABLE`) pendiente de adjuntar. |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) |  |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) |  |

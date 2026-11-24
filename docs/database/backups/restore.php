@@ -7,9 +7,14 @@
  *
  * Uso:
  *   php docs/database/backups/restore.php [archivo.sql]
+ *
+ * Seguridad (api-028): no corre con APP_ENV=production ni contra `arca_zoo`; en otra base exige escribir
+ * su nombre para confirmar.
  */
 
 declare(strict_types=1);
+
+require __DIR__ . '/guard.php';
 
 $backupDir = __DIR__;
 $rootDir = dirname(__DIR__, 3);
@@ -48,6 +53,10 @@ foreach ($envLines as $line) {
         $env[$key] = $val;
     }
 }
+
+// api-028 CA-13: se bloquea producción y se pide confirmar el nombre de la base antes de conectar.
+$env = arcaApplyProcessEnv($env);
+arcaGuardDestructiveTarget($env, 'IMPORTAR datos (con claves foráneas deshabilitadas)');
 
 $host = $env['DB_HOST'] ?? '127.0.0.1';
 $port = (int) ($env['DB_PORT'] ?? 3306);

@@ -1,6 +1,6 @@
 # Guía de validación · 002 · Experiencia visitante
 
-La spec **002** está **Implementada** (PR aprobado e integrado vía DevOps / main, 2026-10-14). Esta guía sirve para validar manualmente el prototipo con Expo Router, datos simulados y las vistas en `src/screens/`. La especificación define el alcance funcional y el plan describe su arquitectura:
+La spec **002** está **Implementada** (PR aprobado e integrado vía DevOps / main). Esta guía sirve para validar manualmente el prototipo con Expo Router, datos simulados y las vistas en `src/screens/`. La especificación define el alcance funcional y el plan describe su arquitectura:
 
 - [Spec 002](../specs/002-mobile-ui-base-visitor-journey.md)
 - [Plan 002](../plan/002-mobile-ui-base-visitor-journey.md)
@@ -56,7 +56,7 @@ npm run test:coverage -- --runInBand
 npx tsc --noEmit
 ```
 
-La verificación manual de Android con Expo Go fue confirmada por la persona solicitante el 2026-10-09. Tras retirar Idioma y Sonidos y efectos, la suite pasó con 11 suites, 70 tests y 1 snapshot, y TypeScript no reportó errores. La prueba `user_logic.test.tsx` todavía imprime advertencias React `act(...)`, pero no provoca fallos. Los flujos de Login y Ajustes (CA-11–CA-15) se verificaron con `access.test.tsx` el 2026-10-16; la revisión visual complementaria en Android queda registrada en la tabla de ítems 12–15 más abajo.
+La verificación manual de Android con Expo Go fue confirmada por el equipo. Tras retirar Idioma y Sonidos y efectos, la suite pasó con 11 suites, 70 tests y 1 snapshot, y TypeScript no reportó errores. La prueba `user_logic.test.tsx` todavía imprime advertencias React `act(...)`, pero no provoca fallos. Los flujos de Login y Ajustes (CA-11–CA-15) se verificaron con `access.test.tsx`; la revisión visual complementaria en Android queda registrada en la tabla de ítems 12–15 más abajo.
 
 ## Límites de esta etapa
 
@@ -73,7 +73,7 @@ Esta guía describe la validación de la spec 002. Lo que sigue ya no es el esta
 
 ## Verificación manual (Android)
 
-La persona solicitante confirmó haber completado la validación en Android con Expo Go el 2026-10-09. El modelo de dispositivo y evidencia gráfica no se registraron.
+El equipo confirmó haber completado la validación en Android con Expo Go. El modelo de dispositivo y evidencia gráfica no se registraron.
 
 La lista de comprobación aplicada fue:
 
@@ -93,14 +93,14 @@ Con la app iniciada mediante `npx expo start` y abierta en Android/Expo Go o un 
 
 ### Enmienda acceso y ajustes (ítems 12–15)
 
-| Ítem | Comprobación en Android / Expo Go | Cobertura automatizada (2026-10-16) |
+| Ítem | Comprobación en Android / Expo Go | Cobertura automatizada |
 |------|-----------------------------------|-------------------------------------|
 | 12 | Login al arranque; invitado e inicio de sesión válido entran al inicio; cerrar sesión vuelve a Login. | `test-ca-11` en `__tests__/access.test.tsx` |
 | 13 | Registro con cuatro campos, advertencia de demostración y regreso a Login. | `test-ca-12` |
 | 14 | Olvido con aviso genérico; restablecer con código de 6 dígitos y nueva contraseña. | `test-ca-13` |
 | 15 | Ajustes desde Perfil: interruptores, Mi cuenta, Privacidad, Ayuda, Acerca de; pestaña Perfil activa; sin idioma ni sonidos. | `test-ca-14`, `test-ca-15`, `navigation.test.tsx` |
 
-**Registro de verificación (2026-10-16):** suite mobile `npm test -- --runInBand` — 11 suites, 70 tests OK; `npx tsc --noEmit` sin errores. Los flujos funcionales de los ítems 12–15 quedan cubiertos por las pruebas anteriores.
+**Registro de verificación:** suite mobile `npm test -- --runInBand` — 11 suites, 70 tests OK; `npx tsc --noEmit` sin errores. Los flujos funcionales de los ítems 12–15 quedan cubiertos por las pruebas anteriores.
 
 La spec 004 retiró «Entrar como invitado» al integrar la cuenta real. Los pasos 12 a 15 de abajo describen el prototipo de esta spec, antes de ese cambio. La cuenta vigente está en el README de la app y en `specs/004-visitor-account.md`.
 

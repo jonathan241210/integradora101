@@ -1,12 +1,14 @@
 # Plan técnico · 015 · step-up-confirmation
 
 - Spec: `apps/dashboard/specs/015-step-up-confirmation.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-20), con «Decisiones finales 2026-11-20» (diálogo permitido en Usuarios).
-- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**. Brechas B-1, B-3, B-4 y B-8 resueltas (sección «Decisiones 2026-11-20»).
+- Estado de spec: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Estado del plan: **Aprobado** (aprobación técnica registrada). Brechas B-1, B-3, B-4 y B-8 resueltas (sección «Decisiones»).
 - Responsable técnico: `<por identificar según acuerdo del equipo>`
 - Dependencias: `apps/api/specs/021-staff-step-up-confirmation.md` (regla y contrato) y su plan `apps/api/plan/021-staff-step-up-confirmation.md`. El cliente puede empezar con respuestas simuladas tras aprobar este plan; la integración real requiere los endpoints de api-021 T-06, T-08 a T-14.
 - Otras dependencias de spec: `dashboard-002` (login, reto y enrolamiento), `dashboard-005` (venta, historial, precios), `dashboard-012` y `dashboard-013` (recintos y QR), `dashboard-017` (usuarios, usa este diálogo).
-- Brechas heredadas de api-021 que afectan al cliente: **B-1** (campo de la contraseña de confirmación en `PUT users/{user}/password`), **B-3** (regenerar sin QR), **B-4** (alta, edición y estado de recintos sin clasificar), **B-8** (texto del 403). Resueltas el 2026-11-20 (ver «Decisiones 2026-11-20»).
+- Brechas heredadas de api-021 que afectan al cliente: **B-1** (campo de la contraseña de confirmación en `PUT users/{user}/password`), **B-3** (regenerar sin QR), **B-4** (alta, edición y estado de recintos sin clasificar), **B-8** (texto del 403). Resueltas.
 - ADR: ninguno. Sin dependencias npm nuevas. `packages/ui` no se modifica (su `Dialog` ya sirve).
 
 ## Diseño de solución
@@ -131,9 +133,9 @@ Ninguna excepción. La excepción de Usuarios (diálogo permitido, dashboard-004
 - **Mocks de pruebas existentes:** `enclosure-qr-printing` (regenerar) cambia de flujo cuando el recinto tiene QR (Ventana). El test debe reflejar la respuesta 403 y la confirmación.
 - **Temporizador de 429:** usa `Retry-After` solo para deshabilitar el botón (CA-04). La API decide la expiración (RN-03); el cliente no la duplica.
 - **Diálogo en Usuarios:** excepción aprobada en la spec; el resto de interacciones de Usuarios siguen sin modales (dashboard-004).
-- **Ambigüedad de textos:** el texto de confirmación y el texto de Siempre («Confirma tu contraseña para realizar esta acción») son propuestas de copy. Aceptados el 2026-11-20 (B-8).
+- **Ambigüedad de textos:** el texto de confirmación y el texto de Siempre («Confirma tu contraseña para realizar esta acción») son propuestas de copy. Aceptados (B-8).
 
-## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+## Decisiones (aprobación técnica)
 
 - **B-1 (`PUT users/{user}/password`):** la confirmación va en `current_password`; `password` es la nueva contraseña. Cliente: `users.resetPassword(id, password, currentPassword)`. Spec: CA-17, RN-11. Tarea: T-07.
 - **B-2 (cuentas no admin):** el diálogo solo aparece para la Ventana de cuentas no admin (incluidas `zoo-admin`). Las cuentas `admin` no tienen acciones en la interfaz (`dashboard-017` CA-04), así que el diálogo no se abre para ellas.
@@ -145,7 +147,7 @@ Ninguna excepción. La excepción de Usuarios (diálogo permitido, dashboard-004
 
 ## Orden y aprobación
 
-1. Aprobado el 2026-11-20 (B-1, B-3, B-4 y B-8 resueltas para las partes afectadas por `api-021`).
+1. Aprobado (B-1, B-3, B-4 y B-8 resueltas para las partes afectadas por `api-021`).
 2. Cliente (`packages/api-client`): T-01.
 3. Lógica pura y hook: T-02, T-03.
 4. Vista del diálogo y accesibilidad: T-04, T-11.
@@ -153,11 +155,11 @@ Ninguna excepción. La excepción de Usuarios (diálogo permitido, dashboard-004
 6. Enrolamiento y sesión: T-09, T-12.
 7. Cobertura, regresión, documentación y verificación: T-13, T-14, T-15, T-16; PR en T-17.
 
-- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan).
-- Aprobador funcional: Jonathan (spec aprobada el 2026-11-20).
+- Revisión técnica: aprobada (aprobación técnica del plan).
+- Aprobador funcional: responsable funcional (spec aprobada).
 - Evidencias: pendientes de la sesión principal (`npm test`, `tsc`, `npm run build` en `apps/dashboard`; el dashboard no define lint). Esta sesión no tiene shell y no afirma que pasen.
 
-## Divergencias de implementación (agente frontend, 2026-11-20)
+## Divergencias de implementación
 
 - **Controlador y proveedor.** Para poder probar la orquestación sin renderizar React, el estado del diálogo vive en `createStepUpController` (en `step-up.ts`, puro); `useStepUpConfirmation` lo envuelve y un único `StepUpProvider` (`src/components/StepUpProvider.tsx`, con `key` del perfil) comparte `runProtected` con los ViewModels mediante `src/viewmodels/step-up-context.ts` (`useRunProtected`). Fuera del proveedor, `runProtected` ejecuta la operación sin diálogo. No cambia la regla ni el contrato.
 - **Parámetro `protect` opcional** (por defecto sin diálogo) en `cancelTicket`, `submitPriceChange`, `saveStaffAccount`, `confirmStaffAction`, `regenerateEnclosureQr` y `deleteEnclosure`; las funciones puras siguen compatibles con las pruebas existentes.
@@ -167,12 +169,12 @@ Ninguna excepción. La excepción de Usuarios (diálogo permitido, dashboard-004
 - **Verificación sin `typescript` propio.** `apps/dashboard` no tiene `typescript` instalado; el chequeo de tipos se hizo con el `tsc` de `apps/pwa` sobre el `tsconfig.json` del dashboard.
 - **Pruebas de nivel hook.** Sin `@testing-library`, las pruebas de CA-02, CA-05, CA-06 y CA-08 usan `createStepUpController` y las funciones de ViewModel con el controlador; el cableado `useRunProtected()` en cada hook está verificado por tipos y lectura, no por render.
 
-## Nota de revisión 2026-11-20 (CA-18, CA-19)
+## Nota de revisión (CA-18, CA-19)
 
 `TwoFactorSetupView` y `PwaRedirectView` reciben `onSignOut` (MVVM: `App.tsx` lo conecta con `session.logout`, es decir `signOut`); el botón es `Button variant="secondary"`, se oculta con `recoveryCodes` y se desactiva con `submitting`. Sin cambios en `signOut`, la API ni `@arca/api-client`. Tests en `src/tests/step-up-two-factor.test.tsx`.
 CA-20: `signOut` no cambia; `PwaRedirectView` recibe `error` y muestra un `Alert` con texto fijo en español (el mensaje de `request-failed` puede no estar en español). `TwoFactorSetupView` ya mostraba su `error` en el paso del QR.
 Ajuste CA-20: `apiMessage` (`auth-session.ts`) usa `error.message` solo con `error.name === "ApiError"`; si no, texto fijo en español. `PwaRedirectView` muestra `error` tal cual.
 
-## Nota de revisión 2026-11-21 (CA-21 a CA-25)
+## Nota de revisión (CA-21 a CA-25)
 
 `formatCountdown`, `rateLimitText` y `startCountdown` (puros, con reloj inyectable y cálculo contra instante final) en `src/viewmodels/countdown.ts`; el hook `useCountdown` (`useCountdown.ts`) los conecta a React y limpia el intervalo al desmontar. `LockoutNotice` (vista) pinta los dígitos con `aria-live="off"` y una región `role="status"` para el aviso inicial y el de fin. `auth-session.ts` guarda `retryAfterSeconds` en el estado (solo lo trae `request-failed`; cualquier otra acción lo limpia) y `LoginView`, `TwoFactorChallengeView` y `StepUpConfirmationDialog` lo consumen. Sin cambios en `@arca/api-client` ni en la API. Los CA-04 de `step-up-confirmation.test.tsx` se ajustaron al texto con contador. Tests en `src/tests/step-up-lockout-countdown.test.tsx` (entorno jsdom por docblock, con timers falsos de Vitest).

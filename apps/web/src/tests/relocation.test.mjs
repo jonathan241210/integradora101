@@ -193,9 +193,9 @@ function mountMobileNavigation(initialWidth = 390) {
   const window = { matchMedia: () => mediaQuery };
   const script = readFileSync(path.join(webSource, 'script.js'), 'utf8');
   const start = script.indexOf('const menuToggle =');
-  const end = script.indexOf('const mapSection =');
+  const end = script.indexOf('/* ---------- Galería ---------- */');
   assert.ok(start >= 0 && end > start, 'No se encontró el controlador de navegación');
-  runInNewContext(script.slice(start, end), { document, window });
+  runInNewContext(script.slice(start, end), { document, window, $: (id) => document.getElementById(id) });
 
   return {
     attributes,
@@ -653,9 +653,9 @@ test('CA-06 isometric-zoo-map conserva suite Node local sin nuevas dependencias'
   assert.equal(existsSync(path.join(webSource, 'package.json')), false);
 });
 
-test('CA-04 visit-info-icons-and-favicon baja 8 px los tres iconos sin alterar el centrado', () => {
+test('CA-04 visit-info-icons-and-favicon centra los tres iconos en su caja sin desplazamiento extra', () => {
   const css = readFileSync(path.join(webSource, 'styles.css'), 'utf8');
-  assert.match(css, /\.infobar\s*\.info-icon\s*\{\s*margin-top:\s*8px;\s*\}/);
+  assert.match(css, /\.infobar\s*\.info-icon\s*\{[^}]*justify-content:\s*center[^}]*margin:\s*0 auto/s);
   assert.match(css, /\.infobar\s*>\s*div\s*\{[^}]*align-items:\s*center[^}]*text-align:\s*center/s);
   assert.equal((readFileSync(path.join(webSource, 'index.html'), 'utf8').match(/class="bi bi-(?:clock|geo-alt|ticket-perforated) info-icon"/g) ?? []).length, 3);
 });
@@ -959,12 +959,12 @@ test('CA-04 cognitive-accessibility-assistant persiste, restaura, reinicia y ope
   assert.equal(assistant.document.documentElement.classList.contains('cognitive-mode-focus'), true);
 });
 
-test('CA-05 cognitive-accessibility-assistant mantiene el resumen inactivo y sin procesamiento', () => {
+test('CA-05 cognitive-accessibility-assistant no ofrece resumen ni procesa contenido', () => {
   const html = readFileSync(path.join(webSource, 'index.html'), 'utf8');
   const script = readFileSync(path.join(webSource, 'accessibility.js'), 'utf8');
   const widgetMarkup = html.match(/<section\s+class="cognitive-panel"[\s\S]*?<\/section>/)?.[0];
   assert.ok(widgetMarkup, 'No se encontró el marcado del asistente');
-  assert.match(widgetMarkup, /class="cognitive-summary"[^>]*disabled[^>]*aria-disabled="true"[\s\S]*?Resumir esta página[\s\S]*?Próximamente/);
+  assert.doesNotMatch(widgetMarkup, /cognitive-summary|Resumir esta página/);
   assert.doesNotMatch(script, /\bfetch\s*\(|\bXMLHttpRequest\b|api.?key|summar/i);
   assert.doesNotMatch(widgetMarkup, /api.?key/i);
 });

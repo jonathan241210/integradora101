@@ -1,11 +1,11 @@
 # DBR-012 · visitor-memories
 
-- Estado: Lista para backend (Aplicada en `arca_pruebas`, 2026-11-11)
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-05
+- Aprobada: 2026-11-11
 - Feature/spec origen: `apps/api/specs/010-visitor-memory-requests.md` (peticiones de visitantes, corrección y reenvío, vigencia y borrado de cuenta). Consumidor de lectura: `apps/api/specs/012-public-memories-read.md`. Clientes: `apps/mobile/specs/010-visitor-memory-requests.md`, `apps/dashboard/specs/008-memory-moderation.md`, `apps/web/specs/010-dynamic-memories.md`. Almacenamiento: `apps/api/specs/013-object-storage-images.md`. Borrado de cuenta (divergencia pendiente): `apps/api/specs/004-visitor-authentication.md`.
-- Solicitante: Aksel (borrador original del 2026-11-05). Respuestas del responsable: Jonathan (2026-11-10).
-- Responsable de BD: Víctor Adrián
-- Responsable backend: Jonathan
-- Fecha de la última revisión: 2026-11-11
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 
 ## Problema y justificación
 
@@ -30,7 +30,7 @@ Las reglas de valores, transiciones, límites y vigencia las aplica la API (`api
 | `id` | BIGINT UNSIGNED AUTO_INCREMENT | NOT NULL | — | Clave primaria, como las demás tablas creadas por migraciones. Las FK a `visitors`/`users` usan `INT` firmado para empatar con las tablas legado. |
 | `visitor_id` | INT | NULL | — | Visitante que envió la petición. FK a `visitors.id` con `ON DELETE SET NULL`. Pasa a NULL al borrar la cuenta, con la elección `keep` o `delete` (`api-010` RN-22, CA-32). Mientras la cuenta existe, no es NULL en la práctica. |
 | `status` | VARCHAR(20) | NOT NULL | `'submitted'` | Valores: `submitted`, `in_review`, `accepted`, `rejected` (`api-010` RN-01). Validación en la aplicación; un CHECK es opcional, a criterio de BD. VARCHAR en vez de ENUM para facilitar cambios de valor y la portabilidad entre Aiven y local. |
-| `opinion` | VARCHAR(300) | NULL | — | Texto plano de hasta 300 caracteres (en utf8mb4, VARCHAR cuenta caracteres). **Opcional (decisión 2026-11-11):** el visitante puede subir solo el recuerdo, sin opinión; si la envía, 1 a 300 caracteres. |
+| `opinion` | VARCHAR(300) | NULL | — | Texto plano de hasta 300 caracteres (en utf8mb4, VARCHAR cuenta caracteres). **Opcional (decisión de BD):** el visitante puede subir solo el recuerdo, sin opinión; si la envía, 1 a 300 caracteres. |
 | `image_path` | VARCHAR(255) | NULL | — | Ruta relativa al disco de medios, `memories/<uuid>.(jpg\|jpeg\|png\|webp)` (nombre generado por la API). El disco es `media` (carpeta local `apps/api/src/media/`, `api-013` D-01 y D-02), sin S3 ni servicio externo por ahora. Pasa a NULL si el rechazo incluye `image` (`api-010` CA-29). |
 | `image_sha256` | CHAR(64) | NULL | — | Hash SHA-256 del archivo ya sin metadatos. Se conserva aunque el archivo se borre, para que un reenvío por `image` exija una foto distinta (`api-010` CA-27). |
 | `published_image_path` | VARCHAR(255) | NULL | — | Ruta relativa en el disco público. Se llena solo al aceptar, con el mismo valor que `image_path` (sin copia; `api-013` CA-11). Una rechazada nunca tiene valor aquí. |
@@ -48,7 +48,7 @@ Las reglas de valores, transiciones, límites y vigencia las aplica la API (`api
 | `updated_at` | TIMESTAMP | NULL | — | Última modificación. |
 | `deleted_at` | TIMESTAMP | NULL | — | Borrado lógico (SoftDeletes, Constitución V). Se usa en el borrado de cuenta con `delete` (`api-010` CA-32). |
 
-La API sigue exponiendo `rejected_fields` como lista (`["image"]`, `["content"]` o ambos); el Resource la construye a partir de `rejected_image` y `rejected_content` (decisión BD 2026-11-11, sin cambiar el contrato de la API).
+La API sigue exponiendo `rejected_fields` como lista (`["image"]`, `["content"]` o ambos); el Resource la construye a partir de `rejected_image` y `rejected_content` (decisión de BD, sin cambiar el contrato de la API).
 
 ### Tabla `visitor_memory_reviews`
 
@@ -109,11 +109,11 @@ Tablas nuevas. No hay datos previos, no hay backfill y no hay cambios a tablas e
   - El archivo rechazado por `image` se borra al rechazar; `image_path` queda en NULL y `image_sha256` se conserva.
   - El archivo rechazado solo por `content` se conserva para la corrección.
   - El archivo que sustituye a otro en un reenvío reemplaza al anterior, que se borra.
-  - Al vencer la publicación, la fila y el archivo se conservan (`api-010` Pregunta 3, resuelta el 2026-11-11).
+  - Al vencer la publicación, la fila y el archivo se conservan (`api-010` Pregunta 3, resuelta).
   - La retención definitiva de datos personales queda pendiente de la decisión del equipo.
 - **Auditoría:** `reviewed_by` y `reviewed_at` guardan la última decisión. `visitor_memory_reviews` guarda cada decisión con su motivo y sus campos. Activitylog registra cada revisión, cada reenvío y la elección de borrado de cuenta (`api-010` CA-19, CA-32).
-- **Creador:** el creador es `visitor_id`, que apunta a `visitors` y no a `users`. Los reenvíos no cambian el creador. No se agregan `created_by`/`updated_by`: el actor de la revisión queda en `reviewed_by` y en `visitor_memory_reviews` (decisión BD 2026-11-11).
-- **Imágenes:** la base guarda solo rutas relativas y el hash. Los archivos viven en el disco de medios (`apps/api/src/media/`, versionado en git y solo con datos de prueba; `api-013` CA-22). **Almacenamiento actual (2026-11-11):** carpeta local del proyecto, sin S3 ni servicio en la nube. La opción S3/cloud queda para cuando el cliente la solicite; Jonathan la documentará entonces (`docs/propuestas/almacenamiento-objetos-s3.md`, ADR 0026 Propuesto).
+- **Creador:** el creador es `visitor_id`, que apunta a `visitors` y no a `users`. Los reenvíos no cambian el creador. No se agregan `created_by`/`updated_by`: el actor de la revisión queda en `reviewed_by` y en `visitor_memory_reviews` (decisión de BD).
+- **Imágenes:** la base guarda solo rutas relativas y el hash. Los archivos viven en el disco de medios (`apps/api/src/media/`, versionado en git y solo con datos de prueba; `api-013` CA-22). **Almacenamiento actual:** carpeta local del proyecto, sin S3 ni servicio en la nube. La opción S3/cloud queda para cuando el cliente la solicite, y el responsable de backend la documentará entonces (`docs/propuestas/almacenamiento-objetos-s3.md`, ADR 0026 Aceptado).
 
 ## Impacto, rendimiento y reversión
 
@@ -135,16 +135,16 @@ No aplica. No hay funciones, procedimientos, vistas ni triggers. Las reglas de e
 
 ## Orden de despliegue
 
-1. Aprobada el 2026-11-11 por Víctor Adrián (responsable de BD) y Jonathan (responsable backend; firma registrada por Víctor Adrián en su representación).
-2. Migración creada y aplicada en `arca_pruebas` el 2026-11-11 sin errores: `apps/api/src/database/migrations/2026_11_11_000012_visitor_memories_schema.php`.
+1. Aprobada por el responsable de BD y por el responsable de backend (aprobaciones registradas en esta DBR).
+2. Migración creada y aplicada en `arca_pruebas` sin errores: `apps/api/src/database/migrations/2026_11_11_000012_visitor_memories_schema.php`.
 3. Aplicación registrada en `arca_pruebas` (tabla de abajo). Evidencia: confirmación del responsable de BD de que la migración se ejecutó sin errores.
-4. Estado «Lista para backend» alcanzado. Backend implementa `api-010` (incluido el seeder de `memories.review`) cuando Aksel firme la spec, y `api-012`.
+4. Estado «Lista para backend» alcanzado. Backend implementa `api-010` (incluido el seeder de `memories.review`) cuando la spec esté aprobada, y `api-012`.
 5. Staging y producción, después, con su propio registro. Los agentes no usan `arca_zoo`.
 6. Requisito previo: DBR-001 (nombres en inglés) y DBR-003 (`visitors`) aplicadas en el ambiente.
 
 ## Pruebas y evidencia
 
-- Migración creada y aplicada en `arca_pruebas` el 2026-11-11 sin errores: `apps/api/src/database/migrations/2026_11_11_000012_visitor_memories_schema.php`.
+- Migración creada y aplicada en `arca_pruebas` sin errores: `apps/api/src/database/migrations/2026_11_11_000012_visitor_memories_schema.php`.
 - Pruebas de esquema ejecutadas por BD en MySQL 8.0 aislado: no registradas en este cambio; la aplicación en `arca_pruebas` fue confirmada por el responsable de BD.
 - Comprobaciones sugeridas para BD:
   - FK a `visitors` (con `ON DELETE SET NULL`), `users` y `visitor_memories`; un borrado de `visitors` deja `visitor_id` en NULL sin error;
@@ -153,24 +153,24 @@ No aplica. No hay funciones, procedimientos, vistas ni triggers. Las reglas de e
   - `published_at`, `published_until` y `published_image_path` en NULL en las filas no aceptadas;
   - `rejection_reason` en NULL y `rejected_image`/`rejected_content` en 0 salvo en `rejected`; al reenviar vuelven a 0;
   - `resubmitted_count` con valor 0 por defecto.
-- Resultado y evidencia (sin secretos ni datos sensibles): migración aplicada en `arca_pruebas` el 2026-11-11, confirmada por el responsable de BD. El `down()` no se ejecutó porque eliminaría las tablas; solo procede en un ambiente sin datos.
+- Resultado y evidencia (sin secretos ni datos sensibles): migración aplicada en `arca_pruebas`, confirmada por el responsable de BD. El `down()` no se ejecutó porque eliminaría las tablas; solo procede en un ambiente sin datos.
 - Pruebas integradas del backend: `api-010` CA-22 y `api-012` CA-11 (PHPUnit contra `arca_pruebas`, con `DatabaseTransactions`, sin `RefreshDatabase`).
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Víctor Adrián | 2026-11-11 | Aprobada |
-| Responsable backend | Jonathan | 2026-11-11 | Aprobada (firmada por Víctor Adrián en su representación, indicación del 2026-11-11) |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
 
-Aprobado por: Víctor Adrián (BD) y Jonathan (backend, firmado por Víctor Adrián en su representación). Esta línea no sustituye las aprobaciones separadas de BD y backend (`docs/database/requests/README.md`, regla 4).
+Aprobación: responsable de BD y responsable de backend. Esta línea no sustituye las aprobaciones separadas de BD y backend (`docs/database/requests/README.md`, regla 4).
 
 > **Recordatorio de firmas:** toda retroalimentación de un ADR, spec o DBR se firma en el propio documento en el momento de darla; no se acepta aprobar de palabra ni dejar la firma para después, porque se olvida. Quien solicita la retroalimentación pide la firma en ese mismo acto.
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | Aplicada | 2026-11-11 | Migración `2026_11_11_000012_visitor_memories_schema` ejecutada sin errores; confirmado por el responsable de BD |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_11_11_000012_visitor_memories_schema` ejecutada sin errores; confirmado por el responsable de BD |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

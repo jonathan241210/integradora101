@@ -1,11 +1,13 @@
 # Plan técnico · 022 · ticket-cancellation-report
 
-- Spec: `apps/api/specs/022-ticket-cancellation-report.md` (Aprobada, Jonathan, 2026-11-20)
-- Spec de consumidor: `apps/dashboard/specs/016-ticket-cancellation-report.md` (Aprobada, 2026-11-20); plan de la SPA en `apps/dashboard/plan/016-ticket-cancellation-report.md`
-- Estado de spec: Aprobada
-- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**. Las tareas de `tasks/022-ticket-cancellation-report.md` se ejecutan en su orden, condicionadas a DBR-024 en «Lista para backend» y a `api-021` y `api-025` implementadas.
+- Spec: `apps/api/specs/022-ticket-cancellation-report.md` (Aprobada)
+- Spec de consumidor: `apps/dashboard/specs/016-ticket-cancellation-report.md` (Aprobada); plan de la SPA en `apps/dashboard/plan/016-ticket-cancellation-report.md`
+- Estado de spec: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Estado del plan: **Aprobado**. Las tareas de `tasks/022-ticket-cancellation-report.md` se ejecutan en su orden, condicionadas a DBR-024 en «Lista para backend» y a `api-021` y `api-025` implementadas.
 - Responsable técnico: `<por identificar>` (la spec indica «backend por confirmar»)
-- Responsable de BD: Víctor Adrián (según DBR-006; pendiente de confirmar para DBR-024)
+- Responsable de BD (según DBR-006; pendiente de confirmar para DBR-024)
 - DBR relacionada: `docs/database/requests/DBR-024-ticket-cancellation-reason-code.md`, estado **Borrador**. Ninguna migración ni código que use `cancellation_reason_code` se escribe hasta que la DBR esté en `Lista para backend`.
 - Orden de implementación: `api-021` (confirmación de contraseña en cancelar y 2FA de `cashier`) → `api-025` (zona única `arca.timezone`) → **`api-022`** (este plan). Despliegue: DBR-024 → API → dashboard (`dashboard-016`).
 - ADR relacionados: ADR 0017 (exportación CSV, Excel y PDF; reutilizada, sin dependencia nueva), ADR 0021 (`Ticket` sin `BaseModel`, con SoftDeletes; se mantiene), ADR 0013 (portabilidad MySQL). No se requiere ADR nuevo.
@@ -53,7 +55,7 @@ Todas las respuestas usan los nombres de la API en inglés y las etiquetas en es
 | API / requests | `app/Http/Requests/Admin/Tickets/CancelTicketRequest.php` (reglas nuevas), `app/Http/Requests/Admin/Tickets/CancellationReportRequest.php` y `ExportCancellationReportRequest.php` (nuevos) | Validación en español. El reporte nuevo no lee `timezone`. |
 | API / controladores | `TicketCancelController` (pasa `reason_code` y `reason`); `TicketCancellationReasonController` y `CancellationReportController`, `CancellationReportExportController` (nuevos) | Controladores delgados que delegan en Actions. |
 | API / Resources | `app/Http/Resources/Admin/Tickets/TicketHistoryResource.php` (campos añadidos), `app/Http/Resources/Admin/Reports/CancellationReportResource.php` y `CancellationReasonResource.php` (nuevos) | Forma de respuesta. |
-| API / rutas | `routes/api.php` | Dentro del grupo `/api/v1/admin` con su middleware de 2FA: `tickets.cancellation-reasons` (`permission:tickets.cancel|reports.cancellations.view`, enmienda funcional 2026-11-20); `reports.cancellations.show` y `reports.cancellations.export` (`permission:reports.cancellations.view`). Sin límite nuevo de consulta (RN-14) en la implementación original; la revisión de seguridad 2026-11-21 añade el limitador `cancellation-report` (60 por minuto y usuario) a `reports.cancellations.show`, `.cashiers` y `.reviews.index`. |
+| API / rutas | `routes/api.php` | Dentro del grupo `/api/v1/admin` con su middleware de 2FA: `tickets.cancellation-reasons` (`permission:tickets.cancel|reports.cancellations.view`, enmienda funcional); `reports.cancellations.show` y `reports.cancellations.export` (`permission:reports.cancellations.view`). Sin límite nuevo de consulta (RN-14) en la implementación original; la revisión de seguridad añade el limitador `cancellation-report` (60 por minuto y usuario) a `reports.cancellations.show`, `.cashiers` y `.reviews.index`. |
 | API / configuración | `config/arca.php` | Bloque `cancellation_alerts` (30 min; 10 %; 20 boletos). Coordinado con api-025, que retira `report_timezone`. |
 | API / permisos | `database/seeders/RolesAndPermissionsSeeder.php` | Añade `reports.cancellations.view` al catálogo. `admin` lo recibe por la diferencia de su lista; `zoo-admin`, `executive`, `cashier` y `veterinarian` no (listas explícitas). |
 | API / búsqueda | `app/Actions/Admin/Search/Groups/SearchTicketHistoryGroup.php` | Muestra «Motivo de cancelación» con la etiqueta, según pregunta 3. |
@@ -69,7 +71,7 @@ Todas las respuestas usan los nombres de la API en inglés y las etiquetas en es
 - **Validación (Form Requests):**
   - `CancelTicketRequest`: `reason_code` `required` + `Rule::enum(TicketCancellationReason::class)`; `reason` `nullable|string|max:255`; `prepareForValidation` recorta `reason`; si el código es `other`, `reason` es `required` y `min:15` (tras recortar). Para otros códigos, comentario opcional y nulo si vacío.
   - `CancellationReportRequest`: `period` `required|in:week,month,custom`; `date` `nullable|date_format:Y-m-d`; `from`/`to` `nullable|date_format:Y-m-d`; `cashier_id` `nullable|integer` con cajero existente (rol `cashier`, incluidos eliminados lógicamente, pregunta 8); `reason_code` `nullable` + enum. Cualquier `timezone` se descarta.
-  - Para `week`/`month` sin `date`: se usa la fecha de hoy en la zona de `api-025`, como `api-007` CA-20 (decisión 2026-11-20, pregunta 1; CA-04 enmendado).
+  - Para `week`/`month` sin `date`: se usa la fecha de hoy en la zona de `api-025`, como `api-007` CA-20 (decisión, pregunta 1; CA-04 enmendado).
 - **Actions:** `ListCancellationReasonsAction`, `CancelTicketAction`, `BuildCancellationReportAction`, `ExportCancellationReportAction`. Los controladores no calculan.
 - **Resources:** `CancellationReasonResource`, `TicketHistoryResource` (añade `cancellation_reason_code`, `cancellation_reason_label`), `CancellationReportResource`. Ningún Resource calcula reglas.
 - **Policies:** no hay Policy por registro en el reporte (es global de `admin`). La cancelación mantiene su regla de dueño en `CancelTicketRequest::authorize`.
@@ -109,9 +111,9 @@ Todas las respuestas usan los nombres de la API en inglés y las etiquetas en es
 ### Verificación previa obligatoria (antes de aprobar el plan y de la migración)
 
 - Consulta de solo lectura en `arca_pruebas` aportada por la sesión principal, con fecha:
-  1. `tickets.cancellation_reason`: **resuelto 2026-11-20**, `varchar(255)` admite NULL (`php artisan db:table tickets`, solo lectura). No bloquea.
+  1. `tickets.cancellation_reason`: **resuelto**, `varchar(255)` admite NULL (`php artisan db:table tickets`, solo lectura). No bloquea.
   2. Confirmar que `cancellation_reason_code` no existe (repetir justo antes de aprobar, DBR-024 «Verificaciones», punto 1).
-  3. Número de filas canceladas (ya consultado: 3 de 34, 2026-11-20).
+  3. Número de filas canceladas.
 - Estos resultados se registran en la DBR y en la spec (si cambian), no en este plan.
 
 ## Mapeo de criterios a pruebas
@@ -164,28 +166,28 @@ Pruebas unitarias del catálogo (RN-02): `Unit/TicketCancellationReasonTest.php`
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencia nueva: Excel y PDF por ADR 0017 ya aceptado. Conexión solo por `.env`. Columna `VARCHAR` nula sin funciones ni triggers (DBR-024, «Compatibilidad MySQL 8.0»). |
-| II. La spec manda | Sí, con condición | Spec 022 Aprobada (2026-11-20) con sus decisiones. Plan y tasks enlazados con el mismo NNN-slug. **Condición:** el plan se aprueba antes de programar. Divergencias registradas en «Riesgos y decisiones», sin editar la spec. |
+| II. La spec manda | Sí, con condición | Spec 022 Aprobada con sus decisiones. Plan y tasks enlazados con el mismo NNN-slug. **Condición:** el plan se aprueba antes de programar. Divergencias registradas en «Riesgos y decisiones», sin editar la spec. |
 | III. Lógica separada de la interfaz | Sí | Totales, conciliación, alertas, minutos y catálogo en Actions. Controladores delgados. El dashboard solo presenta (`apps/dashboard/plan/016-…`). Test estático de la SPA (CA-23 de dashboard-016). |
 | IV. Un test por criterio | Sí | Mapeo completo de CA-01 a CA-25 (tabla anterior). Verificación por búsqueda de `test_caNN_` antes de cerrar. |
 | V. Una sola fuente de verdad para los datos | Sí, con condición | Cambio de esquema solo por migración tras DBR-024 aprobada; la crea y prueba BD. Backend no escribe la migración. `Ticket` mantiene SoftDeletes y auditoría (ADR 0021). Sin borrado físico. Sin backfill. **Condición:** DBR-024 en `Lista para backend`. |
 | VI. Código en inglés, personas en español | Sí | Enum, Actions, rutas, permisos y códigos en inglés; etiquetas, mensajes y metadatos de exportación en español. |
 
-Brechas abiertas: ninguna que requiera ADR. Condiciones: aprobación del plan, DBR-024 en `Lista para backend`. La nulabilidad de `cancellation_reason` quedó verificada (admite NULL, 2026-11-20).
+Brechas abiertas: ninguna que requiera ADR. Condiciones: aprobación del plan, DBR-024 en `Lista para backend`. La nulabilidad de `cancellation_reason` quedó verificada.
 
 ## Riesgos y decisiones
 
 - **ADR requerido/aprobado:** ninguno nuevo. ADR 0017 y 0021 aplican sin cambio.
 - **Dependencia bloqueante:** DBR-024 es Borrador; sin `Lista para backend` no hay código que escriba `cancellation_reason_code`.
-- **Nulabilidad de `cancellation_reason`:** resuelto. Verificado en solo lectura el 2026-11-20 (`php artisan db:table tickets`): `cancellation_reason varchar(255)` **admite NULL**. No hace falta reabrir la DBR.
+- **Nulabilidad de `cancellation_reason`:** resuelto. Verificado en solo lectura (`php artisan db:table tickets`): `cancellation_reason varchar(255)` **admite NULL**. No hace falta reabrir la DBR.
 - **Cambio de contrato de cancelar:** `reason` libre deja de bastar. Riesgo de romper la taquilla antes del despliegue del dashboard: desplegar junto (DBR-024 → API → dashboard).
 - **Divergencias detectadas (no corregidas aquí; se reportan para decisión):**
   1. **`docs/database/requests/DBR-024-…md`, «Propósito»:** dice que `cancellation_reason` «guarda la etiqueta del motivo cuando el código no es `other`». Contradice RN-03 de la spec 022 y la decisión del solicitante (`cancellation_reason` guarda solo el comentario). La DBR debe corregirse antes de aprobarse.
-  2. **`apps/api/specs/009-ticket-sales.md`, «Nota de revisión (2026-11-20, Borrador de api-022)»:** dice «Cambio pendiente de aprobación de Jonathan», mientras la spec 022 figura Aprobada el mismo día. Confirmar que el cambio de contrato de api-009 queda aprobado.
+  2. **`apps/api/specs/009-ticket-sales.md`, «Nota de revisión (, Borrador de api-022)»:** dice «Cambio pendiente de aprobación del responsable funcional», mientras la spec 022 figura Aprobada el mismo día. Confirmar que el cambio de contrato de api-009 queda aprobado.
   3. **CA-22 (`updated_at`):** `tickets` no tiene `updated_at`. Pregunta 6.
   4. **CA-04 frente a api-007 CA-20:** api-007 usa la fecha de hoy si falta `date`; CA-04 de api-022 dice 422. Pregunta 1.
   5. **Historial y búsqueda global:** `TicketHistoryResource` (api-009 CA-14), `TicketHistoryView` del dashboard y `SearchTicketHistoryGroup` (api-019) muestran `cancellation_reason` como motivo. Con el cambio, mostrarían solo el comentario. Pregunta 3.
   6. **Zona de la fila de `dashboard-016` CA-07 y `api-025` CA-12:** consistentes; sin divergencia.
-- **Preguntas (cerradas el 2026-11-20; respuestas en «Decisiones 2026-11-20»):**
+- **Decisiones (respuestas en «Decisiones»):**
   1. CA-04: ¿`period=week|month` sin `date` responde 422 (literal de CA-04) o usa la fecha de hoy como `api-007` CA-20? Propuesta del plan: 422, según el texto aprobado; confirmar.
   2. Filas del reporte: ¿la API las pagina (`report_page_size` = 50, como api-007) o devuelve todas las del periodo? Propuesta: todas (el reporte de cancelaciones es pequeño y la conciliación ya necesita el conjunto completo).
   3. Motivo visible en historial y búsqueda: ¿se muestra la etiqueta además del comentario? Propuesta: sí; `cancellation_reason_label` en `TicketHistoryResource` y en el grupo de búsqueda; `cancellation_reason` sigue siendo el comentario.
@@ -196,7 +198,7 @@ Brechas abiertas: ninguna que requiera ADR. Condiciones: aprobación del plan, D
   8. `cashier_id`: ¿el filtro admite cajeros eliminados lógicamente (RN-12)? Propuesta: sí.
 - **Alternativas y mitigaciones:** refactor de exportadores (documento común) frente a writers nuevos (ver «Reutilización de exportadores»); mitigado por regresión de api-007.
 
-## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+## Decisiones (aprobación técnica del responsable funcional)
 
 - **Pregunta 1 (CA-04, `week`/`month` sin `date`):** se usa la fecha de hoy en la zona de `api-025`, como `api-007` CA-20. Spec: CA-04 enmendado. Tests: `test_ca04_week_or_month_without_date_uses_today` (T-10).
 - **Pregunta 2 (filas del reporte):** todas las filas del periodo, sin paginación. Tope de PDF igual (RN-10). Spec: RN-14 enmendado.
@@ -207,16 +209,16 @@ Brechas abiertas: ninguna que requiera ADR. Condiciones: aprobación del plan, D
 - **Pregunta 7 (exportación):** se mantiene `throttle:20,1` de `api-007`. Spec: RN-14 enmendado. Tarea: T-16.
 - **Pregunta 8 (cajero eliminado en el filtro):** sí, el filtro admite cajeros eliminados lógicamente. Spec: RN-16.
 - **Divergencia 1 (DBR-024, «Propósito»):** no se corrige en esta enmienda (no hay autorización para editar `docs/database/requests/`). Sigue abierta: la DBR debe corregir su «Propósito» antes de aprobarse (RN-03).
-- **Divergencia 2 (nota de `api-009`):** la nota de 2026-11-20 de `api-009` queda aprobada por Jonathan junto con `api-022`. La nota de `api-009` añade la revisión de historial y precios (`api-025` P-03 y P-04).
+- **Divergencia 2 (nota de `api-009`):** la nota de `api-009` queda aprobada por el responsable funcional junto con `api-022`. La nota de `api-009` añade la revisión de historial y precios (`api-025` P-03 y P-04).
 - **Divergencias 3, 4 y 5:** resueltas por las preguntas 6, 1 y 3.
 - **Tarea adicional (api-025 CA-08, P-05):** el test de la zona de la cancelación en el reporte se añade en la tarea T-28 de `tasks/022`.
-- **Pregunta abierta nueva (2026-11-20, surgida de la revisión de `apps/dashboard/plan/016-ticket-cancellation-report.md`):** la lista de cajeros del filtro «Cajero» no tiene fuente definida en este plan. Opciones: (A) endpoint nuevo `GET /api/v1/admin/reports/cancellations/cashiers` con cajeros eliminados incluidos (RN-16), propuesta; (B) campo `reconciliation.cashiers`, que solo lista cajeros con actividad. Requiere decisión antes de implementar T-16 si se elige A (contrato nuevo). Hasta decidir, el filtro de cajero queda pendiente en el dashboard.
+- **Decisión P-016-1 (origen de la lista de cajeros; surgida de la revisión de `apps/dashboard/plan/016-ticket-cancellation-report.md`):** la lista de cajeros del filtro «Cajero» no tiene fuente definida en este plan. Opciones: (A) endpoint nuevo `GET /api/v1/admin/reports/cancellations/cashiers` con cajeros eliminados incluidos (RN-16), propuesta; (B) campo `reconciliation.cashiers`, que solo lista cajeros con actividad. Requiere decisión antes de implementar T-16 si se elige A (contrato nuevo). Hasta decidir, el filtro de cajero queda pendiente en el dashboard.
 
 ## Orden y aprobación
 
-1. Aprobación del plan: hecha por Jonathan el 2026-11-20. Preguntas 1 a 8 cerradas (sección «Decisiones 2026-11-20»).
+1. Aprobación del plan: hecha por el responsable funcional. Preguntas 1 a 8 cerradas.
 2. Verificación de nulabilidad de `cancellation_reason` y repetición de la consulta de `cancellation_reason_code` (solo lectura, `arca_pruebas`).
-3. DBR-024: revisión de BD (Víctor Adrián, por confirmar) y backend; corrección de su «Propósito» (divergencia 1); estado `Aprobada` con fecha; migración y pruebas por BD; `Lista para backend`.
+3. DBR-024: revisión de BD (Responsable de BD, por confirmar) y backend; corrección de su «Propósito» (divergencia 1); estado `Aprobada` con fecha; migración y pruebas por BD; `Lista para backend`.
 4. Prerrequisitos de implementación: api-021 y api-025 implementadas (ver «Orden»).
 5. Backend de api-022 (tareas T-05 en adelante) con DBR-024 en `Lista para backend`.
 6. `packages/api-client` y dashboard (`apps/dashboard/plan/016-…`), tras los endpoints de la API y tras `dashboard-015` y `dashboard-019`.
@@ -224,29 +226,29 @@ Brechas abiertas: ninguna que requiera ADR. Condiciones: aprobación del plan, D
 
 Dependencias con otros cambios: `routes/api.php` (021 middleware; 022 rutas; 023 usuarios y consola; 024 pending-counts); `CancelTicketAction`/`TicketCancelController`/`CancelTicketRequest` (021 confirmación; 025 zona; 022 código de motivo); `RolesAndPermissionsSeeder` y `config/arca.php` (021 `two_factor_roles`; 025 `arca.timezone`; 022 `reports.cancellations.view` y `cancellation_alerts`; 023 roles nuevos).
 
-- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan).
-- Aprobador funcional: Jonathan (spec aprobada 2026-11-20).
-- Fecha de aprobación del plan: 2026-11-20 (Jonathan, aprobación técnica).
+- Revisión técnica: el responsable funcional (aprobación técnica del plan).
+- Aprobador funcional: el responsable funcional.
+- Aprobación del plan: (el responsable funcional, aprobación técnica).
 - Evidencias: pendientes (DBR-024, verificación de nulabilidad, salida de pruebas).
 
-## Decisión de coordinación 2026-11-20 (sesión principal)
+## Decisión de coordinación (sesión principal)
 - Lista de cajeros del filtro: opción **A**, endpoint propio `GET /api/v1/admin/reports/cancellations/cashiers` (permiso `reports.cancellations.view`), que devuelve todas las cuentas con rol `cashier` o que hayan vendido boletos, incluidas las eliminadas lógicamente (RN-16), solo con `id` y nombre. Se añade a las tasks de API (con test) y dashboard-016 T-04 lo consume.
 
-## Divergencias de implementación (2026-11-20)
+## Divergencias de implementación
 
 - **Exportadores (T-15):** se tomó la alternativa del plan. Los writers de api-007 no se tocaron; se añadieron `ReportDocument` y `ReportDocumentWriter` (CSV, Excel y PDF) que comparten el patrón (BOM UTF-8, sanitizado de fórmulas, OpenSpout, Dompdf sin recursos remotos). Sin regresión posible en `TicketReportExportTest`. El PDF del reporte de cancelaciones sale en horizontal por el número de columnas.
-- **Catálogo de motivos:** la ruta `tickets.cancellation-reasons` acepta `tickets.cancel` **o** `reports.cancellations.view` (`permission:tickets.cancel|reports.cancellations.view`), porque `admin` no tiene `tickets.cancel` y el filtro «Motivo» del reporte usa este catálogo (contrato de `dashboard-016`). La spec (CA-10) dice solo `tickets.cancel`; el 403 de `zoo-admin`, `executive` y `veterinarian` se mantiene. CA-10 enmendado por Jonathan el 2026-11-20 para coincidir con esto.
+- **Catálogo de motivos:** la ruta `tickets.cancellation-reasons` acepta `tickets.cancel` **o** `reports.cancellations.view` (`permission:tickets.cancel|reports.cancellations.view`), porque `admin` no tiene `tickets.cancel` y el filtro «Motivo» del reporte usa este catálogo (contrato de `dashboard-016`). La spec (CA-10) dice solo `tickets.cancel`; el 403 de `zoo-admin`, `executive` y `veterinarian` se mantiene. CA-10 enmendado por el responsable funcional para coincidir con esto.
 - **Cajeros del filtro:** `GET /reports/cancellations/cashiers` (`admin.reports.cancellations.cashiers`) devuelve `{data: [{id, name}]}` con cuentas de rol `cashier` o con boletos vendidos, incluidas las eliminadas lógicamente. La misma regla valida `cashier_id` (422 si no es de esa lista).
 - **Filtro por motivo:** se aplica a todo el conjunto (CA-05, literal): con `reason_code` el bruto del periodo contiene solo boletos cancelados de ese motivo, y el neto queda en cero. El neto coincide con `api-007` (CA-17) solo sin filtro de motivo.
 - **Cajero sin registro:** un boleto con `cashier_id` nulo (filas muy anteriores) se agrupa con `cashier_id` nulo y nombre «Sin cajero registrado».
 - **Búsqueda global:** el campo «Motivo de cancelación» muestra «Etiqueta: comentario» (o solo la etiqueta) y solo en boletos cancelados.
 - **`period` obligatorio** en el reporte y la exportación (como en `api-007`); la fecha de referencia es la opcional (CA-04 enmendado).
 
-## Nota: paginación de filas (revisión 2026-11-21, aprobada por Jonathan)
+## Nota: paginación de filas (revisión, aprobada por el responsable funcional)
 - `BuildCancellationReportAction::execute($input, ?int $page = null)`: con `page` calcula igual totales, desgloses y conciliación sobre todo el periodo y presenta solo la página de `rows` (tamaño `config('arca.report_page_size')`, como `BuildTicketReportAction`); añade `meta`. Con `null` (exportación) devuelve todas las filas, con el tope de PDF intacto. Orden `purchased_at, id` (estable).
 - `CancellationReportRequest` valida `page` (`integer|min:1`); el controlador lo pasa a la Action; `CancellationReportResource::with()` entrega `meta` al nivel de `data`, igual que `TicketReportResource`.
 - Página fuera de rango: 200 con `rows` vacío y `meta.current_page` igual a la pedida (comportamiento de `paginate()` de api-007). Pruebas: `CancellationReportPaginationTest` (CA-27 a CA-31). Sin cambios de BD ni de dependencias.
 
-## Nota: revisión 2026-11-21 (c), semáforo como única alerta (aprobada por Jonathan)
+## Nota: revisión (c), semáforo como única alerta (aprobada por el responsable funcional)
 
 - `BuildCancellationReportAction` pide el semáforo completo una vez y de él saca `signal_codes` (por folio), `days_to_review` (por cajero) y `cashier_days` (recortado por `cashier_id` solo al presentar; el nivel usa todos los datos). `PresentCancelledTicketRow` añade `late_cancellation` y `signal_codes` y retira `alert`/`alert_reasons`. Se retira la alerta por cajero y `cashier_min_sold_tickets`; `cashier_cancel_percent` se conserva (S1) y `cancel_after_minutes` marca la cancelación tardía. La exportación sigue el mismo contrato. Sustituye a CA-18 (CA-32). Tests en `CancellationReportClearSignalsTest` y `CancellationReportAlertsTest`.

@@ -1,9 +1,11 @@
 # Plan técnico · 011 · mobile-service-coverage-ci
 
 - Spec: `apps/mobile/specs/011-mobile-service-coverage-ci.md`
-- Estado de spec: Aprobada — usuario solicitante, 2026-11-09
-- Estado del plan: Aprobado e implementado — usuario solicitante, 2026-11-09
-- Responsable técnico: usuario solicitante
+- Estado de spec: Implementada
+- Solicitada: 2026-11-09
+- Aprobada: 2026-11-09
+- Estado del plan: Aprobado e implementado
+- Responsable técnico: Frontend
 
 ## Diseño de solución
 
@@ -64,7 +66,7 @@ No se transmiten datos de usuario ni cobertura a servicios externos. El reporte 
 3. Implementar solo después de aprobar las tasks.
 4. Ejecutar `/verify` para Mobile y revisar `git diff --check`; conservar evidencia de Jest, el reporte y el artefacto Actions.
 
-Responsable de aprobación técnica: pendiente de identificar según acuerdo del equipo. Aprobación funcional: usuario solicitante.
+Aprobación técnica: pendiente de registro en el repositorio. Aprobación funcional: Aprobada.
 
 ## Evidencia de implementación
 
@@ -74,8 +76,8 @@ Responsable de aprobación técnica: pendiente de identificar según acuerdo del
 
 ## Enmienda técnica aprobada — umbral de cobertura del 80 %
 
-- Estado: aprobado por el usuario solicitante, 2026-11-09.
-- La decisión funcional de conservar el 80 % está aprobada por el usuario el 2026-11-09.
+- Estado: aprobado.
+- La decisión funcional de conservar el 80 % está aprobada.
 - Esta enmienda sustituye la decisión anterior de no agregar umbrales nuevos. No modifica el workflow para ocultar fallos ni reduce umbrales existentes.
 
 ### Diseño propuesto
@@ -128,7 +130,7 @@ La suite actual falla porque centrar ubicación no aplica `CENTER_LOCATION_ZOOM`
 3. Revisar las cuatro métricas por archivo y el reporte descargable.
 4. Confirmar una ejecución verde de Actions sin reducir el 80 %.
 
-## Implementación local de la enmienda — 2026-11-09
+## Implementación local de la enmienda
 
 Se reutilizaron y completaron las tres suites de repositorios ya preparadas y se añadieron cuatro suites para ViewModels, sensores/navegación, repositorios HTTP y servicios. No se modificó código de aplicación. Los callbacks de red y sensores se controlan con promesas y mocks; se comprueban resultados observables sin requerir dispositivos ni conexión real.
 
@@ -150,4 +152,4 @@ Evidencia: `apps/mobile/coverage/lcov.info` y `apps/mobile/coverage/lcov-report/
 
 ## Aceptación remota
 
-[Actions 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501) sobre `e59793b`: siete jobs aprobados y artefacto móvil descargado/verificado. Enmienda del 80 % implementada y validada el 2026-11-09.
+[Actions 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501) sobre `e59793b`: siete jobs aprobados y artefacto móvil descargado/verificado. Enmienda del 80 % implementada y validada.

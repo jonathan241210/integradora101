@@ -1,9 +1,10 @@
 # 0003 · MySQL y borradores offline de la PWA
 
 - Estado: Aceptado
-- Fecha: 2026-10-03 (revisión/aceptación: 2026-11-18)
-- Spec relacionada: `apps/pwa/specs/009-offline-first-sync.md` (Aprobada y reaprobada 2026-11-18)
-- Aprobación: Solicitante (usuario), 2026-11-18 (aceptación para implementación de `pwa-009` según decisiones documentadas)
+- Solicitada: 2026-10-03
+- Aprobada: 2026-11-18
+- Spec relacionada: `apps/pwa/specs/009-offline-first-sync.md` (Aprobada)
+- Aprobación: Equipo ARCA-NB (aceptación para implementación de `pwa-009` según decisiones documentadas)
 
 ## Contexto
 

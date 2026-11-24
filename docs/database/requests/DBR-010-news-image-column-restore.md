@@ -1,11 +1,11 @@
 # DBR-010 · news-image-column-restore
 
-- Estado: Aprobada (Lista para backend, 2026-11-07)
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-07
+- Aprobada: 2026-11-07
 - Feature/spec origen: `apps/api/specs/008-event-news-images.md`, `apps/api/specs/011-public-news-read.md` y `apps/web/specs/009-dynamic-news-events.md` (consumidores); causa: restauración de `arca_pruebas` en la nueva instancia de Aiven (`docs/database/plan-migracion-instancia-aiven.md`)
-- Solicitante: Jonathan (responsable funcional y backend)
-- Responsable de BD: Víctor Adrián
-- Responsable backend: Jonathan
-- Fecha: 2026-11-07
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 
 ## Problema y justificación
 
@@ -13,7 +13,7 @@ Tras la migración a la nueva instancia de Aiven, el equipo revisó (solo lectur
 
 ## Estado actual
 
-Verificado el 2026-11-07 contra `arca_pruebas` en `mysql-1718e779-…aivencloud.com:17581` (MySQL 8.4.11):
+Verificado contra `arca_pruebas` en `mysql-1718e779-…aivencloud.com:17581` (MySQL 8.4.11):
 
 - Las 9 migraciones Laravel figuran como ejecutadas (batch 1). Las 40 tablas esperadas existen, con 43 claves foráneas.
 - Los 19 permisos del `RolesAndPermissionsSeeder` están presentes y los 5 roles tienen sus asignaciones.
@@ -79,25 +79,25 @@ Tabla vacía o muy pequeña; bloqueo despreciable. Reversión en `down()`: renom
 | H3 | MySQL 8.4 vs 8.0.x | Aiven corre 8.4.11; Constitución y AGENTS.md indican 8.0.x. | Registrar la versión en el inventario inicial pendiente |
 | H4 | Nombre en el plan de migración | `plan-migracion-instancia-aiven.md` menciona `visitor_point_ledger`; la tabla real es `visitor_point_entries`. | Corregir el documento |
 | H5 | Seeder de permisos | Ya aplicado en la copia (sin permisos faltantes). | Repetir `db:seed --class=RolesAndPermissionsSeeder` en cada ambiente nuevo, nunca `db:seed` sin `--class` |
-| H6 | DBR-009 `system_settings` | Sigue en borrador; no existe la tabla ni se necesita aún. | Ninguna hasta que la spec api-010 se apruebe |
+| H6 | DBR-009 `system_settings` | Descartada para esta entrega; no existe la tabla ni se necesita aún. | Ninguna hasta que la spec api-010 se apruebe |
 
 ## Pruebas y evidencia
 
 - Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: pendiente.
-- Resultado y evidencia (sin secretos ni datos sensibles): revisión de solo lectura del 2026-11-07 resumida arriba.
+- Resultado y evidencia (sin secretos ni datos sensibles): revisión de solo lectura resumida arriba.
 - Pruebas integradas del backend: `apps/api/src/tests/Feature/Catalog/PublicNewsTest.php` y las de api-008 se ejecutarán después del renombre. Los tests de feature escriben en `arca_pruebas` con `DatabaseTransactions`.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Víctor Adrián | 2026-11-07 | Aprobada |
-| Responsable backend | Jonathan | 2026-11-07 | Aprobada (solicitante) |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada (solicitante) | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas | pendiente | | |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_11_07_000010` verificada en solo lectura |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

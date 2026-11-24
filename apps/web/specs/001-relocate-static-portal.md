@@ -3,8 +3,9 @@
 - App dueña: `web`
 - Apps/paquetes afectados: `apps/web`, raíz del repositorio
 - Estado: Implementada
-- Solicitante / responsable funcional: Jonathan
-- Aprobación funcional: Jonathan, 2026-10-06
+- Solicitada: 2026-10-06
+- Aprobada: 2026-10-06
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -80,5 +81,5 @@ Si aparece una colisión o una referencia fuera de la carpeta, se detiene el tra
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan, 2026-10-06.
+- Aprobación: Aprobada.
 - Evidencia/enlaces: implementación `web-001` verificada en `apps/web/tasks/001-relocate-static-portal.md`: inventario de 14 archivos, 14/14 SHA-256 conservados, 10 referencias HTML y 8 referencias CSS locales resueltas sin fallos, redirección PHP validada y orígenes autorizados ausentes. La ampliación por Constitución IV/hook agregó `apps/web/src/tests/relocation.test.mjs`; `node --test apps/web/src/tests/relocation.test.mjs` finalizó con 7 tests, 7 pass, 0 fail. También se ejecutaron `git diff --check` y `git status`. Las specs `002-brand-color-refresh`, `003-lion-hero-mobile-navigation` y `004-isometric-zoo-map` permiten las excepciones visuales y de interacción descritas en sus criterios; las pruebas estructurales continúan protegiendo los 11 assets y verifican el CSS y los contratos de HTML/JavaScript por criterio. Artefactos relacionados: [spec](../specs/001-relocate-static-portal.md), [plan](../plan/001-relocate-static-portal.md) y [tasks](../tasks/001-relocate-static-portal.md).

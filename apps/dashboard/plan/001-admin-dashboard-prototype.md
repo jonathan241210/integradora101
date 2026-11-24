@@ -1,15 +1,16 @@
 # Plan técnico · 001 · admin-dashboard-prototype
 
 - Spec: `apps/dashboard/specs/001-admin-dashboard-prototype.md`
-- Estado de spec: Aprobada
-- Estado técnico de la ampliación anterior: Aprobado por el solicitante, 2026-10-09
-- Estado técnico de la nueva ampliación (login administrativo, paleta institucional y entrada HTML): Aprobado por el solicitante, 2026-10-09
-- Aprobación funcional de la mejora de avisos: Solicitante, 2026-10-13; una advertencia general en la shell autenticada, sin duplicados en vistas internas.
-- Aprobación de la versión anterior: Solicitante, 2026-10-08
+- Estado de spec: Implementada
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
+- Estado técnico de la ampliación anterior: Aprobado por el solicitante
+- Estado técnico de la nueva ampliación (login administrativo, paleta institucional y entrada HTML): Aprobado por el solicitante
+- Aprobación funcional de la mejora de avisos: Solicitante; una advertencia general en la shell autenticada, sin duplicados en vistas internas.
+- Aprobación de la versión anterior: Solicitante
 - Responsable técnico de esta ampliación: Por identificar según acuerdo del equipo
-- Fecha: 2026-10-09
 
-> **Vigencia (2026-10-17):** `dashboard-002-real-staff-login` reemplaza los flujos de login ficticio de CA-01, CA-10 y CA-13, y la parte de login de la cuenta creada en CA-12. La vista de Usuarios de taquilla continúa como demostración, pero sus entradas no autentican.
+> **Vigencia:** `dashboard-002-real-staff-login` reemplaza los flujos de login ficticio de CA-01, CA-10 y CA-13, y la parte de login de la cuenta creada en CA-12. La vista de Usuarios de taquilla continúa como demostración, pero sus entradas no autentican.
 
 ## Diseño de solución
 
@@ -108,13 +109,13 @@ Añadir una guía local en español bajo `apps/dashboard/docs/` que explique có
 
 ## Orden y aprobación
 
-1. Plan anterior aprobado por el solicitante el 2026-10-09, incluyendo los límites simulados, el mapa CA→tests y el Constitution Check. Responsable técnico del equipo: por identificar según acuerdo interno.
+1. Plan anterior aprobado por el solicitante, incluyendo los límites simulados, el mapa CA→tests y el Constitution Check. Responsable técnico del equipo: por identificar según acuerdo interno.
 2. Actualizar `tasks/001-admin-dashboard-prototype.md` con tareas dependientes para perfil/login, vistas de recintos, cuentas e historial, guía, tests y verificación; obtener aprobación del checklist.
 3. Extender selector, reducer/ViewModel y shell para diferenciar administración y taquilla; salir limpia la sesión/perfil activo, conserva las cuentas ficticias en memoria y condiciona la navegación visible al perfil.
 4. Implementar vistas administrativas de modificación de recintos y usuarios de taquilla, con fixtures/estado en memoria y feedback accesible.
 5. Implementar login local ficticio, gating visual por sesión de demostración, historial de taquilla y separación con el reporte administrativo; conservar el flujo de venta existente.
 6. Actualizar estilos responsive y documentación local en español; comprobar etiquetas, teclado, mensajes de error y visibilidad persistente de que es demo.
 7. Añadir tests CA-01..CA-15 y cobertura del reducer; ejecutar `npm run types`, `npm run build`, `npm test`, `/verify` y validar responsive en los viewports especificados.
-8. En la mejora aprobada el 2026-10-13, retirar los banners repetidos de las vistas administrativas, conservar los avisos previos de taquilla y verificar con CA-15 que el aviso general aparece una sola vez en cada vista de administración.
+8. En la mejora aprobada, retirar los banners repetidos de las vistas administrativas, conservar los avisos previos de taquilla y verificar con CA-15 que el aviso general aparece una sola vez en cada vista de administración.
 
-Aprobación funcional de la versión anterior de la spec: solicitante, 2026-10-09. Aprobación funcional y técnica de la ampliación de login administrativo, paleta institucional y alcance de `index.html`: solicitante, 2026-10-09.
+Aprobación funcional de la versión anterior de la spec: solicitante. Aprobación funcional y técnica de la ampliación de login administrativo, paleta institucional y alcance de `index.html`: solicitante.

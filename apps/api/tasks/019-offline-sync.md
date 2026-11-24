@@ -1,8 +1,10 @@
 # Tareas · 019 · offline-sync
 
-- Spec: `apps/api/specs/019-offline-sync.md` (Aprobada, 2026-11-18)
+- Spec: `apps/api/specs/019-offline-sync.md`
 - Plan: `apps/api/plan/019-offline-sync.md`
 - Estado: En progreso (implementación inicial realizada; pruebas y refinamiento pendientes)
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
 
 ## Tareas
 

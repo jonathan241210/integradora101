@@ -1,8 +1,10 @@
 # Tareas · 005 · visitor-progress
 
-- Spec: `apps/api/specs/005-visitor-progress.md` (Implementada, 2026-11-01; aprobación funcional Aksel, 2026-10-22)
-- Plan: `apps/api/plan/005-visitor-progress.md` (Aprobado, Aksel, 2026-10-22)
-- Estado del checklist: Aprobado por Aksel, 2026-10-22
+- Spec: `apps/api/specs/005-visitor-progress.md` (Implementada)
+- Plan: `apps/api/plan/005-visitor-progress.md` (Aprobado)
+- Estado del checklist: Completado
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
 
 ## Base de datos (responsable de BD)
 
@@ -21,7 +23,7 @@
 
 ## Pruebas
 
-- [x] **T-09** (CA-01 a CA-14): `tests/Feature/Visitor/ProgressTest.php`. Cada método nombra su CA. `DatabaseTransactions` sobre `arca_pruebas`. Sin `RefreshDatabase`. CA-14 (2026-11-14): recinto sin animales en exhibición responde `empty_enclosure` y no suma puntos.
+- [x] **T-09** (CA-01 a CA-14): `tests/Feature/Visitor/ProgressTest.php`. Cada método nombra su CA. `DatabaseTransactions` sobre `arca_pruebas`. Sin `RefreshDatabase`. CA-14: recinto sin animales en exhibición responde `empty_enclosure` y no suma puntos.
 
 ## Calidad y entrega
 
@@ -35,4 +37,4 @@ Cada CA-01 a CA-14 tiene una prueba que lo nombra. Ninguna tarea crea una migrac
 - [x] **T-12** (CA-15, CA-16, RN-12): Aplicar el mismo conjunto de especies visitables al listado y a la métrica de descubrimientos por palabra clave.
 - [x] **T-13** (CA-15, CA-16): Agregar cobertura de visibilidad, avance, acreditación retroactiva e idempotencia en PHPUnit.
 - [x] **T-14** (CA-15, CA-16): Verificar la API y actualizar la referencia de progreso.
-  - 2026-11-21: `ProgressTest.php` aprobó sus 18 pruebas en `arca_pruebas`. Aprobaron también las dos pruebas unitarias y Pint para los archivos PHP modificados.
+  - Evidencia: `ProgressTest.php` aprobó sus 18 pruebas en `arca_pruebas`. Aprobaron también las dos pruebas unitarias y Pint para los archivos PHP modificados.

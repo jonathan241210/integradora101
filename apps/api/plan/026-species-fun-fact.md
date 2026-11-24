@@ -1,11 +1,13 @@
 # Plan técnico · 026 · species-fun-fact
 
-- Spec: `apps/api/specs/026-species-fun-fact.md` (Aprobada, Jonathan, 2026-11-21)
-- Estado de spec: Aprobada
-- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-21**. Las tareas de `tasks/026-species-fun-fact.md` se ejecutan en su orden y solo cuando DBR-025 esté en «Lista para backend».
-- Responsable técnico: Jonathan (aprobación técnica, 2026-11-21)
-- Responsable de BD: Víctor Adrián (pendiente de confirmar; en DBR-024 la delegó Jonathan)
-- DBR relacionada: `docs/database/requests/DBR-025-species-fun-fact.md`, estado **Lista para backend** (aprobada por Jonathan por delegación, 2026-11-21).
+- Spec: `apps/api/specs/026-species-fun-fact.md`
+- Estado de spec: Implementada
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Estado del plan: **Aprobado — aprobación técnica: el responsable funcional**. Las tareas de `tasks/026-species-fun-fact.md` se ejecutan en su orden y solo cuando DBR-025 esté en «Lista para backend».
+- Responsable técnico: el responsable funcional
+- Responsable de BD: Responsable de BD Adrián (pendiente de confirmar; en DBR-024 la delegó el responsable funcional)
+- DBR relacionada: `docs/database/requests/DBR-025-species-fun-fact.md`, estado **Lista para backend** (aprobada por el responsable funcional por delegación).
 - Consumidores: `pwa-005`, `dashboard-010` y `web-011` (revisiones en sus specs, ver `apps/api/specs/026-species-fun-fact.md`). Sus planes y tareas no se crean en este documento (ver «Riesgos y decisiones»).
 - ADR relacionados: ADR 0013 (portabilidad MySQL). No se requiere ADR nuevo.
 
@@ -93,7 +95,7 @@ Regresión: las pruebas existentes de `api-014` (publicación de especies) y de 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencia nueva. `VARCHAR(500)` nullable, sin funciones ni triggers. Conexión solo por `.env`. |
-| II. La spec manda | Sí | Spec 026 Aprobada (2026-11-21) con plan y tasks del mismo NNN-slug. Código condicionado a DBR-025. Las revisiones de consumidores quedan en sus propias specs. |
+| II. La spec manda | Sí | Spec 026 Aprobada con plan y tasks del mismo NNN-slug. Código condicionado a DBR-025. Las revisiones de consumidores quedan en sus propias specs. |
 | III. Lógica separada de la interfaz | Sí | Reglas de texto, obligatoriedad y copia en Actions y en el helper de API. Las interfaces solo muestran el mensaje y el contador. |
 | IV. Un test por criterio | Sí, al implementar | Mapeo de CA-01 a CA-16 (tabla anterior). Verificación por búsqueda de `test_caNN`. |
 | V. Una sola fuente de verdad para los datos | Sí, con condición | Esquema solo por migración tras DBR-025 aprobada. Auditoría en Activitylog. Sin borrado físico. Sin SoftDeletes nuevos. |
@@ -104,7 +106,7 @@ Brechas abiertas: ninguna que requiera ADR. Condiciones: DBR-025 en «Lista para
 ## Riesgos y decisiones
 
 - **ADR requerido/aprobado:** ninguno nuevo.
-- **Dependencia bloqueante:** DBR-025 en «Lista para backend» desde 2026-11-21.
+- **Dependencia bloqueante:** DBR-025 en «Lista para backend».
 - **Contenido inadecuado:** la API no lo detecta (RN-08). Mitigación: revisión de la Dirección antes de aceptar y texto de ayuda en el formulario. Riesgo residual aceptado por diseño.
 - **Deriva `diet`/`feeding` (no corregida aquí):**
   - La columna de `species` se llama `feeding` (DBR-014). Las claves de `PublishedSpeciesField`, de `api-014` RN-13, de `api-015`, de `apps/web/src/js/animals.js` (`FIELDS`) y de `apps/web/src/js/search.js` usan `diet`.
@@ -117,19 +119,19 @@ Brechas abiertas: ninguna que requiera ADR. Condiciones: DBR-025 en «Lista para
 
 ## Orden y aprobación
 
-1. DBR-025 revisada por BD (responsable por confirmar) y backend (Jonathan); evidencia y estado «Lista para backend» (T-01 a T-04).
+1. DBR-025 revisada por BD (responsable por confirmar) y backend (el responsable funcional); evidencia y estado «Lista para backend» (T-01 a T-04).
 2. Backend (T-05 en adelante), en el orden de `tasks/026-species-fun-fact.md`.
 3. Tipos en `packages/api-client` y revisiones de consumidores, tras las revisiones aprobadas de `pwa-005`, `dashboard-010` y `web-011` (fuera de este plan).
 4. Verificación de la API: Pint, `php artisan test` filtrado contra `arca_pruebas`, `migrate:status`. Evidencia aportada por la sesión principal.
 
-- Revisión técnica: Jonathan, 2026-11-21.
-- Aprobador funcional: Jonathan (spec aprobada 2026-11-21).
+- Revisión técnica: el responsable funcional.
+- Aprobador funcional: el responsable funcional.
 - Evidencias: pendientes (DBR-025, pruebas de la migración, salida de tests).
 
 ## Preguntas pendientes para el plan
 
 1. Confirmar la clave `fun_fact` (decisión 4 de la spec). Propuesta: sí.
-2. Confirmar que los consumidores no tienen plan ni tareas en esta etapa (ver «Riesgos»). Si Jonathan prefiere planes por app, se abren con el mismo NNN-slug en cada app o con números nuevos siguiendo `api-022` / `dashboard-016`.
+2. Confirmar que los consumidores no tienen plan ni tareas en esta etapa (ver «Riesgos»). Si el responsable funcional prefiere planes por app, se abren con el mismo NNN-slug en cada app o con números nuevos siguiendo `api-022` / `dashboard-016`.
 
 ## Divergencias de implementación
 

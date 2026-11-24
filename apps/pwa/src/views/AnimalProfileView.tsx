@@ -2,7 +2,7 @@ import { Alert, Badge, Button, Card, Dialog } from '@arca/ui';
 import { Fragment, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { exportSheetPdf } from '@/viewmodels/pdfExport';
-import { uploadAnimalPhoto, type AnimalEvaluation, type AnimalProfile } from '@/services/apiClient';
+import { useAnimalActions, type AnimalEvaluation, type AnimalProfile } from '@/viewmodels/useAnimalActions';
 import { institution, usePrintDocument, physicalRestraints } from '@/viewmodels/diagnosisForms';
 import { useAnimal } from '@/viewmodels/useApiData';
 import { LoadingScreen, Spinner } from '@/views/Spinner';
@@ -605,6 +605,7 @@ export function AnimalProfileView({
   mvzName?: string;
 }) {
   const { animal, loading, error, reload } = useAnimal(animalId, userScope);
+  const { uploadAnimalPhoto } = useAnimalActions();
   const { error: printError } = usePrintDocument();
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState('');

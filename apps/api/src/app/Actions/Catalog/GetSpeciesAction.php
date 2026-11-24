@@ -9,7 +9,7 @@ class GetSpeciesAction
     public function execute(int $speciesId): ?Species
     {
         return Species::query()
-            ->with(['animals.enclosure'])
+            ->with(['animals' => fn ($query) => $query->publiclyVisible(), 'animals.enclosure'])
             ->find($speciesId);
     }
 }

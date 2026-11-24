@@ -1,11 +1,13 @@
 # Tareas · 015 · Recorrido AR location-based con recintos, `zoo_places` y ruteo por nodos
 
-- Spec: `apps/mobile/specs/015-spatial-ar-tour.md` (Aprobada, 2026-11-20)
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Spec: `apps/mobile/specs/015-spatial-ar-tour.md` (Aprobada)
 - Plan: `apps/mobile/plan/015-spatial-ar-tour.md` (Borrador técnico presentado, pendiente aprobación técnica)
 
 ## Base de datos (responsable de BD)
 
-- [x] **T-01** (CA-05, CA-06, RN-02): Confirmar estado de DBR-019/DBR-008 como fuente para `enclosures`, `zoo_places`, `path_nodes`. Evidencia (2026-11-20, `arca_pruebas`, solo lectura): existen `zoo_places` y `path_nodes`; `path_edges` no existe; `enclosures` tiene `gps_lat/gps_lon/map_x/map_y`.
+- [x] **T-01** (CA-05, CA-06, RN-02): Confirmar estado de DBR-019/DBR-008 como fuente para `enclosures`, `zoo_places`, `path_nodes`. Evidencia (consulta en solo lectura a `arca_pruebas`): existen `zoo_places` y `path_nodes`; `path_edges` no existe; `enclosures` tiene `gps_lat/gps_lon/map_x/map_y`.
 - [ ] **T-02** (CA-06, RN-06): Crear DBR aprobada para `path_edges` (fase 2) con responsable de BD: conectividad, bidireccionalidad, peso/distancia, estado activo/bloqueado, FKs, índices, SoftDeletes/auditoría según aplique. **Bloquea CA-06 completo por BD**; no implementar migración desde mobile.
 
 ## Contrato API / datos (coordinación con `apps/api`)
@@ -27,7 +29,7 @@
 - [x] **T-14** (CA-06): `pathfinding.test.ts` incluye test que nombra **CA-06** para fallback con `zooPaths.ts` y grafo inválido/sin aristas sin ruta inventada. CA-06 completo por BD diferido hasta T-02.
 - [ ] **T-15** (CA-07, CA-08, RN-01): Revisar permisos, textos en español, accesibilidad de controles AR/Mapa 2D, y privacidad (sin captura/grabación). Ajustar labels/hints y estados de error.
 - [ ] **T-16** (CA-07, CA-08): Agregar tests que nombren **CA-07** y **CA-08** para mensajes de permiso denegado, fallback, y ausencia de APIs de captura/grabación en el flujo AR.
-- [~] **T-20** (CA-04b, CA-04c, RN-07): Implementar panel dinámico "Cerca de ti" en AR con recintos/`zoo_places` cercanos (GPS/FOV), selección por toque, tarjeta simple, llegada <=20 m y visitados en sesión. Quitar botones Anterior/Siguiente y flujo estático de tour. **En progreso (enmienda 2026-11-21).**
+- [~] **T-20** (CA-04b, CA-04c, RN-07): Implementar panel dinámico "Cerca de ti" en AR con recintos/`zoo_places` cercanos (GPS/FOV), selección por toque, tarjeta simple, llegada <=20 m y visitados en sesión. Quitar botones Anterior/Siguiente y flujo estático de tour. **En progreso (enmienda).**
 - [x] **T-22** (CA-03, CA-05): Mostrar `path_nodes` cercanos como tarjeta contextual (no punto AR físico), usando datos GPS cargados desde API/caché. Evidencia: `nearbyPathNode` en `MapScreen` + `ar-nearby-path-node-card` en `ArTourOverlay`.
 - [ ] **T-21** (CA-04b, CA-04c): Agregar tests que nombren **CA-04b** y **CA-04c** para panel cercano, selección, llegada y visitados en sesión.
 

@@ -1,11 +1,12 @@
 # Plan técnico · 014 · visitor-favorite-species
 
 - Spec: `apps/mobile/specs/014-visitor-favorite-species.md`
-- Estado de spec: Aprobada (Aksel, 2026-11-14)
-- Estado del plan: Aprobado técnicamente (Aksel, 2026-11-16). Autoriza las tasks. No autoriza código hasta que esas tasks estén aprobadas.
-- Responsable técnico: Aksel
-- Solicitante funcional: Aksel
-- Dependencias: `api-018` (spec Aprobada; plan aprobado por Aksel el 2026-11-16: `apps/api/plan/018-visitor-favorite-species.md`), DBR-018 (Lista para backend)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Estado del plan: Aprobado técnicamente. Autoriza las tasks. No autoriza código hasta que esas tasks estén aprobadas.
+- Responsable técnico: Frontend
+- Dependencias: `api-018` (spec Aprobada; plan aprobado: `apps/api/plan/018-visitor-favorite-species.md`), DBR-018 (Lista para backend)
 - Este documento no modifica `src/` y no instala dependencias. Las tasks viven en `apps/mobile/tasks/014-visitor-favorite-species.md`.
 
 ## Diseño de solución
@@ -124,7 +125,7 @@ CA-08 de la spec pide esa cobertura. La fila de la tabla lo deja en la misma sui
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencia nueva. AsyncStorage y la detección de red siguen en el ADR 0014, ya aceptado |
-| II. La spec manda | Sí, en este documento | Spec Aprobada por Aksel el 2026-11-14. Plan aprobado por Aksel el 2026-11-16. Las tasks quedan pendientes de su propia aprobación. No hay código |
+| II. La spec manda | Sí, en este documento | Spec aprobada. Plan aprobado. Las tasks quedan pendientes de su propia aprobación. No hay código |
 | III. Lógica separada de la interfaz | Sí | La pantalla no llama a la red. El hook usa el cliente inyectado. Quién puede marcar la especie lo decide `api-018` |
 | IV. Un test por criterio | Sí, al implementar | La tabla cubre CA-01 a CA-08. Los tests no se escriben en este corte |
 | V. Una sola fuente de verdad para los datos | Sí | La autoridad es la API (DBR-018). La copia del teléfono solo pinta sin red y se borra al salir. La clave vieja deja de ser la lista |
@@ -144,10 +145,10 @@ Ninguna excepción nueva. El plan ya está aprobado. El código espera la aproba
 
 ## Orden y aprobación
 
-1. Aprobación técnica de este plan y del plan de `api-018`: Aksel, 2026-11-16.
+1. Aprobación técnica de este plan y del plan de `api-018`: aprobada.
 2. Tasks de la API, métodos del cliente y tests de `api-018`. Esperan su propia aprobación antes del código.
 3. Tasks de esta app. También esperan aprobación antes del código.
 4. Implementación móvil: repositorio, hook, sesión y la suite Jest. En ese PR se actualizan las dos notas de `apps/mobile/docs/` citadas arriba.
 5. Recién al implementar se retira, en el ADR 0014, la frase que dice que los favoritos no salen del teléfono.
 
-La aprobación funcional de la spec es de Aksel (2026-11-14). La aprobación técnica de este plan es de Aksel (2026-11-16).
+La aprobación funcional de la spec y la técnica de este plan están registradas como aprobadas.

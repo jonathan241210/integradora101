@@ -1,6 +1,6 @@
 # Permiso de galería para «Mis memorias»
 
-Spec `apps/mobile/specs/010-visitor-memory-requests.md`. Plan y tasks del mismo número. Selector autorizado por el ADR 0030 (Aceptado, Aksel, 2026-11-14).
+Spec `apps/mobile/specs/010-visitor-memory-requests.md`. Plan y tasks del mismo número. Selector autorizado por el ADR 0030 (Aceptado).
 
 El título de la sección es «Mis memorias». El portal sigue llamando a la galería pública «Momentos para recordar».
 

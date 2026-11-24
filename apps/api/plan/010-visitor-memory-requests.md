@@ -1,29 +1,31 @@
 # Plan técnico · 010 · visitor-memory-requests
 
-- Spec: `apps/api/specs/010-visitor-memory-requests.md` (Aprobada, 2026-11-12, Jonathan, responsable de backend). Aprobar la spec no autoriza implementar.
-- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
-  - Aviso vigente: las precondiciones que sigan «Pendiente» en la tabla bloquean sus tareas. La excepción de la Constitución V (D-M1: SoftDeletes sobre `Model`, sin `BaseModel`) quedó aceptada el 2026-11-13 por Jonathan, en nombre del equipo. La excepción de imágenes de momentos versionadas en git (ADR 0026) quedó aceptada el mismo día solo para datos de prueba en `arca_pruebas`; revisar antes de producción. El mapeo CA→fase quedó aprobado el 2026-11-13.
-- Tasks: `apps/api/tasks/010-visitor-memory-requests.md` (Aprobado, Jonathan, 2026-11-13).
-- Responsable técnico: Jonathan (responsable de backend). Aprobación del 2026-11-13 en nombre del equipo.
-- Base de datos: DBR-012 (`docs/database/requests/DBR-012-visitor-memories.md`), Lista para backend, aplicada en `arca_pruebas` el 2026-11-11. Este plan no crea DBR ni migraciones. Si el diseño necesita una columna o un índice nuevo, se abre DBR antes.
-- Mapeo de criterios a fases: **aprobado** el 2026-11-13 tal como se propuso (sección «Fases y mapeo CA→fase»). La spec no lo fija.
-- Consumidores: `dashboard-008` y `web-010` (Fase 1, a través de `api-012`); `mobile-010` (Fase 2; spec y plan aprobados por Aksel el 2026-11-14).
+- Spec: `apps/api/specs/010-visitor-memory-requests.md` (Aprobada). Aprobar la spec no autoriza implementar.
+- Estado: **Aprobado** (responsable de backend). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+- Solicitada: 2026-11-11
+- Aprobada: 2026-11-12
+  - Aviso vigente: las precondiciones que sigan «Pendiente» en la tabla bloquean sus tareas. La excepción de la Constitución V (D-M1: SoftDeletes sobre `Model`, sin `BaseModel`) quedó aceptada en nombre del equipo. La excepción de imágenes de momentos versionadas en git (ADR 0026) quedó aceptada solo para datos de prueba en `arca_pruebas`; revisar antes de producción. El mapeo CA→fase quedó aprobado.
+- Tasks: `apps/api/tasks/010-visitor-memory-requests.md` (Aprobado).
+- Responsable técnico: Backend. Aprobación en nombre del equipo.
+- Base de datos: DBR-012 (`docs/database/requests/DBR-012-visitor-memories.md`), Lista para backend, aplicada en `arca_pruebas`. Este plan no crea DBR ni migraciones. Si el diseño necesita una columna o un índice nuevo, se abre DBR antes.
+- Mapeo de criterios a fases: **aprobado** tal como se propuso (sección «Fases y mapeo CA→fase»). La spec no lo fija.
+- Consumidores: `dashboard-008` y `web-010` (Fase 1, a través de `api-012`); `mobile-010` (Fase 2; spec y plan aprobados).
 
 ## Precondiciones y bloqueos
 
 Antes de la primera tarea de código de cada fase deben cumplirse las precondiciones de esa fase. T-01 las verifica en solo lectura.
 
-| # | Precondición | Responsable | Estado el 2026-11-12 | Bloquea | Evidencia requerida |
+| # | Precondición | Responsable | Estado | Bloquea | Evidencia requerida |
 |---|---|---|---|---|---|
-| P1 | DBR-012 aplicada en `arca_pruebas` (migración `2026_11_11_000012_visitor_memories_schema`) | BD (Víctor Adrián) | Cumplida el 2026-11-11 (confirmada por BD) | Todo el código | `php artisan migrate:status` en solo lectura con la migración en «Ran» |
-| P2 | `api-013` con plan y tasks aprobados, y disco de medios configurado (`media`, claves de `PUBLIC_MEDIA_DISK`/`PRIVATE_MEDIA_DISK`, `storage:link`, `.gitignore` de `media/`) | Backend (Jonathan) | **Parcial.** Plan y tasks de `api-013` aprobados el 2026-11-13 (Jonathan). **Pendiente:** el disco de medios aún no está en `config/filesystems.php` | T-10, T-12, T-14, T-19 (y el envío) | Plan y tasks de `api-013` aprobados; `config/filesystems.php` con la clave de medios; `storage:link` ejecutado en `arca_pruebas` |
-| P3 | `memories.review` en `RolesAndPermissionsSeeder`, compartido con `api-014` T-07 | Backend | **Cumplida (2026-11-13).** Lo modifica `api-014` T-07 (añade `species.review` y `memories.review`). `api-010` no edita el seeder; solo añade su test | T-06 y T-07 | Un único cambio al seeder, en `api-014` T-07. Ver «Riesgos» R8 |
-| P4 | Plan y tasks de esta spec aprobados | Equipo / responsable de backend | Cumplida el 2026-11-13 (Jonathan, responsable de backend) | Todo el código | Firma del plan y de tasks en el PR |
-| P5 | Brecha de la Constitución V (`BaseModel` no existe) resuelta o registrada como excepción | Equipo | **Cumplida el 2026-11-13:** registrada como excepción D-M1 (SoftDeletes sobre `Model`), la misma que `api-014` P5. Aceptada por Jonathan, en nombre del equipo | Merge a `main` | Acuerdo registrado en este plan y en `api-014`. No se crea ADR nuevo: la aceptación de Jonathan en nombre del equipo basta (2026-11-13) |
+| P1 | DBR-012 aplicada en `arca_pruebas` (migración `2026_11_11_000012_visitor_memories_schema`) | BD (Responsable de BD) | Cumplida (confirmada por BD) | Todo el código | `php artisan migrate:status` en solo lectura con la migración en «Ran» |
+| P2 | `api-013` con plan y tasks aprobados, y disco de medios configurado (`media`, claves de `PUBLIC_MEDIA_DISK`/`PRIVATE_MEDIA_DISK`, `storage:link`, `.gitignore` de `media/`) | Backend (el responsable de backend) | **Parcial.** Plan y tasks de `api-013` aprobados (el responsable de backend). **Pendiente:** el disco de medios aún no está en `config/filesystems.php` | T-10, T-12, T-14, T-19 (y el envío) | Plan y tasks de `api-013` aprobados; `config/filesystems.php` con la clave de medios; `storage:link` ejecutado en `arca_pruebas` |
+| P3 | `memories.review` en `RolesAndPermissionsSeeder`, compartido con `api-014` T-07 | Backend | **Cumplida.** Lo modifica `api-014` T-07 (añade `species.review` y `memories.review`). `api-010` no edita el seeder; solo añade su test | T-06 y T-07 | Un único cambio al seeder, en `api-014` T-07. Ver «Riesgos» R8 |
+| P4 | Plan y tasks de esta spec aprobados | Equipo / responsable de backend | Cumplida (el responsable de backend, responsable de backend) | Todo el código | Firma del plan y de tasks en el PR |
+| P5 | Brecha de la Constitución V (`BaseModel` no existe) resuelta o registrada como excepción | Equipo | **Cumplida:** registrada como excepción D-M1 (SoftDeletes sobre `Model`), la misma que `api-014` P5. Aceptada por el responsable de backend, en nombre del equipo | Merge a `main` | Acuerdo registrado en este plan y en `api-014`. No se crea ADR nuevo: la aceptación del responsable de backend en nombre del equipo basta |
 | P6 | Correo verificado garantizado en las sesiones de visitante (`api-004` CA-04) | Backend | Por verificar en T-01 y T-20. No consta si el token de visitante se emite solo con correo verificado | T-20 (CA-05) | Prueba que muestre 403 `email_not_verified` sin archivo ni petición |
 | P7 | `ext-gd` disponible en el entorno de pruebas (riesgo R8 de `api-014`) | Backend | Por confirmar en T-01. Si no hay GD, los fixtures de imagen son binarios pequeños versionados | Fixtures de T-09, T-10, T-12, T-18 a T-24 | Salida de `php -m` en el PR |
-| P8 | `api-012` con plan y tasks aprobados (lectura pública `GET /api/v1/memories`) | Backend (Jonathan) | Cumplida el 2026-11-13 (Jonathan): plan y tasks de `api-012` aprobados. Sigue sin implementarse | Solo T-26 (pruebas de integración de CA-17, CA-18 y CA-31 sobre el portal). No bloquea la Fase 1 interna | Plan y tasks de `api-012` aprobados |
-| P9 | Enmienda de `api-004` (`DELETE /api/v1/visitor/me` con `memories_policy` y términos en el registro) y de `mobile-004`, aprobada por Aksel tras avisar a sus responsables | Aksel / responsables de `api-004` y `mobile-004` | **No iniciada.** Dependencia separada, no aprobada | T-25 (CA-32) | Enmienda aprobada en su spec, con su plan |
+| P8 | `api-012` con plan y tasks aprobados (lectura pública `GET /api/v1/memories`) | Backend (el responsable de backend) | Cumplida (el responsable de backend): plan y tasks de `api-012` aprobados. Sigue sin implementarse | Solo T-26 (pruebas de integración de CA-17, CA-18 y CA-31 sobre el portal). No bloquea la Fase 1 interna | Plan y tasks de `api-012` aprobados |
+| P9 | Enmienda de `api-004` (`DELETE /api/v1/visitor/me` con `memories_policy` y términos en el registro) y de `mobile-004`, aprobada por el solicitante original tras avisar a sus responsables | el solicitante original / responsables de `api-004` y `mobile-004` | **No iniciada.** Dependencia separada, no aprobada | T-25 (CA-32) | Enmienda aprobada en su spec, con su plan |
 
 Nota: la tarea de «Sesiones y correo verificado» (P6) y la de `memories.review` (P3) no son trabajo nuevo en `api-004`; se comprueban o se aplican en este mismo plan sin cambiar `api-004`.
 
@@ -58,9 +60,9 @@ El visitante con correo verificado envía una foto con opinión opcional y conse
 
 No hay columna de estado derivado. Una petición es pública si `status = accepted`, `deleted_at` es NULL y `published_until > now()`. La regla vive en un scope del modelo (`VisitorMemory`), y `api-012` la usa. La vigencia es un cálculo por fecha: vencer no escribe nada ni genera Activitylog (CA-31).
 
-## Fases y mapeo CA→fase (aprobado el 2026-11-13)
+## Fases y mapeo CA→fase
 
-La spec no fija el mapeo. Se aprobó el 2026-11-13 tal como se propuso a partir del contenido de cada CA. La Fase 2 coincide con la aprobación de la spec (CA-01 a CA-06 y CA-23 a CA-27). CA-32 queda en Fase 2, pero bloqueado por P9, porque es el único que depende de otra spec.
+La spec no fija el mapeo. Se aprobó tal como se propuso a partir del contenido de cada CA. La Fase 2 coincide con la aprobación de la spec (CA-01 a CA-06 y CA-23 a CA-27). CA-32 queda en Fase 2, pero bloqueado por P9, porque es el único que depende de otra spec.
 
 | CA | Fase | Tareas | Motivo |
 |---|---|---|---|
@@ -223,7 +225,7 @@ Notas:
 
 ## Contrato para mobile
 
-- Referencia: `apps/api/docs/momentos-contrato-para-mobile.md` (Borrador, 2026-11-12). Este plan no la duplica. Sus secciones 3.1 a 3.7 describen el contrato que consume la app, y su sección 10 lista las preguntas abiertas.
+- Referencia: `apps/api/docs/momentos-contrato-para-mobile.md`. Este plan no la duplica. Sus secciones 3.1 a 3.7 describen el contrato que consume la app, y su sección 10 lista las preguntas abiertas.
 - Lo que este plan fija y que la guía debe reflejar cuando la Fase 2 esté implementada: rutas y nombres (tabla de «Endpoints»), `data` y `meta` en la lista del visitante, `{"data": []}` en lista vacía, validación del envío (nombres de campos propuestos, D-M9), y código de error 429 con `next_submission_at` y `Retry-After` (CA-23).
 - Lo que este plan NO decide: textos de 401 y 403 `email_not_verified`, formato de fechas y zona, `terms_version` enviada por la app o no (D2 de la guía), cómo sabe la app que hay peticiones antes de borrar la cuenta (D7 de la guía, bloqueado P9), y la tarjeta «En proceso» (D12). Quedan en la sección 10 de la guía.
 - Forma de la respuesta 200 del reenvío: propuesta, la misma forma que el 201 (Q3 si el equipo prefiere otra).
@@ -279,35 +281,35 @@ Nota: las pruebas de concurrencia real (dos procesos en paralelo) no entran en e
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas (`Storage`, validación de Laravel y `StripImageMetadataAction` ya existen). Disco y plazo configurables por `.env`. Sin servicios propietarios. Sin ADR de dependencia requerido |
-| II. La spec manda | Sí, con condición de implementación | Spec Aprobada (2026-11-12) con plan y tasks del mismo `010-visitor-memory-requests`, aprobados el 2026-11-13 (P4). Plan de `api-013` aprobado el 2026-11-13; falta su disco en código (P2). Ningún código antes de P1 y P4; ningún código de imagen antes de P2 |
+| II. La spec manda | Sí, con condición de implementación | Spec Aprobada con plan y tasks del mismo `010-visitor-memory-requests`, aprobados (P4). Plan de `api-013` aprobado; falta su disco en código (P2). Ningún código antes de P1 y P4; ningún código de imagen antes de P2 |
 | III. Lógica separada de la interfaz | Sí (propuesto) | Reglas de estado, límites, vigencia, plazo, archivo y auditoría en Actions. Controladores y Form Requests sin reglas de negocio. Resources solo dan forma. Los clientes quedan fuera de este plan |
 | IV. Un test por criterio | Sí (propuesto) | Tabla «Mapeo de criterios a pruebas»: CA-01 a CA-32 con al menos un test nombrado. CA-17 y CA-18 (lectura pública) dependen de P8. CA-32 tiene su test nombrado pero **omitido** hasta P9: la cobertura formal depende de esa aprobación. Concurrencia secuencial (R5). CI en verde: pendiente de evidencia |
-| V. Una sola fuente de verdad para los datos | **Excepción aceptada (D-M1)** | (1) DBR-012 aplicada en `arca_pruebas` y migración existente: sin cambios de esquema en este plan. (2) La Constitución V pide que los modelos extiendan `BaseModel`; no existe `BaseModel` en `apps/api/src`. **Excepción (D-M1), aceptada por Jonathan en nombre del equipo el 2026-11-13:** `VisitorMemory` y `VisitorMemoryReview` usan `SoftDeletes` sobre `Model`, la misma decisión F que `api-014`. No se crea ADR nuevo (2026-11-13): la aceptación de Jonathan en nombre del equipo basta (P5). (3) Sin `created_by`/`updated_by`: DBR-012 lo decidió así; el actor queda en `reviewed_by` y `visitor_id` (D-M2). `apps/api/AGENTS.md` pide esas columnas cuando el modelo lo requiera; la excepción se registra en el PR. (4) Ninguna acción de esta spec borra filas físicamente. Los archivos sí se borran (no son datos clínicos ni financieros) y el borrado queda auditado (CA-19, CA-29, CA-32) |
+| V. Una sola fuente de verdad para los datos | **Excepción aceptada (D-M1)** | (1) DBR-012 aplicada en `arca_pruebas` y migración existente: sin cambios de esquema en este plan. (2) La Constitución V pide que los modelos extiendan `BaseModel`; no existe `BaseModel` en `apps/api/src`. **Excepción (D-M1), aceptada por el responsable de backend en nombre del equipo:** `VisitorMemory` y `VisitorMemoryReview` usan `SoftDeletes` sobre `Model`, la misma decisión F que `api-014`. No se crea ADR nuevo: la aceptación del responsable de backend en nombre del equipo basta (P5). (3) Sin `created_by`/`updated_by`: DBR-012 lo decidió así; el actor queda en `reviewed_by` y `visitor_id` (D-M2). `apps/api/AGENTS.md` pide esas columnas cuando el modelo lo requiera; la excepción se registra en el PR. (4) Ninguna acción de esta spec borra filas físicamente. Los archivos sí se borran (no son datos clínicos ni financieros) y el borrado queda auditado (CA-19, CA-29, CA-32) |
 | VI. Código en inglés, personas en español | Sí | Clases, rutas, columnas, permisos y configuración en inglés. Mensajes de validación, respuestas y textos de Activitylog en español. Los literales de la spec (CA-02, CA-04, CA-13, CA-24) se usan tal cual |
 
-Ninguna excepción se implementa sin acuerdo. Las excepciones de la fila V quedan aceptadas el 2026-11-13 (D-M1, y la de imágenes de momentos solo para pruebas).
+Ninguna excepción se implementa sin acuerdo. Las excepciones de la fila V quedan aceptadas (D-M1, y la de imágenes de momentos solo para pruebas).
 
 ## Riesgos y decisiones
 
-### Decisiones del plan (aprobadas el 2026-11-13)
+### Decisiones del plan
 
-Preguntas referenciadas por el plan sin lista propia, resueltas el 2026-11-13 con la propuesta citada, aceptada por Jonathan (la Q2 incluida):
+Preguntas referenciadas por el plan sin lista propia, resueltas con la propuesta citada, aceptada por el responsable de backend (la Q2 incluida):
 
-- **Q2 (valor por defecto de `MEMORIES_TERMS_VERSION`): resuelta (2026-11-13, Jonathan).** Valor por defecto `v1`, configurable por `.env`; se cambia cuando el zoológico publique otra versión de términos. Reflejado en T-05, T-20 y T-28.
-- **Q3 (forma del 200 del reenvío y opinión ausente):** resuelta (2026-11-13, Jonathan): se adopta la recomendación. Misma forma que el 201; si no se envía `opinion`, se conserva la guardada (D-M12).
-- **Q4 (paginación de la revisión):** resuelta (2026-11-13, Jonathan): se adopta D-M11 (`page` y `limit`, 10 por defecto, máximo 50).
-- **Q5 (nombres de campos del envío):** resuelta (2026-11-13, Jonathan): se adopta D-M9 (`image`, `opinion` y `consent`).
-- **Q8 (log de auditoría del visitante):** resuelta (2026-11-13, Jonathan): se adopta D-M10 (log `visitor-memories`).
+- **Q2 (valor por defecto de `MEMORIES_TERMS_VERSION`): resuelta (, el responsable de backend).** Valor por defecto `v1`, configurable por `.env`; se cambia cuando el zoológico publique otra versión de términos. Reflejado en T-05, T-20 y T-28.
+- **Q3 (forma del 200 del reenvío y opinión ausente):** resuelta (, el responsable de backend): se adopta la recomendación. Misma forma que el 201; si no se envía `opinion`, se conserva la guardada (D-M12).
+- **Q4 (paginación de la revisión):** resuelta (, el responsable de backend): se adopta D-M11 (`page` y `limit`, 10 por defecto, máximo 50).
+- **Q5 (nombres de campos del envío):** resuelta (, el responsable de backend): se adopta D-M9 (`image`, `opinion` y `consent`).
+- **Q8 (log de auditoría del visitante):** resuelta (, el responsable de backend): se adopta D-M10 (log `visitor-memories`).
 
-- **D-M1 Excepción de la Constitución V (`BaseModel`).** SoftDeletes sobre `Model`, sin crear `BaseModel`. La decisión del usuario fue no crearlo; hay que registrarla como excepción con el mismo alcance que `api-014` (decisión F). Aceptada por Jonathan, en nombre del equipo, el 2026-11-13 (P5).
+- **D-M1 Excepción de la Constitución V (`BaseModel`).** SoftDeletes sobre `Model`, sin crear `BaseModel`. La decisión del usuario fue no crearlo; hay que registrarla como excepción con el mismo alcance que `api-014` (decisión F). Aceptada por el responsable de backend, en nombre del equipo, (P5).
 - **D-M2 Sin `created_by`/`updated_by`.** DBR-012 lo decidió. El actor de la revisión queda en `reviewed_by` y en `visitor_memory_reviews`; el creador es `visitor_id`. Excepción registrada en el PR.
-- **D-M3 Mapeo de fases.** Aprobado el 2026-11-13 tal como se propuso (sección «Fases y mapeo CA→fase»).
-- **D-M4 Configuración en `config/memories.php`.** `publication_days` (`MEMORIES_PUBLICATION_DAYS`, por defecto 7) y `terms_version` (`MEMORIES_TERMS_VERSION`). Las Actions no leen `env()`. Valor por defecto de `terms_version`: `v1` (Q2, resuelta el 2026-11-13).
+- **D-M3 Mapeo de fases.** Aprobado tal como se propuso (sección «Fases y mapeo CA→fase»).
+- **D-M4 Configuración en `config/memories.php`.** `publication_days` (`MEMORIES_PUBLICATION_DAYS`, por defecto 7) y `terms_version` (`MEMORIES_TERMS_VERSION`). Las Actions no leen `env`. Valor por defecto de `terms_version`: `v1`.
 - **D-M5 Disco por configuración.** El nombre del disco privado sale de la clave que defina `api-013`. Ninguna Action escribe un nombre de disco literal (`api-013` CA-02).
 - **D-M6 Orden del envío.** Bloqueo de la fila del visitante, comprobaciones (CA-24, CA-23), escritura del archivo dentro de la transacción, inserción, commit; si falla, se borra el archivo nuevo. Así un 422 por límite no deja archivo (CA-23, CA-24).
 - **D-M7 Transición condicional en la apertura.** `UPDATE … WHERE status = 'submitted'`. Gana una sola transición; la segunda lee el estado actual (CA-10, RN-12).
 - **D-M8 Hash y retiro de metadatos fuera de la transacción.** La transacción solo escribe un archivo.
-- **D-M9 Nombres de campos del envío.** `image`, `opinion` y `consent`, iguales a las claves de error de la spec. Resuelta (Q5, 2026-11-13): se adopta la propuesta.
+- **D-M9 Nombres de campos del envío.** `image`, `opinion` y `consent`, iguales a las claves de error de la spec. Resuelta: se adopta la propuesta.
 - **D-M10 Auditoría.** Staff: log `admin` con `LogAdminActivityAction`. Visitante: log `visitor-memories` (Q8 resuelta: se adopta). El envío no se registra (la spec no lo pide; no se añade alcance).
 - **D-M11 Paginación de la revisión.** Parámetros `page` y `limit` (10 por defecto, máximo 50), como `api-011` y `api-012`. La spec no nombra el parámetro (Q4 resuelta: se adopta).
 - **D-M12 Opinión ausente en el reenvío.** Propuesta: si no se envía `opinion`, se conserva la guardada. La spec no lo dice (Q3 resuelta: se adopta).
@@ -328,7 +330,7 @@ Preguntas referenciadas por el plan sin lista propia, resueltas el 2026-11-13 co
 - **R12 Texto de la casilla.** RN-08 y RN-23 son de referencia hasta la aprobación del zoológico (Pregunta 6 de la spec). No se publican en producción sin ese texto.
 - **R13 Divergencias de documentos (no se corrigen aquí).**
   1. `api-010` CA-11 cita «`api-013` CA-12» para `published_image_path`. La referencia correcta es `api-013` CA-11 (aceptar). Corregir en la spec en otro cambio.
-  2. `DBR-012` describe `MEMORIES_PUBLICATION_DAYS` como «90 propuesto». La decisión vigente es 7 (2026-11-12). Corregir en la DBR (BD).
+  2. `DBR-012` describe `MEMORIES_PUBLICATION_DAYS` como «90 propuesto». La decisión vigente es 7. Corregir en la DBR (BD).
   3. La guía `apps/api/docs/momentos-contrato-para-mobile.md` tiene ya marcadas sus divergencias D1 a D12 (ver su sección 7).
 - **R14 Acoplamiento con `api-008`.** Se reutiliza `StripImageMetadataAction` desde `Actions/Admin/Content/`. Si `api-008` lo mueve, este plan se ajusta; no se cambia `api-008` desde aquí.
 - **R15 Sin límite de tasa por IP o dispositivo.** La spec no lo define (riesgo de abuso señalado en la spec). Los límites por cuenta (una abierta, una cada 7 días) son los únicos. No se añade límite de tasa.
@@ -336,8 +338,8 @@ Preguntas referenciadas por el plan sin lista propia, resueltas el 2026-11-13 co
 
 ### ADR
 
-- ADR requerido para la Fase 1 y la Fase 2: ninguno nuevo. Riesgos de ADR 0026 y ADR 0027 aceptados (2026-11-12).
-- Excepción de la Constitución V (D-M1): aceptada por Jonathan, en nombre del equipo, el 2026-11-13. No se crea ADR nuevo: la aceptación de Jonathan en nombre del equipo basta, igual que en `api-014`.
+- ADR requerido para la Fase 1 y la Fase 2: ninguno nuevo. Riesgos de ADR 0026 y ADR 0027 aceptados.
+- Excepción de la Constitución V (D-M1): aceptada por el responsable de backend, en nombre del equipo,. No se crea ADR nuevo: la aceptación del responsable de backend en nombre del equipo basta, igual que en `api-014`.
 - Ningún ADR autoriza almacenamiento externo; no se propone.
 
 ### Alternativas consideradas
@@ -369,14 +371,14 @@ Fase 1 y Fase 2 pueden aprobarse y entregarse por separado. Fase 2 no depende de
 
 | Rol | Quién | Estado |
 |---|---|---|
-| Responsable funcional de la spec | Jonathan (aprobación de la spec, 2026-11-12) | Aprobada |
-| Responsable técnico del plan | Jonathan (responsable de backend) | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
-| Equipo (solución técnica y Constitution Check) | Equipo | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 (P4; P5 aceptada como D-M1) |
-| Responsable de BD (DBR-012 aplicada en `arca_pruebas`) | Víctor Adrián | Cumplida (P1). No hay cambios de esquema en este plan |
-| Dependencia `api-013` (disco `media`) | Jonathan (responsable de `api-013`) | Parcial: plan y tasks aprobados el 2026-11-13; disco sin configurar (P2) |
-| Dependencia `api-014` (seeder compartido, P3, y excepción V, P5) | Responsable de `api-014` | Cumplida (2026-11-13): el seeder lo modifica `api-014` T-07; excepción V aceptada como D-M1 |
-| Dependencia `api-012` (lectura pública) | Jonathan | Cumplida el 2026-11-13 (P8, plan y tasks aprobados); no bloquea Fase 1 |
-| Enmienda `api-004` y `mobile-004` (CA-32) | Aksel, tras avisar a sus responsables | No iniciada (P9) |
-| Mapeo de fases | Usuario (confirma) | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
+| Responsable funcional de la spec | el responsable de backend | Aprobada |
+| Responsable técnico del plan | Backend | Aprobado: el responsable de backend, responsable de backend, en nombre del equipo |
+| Equipo (solución técnica y Constitution Check) | Equipo | Aprobado: el responsable de backend, responsable de backend, en nombre del equipo (P4; P5 aceptada como D-M1) |
+| Responsable de BD (DBR-012 aplicada en `arca_pruebas`) | Responsable de BD | Cumplida (P1). No hay cambios de esquema en este plan |
+| Dependencia `api-013` (disco `media`) | el responsable de backend (responsable de `api-013`) | Parcial: plan y tasks aprobados; disco sin configurar (P2) |
+| Dependencia `api-014` (seeder compartido, P3, y excepción V, P5) | Responsable de `api-014` | Cumplida: el seeder lo modifica `api-014` T-07; excepción V aceptada como D-M1 |
+| Dependencia `api-012` (lectura pública) | el responsable de backend | Cumplida (P8, plan y tasks aprobados); no bloquea Fase 1 |
+| Enmienda `api-004` y `mobile-004` (CA-32) | el solicitante original, tras avisar a sus responsables | No iniciada (P9) |
+| Mapeo de fases | Usuario (confirma) | Aprobado: el responsable de backend, responsable de backend, en nombre del equipo |
 
-Evidencias requeridas al cerrar el plan: salida de `php artisan migrate:status` (solo lectura), enlace a la aprobación de `api-013`, salida de `php -m` con `gd`, enlace al PR con spec, plan y tasks, y la decisión sobre D-M1 (tomada el 2026-11-13).
+Evidencias requeridas al cerrar el plan: salida de `php artisan migrate:status` (solo lectura), enlace a la aprobación de `api-013`, salida de `php -m` con `gd`, enlace al PR con spec, plan y tasks, y la decisión sobre D-M1.

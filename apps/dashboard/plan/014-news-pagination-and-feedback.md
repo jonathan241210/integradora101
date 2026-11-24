@@ -2,6 +2,8 @@
 
 - Spec: `apps/dashboard/specs/014-news-pagination-and-feedback.md`.
 - Estado del plan: aprobado por la persona solicitante en la conversación.
+- Solicitada: 2026-11-19
+- Aprobada: 2026-11-19
 
 ## Diseño
 

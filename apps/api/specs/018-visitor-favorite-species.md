@@ -2,12 +2,13 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña de la lista, la visibilidad y el borrado con la cuenta); `mobile` (corazón, inicio y copia local, spec `mobile-014`); `packages/api-client` (métodos y tipos, sin lógica de negocio).
-- Estado: En progreso
-- Solicitante / responsable funcional: Aksel
-- Aprobación funcional: Aksel, 2026-11-14 (alcance, CA y RN)
-- Conformidad del equipo: Aksel, 2026-11-14
-- Dependencias: `api-004` (sesión y borrado físico de la cuenta), `api-015` (especie visible: `is_published = 1` y sin `deleted_at`). DBR-018 está Aprobada y Lista para backend (Aksel, 2026-11-14). El plan y las tasks están aprobados (Aksel, 2026-11-16). Aksel confirmó el 2026-11-20 la verificación y el pull (T-17).
-- El plan y las tasks están aprobados (Aksel, 2026-11-16). La verificación y el pull quedaron confirmados el 2026-11-20. Esta nota no cambia el estado a Implementada: la definición de hecho de la spec sigue siendo la que cierra ese paso.
+- Estado: Implementada
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Aprobación funcional: Equipo de producto móvil (alcance, CA y RN)
+- Conformidad del equipo: Equipo de producto móvil
+- Dependencias: `api-004` (sesión y borrado físico de la cuenta), `api-015` (especie visible: `is_published = 1` y sin `deleted_at`). DBR-018 está Aprobada y Lista para backend. El plan y las tasks están aprobados. Equipo de producto móvil confirmó la verificación y el pull (T-17).
+- El plan y las tasks están aprobados. La verificación y el pull quedaron confirmados. Esta nota no cambia el estado a Implementada: la definición de hecho de la spec sigue siendo la que cierra ese paso.
 
 ## Problema y contexto
 
@@ -30,7 +31,7 @@ Esta spec pasa la lista a la cuenta. El teléfono puede guardar una copia para m
 - Lista pública o visible para otra cuenta.
 - Correo o push al marcar.
 - Reutilizar `visitor_collections`.
-- El texto del plan y de las tasks no vive en esta spec. El plan y las tasks están aprobados (Aksel, 2026-11-16). El código está en curso.
+- El texto del plan y de las tasks no vive en esta spec. El plan y las tasks están aprobados. El código está en curso.
 
 ## Actores y permisos
 
@@ -75,7 +76,7 @@ Esta spec pasa la lista a la cuenta. El teléfono puede guardar una copia para m
 - Se guarda la pareja cuenta–especie y `created_at`. No se guarda el nombre del animal ni una nota.
 - La lista no se expone a otras cuentas ni al portal.
 - No son datos clínicos ni financieros.
-- Sin SoftDeletes y sin `BaseModel`. Es una preferencia de la cuenta, igual que el borrado físico de `api-004`. BD (Victor Adrian) y backend (Aksel) aceptaron esa excepción en DBR-018 el 2026-11-14.
+- Sin SoftDeletes y sin `BaseModel`. Es una preferencia de la cuenta, igual que el borrado físico de `api-004`. BD (Responsable de BD Adrian) y backend (Equipo de producto móvil) aceptaron esa excepción en DBR-018.
 - Requiere DBR: sí. `docs/database/requests/DBR-018-visitor-favorite-species.md` (Aprobada y Lista para backend). Esta spec no incluye SQL ejecutable.
 
 ## Flujos y errores
@@ -87,16 +88,16 @@ Esta spec pasa la lista a la cuenta. El teléfono puede guardar una copia para m
 
 ## Dependencias, riesgos y preguntas
 
-- Dependencias: `api-004`, `api-015`, DBR-018. No hay paquete nuevo ni ADR nuevo. El teléfono guarda la última respuesta para mostrarla sin red (`mobile-014`). El cache de catálogo del ADR 0014 se queda. El plan y las tasks están aprobados. Aksel confirmó la verificación y el pull el 2026-11-20.
+- Dependencias: `api-004`, `api-015`, DBR-018. No hay paquete nuevo ni ADR nuevo. El teléfono guarda la última respuesta para mostrarla sin red (`mobile-014`). El cache de catálogo del ADR 0014 se queda. El plan y las tasks están aprobados. Equipo de producto móvil confirmó la verificación y el pull.
 - Riesgos: una especie despublicada desaparece del GET y el corazón deja de verla, aunque la fila siga. Volver a publicarla la muestra otra vez.
-- Preguntas pendientes: ninguna. BD (Victor Adrian) y backend (Aksel) aceptaron el 2026-11-14 la tabla sin SoftDeletes en DBR-018. El plan y las tasks están aprobados (Aksel, 2026-11-16). La verificación y el pull quedaron confirmados el 2026-11-20.
+- Decisiones: ninguna pendiente. BD (Responsable de BD Adrian) y backend (Equipo de producto móvil) aceptaron la tabla sin SoftDeletes en DBR-018. El plan y las tasks están aprobados. La verificación y el pull quedaron confirmados.
 
 ## Revisión
 
-- Aprobación funcional: Aksel, 2026-11-14. Alcance, CA y RN.
+- Aprobación funcional: Equipo de producto móvil. Alcance, CA y RN.
 - Conformidad del equipo, antes de pasar el estado a Aprobada:
 
 | Rol | Nombre | Fecha | Resultado |
 |---|---|---|---|
-| Equipo | Aksel | 2026-11-14 | Aprobado |
+| Equipo | Equipo de producto móvil | — | Aprobado |
 - Evidencia/enlaces: `apps/mobile/specs/014-visitor-favorite-species.md`, `docs/database/requests/DBR-018-visitor-favorite-species.md`, `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md` (CA-16), `apps/api/specs/015-public-species-read.md`, `apps/api/specs/004-visitor-authentication.md`, `docs/adr/0014-mobile-offline-cache-and-connectivity.md`.

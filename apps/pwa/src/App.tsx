@@ -5,10 +5,11 @@ import { getStaffDisplayName, getStaffUserScope, useStaffSession } from '@/viewm
 import { AppShell } from '@/views/AppShell';
 import { LoginView } from '@/views/LoginView';
 import { LoadingScreen } from '@/views/Spinner';
+import { LogoutConfirmDialog } from '@/views/LogoutConfirmDialog';
 import { ensureBootstrap, notifyPendingSummary, startSyncListeners } from '@/offline/sync-manager';
 
 function App() {
-  const { session, error, retryAfterSeconds, busy, login, logout, profile, expireSession } = useStaffSession();
+  const { session, error, retryAfterSeconds, busy, login, logout, pendingLogout, confirmLogout, cancelLogout, profile, expireSession } = useStaffSession();
 
   useEffect(() => {
     onVeterinarianUnauthorized(expireSession);
@@ -35,6 +36,9 @@ function App() {
       error={error}
       busy={busy}
       logout={logout}
+      pendingLogout={pendingLogout}
+      confirmLogout={confirmLogout}
+      cancelLogout={cancelLogout}
       mvzName={getStaffDisplayName(profile)}
       userScope={getStaffUserScope(profile)}
       roles={profile?.roles ?? []}
@@ -46,6 +50,9 @@ function StaffWorkspace({
   error,
   busy,
   logout,
+  pendingLogout,
+  confirmLogout,
+  cancelLogout,
   mvzName,
   userScope,
   roles,
@@ -53,6 +60,9 @@ function StaffWorkspace({
   error: string;
   busy: boolean;
   logout: () => Promise<void>;
+  pendingLogout: number | null;
+  confirmLogout: () => Promise<void>;
+  cancelLogout: () => void;
   mvzName: string;
   userScope: string;
   roles: string[];
@@ -68,6 +78,7 @@ function StaffWorkspace({
   }, [userScope]);
 
   return (
+    <>
     <AppShell
       activeSection={activeSection}
       sessionError={error}
@@ -78,6 +89,8 @@ function StaffWorkspace({
       onLogout={logout}
       onNavigate={setActiveSection}
     />
+    <LogoutConfirmDialog pending={pendingLogout} busy={busy} onConfirm={confirmLogout} onCancel={cancelLogout} />
+    </>
   );
 }
 

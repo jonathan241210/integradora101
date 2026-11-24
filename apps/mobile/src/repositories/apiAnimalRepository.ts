@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl } from '../config/runtime';
 import { createHttpClient, type HttpClient } from '@arca/api-client';
 import { Animal } from '../models';
 import { AnimalRepository } from './index';
@@ -89,7 +90,7 @@ export class ApiAnimalRepository implements AnimalRepository {
   ) {
     this.defaultTtl = customTtl;
     this.storage = customStorage;
-    this.apiBaseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8000/api/v1';
+    this.apiBaseUrl = resolveApiBaseUrl();
     this.httpClient = customClient ?? createHttpClient({ baseUrl: this.apiBaseUrl });
   }
 

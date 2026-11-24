@@ -1,8 +1,10 @@
 # Plan técnico · 003 · staff-login
 
 - Spec: `apps/pwa/specs/003-staff-login.md`
-- Estado de spec: Aprobada
-- Aprobación técnica: solicitante, 2026-11-04, en esta conversación.
+- Estado de spec: Implementada
+- Solicitada: 2026-11-04
+- Aprobada: 2026-11-04
+- Aprobación técnica: Aprobada (solicitante, en la conversación de aprobación).
 
 ## Diseño y cambios por área
 
@@ -46,10 +48,10 @@ La PWA consumirá el cliente HTTP y el módulo `auth` de `@arca/api-client` con 
 
 Revisión técnica del plan, checklist con trazabilidad, configuración del cliente y del proxy, hook de sesión, verificación automatizada y recorrido manual. No se requiere un ADR nuevo.
 
-## Nota · Revisión 2026-11-21: contador de bloqueo
+## Nota · Revisión: contador de bloqueo
 
 `viewmodels/countdown.ts` (utilidad pura, réplica de la del dashboard; no se mueve a `packages/`), `viewmodels/useCountdown.ts` (ViewModel) y `components/LockoutNotice.tsx` (View con tokens de `@arca/ui`). `signInStaff` devuelve `retryAfterSeconds` ante un 429 y `LoginView` deshabilita el botón mientras corre. Sin dependencias nuevas. Pruebas: `src/tests/login-lockout-countdown.test.tsx` (CA-04 a CA-08, entorno node con `renderToStaticMarkup` y reloj simulado).
 
-## Nota 2026-11-21 (dashboard-020 rev. (d)): contador movido a `@arca/ui`
+## Nota (dashboard-020 rev. (d)): contador movido a `@arca/ui`
 
 Se eliminan `viewmodels/countdown.ts`, `viewmodels/useCountdown.ts` y `components/LockoutNotice.tsx`; `LoginView` y `useStaffSession` importan de `@arca/ui` y pasan `alertClassName="login-error"`.

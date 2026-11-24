@@ -3,6 +3,14 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { ScreenContainer, AppText, BackButton, Card, Chip, Icon, ProgressBar, LoadingView } from '../components/ui';
 import { colors, radius, spacing } from '../theme/tokens';
 import { Mission } from '../models';
+import { VisitorDataNotice } from '../components/ui/VisitorDataGate';
+
+export interface MissionsAccess {
+  status: 'guest' | 'error';
+  error?: string | null;
+  onLogin: () => void;
+  onRetry: () => void;
+}
 
 interface GameScreenProps {
   missions: Mission[];
@@ -13,6 +21,8 @@ interface GameScreenProps {
   onAchievementsPress?: () => void;
   loading?: boolean;
   embedded?: boolean;
+  /** Sin sesión o con error: reemplaza la lista de misiones por el aviso correspondiente. */
+  access?: MissionsAccess;
 }
 
 type MissionFilter = 'inProgress' | 'notStarted';
@@ -47,7 +57,7 @@ function MissionCard({ mission, done = false, onPress }: { mission: Mission; don
   );
 }
 
-export function GameScreen({ missions, pendingScans = [], onBackPress, onMissionPress, onRetryPress, onAchievementsPress, loading = false, embedded = false }: GameScreenProps) {
+export function GameScreen({ missions, pendingScans = [], onBackPress, onMissionPress, onRetryPress, onAchievementsPress, loading = false, embedded = false, access }: GameScreenProps) {
   const [filter, setFilter] = useState<MissionFilter | null>(null);
   const active = missions.filter((mission) => !isComplete(mission));
   const completed = missions.filter(isComplete);
@@ -59,11 +69,18 @@ export function GameScreen({ missions, pendingScans = [], onBackPress, onMission
       <View testID={embedded ? 'missions-intro' : undefined} style={[styles.header, embedded ? styles.headerEmbedded : null]}>
         {embedded ? null : <BackButton onPress={onBackPress} />}
         {embedded ? null : <AppText variant="title">Aventura en el Zoo</AppText>}
-        {loading ? null : (
+        {loading || access ? null : (
           <AppText variant="small" color="textMuted">Completa misiones y acumula puntos de exploración.</AppText>
         )}
       </View>
-      {loading ? (
+      {access ? (
+        <VisitorDataNotice
+          status={access.status}
+          error={access.error}
+          onLogin={access.onLogin}
+          onRetry={access.onRetry}
+        />
+      ) : loading ? (
         <View style={styles.loadingFill}>
           <LoadingView message="Cargando misiones…" />
         </View>

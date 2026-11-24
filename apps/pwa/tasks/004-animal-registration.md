@@ -1,13 +1,15 @@
 # Tareas · 004 · animal-registration (alineación DBR-014)
 
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-13
 - Spec: `apps/pwa/specs/004-animal-registration.md`
 - Plan: `apps/pwa/plan/004-animal-registration.md`
 
-> Precondiciones satisfechas para implementar: spec aprobada (2026-11-13), decisiones 1A/2A/3/4 cerradas y DBR-014 “Lista para backend” (aplicada en `arca_pruebas`, evidencia detallada pendiente de adjuntar). T-01 a T-08 del alcance previo quedan completados; las tareas siguientes cubren la alineación.
+> Precondiciones satisfechas para implementar: spec aprobada, decisiones 1A/2A/3/4 cerradas y DBR-014 “Lista para backend” (aplicada en `arca_pruebas`, evidencia detallada pendiente de adjuntar). T-01 a T-08 del alcance previo quedan completados; las tareas siguientes cubren la alineación.
 
 ## Base de datos (responsable de BD)
 
-- [x] **T-11** (DBR-014): DBR aprobada, migración aplicada manualmente en `arca_pruebas` (2026-11-13, Victor Adrian). Pendiente: adjuntar evidencia detallada (`SHOW CREATE TABLE`, backfill/conteos, `tag_number`) y confirmar estado “Lista para backend” en el documento.
+- [x] **T-11** (DBR-014): DBR aprobada, migración aplicada manualmente en `arca_pruebas`. Pendiente: adjuntar evidencia detallada (`SHOW CREATE TABLE`, backfill/conteos, `tag_number`) y confirmar estado “Lista para backend” en el documento.
 
 ## Implementación — API
 

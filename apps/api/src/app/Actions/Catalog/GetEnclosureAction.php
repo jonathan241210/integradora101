@@ -10,8 +10,8 @@ class GetEnclosureAction
     {
         return Enclosure::query()
             ->where('is_active', 1)
-            ->with(['animals.species'])
-            ->withCount('animals')
+            ->with(['animals' => fn ($query) => $query->publiclyVisible(), 'animals.species'])
+            ->withCount(['animals' => fn ($query) => $query->publiclyVisible()])
             ->find($id);
     }
 }

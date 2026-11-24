@@ -1,8 +1,10 @@
 # Plan técnico · 017 · fixed-roles-account-management
 
 - Spec: `apps/dashboard/specs/017-fixed-roles-account-management.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-20)
-- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**.
+- Estado de spec: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Estado del plan: **Aprobado** (aprobación técnica registrada).
 - Responsable técnico (frontend): por identificar en la aprobación técnica.
 - Plan de la API del que depende: `apps/api/plan/023-fixed-roles-and-console-admins.md` (contrato de `users/options`, `managed_by_console`, avisos de consola).
 - DBR relacionada: ninguna (la interfaz no toca esquema).
@@ -27,7 +29,7 @@ Componentes:
    - `pendingActionForFocus` devuelve `null` para cuentas gestionadas desde consola (CA-04, y el foco del buscador global no abre acciones sobre `admin`).
    - Los errores 403 de la API se muestran con `describeApiError` en el formulario o en el diálogo (CA-06); la lista no cambia.
 4. **Vistas (`views/UsersView.tsx`, `sections/UsersSection.tsx`).**
-   - Filas de cuentas `admin`: etiqueta «Gestionada desde la consola del servidor», sin botones de acción (no deshabilitados, decisión 2026-11-20).
+   - Filas de cuentas `admin`: etiqueta «Gestionada desde la consola del servidor», sin botones de acción.
    - Selector de rol del alta y de la edición: opciones de `options.roles` (sin «Administrador de Presidencia»), bloque de solo lectura con las secciones que abre el rol y, si `two_factor_required`, el texto de 2FA sin bloquear el envío (CA-03).
    - Filtro «Todos los roles»: ofrece los roles asignables (decisión de presentación; las cuentas `admin` aparecen en «Todos los roles» y en la lista sin filtro).
    - Diálogos de acción (`dashboard-015` para la confirmación de contraseña) se conservan para cuentas no admin; no se toca su lógica (CA-05).
@@ -106,7 +108,7 @@ Pruebas existentes que cambian: `administration-navigation.test.tsx` (líneas 52
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas; React 19, TS, Vite y `@arca/ui` existentes. Sin servicios de nube. |
-| II. La spec manda | Sí | Spec 017 Aprobada (2026-11-20); plan y tasks con el mismo `017-fixed-roles-account-management`. Tareas sin marcar. |
+| II. La spec manda | Sí | Spec 017 Aprobada; plan y tasks con el mismo `017-fixed-roles-account-management`. Tareas sin marcar. |
 | III. Lógica separada de la interfaz | Sí | Permisos y roles solo en la API; `navigation.ts` y los viewmodels solo presentan; las llamadas pasan por `@arca/api-client` desde hooks (CA-15, verificado por T-10). |
 | IV. Un test por criterio | Sí | Mapeo completo CA-01 a CA-17 con nombres que los citan. CI en verde: **pendiente de evidencia de la sesión principal**. |
 | V. Una sola fuente de verdad para los datos | Sí | El cliente no guarda avisos ni cuentas fuera de la sesión; el estado de «leído» lo guarda la API (`api-023`). |
@@ -116,13 +118,13 @@ Pruebas existentes que cambian: `administration-navigation.test.tsx` (líneas 52
 
 - **Bloqueo de dependencia:** si `api-023` no entrega `managed_by_console` ni `two_factor_required`, CA-03 y CA-04 no se pueden cumplir. Mitigación: T-01 y T-02 usan el tipo nuevo solo tras la fusión de la API; mientras tanto, los datos de prueba lo declaran.
 - **Consumo de `users/options` sin `admin`:** la interfaz cambia en el mismo cambio que la API (cliente y servidor juntos). Si la API se despliega sin el dashboard, el selector sigue funcionando porque lee la lista de la API.
-- **Filtro «Todos los roles»:** no incluye `admin` como opción; las cuentas admin siguen en la lista sin filtro. Decisión de presentación, no de seguridad. Aceptado en la aprobación técnica del 2026-11-20.
+- **Filtro «Todos los roles»:** no incluye `admin` como opción; las cuentas admin siguen en la lista sin filtro. Decisión de presentación, no de seguridad. Aceptado en la aprobación técnica.
 - **Solapamiento con `dashboard-015` (diálogo de contraseña)** y con `dashboard-016`/`dashboard-018` (menú y pendientes): se coordinan en `App.tsx` y `navigation.ts`. El banner se monta sin tocar la cabecera ni el menú.
-- **Búsqueda global:** el foco del buscador a una cuenta `admin` abre el listado sin acciones (CA-04). Decisión Q5 (2026-11-20): las cuentas admin aparecen en la búsqueda sin acciones; esta regla aplica.
+- **Búsqueda global:** el foco del buscador a una cuenta `admin` abre el listado sin acciones (CA-04). Decisión Q5: las cuentas admin aparecen en la búsqueda sin acciones; esta regla aplica.
 - **Accesibilidad:** la verificación de anchos 360–1366 px es manual; no hay Playwright en el repositorio. Se registra como evidencia de la sesión principal.
-- **Alternativas descartadas:** acciones deshabilitadas para cuentas admin (decisión 2026-11-20: sin acciones); mostrar la lista completa de permisos en lugar de las secciones (decisión 2026-11-20); resumir varios avisos en uno (decisión 2026-11-20).
+- **Alternativas descartadas:** acciones deshabilitadas para cuentas admin; mostrar la lista completa de permisos en lugar de las secciones; resumir varios avisos en uno.
 
-## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+## Decisiones (aprobación técnica)
 
 - **Q5 (búsqueda global de `api-023`):** las cuentas `admin` aparecen en los resultados sin acciones, con la etiqueta de gestión desde consola. Spec: CA-04 enmendado. Tarea: T-04.
 - **Filtro «Todos los roles»:** aceptado (opciones asignables, sin `admin`; las cuentas admin siguen en la lista sin filtro).
@@ -131,7 +133,7 @@ Pruebas existentes que cambian: `administration-navigation.test.tsx` (líneas 52
 
 ## Orden y aprobación
 
-1. Aprobado el 2026-11-20 (Q1 a Q7 de `api-023` cerradas).
+1. Aprobado (Q1 a Q7 de `api-023` cerradas).
 2. T-01 (contrato del cliente) tras la fusión del contrato de la API o con datos simulados.
 3. T-02 (navegación y etiquetas), T-03 (selector y secciones), T-04 y T-05 (cuentas), T-06 a T-08 (avisos).
 4. T-09 a T-10 (accesibilidad, estilo y análisis estático), T-11 (cobertura), T-12 (documentación).
@@ -140,11 +142,11 @@ Pruebas existentes que cambian: `administration-navigation.test.tsx` (líneas 52
 Dependencias entre cambios del dashboard: `dashboard-015` (diálogo de contraseña, usado en las acciones de cuentas no admin), `dashboard-019` (formato de fechas de los avisos), `dashboard-016` y `dashboard-018` (navegación y pendientes en `App.tsx`).
 
 Aprobación:
-- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan).
-- Aprobador funcional: Jonathan, spec aprobada el 2026-11-20.
+- Revisión técnica: aprobada (aprobación técnica del plan).
+- Aprobador funcional: responsable funcional (spec aprobada).
 - Evidencias: pendientes de la sesión principal (salida de `vitest`, `tsc`, lint y build del dashboard y del paquete; evidencia manual de anchos). Esta redacción no ejecutó nada y no afirma que pasen.
 
-## Divergencias de implementación (2026-11-20)
+## Divergencias de implementación
 
 - `sectionsForPermissions` devuelve las **etiquetas** de las secciones (presentación), no sus ids.
 - La nota de 2FA (CA-03) solo se muestra en el alta; el bloque de secciones del rol (CA-02) se muestra en alta y edición.
@@ -153,7 +155,7 @@ Aprobación:
 - El cierre del aviso usa un botón «Cerrar aviso: {correo}» por fila. El banner usa `Alert` de `@arca/ui` con `role="status"` (lista) o `role="alert"` (error).
 - Las pruebas son de ViewModel y `renderToStaticMarkup` (el repositorio no tiene DOM de pruebas), igual que el resto del dashboard.
 
-## Revisión 2026-11-21: avisos de consola como emergentes (CA-19 a CA-26)
+## Revisión: avisos de consola como emergentes (CA-19 a CA-26)
 
 - `viewmodels/console-notices.ts`: el estado pasa a `{status, announcement, error}`; funciones puras `planConsoleNotices(notices, now)` (7 días por `created_at`, 3 más recientes y resumen), `consoleNoticesSummaryText` y `markConsoleNoticesRead` (una llamada por aviso, `Promise.allSettled`, sin reintentos). Sin acciones de cierre ni reintento.
 - `viewmodels/useConsoleNotices.ts`: consulta solo con `users.manage`, una vez por inicio de sesión (`[enabled, accountId]`, sin depender de la sección); expone `actions.markRead`.

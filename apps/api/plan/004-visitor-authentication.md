@@ -1,10 +1,12 @@
 # Plan técnico · 004 · visitor-authentication
 
 - Spec: `apps/api/specs/004-visitor-authentication.md`
-- Estado de spec: Implementada (2026-10-21; aprobación funcional de Aksel, 2026-10-20)
-- Estado del plan: Aprobado (Aksel, 2026-10-21)
-- Responsable técnico: Aksel (cuenta visitante)
-- Responsable de BD: Victor Adrian. DBR-001 y DBR-003 ya están en `Lista para backend` y aplicadas en `arca_pruebas`. Este plan no pide migración nueva.
+- Estado de spec: Implementada
+- Solicitada: 2026-10-20
+- Aprobada: 2026-10-20
+- Estado del plan: Aprobado
+- Responsable técnico: Backend (cuenta visitante)
+- Responsable de BD: Responsable de BD (rol). DBR-001 y DBR-003 ya están en `Lista para backend` y aplicadas en `arca_pruebas`. Este plan no pide migración nueva.
 
 ## Diseño de solución
 
@@ -14,7 +16,7 @@ Flujo: aviso de privacidad público → registro 201 sin tokens y código de 6 d
 
 La lógica vive en las Actions de RN-10. Los controladores solo reciben el Form Request, llaman la Action y devuelven un Resource. Este plan no sustituye el repositorio simulado de la app móvil ni crea el módulo visitante de `@arca/api-client`. Ese cambio es el corte siguiente, cuando estos endpoints existan, y no edita `packages/api-client/auth.ts`, `apps/web` ni `apps/dashboard`.
 
-ADR 0011 fue aceptado el 2026-10-21, después de aprobar este plan. El backend no lo necesitaba para estos endpoints: Sanctum ya está en ADR 0001 y el correo sale por el mailer nativo de Laravel. Este plan no instala dependencias. `expo-secure-store` es de la app: el checklist HTTP de `mobile-004` lo aprobó Aksel el 2026-10-21 y la app lo instaló ese día.
+ADR 0011 fue aceptado después de aprobar este plan. El backend no lo necesitaba para estos endpoints: Sanctum ya está en ADR 0001 y el correo sale por el mailer nativo de Laravel. Este plan no instala dependencias. `expo-secure-store` es de la app: el checklist HTTP de `mobile-004` se aprobó en su checklist y la app lo instaló en ese mismo corte.
 
 ## Cambios por área
 
@@ -61,7 +63,7 @@ El prefijo `api/v1` ya lo pone `bootstrap/app.php`. Las rutas nuevas se agrupan 
 
 Campos en inglés. Mensajes `message` en español.
 
-Registro: `email`, `password`, `password_confirmation`, `first_name`, `nickname`, `avatar_code`, `is_adult`, `privacy_notice_version`. Respuesta 201 `{ "message": "Te enviamos un código de 6 dígitos para verificar tu correo." }` y ningún token. `is_adult` debe ser `true`. `privacy_notice_version` debe ser la versión vigente. `avatar_code` debe ser uno de `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`. Correo duplicado: la misma respuesta 201 que un alta nueva, sin crear otra cuenta ni cambiar sus datos, y con un código `registration_notice`. Verificar ese código responde 200 `{ "message": "Ese correo ya está registrado.", "code": "email_already_registered" }` sin tokens. La respuesta genérica de RN-04 aplica a registro, login, reenvío y olvido. Enmienda de Aksel, 2026-11-05.
+Registro: `email`, `password`, `password_confirmation`, `first_name`, `nickname`, `avatar_code`, `is_adult`, `privacy_notice_version`. Respuesta 201 `{ "message": "Te enviamos un código de 6 dígitos para verificar tu correo." }` y ningún token. `is_adult` debe ser `true`. `privacy_notice_version` debe ser la versión vigente. `avatar_code` debe ser uno de `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`. Correo duplicado: la misma respuesta 201 que un alta nueva, sin crear otra cuenta ni cambiar sus datos, y con un código `registration_notice`. Verificar ese código responde 200 `{ "message": "Ese correo ya está registrado.", "code": "email_already_registered" }` sin tokens. La respuesta genérica de RN-04 aplica a registro, login, reenvío y olvido. Enmienda.
 
 Verificación: `email`, `code`. Éxito 200 con el par y el visitante. Código inválido, vencido, consumido o con 5 intentos: 422 «El código no es válido.» sin sesión.
 
@@ -104,9 +106,9 @@ Par de tokens:
 
 ### Actions
 
-- `RegisterVisitorAction`: valida mayoría y versión del aviso, crea `Visitor` sin `email_verified_at`, guarda `adult_confirmed_at` y `privacy_accepted_at`, y pide el código `email_verification`. `last_name` queda nulo: el alta no lo pide. `is_active` queda verdadero. Si el correo ya existe, no escribe la fila y pide `registration_notice`. Enmienda de Aksel, 2026-11-05.
-- `SendVisitorCodeAction`: código de 6 dígitos con `random_int`, guardado solo con `Hash::make`. Vence a los 15 minutos, `attempts` en 0. Invalida el código anterior del mismo propósito. Envía `VisitorAccessCodeMail`. No envía `email_verification` si el correo ya está verificado. `registration_notice` sí se envía a una cuenta ya verificada. El reenvío repite el propósito vigente más reciente entre `email_verification` y `registration_notice`; si la cuenta sigue sin verificar y no hay código vigente, reenvía `email_verification`; si no hay cuenta, no envía nada y la ruta responde 202. Enmienda de Aksel, 2026-11-05.
-- `VerifyVisitorEmailAction`: compara en lectura los códigos vigentes de `email_verification` y `registration_notice`. Si uno coincide, consume solo ese. Si `registration_notice` coincide, responde 200 con el mensaje y `email_already_registered`, sin tokens ni cambios en la cuenta. Si `email_verification` coincide, marca `email_verified_at` y llama a `IssueVisitorTokensAction`. Si ninguno coincide, suma un intento solo al código vigente más reciente de esos dos y, a los 5, lo deja inservible. Enmienda de Aksel, 2026-11-05.
+- `RegisterVisitorAction`: valida mayoría y versión del aviso, crea `Visitor` sin `email_verified_at`, guarda `adult_confirmed_at` y `privacy_accepted_at`, y pide el código `email_verification`. `last_name` queda nulo: el alta no lo pide. `is_active` queda verdadero. Si el correo ya existe, no escribe la fila y pide `registration_notice`. Enmienda.
+- `SendVisitorCodeAction`: código de 6 dígitos con `random_int`, guardado solo con `Hash::make`. Vence a los 15 minutos, `attempts` en 0. Invalida el código anterior del mismo propósito. Envía `VisitorAccessCodeMail`. No envía `email_verification` si el correo ya está verificado. `registration_notice` sí se envía a una cuenta ya verificada. El reenvío repite el propósito vigente más reciente entre `email_verification` y `registration_notice`; si la cuenta sigue sin verificar y no hay código vigente, reenvía `email_verification`; si no hay cuenta, no envía nada y la ruta responde 202. Enmienda.
+- `VerifyVisitorEmailAction`: compara en lectura los códigos vigentes de `email_verification` y `registration_notice`. Si uno coincide, consume solo ese. Si `registration_notice` coincide, responde 200 con el mensaje y `email_already_registered`, sin tokens ni cambios en la cuenta. Si `email_verification` coincide, marca `email_verified_at` y llama a `IssueVisitorTokensAction`. Si ninguno coincide, suma un intento solo al código vigente más reciente de esos dos y, a los 5, lo deja inservible. Enmienda.
 - `IssueVisitorTokensAction`: crea un access token Sanctum con nombre igual al `family_id` (UUID), ability `visitor` y `expires_at` a 15 minutos. El refresh son 64 bytes aleatorios; en `visitor_refresh_tokens` solo se guarda `hash('sha256', $plain)`, con `expires_at` a 30 días. El plano se devuelve una sola vez.
 - `RotateRefreshTokenAction`: ver la sección de concurrencia. La familia es el conjunto de filas con el mismo `family_id` más los access tokens Sanctum cuyo `name` es ese `family_id`.
 - `RevokeVisitorSessionAction`: logout de un dispositivo, revocación del resto al cambiar contraseña, o revocación total al recuperar la contraseña.
@@ -190,8 +192,8 @@ CA-21 lee los archivos `tests/Feature/Visitor` y exige `CA-01` … `CA-21`. La s
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
-| I. Stack mínimo y portable | Sí | Sin dependencia nueva en la API. Sanctum está en ADR 0001. Correo por el mailer de Laravel y `.env`. ADR 0011 está aceptado desde el 2026-10-21. Este plan no instala `expo-secure-store`: es dependencia de la app. MySQL solo por `.env` (ADR 0013). |
-| II. La spec manda | Sí | Spec Implementada el 2026-10-21. Este plan no agrega Google, cuentas de menores, progreso, dashboard ni cambios al login de personal. El cliente móvil se cerró después, en `mobile-004`, sin editar `auth.ts`. |
+| I. Stack mínimo y portable | Sí | Sin dependencia nueva en la API. Sanctum está en ADR 0001. Correo por el mailer de Laravel y `.env`. ADR 0011 está aceptado. Este plan no instala `expo-secure-store`: es dependencia de la app. MySQL solo por `.env` (ADR 0013). |
+| II. La spec manda | Sí | Spec Implementada. Este plan no agrega Google, cuentas de menores, progreso, dashboard ni cambios al login de personal. El cliente móvil se cerró después, en `mobile-004`, sin editar `auth.ts`. |
 | III. Lógica separada de la interfaz | Sí | Actions y controladores delgados. Este corte no pone reglas en la app ni en el paquete cliente. |
 | IV. Un test por criterio | Sí | La tabla de arriba nombra CA-01 a CA-21 en PHPUnit. |
 | V. Una sola fuente de verdad para los datos | Sí, con la excepción ya aprobada | No hay migración nueva. DBR-001 y DBR-003 están en `Lista para backend`. `Visitor` no usa SoftDeletes: RN-08 y DBR-003 lo exigen porque el borrado es físico y no es dato clínico ni financiero. No existe `BaseModel` en la API; `User` tampoco lo extiende. |
@@ -201,7 +203,7 @@ Ninguna brecha queda abierta para el código de este plan. La excepción de Soft
 
 ## Riesgos y decisiones
 
-- ADR requerido/aprobado: ADR 0001 (Sanctum, ya aceptado). ADR 0010 y ADR 0013 (MySQL). ADR 0011 está aceptado desde el 2026-10-21. Este plan no instala dependencias móviles. No hay ADR nuevo en la API porque no hay dependencia nueva.
+- ADR requerido/aprobado: ADR 0001 (Sanctum, ya aceptado). ADR 0010 y ADR 0013 (MySQL). ADR 0011 está aceptado. Este plan no instala dependencias móviles. No hay ADR nuevo en la API porque no hay dependencia nueva.
 - Carrera de dos refresh: la marca de caché de 10 segundos separa al perdedor (CA-07) del reuso posterior (CA-06). Si el cache se reinicia en esa ventana, un segundo uso podría revocar a la ganadora. Aceptado: la ventana es corta y las pruebas cubren ambos casos.
 - `uncompromised()` en `testing` se aísla con `Http::fake`, no con una excepción extra de entorno.
 - Correo sin índice único: validación de aplicación. Una DBR futura puede agregar el índice; no forma parte de este plan.
@@ -210,9 +212,9 @@ Ninguna brecha queda abierta para el código de este plan. La excepción de Soft
 
 ## Orden y aprobación
 
-1. Plan aprobado por Aksel el 2026-10-21.
-2. Checklist `apps/api/tasks/004-visitor-authentication.md` aprobado por Aksel el 2026-10-21.
+1. Plan aprobado.
+2. Checklist `apps/api/tasks/004-visitor-authentication.md` aprobado.
 3. Implementación solo en `apps/api/src`: modelos, Actions, HTTP, middleware de aislamiento, config y pruebas. Después `php artisan test`.
-4. El corte del cliente se cerró en `mobile-004` el 2026-10-21: módulo visitante nuevo en `@arca/api-client` (sin editar `auth.ts`) y `HttpAuthRepository` en `apps/mobile`. Sin `EXPO_PUBLIC_API_URL`, Jest sigue en memoria y no publica un código fijo.
+4. El corte del cliente se cerró en `mobile-004`: módulo visitante nuevo en `@arca/api-client` (sin editar `auth.ts`) y `HttpAuthRepository` en `apps/mobile`. Sin `EXPO_PUBLIC_API_URL`, Jest sigue en memoria y no publica un código fijo.
 
-Aprobador funcional: Aksel. Fecha de este documento: 2026-10-20. Evidencia de esquema: DBR-003 aplicada en `arca_pruebas` con la migración `2026_10_15_000003_visitor_accounts_schema.php`.
+Aprobación funcional: Aprobada. Evidencia de esquema: DBR-003 aplicada en `arca_pruebas` con la migración `2026_10_15_000003_visitor_accounts_schema.php`.

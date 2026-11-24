@@ -2,10 +2,11 @@
 
 - App dueña: `dashboard` (presentación); la lógica de zona es de `api` (`api-025`, dueña).
 - Apps/paquetes afectados: `dashboard` (`src/viewmodels/formatters.ts`, `src/viewmodels/ticket-history.ts`, `src/viewmodels/ticket-report.ts` y las pantallas de panel, reporte e historial); `packages/api-client` (`admin.ts`, `ticket-sales.ts` y sus tipos; `README.md`); `api` (fuente de la zona, `api-025`, sin cambios en esta spec).
-- Estado: Aprobada
-- Solicitante / responsable funcional: Jonathan
+- Estado: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
 - Responsable de BD: no aplica. Sin DBR (solo presentación y cliente HTTP).
-- Aprobación funcional: Jonathan, 2026-11-20 (decisión 5 de `api-025`; la sesión principal aporta la evidencia)
+- Aprobación funcional: Aprobada (decisión 5 de `api-025`; la sesión principal aporta la evidencia)
 - Dependencias de orden: después de `api-025`. La API ya debe informar `timezone` y `period.timezone` con la zona de negocio.
 - Sustituye, cuando se implemente: `dashboard-005` CA-13 y RN-13 (presentación en la zona del dispositivo); la aclaración de `dashboard-005` sobre el `timezone` del historial para filtros; `dashboard-003` RN-11 y CA-19 en lo que se refiere a la zona del dispositivo.
 
@@ -49,7 +50,7 @@ La interfaz no añade permisos. La autorización sigue en la API.
 
 - **CA-01 (fecha de compra en la zona de la API):** Dado un historial cuya respuesta trae `timezone: "America/Mexico_City"` y una compra con `purchased_at` `2026-11-07T05:30:00Z`, cuando se presenta con el navegador configurado en `America/Tijuana`, entonces la fecha y hora se muestran como `06/11/2026 23:30`. Test Vitest con la zona del navegador inyectada.
 - **CA-02 (el navegador no cambia la presentación):** Dado el mismo historial, cuando se presenta con el navegador configurado en `Europe/Madrid` y luego en `America/Mexico_City`, entonces el texto mostrado es idéntico en ambos casos (`06/11/2026 23:30`).
-- **CA-03 (panel y reporte):** Dada una respuesta de panel con `timezone` y una de reporte con `period.timezone` `America/Mexico_City`, cuando se presentan fechas y horas (fecha de compra, periodo e intervalos de días), entonces usan esa zona y el dashboard no recalcula días ni totales. Test Vitest con respuesta fija. *Enmienda técnica 2026-11-20 (D-02): lo mismo para el recibo de venta y los precios vigentes, que informan `timezone` (`api-025` P-04, RN-13).*
+- **CA-03 (panel y reporte):** Dada una respuesta de panel con `timezone` y una de reporte con `period.timezone` `America/Mexico_City`, cuando se presentan fechas y horas (fecha de compra, periodo e intervalos de días), entonces usan esa zona y el dashboard no recalcula días ni totales. Test Vitest con respuesta fija. *Enmienda técnica (D-02): lo mismo para el recibo de venta y los precios vigentes, que informan `timezone` (`api-025` P-04, RN-13).*
 - **CA-04 (sin `timezone` en las peticiones):** Dado un `@arca/api-client` con la sesión activa, cuando el dashboard llama panel, reporte, exportación de reporte, historial (listado) y cancelación de boleto, entonces ninguna URL ni cuerpo contiene `timezone`. Test Vitest en `packages/api-client` o en `apps/dashboard/src/tests`.
 - **CA-05 (exportación sin zona del cliente):** Dada la exportación de reporte (CSV, XLSX o PDF) desde la pantalla, cuando se inicia la descarga, entonces la petición usa solo el periodo y el formato, sin `timezone`; el nombre y el contenido del archivo los decide la API (`api-025` CA-05). Test Vitest de `ticket-report.ts`.
 - **CA-06 (sin lectura de la zona del dispositivo):** Dado el código de `apps/dashboard/src` y `packages/api-client`, cuando se revisa, entonces no hay lectura de `Intl.DateTimeFormat().resolvedOptions().timeZone` ni llamada equivalente para decidir fechas o parámetros. Verificable por revisión de PR y por un test Vitest que comprueba que el cliente no envía zona aunque el entorno la informe.
@@ -64,8 +65,8 @@ La interfaz no añade permisos. La autorización sigue en la API.
 - **RN-03 (sin `timezone` en el cliente):** `@arca/api-client` deja de enviar `timezone` en panel, reporte, exportación, historial y cancelación. Si un llamador pasa `timezone`, el cliente no lo reenvía (la API lo ignora de todos modos, `api-025` RN-04).
 - **RN-04 (formato):** Se mantiene `dd/mm/aaaa HH:mm` para fecha y hora de presentación.
 - **RN-05 (sin configuración de usuario):** La zona no es preferencia del usuario ni se muestra en la interfaz (`dashboard-003` pregunta 4).
-- **RN-06 (precios programados; enmienda técnica 2026-11-20, decisión D-01):** la fecha de «entrada en vigor» se envía a la API sin desfase del navegador; la API la interpreta en `arca.timezone` (`api-025` RN-12, CA-16). `ticket-prices.ts` deja de usar `getTimezoneOffset`. Cierra la brecha de CA-06 para precios.
-- **RN-07 (respaldo en momentos, especies y publicaciones; enmienda técnica 2026-11-20, decisión D-03):** `formatDateTime` mantiene `America/Mexico_City` como zona fija para momentos, especies y publicaciones, porque esas respuestas no informan `timezone`. Divergencia aceptada: si `ARCA_TIMEZONE` cambia, esas vistas no la siguen hasta que informen su zona.
+- **RN-06:** la fecha de «entrada en vigor» se envía a la API sin desfase del navegador; la API la interpreta en `arca.timezone` (`api-025` RN-12, CA-16). `ticket-prices.ts` deja de usar `getTimezoneOffset`. Cierra la brecha de CA-06 para precios.
+- **RN-07 (respaldo en momentos, especies y publicaciones; enmienda técnica, decisión D-03):** `formatDateTime` mantiene `America/Mexico_City` como zona fija para momentos, especies y publicaciones, porque esas respuestas no informan `timezone`. Divergencia aceptada: si `ARCA_TIMEZONE` cambia, esas vistas no la siguen hasta que informen su zona.
 
 ## Datos, privacidad y auditoría
 
@@ -101,10 +102,10 @@ La interfaz no añade permisos. La autorización sigue en la API.
 - **Preguntas pendientes:**
   1. Si una respuesta no trae `timezone` (por ejemplo, si `api-025` pregunta 1 se resuelve en «no»), ¿el dashboard muestra la fecha sin conversión, usa `America/Mexico_City` como respaldo fijo o muestra un error? Esta decisión no está cubierta por las decisiones cerradas.
 
-## Decisiones finales 2026-11-20 (Jonathan)
+## Decisiones finales
 1. Si una respuesta no trae `timezone`, el dashboard presenta las fechas en `America/Mexico_City` como respaldo fijo (nunca la zona del navegador).
 
-## Enmienda técnica 2026-11-20
+## Enmienda técnica
 
 - Decisiones de la aprobación técnica de `apps/dashboard/plan/019-single-business-timezone.md`: D-01 (propuesta A: la API interpreta la hora de precios en `arca.timezone`; RN-06), D-02 (recibo y precios con `timezone` de la API; CA-03 enmendado) y D-03 (respaldo fijo en momentos, especies y publicaciones; RN-07).
 - Ningún CA cambia de número. Los CA de la spec de `api-025` que sirven de base son CA-12, CA-16 y RN-13.

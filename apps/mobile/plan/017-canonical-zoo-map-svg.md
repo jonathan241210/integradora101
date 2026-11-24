@@ -1,8 +1,11 @@
 # Plan técnico · 017 · canonical-zoo-map-svg
 
 - Spec: `apps/mobile/specs/017-canonical-zoo-map-svg.md`
-- Estado de spec: Aprobada
-- Responsable técnico: Por confirmar
+- Estado de spec: Implementada
+- Solicitada: 2026-11-22
+- Aprobada: 2026-11-22
+- Estado del plan: Pendiente de registro de aprobación técnica
+- Responsable técnico: Frontend
 
 ## Diseño de solución
 
@@ -44,6 +47,8 @@ La ruta azul 2D se conserva. `zooPaths.ts` se recalibra manualmente al nuevo vie
 
 ## Mapeo de criterios a pruebas
 
+Nota de cierre: las rutas de prueba de esta tabla son las previstas por el plan. A la fecha de revisión no existen con esos nombres ni hay casos `CA-xx` de 017 en `apps/mobile/__tests__/`; las tareas T-08 a T-11 quedan como fuera de alcance de esta entrega (ver `tasks/017-canonical-zoo-map-svg.md`).
+
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
 | CA-01 SVG canónico 1600x1200 | Render test de `ZooMapSvg` verifica `viewBox="0 0 1600 1200"` y presencia de capas/caminos/recintos; no referencia 1000x1400 | `apps/mobile/__tests__/components/map/ZooMapSvg.test.tsx` |
@@ -62,7 +67,7 @@ La ruta azul 2D se conserva. `zooPaths.ts` se recalibra manualmente al nuevo vie
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | RN-SVG ya aprobado; sin proveedor de mapas externo. Datos por MySQL/API/`.env`. |
-| II. La spec manda | Sí | Spec `017-canonical-zoo-map-svg.md` Aprobada 2026-11-22; plan/tasks con mismo NNN. |
+| II. La spec manda | Sí | Spec `017-canonical-zoo-map-svg.md` aprobada funcionalmente y en estado Implementada; plan/tasks con mismo NNN. |
 | III. Lógica separada de la interfaz | Sí | Transformación/calibración en utils/constants/mappers; ViewModel orquesta; componentes renderizan. |
 | IV. Un test por criterio | Sí | CA-01..CA-10 mapeados a pruebas automatizadas Jest. |
 | V. Una sola fuente de verdad para los datos | Sí | BD/API autoritativa; `map_x/map_y` en DBR-019/008; artefacto SVG-mapeo versionado; no SQL manual. |
@@ -88,4 +93,4 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos. Si algo no 
 6. Actualizar/crear tests CA-01..CA-10 y ejecutar suite mobile.
 7. Registrar evidencia DBR-019 y limitaciones de calibración/dispositivo.
 
-- **Aprobación requerida:** técnica y funcional. Con spec aprobada, este plan queda listo para aprobación técnica antes de `/sdd-tasks` e implementación.
+- **Aprobación:** funcional aprobada (spec). La aprobación técnica de este plan no está registrada en el repositorio; debe registrarse para cerrar el plan.

@@ -2,9 +2,10 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile`; `apps/api` (solo consumo de datos existentes `map_x/map_y` en `enclosures`/`zoo_places`); `docs/database/requests/DBR-019-zoo-places-and-path-nodes.md` (evidencia/carga de datos, sin cambio de esquema previsto)
-- Estado: Aprobada
-- Solicitante / responsable funcional: Víctor Adrián
-- Aprobación funcional: Víctor Adrián (2026-11-22)
+- Estado: Implementada
+- Solicitada: 2026-11-22
+- Aprobada: 2026-11-22
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -93,23 +94,24 @@ Esta spec define la integración del SVG canónico en mobile, el contrato de coo
   - `007-map-location.md` (base 2D), `015-spatial-ar-tour.md` (AR/location), `016-arcore-arkit-anchor-poc.md`.
   - DBR-019 (`zoo_places/path_nodes`, `map_x/map_y`) y DBR-008.
   - ADR 0015 `mobile-svg-map-rendering.md`; ADR 0016 `expo-location-gps-blue-dot.md`.
-  - SVG canónico: `C:\Users\vic22\Downloads\WhatsApp Image 2026-11-04 at 10.07.17 AM-mejorado.svg` (fuente visual aprobada por usuario en conversación; debe copiarse/versionarse en ruta de repo definida en plan).
+  - SVG canónico: fuente visual revisada por el solicitante, versionada en `apps/mobile/src/assets/map/zoo-map-canonical.svg` (la copia de trabajo para RN-SVG está en `apps/mobile/src/data/zooMapCanonicalSvg.ts`).
 - **Riesgos:**
   - Desalineación de `geoTransform`/ruta por cambio de viewBox.
   - Mapeos ambiguos SVG↔BD (tigre2/codorniz/herbívoros/lugares duplicados).
   - `zooPaths.ts` y `SVG_UNIT_TO_METERS` quedan obsoletos con 1600x1200.
   - Render RN-SVG de SVG grande/convertido puede afectar rendimiento.
   - `icons_auto` del SVG mejorado contiene texto/íconos decorativos; si se conserva sin control, duplica marcadores.
-- **Decisiones (2026-11-22, Víctor Adrián):**
-  - SVG canónico versionado en repo: `apps/mobile/src/assets/map/zoo-map-canonical.svg` (o ruta equivalente bajo `apps/mobile/src/assets/map/`, definida en plan); se consume desde componente RN-SVG.
-  - Mapeo `svg_id`<->BD versionado como artefacto JSON/CSV en repo mientras no se requiera cambio de esquema; cualquier columna/tabla nueva requiere DBR aparte.
-  - Los 13 `zoo_places` sin forma SVG se muestran como marcador de datos cuando tengan `map_x/map_y` o GPS calibrado; no bloquean el mapa.
-  - `zooPaths.ts` se recalibra manualmente al viewBox `1600x1200` en esta spec, manteniendo ruta azul 2D; calibración provisional hasta ruta DB/artefacto aprobado.
-  - `ZOO_BOUNDS`/entrada se recalibran de forma provisional documentada para el SVG canónico y se validan antes de cerrar CA-03/CA-08; si existe medición real, se usa.
+## Decisiones
+
+- Se optó por versionar el SVG canónico en `apps/mobile/src/assets/map/zoo-map-canonical.svg` y consumirlo desde el componente RN-SVG, porque es la fuente visual revisada y queda bajo control de versiones.
+- Se optó por versionar el mapeo `svg_id` ↔ BD como artefacto JSON/CSV en el repositorio, porque no hace falta cambio de esquema; cualquier columna o tabla nueva requiere DBR aparte.
+- Se optó por mostrar los 13 `zoo_places` sin forma SVG como marcador de datos cuando tengan `map_x/map_y` o GPS calibrado, porque no deben bloquear el mapa.
+- Se optó por recalibrar manualmente `zooPaths.ts` al viewBox `1600x1200` manteniendo la ruta azul 2D, porque la ruta desde BD (`path_edges`) no está implementada; la calibración queda como provisional.
+- Se optó por recalibrar `ZOO_BOUNDS` y la entrada de forma provisional y documentada, porque no hay medición real en campo; si se obtiene una medición, reemplaza esta calibración.
 
 ## Revisión
 
-- Aprobadores y fecha: Víctor Adrián, aprobación funcional 2026-11-22.
+- Aprobación: Aprobada.
 - Evidencia/enlaces:
   - `apps/mobile/specs/007-map-location.md`
   - `apps/mobile/specs/015-spatial-ar-tour.md`

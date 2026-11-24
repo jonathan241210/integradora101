@@ -1,11 +1,11 @@
 # DBR-004 · visitor-progress
 
-- Estado: Lista para backend
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-10-13
+- Aprobada: 2026-10-15
 - Feature/spec origen: `apps/api/specs/005-visitor-progress.md`
-- Solicitante: Aksel
-- Responsable de BD: Victor Adrian
-- Responsable backend: Por definir
-- Fecha: 2026-10-13
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 - Depende de: DBR-001 (`english-schema-normalization`) y DBR-003 (`visitor-accounts`), que deben aplicarse primero
 
 ## Problema y justificación
@@ -48,7 +48,7 @@ Unicidad: UNIQUE `(visitor_id, species_id)` **en lugar de** `(visitor_id, enclos
 | `enclosure_qr_code_id` | FK `enclosure_qr_codes.id` | NULL, ON DELETE SET NULL |
 | `scanned_at` | timestamp | declarado por el cliente |
 | `received_at` | timestamp | hora del servidor |
-| `result` | varchar(30) | `discovered` \| `already_discovered` \| `empty_enclosure` \| `invalid_code` \| `expired_scan` \| `inactive_code`. `empty_enclosure` (2026-11-14, `api-005` CA-14) cabe en el varchar ya creado; no hay migración nueva. |
+| `result` | varchar(30) | `discovered` \| `already_discovered` \| `empty_enclosure` \| `invalid_code` \| `expired_scan` \| `inactive_code`. `empty_enclosure` (`api-005` CA-14) cabe en el varchar ya creado; no hay migración nueva. |
 
 Unicidad: UNIQUE `(visitor_id, client_scan_id)`.
 
@@ -200,15 +200,15 @@ No aplica.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Victor Adrian | 2026-10-15 | Aprobada |
-| Solicitante / Backend | Aksel / Jonathan | 2026-10-15 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Solicitante / Backend | Aprobada | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | aplicada | 2026-10-15 | Migración 2026_10_15_000004 ejecutada y verificada |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_10_15_000004` ejecutada y verificada |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

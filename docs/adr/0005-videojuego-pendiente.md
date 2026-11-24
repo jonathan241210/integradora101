@@ -1,8 +1,9 @@
 # 0005 · Tecnología del videojuego Zoopedia
 
-- Estado: Abierto
-- Fecha: 2026-10-03
+- Estado: Rechazado — fuera de alcance de esta entrega
+- Solicitada: 2026-10-03
 - Spec relacionada: Por definir; no existe carpeta de juego
+- Justificación: no hay motor, contenido ni requisitos verificables definidos. La pestaña de juego de `apps/mobile` es un prototipo visual sin motor (spec mobile-002); no implementa esta decisión.
 
 ## Contexto
 Zoopedia es la experiencia educativa de juego móvil de baja poligonización que permite desbloquear especies y hábitats durante visitas físicas. Aún no están definidos motor, contenido, dispositivos objetivo ni relación técnica con la app visitante.

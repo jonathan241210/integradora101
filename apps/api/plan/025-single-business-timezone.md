@@ -1,8 +1,10 @@
 # Plan técnico · 025 · single-business-timezone
 
-- Spec: `apps/api/specs/025-single-business-timezone.md` (Estado: Aprobada, Jonathan, 2026-11-20; decisiones finales 1 a 4 incluidas)
-- Estado de spec: Aprobada
-- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**. Preguntas P-01 a P-06 y D-03 cerradas en «Decisiones 2026-11-20».
+- Spec: `apps/api/specs/025-single-business-timezone.md` (Estado: Aprobada, el responsable funcional; decisiones finales 1 a 4 incluidas)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Estado del plan: **Aprobado**. Preguntas P-01 a P-06 y D-03 cerradas en «Decisiones».
 - Responsable técnico: por identificar en la aprobación técnica
 - Spec dashboard relacionada: `apps/dashboard/specs/019-single-business-timezone.md` (consumidora; se implementa después de esta API)
 - DBR relacionada: ninguna. Es cambio de configuración (`.env` y opciones de conexión), no de esquema (spec, «Datos, privacidad y auditoría»).
@@ -31,7 +33,7 @@ Componentes:
 - **`App\Actions\Admin\Reports\ResolveReportPeriodAction`, `BuildDashboardSummaryAction`, `ListTicketHistoryAction`:** pierden el parámetro de zona del cliente y leen `BusinessTimezone`. `ExportTicketReportAction` no cambia su lógica; su bitácora `report-exported` sigue registrando `timezone` con la zona de negocio.
 - **Resources y writers (CSV, XLSX, PDF):** sin cambio de código. `ReportPeriod::timezone()` ya devuelve la zona resuelta, así que informan la zona de negocio automáticamente.
 - **`config/database.php`, conexión `mysql`:** añade `'timezone' => env('DB_TIMEZONE', '+00:00')`. Laravel aplica esa opción como zona de sesión al conectar. Es configuración de conexión y no crea ni cambia tablas (RN-06).
-- **Conexión `mysql2` (`settings_colores`):** retirada por P-01 (2026-11-20): no existe en el código. En el código de la API no existe tal conexión.
+- **Conexión `mysql2` (`settings_colores`):** retirada por P-01: no existe en el código. En el código de la API no existe tal conexión.
 
 ## Cambios por área
 
@@ -108,7 +110,7 @@ Pruebas sin CA (cubren decisiones de la spec): `BusinessTimezoneTest` (unitaria,
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas ni ADR nuevo. Zona y zona de sesión solo por `.env` (`ARCA_TIMEZONE`, `DB_TIMEZONE`). Sin SDK de nube. Funciona igual en Aiven (ADR 0013) y MySQL local. |
-| II. La spec manda | Sí | Spec 025 Aprobada (2026-11-20) con decisiones finales. Plan y tasks con el mismo `025-single-business-timezone`. Plan pendiente de aprobación técnica: no se implementa todavía. |
+| II. La spec manda | Sí | Spec 025 Aprobada con decisiones finales. Plan y tasks con el mismo `025-single-business-timezone`. Plan pendiente de aprobación técnica: no se implementa todavía. |
 | III. Lógica separada de la interfaz | Sí | Toda la regla de día y zona está en `BusinessTimezone`, Actions y `PublicCalendar`. Controladores solo delegan. El dashboard no calcula días (`dashboard-019` RN-02). |
 | IV. Un test por criterio | Sí (CA-08 diferido a `api-022`, P-05) | Mapeo de CA-01 a CA-07 y CA-09 a CA-16. CA-08 se prueba en `api-022` (T-28). CI en verde: pendiente de evidencia de la sesión principal. |
 | V. Una sola fuente de verdad para los datos | Sí | Sin cambios de esquema ni DBR. Modelos y SoftDeletes sin cambio. Los instantes siguen en UTC. Riesgo de datos existentes (RN-08) documentado y con verificación previa. |
@@ -134,7 +136,7 @@ Pruebas sin CA (cubren decisiones de la spec): `BusinessTimezoneTest` (unitaria,
   - **B-06 Decisión 2 sin CA:** la decisión de arranque fallido no tiene CA en la spec, y su sección «Flujos y errores» aún dice «comportamiento pendiente (pregunta 2)». Ver P-06.
 - **Divergencia spec/código detectada en la revisión (no corregida aquí):** `api-019` (`SearchTicketHistoryGroup`) usa UTC para la fecha de compra. La spec ya lo fija como corrección (RN-03 y «Riesgos»).
 
-## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+## Decisiones (aprobación técnica del responsable funcional)
 
 - **P-01 (`mysql2`, B-01):** resuelta. La conexión `mysql2` no existe en `config/database.php` y no se crea en esta spec. Decisión 3 de la spec retirada; T-13 cerrada sin cambios. Divergencia reportada: `docs/02-arquitectura.md`, `infra/README.md` y `docs/database/diccionario-datos.md` describen la conexión como existente; su corrección queda fuera de este cambio.
 - **P-02 (memoria semanal, B-02):** `WeeklyMemoryLimitException` usa `arca.timezone`. Spec: RN-11, CA-15. Tarea: T-24, incluida la corrección de `apps/api/docs/momentos-contrato-para-mobile.md` (línea 152, `APP_TIMEZONE`), que es la referencia que hay que corregir.
@@ -156,7 +158,7 @@ Pruebas sin CA (cubren decisiones de la spec): `BusinessTimezoneTest` (unitaria,
 
 ## Pendientes de la sesión principal (evidencia, no DBR)
 
-- Consulta en solo lectura en `arca_pruebas` (sesión principal, `php artisan db:table tickets`, 2026-11-20): `tickets.purchased_at` es **`TIMESTAMP`** con default `CURRENT_TIMESTAMP`; `tickets.cancelled_at` es **`DATETIME`**. Sesión MySQL actual: `@@session.time_zone = SYSTEM`, `@@system_time_zone = UTC`. Fijar `DB_TIMEZONE=+00:00` no cambia lo que ya está guardado en `arca_pruebas`. T-14 resuelta.
+- Consulta en solo lectura en `arca_pruebas` (sesión principal, `php artisan db:table tickets`): `tickets.purchased_at` es **`TIMESTAMP`** con default `CURRENT_TIMESTAMP`; `tickets.cancelled_at` es **`DATETIME`**. Sesión MySQL actual: `@@session.time_zone = SYSTEM`, `@@system_time_zone = UTC`. Fijar `DB_TIMEZONE=+00:00` no cambia lo que ya está guardado en `arca_pruebas`. T-14 resuelta.
 - Salida de `php artisan test` filtrado y de Pint tras la implementación (no se afirma que pasen).
 
 ## Impacto y dependencias de orden
@@ -168,27 +170,27 @@ Pruebas sin CA (cubren decisiones de la spec): `BusinessTimezoneTest` (unitaria,
 
 ## Orden y aprobación
 
-1. Aprobación técnica hecha por Jonathan el 2026-11-20 (preguntas P-01 a P-06 resueltas).
-2. Respuestas registradas en la spec y en este plan (2026-11-20).
+1. Aprobación técnica hecha por el responsable funcional (preguntas P-01 a P-06 resueltas).
+2. Respuestas registradas en la spec y en este plan.
 3. Consulta de solo lectura de `tickets.purchased_at` (sesión principal).
 4. Implementación según `apps/api/tasks/025-single-business-timezone.md` (T-02 en adelante).
 5. Verificación con evidencia de la sesión principal; operaciones valida `arca_zoo` antes de desplegar (decisión 4).
 
-- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan).
-- Aprobador funcional: Jonathan (spec aprobada 2026-11-20).
+- Revisión técnica: el responsable funcional (aprobación técnica del plan).
+- Aprobador funcional: el responsable funcional.
 - Evidencias: pendientes de la sesión principal. Esta sesión no tiene shell y no afirma que pruebas, lint ni CI pasen.
 
-## Decisión de coordinación 2026-11-20 (sesión principal)
+## Decisión de coordinación (sesión principal)
 - P-03b: `effective_at` **con** desfase explícito se sigue aceptando y se respeta el instante indicado (compatibilidad con clientes actuales); **sin** desfase se interpreta en `arca.timezone`. El dashboard (dashboard-019) envía la hora sin desfase.
 
-## Consulta de solo lectura de `arca_pruebas` antes de implementar (2026-11-20, agente backend)
+## Consulta de solo lectura de `arca_pruebas` antes de implementar
 
-- `@@session.time_zone = SYSTEM`, `@@global.time_zone = SYSTEM`, `@@system_time_zone = UTC`; `now()` = `utc_timestamp()` (2026-11-21 04:02:07), es decir, la sesión efectiva ya es UTC.
+- `@@session.time_zone = SYSTEM`, `@@global.time_zone = SYSTEM`, `@@system_time_zone = UTC`; `now` = `utc_timestamp`, es decir, la sesión efectiva ya es UTC.
 - `tickets` (34 filas): `purchased_at` mínimo `2026-11-08 17:43:31`, máximo `2026-11-19 23:54:35`; `cancelled_at` es `DATETIME` y está nulo en las últimas filas. Los valores son coherentes con UTC (la hora actual en UTC es posterior al máximo).
 - `ticket_prices`: `effective_at` de `2026-11-07 22:35:31` a `2026-11-18 21:19:45`, coherente con UTC.
 - Conclusión: fijar `DB_TIMEZONE=+00:00` no desplaza datos existentes en `arca_pruebas`. No hace falta DBR. `arca_zoo` no se consultó (decisión 4).
 
-## Divergencias de implementación (2026-11-20)
+## Divergencias de implementación
 
 - **Ubicación de `timezone` en recibo y precios (dashboard-019):** el plan decía solo «incluyen `timezone`». Por contrato con el dashboard ya implementado, va dentro de `data`: `POST /tickets` en `data.timezone`, `GET /ticket-prices/current` en `data.timezone` junto a `adult` y `child` y `POST /ticket-prices` en `data.timezone` (y dentro de `data.current`). El historial lo lleva en la raíz.
 - **Helper de día de negocio:** además de `name()`, `now()`, `today()` y `assertValid()`, `BusinessTimezone` expone `startOfDayUtc(Y-m-d)`, `endOfDayUtc(Y-m-d)` (límite exclusivo) y `dateOf(instante)`, para `api-022` y los exportadores de `api-007`. `ListTicketHistoryAction` ya los usa.

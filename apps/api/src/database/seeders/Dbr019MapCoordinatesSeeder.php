@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\RefusesProduction;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -9,6 +10,8 @@ use RuntimeException;
 
 class Dbr019MapCoordinatesSeeder extends Seeder
 {
+    use RefusesProduction;
+
     /**
      * Carga controlada DBR-019: completa map_x/map_y desde el SVG canónico
      * en recintos (enclosures) y lugares (zoo_places) ya existentes.
@@ -21,6 +24,8 @@ class Dbr019MapCoordinatesSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->refuseProduction();
+
         $normalizedPath = database_path('data/dbr019-zoo-places-normalized.json');
         $enclosuresPath = database_path('data/dbr019-enclosures-gps-update.json');
 
@@ -59,6 +64,7 @@ class Dbr019MapCoordinatesSeeder extends Seeder
                 $existing = $query->first();
                 if (! $existing) {
                     $skippedEnclosures[] = $name ?? ($row['suggested_id'] ?? 'unknown');
+
                     continue;
                 }
 
@@ -92,6 +98,7 @@ class Dbr019MapCoordinatesSeeder extends Seeder
 
                 if (! $existing) {
                     $skippedPlaces[] = $nameOriginal ?? ($row['suggested_id'] ?? 'unknown');
+
                     continue;
                 }
 

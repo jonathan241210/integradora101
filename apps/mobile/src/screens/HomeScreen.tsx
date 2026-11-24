@@ -15,7 +15,7 @@ import {
   ErrorView,
 } from '../components/ui';
 import { colors, radius, spacing } from '../theme/tokens';
-import { GameScreen } from './GameScreen';
+import { GameScreen, type MissionsAccess } from './GameScreen';
 import { Animal, ZooEvent, News, Mission } from '../models';
 
 type HomePanel = 'home' | 'missions';
@@ -63,6 +63,7 @@ export interface HomeScreenProps {
   initialPanel?: HomePanel;
   missions?: Mission[];
   missionsLoading?: boolean;
+  missionsAccess?: MissionsAccess;
   pendingScans?: { clientScanId: string; code: string }[];
   onMissionPress?: (id: string) => void;
   onAchievementsPress?: () => void;
@@ -93,6 +94,7 @@ export function HomeScreen({
   initialPanel = 'home',
   missions = [],
   missionsLoading = false,
+  missionsAccess,
   pendingScans = [],
   onMissionPress,
   onAchievementsPress,
@@ -121,6 +123,7 @@ export function HomeScreen({
           missions={missions}
           pendingScans={pendingScans}
           loading={missionsLoading}
+          access={missionsAccess}
           onBackPress={() => setPanel('home')}
           onMissionPress={(id) => onMissionPress?.(id)}
           onAchievementsPress={onAchievementsPress}

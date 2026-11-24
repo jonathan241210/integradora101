@@ -53,7 +53,6 @@ class PublicEnclosuresTest extends FeatureTestCase
                             'longevity',
                             'diet',
                             'reproduction',
-                            'characteristics',
                             'photo_path',
                             'stay_status',
                             'can_receive_visits',

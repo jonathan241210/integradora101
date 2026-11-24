@@ -4,21 +4,23 @@
 - Plan: `apps/mobile/plan/007-map-location.md`
 - ADR: `docs/adr/0015-mobile-svg-map-rendering.md`
 - Brief del SVG: `apps/mobile/docs/007-svg-brief.md`
-- Estado: V1, V2 y V2.1 completadas; Enmienda V2.2 lista para implementar
+- Estado del checklist: Completado para V1, V2, V2.1, V2.2, V3 y la enmienda correctiva. La Enmienda V4 no tiene T-xx registradas en este archivo (ver la sección final).
+- Solicitada: 2026-10-26
+- Aprobada: 2026-10-29
 
 ## Prerrequisitos
 
 - [x] Aprobar el plan `apps/mobile/plan/007-map-location.md`.
 - [x] Aceptar el ADR 0015 `docs/adr/0015-mobile-svg-map-rendering.md`.
-- [ ] Confirmar la revisión técnica de Aksel.
+- [x] Confirmar la revisión técnica del equipo móvil. — Fuera de alcance de esta entrega: la revisión técnica no está registrada en el repositorio.
 - [x] Confirmar el SVG esquemático V1 y sus IDs de sección (borrador `apps/mobile/docs/007-map-v1-draft.svg` validado en pantalla).
 
 ## Implementación
 
 ### Fase 1: Dependencia y datos
 
-- [ ] **T-01** (CA-01, RN-07, ADR 0015): Instalar `react-native-svg` con `npx expo install react-native-svg` y verificar que renderiza en Expo Go y en el build Android.
-  - Dependencia instalada (`15.15.4`). Se alinearon `react-native-worklets@0.10.1` y `react-native-reanimated@4.5.1` con Expo SDK 57 y se actualizaron `expo@57.0.31`/`expo-router@57.0.29`. El bundle Android compila; la verificación visual en Expo Go/Android queda en T-17.
+- [x] **T-01** (CA-01, RN-07, ADR 0015): Instalar `react-native-svg` con `npx expo install react-native-svg` y verificar que renderiza en Expo Go y en el build Android.
+  - Dependencia instalada (`15.15.4`, visible en `apps/mobile/package.json`). Se alinearon `react-native-worklets@0.10.1` y `react-native-reanimated@4.5.1` con Expo SDK 57 y se actualizaron `expo@57.0.31`/`expo-router@57.0.29`. La verificación visual en Expo Go/Android se registra en T-17.
 
 - [x] **T-02** (CA-02, RN-02): Actualizar `apps/mobile/src/models/index.ts` con `MapPlace`, `MapSection`, `MapPlaceKind` y `MapFilter`; reemplazar `left`/`top` por `mapX`/`mapY` normalizados y retirar `MapRoute` del flujo del mapa.
 
@@ -63,7 +65,7 @@
   - Verificado con `npx jest --runInBand` (27 suites, 132 pruebas) y `npx tsc --noEmit` sin errores.
 
 - [x] **T-17**: Ejecutar `/verify`, revisar que no haya dependencias no aprobadas ni cambios de BD, y validar visualmente el mapa en Android/Expo Go.
-  - Validación visual en dispositivo Android con Expo Go SDK 57 confirmada exitosamente por el responsable funcional (Víctor Adrián, 2026-10-25). El plano SVG renderiza nítido, los marcadores caen en sus posiciones, los filtros responden y la navegación con Búsqueda enfoca correctamente.
+  - Validación visual en dispositivo Android con Expo Go SDK 57 confirmada por el responsable funcional. El plano SVG renderiza nítido, los marcadores caen en sus posiciones, los filtros responden y la navegación con Búsqueda enfoca correctamente.
 
 - [x] **T-18**: Actualizar `apps/mobile/docs/003-008-roadmap-y-asignacion.md` y la documentación local de la app con el estado de la V1, el ADR 0015 y las limitaciones (sin GPS, sin API, sin DBR).
 
@@ -81,8 +83,8 @@
 
 ## Enmienda V2 — GPS, Punto Azul (CA-08 a CA-11)
 
-- Spec: `apps/mobile/specs/007-map-location.md` (enmienda V2, Aprobada 2026-10-29)
-- Plan: `apps/mobile/plan/007-map-location.md` (enmienda V2, Aprobado 2026-10-29)
+- Spec: `apps/mobile/specs/007-map-location.md` (enmienda V2, Aprobada)
+- Plan: `apps/mobile/plan/007-map-location.md` (enmienda V2, Aprobado)
 - ADR: `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado
 - Alcance: **solo punto azul** — CA-08, CA-09, CA-10, CA-11
 - Fuera de alcance aquí: línea al destino, detección de llegada (CA-12) → V2.1
@@ -214,8 +216,8 @@
 
 ## Enmienda V2.1 — Ruta hacia el destino y Detección de Llegada (CA-12, CA-14)
 
-- Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V2.1, Aprobada 2026-11-01)
-- Plan: `apps/mobile/plan/007-map-location.md` (Enmienda V2.1, Aprobado 2026-11-01)
+- Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V2.1, Aprobada)
+- Plan: `apps/mobile/plan/007-map-location.md` (Enmienda V2.1, Aprobado)
 - Tareas: T-37 a T-48
 
 ### Bloque 9 — Utilidad Haversine y Constantes V2.1
@@ -248,8 +250,8 @@
 
 ## Fase V3 — Grafo de Senderos Peatonales y Tiempo a Pie (CA-18 a CA-20)
 
-- **Spec:** `apps/mobile/specs/007-map-location.md` (Enmienda V3, Aprobada 2026-11-04)
-- **Plan:** `apps/mobile/plan/007-map-location.md` (Enmienda V3, Aprobado 2026-11-04)
+- **Spec:** `apps/mobile/specs/007-map-location.md` (Enmienda V3, Aprobada)
+- **Plan:** `apps/mobile/plan/007-map-location.md` (Enmienda V3, Aprobado)
 - **Estado:** Implementada sobre la red de andadores del SVG actual; lista para recalibrar coordenadas en `src/constants/zooPaths.ts` al incorporar la cartografía definitiva de dron.
 - **Tareas:** T-49 a T-56
 
@@ -271,8 +273,8 @@
 
 ## Enmienda V2.2 — Controles Interactivos del Mapa: Zoom, Desplazamiento y Centrado (CA-15 a CA-17)
 
-- **Spec:** `apps/mobile/specs/007-map-location.md` (Enmienda V2.2, Aprobada 2026-11-04)
-- **Plan:** `apps/mobile/plan/007-map-location.md` (Enmienda V2.2, Aprobado 2026-11-04)
+- **Spec:** `apps/mobile/specs/007-map-location.md` (Enmienda V2.2, Aprobada)
+- **Plan:** `apps/mobile/plan/007-map-location.md` (Enmienda V2.2, Aprobado)
 - **Tareas:** T-57 a T-63
 
 ### Bloque 16 — Utilidades de Cámara/Viewport y Constantes
@@ -290,17 +292,17 @@
 
 ## Enmienda correctiva — CA-07 y CA-17
 
-- Estado: tasks correctivas aprobadas por el usuario solicitante, 2026-11-09.
+- Estado: tasks correctivas aprobadas (Equipo ARCA-NB).
 
 - [x] **T-64** (CA-17): aplicar el zoom de centrado `CENTER_LOCATION_ZOOM` y calcular el pan con esa escala; preservar el comportamiento cuando no hay ubicación activa.
 - [x] **T-65** (CA-07): sustituir literales hexadecimales y `rgba()` de componentes/pantallas por tokens semánticos compartidos; añadir solo los roles semánticos ausentes en `packages/tokens/index.ts`.
 - [x] **T-66** (CA-07, CA-17): ejecutar y aprobar `mapAccessibility.test.tsx`, `architecture.test.ts` y `mapViewport.test.tsx`; verificar que la búsqueda de colores fijos no encuentre resultados en componentes/pantallas. Resultado: 3 suites y 11 pruebas aprobadas, sin modificar las expectativas.
 
-Aprobación de las tasks correctivas: usuario solicitante, 2026-11-09.
+Aprobación de las tasks correctivas: Aprobada (Equipo ARCA-NB).
 
 Se continúa desde T-63 de la enmienda anterior para evitar duplicar identificadores de tareas.
 
-### Evidencia local de la corrección — 2026-11-09
+### Evidencia local de la corrección
 
 - Suite publicada: `npm run test --workspace=apps/mobile -- --runInBand --silent '--testPathIgnorePatterns=apiRepositories.coverage.test.ts|mappers.coverage.test.ts|repositoriesCore.coverage.test.ts'`: exit 0, 55 suites, 227 pruebas y 1 snapshot aprobados; 16,039 s. Los tres archivos excluidos son pruebas no versionadas de otra tarea; no forman parte del commit.
 - La primera ejecución completa tuvo un timeout de 5 s en el formulario de registro. La repetición aprobó sin cambiar pruebas ni límites; se conserva como observación de estabilidad.
@@ -308,3 +310,9 @@ Se continúa desde T-63 de la enmienda anterior para evitar duplicar identificad
 - `/verify`: Mobile tiene el manifiesto en la raíz de la app, no en `src/`; se utilizó el script workspace existente. No declara lint, format ni types; se usó TypeScript instalado sin instalar dependencias. `@arca/tokens` no declara scripts; se validó mediante los consumidores móviles y `theme.test.ts` en la suite completa.
 - `git diff --check`: exit 0. Sin cambios de tests, dependencias, datos, permisos o umbrales de cobertura.
 - No se repitió la suite con cobertura en esta corrección; los umbrales y tareas de `mobile-011` conservan su verificación propia. La nueva corrida remota y la inspección visual del mapa quedan pendientes.
+
+## Enmienda V4 — Integración con API de Recintos (api-010) y caché offline
+
+- Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V4, Aprobada).
+- Tareas: no hay T-xx registradas para esta enmienda en este archivo. Pendiente registrarlas o confirmar que la integración se cerró sin tareas propias.
+- Cobertura existente: `apps/mobile/__tests__/apiMapRepository.test.ts` nombra CA-21, CA-22 y CA-23 de la spec.

@@ -2,9 +2,10 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` únicamente. Sin cambios en `api`, `packages/api-client`, `packages/ui`, `apps/web`, `apps/pwa` ni `apps/mobile`. Dependencias de API ya aprobadas y no modificadas por esta spec: `api-007` (reporte de boletos), `api-009` (historial de boletos y `tickets.view-all`, RN-17), `api-019` (búsqueda global), `api-022` (cancelaciones y exportación), `api-023` (`tickets.view-all`, CA-08).
-- Estado: Aprobada
-- Aprobación funcional: Jonathan, 2026-11-21
-- Solicitante / responsable funcional: Jonathan
+- Estado: Implementada
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Aprobación funcional: Aprobada
 - Relación: consolida la navegación de administración de `dashboard-003` (reporte de boletos), la entrada «Historial» de `dashboard-005` (solo para el cajero), la página de `dashboard-016` (cancelaciones) y la gestión de avisos de `dashboard-014`, `dashboard-017` y `dashboard-018`. No cambia los CA de esas specs; cada una recibe una nota de revisión que apunta aquí.
 
 ## Problema y contexto
@@ -104,9 +105,9 @@ La interfaz solo oculta opciones. La autorización real la aplica la API en cada
 - **CA-31:** Dadas las pestañas, cuando se usan con teclado y en anchos de 360 a 1366 px, entonces tienen rol de pestaña (`tablist`, `tab`, `tabpanel`), `aria-selected`, foco visible, navegación con flechas, Inicio y Fin, y la página no tiene desbordamiento horizontal.
 - **CA-32:** Dada la suite de Vitest del dashboard con entorno `node`, cuando se ejecuta, entonces existe al menos una prueba que nombra cada CA-01 a CA-31 y una prueba de cobertura que comprueba que ninguno falta (Constitución IV).
 
-### Revisión 2026-11-21 (b) (aprobada por Jonathan)
+### Revisión (b) (aprobada)
 
-Dos cambios pedidos por Jonathan el 2026-11-21. Los CA siguen al último (CA-32) y no renumeran nada. Sustituyen en lo que choquen a CA-22 y CA-25 (el nombre «confirmación en línea» pasa a ser «diálogo de confirmación»; el error general de restablecer contraseña va dentro del diálogo, D-3) y a `dashboard-004` CA-08 a CA-12 y RN-02 (confirmaciones en línea).
+Dos cambios pedidos por el responsable funcional. Los CA siguen al último (CA-32) y no renumeran nada. Sustituyen en lo que choquen a CA-22 y CA-25 (el nombre «confirmación en línea» pasa a ser «diálogo de confirmación»; el error general de restablecer contraseña va dentro del diálogo, D-3) y a `dashboard-004` CA-08 a CA-12 y RN-02 (confirmaciones en línea).
 
 **Confirmaciones en ventana modal (patrón de Noticias: `ConfirmDialog`).**
 
@@ -124,7 +125,7 @@ Dos cambios pedidos por Jonathan el 2026-11-21. Los CA siguen al último (CA-32)
 - **CA-41:** Dado un rol elegido distinto del sugerido para el área, cuando se muestra el formulario, entonces aparece un aviso informativo que no bloquea («El rol sugerido para Taquilla es Cajero. Puedes asignar otro si la persona lo necesita.»); sin rol sugerido para el área, sin rol elegido o con el rol sugerido, no hay aviso.
 - **CA-42:** Dada la regla de CA-38 a CA-41, cuando se revisa el código, entonces vive en un viewmodel puro (`viewmodels/staff-role-suggestion.ts` y el reductor de `staff-accounts.ts`) y la vista no calcula nada. Sin cambios en `apps/api` ni en `packages/api-client`.
 
-### Revisión 2026-11-21 (c) (aprobada por Jonathan): paginación unificada
+### Revisión (c) (aprobada): paginación unificada
 
 Todo el dashboard usa un solo paginador, con el diseño de Recintos. Los CA siguen al último (CA-42) y no renumeran nada.
 
@@ -135,7 +136,7 @@ Todo el dashboard usa un solo paginador, con el diseño de Recintos. Los CA sigu
 - **CA-47 (comportamiento conservado):** Dada cada pantalla que ya paginaba, cuando se migra, entonces conserva su tamaño de página y el reinicio a la página 1 al filtrar (la decisión sigue en su viewmodel).
 - **CA-48 (listas sin paginar):** Dada una lista sin paginación cuya API no entrega páginas (Cancelaciones, `reports/cancellations`), cuando se revisa, entonces no se cambia la API ni se pagina en cliente; queda como pendiente de API. El CSS de paginaciones viejas sin uso se elimina.
 
-### Revisión 2026-11-21 (d) (aprobada por Jonathan): componentes compartidos en `@arca/ui` y paginación con total
+### Revisión (d) (aprobada): componentes compartidos en `@arca/ui` y paginación con total
 
 Lo que usa más de una app pasa a `packages/ui` y las listas con `meta` con total (api-012 rev., api-014 rev., api-022 rev.) usan números de página. Los CA siguen al último (CA-48) y no renumeran nada. CA-43 cambia de lugar (el componente único vive en `@arca/ui`); CA-45 queda como respaldo; CA-48 queda superado en lo de Cancelaciones (CA-53).
 
@@ -147,9 +148,9 @@ Lo que usa más de una app pasa a `packages/ui` y las listas con `meta` con tota
 - **CA-54 (`@arca/api-client`):** Dado el cliente, cuando se revisa, entonces el cambio es solo aditivo: `ListPageMeta` y `TotalPage` (con `has_more` opcional), `limit` en la consulta de Momentos y `page` en `CancellationReportQuery` con `meta` en `CancellationReportDto`.
 - **CA-55 (sin copias):** Dadas las apps, cuando se revisa el código, entonces ni `apps/dashboard` ni `apps/pwa` conservan copias locales del contador, del aviso de bloqueo ni de la paginación; importan de `@arca/ui`.
 
-## Revisión 2026-11-21 (e): esqueletos de carga
+## Revisión (e): esqueletos de carga
 
-Aprobada por Jonathan (2026-11-21). Cada pantalla que carga datos muestra, al cargar, un esqueleto con su forma real en lugar del texto «Cargando…». Los CA siguen al último (CA-55) y no renumeran nada. No cambia la API ni la lógica de carga de ningún ViewModel.
+Aprobada. Cada pantalla que carga datos muestra, al cargar, un esqueleto con su forma real en lugar del texto «Cargando…». Los CA siguen al último (CA-55) y no renumeran nada. No cambia la API ni la lógica de carga de ningún ViewModel.
 
 - **CA-56 (componentes compartidos):** Dado `@arca/ui`, cuando se revisa, entonces exporta `Skeleton` (variantes `text`, `title`, `avatar`, `image` y `button`), `SkeletonRegion`, `SkeletonTable` (encabezado, columnas y filas configurables), `SkeletonCards` (rejilla con imagen opcional), `SkeletonForm` (campos y botones), `useDelayedFlag` y `startDelayedFlag`; sin dependencias nuevas y documentados en el README del paquete.
 - **CA-57 (accesibilidad):** Dado un esqueleto, cuando se renderiza, entonces su contenedor lleva `aria-busy="true"` y un texto oculto «Cargando…» (o el de la pantalla) con `role="status"`, y los bloques llevan `aria-hidden="true"`.
@@ -180,7 +181,7 @@ Nota: el esqueleto de Reportes sustituye al genérico anterior (`report-loading*
   Los avisos de tono informativo de `dashboard-018` (pendientes) y el aviso de cambios por consola de `dashboard-017` (CA-10) siguen su propia spec.
 - **RN-08 (estado en memoria):** La pestaña activa vive en la memoria de la shell. No se guarda en URL, `localStorage`, cookies ni base de datos (`dashboard-005` RN-12 no aplica a esto).
 - **RN-09 (sin cambios de API):** Esta spec no requiere endpoints nuevos ni cambios de contrato. Si una implementación los necesita, se detiene y se marca como bloqueante antes de codificar.
-- **RN-10 (Consulta directiva):** `executive` no ve Cancelaciones ni el historial completo, en ninguna pestaña ni en la búsqueda global (decisión 2026-11-21, punto 5).
+- **RN-10 (Consulta directiva):** `executive` no ve Cancelaciones ni el historial completo, en ninguna pestaña ni en la búsqueda global.
 - **RN-11 (idioma):** Etiquetas y mensajes en español; identificadores del código en inglés (Constitución VI).
 - **RN-12 (sin React Router):** Las pestañas se cambian por estado de la SPA (ADR 0002).
 
@@ -213,7 +214,7 @@ El inventario completo, con archivos, textos y categoría prevista, está en `ap
   - Duplicado visible de errores (CA-20): hoy `ActionError` muestra el texto en línea además del aviso. El cambio altera la pantalla de varias secciones.
   - Enlaces de búsqueda global a «Historial» que ya no está en el menú de admin (CA-12).
   - Cambio de etiquetas de periodo de «Semana»/«Mes» (`dashboard-016` CA-04) a «Semanal»/«Mensual» (CA-15), y del selector de formato a botones (`dashboard-016` CA-17). Se anota en la nota de revisión de `dashboard-016`.
-- **Decisiones de redacción pendientes de confirmación explícita de Jonathan** (propuestas del redactor; el plan las lista como D-1 a D-5; si Jonathan las cambia, se revisa esta spec antes de implementar lo que dependa de ellas):
+- **Decisiones de redacción pendientes de confirmación explícita del responsable funcional** (propuestas del redactor; el plan las lista como D-1 a D-5; si el responsable funcional las cambia, se revisa esta spec antes de implementar lo que dependa de ellas):
   1. RN-05 y CA-10: cuenta mixta de `tickets.create` y `tickets.view-all` (no existe hoy).
   2. CA-23 y RN-07 (4): los errores de carga quedan como estado de la vista, no como aviso emergente.
   3. CA-22 y RN-07 (3): los errores dentro de un diálogo se quedan en el diálogo.
@@ -222,12 +223,12 @@ El inventario completo, con archivos, textos y categoría prevista, está en `ap
 
 ## Revisión
 
-- Confirmación de decisiones: la sesión principal confirmó el 2026-11-21 las decisiones 1 a 5 de redacción y D-7 (exportación con tres botones iguales en todas las pestañas); quedan sujetas a veto de Jonathan.
-- Aprobadores y fecha: Jonathan (responsable funcional), 2026-11-21, para las decisiones 1 a 5 del encargo. Las decisiones de redacción de la sección anterior quedan pendientes de su confirmación.
+- Confirmación de decisiones: la sesión principal confirmó las decisiones 1 a 5 de redacción y D-7 (exportación con tres botones iguales en todas las pestañas); quedan sujetas a veto del responsable funcional.
+- Aprobadores: responsable funcional, para las decisiones 1 a 5 del encargo. Las decisiones de redacción de la sección anterior quedan pendientes de su confirmación.
 - Evidencia/enlaces: `apps/dashboard/src/viewmodels/navigation.ts`, `apps/dashboard/src/viewmodels/dashboard-shell.ts`, `apps/dashboard/src/App.tsx`, `apps/dashboard/src/views/TicketReportView.tsx`, `apps/dashboard/src/views/CancellationReportView.tsx`, `apps/dashboard/src/views/TicketHistoryView.tsx`, `apps/dashboard/src/views/UsersView.tsx`, `apps/dashboard/src/components/DashboardNotifications.tsx`, `apps/dashboard/src/viewmodels/dashboard-notifications.ts`, `apps/api/specs/023-fixed-roles-and-console-admins.md`, `apps/api/specs/009-ticket-sales.md`, `apps/api/specs/022-ticket-cancellation-report.md`.
 - Notas de revisión que apuntan a esta spec: `dashboard-003`, `dashboard-004`, `dashboard-005`, `dashboard-014`, `dashboard-016` y `dashboard-017`.
-- Revisión 2026-11-21 (b): aprobada por Jonathan; CA-33 a CA-42 (confirmaciones en ventana modal en Usuarios, Noticias y Eventos; área sugiere rol).
-- Nota 2026-11-21 (TulanPedia): `dashboard-010` adopta este patrón (encabezado fijo con pestañas debajo, clases `section-tab*`, teclado de CA-31 y gap compartido). Ver `dashboard-010` CA-66 a CA-73. Las pestañas de «Reportes» pasan a las clases neutrales `section-tabs`, `section-tab` y `section-tab-panel` sin cambio de comportamiento.
-- Revisión 2026-11-21 (c): aprobada por Jonathan; CA-43 a CA-48 (paginación unificada). Ver `plan/020` y `tasks/020` (T-24 a T-26).
-- Revisión 2026-11-21 (d): aprobada por Jonathan; CA-49 a CA-55 (componentes compartidos en `@arca/ui`; paginación con total en TulanPedia, Momentos y Cancelaciones). Ver `plan/020` y `tasks/020` (T-27 a T-31).
-- Revisión 2026-11-21 (e): aprobada por Jonathan; CA-56 a CA-65 (esqueletos de carga en todas las pantallas). Ver `plan/020` y `tasks/020` (T-32 a T-35).
+- Revisión (b): aprobada; CA-33 a CA-42 (confirmaciones en ventana modal en Usuarios, Noticias y Eventos; área sugiere rol).
+- Nota (TulanPedia): `dashboard-010` adopta este patrón (encabezado fijo con pestañas debajo, clases `section-tab*`, teclado de CA-31 y gap compartido). Ver `dashboard-010` CA-66 a CA-73. Las pestañas de «Reportes» pasan a las clases neutrales `section-tabs`, `section-tab` y `section-tab-panel` sin cambio de comportamiento.
+- Revisión (c): aprobada; CA-43 a CA-48 (paginación unificada). Ver `plan/020` y `tasks/020` (T-24 a T-26).
+- Revisión (d): aprobada; CA-49 a CA-55 (componentes compartidos en `@arca/ui`; paginación con total en TulanPedia, Momentos y Cancelaciones). Ver `plan/020` y `tasks/020` (T-27 a T-31).
+- Revisión (e): aprobada; CA-56 a CA-65 (esqueletos de carga en todas las pantallas). Ver `plan/020` y `tasks/020` (T-32 a T-35).

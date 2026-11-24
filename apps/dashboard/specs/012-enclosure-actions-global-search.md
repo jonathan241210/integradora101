@@ -2,12 +2,13 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` (dueña de la sección Recintos, del buscador del encabezado y de sus estilos); `api` (proveedor: `api-019`, sin cambios en esta spec); `packages/api-client` (métodos y tipos de `api-019`, sin lógica de negocio). `mobile`, `web` y `pwa` no cambian.
-- Estado: Aprobada (Jonathan, 2026-11-18). Aprobar no autoriza implementar hasta tener plan y tasks aprobados; las acciones de recintos dependen de DBR-020 vía api-019.
-- Solicitante / responsable funcional: usuario del proyecto (nombre por registrar)
-- Aprobación funcional: Jonathan, 2026-11-18
+- Estado: Implementada
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Aprobación funcional: Aprobada (responsable funcional)
 - Dependencias: `api-019` (Borrador; contrato del listado, de estado, de borrado y de búsqueda); DBR-020 (Borrador; necesaria para que el recinto tenga estado y borrado). Reutiliza `ConfirmDialog` y el patrón de paginación de `dashboard-011`.
 - **Enmienda propuesta a `dashboard-003` CA-09.** Hoy dice que Recintos «no ofrece eliminar». Al aprobarse esta spec, CA-09 se sustituye por los CA-01 a CA-11 de aquí para la parte de recintos. El resto de CA-09 (crear y renombrar, error de nombre repetido) se conserva. `dashboard-003` no se modifica en esta spec.
-- **Enmienda 2026-11-18 (b), aprobada por Jonathan:** buscador tolerante en el cliente, fragmento `match` con resaltado, grupo «Acciones» con el catálogo de acciones existentes, apertura de acciones desde un resultado cuando la vista lo soporta y manejo del límite de peticiones. Modifica CA-13, CA-15, CA-17, CA-28, RN-06 y RN-07; añade CA-29 a CA-41 y RN-11 a RN-14. Depende de `api-019` enmienda (b). Ver «Enmienda 2026-11-18 (b)».
+- **Enmienda (b), aprobada:** buscador tolerante en el cliente, fragmento `match` con resaltado, grupo «Acciones» con el catálogo de acciones existentes, apertura de acciones desde un resultado cuando la vista lo soporta y manejo del límite de peticiones. Modifica CA-13, CA-15, CA-17, CA-28, RN-06 y RN-07; añade CA-29 a CA-41 y RN-11 a RN-14. Depende de `api-019` enmienda (b). Ver «Enmienda (b)».
 
 ## Problema y contexto
 
@@ -73,7 +74,7 @@ Ocultar un botón o un grupo no reemplaza la autorización del servidor (`apps/d
 - **CA-15 (orden de grupos):** Dada una respuesta con grupos, cuando se muestra, entonces el grupo de la sección actual aparece primero con la etiqueta «En esta sección». Los demás grupos llevan «En <Sección>». Las acciones coincidentes aparecen en un grupo «Acciones» (CA-34) y las coincidencias con nombres de secciones permitidas, en un grupo «Secciones», al final. *(Modificado por enmienda (b).)* Si la sección actual no tiene resultados, no aparece su grupo. *(Modificado por enmienda (d): el orden es «En esta sección», los demás grupos de la API por `best_score` descendente —empate: orden de navegación—, «Acciones» y «Secciones»; ver CA-42.)*
 - **CA-16 (teclado):** Dado el desplegable abierto, cuando se pulsa ↑ o ↓, entonces el foco visual se mueve entre los resultados; Enter elige el activo; Esc o Tab cierran el desplegable y devuelven el foco al campo. Cada resultado tiene un nombre accesible que incluye su sección.
 - **CA-17 (presentación):** Cada resultado muestra el ícono de su sección (con `aria-hidden`) y el texto coincidente resaltado con `<mark>` según la regla de CA-30 (y la línea de CA-29 si hay `match`). *(Modificado por enmienda (b).)* El resaltado se construye con nodos de React, no con `innerHTML`.
-- **CA-18 (otra sección):** Dado un resultado de otra sección, cuando se elige, entonces la aplicación cambia a esa sección sin recargar la página y, después, ubica el elemento (CA-20 a CA-22). Si el resultado es de TulanPedia, abre la pestaña según el campo `kind` del elemento: `published-species` → «Publicadas»; `species-request` → «Solicitudes» (`api-019` CA-30; decisión técnica de la sesión principal, 2026-11-18, pendiente de aprobación de Jonathan).
+- **CA-18 (otra sección):** Dado un resultado de otra sección, cuando se elige, entonces la aplicación cambia a esa sección sin recargar la página y, después, ubica el elemento (CA-20 a CA-22). Si el resultado es de TulanPedia, abre la pestaña según el campo `kind` del elemento: `published-species` → «Publicadas»; `species-request` → «Solicitudes» (`api-019` CA-30; decisión técnica de la sesión principal, pendiente de aprobación del responsable funcional).
 - **CA-19 (misma sección):** Dado un resultado de la sección actual, cuando se elige, entonces no se vuelve a pedir la lista de la sección; solo se ubica y se marca el elemento.
 - **CA-20 (página correcta):** Dado un resultado de Recintos o de Eventos que está en otra página, cuando se elige, entonces primero se pasa a la página que lo contiene y después se ubica. *(Eventos según `dashboard-011` CA-03.)*
 - **CA-21 (historial de boletos):** Dado un resultado de boleto por folio, cuando se elige, entonces Historial de boletos carga ese folio sin modificar el formulario de filtros: los valores y el estado de los filtros son los mismos antes y después.
@@ -85,7 +86,7 @@ Ocultar un botón o un grupo no reemplaza la autorización del servidor (`apps/d
 - **CA-27 (estilo):** `.search-box` ocupa el 100 % del ancho en pantallas de 640 px o menos. Los estilos nuevos usan solo tokens semánticos y modo claro; no hay colores fijos.
 - **CA-28 (cobertura):** Dada la suite de Vitest del dashboard, cuando se ejecuta, entonces hay al menos un `describe("CA-xx enclosure-actions-global-search")` con pruebas para cada CA-01 a CA-44, y la spec 012 queda registrada en `administration-coverage.test.tsx`.
 
-### Buscador tolerante y acciones (enmienda 2026-11-18 (b), aprobada por Jonathan)
+### Buscador tolerante y acciones (enmienda (b), aprobada)
 
 - **CA-29 (fragmento de coincidencia):** Dado un resultado de la API con `match`, cuando se muestra, entonces bajo el título aparece «<match.field>: <snippet>» con la coincidencia resaltada en `<mark>`. Sin `match`, no aparece esa línea. El fragmento se pinta con nodos de React, no con `innerHTML`.
 - **CA-30 (resaltado tolerante):** Dado un término y un texto (título, fragmento o nombre de sección), cuando se resalta, entonces se marcan las partes que cumplen la regla de `api-019` CA-36 a CA-40: sin mayúsculas ni acentos, prefijos, errores de escritura según la longitud y «contiene» desde 4 letras. Se aplica a los grupos de la API y al grupo «Secciones».
@@ -168,7 +169,7 @@ Ocultar un botón o un grupo no reemplaza la autorización del servidor (`apps/d
 | Estilos | `src/styles.css` | Cuadrícula de 3/2/1 columnas, `.search-hit`, buscador de ancho completo (solo tokens) |
 | Pruebas | `src/tests/` (Vitest) | `describe("CA-xx enclosure-actions-global-search")` y registro en `administration-coverage.test.tsx` |
 
-## Enmienda 2026-11-18 (b), aprobada por Jonathan
+## Enmienda (b), aprobada
 
 Alcance: buscador tolerante en el cliente (resaltado y reglas de secciones y acciones), fragmento `match`, grupo «Acciones» con el catálogo de acciones existentes, apertura de acciones desde un resultado donde la vista lo soporta y manejo del límite de peticiones. Sin cambios de permisos, de navegación del perfil ni DBR. Depende de `api-019` enmienda (b).
 
@@ -228,15 +229,15 @@ No hay una entrada propia «QR»: «qr» y «código qr» son sinónimos de «Nu
 - El resto de la consulta (las palabras que no son de acción) es la consulta enviada a la API.
 - Un elemento de la sección S recibe «Ir a: <acción>» si una palabra de acción coincide con una acción de S que el perfil puede ver. Si hay varias, gana la primera en el orden del catálogo.
 
-### Preguntas de la enmienda (b), pendientes de Jonathan
+### Decisiones de la enmienda (b)
 
 1. ¿Basta con llevar a la sección (sin abrir formulario ni diálogo) en las acciones de imagen, edición, aceptar, rechazar, publicar y exportar? (propuesta: sí).
 2. ¿Confirmas que solo Usuarios, Recintos e Historial de boletos abren el diálogo desde un resultado? (propuesta: sí; el resto requiere cambios de vista que no están en esta enmienda).
-3. ~~¿«QR» sin acción o a Nueva venta?~~ Resuelta 2026-11-18: apunta a Nueva venta (plan D-28).
+3. ~~¿«QR» sin acción o a Nueva venta?~~ Resuelta: apunta a Nueva venta (plan D-28).
 
-## Enmienda 2026-11-18 (c), aprobada por Jonathan junto con `dashboard-013`
+## Enmienda (c), aprobada junto con `dashboard-013`
 
-Alcance: el catálogo de acciones gana la entrada de QR del recinto, y el aviso de eliminar un recinto menciona sus QR. Sin cambios de permisos, de navegación del perfil ni de DBR. La spec que la usa es `apps/dashboard/specs/013-enclosure-qr-printing.md` (Aprobada, 2026-11-18). Decisión de Jonathan, 2026-11-18.
+Alcance: el catálogo de acciones gana la entrada de QR del recinto, y el aviso de eliminar un recinto menciona sus QR. Sin cambios de permisos, de navegación del perfil ni de DBR. La spec que la usa es `apps/dashboard/specs/013-enclosure-qr-printing.md` (Aprobada). Decisión del responsable funcional.
 
 | Elemento | Antes | Después |
 |---|---|---|
@@ -246,7 +247,7 @@ Alcance: el catálogo de acciones gana la entrada de QR del recinto, y el aviso 
 | CA-03 (eliminar recinto, texto del `ConfirmDialog`) | «¿Eliminar el recinto «X»? Desaparecerá del panel, del portal y de la app. Esta acción no se puede deshacer desde el panel.» | Se añade, al final, «Sus códigos QR dejarán de funcionar.» (`dashboard-013` CA-23). El resto del texto no cambia. |
 | CA-41 (palabras de acción) | Sin cambio. | Sin cambio: la regla de palabras aplica tal cual a «QR del recinto». |
 
-## Enmienda 2026-11-18 (d), aprobada por Jonathan
+## Enmienda (d), aprobada
 
 Alcance: orden de los grupos por `best_score`, relevancia y coincidencia parcial del cliente en paridad con `api-019` enmienda (d), y resaltado de todas las palabras coincidentes. Sin cambios de permisos, navegación ni DBR. `best_score?: number` es opcional en `GlobalSearchGroup` (`packages/api-client`, a cargo del agente backend).
 
@@ -260,12 +261,12 @@ Alcance: orden de los grupos por `best_score`, relevancia y coincidencia parcial
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan, 2026-11-18. Decisiones de 2026-11-18 (Jonathan): activar sin confirmación, texto en singular para un animal, recálculo de página tras crear, grupo «Secciones» al final; sin restauración de recintos eliminados. Decisión técnica de la sesión principal (2026-11-18), pendiente de aprobación de Jonathan: pestaña de TulanPedia según `kind` (CA-18).
+- Aprobadores: responsable funcional. Decisiones registradas: activar sin confirmación, texto en singular para un animal, recálculo de página tras crear, grupo «Secciones» al final; sin restauración de recintos eliminados. Decisión técnica de la sesión principal, pendiente de aprobación del responsable funcional: pestaña de TulanPedia según `kind` (CA-18).
 - Evidencia/enlaces: `apps/api/specs/019-enclosure-status-and-global-search.md`, `docs/database/requests/DBR-020-enclosure-status-soft-delete.md`, `apps/dashboard/specs/003-administration-sections.md` (CA-06, CA-09, RN-03), `apps/dashboard/specs/011-collapsible-menu-event-pagination.md` (CA-03).
 
-## Enmienda 2026-11-19 (e), aprobada por Jonathan
+## Enmienda (e), aprobada
 
-Pedida por Jonathan: «busco una noticia y salen primero eventos; solo toma algunas palabras».
+Pedida por el responsable funcional: «busco una noticia y salen primero eventos; solo toma algunas palabras».
 
 - **Palabras vacías** (a, al, con, de, del, el, en, es, la, las, lo, los, o, para, por, que, se, su, sus, un, una, unas, unos, y): no se exigen ni cuentan como coincidencia; sí forman parte de la frase literal (CA-50 a CA-52). Si la consulta solo tiene palabras vacías, se usan todas. Implementado en `ItemMatcher` (API) y `search-tolerance.ts` (cliente, paridad).
 - **Coincidencia parcial más estricta** (modifica CA-37 y la regla de ceil(n/2) de la enmienda d): con 1 a 3 palabras con contenido se exigen todas; con 4 o más, al menos 3 y al menos el 75 % (redondeado hacia arriba).
@@ -273,6 +274,6 @@ Pedida por Jonathan: «busco una noticia y salen primero eventos; solo toma algu
 - **Palabras de sección y vacías no son acciones** (dashboard, `splitSearchQuery`): antes una palabra como «noticia» se reconocía como parte de una acción («Publicar noticia») y se quitaba de la consulta enviada a la API, por lo que la búsqueda usaba una sola palabra. Ahora esas palabras siempre llegan a la búsqueda.
 - **Grupo «Acciones» solo con palabras sin resultados** (`orderSearchGroups`): las acciones se buscan solo con las palabras de la consulta que no aparecen en ningún resultado de la API (título, subtítulo o fragmento), sin palabras vacías ni de sección; si no queda ninguna, no se muestran acciones. Evita acciones ajenas por sinónimos («nuevo» → «Crear…») cuando la palabra es parte del contenido buscado. «contraseña juan» sigue mostrando «Restablecer contraseña». **Excepción, verbo explícito:** si la consulta incluye de forma exacta el verbo inicial de una acción (Crear, Renombrar, Eliminar, Desactivar, Activar, Cancelar, Restablecer, Aceptar, Rechazar, Publicar/Despublicar/Republicar, Editar, Exportar) o un sinónimo en infinitivo («borrar», «cambiar»…), esa palabra siempre se usa para «Acciones», aunque aparezca en los resultados.
 - **Resaltado:** usa la consulta completa sin palabras vacías, para marcar todas las palabras que coinciden.
-- **Tests:** actualizados el 2026-11-19 para CA-37, CA-41 y CA-43 del dashboard; la verificación completa queda registrada en tasks. La cobertura de API CA-50 a CA-54 se verifica en su propia suite.
+- **Tests:** actualizados para CA-37, CA-41 y CA-43 del dashboard; la verificación completa queda registrada en tasks. La cobertura de API CA-50 a CA-54 se verifica en su propia suite.
 
-- Nota 2026-11-21 (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.
+- Nota (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.

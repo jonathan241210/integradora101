@@ -1,7 +1,6 @@
 # Alineación de formularios PWA veterinaria con la base de datos
 
 > **Tipo:** Documento de análisis y alineación (no aprobado como DBR ni como spec).  
-> **Fecha:** 2026-11-12  
 > **Alcance:** Formularios de **Diagnóstico intenso**, **Diagnóstico rápido** y **Registro de animales** en `apps/pwa`.  
 > **Objetivo:** Definir qué falta y cómo deben alinearse los formularios, la API y la BD para que la información capturada se integre a la base de datos de forma natural, completa y trazable.
 
@@ -168,7 +167,7 @@ Para que un envío se integre de forma natural a la BD:
 
 ## 9. Plan de trabajo recomendado (SDD)
 
-1. **Acordar decisiones abiertas** (sección 10) con responsables funcional/técnico/BD.
+1. **Revisar las decisiones** (sección 10) con responsables funcional, técnico y de BD.
 2. **Spec (nueva o enmienda):** alcance de persistencia de diagnósticos (reemplaza/ajusta el “sin guardar” de 002), CA-xx, RN-xx, privacidad y manejo de errores.
 3. **DBR(s):** para cada brecha estructural aprobada; esperar estado “Lista para backend”.
 4. **Plan técnico:** mapeo definitivo campo→columna, contrato API, transacciones y validaciones.
@@ -177,15 +176,17 @@ Para que un envío se integre de forma natural a la BD:
 
 ---
 
-## 10. Decisiones abiertas (requieren acuerdo)
+## 10. Decisiones (según migraciones y modelos existentes)
 
-1. ¿Los diagnósticos deben **persistirse** en BD (cambiando el alcance de 002) o mantenerse solo como PDF/memoria? (condiciona todo lo demás).
-2. Datos del paciente mostrados en el formato (nombre/especie/edad/sexo/identificación): ¿se leen siempre del `animal_id` o se guarda un **snapshot histórico** en la evaluación?
-3. “MVZ” y “nº de animales afectados”: ¿columnas propias o texto en `assessment_reason`?
-4. Nivel de detalle a persistir: ¿opciones de casillas **normalizadas/estructuradas** o agregadas en texto/descripción?
-5. Formato canónico de `body_condition_score`, longitudes de `evaluation_reason`/`physical_method` y catálogo de `sample_type`/métodos.
-6. Semántica de “apto para liberación” y de campos opcionales/no respondidos (NULL vs valor por defecto).
-7. ¿Se incorpora **guardado offline/borradores** (requiere ADR/capacidades aprobadas) o solo envío en línea?
+Las decisiones se toman con el esquema de las migraciones y los modelos `ClinicalEvaluation`, `ClinicalEvaluationFinding`, `LabSample` y `AnimalRestraint` del repositorio.
+
+1. **Persistencia de diagnósticos.** Se optó por persistir los diagnósticos en BD en `clinical_evaluations` (`presumptive_diagnosis` y `definitive_diagnosis`), porque el esquema ya los contempla. Esto amplía el alcance de la spec 002 de forma explícita.
+2. **Datos del paciente.** Se optó por guardar un snapshot histórico de la edad en `clinical_evaluations.patient_age` (DBR-015), y por leer el resto de datos del paciente desde `animal_id`, porque el snapshot evita que una evaluación pasada cambie al editar el ejemplar.
+3. **MVZ y número de animales afectados.** Se optó por `veterinarian_id` para el MVZ, porque ya existe como FK, y por registrar el número de animales afectados en `assessment_reason`, porque no hay columna propia.
+4. **Nivel de detalle.** Se optó por persistir los hallazgos como filas en `clinical_evaluation_findings` (`organ_system`, `status`, `description`), que es el modelo vigente, en lugar de texto agregado.
+5. **Formatos y catálogos.** Se optó por mantener el formato actual de `body_condition_score` (con su restricción CHECK de la migración `2026_10_14_000001`), las longitudes vigentes y `sample_type` como texto en `lab_samples`. No se crean catálogos nuevos en esta fase.
+6. **Campos no respondidos.** Se optó por valores NULL para los campos no respondidos, sin valor por defecto. `is_fit_for_wild_release` es la columna renombrada de «optimo_liberacion_silvestre».
+7. **Guardado offline.** Se optó por el guardado offline solo como borradores sincronizados, según ADR 0003 y `pwa-009` (DBR-020 y DBR-021 aplicadas). El servidor no sobrescribe evaluaciones clínicas confirmadas.
 
 ---
 

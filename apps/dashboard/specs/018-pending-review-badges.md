@@ -2,10 +2,11 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` (aviso al iniciar sesión, puntito en el menú, consulta de conteos); `api` (`api-024`, dueña de los conteos y de los permisos; no se modifica desde esta spec); `packages/api-client` (método y tipo de los conteos; sin lógica de negocio); `packages/ui` (solo si falta un componente compartido).
-- Estado: Aprobada (2026-11-20). Sin plan, sin tasks, sin código.
-- Solicitante / responsable funcional: Jonathan.
-- Aprobación funcional: Jonathan, 2026-11-20.
-- Dependencias de contrato: `api-024` (Aprobada 2026-11-20; endpoint `GET /api/v1/admin/pending-counts`). Depende de los permisos de `api-023` (rol «Comunicación», solo citado).
+- Estado: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Aprobación funcional: Aprobada.
+- Dependencias de contrato: `api-024` (Aprobada; endpoint `GET /api/v1/admin/pending-counts`). Depende de los permisos de `api-023` (rol «Comunicación», solo citado).
 
 ## Problema y contexto
 
@@ -59,7 +60,7 @@ La decisión se toma por permiso (`profile.permissions`), no por nombre de rol.
 - **CA-02 (sin aviso sin pendientes):** Dado un usuario cuyos conteos son 0, o que no tiene ninguno de los dos permisos, cuando inicia sesión, entonces no aparece ningún aviso de pendientes.
   - Verificación: `pending-review-badges.test.tsx`, caso «sin aviso con cero».
 
-- **CA-03 (singular y plural):** Con 1 pendiente, el texto es «Tienes 1 solicitud de especie pendiente.» o «Tienes 1 momento pendiente de revisión.». Con 2 o más, los textos usan el plural de CA-01. Los textos están aprobados (decisión 2026-11-20).
+- **CA-03 (singular y plural):** Con 1 pendiente, el texto es «Tienes 1 solicitud de especie pendiente.» o «Tienes 1 momento pendiente de revisión.». Con 2 o más, los textos usan el plural de CA-01. Los textos están aprobados.
   - Verificación: `pending-review-badges.test.tsx`, caso «singular y plural».
 
 - **CA-04 (aviso una vez por inicio):** Dado un aviso ya mostrado en el inicio, cuando el usuario cambia de pantalla, entonces el aviso no vuelve a aparecer; solo se actualiza el puntito (CA-07).
@@ -105,23 +106,23 @@ La decisión se toma por permiso (`profile.permissions`), no por nombre de rol.
 
 - **RN-01 (la API decide):** Los conteos y su significado los decide `api-024`. El dashboard no reinterpreta estados ni calcula pendientes a partir de otros datos.
 - **RN-02 (consulta por permiso):** La consulta se hace solo si el perfil ya entregado por la API incluye `species.review` o `memories.review`. Ocultar el puntito no reemplaza la autorización del servidor (`apps/dashboard/AGENTS.md`).
-- **RN-03 (aviso de inicio):** El aviso de pendientes se muestra una vez por inicio, cuando los conteos llegan con valores mayores que 0. Ocurre tanto al escribir credenciales como al cargar el panel con una sesión ya activa (decisión 2026-11-20). Se comporta como el aviso actual: se cierra solo a los 5 segundos y tiene botón de cierre. Una vez cerrado, no vuelve a aparecer en esa sesión, aunque cambie de pantalla.
+- **RN-03 (aviso de inicio):** El aviso de pendientes se muestra una vez por inicio, cuando los conteos llegan con valores mayores que 0. Ocurre tanto al escribir credenciales como al cargar el panel con una sesión ya activa. Se comporta como el aviso actual: se cierra solo a los 5 segundos y tiene botón de cierre. Una vez cerrado, no vuelve a aparecer en esa sesión, aunque cambie de pantalla.
 - **RN-04 (puntito):** El puntito aparece cuando el último conteo recibido de esa clave es mayor que 0 y desaparece cuando es 0. No hay número visible en el menú.
 - **RN-05 (sin estado de leído):** Abrir la sección no oculta el puntito. Solo lo oculta un conteo de 0, es decir, que la solicitud o el momento salió de la cola.
 - **RN-06 (sin tiempo real):** La actualización ocurre al iniciar sesión y al cambiar de pantalla. No hay sondeo, websockets, correo ni notificaciones del sistema.
-- **RN-07 (intervalo mínimo):** Entre dos consultas seguidas, el panel espera al menos 15 segundos (decisión 2026-11-20). Un cambio de pantalla dentro de ese intervalo usa el último resultado (CA-16). *Enmienda técnica 2026-11-20 (pregunta 4 del plan): solo las consultas con éxito actualizan el intervalo; un fallo no cuenta para él.*
+- **RN-07 (intervalo mínimo):** Entre dos consultas seguidas, el panel espera al menos 15 segundos. Un cambio de pantalla dentro de ese intervalo usa el último resultado (CA-16). *Enmienda técnica (pregunta 4 del plan): solo las consultas con éxito actualizan el intervalo; un fallo no cuenta para él.*
 - **RN-08 (fallo):** Si la consulta falla, no se muestra puntito ni aviso nuevo (CA-10). El fallo no bloquea la navegación ni las acciones.
 - **RN-09 (menú contraído y móvil):** El puntito se ve también con el menú contraído (`dashboard-011` CA-01), sobre el icono, y en el menú móvil, con el mismo texto accesible.
-- **RN-10 (sin cambio de decisiones de revisión):** Las acciones de revisión (`dashboard-008`, `dashboard-010`) no cambian. Tras una decisión, el puntito se actualiza al cambiar de pantalla, no en la misma pantalla (decisión 2026-11-20).
+- **RN-10 (sin cambio de decisiones de revisión):** Las acciones de revisión (`dashboard-008`, `dashboard-010`) no cambian. Tras una decisión, el puntito se actualiza al cambiar de pantalla, no en la misma pantalla.
 - **RN-11 (estilo):** Usa tokens semánticos y los componentes de `@arca/ui` y los avisos existentes. No fija colores de marca. Modo claro.
-- **RN-12 (tono):** El aviso de pendientes usa tono informativo neutro dentro de `DashboardNotifications`, sin dependencia nueva (decisión 2026-11-20). No usa el tono de éxito. *Enmienda técnica 2026-11-20 (pregunta 2 del plan): el encabezado del tono informativo es «Aviso».*
-- **RN-13 (clic en la sección abierta; enmienda técnica 2026-11-20, pregunta 3):** Un clic en la sección que ya está abierta no vuelve a consultar los conteos. Solo un cambio de sección consulta (CA-07).
-- **RN-14 (cola de avisos; enmienda técnica 2026-11-20, pregunta 1):** `DashboardNotifications` muestra los avisos en orden de llegada, en cola FIFO para todos los tonos: un aviso espera a que termine el anterior (por tiempo o por su botón) y después se muestra. Sustituye la ranura única de la versión anterior (CA-15).
+- **RN-12 (tono):** El aviso de pendientes usa tono informativo neutro dentro de `DashboardNotifications`, sin dependencia nueva. No usa el tono de éxito. *Enmienda técnica (pregunta 2 del plan): el encabezado del tono informativo es «Aviso».*
+- **RN-13 (clic en la sección abierta; enmienda técnica, pregunta 3):** Un clic en la sección que ya está abierta no vuelve a consultar los conteos. Solo un cambio de sección consulta (CA-07).
+- **RN-14 (cola de avisos; enmienda técnica, pregunta 1):** `DashboardNotifications` muestra los avisos en orden de llegada, en cola FIFO para todos los tonos: un aviso espera a que termine el anterior (por tiempo o por su botón) y después se muestra. Sustituye la ranura única de la versión anterior (CA-15).
 
 ## Datos, privacidad y auditoría
 
 - **Datos:** solo los dos enteros de `api-024` (CA-01 a CA-03 de esa spec). El dashboard no guarda historial de conteos ni los escribe en almacenamiento local.
-- **Esquema:** esta spec no lee ni modifica tablas. La verificación de esquema de `api-024` (2026-11-20) confirma que no hace falta índice ni DBR.
+- **Esquema:** esta spec no lee ni modifica tablas. La verificación de esquema de `api-024` confirma que no hace falta índice ni DBR.
 - **Privacidad:** no se muestra ningún dato de personas (CA-12). Las pantallas de revisión mantienen sus propias reglas de privacidad.
 - **Auditoría:** la consulta de conteos no se audita; las decisiones se auditan en las specs de revisión.
 
@@ -143,24 +144,25 @@ La decisión se toma por permiso (`profile.permissions`), no por nombre de rol.
   - Carga por cambios de pantalla frecuentes: mitigado por RN-07 y por el límite de `api-024` CA-10.
   - Pantallas que no pasan por la navegación habitual (enlaces directos): deben consultar también al cambiar de sección. Lo cubre CA-07 al cubrir la búsqueda y los enlaces internos.
   - El nombre accesible del botón del menú hoy se fija con `aria-label` igual a la etiqueta; el plan debe incluir el estado sin romper el nombre actual.
-- **Decisiones 2026-11-20** (las preguntas de la versión Borrador quedan cerradas):
-  1. **¿Aviso al escribir credenciales, al cargar con sesión activa, o ambos?** Decisión 2026-11-20: ambos (RN-03).
-  2. **¿Cierre automático o permanente?** Decisión 2026-11-20: igual que el aviso actual, con cierre automático a los 5 segundos y botón de cierre (RN-03).
-  3. **¿Espera o se muestra a la vez si hay otro aviso?** Decisión 2026-11-20: espera (CA-15); tono informativo neutro dentro de `DashboardNotifications` (RN-12).
-  4. **¿Intervalo mínimo?** Decisión 2026-11-20: 15 segundos entre consultas (RN-07, CA-16).
-  5. **¿Textos de CA-01 y CA-03?** Decisión 2026-11-20: aprobados tal como están escritos.
-  6. **¿Puntito al instante tras aceptar o rechazar?** Decisión 2026-11-20: se actualiza al cambiar de pantalla, no en la misma pantalla (RN-10).
+## Decisiones
+
+- **P-1 (aviso de inicio):** Se optó por mostrar el aviso tanto al escribir credenciales como al cargar el panel con sesión activa (RN-03), para que el pendiente no se pierda en ninguno de los dos caminos.
+- **P-2 (cierre):** Se optó por el mismo comportamiento del aviso actual: cierre automático a los 5 segundos y botón de cierre (RN-03), para no crear un componente nuevo.
+- **P-3 (avisos simultáneos):** Se optó por hacer esperar el aviso de pendientes a que termine el anterior, con tono informativo neutro dentro de `DashboardNotifications` (CA-15, RN-12, RN-14), para no solapar avisos.
+- **P-4 (intervalo):** Se optó por 15 segundos entre consultas (RN-07, CA-16), para no saturar la API en cambios de pantalla frecuentes.
+- **P-5 (textos):** Se optó por los textos de CA-01 y CA-03 tal como están escritos.
+- **P-6 (tras decidir):** Se optó por actualizar el puntito al cambiar de pantalla y no en la misma pantalla (RN-10), porque no hay sondeo ni tiempo real.
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan, 2026-11-20.
-- Enmienda técnica 2026-11-20: decisiones de la aprobación técnica de `apps/dashboard/plan/018-pending-review-badges.md`. Enmienda RN-07 (fallo no cuenta) y RN-12 (etiqueta «Aviso»); añade RN-13 (clic sin consulta) y RN-14 (cola FIFO). CA sin cambio de número.
+- Aprobación: Aprobada.
+- Enmienda técnica: decisiones de la aprobación técnica de `apps/dashboard/plan/018-pending-review-badges.md`. Enmienda RN-07 (fallo no cuenta) y RN-12 (etiqueta «Aviso»); añade RN-13 (clic sin consulta) y RN-14 (cola FIFO). CA sin cambio de número.
 - Evidencia/enlaces: `apps/dashboard/src/components/DashboardNotifications.tsx` (aviso emergente, `NotificationAlert`, cierre automático de 5 s), `apps/dashboard/src/components/NoticeBar.tsx`, `apps/dashboard/src/components/PendingRequestNotice.tsx`, `apps/dashboard/src/App.tsx` (menú `sidebar-link`, `navigate`, perfil con `permissions`), `apps/dashboard/src/viewmodels/navigation.ts` (secciones `memories` y `tulanpedia` con sus permisos), `apps/dashboard/src/viewmodels/dashboard-shell.ts` (acción `navigate`); specs `apps/dashboard/specs/008-memory-moderation.md`, `apps/dashboard/specs/009-species-request-review.md`, `apps/dashboard/specs/010-public-content-management.md`, `apps/dashboard/specs/011-collapsible-menu-event-pagination.md`; `apps/api/specs/024-pending-review-counts.md`.
 - Consulta de esquema vivo: no aplica a esta spec (no toca datos); ver `api-024`.
 
-## Nota de revisión (2026-11-21, `dashboard-021` y `api-027`)
+## Nota de revisión (`dashboard-021` y `api-027`)
 
-- **Clave nueva `cancellation_days`:** para quien tiene `reports.cancellations.view` (solo `admin`), el aviso al iniciar sesión y el puntito usan la clave `cancellation_days` de `GET /api/v1/admin/pending-counts` (`api-024` nota de 2026-11-21).
+- **Clave nueva `cancellation_days`:** para quien tiene `reports.cancellations.view` (solo `admin`), el aviso al iniciar sesión y el puntito usan la clave `cancellation_days` de `GET /api/v1/admin/pending-counts` (`api-024`, nota de revisión).
 - **Texto del aviso:** «Tienes N días de cancelaciones en Atención sin revisar.» y, con 1, «Tienes 1 día de cancelaciones en Atención sin revisar.». Mismo tono informativo, cola FIFO (RN-14) y cierre de 5 s (RN-03).
 - **Puntito:** aparece junto a «Reportes» (menú) y en la pestaña «Cancelaciones» cuando la clave es mayor que 0; el nombre accesible es «Reportes, con días de cancelaciones pendientes de revisión». Sustituye el criterio de CA-05 solo para esa sección; las secciones «TulanPedia» y «Momentos» no cambian.
 - **Permisos:** RN-02 y CA-11 se amplían con `reports.cancellations.view`. Sin ese permiso no hay consulta de `cancellation_days`.

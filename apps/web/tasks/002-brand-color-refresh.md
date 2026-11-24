@@ -1,5 +1,7 @@
 # Tareas · 002 · brand-color-refresh
 
+- Solicitada: 2026-10-07
+- Aprobada: 2026-10-07
 - Spec: `apps/web/specs/002-brand-color-refresh.md`
 - Plan: `apps/web/plan/002-brand-color-refresh.md`
 

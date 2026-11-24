@@ -2,10 +2,11 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña: enum de campos publicados, validación, Actions de envío, edición, aceptación, republicar y eliminar, recursos públicos y de administración); `pwa` (`pwa-005`, envío del veterinario: casilla y texto; revisión pendiente, ver «Cambios por área»); `dashboard` (`dashboard-010`, revisión y edición en TulanPedia; revisión pendiente); `web` (`web-011`, muestra el campo solo si la API lo publica; revisión pendiente); `packages/api-client` (tipos del campo; sin cambio de métodos); `mobile` sin cambios (`api-006` no cambia).
-- Estado: Aprobada
-- Solicitante / responsable funcional: Jonathan
-- Aprobación funcional: Jonathan, 2026-11-21
-- Base de datos: `docs/database/requests/DBR-025-species-fun-fact.md` (Lista para backend, 2026-11-21).
+- Estado: Implementada
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Aprobación funcional: Aprobada.
+- Base de datos: `docs/database/requests/DBR-025-species-fun-fact.md`.
 - Número: `026` es el siguiente libre en `apps/api/specs/` (el máximo existente es `025-single-business-timezone.md`).
 
 ## Problema y contexto
@@ -14,7 +15,7 @@ La ficha pública de especies (TulanPedia, `web-011`) muestra solo los campos qu
 
 Los formularios veterinarios tienen datos clínicos. Este campo **no** los reutiliza: es un texto nuevo, de contenido público, y no se copia ningún dato clínico al portal.
 
-## Decisiones (2026-11-21, Jonathan)
+## Decisiones (, el responsable funcional)
 
 - Un solo campo de texto plano opcional, «Dato curioso», de hasta 500 caracteres.
 - Sin datos clínicos ni de personas. Texto de ayuda para los formularios: «Escribe una o dos frases para quien visita el zoológico. No incluyas datos clínicos ni de personas.»
@@ -109,10 +110,10 @@ Los formularios veterinarios tienen datos clínicos. Este campo **no** los reuti
 ## Reglas de negocio
 
 - **RN-01 (clave y longitud):** `fun_fact` es una clave de `PublishedSpeciesField`. Se cuenta en caracteres (no en bytes) tras quitar los espacios al inicio y al final: mínimo 20 cuando se muestra, máximo 500 siempre.
-- **RN-02 (solo con el campo marcado):** `species_publication_requests.fun_fact` guarda texto solo si `fun_fact` está en el `published_fields` de la solicitud. Si no está, guarda NULL (CA-04, CA-05). *Confirmada por Jonathan, 2026-11-21.*
-- **RN-03 (copia al aceptar):** al aceptar, `species.fun_fact` toma el valor de la solicitud, igual que `published_fields`, aunque sea NULL. *Confirmada por Jonathan, 2026-11-21.*
+- **RN-02 (solo con el campo marcado):** `species_publication_requests.fun_fact` guarda texto solo si `fun_fact` está en el `published_fields` de la solicitud. Si no está, guarda NULL (CA-04, CA-05). *Confirmada por el responsable funcional.*
+- **RN-03 (copia al aceptar):** al aceptar, `species.fun_fact` toma el valor de la solicitud, igual que `published_fields`, aunque sea NULL. *Confirmada por el responsable funcional.*
 - **RN-04 (edición de la especie):** las reglas de RN-01 y RN-02 se aplican a `species.fun_fact` cuando se edita una especie despublicada (CA-08).
-- **RN-05 (eliminar no borra el texto):** eliminar la publicación no cambia `species.fun_fact`, como las correcciones (`api-014` RN-21). El campo deja de ser visible porque `published_fields` queda NULL. *Confirmada por Jonathan, 2026-11-21.*
+- **RN-05 (eliminar no borra el texto):** eliminar la publicación no cambia `species.fun_fact`, como las correcciones (`api-014` RN-21). El campo deja de ser visible porque `published_fields` queda NULL. *Confirmada por el responsable funcional.*
 - **RN-06 (visibilidad pública):** la clave `fun_fact` aparece en `GET /api/v1/published-species` solo si la especie es visible (`api-015` RN-03) y el campo está seleccionado (CA-11). No es filtro: el parámetro `fun_fact`, si llega, se ignora.
 - **RN-07 (texto plano):** la API guarda el texto sin transformar salvo los espacios de los extremos. No lo interpreta como HTML. Los clientes lo muestran como texto (`web-011` CA-11, `dashboard-010`).
 - **RN-08 (contenido sin datos clínicos ni de personas):** la API no detecta datos clínicos ni de personas. La Dirección lo revisa antes de aceptar (`dashboard-010`). El texto de ayuda lo advierte al veterinario.
@@ -148,7 +149,7 @@ Textos de ayuda para las interfaces (no los genera la API): etiqueta «Dato curi
 ## Dependencias, riesgos y preguntas
 
 - **Dependencias/ADR:**
-  - DBR-025 (Lista para backend, 2026-11-21).
+  - DBR-025.
   - `api-014` (Aprobada; en progreso): endpoints de envío, edición, aceptación, despublicar, republicar y eliminar, que esta spec extiende.
   - `api-015` (Aprobada): lectura pública, que esta spec extiende con CA-11 y CA-12.
   - `api-006` (Aprobada): no cambia (CA-13).
@@ -158,8 +159,8 @@ Textos de ayuda para las interfaces (no los genera la API): etiqueta «Dato curi
   - **Contenido inadecuado:** la API no valida el contenido (RN-08). Mitigación: revisión humana obligatoria antes de aceptar y texto de ayuda en los formularios.
   - **Deriva `diet`/`feeding` (no se corrige aquí):** la columna se llama `feeding` (DBR-014) y `api-014` / `api-015` / `web-011` / `PublishedSpeciesField` usan la clave `diet`. `apps/web/src/js/animals.js` y `apps/web/src/js/search.js` también usan `diet`. Al implementar `fun_fact` no se mezclan con esa clave. Se corrige en una spec propia.
   - **Coste de la fila:** `VARCHAR(500)` en utf8mb4 ocupa hasta 2000 bytes por columna. Verificación pendiente de BD (DBR-025, «Verificaciones para BD»).
-- **Preguntas resueltas por Jonathan (2026-11-21):** las cuatro propuestas se aceptan tal cual (1 sí, 2 se descarta, 3 se conserva, 4 `fun_fact`).
-- **Preguntas (histórico):**
+- **Preguntas resueltas por el responsable funcional:** las cuatro propuestas se aceptan tal cual (1 sí, 2 se descarta, 3 se conserva, 4 `fun_fact`).
+- **Decisiones (histórico de preguntas):**
   1. ¿El veterinario ve en el selector el dato curioso vigente de la especie, para precargarlo al pedir una actualización (CA-14)? Propuesta: sí.
   2. Si el veterinario o la Dirección desmarcan «Dato curioso», ¿el texto se descarta (RN-02, propuesta) o se conserva sin mostrarse? Propuesta: se descarta, para no guardar texto oculto en solicitudes.
   3. Al eliminar la publicación, ¿el texto se conserva (RN-05, propuesta) o se borra? Propuesta: se conserva, como las correcciones.
@@ -171,15 +172,15 @@ Esta spec no modifica las specs de otras apps. Cada revisión se registra en la 
 
 | Spec | Revisión necesaria | Estado |
 |---|---|---|
-| `apps/api/specs/014-species-requests.md` | Nota de revisión: CA-06, CA-08, CA-15, CA-18, CA-26, CA-36, CA-37 y CA-38 incluyen `fun_fact` según esta spec. | Nota añadida 2026-11-21 |
-| `apps/api/specs/015-public-species-read.md` | Nota de revisión: CA-03 y CA-13 admiten `fun_fact` cuando está en `published_fields`. Sin filtro. | Nota añadida 2026-11-21 |
-| `apps/pwa/specs/005-species-request-submission.md` | Casilla «Dato curioso» en «Qué mostrar» (CA-09), texto con ayuda, obligatorio y mínimo de 20 caracteres solo si está marcado (CA-02), máximo de 500 (CA-03). El orden «Qué mostrar» primero y la visibilidad de cada campo lo cubre otra revisión de `pwa-005`; esta spec solo cita esa dependencia. | Nota añadida 2026-11-21; plan y tareas de PWA pendientes |
-| `apps/dashboard/specs/010-public-content-management.md` | Mostrar «Dato curioso» como dato actual y propuesto en la revisión (sección A) y en las especies publicadas (sección F); edición en solicitud `submitted` y en especie despublicada con las reglas de esta spec; no aparece en listados. | Nota añadida 2026-11-21; plan y tareas de dashboard pendientes |
-| `apps/web/specs/011-dynamic-tulanpedia.md` | Mostrar «Dato curioso» solo si la API lo devuelve, como texto (CA-11); añadir la etiqueta a la lista de campos de la ficha (`apps/web/src/js/animals.js`). Ver la deriva `diet`/`feeding`. | Nota añadida 2026-11-21; plan y tareas de web pendientes |
+| `apps/api/specs/014-species-requests.md` | Nota de revisión: CA-06, CA-08, CA-15, CA-18, CA-26, CA-36, CA-37 y CA-38 incluyen `fun_fact` según esta spec. | Nota añadida |
+| `apps/api/specs/015-public-species-read.md` | Nota de revisión: CA-03 y CA-13 admiten `fun_fact` cuando está en `published_fields`. Sin filtro. | Nota añadida |
+| `apps/pwa/specs/005-species-request-submission.md` | Casilla «Dato curioso» en «Qué mostrar» (CA-09), texto con ayuda, obligatorio y mínimo de 20 caracteres solo si está marcado (CA-02), máximo de 500 (CA-03). El orden «Qué mostrar» primero y la visibilidad de cada campo lo cubre otra revisión de `pwa-005`; esta spec solo cita esa dependencia. | Nota añadida; plan y tareas de PWA pendientes |
+| `apps/dashboard/specs/010-public-content-management.md` | Mostrar «Dato curioso» como dato actual y propuesto en la revisión (sección A) y en las especies publicadas (sección F); edición en solicitud `submitted` y en especie despublicada con las reglas de esta spec; no aparece en listados. | Nota añadida; plan y tareas de dashboard pendientes |
+| `apps/web/specs/011-dynamic-tulanpedia.md` | Mostrar «Dato curioso» solo si la API lo devuelve, como texto (CA-11); añadir la etiqueta a la lista de campos de la ficha (`apps/web/src/js/animals.js`). Ver la deriva `diet`/`feeding`. | Nota añadida; plan y tareas de web pendientes |
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan (aprobación funcional), 2026-11-21.
-- Estado: Aprobada (2026-11-21). Aprobar no autoriza implementar: la implementación espera a DBR-025 en «Lista para backend» (RN-11).
-- Historial: borrador del mismo día, a partir de las decisiones funcionales de Jonathan (2026-11-21) y de la lectura de `api-014`, `api-015`, `pwa-005`, `dashboard-010` y `web-011`.
+- Aprobación: Equipo ARCA-NB.
+- Estado: Aprobada. Aprobar no autoriza implementar: la implementación espera a DBR-025 en «Lista para backend» (RN-11).
+- Historial: borrador del mismo día, a partir de las decisiones funcionales del responsable funcional y de la lectura de `api-014`, `api-015`, `pwa-005`, `dashboard-010` y `web-011`.
 - Evidencia/enlaces: `apps/api/plan/026-species-fun-fact.md`, `apps/api/tasks/026-species-fun-fact.md`, `docs/database/requests/DBR-025-species-fun-fact.md`, `apps/api/src/app/Enums/PublishedSpeciesField.php`, `apps/api/src/app/Http/Resources/Catalog/PublishedSpeciesResource.php`, `apps/api/src/app/Http/Requests/Concerns/ValidatesPublishedFields.php`, `apps/api/src/app/Actions/Admin/SpeciesPublication/AcceptSpeciesPublicationRequestAction.php`.

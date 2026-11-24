@@ -1,8 +1,10 @@
 # Plan técnico · 019 · single-business-timezone
 
-- Spec: `apps/dashboard/specs/019-single-business-timezone.md` (Estado: Aprobada, Jonathan, 2026-11-20; decisión final 1: respaldo fijo a `America/Mexico_City`)
-- Estado de spec: Aprobada
-- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**. D-01, D-02 y D-03 cerradas en «Decisiones 2026-11-20». La implementación sigue condicionada a `api-025` implementada.
+- Spec: `apps/dashboard/specs/019-single-business-timezone.md` (Estado: Aprobada; decisión final 1: respaldo fijo a `America/Mexico_City`)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Estado del plan: **Aprobado** (aprobación técnica registrada). D-01, D-02 y D-03 cerradas en «Decisiones». La implementación sigue condicionada a `api-025` implementada.
 - Responsable técnico: por identificar en la aprobación técnica
 - Spec de la API (dueña de la zona): `apps/api/specs/025-single-business-timezone.md`, plan `apps/api/plan/025-single-business-timezone.md`
 - DBR relacionada: ninguna (solo presentación y cliente HTTP).
@@ -68,7 +70,7 @@ Vitest, nombre de cada `it` con el identificador del CA al inicio (`CA-NN: ...`)
 
 | Criterio | Prueba automatizada | Ubicación | Tareas |
 |---|---|---|---|
-| CA-01 | `CA-01: fecha de compra en la zona de la API aunque el navegador esté en America/Tijuana` (`timezone: "America/Mexico_City"`, `purchased_at` 2026-11-07T05:30:00Z → `06/11/2026 23:30`) | `business-timezone.test.tsx` | T-07, T-08 |
+| CA-01 | `CA-01: fecha de compra en la zona de la API aunque el navegador esté en America/Tijuana` (`timezone: "America/Mexico_City"`, `purchased_at`:00Z → `06/11/2026 23:30`) | `business-timezone.test.tsx` | T-07, T-08 |
 | CA-02 | `CA-02: el navegador no cambia la presentación` (Europe/Madrid y America/Mexico_City → mismo texto `06/11/2026 23:30`) | `business-timezone.test.tsx` | T-07 |
 | CA-03 | `CA-03: panel y reporte presentan con su zona sin recalcular` (respuesta de panel con `timezone` y reporte con `period.timezone` `America/Mexico_City`; `purchased_at` de la fila ya en esa zona no se convierte; totales sin cambio) | `business-timezone.test.tsx` | T-11 |
 | CA-04 | `CA-04: panel, reporte, exportación, historial y cancelación no envían timezone` (con `@arca/api-client` y sesión activa, URLs y cuerpos sin `timezone`) y `CA-04: history.list no envía timezone aunque el llamador lo pase` | `api-client-admin.test.tsx`, `ticket-sales-api-client.test.tsx` | T-02 a T-05 |
@@ -83,7 +85,7 @@ Vitest, nombre de cada `it` con el identificador del CA al inicio (`CA-NN: ...`)
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas (no se añade ninguna librería de zonas horarias). La zona se lee de la API, no de la nube. Pendiente D-01: si se decide convertir localmente, la solución no debe añadir una dependencia sin ADR. |
-| II. La spec manda | Sí | Spec 019 Aprobada (2026-11-20). Plan y tasks con el mismo `019-single-business-timezone`. Requiere `api-025` implementada antes. |
+| II. La spec manda | Sí | Spec 019 Aprobada. Plan y tasks con el mismo `019-single-business-timezone`. Requiere `api-025` implementada antes. |
 | III. Lógica separada de la interfaz | Parcial (con brecha) | Las vistas solo presentan; el cliente no tiene reglas. Brecha: `ticket-prices.ts` convierte la hora de entrada en vigor con el desfase del navegador (`localDateTimeToIso`). Es lógica de viewmodel que depende de la zona del dispositivo (D-01). |
 | IV. Un test por criterio | Sí | Mapeo de CA-01 a CA-08 con `it("CA-NN: ...")`. CA-09 por verificación de cobertura. Pendiente la evidencia de la sesión principal. |
 | V. Una sola fuente de verdad para los datos | Sí | Sin datos nuevos ni escrituras. La zona de negocio es la de la API. |
@@ -104,7 +106,7 @@ Vitest, nombre de cada `it` con el identificador del CA al inicio (`CA-NN: ...`)
 - **Cambio visible:** un usuario en otra zona verá horas distintas. Es el efecto esperado y debe anunciarse antes del despliegue.
 - **Alternativas descartadas:** guardar la zona en `localStorage` (prohibido por la spec); añadir una librería de zonas (sin ADR, descartado); mostrar la zona en la interfaz (fuera de alcance, `dashboard-003` pregunta 4).
 
-## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+## Decisiones (aprobación técnica)
 
 - **D-01 (precios programados):** propuesta A aceptada. El dashboard envía la fecha y hora de «entrada en vigor» sin desfase; la API la interpreta en `arca.timezone` (`api-025` RN-12, CA-16). Spec: RN-06. Tarea: T-10 desbloqueada. Queda abierta P-03b de `api-025` (desfase explícito), que no bloquea el envío sin desfase.
 - **D-02 (recibo y precio vigente):** la API informa `timezone` en la respuesta de venta y en los precios vigentes (`api-025` P-04, RN-13). Spec: CA-03 enmendado. Tarea: T-09 desbloqueada; el recibo y los precios usan la zona de la respuesta.
@@ -121,15 +123,15 @@ Vitest, nombre de cada `it` con el identificador del CA al inicio (`CA-NN: ...`)
 
 1. `dashboard-015` (confirmación de la 2FA) cerrado.
 2. `api-025` implementada (historial con `timezone`, panel y reporte con la zona de negocio) y verificada.
-3. Hecho: respuestas a D-01, D-02 y D-03 registradas el 2026-11-20.
+3. Hecho: respuestas a D-01, D-02 y D-03 registradas.
 4. Implementación según `apps/dashboard/tasks/019-single-business-timezone.md` (T-02 en adelante). T-09 y T-10 solo al cerrar D-01 y D-02.
 5. Verificación con evidencia de la sesión principal.
 
-- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan).
-- Aprobador funcional: Jonathan (spec aprobada 2026-11-20).
+- Revisión técnica: aprobada (aprobación técnica del plan).
+- Aprobador funcional: responsable funcional (spec aprobada).
 - Evidencias: pendientes de la sesión principal (salida de Vitest y de tipos, y de lint). Esta sesión no tiene shell y no afirma que pasen.
 
-## Divergencias de implementación (2026-11-20)
+## Divergencias de implementación
 
 - Contrato de `api-025` P-04 supuesto: `timezone` opcional en el nivel superior de `TicketSaleBatchDto` (venta) y de `TicketPriceCurrentDto` (precios vigentes), y `timezone` en el nivel superior de la página del historial. Si falta, el dashboard usa `BUSINESS_TIMEZONE_FALLBACK`. Hay que confirmar la ubicación exacta con `api-025` T-36.
 - `exportTicketReport` perdió su sexto parámetro `report` (ya no se necesita para leer la zona).

@@ -2,16 +2,15 @@
 
 - **Documento:** Propuesta de herramienta utilitaria para levantamiento geográfico
 - **Feature asociada:** `apps/mobile/specs/007-map-location.md` (Frente 1 / DBR-008)
-- **Fecha:** 2026-11-09
-- **Autor / Responsable:** Víctor Adrián
-- **Estado:** Aprobada por Aksel (2026-11-09)
+- **Responsable:** Frontend
+- **Estado:** Aprobada
 
 ---
 
 ## 1. Contexto y Justificación
 
 ### 1.1. Antecedentes
-El mapa 2D del visitante en `apps/mobile` (especificación `007-map-location.md`) cuenta con soporte para posicionamiento geográfico en tiempo real, trazado de rutas y geocercas de llegada ($\le 10\text{ m}$) mediante la fórmula de Haversine. La base de datos ya cuenta con las columnas necesarias en la tabla `enclosures` aprobadas mediante la solicitud [DBR-008](file:///c:/Users/vic22/OneDrive/Escritorio/ARCA-NB/docs/database/requests/DBR-008-enclosure-gps-coordinates.md):
+El mapa 2D del visitante en `apps/mobile` (especificación `007-map-location.md`) cuenta con soporte para posicionamiento geográfico en tiempo real, trazado de rutas y geocercas de llegada ($\le 10\text{ m}$) mediante la fórmula de Haversine. La base de datos ya cuenta con las columnas necesarias en la tabla `enclosures` aprobadas mediante la solicitud `docs/database/requests/DBR-008-enclosure-gps-coordinates.md`:
 - `gps_lat DECIMAL(10, 8)`
 - `gps_lon DECIMAL(11, 8)`
 
@@ -138,7 +137,7 @@ Una vez concluido el levantamiento en el zoológico:
 
 ## 6. Próximos Pasos Recomendados
 
-1. **Revisión y Aprobación:** Aksel aprobó esta propuesta el 2026-11-09.
+1. **Revisión y Aprobación:** propuesta aprobada por el equipo.
 2. **Implementación de la herramienta:** Creación de los archivos en `tools/zoo-mapper/`.
 3. **Prueba local preliminar:** Probar la captura en calle/parque cercano para validar la respuesta del semáforo y la vibración en el teléfono.
 4. **Levantamiento en Tulancingo:** Jornada de mapeo en el Zoológico Nicolás Bravo.

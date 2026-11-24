@@ -29,7 +29,6 @@ class EnclosureResource extends JsonResource
                     'id' => (int) $animal->id,
                     'name' => (string) $animal->name,
                     'sex' => (string) ($animal->sex ?? ''),
-                    'birth_date' => $animal->birth_date ? (string) $animal->birth_date : null,
                     'age' => $this->ageLabel($animal->birth_date),
                     'origin' => (string) ($animal->origin ?? ''),
                     'longevity' => $animal->relationLoaded('species') && $animal->species !== null
@@ -41,7 +40,6 @@ class EnclosureResource extends JsonResource
                     'reproduction' => $animal->relationLoaded('species') && $animal->species !== null
                         ? (string) ($animal->species->reproduction ?? '')
                         : '',
-                    'characteristics' => (string) ($animal->characteristics ?? ''),
                     'photo_path' => $animal->photo_path ? (string) $animal->photo_path : null,
                     'stay_status' => (string) ($animal->stay_status ?? ''),
                     'can_receive_visits' => (bool) ($animal->can_receive_visits ?? true),

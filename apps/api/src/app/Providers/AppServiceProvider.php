@@ -14,6 +14,7 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -57,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
 
         DB::prohibitDestructiveCommands();
         $this->forceHttps();
+        $this->configureTrustedProxies();
         $this->registerVisitorLimiters();
         $this->registerReadLimiters();
         $this->registerTicketLimiters();
@@ -64,6 +66,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerPendingCountsLimiter();
         $this->registerCancellationReportLimiter();
         $this->registerPasswordConfirmationLimiter();
+        $this->registerStaffApiLimiter();
 
         // api-021 CA-10: la ventana de confirmación no sobrevive a un inicio ni a un cierre de sesión.
         Event::listen(Login::class, ClearStepUpWindow::class);
@@ -72,6 +75,18 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Failed::class, RecordAuthenticationEvent::class);
         Event::listen(Logout::class, RecordAuthenticationEvent::class);
         Event::listen(TwoFactorAuthenticationConfirmed::class, RecordAuthenticationEvent::class);
+    }
+
+    /** api-028 CA-11: `TRUSTED_PROXIES` (IP/CIDR separados por coma, o `*`); vacío: ningún proxy es de confianza. */
+    public function configureTrustedProxies(): void
+    {
+        $value = config('arca.trusted_proxies');
+
+        if (! is_string($value) || trim($value) === '') {
+            return;
+        }
+
+        TrustProxies::at(trim($value) === '*' ? '*' : array_values(array_filter(array_map('trim', explode(',', $value)))));
     }
 
     public function forceHttps(): void
@@ -92,7 +107,11 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('visitor-login', function (Request $request) use ($response) {
             $key = Str::lower((string) $request->input('email')).'|'.$request->ip();
 
-            return Limit::perMinute(5)->by($key)->response($response);
+            // api-028: tope adicional solo por IP contra pruebas de una contraseña en muchos correos.
+            return [
+                Limit::perMinute(5)->by($key)->response($response),
+                Limit::perMinute(20)->by('ip:'.$request->ip())->response($response),
+            ];
         });
 
         RateLimiter::for('visitor-resend', function (Request $request) use ($response) {
@@ -105,8 +124,16 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('visitor-forgot', function (Request $request) use ($response) {
-            return Limit::perHour(3)->by(Str::lower((string) $request->input('email')))->response($response);
+            return [
+                Limit::perHour(3)->by(Str::lower((string) $request->input('email')))->response($response),
+                Limit::perHour(10)->by('ip|'.$request->ip())->response($response),
+            ];
         });
+
+        // api-028 CA-09: verificación de código, renovación de sesión y restablecimiento con límite por IP.
+        RateLimiter::for('visitor-verify', fn (Request $request) => Limit::perMinute(10)->by('verify|'.$request->ip())->response($response));
+        RateLimiter::for('visitor-refresh', fn (Request $request) => Limit::perMinute(30)->by('refresh|'.$request->ip())->response($response));
+        RateLimiter::for('visitor-reset', fn (Request $request) => Limit::perMinute(10)->by('reset|'.$request->ip())->response($response));
     }
 
     /**
@@ -205,6 +232,16 @@ class AppServiceProvider extends ServiceProvider
                     'message' => 'Demasiadas consultas al reporte. Espera un minuto e inténtalo de nuevo.',
                 ], 429, $headers));
         });
+    }
+
+    /** api-028 CA-06: límite por usuario en /staff/*; el tope sale de `arca.staff_api_limit` (por minuto). */
+    private function registerStaffApiLimiter(): void
+    {
+        RateLimiter::for('staff-api', fn (Request $request) => Limit::perMinute(max(1, (int) config('arca.staff_api_limit', 120)))
+            ->by('staff|'.($request->user()?->getAuthIdentifier() ?? $request->ip()))
+            ->response(fn (Request $request, array $headers) => response()->json([
+                'message' => 'Demasiadas solicitudes. Intenta de nuevo en unos instantes.',
+            ], 429, $headers)));
     }
 
     /** api-021: 10 confirmaciones por minuto y usuario, antes de verificar la contraseña. */

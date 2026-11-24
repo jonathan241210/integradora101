@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { clearToasts } from '@/offline/notifications';
 import { validRetryAfter } from '@arca/ui';
 import { getUserScope } from '@/offline/scope';
+import { clearUserOfflineData, countPendingOperations } from '@/offline/session-cleanup';
 
 type SessionApi = Pick<AuthApi, 'login' | 'me' | 'logout'>;
 type SessionResult = {
@@ -89,6 +90,40 @@ export async function signOutStaff(auth: SessionApi): Promise<SessionResult> {
   }
 }
 
+export const cleanupWarning = 'No se pudieron borrar los datos locales. Cierra el navegador para proteger la información.';
+
+/**
+ * Cierra la sesión y borra los datos offline del usuario (pwa-012 CA-03, RN-01).
+ * Si el borrado falla, la sesión se cierra igual y se devuelve un aviso.
+ */
+export async function closeStaffSession(
+  auth: SessionApi,
+  userScope: string | null,
+  clear: (scope: string) => Promise<void> = clearUserOfflineData,
+): Promise<SessionResult> {
+  const result = await signOutStaff(auth);
+  if (result.session !== 'anonymous' || !userScope) return result;
+  try {
+    await clear(userScope);
+  } catch {
+    return { ...result, error: cleanupWarning };
+  }
+  return result;
+}
+
+/** Operaciones pendientes que se perderían al cerrar sesión (pwa-012 CA-04); 0 si no se puede consultar. */
+export async function pendingOperationsBeforeLogout(
+  userScope: string | null,
+  count: (scope: string) => Promise<number> = countPendingOperations,
+): Promise<number> {
+  if (!userScope) return 0;
+  try {
+    return await count(userScope);
+  } catch {
+    return 0;
+  }
+}
+
 export function useStaffSession() {
   const [state, setState] = useState<SessionResult | { session: 'restoring'; error: ''; profile: null }>({
     session: 'restoring',
@@ -96,6 +131,7 @@ export function useStaffSession() {
     profile: null,
   });
   const [busy, setBusy] = useState(false);
+  const [pendingLogout, setPendingLogout] = useState<number | null>(null);
   const previousScopeRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -151,12 +187,28 @@ export function useStaffSession() {
     setBusy(false);
   }
 
-  async function logout() {
+  async function finishLogout() {
+    setPendingLogout(null);
     setBusy(true);
-    const result = await signOutStaff(api);
+    const scope = state.profile ? getUserScope(state.profile.id) : null;
+    const result = await closeStaffSession(api, scope);
     setState(result);
     setBusy(false);
   }
 
-  return { ...state, retryAfterSeconds: 'retryAfterSeconds' in state ? (state.retryAfterSeconds ?? null) : null, busy, login, logout, expireSession };
+  /** Primer paso: si hay pendientes avisa y espera confirmación (RN-02). */
+  async function logout() {
+    const scope = state.profile ? getUserScope(state.profile.id) : null;
+    const pending = await pendingOperationsBeforeLogout(scope);
+    if (pending > 0) {
+      setPendingLogout(pending);
+      return;
+    }
+    await finishLogout();
+  }
+
+  const confirmLogout = finishLogout;
+  const cancelLogout = () => setPendingLogout(null);
+
+  return { ...state, retryAfterSeconds: 'retryAfterSeconds' in state ? (state.retryAfterSeconds ?? null) : null, busy, login, logout, pendingLogout, confirmLogout, cancelLogout, expireSession };
 }

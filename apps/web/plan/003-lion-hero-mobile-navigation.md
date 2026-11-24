@@ -1,10 +1,12 @@
 # Plan técnico · 003 · lion-hero-mobile-navigation
 
 - Spec: `apps/web/specs/003-lion-hero-mobile-navigation.md`
-- Estado de spec: Aprobada
-- Responsable técnico: Por identificar
+- Estado de spec: Implementada
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
+- Responsable técnico: Frontend
 - Estado técnico: En progreso
-- Fecha del plan: 2026-10-08
+- Aprobación técnica: Aprobada
 
 ## Diseño de solución
 
@@ -56,7 +58,7 @@ La prueba de reubicación conserva hashes de los recursos inmutables. Para permi
 | CA-04 | `CA-04 lion-hero-mobile-navigation` verifica presencia y orden de las reglas responsive; en navegador automatizado se comprueba `scrollWidth <= innerWidth`, legibilidad/disponibilidad de controles y ausencia de superposición en 360, 390, 768, 1024 y 1366 px. | Node `node:test` y navegador integrado; `apps/web/src/tests/relocation.test.mjs`. |
 | CA-05 | `CA-05 lion-hero-mobile-navigation` comprueba que estén presentes los tests CA-01..CA-05 y que la suite solo dependa de builtins de Node; se ejecuta la suite completa. | Node `node:test`; `apps/web/src/tests/relocation.test.mjs`. |
 
-La inspección con navegador integrado se registra como evidencia de aceptación, sin añadir un paquete E2E a una app estática sin manifiesto. La persona solicitante autorizó el 2026-10-08 continuar el trabajo con las pruebas automatizadas disponibles y documentar la limitación; no se afirma que `scrollWidth` esté medido en los cinco viewports ni se cierra CA-04 hasta poder efectuar esa comprobación visual.
+La inspección con navegador integrado se registra como evidencia de aceptación, sin añadir un paquete E2E a una app estática sin manifiesto. La persona solicitante autorizó continuar el trabajo con las pruebas automatizadas disponibles y documentar la limitación; no se afirma que `scrollWidth` esté medido en los cinco viewports ni se cierra CA-04 hasta poder efectuar esa comprobación visual.
 
 ## Constitution Check
 
@@ -89,4 +91,4 @@ No se requiere excepción constitucional ni ADR.
 6. Ejecutar tests Node, interacción/viewport en navegador integrado, `git diff --check` y `/verify`; revisar que los cambios existentes no relacionados permanezcan intactos.
 7. Actualizar spec, plan y tasks a Implementada únicamente después de pasar los criterios.
 
-La aprobación funcional de la spec y la aprobación del plan técnico fueron otorgadas por la persona solicitante el 2026-10-08 en esta conversación. No se inicia la implementación antes de desglosar las tareas.
+La aprobación funcional de la spec y la aprobación del plan técnico fueron otorgadas por la persona solicitante en esta conversación. No se inicia la implementación antes de desglosar las tareas.

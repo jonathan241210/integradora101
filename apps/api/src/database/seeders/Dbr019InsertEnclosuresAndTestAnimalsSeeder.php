@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\RefusesProduction;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -9,6 +10,8 @@ use RuntimeException;
 
 class Dbr019InsertEnclosuresAndTestAnimalsSeeder extends Seeder
 {
+    use RefusesProduction;
+
     /**
      * DBR-019: inserta los 63 recintos del levantamiento como nuevos enclosures
      * y crea un animal de prueba asignado a cada uno (para arca_pruebas).
@@ -22,6 +25,8 @@ class Dbr019InsertEnclosuresAndTestAnimalsSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->refuseProduction();
+
         $path = database_path('data/dbr019-enclosures-gps-update.json');
         if (! File::exists($path)) {
             throw new RuntimeException("Dataset no encontrado: {$path}");
@@ -96,6 +101,7 @@ class Dbr019InsertEnclosuresAndTestAnimalsSeeder extends Seeder
 
                 if ($existingAnimal) {
                     $animalsExisting++;
+
                     continue;
                 }
 
@@ -171,6 +177,7 @@ class Dbr019InsertEnclosuresAndTestAnimalsSeeder extends Seeder
             return (int) DB::table('species')->insertGetId($record);
         } catch (\Throwable $e) {
             $this->command?->warn('DBR-019: no se pudo crear especie de prueba automáticamente: '.$e->getMessage());
+
             return null;
         }
     }

@@ -1,8 +1,10 @@
 # Plan técnico · 009 · offline-first-sync
 
 - Spec: `apps/pwa/specs/009-offline-first-sync.md`
-- Estado de spec: Aprobada
-- Responsable técnico: Por definir (PWA + API; coordinación con responsable de BD para DBR)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Responsable técnico: Equipo ARCA-NB (PWA y API; coordinación con el responsable de BD para DBR)
 
 ## Diseño de solución
 
@@ -72,7 +74,7 @@ Se implementa un modo offline-first para la PWA veterinaria con **almacenamiento
 
 - **Datos sensibles:** datos clínicos en local; minimizar exposición (aislamiento por cuenta, no credenciales, no logs sensibles, limpieza de avisos/preferencias del usuario anterior al cambiar usuario/dispositivo compartido). Definir en implementación medidas proporcionales de protección y retención.
 - **Mínimo privilegio:** sync y bootstrap solo para staff autenticado y con permisos; filtros por permisos en delta/bootstrap.
-- **Sesión:** login y bootstrap requieren conexión; ante expiración de sesión en campo se conserva la captura local (según RN-02) pero la sincronización queda bloqueada hasta reautenticación (detalle a confirmar, ver riesgos/preguntas).
+- **Sesión:** login y bootstrap requieren conexión; ante expiración de sesión en campo se conserva la captura local (según RN-02) pero la sincronización queda bloqueada hasta reautenticación (detalle en «Riesgos y decisiones»).
 - **Service Worker:** cache de app shell/estáticos necesarios para arranque offline; evitar cachear respuestas sensibles dinámicas de API salvo estrategia explícita y segura; actualización controlada de versión.
 - **Sync Manager:** ejecución única (lock/mutex), backoff `5s,15s,30s,1m,5m,15m...`, sin límite fijo mientras haya pendientes temporales, reanudable tras cierre de app.
 - **Portabilidad:** MySQL 8.0.x compatible Aiven/local (ADR 0013); configuración por `.env`; `arca_pruebas` para pruebas, nunca `arca_zoo`.
@@ -104,7 +106,7 @@ Se implementa un modo offline-first para la PWA veterinaria con **almacenamiento
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Condicionado | PWA usa React 19/TS/Vite; API Laravel/PHP 8.4+/MySQL 8.0.x. **Nuevas dependencias propuestas:** `dexie` y `uuid` (requieren ADR aprobado antes de instalar). SW manual alineado a ADR 0003 sin sustituir Vite PWA. Configuración solo por `.env`; sin lock-in cloud. |
-| II. La spec manda | Sí | Spec `009-offline-first-sync.md` en `Estado: Aprobada` (2026-11-18); plan, tasks y código deben mantener mismo `NNN-slug` y trazabilidad. |
+| II. La spec manda | Sí | Spec `009-offline-first-sync.md` en `Estado: Aprobada`; plan, tasks y código deben mantener mismo `NNN-slug` y trazabilidad. |
 | III. Lógica separada de la interfaz | Sí | Reglas de negocio, validación, idempotencia y persistencia definitiva en API (Form Requests/Actions/Resources/Policies). PWA: Dexie/outbox/sync como infraestructura cliente y ViewModels/servicios; componentes presentan estado y consumen servicios/cliente, sin convertirse en autoridad de negocio. |
 | IV. Un test por criterio | Sí (planificado) | Tabla CA-01..CA-14 mapea cada criterio a ≥1 prueba automatizada con prefijo `CA-xx` en PWA/API según aplique. |
 | V. Una sola fuente de verdad para los datos | Sí | MySQL/API autoridad; datos locales son borradores/cola sujetos a confirmación. Sin borrado físico clínico. Cambios de esquema solo por migraciones del responsable de BD tras DBR aprobada. Bajas de catálogo no eliminan historial clínico. |
@@ -115,13 +117,13 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos. Si algo no 
 ## Riesgos y decisiones
 
 - **ADR requerido/aprobado:**
-  - `docs/adr/0003-mysql-y-pwa-offline.md` actualizado (2026-11-18) para alinearlo a `pwa-009` (Dexie.js, UUID, SW manual, outbox/Sync Manager, bootstrap+delta); requiere aprobación formal según acuerdo del equipo.
+  - `docs/adr/0003-mysql-y-pwa-offline.md` (estado Aceptado) alineado con `pwa-009` (Dexie.js, UUID, SW manual, outbox/Sync Manager, bootstrap+delta).
   - Aprobación técnica del contrato de sync API (bootstrap, delta, tombstones, idempotencia, confirmación individual).
 - **DBR requerida (probable):** soporte de idempotencia (unicidad por UUID de operación), campos/índices para delta y consistencia de `deleted_at`/tombstones en catálogos sincronizados. Definir y aprobar DBR antes de migraciones/cambios dependientes. **Hallazgo inicial:** `ClinicalEvaluation` y `Species` usan SoftDeletes; `Animal` y `Enclosure` no muestran SoftDeletes/`deleted_at` en modelos actuales, por lo que la exposición de bajas en delta para esos catálogos debe verificarse contra esquema real y, si falta, tramitarse por DBR.
 - **Alternativas y mitigaciones:**
   - *Delta complejo:* MVP mantiene bootstrap completo inicial y permite fallback a refresh completo ante inconsistencia de cursor/versión.
-  - *Sesión expirada en campo (pregunta abierta):* conservar cola local y requerir reautenticación para sincronizar; definir UX exacta en implementación/ajuste de spec si es necesario.
-  - *Avisos efímeros sin tabla:* riesgo de perder visibilidad de errores de validación/reintentos puntuales; mitigar con mensajes persistentes mientras haya error activo en contexto relevante y/o mecanismo mínimo en UI existente (pendiente de decisión, ver spec).
+  - *Sesión expirada en campo (decisión):* se optó por conservar la cola local en el almacén del dispositivo y exigir reautenticación para sincronizar. La UX implementada es volver al login con «Tu sesión expiró.» (`apps/pwa/src/viewmodels/useStaffSession.ts`, `expiredSession`), sin borrar la cola.
+  - *Avisos efímeros sin tabla:* riesgo de perder visibilidad de errores de validación o reintentos puntuales. Se optó por la tabla de pendientes de `SyncStatusView.tsx` combinada con avisos efímeros (`sync-manager.ts`), que es lo implementado; los errores activos permanecen en la tabla.
   - *Dispositivos compartidos:* aislamiento estricto por cuenta, limpieza de avisos/preferencias al cambiar usuario y no exponer almacenes ajenos.
   - *Duplicados:* idempotencia obligatoria por UUID en API + reintentos seguros en cliente.
 - **Riesgos operativos:** soporte variable de SW/background behavior (prioridad Chrome/Android), crecimiento de cola local, y necesidad de coordinar entrega API+PWA+DBR.
@@ -137,7 +139,8 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos. Si algo no 
 7. **Pruebas y verificación:** implementar pruebas CA-01..CA-14, ejecutar Vitest en PWA y PHPUnit (`DatabaseTransactions`, `arca_pruebas`) en API; ejecutar `/verify` según apps modificadas.
 8. **Aprobación y cierre:** revisión técnica (PWA/API/BD) y validación funcional por el solicitante con evidencia por CA; actualizar documentación operativa y enlazar spec/plan/tasks/ADR/DBR en el PR.
 
-**Aprobadores previstos (a confirmar):** responsable funcional (solicitante) para alcance/UX; responsable técnico PWA y API; responsable de BD para DBR/migraciones. Detenerse antes de implementar código dependiente de decisiones/ADR/DBR no aprobadas.
-## Nota de revisión 2026-11-21
+**Aprobadores:** Equipo ARCA-NB para alcance y UX; responsables técnicos de PWA y API; responsable de BD para DBR y migraciones. No se implementa código dependiente de decisiones, ADR o DBR no aprobados.
+
+## Nota de revisión
 
 El service worker se registra solo en producción (CA-15). En desarrollo, el caché «cache first» servía módulos de Vite viejos; ahora se retira el service worker y se vacían los cachés `arca-pwa-*`. No cambia la estrategia de caché en producción.

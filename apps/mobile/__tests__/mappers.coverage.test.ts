@@ -102,7 +102,7 @@ describe('mobile-011 CA-05: mapeadores de respuestas API para Mobile', () => {
         id: 11, name: 'Tigre', species_name: 'Tigre de Bengala',
         sex: null, age: '4 años', origin: 'India', longevity: '15 años',
         diet: 'Carnívoro', reproduction: 'Vivíparo', stay_status: 'En observación',
-        characteristics: 'Rayas', photo_path: 'tigre.jpg',
+        fun_fact: 'Rayas', photo_path: 'tigre.jpg',
       }],
     })).toMatchObject({
       mapX: 0.2,

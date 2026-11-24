@@ -1,9 +1,11 @@
 # Tareas · 006 · diagnostico-intenso-parte1-precarga
 
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-13
 - Spec: `apps/pwa/specs/006-diagnostico-intenso-parte1-precarga.md`
 - Plan: `apps/pwa/plan/006-diagnostico-intenso-parte1-precarga.md`
 
-> Precondiciones satisfechas: spec 006 aprobada y ajustada (2026-11-13). Decisiones vigentes: MVZ y datos del animal (nombre, especie, identificación, sexo, edad) precargados y **editables** (sin sombreado visual); edad calculada desde `birth_date` o `estimated_age`; peso/fecha editables. Sin cambios de BD ni persistencia.
+> Precondiciones satisfechas: spec 006 aprobada y ajustada. Decisiones vigentes: MVZ y datos del animal (nombre, especie, identificación, sexo, edad) precargados y **editables** (sin sombreado visual); edad calculada desde `birth_date` o `estimated_age`; peso/fecha editables. Sin cambios de BD ni persistencia.
 
 ## Implementación
 

@@ -1,7 +1,9 @@
 # Plan técnico · 002 · diagnostico-intenso-rapido-pdf
 
 - Spec: `apps/pwa/specs/002-diagnostico-intenso-rapido-pdf.md`
-- Estado de spec: Aprobada
+- Estado de spec: Implementada
+- Solicitada: 2026-10-14
+- Aprobada: 2026-10-14
 - Responsable técnico: Por identificar
 
 ## Diseño de solución

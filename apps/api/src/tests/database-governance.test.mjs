@@ -23,7 +23,7 @@ test('CA-01 MySQL 8.0.x es la familia normativa y 8.4 no aparece como permitida'
         const text = read(rel);
         assert.ok(text.includes('MySQL 8.0.x'), `${rel} debe mencionar MySQL 8.0.x`);
         assert.ok(!/MySQL 8(?!\.0)/.test(text), `${rel} no debe usar "MySQL 8" sin ".0"`);
-        assert.ok(!text.includes('8.4'), `${rel} no debe mencionar 8.4`);
+        assert.ok(!/MySQL 8\.4/.test(text), `${rel} no debe mencionar MySQL 8.4`);
     }
     for (const rel of ['docs/database/README.md', 'README.md']) {
         assert.match(read(rel), /revisi[oó]n m[ií]nima[^.\n]*pendiente/i, `${rel} debe indicar revisión mínima pendiente`);

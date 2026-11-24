@@ -1,10 +1,11 @@
 # 0016 — Ubicación GPS en tiempo real con expo-location (mapa V2)
 
 - Estado: Aceptado
-- Fecha: 2026-10-29
-- Aprobado por: Víctor Adrián (2026-10-29)
+- Solicitada: 2026-10-29
+- Aprobada: 2026-10-29
+- Aprobado por: Equipo ARCA-NB
 - Spec relacionada: `apps/mobile/specs/007-map-location.md` (V2, aún no redactada)
-- Autor: Víctor Adrián
+- Autor: Equipo móvil
 
 ---
 
@@ -112,7 +113,7 @@ Hasta que el GPS tenga precisión aceptable (`accuracy < 20 m`):
 
 ## Validación y revisión
 
-- [ ] Aprobación de Aksel (equipo móvil / revisión técnica)
+- [ ] Aprobación del equipo móvil (revisión técnica)
 - [ ] Confirmación de que `expo-location` ^17.x es compatible con SDK 57 (`npx expo install expo-location`)
 - [ ] Medición de coordenadas GPS en campo (4 esquinas + entrada)
 - [ ] Test unitario de `geoTransform.ts` con coordenadas sintéticas pasa en verde

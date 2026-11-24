@@ -1,8 +1,10 @@
 # Plan técnico · 001 · database-change-governance
 
 - Spec: `apps/api/specs/001-database-change-governance.md`
-- Estado de spec: Aprobada
-- Responsable técnico: Jonathan
+- Estado de spec: Implementada
+- Solicitada: 2026-10-09
+- Aprobada: 2026-10-09
+- Responsable técnico: Backend / Responsable de BD
 
 ## Diseño de solución
 
@@ -67,7 +69,7 @@ La API aún no tiene `composer.json` ni PHPUnit; se usará una prueba estructura
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | MySQL se restringe a 8.0.x; el cambio constitucional queda registrado en ADR 0010 aceptado por el equipo; sin dependencias nuevas |
-| II. La spec manda | Sí | Spec aprobada por el solicitante; plan y tasks con el mismo identificador |
+| II. La spec manda | Sí | Spec aprobada; plan y tasks con el mismo identificador |
 | III. Lógica separada de la interfaz | Sí | Reglas principales permanecen en Actions; clientes solo generan DBR |
 | IV. Un test por criterio | Sí | Prueba documental Node con un test nombrado por CA-01 a CA-10 |
 | V. Una sola fuente de verdad para los datos | Sí | El esquema continúa versionado por migraciones Laravel; añade DBR previa y ownership de BD |
@@ -76,9 +78,9 @@ La API aún no tiene `composer.json` ni PHPUnit; se usará una prueba estructura
 ## Riesgos y decisiones
 
 - ADR requerido: se crea `0010` como Aceptado; especializa ADR 0001 y 0006 sin borrar historial.
-- La especificación quedó aprobada e Implementada el 2026-10-09.
+- La especificación está Implementada.
 - La prueba documental es transitoria hasta que exista PHPUnit en la API.
-- El cambio a `CONSTITUTION.md` se justifica por la aprobación del equipo confirmada por el solicitante; el PR debe enlazar esa evidencia.
+- El cambio a `CONSTITUTION.md` se justifica por la aprobación del equipo confirmada por el equipo; el PR debe enlazar esa evidencia.
 
 ## Orden y aprobación
 
@@ -87,6 +89,6 @@ La API aún no tiene `composer.json` ni PHPUnit; se usará una prueba estructura
 3. Implementar `docs/database/`, ADR 0010 y actualizaciones normativas.
 4. Crear la prueba documental y ejecutarla.
 5. Verificar enlaces, referencias de versión, `git diff --check` y `/verify` (reportando API no inicializada).
-6. Actualizar estado de la spec a Implementada cuando se cumpla la definición de terminado.
+6. Actualizar estado de la spec a Implementada cuando se cumpla la definición de terminado (hecho).
 
-Aprobación técnica: Jonathan, 2026-10-09.
+Aprobación técnica: Aprobada.

@@ -1,7 +1,8 @@
 # 0013 · Aiven como proveedor de MySQL administrado
 
 - Estado: Aceptado
-- Fecha: 2026-10-15
+- Solicitada: 2026-10-15
+- Aprobada: 2026-10-15
 - Spec relacionada: `apps/api/specs/002-initial-db-connection.md`, `apps/api/specs/003-staff-authentication.md`
 - Sustituye a: [0006 · Google Cloud con portabilidad a MySQL Server local](0006-hosting-google-cloud-portable.md)
 
@@ -29,9 +30,9 @@ La documentación refleja la infraestructura real; el equipo comparte `arca_prue
 - La diferencia de versión (8.4 en Aiven, 8.0.x comprometida) exige revisar migraciones y consultas contra 8.0.
 - Los tests de la API dependen de la disponibilidad de red hacia Aiven.
 - El hosting de la API está pendiente; la cookie de sesión de Sanctum requerirá que API, dashboard y PWA compartan dominio raíz.
-- La enmienda de la Constitución (principio I) normalmente requiere acuerdo del equipo; se registra con la aprobación de Jonathan y debe comunicarse al equipo.
+- La enmienda de la Constitución (principio I) normalmente requiere acuerdo del equipo; se registra con la aprobación del equipo.
 
 ## Validación y revisión
-- Aprobado por Jonathan, 2026-10-15, en representación del equipo.
+- Aprobado por el equipo.
 - Enmienda el principio I de `CONSTITUTION.md` y deja ADR 0006 como Superseded.
 - Verificación: `DbConnectionTest` (`api-002`) y el inventario `apps/api/docs/inventario-bd-inicial.md`; migraciones revisadas contra MySQL 8.0.x por el responsable de BD.

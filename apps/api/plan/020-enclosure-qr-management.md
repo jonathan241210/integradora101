@@ -1,10 +1,12 @@
 # Plan técnico · 020 · enclosure-qr-management
 
 - Spec: `apps/api/specs/020-enclosure-qr-management.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-18)
-- Estado del plan: **Aprobado** (Jonathan, 2026-11-18). Autoriza la implementación según sus tasks.
-- Responsable técnico: Jonathan (backend, según DBR-021)
-- DBR relacionada: `docs/database/requests/DBR-021-enclosure-qr-codes-soft-deletes.md` (Lista para backend, aplicada en `arca_pruebas` el 2026-11-18)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Estado del plan: **Aprobado**. Autoriza la implementación según sus tasks.
+- Responsable técnico: el responsable funcional (backend, según DBR-021)
+- DBR relacionada: `docs/database/requests/DBR-021-enclosure-qr-codes-soft-deletes.md` (Lista para backend, aplicada en `arca_pruebas`)
 - ADR relacionados: ADR 0021 (excepción de `BaseModel`, cubre `EnclosureQrCode`), ADR 0019 (SVG con `bacon/bacon-qr-code`). No se requiere ADR nuevo.
 
 ## Diseño de solución
@@ -109,7 +111,7 @@ Todas las pruebas usan `DatabaseTransactions` sobre `arca_pruebas`. Nombres: doc
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas; `bacon/bacon-qr-code` ya es dependencia directa (ADR 0019). Sin variables de nube. Índice y columna de DBR-021 portables. |
-| II. La spec manda | Sí | Spec 020 Aprobada (2026-11-18). Plan y tasks con el mismo `020-enclosure-qr-management`. Enmiendas de `api-019`, `api-005` y `mobile-006` aprobadas y aplicadas en T-18. |
+| II. La spec manda | Sí | Spec 020 Aprobada. Plan y tasks con el mismo `020-enclosure-qr-management`. Enmiendas de `api-019`, `api-005` y `mobile-006` aprobadas y aplicadas en T-18. |
 | III. Lógica separada de la interfaz | Sí | Reglas en Actions; controlador delgado; `api-client` sin lógica; el panel no calcula el código (`dashboard-013`). |
 | IV. Un test por criterio | Sí | Mapeo de CA-01 a CA-26 con nombre `test_caNN_`. CI en verde: pendiente de evidencia de la sesión principal. |
 | V. Una sola fuente de verdad para los datos | Sí, con excepción documentada | Esquema solo por DBR-021 (aplicada). `EnclosureQrCode` usa SoftDeletes y no `BaseModel`: excepción cubierta por ADR 0021, igual que `Enclosure`. Sin borrado físico. Activitylog en generar, regenerar y eliminar. |
@@ -123,7 +125,7 @@ Ninguna excepción nueva se implementa sin revisión. La única excepción (`Bas
 - **Registro de actividad desde consola:** el comando no tiene usuario. Propuesta: `causer` vacío y `properties.source = "console"`. Confirmar en revisión técnica; no altera la spec (CA-10 habla de actor cuando hay usuario).
 - **Cambio de comportamiento del comando:** deja de crear un código cada vez. Está en la spec (CA-18) y en la enmienda a `api-005` CA-12.
 - **Escaneo de recintos eliminados:** el código ya no se encuentra, así que responde `invalid_code` y no `inactive_enclosure`. Es la enmienda a `api-019` CA-18. El test actual de `api-019` (`EnclosureScanTest`, caso de recinto eliminado) debe actualizarse en el mismo PR (T-12).
-- **Numerador de especies:** `api-019` CA-35 puede bajar `species_count` al eliminar un recinto que era la única exhibición de una especie. Se mantiene sin cambio (divergencia (a) aclarada a Jonathan). CA-24 solo garantiza `enclosure_count` y puntos.
+- **Numerador de especies:** `api-019` CA-35 puede bajar `species_count` al eliminar un recinto que era la única exhibición de una especie. Se mantiene sin cambio (divergencia (a) aclarada al responsable funcional). CA-24 solo garantiza `enclosure_count` y puntos.
 - **Enumeración:** 8,5·10¹¹ combinaciones. El límite de escaneos por visitante reduce el riesgo; no se añade limitación nueva.
 - **Alternativas descartadas:** guardar el SVG en disco (contradice ADR 0019); `Str::random` para el alfabeto nuevo (no permite excluir caracteres ambiguos de forma directa); añadir `deleted_at IS NULL` al join del progreso (rompería el progreso ya obtenido).
 
@@ -137,6 +139,6 @@ Ninguna excepción nueva se implementa sin revisión. La única excepción (`Bas
 6. Cliente (`packages/api-client`, T-15). Desbloquea `dashboard-013`.
 7. Cobertura, documentación, enmiendas y verificación (T-16 a T-19); PR (T-20).
 
-- Revisión técnica: pendiente (Jonathan, responsable técnico).
-- Aprobador funcional: Jonathan, spec aprobada el 2026-11-18.
+- Revisión técnica: pendiente (el responsable funcional, responsable técnico).
+- Aprobador funcional: el responsable funcional, spec aprobada.
 - Evidencias: pendientes de la sesión principal (salida de `php artisan test` contra `arca_pruebas`, Pint y migraciones). Esta sesión no tiene shell y no afirma que pasen.

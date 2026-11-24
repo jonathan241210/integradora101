@@ -266,4 +266,4 @@ Solo dime y lo hago! 😊
 ---
 
 *Desarrollado con React, TypeScript y CSS Moderno*  
-*Fecha: 2025-11-14*
+*Fecha:*

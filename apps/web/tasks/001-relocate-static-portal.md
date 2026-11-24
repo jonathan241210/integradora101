@@ -2,7 +2,9 @@
 
 - Spec: `apps/web/specs/001-relocate-static-portal.md` (Estado: **Implementada**)
 - Plan: `apps/web/plan/001-relocate-static-portal.md` (Estado técnico: **Aprobado para implementar**)
-- Estado del checklist: **Aprobado** por Jonathan el 2026-10-06. No se realiza `git add` ni `git commit` como parte de estas tareas.
+- Estado del checklist: **Aprobado**. No se realiza `git add` ni `git commit` como parte de estas tareas.
+- Solicitada: 2026-10-06
+- Aprobada: 2026-10-06
 - Nota operativa: las verificaciones históricas usaron comandos temporales de shell (`find`, `sha256sum`, `grep`, `test`, `git diff`/`git status`). **No se crean scripts auxiliares permanentes**, salvo la prueba aprobada `apps/web/src/tests/relocation.test.mjs` exigida por Constitución IV y el hook; `verify-references.sh` mencionado en el plan se ejecutó como verificación puntual y se descartó.
 
 ## Trazabilidad

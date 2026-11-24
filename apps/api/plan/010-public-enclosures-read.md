@@ -1,8 +1,10 @@
 # Plan técnico · 010 · public-enclosures-read
 
 - Spec: `apps/api/specs/010-public-enclosures-read.md`
-- Estado de spec: Aprobada (Víctor Adrián, 2026-11-07)
-- Responsable técnico: Víctor Adrián
+- Estado de spec: Implementada
+- Solicitada: 2026-11-07
+- Aprobada: 2026-11-07
+- Responsable técnico: Backend
 - Consumidores: `mobile-007` (Enmienda V4), `@arca/api-client`
 
 ---

@@ -213,7 +213,7 @@ test('CA-12 dynamic-tulanpedia: index.html conserva los IDs de la sección y las
   }
   assert.ok(indexHtml.indexOf('js/api.js') < indexHtml.indexOf('js/animals.js'), 'animals.js va después de api.js');
   assert.ok(indexHtml.includes('href="animals.css"'));
-  assert.ok(indexHtml.includes('var viewerLoaded = false;'), 'viewerLoaded sigue para el mapa');
+  assert.ok(indexHtml.includes('var mapViewer = null;') && indexHtml.includes('var viewerLoading = null;'), 'el alternador del mapa conserva el estado del visor 3D');
   assert.ok(!indexHtml.includes('.animal-card[data-model]'), 'sin bloque de visor de tarjetas');
 });
 

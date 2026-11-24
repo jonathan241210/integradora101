@@ -2,7 +2,9 @@
 
 - Spec: `apps/api/specs/002-initial-db-connection.md`
 - Plan: `apps/api/plan/002-initial-db-connection.md`
-- Estado del checklist: Aprobado por Victor Adrian, 2026-10-11
+- Estado del checklist: Completado
+- Solicitada: 2026-10-11
+- Aprobada: 2026-10-11
 
 ## Preparación de seguridad
 
@@ -17,9 +19,9 @@
 - [x] **T-03** (CA-01): crear/actualizar `apps/api/src/.env.example` con las claves de conexión Aiven (host, puerto y base de datos con valores reales; `DB_PASSWORD` vacío; `DB_SSL_CA` con ruta de ejemplo). Ver plantilla en el plan.
 - [x] **T-04** (CA-02): ajustar `apps/api/src/config/database.php` — añadir clave `options` con `PDO::MYSQL_ATTR_SSL_CA => env('DB_SSL_CA')` en la conexión `mysql`.
 
-## Configuración local de Victor Adrian (responsable de BD)
+## Configuración local del Responsable de BD
 
-- [x] **T-05** (CA-02): Victor Adrian descarga `ca.pem` del panel de Aiven, lo guarda en una ruta local fuera del repo (p. ej. `~/.arca/ca.pem`) y crea `apps/api/src/.env` copiando `.env.example` con sus credenciales (`avnadmin`, contraseña real, ruta al `ca.pem`).
+- [x] **T-05** (CA-02): El Responsable de BD descarga `ca.pem` del panel de Aiven, lo guarda en una ruta local fuera del repo (p. ej. `~/.arca/ca.pem`) y crea `apps/api/src/.env` copiando `.env.example` con sus credenciales (`avnadmin`, contraseña real, ruta al `ca.pem`).
 - [x] **T-06** (CA-02): ejecutar `php artisan db:show` desde `apps/api/src/` y confirmar que conecta sin error. Si falla, revisar SSL, host, puerto y credenciales antes de continuar.
 
 ## Inventario inicial
@@ -43,7 +45,7 @@
 
 ## Distribución al equipo
 
-- [x] **T-11** (CA-01, CA-02): Victor Adrian comparte por canal externo (fuera del repo):
+- [x] **T-11** (CA-01, CA-02): El Responsable de BD comparte por canal externo (fuera del repo):
   - El archivo `ca.pem` de Aiven (o el enlace de descarga desde el panel).
   - Las credenciales del usuario `desarrollador`.
   - Instrucciones: copiar `.env.example` → `.env`, llenar `DB_PASSWORD` y `DB_SSL_CA`.

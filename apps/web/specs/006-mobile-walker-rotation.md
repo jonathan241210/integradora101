@@ -2,9 +2,10 @@
 
 - App dueña: `web`
 - Apps/paquetes afectados: `apps/web`
-- Estado: En progreso
-- Solicitante / responsable funcional: Solicitante de esta conversación; nombre por identificar
-- Aprobación funcional: Solicitante, 2026-10-08
+- Estado: Implementada
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -68,5 +69,5 @@ No se crean, consultan ni modifican datos. No se tratan datos personales, clíni
 
 ## Revisión
 
-- Aprobadores y fecha: Solicitante, 2026-10-08.
+- Aprobación: Aprobada.
 - Evidencia/enlaces: La preferencia de hasta dos animalitos y el intervalo de 8 segundos fueron confirmados por el solicitante en esta conversación. La spec `003-lion-hero-mobile-navigation` mantiene su alcance de navegación y hero sin cambios. Las cuatro pruebas específicas CA-01..CA-04 pasan y la verificación en navegador confirmó dos animalitos a 390 px, seis a 1024 px, el cambio de pareja después de 8 segundos y el control de ocultar/mostrar. La suite completa registra 32/33 pruebas aprobadas; falla una prueba preexistente de `visit-info-icons-and-favicon` que espera `margin-top: 8px` en los iconos de visita. Esta spec permanece En progreso hasta que se resuelva y vuelva a verificarse el bloqueo de la suite.

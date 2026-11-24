@@ -1,10 +1,12 @@
 # Tareas · 003 · administration-sections
 
-- Spec: `apps/dashboard/specs/003-administration-sections.md` (Revisión aprobada por Jonathan el 2026-11-05; aprobada el 2026-10-30)
-- Plan: `apps/dashboard/plan/003-administration-sections.md` (Aprobado, Jonathan, 2026-10-30; revisión de 2026-11-05 aprobada)
-- Estado del checklist: Aprobado (2026-10-30). revisión de 2026-11-05 aprobada: tareas T-33 a T-38, al final del documento, antes de «Trazabilidad».
+- Spec: `apps/dashboard/specs/003-administration-sections.md` (Revisión aprobada; spec aprobada)
+- Plan: `apps/dashboard/plan/003-administration-sections.md` (Aprobado; revisión aprobada)
+- Estado del checklist: Aprobado. revisión aprobada: tareas T-33 a T-38, al final del documento, antes de «Trazabilidad».
+- Solicitada: 2026-10-30
+- Aprobada: 2026-10-30
 
-> Nota de vigencia (2026-11-01): T-09, T-13, T-18 y T-19 describen diálogos en Usuarios, Noticias y Eventos, y «sin campo de imagen» en estas dos últimas. Esa parte queda reemplazada por `dashboard-004` (`apps/dashboard/tasks/004-inline-content-forms.md`) y por `api-008` para la subida. Las casillas `[x]` son historial y no se modifican.
+> Nota de vigencia: T-09, T-13, T-18 y T-19 describen diálogos en Usuarios, Noticias y Eventos, y «sin campo de imagen» en estas dos últimas. Esa parte queda reemplazada por `dashboard-004` (`apps/dashboard/tasks/004-inline-content-forms.md`) y por `api-008` para la subida. Las casillas `[x]` son historial y no se modifican.
 
 Rutas relativas a `apps/dashboard` salvo que se indique `packages/…`. Cada prueba nombra su criterio con el bloque `describe("CA-NN administration-sections", …)`. Se desarrolla contra un `AdminApi` simulado (RN-08); no se instalan dependencias ni se toca `package.json`.
 
@@ -27,7 +29,7 @@ No hay tareas de BD: esta feature no cambia el esquema. La DBR-005 acompaña a `
 
 ### Shell y navegación
 
-- [x] **T-06** (CA-01, RN-01): En `src/viewmodels/navigation.ts` renombrar el id `ticket-users` a `users` con etiqueta «Usuarios», manteniendo el permiso `users.manage` u `operational-staff.manage` [revisión de 2026-11-05: solo `users.manage`, ver T-33]; ajustar `DashboardSection` en `src/viewmodels/dashboard-demo.ts` y retirar de ese reducer y de `useDashboardDemo.ts` el estado y las acciones ficticias de recintos y usuarios.
+- [x] **T-06** (CA-01, RN-01): En `src/viewmodels/navigation.ts` renombrar el id `ticket-users` a `users` con etiqueta «Usuarios», manteniendo el permiso `users.manage` u `operational-staff.manage` [revisión: solo `users.manage`, ver T-33]; ajustar `DashboardSection` en `src/viewmodels/dashboard-demo.ts` y retirar de ese reducer y de `useDashboardDemo.ts` el estado y las acciones ficticias de recintos y usuarios.
 - [x] **T-07** (CA-01, CA-02, RN-06): En `src/App.tsx`: enrutar las seis secciones a sus contenedores, actualizar `sectionTitles` y mostrar `DemoBanner` solo cuando la sección activa sea `tickets` o `ticket-history`.
 
 ### Usuarios
@@ -52,7 +54,7 @@ No hay tareas de BD: esta feature no cambia el esquema. La DBR-005 acompaña a `
 
 ## Pruebas (un test por CA)
 
-- [x] **T-16** (CA-01): `src/tests/administration-navigation.test.tsx`: `getNavigationForProfile` muestra «Usuarios» con `users.manage` o con `operational-staff.manage` [revisión de 2026-11-05: solo `users.manage`, ver T-34], respeta cada permiso y ya no existe «Usuarios de taquilla».
+- [x] **T-16** (CA-01): `src/tests/administration-navigation.test.tsx`: `getNavigationForProfile` muestra «Usuarios» con `users.manage` o con `operational-staff.manage` [revisión: solo `users.manage`, ver T-34], respeta cada permiso y ya no existe «Usuarios de taquilla».
 - [x] **T-17** (CA-02): Actualizar `src/tests/global-demo-banner.test.tsx`: `App` no renderiza `DemoBanner` en las seis secciones conectadas y sí en Venta e Historial.
 - [x] **T-18** (CA-03, CA-04, CA-05, CA-06, CA-07): Reemplazar `src/tests/ticket-users.test.tsx` por `src/tests/staff-accounts.test.tsx`: columnas, filtros, paginación y estados; rol sugerido y roles asignables; edición con correo de solo lectura; confirmación antes de llamar a la API y contraseña con mostrar/ocultar; 403/404/422 sin alterar la lista y recarga con aviso tras éxito.
 - [x] **T-19** (CA-08): Reescribir `src/tests/content-management.test.tsx` para noticias y eventos reales: lista, crear/editar/estado/eliminar con confirmación, 422 por campo y ausencia de campo de imagen.
@@ -60,7 +62,7 @@ No hay tareas de BD: esta feature no cambia el esquema. La DBR-005 acompaña a `
 - [x] **T-21** (CA-10): Actualizar `src/tests/dashboard.test.tsx`: datos de la API tal cual, sin cálculos y con estado vacío.
 - [x] **T-22** (CA-11, CA-12, CA-13): Reescribir `src/tests/ticket-report.test.tsx`: periodos, anterior/siguiente por `previous_date`/`next_date`, totales y listado; exportación con el periodo visible, error de formato no disponible y fallo de red conservando el reporte; `executive` sin acciones de edición.
 - [x] **T-23** (CA-14, CA-15, CA-16, CA-17): `src/tests/administration-quality.test.tsx`: revisión estática de que `views/`, `components/` y `sections/` no importan `fetch`/`axios`/`services/`/`@arca/api-client` ni calculan totales o permisos; un 401 vuelve al login con «Tu sesión expiró»; marcado accesible (diálogos con `aria-labelledby`, `role="alert"`/`status`, tablas con contenedor desplazable, controles con etiqueta); sin hex de marca en `styles.css` ni en las Views nuevas.
-- [x] **T-24** (CA-18): `src/tests/administration-coverage.test.tsx`: verifica que `CA-01` a `CA-19 administration-sections` aparecen nombrados en los tests (patrón de `acceptance-coverage.test.tsx`). Ampliada el 2026-10-30 a CA-19; su verificación de CA-19 depende de T-32. La casilla se mantiene como historial y debe revisarse al cerrar T-32.
+- [x] **T-24** (CA-18): `src/tests/administration-coverage.test.tsx`: verifica que `CA-01` a `CA-19 administration-sections` aparecen nombrados en los tests (patrón de `acceptance-coverage.test.tsx`). Ampliada a CA-19; su verificación de CA-19 depende de T-32. La casilla se mantiene como historial y debe revisarse al cerrar T-32.
 - [x] **T-25** (CA-12, CA-14): Pruebas del cliente con `fetch` simulado para `patch`, `put` y `download` (XSRF, 419, 401 y error 422 con cuerpo JSON), en `src/tests/api-client-admin.test.tsx`.
 
 ## Calidad y entrega
@@ -71,16 +73,16 @@ No hay tareas de BD: esta feature no cambia el esquema. La DBR-005 acompaña a `
 - [x] **T-29**: Actualizar `apps/dashboard/docs/arquitectura.md` y `apps/dashboard/docs/manual-demo.md` (secciones conectadas vs. demostrativas, estructura View/Section/ViewModel, limitación de Excel/PDF).
 - [x] **T-30**: Completar el Constitution Check del PR (`/constitution-check`), enlazar spec, plan y tasks, citar `dashboard-003` en los commits y pasar la spec a `Implementada` cuando CA-01 a CA-19 estén verificados.
 
-## Cambio de 2026-10-30: zona horaria del dispositivo (RN-11, CA-19)
+## Cambio: zona horaria del dispositivo (RN-11, CA-19)
 
-Decisión de Jonathan (responsable funcional), 2026-10-30: zona del dispositivo con respaldo en `America/Mexico_City`; Jonathan confirmó la decisión y aprobó proceder con la implementación. La redacción literal de CA-19 y RN-11 la proveyó el documentador y fue confirmada por Jonathan, 2026-10-30. La decisión de no mostrar la zona en la interfaz queda confirmada en la misma fecha; por eso no hay tarea de interfaz para ella. Depende de `api-007` RN-14 y CA-28 (T-40 y T-41) para que el efecto llegue a la API real.
+Decisión del responsable funcional: zona del dispositivo con respaldo en `America/Mexico_City`; Se confirmó la decisión y se aprobó proceder con la implementación. La redacción literal de CA-19 y RN-11 la proveyó el documentador y fue confirmada por el responsable funcional. La decisión de no mostrar la zona en la interfaz queda confirmada en la misma fecha; por eso no hay tarea de interfaz para ella. Depende de `api-007` RN-14 y CA-28 (T-40 y T-41) para que el efecto llegue a la API real.
 
 - [x] **T-31** (CA-19, RN-11): en `packages/api-client/admin.ts`, `createAdminApi(http, options?)` con `options.deviceTimeZone` (por defecto `Intl.DateTimeFormat().resolvedOptions().timeZone`). `dashboard.summary()`, `reports.tickets(query)` y `reports.exportTickets(query, format)` añaden `timezone` a la consulta cuando hay zona; si el llamador ya pasa `timezone`, prevalece. `TicketReportQuery` admite `timezone?: string` en `admin-types.ts`. Actualizar `packages/api-client/README.md`. No se tocan `dashboard-summary.ts`, `ticket-report.ts`, las vistas ni `formatters.ts`.
 - [x] **T-32** (CA-19): en `src/tests/api-client-admin.test.tsx`, bloque `describe("CA-19 administration-sections", …)` con `fetch` simulado: las tres llamadas (`summary`, `tickets` y `exportTickets`) incluyen `timezone` con la zona inyectada; sin zona no se envía el parámetro; un `timezone` explícito prevalece. Verificar con `npm test` y `npm run types` desde `apps/dashboard`. La comprobación contra la API real queda en T-28 y depende de que `api-007` T-40 esté verificada en `arca_pruebas`.
 
-## Revisión 2026-11-05 (aprobada por Jonathan el 2026-11-05)
+## Revisión (aprobada)
 
-Fuente: `apps/dashboard/specs/003-administration-sections.md`, «Revisión 2026-11-05», y `apps/api/tasks/007-administration-management.md` (T-42 a T-44). **Revisión aprobada por Jonathan el 2026-11-05.** Ninguna casilla se marca sin evidencia.
+Fuente: `apps/dashboard/specs/003-administration-sections.md`, «Revisión», y `apps/api/tasks/007-administration-management.md` (T-42 a T-44). **Revisión aprobada.** Ninguna casilla se marca sin evidencia.
 
 - [x] **T-33** (CA-01; RN-01) `[frontend]`: `src/viewmodels/navigation.ts` (línea 47): la sección «Usuarios» exige solo `users.manage`; se retira `operational-staff.manage`. Sin cambio de etiqueta ni de identificador. La autorización real la aplica `api-007`.
 - [x] **T-34** (CA-01) `[frontend]`: `src/tests/administration-navigation.test.tsx`: `admin` (con `users.manage`) ve «Usuarios»; `zoo-admin` no la ve; un perfil con solo `operational-staff.manage` tampoco. Sustituye la parte de T-16 que aceptaba `operational-staff.manage`.
@@ -91,9 +93,9 @@ Fuente: `apps/dashboard/specs/003-administration-sections.md`, «Revisión 2026-
   - Depende de: `api-007` T-43.
 - [x] **T-37** (CA-01; RN-02) `[docs]`: `apps/dashboard/docs/arquitectura.md` (fila `navigation`: Usuarios solo con `users.manage`) y `apps/dashboard/docs/manual-demo.md` (`zoo-admin` sin Usuarios; requisitos locales para imágenes de `api-008`).
 - [x] **T-38** (CA-01, CA-04; control) `[verificación]`: desde `apps/dashboard`, `npm run types`, `npm test` y `npm run build`. Recorrido manual contra `arca_pruebas` con `presidencia@arca.local` y `direccion_zoo@arca.local` (sin contraseñas en el repositorio ni en la evidencia). Depende de `api-007` T-42 a T-44.
-  - Evidencia (2026-11-06): `types`, `npm test` (290/290) y `build` en verde; Jonathan informó que probó el recorrido y está correcto.
+  - Evidencia: `types`, `npm test` (290/290) y `build` en verde; el responsable funcional informó que probó el recorrido y está correcto.
 
-## Revisión visual 2026-11-12 (CA-20, RN-09)
+## Revisión visual (CA-20, RN-09)
 
 - [x] **T-39** (CA-20, RN-09) `[frontend, pruebas, verificación]`: delimitar los estilos visuales en `App.tsx` y `styles.css` al administrador/ejecutivo; mejorar jerarquía, espaciado y legibilidad de encabezados, tarjetas, formularios, filtros, tablas y controles del reporte; conservar tokens, colores y tipografía; no cambiar flujos ni afectar taquilla. Añadir prueba de alcance y revisar visualmente las seis secciones a 360, 768 y 1366 px; ejecutar `npm run types`, `npm test` y `npm run build`. Evidencia: sin desbordamiento de página en las seis secciones; tabla de Usuarios apilada y buscador ancho completo en móvil; `types`, 300 tests y `build` en verde.
 

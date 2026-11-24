@@ -2,9 +2,10 @@
 
 - App dueña: `web`
 - Apps/paquetes afectados: `apps/web`
-- Estado: En progreso
-- Solicitante / responsable funcional: Solicitante de esta conversación; nombre por identificar
-- Aprobación funcional: Solicitante, 2026-10-08 (aprobación en esta conversación)
+- Estado: Implementada
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -70,10 +71,10 @@ No se crean, consultan ni modifican datos. No se usan datos personales, clínico
 
 - Dependencias/ADR: no se agregan dependencias ni se requiere ADR.
 - Riesgos: una cabecera con menú desplegado puede ocultar contenido en pantallas pequeñas; se mitiga con altura adaptable, scroll normal y pruebas en los anchos definidos.
-- Preguntas pendientes: ninguna de alcance. El nombre de la persona responsable funcional no está registrado; el solicitante aprobó el alcance el 2026-10-08.
+- Preguntas pendientes: ninguna de alcance. El nombre de la persona responsable funcional no está registrado; el solicitante aprobó el alcance.
 
 ## Revisión
 
-- Aprobadores y fecha: Solicitante, 2026-10-08 (alcance aprobado en esta conversación).
+- Aprobación: Aprobada (alcance).
 - Evidencia/enlaces: La paleta general de referencia sigue documentada en [`002-brand-color-refresh`](./002-brand-color-refresh.md); el verde de la capa del hero corresponde a los valores previos de `apps/web/src/styles.css`.
-- Decisión de verificación: El 2026-10-08 la persona solicitante autorizó continuar con pruebas automatizadas y dejar anotada la limitación de revisión visual responsive. No se considera verificado el desbordamiento visual real hasta ejecutar la comprobación de navegador pendiente en T-06.
+- Decisión de verificación: El la persona solicitante autorizó continuar con pruebas automatizadas y dejar anotada la limitación de revisión visual responsive. No se considera verificado el desbordamiento visual real hasta ejecutar la comprobación de navegador pendiente en T-06.

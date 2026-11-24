@@ -1,8 +1,9 @@
 # Trabajo en paralelo: medios, momentos y especies
 
-- Fecha: 2026-11-13
-- Responsable: Jonathan (responsable de backend)
-- Estado: planes y tasks de las 9 features **aprobados** por Jonathan el 2026-11-13, con sus preguntas abiertas resueltas. Implementación por iniciar.
+> **Histórico / cerrado para nuevas sesiones.** Este documento coordinó el reparto en paralelo de las 9 features. Ya no define el flujo vigente: el estado de cada feature está en su spec, plan y tasks, y en las DBR aplicadas.
+
+- Responsable: Backend (responsable de backend)
+- Estado: planes y tasks de las 9 features **aprobados**, con sus preguntas abiertas resueltas.
 - Propósito: repartir la implementación de 9 features entre 3 sesiones de Claude Code que trabajan al mismo tiempo, sin pisarse.
 
 Este documento no sustituye a ninguna spec, plan ni tasks. Solo coordina el orden, las ramas y los puntos de sincronización. Si algo aquí contradice una spec, manda la spec.
@@ -37,7 +38,7 @@ Las tres ramas salen de `Jona`. Cada sesión trabaja solo en su worktree y en su
 
 ## Cómo se comparten los cambios entre sesiones
 
-Los worktrees son carpetas del **mismo repositorio local**. Un commit hecho en la rama de una sesión lo ven las demás al instante, sin `push`: basta `git merge <rama>` con el nombre local. Nada de esto sube a GitHub; Jonathan hace el `push` cuando quiera.
+Los worktrees son carpetas del **mismo repositorio local**. Un commit hecho en la rama de una sesión lo ven las demás al instante, sin `push`: basta `git merge <rama>` con el nombre local. Nada de esto sube a GitHub; el `push` lo hace el responsable de backend cuando quiera.
 
 Para que las ramas no se mezclen a medias, solo hay **dos merges entre sesiones** durante el trabajo (H1 y H2). Todo lo demás se junta en la fase de integración de S1.
 
@@ -48,7 +49,7 @@ Para que las ramas no se mezclen a medias, solo hay **dos merges entre sesiones*
 | H1 | S1 | Al cerrar y hacer commit de T-01, T-02 y T-04 de `api-013` (disco `media`, `config/filesystems.php`, `.env.example`) | S2 y S3 hacen `git merge feat/media-public-species`. Antes de H1, no tocan nada que guarde o lea imágenes |
 | H2 | S3 | Al cerrar y hacer commit de T-07 de `api-014` (permisos `species.review` y `memories.review` en `RolesAndPermissionsSeeder`) | S2 hace `git merge feat/species-requests` y **no** vuelve a editar el seeder; reutiliza `memories.review` |
 
-Jonathan pasa cada aviso de una sesión a otra. Mientras una dependencia no está lista, la sesión avanza en lo que no la necesita: enums, modelos, Actions sin imagen, o el frontend con respuestas simuladas.
+El responsable de backend pasa cada aviso de una sesión a otra. Mientras una dependencia no está lista, la sesión avanza en lo que no la necesita: enums, modelos, Actions sin imagen, o el frontend con respuestas simuladas.
 
 ## Reglas para trabajar en paralelo
 
@@ -69,16 +70,16 @@ Cuando S2 y S3 avisan «lista para integración» (todas sus T-xx hechas o marca
 3. Hace las verificaciones reales entre features: `dashboard-008` y `dashboard-010` contra la API; `web-010` contra `api-012`; `web-011` contra `api-015`. Marca las T-xx que quedaron «pendiente de integración».
 4. Pide a una persona con rol `admin` o `zoo-admin` volver a subir las imágenes de noticias y eventos (D-04 de `api-013`).
 5. Revisa el diff completo con `quality-reviewer` y `security-reviewer` y corrige lo que encuentren.
-6. Actualiza el estado de specs, plan y tasks y Neuromapa, y prepara los commits y la descripción de los PR para que Jonathan haga el `push`.
+6. Actualiza el estado de specs, plan y tasks y Neuromapa, y prepara los commits y la descripción de los PR para que el responsable de backend haga el `push`.
 
-## Decisiones resueltas (2026-11-13, Jonathan)
+## Decisiones resueltas
 
-Jonathan pidió adoptar las recomendaciones de los planes para empezar de lleno. Cada plan registra la decisión concreta de sus preguntas. Las que bloqueaban tareas:
+Se decidió adoptar las recomendaciones de los planes para empezar de lleno. Cada plan registra la decisión concreta de sus preguntas. Las que bloqueaban tareas:
 
 | Decisión | Resolución |
 |---|---|
-| Excepción de la Constitución V: imágenes de momentos versionadas en git (ADR 0026, D-M1) | Aceptada por Jonathan solo para datos de prueba en `arca_pruebas`; se revisa antes de producción |
-| Brecha de `BaseModel` (P5 de `api-014`; también `api-010`, `api-012` y `api-015`) | En el código no existe la clase `BaseModel`: todos los modelos extienden `Model` con `SoftDeletes`. Los modelos nuevos siguen ese patrón, como excepción aceptada por Jonathan; no se crea `BaseModel` en estas features |
+| Excepción de la Constitución V: imágenes de momentos versionadas en git (ADR 0026, D-M1) | Aceptada por el responsable de backend solo para datos de prueba en `arca_pruebas`; se revisa antes de producción |
+| Brecha de `BaseModel` (P5 de `api-014`; también `api-010`, `api-012` y `api-015`) | En el código no existe la clase `BaseModel`: todos los modelos extienden `Model` con `SoftDeletes`. Los modelos nuevos siguen ese patrón, como excepción aceptada por el responsable de backend; no se crea `BaseModel` en estas features |
 | Unidad de «100 MB» (pregunta 5 del plan de `api-013`) | 104 857 600 bytes, contando solo `.jpg`, `.jpeg`, `.png` y `.webp` de `apps/api/src/media/`, por tamaño en disco |
 | Versión de términos de momentos (`api-010`) | `MEMORIES_TERMS_VERSION=v1` por defecto, configurable por `.env` |
 | Tope de `page` en `api-012` | Sin tope; una página fuera de rango devuelve la lista vacía |

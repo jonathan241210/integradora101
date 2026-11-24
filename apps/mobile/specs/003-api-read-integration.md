@@ -2,18 +2,19 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile`, `packages/api-client`
-- Estado: Aprobada
-- Solicitante / responsable funcional: Víctor Adrián (redacción spec / responsable BD); Aksel (revisión móvil)
-- Aprobación funcional: Víctor Adrián (2026-10-20). Enmienda de inicio (noticias, eventos e imágenes) confirmada con el plan el 2026-11-10.
+- Estado: Implementada
+- Solicitada: 2026-10-20
+- Aprobada: 2026-10-20
+- Aprobación funcional: Aprobada. Enmienda de inicio (noticias, eventos e imágenes) confirmada con el plan.
 - Equivalencia en el documento de decisiones previas: 003
 
-## Enmienda 2026-11-17
+## Enmienda
 
 El catálogo que ve el visitante no es la lista cruda de `GET /species`. La app cruza `GET /published-species` con los animales de `GET /enclosures` cuyo `can_receive_visits` está activo. Solo esa intersección se muestra en Inicio, Colección, Perfil y ficha. Si las tres lecturas responden y la especie queda fuera, el detalle no se abre. Los conteos usan esa lista. La API de `GET /species` no cambia. Si falla la lectura de visibilidad, se conserva el comportamiento anterior de caché.
 
 Para CA-01, CA-02 y CA-06, el catálogo y la ficha usan la foto usable de la especie y recurren a la foto de `GET /published-species` cuando falta o su URL no es usable. Las rutas relativas `species/…` se resuelven bajo `/media/` y las URLs locales se resuelven con el origen efectivo de la API. Para CA-05, si una actualización cambia la clave de caché del catálogo, la lista anterior sigue disponible sin conexión hasta que la app pueda renovar los datos.
 
-## Enmienda 2026-11-10
+## Enmienda de inicio
 
 El inicio deja de volcar la lista completa de eventos y pasa a mostrar una noticia y un evento, con despliegue hasta tres y salida avisada al portal. No hay spec nueva: esta enmienda reescribe el CA-03 y agrega CA-08, CA-09 y CA-10. La API no cambia. Las noticias salen de `GET /api/v1/news?limit=3` y `GET /api/v1/news/{id}`; los eventos, de `GET /api/v1/events?limit=3` y `GET /api/v1/events/{id}`. El orden lo decide la API: la noticia más nueva primero y el evento de inicio más próximo primero. La app no reordena.
 
@@ -152,15 +153,15 @@ flowchart TD
 - **Riesgos:**
   - Si el backend de Laravel demora en desplegar formalmente los endpoints públicos (`/species`, `/events`), la implementación móvil dependerá temporalmente de mocks o interceptores de prueba. No obstante, al respetar la interfaz del repositorio, el cambio es instantáneo vía variable de entorno (`EXPO_PUBLIC_USE_MOCKS=false`).
   - Imágenes pesadas servidas por el catálogo web podrían saturar la memoria o tardar en redes celulares 3G/4G del parque. Se mitigará usando componentes optimizados con fallback.
-- **Preguntas resueltas:**
-  - *¿Cómo se aborda la falta de spec previa en API?* Se redacta la spec cliente asumiendo las rutas estándar documentadas en `estandares-integracion-api.md`.
-  - *¿Política de caché?* Stale-While-Revalidate con TTL de 5 minutos en `AsyncStorage`.
-  - *¿Alcance de `isDiscovered`?* Excluido; pertenece al progreso del visitante (`mobile-005`).
-  - *¿Detalle de eventos?* Incluido formalmente junto con el listado.
+- **Decisiones:**
+  - Se optó por redactar la spec cliente asumiendo las rutas estándar documentadas en `estandares-integracion-api.md`, porque no existía spec previa de API.
+  - Se optó por Stale-While-Revalidate con TTL de 5 minutos en `AsyncStorage`, porque el visitante ve datos al instante y se actualizan en segundo plano.
+  - Se optó por excluir `isDiscovered`, porque pertenece al progreso del visitante (`mobile-005`).
+  - Se optó por incluir el detalle de eventos junto con el listado, porque la pantalla de evento lo necesita.
 
 ## Revisión
 
-- **Aprobadores y fecha:** Aprobada por Víctor Adrián (2026-10-20). Revisión móvil técnica coordinada con Aksel. Enmienda de inicio confirmada con el plan el 2026-11-10: reescribe CA-03 y agrega CA-08, CA-09 y CA-10. El 2026-11-10 se agrega CA-11: deslizar el inicio actualiza solo noticias y eventos. No cubre la petición de fotos del visitante (`mobile-010`).
+- **Aprobación:** Aprobada. Revisión móvil técnica coordinada con el equipo móvil. Enmienda de inicio confirmada con el plan: reescribe CA-03 y agrega CA-08, CA-09 y CA-10; CA-11 indica que deslizar el inicio actualiza solo noticias y eventos. No cubre la petición de fotos del visitante (`mobile-010`).
 - **Evidencia/enlaces:**
   - `apps/mobile/docs/estandares-integracion-api.md`
   - `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md`

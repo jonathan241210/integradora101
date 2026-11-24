@@ -19,6 +19,9 @@ import { isOnline, nowIso, toErrorMessage, toUserSyncMessage } from './utils';
 
 let syncing = false;
 
+/** Máximo de operaciones por petición que acepta `POST /api/v1/staff/sync/operations` (api-028 RN-03). */
+export const SYNC_BATCH_SIZE = 100;
+
 function isTemporaryError(error: unknown): boolean {
   if (error instanceof TypeError) return true;
   if (error && typeof error === 'object' && 'status' in error) {
@@ -96,10 +99,6 @@ async function canProcess(item: OutboxItem, userScope: string): Promise<boolean>
   if (!item.dependsOnLocalId) return true;
   const dep = await offlineDb.localAnimals.get([userScope, item.dependsOnLocalId]);
   return Boolean(dep?.serverId);
-}
-
-function isTemporaryResult(result: SyncOperationResult): boolean {
-  return result.status === 'error' || result.status === 'temporary_error';
 }
 
 async function buildOperationInput(item: OutboxItem, userScope: string): Promise<SyncOperationInput | null> {
@@ -215,16 +214,20 @@ export async function syncNow(userScope: string, options: { force?: boolean } = 
 
     if (prepared.length === 0) return;
 
-    let results: SyncOperationResult[] = [];
-    try {
-      results = await syncOperations(prepared.map((p) => p.input));
-    } catch (error) {
-      const temporary = isTemporaryError(error);
-      const message = toErrorMessage(error);
-      for (const { item } of prepared) {
-        await applyFailure(item, userScope, message, temporary);
+    // api-028 limita cada lote a SYNC_BATCH_SIZE operaciones; se envían en orden por bloques (pwa-012 CA-09).
+    const results: SyncOperationResult[] = [];
+    for (let start = 0; start < prepared.length; start += SYNC_BATCH_SIZE) {
+      const batch = prepared.slice(start, start + SYNC_BATCH_SIZE);
+      try {
+        results.push(...(await syncOperations(batch.map((p) => p.input))));
+      } catch (error) {
+        const temporary = isTemporaryError(error);
+        const message = toErrorMessage(error);
+        for (const { item } of prepared.slice(start)) {
+          await applyFailure(item, userScope, message, temporary);
+        }
+        return;
       }
-      return;
     }
 
     const byId = new Map(results.map((r) => [r.operation_uuid, r]));
@@ -237,10 +240,13 @@ export async function syncNow(userScope: string, options: { force?: boolean } = 
       if (result.status === 'completed' || result.status === 'duplicate') {
         await applySuccess(item, userScope, result.server_id ?? undefined);
       } else if (result.status === 'rejected') {
-        const code = result.error_code ?? '';
-        const temporary = code === 'processing_error' || isTemporaryResult(result);
+        // Un rechazo es definitivo (api-028 RN-04); los errores transitorios llegan como `retry`.
         const message = toUserSyncMessage(result.message, 'La operación fue rechazada por el servidor.');
-        await applyFailure(item, userScope, message, temporary && code === 'processing_error');
+        await applyFailure(item, userScope, message, false);
+      } else if (result.status === 'retry') {
+        // Error transitorio del servidor (api-028): sigue pendiente, no se marca como rechazada.
+        const message = toUserSyncMessage(result.message, 'El servidor no pudo procesar la operación ahora. Se reintentará automáticamente.');
+        await applyFailure(item, userScope, message, true);
       } else {
         const message = toUserSyncMessage(result.message, 'No se pudo sincronizar la operación.');
         await applyFailure(item, userScope, message, true);

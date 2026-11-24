@@ -28,7 +28,7 @@ Estado derivado de la especie: `not_published`, `published`, `unpublished` o `pe
 | GET, PATCH, DELETE | `/admin/species/{id}/publication` | `admin.species.publication.*` | Ver, editar despublicada, eliminar publicación |
 | POST | `/admin/species/{id}/unpublish` y `/republish` | | Despublicar y republicar |
 
-### Paginación con total (api-014 CA-42, CA-43; revisión 2026-11-21)
+### Paginación con total
 
 Las tres listas (`/veterinarian/species-publication-requests`, `/admin/species-publication-requests` y `/admin/published-species`) paginan de 10 en 10 y responden:
 

@@ -13,5 +13,10 @@ class LabSample extends Model
 
     public $timestamps = false;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'clinical_evaluation_id',
+        'sample_type',
+        'file_path',
+        'result_notes',
+    ];
 }

@@ -1,8 +1,10 @@
 # Plan técnico · 006 · public-catalog-read
 
 - Spec: `apps/api/specs/006-public-catalog-read.md`
-- Estado de spec: Aprobada (Víctor Adrián, 2026-10-22)
-- Responsable técnico: Víctor Adrián (API); revisión backend pendiente
+- Estado de spec: Implementada
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
+- Responsable técnico: Backend (API); revisión de backend pendiente
 - Consumidores: `mobile-003` (`apps/mobile`)
 
 ## Diseño de solución
@@ -154,4 +156,4 @@ Sin excepciones: no se requiere ADR nuevo ni DBR.
 5. Tests CA-01…CA-08 y ajuste de `end_date` en los tests existentes si aplica.
 6. `php artisan test`, `vendor/bin/pint --test` y `/verify`.
 
-Aprobación funcional: Víctor Adrián (2026-10-22). Aprobación técnica del plan: pendiente de revisión backend antes del merge.
+Aprobación funcional: Aprobada. Aprobación técnica del plan: pendiente de revisión de backend; no hay registro de esa aprobación.

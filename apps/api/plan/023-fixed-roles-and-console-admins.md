@@ -1,10 +1,12 @@
 # Plan técnico · 023 · fixed-roles-and-console-admins
 
 - Spec: `apps/api/specs/023-fixed-roles-and-console-admins.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-20)
-- Estado del plan: **Aprobado — aprobación técnica: Jonathan, 2026-11-20**. Preguntas Q1 a Q7 cerradas en «Decisiones 2026-11-20».
+- Estado de spec: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Estado del plan: **Aprobado — aprobación técnica: el responsable funcional**. Preguntas Q1 a Q7 cerradas en «Decisiones».
 - Responsable técnico (backend): por identificar en la aprobación técnica.
-- Responsable de BD: Víctor Adrián (solo T-01 y T-02 de `tasks/023`).
+- Responsable de BD: Responsable de BD (solo T-01 y T-02 de `tasks/023`).
 - Plan hermano: `apps/dashboard/plan/017-fixed-roles-account-management.md` (consumidor de este contrato).
 - DBR relacionada: **ninguna**. La evaluación de la spec (sección «Datos, privacidad y auditoría») no encuentra cambios de esquema. La comprobación viva pendiente (T-01) puede cambiar esta conclusión; si falla, se abre DBR en `docs/database/requests/` antes de tocar datos.
 - ADR relacionados: ADR 0021, excepción b) (`staff_notifications` sin SoftDeletes ni `BaseModel`). La spec la reactiva para avisos de consola; el ADR exige revisión en ese caso (ver «Riesgos y decisiones»). ADR 0001 (sin dependencias nuevas). No se requiere ADR nuevo.
@@ -93,7 +95,7 @@ Las rutas de avisos van dentro del grupo `permission:users.manage` existente. `{
 | `arca:create-staff` | `—` (no admin; motivo y confirmación según RN-19) | Lista sin `admin`; selector sin opción marcada (Q4); motivo, confirmación, auditoría y avisos (Q1) | CA-24, CA-33; T-17 |
 | `arca:create-staff-simple` | — | Se retira (Q1) | CA-32; T-17 |
 
-- **Modo no interactivo** (`--no-interaction`): sin contraseña por argumento. `create`, `reset-password` fallan con mensaje en español («Este comando pide la contraseña en la terminal.») y no cambian nada. Los demás exigen `--reason` y **`--yes`**, que es la única forma de confirmar sin terminal (decisión Q3 de 2026-11-20; RN-20 de la spec).
+- **Modo no interactivo** (`--no-interaction`): sin contraseña por argumento. `create`, `reset-password` fallan con mensaje en español («Este comando pide la contraseña en la terminal.») y no cambian nada. Los demás exigen `--reason` y **`--yes`**, que es la única forma de confirmar sin terminal.
 - **Motivo**: texto recortado de al menos 10 caracteres; si no cumple, código de salida `FAILURE` y «Indica el motivo del cambio.» antes de cualquier consulta de datos que cambie (CA-16).
 - **Confirmación**: `confirm()` con valor por defecto `false`. Rechazarla termina con `SUCCESS` sin cambios y sin auditoría (CA-17).
 - **Resumen**: muestra la conexión (`DB_CONNECTION`, nombre de la base de `config('database.connections.<conexión>.database')`), la operación, la cuenta afectada y el motivo antes de confirmar. Nunca muestra contraseñas.
@@ -204,7 +206,7 @@ Estas pruebas afirman el comportamiento anterior y se reescriben o amplían en e
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas. Prompts y Spatie ya en uso. El único índice relevante (`uk_staff_notif_user_price`) funciona con `NULL` en MySQL 8.0 (Aiven y local). Verificación en T-01. |
-| II. La spec manda | Sí | Spec 023 Aprobada (2026-11-20). Plan y tasks con el mismo `023-fixed-roles-and-console-admins`. Tareas no marcadas hasta aprobación. |
+| II. La spec manda | Sí | Spec 023 Aprobada. Plan y tasks con el mismo `023-fixed-roles-and-console-admins`. Tareas no marcadas hasta aprobación. |
 | III. Lógica separada de la interfaz | Sí | Reglas en Actions (`Guard*`, `Resolve*`, `ApplyConsoleAdminChangeAction`, avisos). Controladores y comandos delgados. El dashboard solo consume el contrato (CA-15 de `dashboard-017`). |
 | IV. Un test por criterio | Sí | Mapeo completo CA-01 a CA-31 (tabla anterior). CI en verde: **pendiente de evidencia de la sesión principal**. |
 | V. Una sola fuente de verdad para los datos | Sí, con excepción existente | Sin migraciones ni SQL. Roles y permisos por seeder (catálogo). `staff_notifications` sin SoftDeletes: excepción b) de ADR 0021, cubierta por el ADR y pendiente de revisión al reactivar la tabla (ver Riesgos). Cambios por consola auditados en `activity_log`; rechazos auditados. |
@@ -212,17 +214,17 @@ Estas pruebas afirman el comportamiento anterior y se reescriben o amplían en e
 
 ## Riesgos y decisiones
 
-- **ADR requerido o aprobado:** ADR 0021 (excepción b) de `staff_notifications`). La spec la reactiva para avisos. Nota de revisión añadida al ADR 0021 (`docs/adr/0021-ticket-sales-constitution-exceptions.md`), autorizada en Q7 el 2026-11-20.
+- **ADR requerido o aprobado:** ADR 0021 (excepción b) de `staff_notifications`). La spec la reactiva para avisos. Nota de revisión añadida al ADR 0021 (`docs/adr/0021-ticket-sales-constitution-exceptions.md`), autorizada en Q7.
 - **Riesgo de bloqueo:** si no quedan administradores activos, solo la consola puede recuperar el acceso. Mitigación: CA-20 y recomendación de al menos dos administradores activos.
 - **2FA de `executive` existente (1 cuenta):** en su siguiente inicio exigirá configurar 2FA (CA-05). Requiere aviso previo al usuario.
 - **Cuentas sin rol:** RN-03 deja `administration` como inicio de toda cuenta sin permiso de inicio; una cuenta sin rol vería un panel vacío. `arca:create-staff-simple` crea cuentas sin rol (Q1).
-- **Orden con `api-021`:** decidido (Q6, 2026-11-20): el 403 de cuenta admin (023) se produce antes del 403 `password_confirmation_required` (021), por middleware (CA-36 de esta spec; CA-38 de `api-021`).
+- **Orden con `api-021`:** decidido: el 403 de cuenta admin (023) se produce antes del 403 `password_confirmation_required` (021), por middleware (CA-36 de esta spec; CA-38 de `api-021`).
 - **Cambio de `users/options` y de `role.label`:** rompe clientes que esperen `admin` o «Ejecutivo»; se coordina con `dashboard-017` en el mismo cambio.
 - **Operación sobre base equivocada:** los comandos escriben en la base de `.env`. Mitigación: resumen con la base activa, confirmación y prohibición de `arca_zoo` en pruebas.
 - **Búsqueda global:** `SearchUsersGroup` muestra cuentas por `users.manage`; ver Q5.
 - **Alternativas descartadas:** Policy por registro con 403 para admin (ya descartada por la spec por revelar existencia); roles creados desde la interfaz (fuera de alcance); contraseña del operador por argumento (expone secretos en el historial de shell).
 
-### Preguntas (cerradas 2026-11-20; ver «Decisiones 2026-11-20»)
+### Preguntas
 
 - **Q1.** ¿`arca:create-staff` (que crea cuentas no admin) debe cumplir RN-07 a RN-10 (motivo, confirmación, auditoría y avisos), como dice el objetivo «cada comando de consola que cambia datos»? ¿Y `arca:create-staff-simple`, que crea cuentas sin rol y sin auditoría, se retira o se deja fuera de alcance? El plan asume «sí» para `arca:create-staff` y no lo toca para `arca:create-staff-simple` hasta respuesta.
 - **Q2.** CA-19: ¿los avisos van a las cuentas `admin` activas **después** del cambio (una cuenta desactivada no recibe el aviso) o **antes**? El plan propone «después».
@@ -232,7 +234,7 @@ Estas pruebas afirman el comportamiento anterior y se reescriben o amplían en e
 - **Q6.** ¿Se confirma el orden 023 → 021 para el 403 de cuenta admin frente a la confirmación de contraseña?
 - **Q7.** Nota de revisión en ADR 0021 (excepción b) al reactivar `staff_notifications`: ¿autorizada?
 
-## Decisiones 2026-11-20 (aprobación técnica de Jonathan)
+## Decisiones (aprobación técnica del responsable funcional)
 
 - **Q1 (`arca:create-staff`):** cumple RN-07 a RN-10 (motivo, confirmación, auditoría y avisos). `arca:create-staff-simple` se retira. Spec: RN-19, CA-32, CA-33. Tarea: T-17 (retirar `CreateStaff.php`).
 - **Q2 (avisos):** se crean para las cuentas `admin` activas **después** de aplicar el cambio; una cuenta desactivada por el cambio no recibe aviso. Spec: CA-19, RN-10 (enmendados). Tareas: T-12, T-15.
@@ -240,12 +242,12 @@ Estas pruebas afirman el comportamiento anterior y se reescriben o amplían en e
 - **Q4 (selector de `arca:create-staff`):** arranca sin opción marcada; la sugerencia de área va en la etiqueta. Spec: CA-24 (enmendado). Tarea: T-17.
 - **Q5 (búsqueda global):** las cuentas `admin` aparecen en solo lectura, sin acciones, con `managed_by_console: true`. Spec: CA-35. Tarea: T-08 (`SearchUsersGroup`); coherente con CA-04 de `dashboard-017`.
 - **Q6 (orden 403 de cuenta admin frente a contraseña):** 023 primero. Middleware `console-managed-account` antes de `step-up` (`api-021`). Spec: CA-36, RN-21. Tarea: T-09. Queda la pregunta de orden del rol `admin` pedido (ver plan de 021, «Preguntas de orden»).
-- **Q7 (ADR 0021, excepción b):** autorizada. Nota de revisión añadida a `docs/adr/0021-ticket-sales-constitution-exceptions.md` el 2026-11-20. Sin cambio de la decisión del ADR.
+- **Q7 (ADR 0021, excepción b):** autorizada. Nota de revisión añadida a `docs/adr/0021-ticket-sales-constitution-exceptions.md`. Sin cambio de la decisión del ADR.
 - **Propuestas del plan aceptadas:** 204 en el marcado de avisos, 404 «Aviso no encontrado.», mensajes de cuentas admin, `managed_by_console`, motivo de al menos 10 caracteres y nombres de rutas de avisos.
 
 ## Orden y aprobación
 
-1. Aprobación técnica del plan hecha por Jonathan el 2026-11-20; Q1 a Q7 respondidas (sección «Decisiones 2026-11-20»).
+1. Aprobación técnica del plan hecha por el responsable funcional; Q1 a Q7 respondidas.
 2. T-01 (responsable de BD): consulta de esquema vivo en `arca_pruebas` sin cambios. Resultado con fecha en la tarea.
 3. Backend: catálogo y seeder (T-03), 2FA (T-04), inicio e historial (T-05, T-06), sugerencia (T-07), lectura de cuentas admin y opciones (T-08), guards de escritura (T-09, T-10).
 4. Consola: esqueleto y motivo (T-11), auditoría y avisos (T-12), comandos de alta, promoción, desactivación y restablecimiento (T-13 a T-16), `arca:create-staff` (T-17).
@@ -261,16 +263,16 @@ Dependencias entre cambios:
 - `dashboard-017`: consume `users/options`, `managed_by_console` y los avisos. Su plan y tareas siguen este contrato.
 
 Aprobación:
-- Revisión técnica: Jonathan, 2026-11-20 (aprobación técnica del plan).
-- Aprobador funcional: Jonathan, spec aprobada el 2026-11-20.
+- Revisión técnica: el responsable funcional (aprobación técnica del plan).
+- Aprobador funcional: el responsable funcional, spec aprobada.
 - Evidencias: pendientes de la sesión principal (salida de `php artisan test` contra `arca_pruebas`, Pint, `php artisan list`, `migrate:status` sin cambios, consultas de T-01 y T-02). Esta redacción no ejecutó nada y no afirma que pasen.
 
-## Verificación de esquema de la sesión principal (2026-11-20, solo lectura)
+## Verificación de esquema de la sesión principal
 - `users.created_by` y `users.updated_by`: `int` **nullable**, FK a `users` con `ON DELETE SET NULL` (`php artisan db:table users`). El alta por consola sin usuario de aplicación cabe sin DBR.
 - `staff_notifications.created_by`: `int` nullable (verificado antes en esta fecha).
 - T-01 del responsable de BD sigue vigente como confirmación formal, pero no se esperan hallazgos.
 
-## Divergencias de implementación (2026-11-20)
+## Divergencias de implementación
 
 - **Middleware `console-managed-account` cubre también el rol `admin` pedido.** El plan lo limitaba a la cuenta objetivo y dejaba el rol pedido en `authorize()` de los Form Requests (después de `step-up:*`). Se implementa en el mismo middleware (rutas `admin.users.store` y `admin.users.update`) para que el 403 de rol admin también preceda a `password_confirmation_required`, según la coordinación con `api-021` (plan de 021, «Preguntas de orden», propuesta aceptada en su línea de decisiones). `authorize()` de los Requests conserva la comprobación como segunda línea; no hay doble auditoría porque el middleware corta antes. En `users.update`, si la cuenta no existe el middleware pasa de largo y responde 404 (CA-14).
 - **El guard `console-managed-account` no existía en el árbol** (el encargo lo daba por insertado por `api-021`): se creó aquí (`ConsoleManagedAccountGuard`, alias en `bootstrap/app.php`) y se antepone a `step-up:*` en las seis rutas de escritura de cuentas. Con esto quedan cubiertos `api-021` CA-38 y el orden del rol admin pedido (`test_ca36_*` y `test_ca38_*`).
@@ -283,9 +285,9 @@ Aprobación:
 - **`arca:create-staff`:** el selector de rol usa etiquetas `código — etiqueta` y no pasa `default:`; no admite `--no-interaction` (pide la contraseña en la terminal).
 - **Permiso huérfano `operational-staff.manage`:** sin cambios ni limpieza de la fila (fuera de alcance); solo se verifica que ningún código lo usa (CA-27).
 
-## Revisión 2026-11-21 (aprobada por Jonathan): niveles de consola, titular y recuperación
+## Revisión (aprobada por el responsable funcional): niveles de consola, titular y recuperación
 
-Spec: CA-37 a CA-49, RN-22 a RN-26. Sin DBR ni migraciones: `users.deleted_at` existe (`php artisan db:table users`, 2026-11-21: `deleted_at timestamp nullable`; `uk_users_email` único incluye cuentas eliminadas). Sin dependencias nuevas.
+Spec: CA-37 a CA-49, RN-22 a RN-26. Sin DBR ni migraciones: `users.deleted_at` existe (`php artisan db:table users`: `deleted_at timestamp nullable`; `uk_users_email` único incluye cuentas eliminadas). Sin dependencias nuevas.
 
 ### Diseño
 
@@ -295,7 +297,7 @@ Spec: CA-37 a CA-49, RN-22 a RN-26. Sin DBR ni migraciones: `users.deleted_at` e
 - **Recuperación:** solo `reset-password` sobre el titular, o `create` sin admins activos; sin contraseña, con confirmación por correo; eventos `console-recovery-*`.
 - **Orden de cada comando:** motivo → cuenta y validaciones baratas (incluida la protección del titular) → autorización de nivel alto → datos → resumen y confirmación → transacción (cambio, auditoría y avisos).
 
-### Divergencias de implementación (2026-11-21)
+### Divergencias de implementación
 
 - **Sin terminal:** `promote` y `deactivate`, que antes admitían `--reason` y `--yes` (CA-34), ahora se rechazan (nivel alto); `reset-two-factor` exige `--confirm-email`.
 - **CA-20:** al exigir un titular activo, la última cuenta admin activa es siempre el titular y el comando responde primero con el mensaje del titular; la regla de continuidad (`GuardAdministratorContinuityAction`) se prueba directamente.
@@ -313,7 +315,7 @@ Spec: CA-37 a CA-49, RN-22 a RN-26. Sin DBR ni migraciones: `users.deleted_at` e
 | CA-49 (y CA-15) | `ArcaAdminCommandsTest::test_ca15_*` |
 | CA-15, CA-17, CA-18, CA-19, CA-20, CA-21, CA-22, CA-23, CA-30, CA-34 | clases de `tests/Feature/Console` actualizadas al nuevo nivel |
 
-## Revisión 2026-11-21 (b) (aprobada por Jonathan): `list` con filtros y `help`
+## Revisión (b) (aprobada por el responsable funcional): `list` con filtros y `help`
 
 Spec: CA-50 a CA-55, RN-27 y RN-28. Sin DBR ni migraciones; sin dependencias nuevas.
 

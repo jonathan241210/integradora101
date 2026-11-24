@@ -13,5 +13,10 @@ class ClinicalEvaluationFinding extends Model
 
     public $timestamps = false;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'clinical_evaluation_id',
+        'organ_system',
+        'status',
+        'description',
+    ];
 }

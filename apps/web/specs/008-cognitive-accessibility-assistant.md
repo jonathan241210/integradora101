@@ -3,8 +3,9 @@
 - App dueña: `web`
 - Apps/paquetes afectados: `apps/web`
 - Estado: Implementada
-- Solicitante / responsable funcional: Solicitante de esta conversación; nombre por identificar
-- Aprobación funcional: Solicitante, 2026-10-08
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -19,7 +20,7 @@ El resumen de página con IA se mostrará solo como opción visual no disponible
 - Ofrecer perfiles predefinidos y permitir ajustes individuales posteriores.
 - Conservar las preferencias en el navegador y ofrecer una acción para restablecerlas.
 - Mantener las funciones de búsqueda, navegación, mapa, formularios y animaciones existentes del portal.
-- Mostrar “Resumir esta página” como opción visual no disponible, sin implementar IA o integración externa.
+- No ofrecer resumen automático de la página: la opción «Resumir esta página» se retiró del panel (ver CA-05).
 
 ## Fuera de alcance
 
@@ -52,7 +53,7 @@ Como visitante del portal, quiero elegir una forma de lectura y activar herramie
   - Regla de Lectura muestra una guía horizontal que sigue el puntero y se reposiciona con el foco de teclado, sin bloquear clics ni selección de texto.
   - Interfaz Calma reduce animaciones y estímulos visuales, conservando contraste suficiente y respetando la preferencia del sistema para movimiento reducido.
 - **CA-04:** Dado que se modifican perfiles o modos individuales, cuando se recargue el portal en el mismo navegador, entonces se restaurarán las preferencias previamente guardadas; al usar “Restablecer” se borrarán esas preferencias locales y se desactivarán los modos. Si el almacenamiento del navegador no está disponible, el panel seguirá funcionando hasta finalizar la página actual y no mostrará un error bloqueante.
-- **CA-05:** Dada la opción “Resumir esta página”, cuando se muestre el panel, entonces estará visible como control no disponible y claramente identificado como “Próximamente”; al intentar usarlo no enviará contenido, no hará peticiones ni pedirá configuración de API keys.
+- **CA-05:** Dado el panel del asistente, cuando se muestre, entonces no ofrece una opción de resumen y no envía contenido, no hace peticiones ni procesa texto con servicios externos. *(Sustituye la versión que mostraba «Resumir esta página / Próximamente» deshabilitado: se optó por retirarlo porque un control que nunca se activa confunde al visitante.)*
 - **CA-06:** Dado el panel y todas sus herramientas, cuando se usen a 360, 390, 768, 1024 y 1366 px, entonces el panel permanecerá dentro del viewport, sus controles podrán operarse con teclado y táctil, no habrá desbordamiento horizontal y las funciones actuales del sitio seguirán disponibles.
 - **CA-07:** Dada la suite `node --test apps/web/src/tests/relocation.test.mjs`, cuando se ejecute, entonces incluirá tests nombrados para CA-01..CA-07 que cubran apertura/cierre/foco, perfiles, cada modo, persistencia y restablecimiento, estado no disponible del resumen y adaptación responsive sin dependencias nuevas.
 
@@ -76,7 +77,7 @@ Solo se guardan en el navegador preferencias de interfaz no identificables (perf
 3. La selección aplica los modos asociados y actualiza su estado visual y accesible.
 4. Una modificación manual convierte el selector a “Personalizado”; las preferencias se guardan localmente.
 5. “Restablecer” desactiva herramientas, selecciona “Sin perfil” y elimina preferencias guardadas.
-6. “Resumir esta página” aparece deshabilitado y no realiza acciones de red.
+6. El panel no muestra opción de resumen y no realiza acciones de red.
 7. Si falla el almacenamiento local, los cambios siguen disponibles en memoria durante la sesión y el panel no se bloquea.
 8. Si el panel se cierra, se puede reabrir desde su control; el foco vuelve al control al cerrar.
 
@@ -91,5 +92,5 @@ Solo se guardan en el navegador preferencias de interfaz no identificables (perf
 
 ## Revisión
 
-- Aprobadores y fecha: Solicitante, 2026-10-08.
+- Aprobación: Aprobada.
 - Evidencia/enlaces: El solicitante pidió añadir el panel descrito como “Asistente Cognitivo”. Confirmó tres perfiles (“Lectura clara”, “Enfoque” y “Calma”), persistencia solo en el navegador con restablecimiento, y que “Resumir esta página” debe ser visual sin IA funcional ni configuración de claves. Verificación final: siete pruebas CA-01..CA-07 enfocadas aprobadas; 44 de 45 pruebas de la suite completa aprobadas. La única falla es el test preexistente `CA-04 visit-info-icons-and-favicon`, ajeno a esta feature. Se verificaron en navegador los viewports 360, 390, 768, 1024 y 1366 px sin overflow horizontal; Bionic Reading conserva la selección exacta y la Regla de Lectura no intercepta eventos. `/verify` identificó `apps/web` como no inicializada por ausencia de `apps/web/src/package.json`. Esta feature no duplica las specs 001–007.

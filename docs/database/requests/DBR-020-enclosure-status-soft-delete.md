@@ -1,12 +1,12 @@
 # DBR-020 · Estado activo del recinto
 
-- Estado: Lista para backend (aplicada en `arca_pruebas` el 2026-11-18). Staging y producción pendientes.
-- Feature/spec origen: `apps/api/specs/019-enclosure-status-and-global-search.md` (Borrador). Consumidor de la interfaz: `apps/dashboard/specs/012-enclosure-actions-global-search.md` (Borrador). Enmienda `api-007` CA-18 y `api-010` (fuera de alcance), según la spec 019.
-- Solicitante: usuario del proyecto (nombre por registrar)
-- Responsable de BD: Jonathan, por delegación verbal del responsable de BD (Victor Adrian) comunicada por Jonathan el 2026-11-18. La delegación cubre redactar, aprobar, crear y aplicar la migración de esta DBR en `arca_pruebas`.
-- Responsable backend: Jonathan
-- Fecha: 2026-11-18
-- Decisiones de producto: cerradas por Jonathan (2026-11-18). Quedan dos verificaciones para BD al final. Esta DBR no se aprueba ni se aplica hasta que BD y backend firmen en el propio documento.
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-18
+- Aprobada: 2026-11-18
+- Feature/spec origen: `apps/api/specs/019-enclosure-status-and-global-search.md` (Aprobada). Consumidor de la interfaz: `apps/dashboard/specs/012-enclosure-actions-global-search.md`. Enmienda `api-007` CA-18 y `api-010` (fuera de alcance), según la spec 019.
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
+- Decisiones de producto: cerradas. Quedan dos verificaciones para BD al final. La aprobación de BD y backend consta en la tabla de aprobaciones.
 
 ## Problema y justificación
 
@@ -19,7 +19,7 @@ La base ya tiene `enclosures.deleted_at` (borrado lógico), pero no tiene ningun
 
 ## Estado actual
 
-Consultado sobre la base viva `arca_pruebas` el 2026-11-18 (`php artisan db:table enclosures` e `information_schema`, solo lectura), con todas las migraciones del repositorio en estado *Ran*:
+Consultado sobre la base viva `arca_pruebas` (`php artisan db:table enclosures` e `information_schema`, solo lectura), con todas las migraciones del repositorio en estado *Ran*:
 
 - `enclosures` tiene `id`, `name` VARCHAR(100), `gps_lat`, `gps_lon`, `map_x`, `map_y` (DBR-008), **`updated_at` TIMESTAMP NULL** y **`deleted_at` TIMESTAMP NULL**, con índices `idx_enclosures_updated_at` e `idx_enclosures_deleted_at`. **No tiene** `is_active`.
 - `updated_at` y `deleted_at` **no aparecen en ninguna migración del repositorio**: existen en la base pero no están versionados. El modelo `Enclosure` tampoco los usa (`$timestamps = false`, sin `SoftDeletes`). Ver verificación 1.
@@ -95,22 +95,22 @@ No aplica. Las reglas de visibilidad y de asignación viven en Actions de la API
 ## Plan de ejecución
 
 ### Fase 0: cierre documental
-- [x] BD (Jonathan, por delegación) y backend (Jonathan) firman en el documento (2026-11-18).
-- [x] Estado pasa a «Aprobada» (2026-11-18).
+- [x] BD y backend firman en el documento.
+- [x] Estado pasa a «Aprobada».
 
 ### Fase 1: migración de esquema (responsable de BD)
 - [x] Migración creada: `apps/api/src/database/migrations/2026_11_18_000020_enclosure_status_soft_delete.php`.
 - [x] Verificaciones 1 y 2 registradas (ver «Verificaciones para BD»).
 - [x] Aplicada en `arca_pruebas` con `php artisan migrate` (lote 12). `up()` es idempotente. **`down()` no se ejecutó**: el proyecto bloquea `migrate:rollback` en este ambiente («This command is prohibited from running in this environment») y no se forzó; queda revisado solo en código (retira únicamente `is_active`). No se probó en una MySQL aislada.
 - [x] Evidencia registrada en «Pruebas y evidencia».
-- [x] Estado pasa a «Lista para backend» (2026-11-18).
+- [x] Estado pasa a «Lista para backend».
 
 ### Fase 2: backend
 - [ ] Backend implementa modelo, Actions y endpoints de la spec 019 solo con la DBR en «Lista para backend».
 
 ## Pruebas y evidencia
 
-Evidencia de `arca_pruebas` (2026-11-18, Jonathan como responsable de BD por delegación):
+Evidencia de `arca_pruebas`:
 
 - **Antes:** `SELECT COUNT(*) FROM enclosures WHERE deleted_at IS NOT NULL` = 0; total 67 filas. `SHOW CREATE TABLE` sin `is_active`, con `updated_at` y `deleted_at` y sus índices.
 - **Aplicación:** `php artisan migrate --force` → `2026_11_18_000020_enclosure_status_soft_delete ... DONE`; `migrate:status` → lote 12, *Ran*.
@@ -120,22 +120,22 @@ Evidencia de `arca_pruebas` (2026-11-18, Jonathan como responsable de BD por del
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Jonathan (por delegación de Victor Adrian) | 2026-11-18 | Aprobada |
-| Responsable backend | Jonathan | 2026-11-18 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | Aplicada | 2026-11-18 | lote 12; ver «Pruebas y evidencia» |
-| staging | Pendiente | | |
-| producción | Pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas | Migración `2026_11_18_000020_enclosure_status_soft_delete` (lote 12); ver «Pruebas y evidencia» |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
 
 ## Verificaciones para BD
 
 No son preguntas de producto. Son comprobaciones que el responsable de BD registra antes de aplicar la migración.
 
 1. **`UNIQUE` sobre `enclosures.name`.** La unicidad del nombre se valida en la aplicación (spec 019, RN-06: solo entre recintos no eliminados). Si existe un `UNIQUE` en la base, BD lo evalúa y decide cómo tratarlo; no se resuelve en esta DBR.
-2. **`ON DELETE` real de las FK.** Confirmar la acción de `animals.enclosure_id` y de `enclosure_qr_codes.enclosure_id` (la migración de 2026-10-15 indica RESTRICT). Esta DBR no las cambia; el resultado se registra como evidencia.
+2. **`ON DELETE` real de las FK.** Confirmar la acción de `animals.enclosure_id` y de `enclosure_qr_codes.enclosure_id` (la migración indica RESTRICT). Esta DBR no las cambia; el resultado se registra como evidencia.

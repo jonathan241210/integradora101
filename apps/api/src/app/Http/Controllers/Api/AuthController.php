@@ -22,7 +22,10 @@ class AuthController extends Controller
 
         $throttleKey = 'login:'.strtolower($credentials['email']).'|'.$request->ip();
 
-        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+        // api-028: además del límite por correo+IP, un tope solo por IP evita probar una contraseña contra muchos correos.
+        $ipThrottleKey = 'login-ip:'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5) || RateLimiter::tooManyAttempts($ipThrottleKey, 20)) {
             return response()->json([
                 'message' => 'Demasiados intentos. Inténtalo de nuevo en unos minutos.',
             ], 429);
@@ -32,6 +35,7 @@ class AuthController extends Controller
 
         if (! $user || ! $user->is_active || ! Hash::check($credentials['password'], $user->password)) {
             RateLimiter::hit($throttleKey, 300);
+            RateLimiter::hit($ipThrottleKey, 300);
 
             return response()->json(['message' => 'Credenciales incorrectas.'], 422);
         }

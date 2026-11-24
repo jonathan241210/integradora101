@@ -1,8 +1,7 @@
 # Estándares de Integración API · `apps/mobile`
 
 - **Estado:** Propuesta / Vigente para el equipo móvil
-- **Fecha:** 2026-10-17
-- **Responsables:** Víctor Adrián, Aksel
+- **Responsables:** Frontend (equipo móvil)
 - **Specs relacionadas:** `mobile-003` (catálogo y caché), `mobile-004` (cuenta), `mobile-005` (progreso), `mobile-006` (QR), `mobile-007` (mapa)
 - **Specs API de referencia:** `api-004` (visitor-authentication), `api-005` (visitor-progress)
 - **ADRs de referencia:** [ADR 0004](../../../docs/adr/0004-mobile-react-native.md) (React Native/Expo), [ADR 0011](../../../docs/adr/0011-visitor-identity-and-mobile-session.md) (Identidad visitante y sesión)
@@ -13,7 +12,7 @@
 
 Este documento establece los **estándares técnicos y de arquitectura** para conectar la aplicación móvil (`apps/mobile`) con la API central Laravel (`apps/api`).
 
-Su objetivo es garantizar que tanto **Víctor** como **Aksel** desarrollen sus respectivas features de forma consistente, desacoplada y alineada a las especificaciones aprobadas.
+Su objetivo es garantizar que el equipo móvil desarrolle sus respectivas features de forma consistente, desacoplada y alineada a las especificaciones aprobadas.
 
 > [!IMPORTANT]
 > **Regla de oro (Constitución Principio III):**
@@ -76,11 +75,11 @@ Para evitar discrepancias con las specs aprobadas de la API (`api-004` y `api-00
 
 | Dominio | Responsable | Specs móvil / API | Rutas contractuales (API v1) | Autenticación |
 |---|---|---|---|---|
-| **Catálogo Público** | **Víctor** | `mobile-003` | `GET /species`, `GET /species/{id}`, `GET /published-species`, `GET /enclosures`, `GET /events` | Ninguna (Público) |
-| **Mapa y Ubicación** | **Víctor** | `mobile-007` | `GET /enclosures`, `GET /map/locations` | Ninguna (Público) |
-| **Cuenta Visitante** | **Aksel** | `mobile-004` / `api-004` | `POST /visitor/auth/register`<br>`POST /visitor/auth/email/verify`<br>`POST /visitor/auth/login`<br>`POST /visitor/auth/refresh`<br>`POST /visitor/auth/logout`<br>`GET /visitor/me` | Bearer Token (Sanctum) + Refresh Token |
-| **Progreso y Colección** | **Aksel** | `mobile-005` / `api-005` | `GET /visitor/progress`<br>`GET /visitor/collection`<br>`GET /visitor/achievements`<br>`GET /visitor/missions` | Bearer Token obligatorio |
-| **Escaneo QR / Descubrimientos** | **Aksel** | `mobile-006` / `api-005` | `POST /visitor/discoveries` (idempotente vía `client_scan_id`) | Bearer Token obligatorio |
+| **Catálogo Público** | **Frontend** | `mobile-003` | `GET /species`, `GET /species/{id}`, `GET /published-species`, `GET /enclosures`, `GET /events` | Ninguna (Público) |
+| **Mapa y Ubicación** | **Frontend** | `mobile-007` | `GET /enclosures`, `GET /map/locations` | Ninguna (Público) |
+| **Cuenta Visitante** | **Frontend** | `mobile-004` / `api-004` | `POST /visitor/auth/register`<br>`POST /visitor/auth/email/verify`<br>`POST /visitor/auth/login`<br>`POST /visitor/auth/refresh`<br>`POST /visitor/auth/logout`<br>`GET /visitor/me` | Bearer Token (Sanctum) + Refresh Token |
+| **Progreso y Colección** | **Frontend** | `mobile-005` / `api-005` | `GET /visitor/progress`<br>`GET /visitor/collection`<br>`GET /visitor/achievements`<br>`GET /visitor/missions` | Bearer Token obligatorio |
+| **Escaneo QR / Descubrimientos** | **Frontend** | `mobile-006` / `api-005` | `POST /visitor/discoveries` (idempotente vía `client_scan_id`) | Bearer Token obligatorio |
 
 ---
 
@@ -150,7 +149,7 @@ export type ViewState = 'loading' | 'success' | 'empty' | 'error' | 'offline';
 
 Dado que en el zoológico la señal móvil puede ser irregular, la aplicación aplica dos estrategias según la naturaleza de la información:
 
-### 7.1 Lectura de Catálogo y Mapa (Víctor · `mobile-003`, `mobile-007`)
+### 7.1 Lectura de Catálogo y Mapa (Frontend · `mobile-003`, `mobile-007`)
 - **Estrategia:** *Stale-While-Revalidate* con respaldo en `AsyncStorage`.
 - **Flujo:**
   1. El Repositorio revisa si existen datos en caché local.
@@ -158,7 +157,7 @@ Dado que en el zoológico la señal móvil puede ser irregular, la aplicación a
   3. En segundo plano, consulta la API: si hay datos actualizados, actualiza la caché y refresca la UI silenciosamente.
   4. Si la consulta de red falla, conserva los datos de la caché; el estado `offline` lo determina `useNetworkStatus` con `expo-network` (ADR 0014), no el fallo HTTP aislado.
 
-### 7.2 Progreso y Escaneos QR (Aksel · `mobile-005`, `mobile-006`)
+### 7.2 Progreso y Escaneos QR (Frontend · `mobile-005`, `mobile-006`)
 - **Estrategia:** Cola local persistente (*Offline Sync Queue*).
 - **Flujo (según spec `api-005` y ADR 0011):**
   1. Si el visitante escanea un QR sin señal, el escaneo se guarda con un identificador único generado por el cliente (`client_scan_id`) en `AsyncStorage`.
@@ -195,7 +194,7 @@ export class ApiAnimalRepository implements AnimalRepository {
 
   constructor() {
     this.httpClient = createHttpClient({
-      baseUrl: process.env.EXPO_PUBLIC_API_URL ?? 'http://10.0.2.2:8000/api/v1',
+      baseUrl: resolveApiBaseUrl(), // src/config/runtime.ts: URL local solo en desarrollo; en producción exige EXPO_PUBLIC_API_URL
     });
   }
 
@@ -246,14 +245,14 @@ Conforme a la **Constitución (Principio IV)**, cada criterio de aceptación (`C
 
 ---
 
-## 10. Checklist de revisión para PRs entre Víctor y Aksel
+## 10. Checklist de revisión para PRs de integración móvil
 
-Antes de abrir o aprobar un PR de integración móvil:
-- [ ] ¿La llamada a la red se hace dentro de un Repositorio (nunca en la pantalla)?
-- [ ] ¿Las rutas coinciden exactamente con las specs de la API (`/visitor/auth/*`, `/visitor/discoveries`)?
-- [ ] ¿Se utiliza `createHttpClient` de `@arca/api-client`?
-- [ ] ¿Las claves de respuesta están mapeadas a `camelCase` en los modelos de UI?
-- [ ] ¿La pantalla maneja los estados `loading`, `empty`, `error` y `offline`?
-- [ ] ¿Los textos y mensajes de error están en español comprensible?
-- [ ] ¿No se versionaron secretos, tokens de prueba ni contraseñas en el código?
-- [ ] ¿Los tests unitarios de Jest corren en verde (`npm test -- --runInBand`)?
+Antes de abrir o aprobar un PR de integración móvil, verificar que:
+- [ ] La llamada a la red se hace dentro de un Repositorio, nunca en la pantalla.
+- [ ] Las rutas coinciden exactamente con las specs de la API (`/visitor/auth/*`, `/visitor/discoveries`).
+- [ ] Se utiliza `createHttpClient` de `@arca/api-client`.
+- [ ] Las claves de respuesta están mapeadas a `camelCase` en los modelos de UI.
+- [ ] La pantalla maneja los estados `loading`, `empty`, `error` y `offline`.
+- [ ] Los textos y mensajes de error están en español comprensible.
+- [ ] No se versionaron secretos, tokens de prueba ni contraseñas en el código.
+- [ ] Los tests unitarios de Jest corren en verde (`npm test -- --runInBand`).

@@ -2,10 +2,11 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña: configuración `arca.timezone`, Actions de panel, reporte, exportación, historial, cancelación y visibilidad pública, y zona de la conexión MySQL); `apps/dashboard` (consumidor: presenta fechas en la zona que devuelve la API, `dashboard-019`); `packages/api-client` (deja de enviar `timezone`, `dashboard-019`); `apps/web`, `apps/mobile` y `apps/pwa` (impacto listado en «Dependencias, riesgos y preguntas», sin spec redactada aquí).
-- Estado: Aprobada
-- Solicitante / responsable funcional: Jonathan
+- Estado: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
 - Responsable de BD: no aplica. Sin DBR: el cambio es de configuración (`.env` y opciones de la conexión), no de esquema (ver «Datos, privacidad y auditoría»).
-- Aprobación funcional: Jonathan, 2026-11-20 (decisiones cerradas 1 a 8, registradas en esta spec; la sesión principal aporta la evidencia)
+- Aprobación funcional: Aprobada (decisiones cerradas 1 a 8, registradas en esta spec; la sesión principal aporta la evidencia)
 - Orden de implementación: después de `api-021` y antes de `api-022`.
 - Sustituye, cuando se implemente: `api-007` RN-14 y CA-28 (zona del dispositivo con respaldo), `api-011` RN-14 (llave `arca.public_timezone`) y el texto de zona de `api-009` RN-16 y CA-31 (llave `arca.report_timezone`). Hasta su implementación, esas specs siguen vigentes.
 
@@ -38,7 +39,7 @@ Resultado: una venta a las 23:30 de Tulancingo puede caer en otro día según qu
 - Lógica especial de horario de verano (ver RN-07).
 - Cambios de esquema, migraciones o DBR.
 - Cambios de contrato en `apps/web`, `apps/mobile` y `apps/pwa`; solo se listan como impacto.
-- Cambios en la conexión `mysql2` de `settings_colores` (fuente externa de solo lectura). *Enmienda técnica 2026-11-20 (P-01): la conexión `mysql2` no existe en el código de la API (`config/database.php` solo define `sqlite`, `mysql`, `mariadb`, `pgsql` y `sqlsrv`). La decisión 3 queda retirada; ver «Decisiones finales».*
+- Cambios en la conexión `mysql2` de `settings_colores` (fuente externa de solo lectura). *Enmienda técnica (P-01): la conexión `mysql2` no existe en el código de la API (`config/database.php` solo define `sqlite`, `mysql`, `mariadb`, `pgsql` y `sqlsrv`). La decisión 3 queda retirada; ver «Decisiones finales».*
 - Redacción de la spec del dashboard y del api-client: corresponde a `dashboard-019`.
 - Reemplazar `api-022` o el reporte de cancelaciones: esta spec solo fija la zona que usará.
 
@@ -51,7 +52,7 @@ Resultado: una venta a las 23:30 de Tulancingo puede caer en otro día según qu
 | Visitante anónimo | Ver noticias y eventos vigentes según el día del zoológico | Ninguno (sin cambio, `api-011`) |
 | Dashboard (`dashboard-019`) | Presentar fechas en la zona que devuelve la API | Ninguno nuevo |
 | Operaciones (`.env` por ambiente) | Definir `ARCA_TIMEZONE` y `DB_TIMEZONE` | Acceso de despliegue (`infra/README.md`) |
-| Responsable funcional | Validar la zona de negocio y el corte | Jonathan |
+| Responsable funcional | Validar la zona de negocio y el corte | Equipo ARCA-NB |
 
 Esta feature no crea permisos ni roles.
 
@@ -77,9 +78,9 @@ Ejemplo de referencia usado en los CA: `2026-11-07 05:30:00 UTC` equivale a `202
 - **CA-09 (vigencia pública con la misma llave):** Dado que la hora del servidor es `2026-11-07 05:30:00` UTC y una noticia con `end_date` `2026-11-06`, cuando se consulta sin sesión con `ARCA_TIMEZONE=America/Mexico_City`, entonces la noticia es visible; con `ARCA_TIMEZONE=UTC` (hoy `2026-11-07`), entonces no es visible. El cálculo de «hoy» sale de `arca.timezone` (`api-011` CA-12 se mantiene con esta llave).
 - **CA-10 (el parámetro `timezone` del cliente se ignora):** Dado cualquier cliente que envía `timezone` con una zona válida (`Asia/Tokyo`), una zona no válida (`Mars/Olympus`), una abreviatura (`EST`) o un desfase (`+05:00`), cuando llama panel, reporte, exportación, historial, cancelación, reporte de cancelaciones o noticias y eventos, entonces la respuesta es idéntica a la que daría sin ese parámetro, no hay error `422` por zona y la respuesta informa `arca.timezone`.
 - **CA-11 (conexión MySQL en UTC):** Dada la conexión `mysql` con la configuración del ambiente, cuando se consulta `@@session.time_zone`, entonces devuelve `+00:00`; y la zona se configura solo por `.env` (`DB_TIMEZONE`, por defecto `+00:00`) en `config/database.php`.
-- **CA-12 (zona informada en las respuestas):** Dadas las respuestas de panel (`timezone`), reporte (`period.timezone`) y historial de taquilla, cuando se consultan, entonces informan `arca.timezone` como texto IANA. Esta respuesta es la fuente que usa el dashboard para presentar fechas (`dashboard-019`). *Enmienda técnica 2026-11-20 (P-04): la respuesta del recibo de venta (`POST /api/v1/admin/tickets`) y las respuestas de precios vigentes también informan `timezone` con `arca.timezone`.*
-- **CA-13 (cobertura de pruebas):** Dada la suite de PHPUnit, cuando se ejecuta contra `arca_pruebas` con `DatabaseTransactions` (sin `RefreshDatabase` ni migraciones desde los tests), entonces existe al menos un test que nombra cada CA-01 a CA-16. Los tests que hoy envían `timezone` como zona de negocio se actualizan para cumplir CA-10. *Enmienda técnica 2026-11-20: CA-08 se verifica con `api-022` (P-05), así que su test vive en las tareas de `api-022`.*
-- **CA-14 (arranque con zona inválida; decisión 2 de 2026-11-20 y P-06):** Dado `ARCA_TIMEZONE` vacío o que no es un identificador IANA (por ejemplo `Mars/Olympus`, `EST` o `+05:00`), cuando la aplicación arranca, entonces no arranca y muestra un error claro en español que indica la variable y el valor recibido, sin respaldo silencioso a `America/Mexico_City`.
+- **CA-12 (zona informada en las respuestas):** Dadas las respuestas de panel (`timezone`), reporte (`period.timezone`) y historial de taquilla, cuando se consultan, entonces informan `arca.timezone` como texto IANA. Esta respuesta es la fuente que usa el dashboard para presentar fechas (`dashboard-019`). *Enmienda técnica (P-04): la respuesta del recibo de venta (`POST /api/v1/admin/tickets`) y las respuestas de precios vigentes también informan `timezone` con `arca.timezone`.*
+- **CA-13 (cobertura de pruebas):** Dada la suite de PHPUnit, cuando se ejecuta contra `arca_pruebas` con `DatabaseTransactions` (sin `RefreshDatabase` ni migraciones desde los tests), entonces existe al menos un test que nombra cada CA-01 a CA-16. Los tests que hoy envían `timezone` como zona de negocio se actualizan para cumplir CA-10. *Enmienda técnica: CA-08 se verifica con `api-022` (P-05), así que su test vive en las tareas de `api-022`.*
+- **CA-14 (arranque con zona inválida; decisión 2 y P-06):** Dado `ARCA_TIMEZONE` vacío o que no es un identificador IANA (por ejemplo `Mars/Olympus`, `EST` o `+05:00`), cuando la aplicación arranca, entonces no arranca y muestra un error claro en español que indica la variable y el valor recibido, sin respaldo silencioso a `America/Mexico_City`.
 - **CA-15 (memoria semanal; P-02):** Dado un visitante que supera el límite semanal de momentos (`api-010` CA-23), cuando recibe el mensaje de `WeeklyMemoryLimitException`, entonces la fecha del mensaje se calcula con `arca.timezone` y no con `config('app.timezone')`.
 - **CA-16 (precios programados; P-03):** Dado `POST /api/v1/admin/ticket-prices` con `effective_at` como fecha y hora sin desfase (por ejemplo `2026-11-07T00:00:00`), cuando la API la procesa con `ARCA_TIMEZONE=America/Mexico_City`, entonces la vigencia empieza a las `2026-11-07 06:00:00` UTC; con `ARCA_TIMEZONE=UTC`, empieza a las `2026-11-07 00:00:00` UTC.
 
@@ -95,9 +96,9 @@ Ejemplo de referencia usado en los CA: `2026-11-07 05:30:00 UTC` equivale a `202
 - **RN-08 (datos existentes):** Esta spec no reescribe ni convierte filas guardadas. Se asume que los instantes ya guardados están en UTC; esa suposición se verifica antes de desplegar (ver riesgos).
 - **RN-09 (un único punto de lectura):** La zona se lee en un único punto de la API (Action o servicio de soporte), no con `config()` repetido en cada Action (`api-011` RN-10).
 - **RN-10 (sin cambio de contratos de datos):** Solo cambian el origen de la zona y la aceptación del parámetro `timezone`. Los totales, las formas de respuesta y los permisos no cambian, salvo lo que ya cubre `api-022`.
-- **RN-11 (memoria semanal; P-02, enmienda técnica 2026-11-20):** `WeeklyMemoryLimitException` (`api-010` CA-23) formatea la fecha del límite con `BusinessTimezone::name()`, es decir, con `arca.timezone`. Se corrige la referencia a `APP_TIMEZONE` de `apps/api/docs/momentos-contrato-para-mobile.md` (tarea).
-- **RN-12 (precios programados; P-03, enmienda técnica 2026-11-20):** La hora de «entrada en vigor» (`effective_at`) de `POST /api/v1/admin/ticket-prices` se interpreta en `arca.timezone` cuando llega sin desfase. Es un cambio de contrato de `api-009` CA-18 y CA-19 (anotado en su nota de revisión). El dashboard deja de calcular el desfase del navegador (`dashboard-019` RN-06).
-- **RN-13 (zona en recibo y precios; P-04, enmienda técnica 2026-11-20):** El recibo de venta y las respuestas de precios vigentes informan `timezone` con `arca.timezone`, igual que el historial (CA-12).
+- **RN-11 (memoria semanal; P-02, enmienda técnica):** `WeeklyMemoryLimitException` (`api-010` CA-23) formatea la fecha del límite con `BusinessTimezone::name()`, es decir, con `arca.timezone`. Se corrige la referencia a `APP_TIMEZONE` de `apps/api/docs/momentos-contrato-para-mobile.md` (tarea).
+- **RN-12 (precios programados; P-03, enmienda técnica):** La hora de «entrada en vigor» (`effective_at`) de `POST /api/v1/admin/ticket-prices` se interpreta en `arca.timezone` cuando llega sin desfase. Es un cambio de contrato de `api-009` CA-18 y CA-19 (anotado en su nota de revisión). El dashboard deja de calcular el desfase del navegador (`dashboard-019` RN-06).
+- **RN-13 (zona en recibo y precios; P-04, enmienda técnica):** El recibo de venta y las respuestas de precios vigentes informan `timezone` con `arca.timezone`, igual que el historial (CA-12).
 
 ## Datos, privacidad y auditoría
 
@@ -106,7 +107,7 @@ Ejemplo de referencia usado en los CA: `2026-11-07 05:30:00 UTC` equivale a `202
 - Activitylog: sin cambios. Un cambio de `ARCA_TIMEZONE` o `DB_TIMEZONE` es un cambio de despliegue; no se registra como acción de usuario.
 - SoftDeletes: sin cambios.
 
-**Estado actual (consulta en solo lectura, 2026-11-20, sesión principal sobre `arca_pruebas` en Aiven):**
+**Estado actual (consulta en solo lectura, sesión principal sobre `arca_pruebas` en Aiven):**
 
 - `@@global.time_zone = SYSTEM`
 - `@@session.time_zone = SYSTEM`
@@ -143,21 +144,21 @@ Conclusión: en Aiven el sistema opera en UTC, pero la aplicación no fija la zo
   - **Compatibilidad del cliente:** clientes que siguen enviando `timezone` no se rompen, porque la API lo ignora (CA-10). El api-client y el dashboard lo dejan de enviar en `dashboard-019`.
   - **Impacto en otras apps (sin spec aquí):** `apps/web` (fechas de noticias y eventos del portal, `web-009`), `apps/mobile` (horas de corte de eventos, `mobile-003`) y `apps/pwa` (no revisada) deben confirmar si muestran horas o días; si lo hacen, requieren su propia revisión.
   - **Configuración de ambiente:** `ARCA_TIMEZONE` y `DB_TIMEZONE` se anotan en `infra/README.md` en el PR de implementación (AGENTS.md raíz: requisitos de ambiente).
-- **Preguntas pendientes:**
-  1. ¿El historial de taquilla (`api-009`) debe incluir `timezone` en su respuesta? Propuesta: sí (CA-12), para que el dashboard presente fechas sin depender del navegador. Si no, `dashboard-019` necesita otra fuente de la zona.
-  2. ¿Un `ARCA_TIMEZONE` vacío o no válido debe impedir el arranque de la API, o caer a `America/Mexico_City`? Esta decisión no está cubierta por las ocho decisiones cerradas; no bloquea los CA-01 a CA-13.
-  3. ¿La conexión `mysql2` de `settings_colores` (solo lectura) también debe fijar UTC? Propuesta: sí, sin escribir nada en esa tabla.
-  4. Verificación de datos: ¿el responsable de operaciones confirma la zona de sesión y que los `purchased_at` guardados en producción están en UTC antes de desplegar? Los agentes no consultan `arca_zoo`.
-  5. **(P-03b, abierta.)** ¿Un `effective_at` con desfase explícito (por ejemplo `+05:00`) sigue aceptándose en `POST /api/v1/admin/ticket-prices`, además de la hora sin desfase de RN-12? Pendiente de confirmar antes de implementar T-02 del dashboard (`dashboard-019` T-10).
+- **Decisiones y pendientes:**
+  1. Se optó por incluir `timezone` en la respuesta del historial de taquilla (CA-12), para que el dashboard presente fechas sin depender del navegador.
+  2. Se optó por que un `ARCA_TIMEZONE` vacío o no válido impida el arranque de la API (decisión 2 de la sección final).
+  3. Se optó por no configurar la conexión `mysql2` de `settings_colores` en esta spec (P-01; esa conexión no existe en la API).
+  4. La verificación de datos en `arca_zoo` queda fuera de alcance de esta entrega: los agentes no consultan producción.
+  5. **P-03b (abierta).** Desfase explícito en `effective_at` (por ejemplo `+05:00`): fuera de alcance de esta entrega hasta confirmación funcional; bloquea `dashboard-019` T-10.
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan, 2026-11-20 (decisiones cerradas 1 a 8: UTC en almacenamiento; llave única `arca.timezone` con `ARCA_TIMEZONE` y valor `America/Mexico_City`; uso en panel, reporte, exportación, historial, cancelación, reporte de cancelaciones y visibilidad pública; API ignora `timezone`; dashboard presenta en la zona de la API; conexión MySQL en UTC; sin horario de verano; orden tras `api-021` y antes de `api-022`).
-- Evidencia/enlaces: `apps/api/src/config/arca.php` (llaves `report_timezone` y `public_timezone`, ambas `America/Mexico_City`); `app/Support/PublicCalendar.php`; `app/Actions/Admin/Reports/ResolveRequestedTimezoneAction.php`; `app/Actions/Admin/Reports/BuildDashboardSummaryAction.php`; `app/Actions/Admin/Reports/ResolveReportPeriodAction.php`; `app/Actions/Admin/Reports/ExportTicketReportAction.php`; `app/Actions/Admin/Reports/PresentTicketRow.php`; `app/Actions/Admin/Tickets/ListTicketHistoryAction.php`; `app/Actions/Admin/Tickets/IsTicketCancellableAction.php`; `config/app.php` (`timezone` = `UTC`); `docs/database/README.md`; consulta de zona de sesión de `arca_pruebas` del 2026-11-20 (resultado en «Estado actual»).
-- Estado: Aprobada. Plan y tasks aprobados por Jonathan el 2026-11-20. Enmienda técnica 2026-11-20: CA-12 (P-04), CA-13 (rango a CA-16 y CA-08 diferido a `api-022`), CA-14 a CA-16 nuevos, RN-11 a RN-13 nuevos, decisión 3 retirada (P-01).
+- Aprobación: Aprobada (decisiones cerradas 1 a 8: UTC en almacenamiento; llave única `arca.timezone` con `ARCA_TIMEZONE` y valor `America/Mexico_City`; uso en panel, reporte, exportación, historial, cancelación, reporte de cancelaciones y visibilidad pública; API ignora `timezone`; dashboard presenta en la zona de la API; conexión MySQL en UTC; sin horario de verano; orden tras `api-021` y antes de `api-022`).
+- Evidencia/enlaces: `apps/api/src/config/arca.php` (llaves `report_timezone` y `public_timezone`, ambas `America/Mexico_City`); `app/Support/PublicCalendar.php`; `app/Actions/Admin/Reports/ResolveRequestedTimezoneAction.php`; `app/Actions/Admin/Reports/BuildDashboardSummaryAction.php`; `app/Actions/Admin/Reports/ResolveReportPeriodAction.php`; `app/Actions/Admin/Reports/ExportTicketReportAction.php`; `app/Actions/Admin/Reports/PresentTicketRow.php`; `app/Actions/Admin/Tickets/ListTicketHistoryAction.php`; `app/Actions/Admin/Tickets/IsTicketCancellableAction.php`; `config/app.php` (`timezone` = `UTC`); `docs/database/README.md`; consulta de zona de sesión de `arca_pruebas` (resultado en «Estado actual»).
+- Estado: Aprobada. Plan y tasks aprobados. Enmienda técnica: CA-12 (P-04), CA-13 (rango a CA-16 y CA-08 diferido a `api-022`), CA-14 a CA-16 nuevos, RN-11 a RN-13 nuevos, decisión 3 retirada (P-01).
 
-## Decisiones finales 2026-11-20 (Jonathan)
+## Decisiones finales
 1. El historial de taquilla (`api-009`) incluye `timezone` en su respuesta (CA-12).
 2. Si `ARCA_TIMEZONE` está vacío o no es una zona válida, la API no arranca y muestra un error claro en español; no hay respaldo silencioso.
-3. *(Retirada el 2026-11-20, P-01.)* La conexión `mysql2` (`settings_colores`) no existe en el código de la API, así que esta spec no la configura. Cuando exista, su zona de sesión se fija en UTC en el cambio que la cree, sin escribir en `settings_colores`.
+3. *(Retirada, P-01.)* La conexión `mysql2` (`settings_colores`) no existe en el código de la API, así que esta spec no la configura. Cuando exista, su zona de sesión se fija en UTC en el cambio que la cree, sin escribir en `settings_colores`.
 4. Antes de desplegar, el responsable de operaciones verifica la zona de sesión de `arca_zoo` y que los `purchased_at` guardados estén en UTC; los agentes no consultan `arca_zoo`.

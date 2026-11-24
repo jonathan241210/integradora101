@@ -2,14 +2,15 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` (sección «Solicitudes de especies», solo con `species.review`); `packages/api-client` (métodos y tipos de solicitudes); `api` (dueña de reglas, estados, permisos, auditoría: `api-014`); `packages/ui` (solo si falta componente)
-- Estado: Borrador
-- Solicitante / responsable funcional: (por designar)
-- Aprobación funcional: (pendiente)
-- Dependencias de contrato: `api-014` (Aprobada 2026-11-12) y DBR-013 (`species_publication_requests`, aprobada por BD y backend el 2026-11-12; aplicada en `arca_pruebas`, lote 5, verificada el 2026-11-12; «Lista para backend»)
+- Estado: Implementada (cubierta por `dashboard-010`, sección A: `useSpeciesRequests.ts` y sus pruebas Vitest)
+- Solicitada: 2026-11-11
+- Aprobada: 2026-11-11
+- Aprobación funcional: cubierta por `dashboard-010` (Aprobada)
+- Dependencias de contrato: `api-014` (Aprobada) y DBR-013 (`species_publication_requests`, aprobada por BD y backend; aplicada en `arca_pruebas`, lote 5; «Lista para backend»)
 
-> **Integrada en dashboard-010 (2026-11-11).** Las solicitudes de especie pasan a `apps/dashboard/specs/010-public-content-management.md`, que la absorbe y añade la edición de la solicitud antes de aceptarla (`dashboard-010` CA-07 a CA-10) y el efecto en TulanPedia. Esta spec no se borra; su texto sigue como referencia hasta la aprobación de `dashboard-010`. Cada CA de la sección A de `dashboard-010` indica entre paréntesis el CA de esta spec del que procede.
+> **Integrada en dashboard-010.** Las solicitudes de especie pasan a `apps/dashboard/specs/010-public-content-management.md`, que la absorbe y añade la edición de la solicitud antes de aceptarla (`dashboard-010` CA-07 a CA-10) y el efecto en TulanPedia. Esta spec no se borra; su texto queda como referencia histórica. Cada CA de la sección A de `dashboard-010` indica entre paréntesis el CA de esta spec del que procede.
 >
-> **Cambio de modelo (2026-11-11): fuente de verdad, `dashboard-010`.** La solicitud ya no propone una especie nueva que se crea al aceptar. Propone la **publicación de una especie existente** (`api-014`). «Aceptar» pasa a «Aceptar y publicar»: actualiza la especie, no la crea. El nombre común no es editable. Los textos de este documento que hablen de crear la especie, de «Aceptada» como único estado visible o de la ruta `admin/species-requests` quedan superados por `dashboard-010`.
+> **Cambio de modelo: fuente de verdad, `dashboard-010`.** La solicitud ya no propone una especie nueva que se crea al aceptar. Propone la **publicación de una especie existente** (`api-014`). «Aceptar» pasa a «Aceptar y publicar»: actualiza la especie, no la crea. El nombre común no es editable. Los textos de este documento que hablen de crear la especie, de «Aceptada» como único estado visible o de la ruta `admin/species-requests` quedan superados por `dashboard-010`.
 
 ## Problema y contexto
 
@@ -87,7 +88,7 @@ Los veterinarios envían solicitudes de nuevas especies para el catálogo públi
 
 ### Rechazar
 
-- **CA-14:** Dada una solicitud en Pendiente, cuando se pulsa «Rechazar», entonces se abre un diálogo con un campo de motivo (obligatorio, 1-500 caracteres, con contador). La casilla de confirmación fue reemplazada por el diálogo obligatorio de `dashboard-010` CA-13 (decisión del usuario 2026-11-11). El botón «Confirmar» está deshabilitado si el motivo está vacío. Al confirmar, llama a `POST .../reject` con `{rejection_reason}`.
+- **CA-14:** Dada una solicitud en Pendiente, cuando se pulsa «Rechazar», entonces se abre un diálogo con un campo de motivo (obligatorio, 1-500 caracteres, con contador). La casilla de confirmación fue reemplazada por el diálogo obligatorio de `dashboard-010` CA-13. El botón «Confirmar» está deshabilitado si el motivo está vacío. Al confirmar, llama a `POST.../reject` con `{rejection_reason}`.
 
 - **CA-15:** Dado el diálogo de rechazo, cuando se escribe el motivo, entonces muestra un contador de caracteres (p. ej. «245/500») y el botón «Confirmar» se habilita solo si hay 1+ caracteres.
 
@@ -145,7 +146,7 @@ Los veterinarios envían solicitudes de nuevas especies para el catálogo públi
 ## Dependencias, riesgos y preguntas
 
 - **Dependencias:**
-  - `api-014` (Aprobada 2026-11-12; requiere implementación backend, que espera a «Lista para backend» de DBR-013).
+  - `api-014` (Aprobada; requiere implementación backend, que espera a «Lista para backend» de DBR-013).
   - DBR-013 (`species_publication_requests`, tabla nueva, y columnas de publicación en `species`).
   - `api-013` (almacenamiento de imágenes, rutas autenticadas).
   - Permiso `species.review` nuevo.
@@ -155,13 +156,14 @@ Los veterinarios envían solicitudes de nuevas especies para el catálogo públi
   - Foto grande tarda en cargar → mostrar spinner.
   - Motivo con datos personales → revisor debe leer antes de aceptar (no se filtra en el cliente).
 
-- **Preguntas abiertas:**
-  1. ¿El tamaño de página es 10, igual que otras listas administrativas? Propuesta: sí.
-  2. ¿Se puede ver el historial de solicitudes rechazadas indefinidamente, o se purgan? Propuesta: indefinido, auditoría completa.
-  3. ¿Notificar al veterinario por email si se acepta su solicitud? Propuesta: No en V1; futura integración de notificaciones.
+## Decisiones
+
+- **Tamaño de página:** Se optó por 10 filas por página, que es lo implementado (`ListSpeciesPublicationRequestsAction::PER_PAGE = 10` en la API y CA-03), para igualar otras listas administrativas.
+- **Historial de rechazadas:** Se optó por conservar el historial indefinidamente, porque la API no implementa purga de solicitudes y la auditoría debe quedar completa.
+- **Notificación por correo al veterinario:** Fuera de alcance de esta entrega. No se implementa en V1 (RN-09 y `dashboard-010`); queda como integración futura de notificaciones.
 
 ## Revisión
 
-- Aprobadores y fecha: (pendiente)
-- Estado: Borrador (requiere aprobación técnica y de API antes de En progreso)
-- Historial: 2026-11-11, nota de cambio de modelo (publicación de especie existente, no especie nueva). Fuente de verdad: `dashboard-010`. Esta spec no cambia sus CA; quedan como referencia histórica hasta su integración.
+- Aprobación: cubierta por `dashboard-010` (Aprobada).
+- Estado: Implementada (cubierta por `dashboard-010`).
+- Historial: nota de cambio de modelo (publicación de especie existente, no especie nueva). Fuente de verdad: `dashboard-010`. Esta spec no cambia sus CA; queda como referencia histórica.

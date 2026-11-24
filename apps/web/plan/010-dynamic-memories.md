@@ -1,14 +1,16 @@
 # Plan técnico · 010 · dynamic-memories
 
-- Spec: `apps/web/specs/010-dynamic-memories.md` (Estado: **Aprobada**, Jonathan, responsable de backend, 2026-11-12; aprobar la spec no autoriza implementar).
-- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`. Enmienda del rediseño del carrusel (2026-11-13, pedida y aprobada por Jonathan): ver «Enmienda 2026-11-13: rediseño del carrusel (plan)». Las tareas T-07 a T-10, T-12 a T-14 y T-16 quedan reabiertas por esa enmienda.
-  - Aviso vigente: no se marca ninguna T-xx sin evidencia. Las preguntas 1 a 7 del plan quedan resueltas el 2026-11-13 (sección «Preguntas»). La dependencia de `api-012` implementada sigue abierta.
-- Tasks: `apps/web/tasks/010-dynamic-memories.md` (Aprobado, Jonathan, 2026-11-13; mismo NNN-slug; ninguna T-xx marcada).
-- ADR de excepción: `docs/adr/0027-dynamic-public-memories-gallery.md` (Aceptado 2026-11-12, con la enmienda del carrusel confirmada por Jonathan el mismo día). `docs/adr/0024-web-static-portal-exception.md` no se modifica.
-- Responsable técnico de implementación: Jonathan (coordina las sesiones de Claude Code). Plan y tasks aprobados por él, en nombre del equipo, el 2026-11-13 (pregunta 6).
+- Spec: `apps/web/specs/010-dynamic-memories.md` (Estado: **Aprobada**, por Backend; aprobar la spec no autoriza implementar).
+- Estado: **Aprobado** (Backend). Implementación en curso; coordinación en `docs/trabajo-paralelo-momentos-especies.md`. Enmienda del rediseño del carrusel (pedida y aprobada): ver «Enmienda: rediseño del carrusel (plan)». Las tareas T-07 a T-10, T-12 a T-14 y T-16 quedan reabiertas por esa enmienda.
+- Solicitada: 2026-11-11
+- Aprobada: 2026-11-11
+  - Aviso vigente: no se marca ninguna T-xx sin evidencia. Las preguntas 1 a 7 del plan quedan resueltas (sección «Preguntas»). La dependencia de `api-012` implementada sigue abierta.
+- Tasks: `apps/web/tasks/010-dynamic-memories.md` (Aprobado; mismo NNN-slug; ver el estado de cada T-xx en ese archivo).
+- ADR de excepción: `docs/adr/0027-dynamic-public-memories-gallery.md` (Aceptado, con la enmienda del carrusel confirmada). `docs/adr/0024-web-static-portal-exception.md` no se modifica.
+- Responsable técnico de implementación: Backend (coordina las sesiones de implementación). Plan y tasks aprobados por el equipo (pregunta 6).
 - Dependencias:
-  - `api-012` (`GET /api/v1/memories`): Aprobada 2026-11-12, **sin implementar**. Hasta que exista, las pruebas usan respuestas simuladas y la verificación real queda en T-15.
-  - `api-010` (datos, publicación y vigencia): Aprobada 2026-11-12. DBR-012 aplicada en `arca_pruebas` (2026-11-11), Lista para backend.
+  - `api-012` (`GET /api/v1/memories`): Aprobada, **sin implementar**. Hasta que exista, las pruebas usan respuestas simuladas y la verificación real queda en T-15.
+  - `api-010` (datos, publicación y vigencia): Aprobada. DBR-012 aplicada en `arca_pruebas`, Lista para backend.
   - `web-009` (módulo `js/api.js`, meta `arca-api-base`): reutilizado.
   - `web-011` (TulanPedia): comparte `apps/web/src/index.html` y `apps/web/src/js/api.js`. Ver «Coordinación con web-011».
 
@@ -18,7 +20,7 @@ La galería «Momentos para recordar» (`#galeria`) sigue siendo HTML, CSS y Jav
 
 1. **Red (`js/api.js`).** Se añade `getMemories(options)` al objeto `ArcaApi` existente. Es la única función de red de la galería. Usa `request` sin cambios: base desde `<meta name="arca-api-base">`, `credentials: 'omit'`, `Accept: application/json`, 10 s de tiempo máximo y resultado uniforme `{ ok, data, meta }` o `{ ok: false, reason }`.
 2. **Contenido (`js/memories.js`, nuevo).** Pide `getMemories({ limit: 6 })` una sola vez por carga, toma los 6 primeros en el orden de la API, pinta los estados (carga, vacío, error y reintento), construye cada momento (imagen o marcador, y opinión) con texto seguro y gestiona el foco. No conoce el temporizador ni la pausa. No llama a `fetch`.
-3. **Carrusel (`js/memories-carousel.js`, nuevo).** Recibe los momentos ya construidos y se encarga solo del comportamiento: qué momento se ve, flechas, fundido cruzado de 600 ms, acercamiento sutil (sujeto a la pregunta 7), avance automático cada 5 s, pausa por cursor o foco, teclado con flechas, anuncios y movimiento reducido (enmienda del 2026-11-13). No conoce la red ni el contenido de cada momento.
+3. **Carrusel (`js/memories-carousel.js`, nuevo).** Recibe los momentos ya construidos y se encarga solo del comportamiento: qué momento se ve, flechas, fundido cruzado de 600 ms, acercamiento sutil (sujeto a la pregunta 7), avance automático cada 5 s, pausa por cursor o foco, teclado con flechas, anuncios y movimiento reducido. No conoce la red ni el contenido de cada momento.
 
 La separación entre `memories.js` (contenido) y `memories-carousel.js` (comportamiento) permite probar cada parte con el DOM simulado de `web-009`. Es una decisión de este plan (pregunta 7).
 
@@ -43,10 +45,10 @@ El carrusel no crea encabezados por momento ni landmarks nuevos: el encabezado d
 
 «Reintentar» llama a `load()` con los mismos parámetros. Un `busy` evita dos peticiones en curso.
 
-### Decisión: el temporizador y la pausa (CA-16, CA-20, CA-21; enmienda 2026-11-13: sin botón de pausa)
+### Decisión: el temporizador y la pausa
 
 - **Avance:** `setInterval` con `CAROUSEL_INTERVAL_MS = 5000` (inyectable para pruebas). Desde el último momento vuelve al primero. Cada cambio es un fundido cruzado de 600 ms (CA-24): los momentos están apilados en la misma celda de rejilla; el activo tiene `is-active` (opacidad 1) y el resto opacidad 0 con `visibility: hidden` al terminar la transición, de modo que no son enfocables ni se leen. No hay desplazamiento lateral.
-- **Motivos de pausa** (sin contar el movimiento reducido): (a) cursor encima del carrusel (`mouseenter` / `mouseleave`); (b) foco dentro del carrusel (`focusin` / `focusout`, comprobando `relatedTarget`). La pausa manual se retira con CA-23 (enmienda del 2026-11-13).
+- **Motivos de pausa** (sin contar el movimiento reducido): (a) cursor encima del carrusel (`mouseenter` / `mouseleave`); (b) foco dentro del carrusel (`focusin` / `focusout`, comprobando `relatedTarget`). La pausa manual se retira con CA-23.
 - **Cuándo hay temporizador:** solo con 2 a 6 momentos, sin cursor ni foco dentro del carrusel y sin movimiento reducido. Con un solo momento no hay temporizador (CA-17).
 - **Navegación manual** (flechas o teclado): cambia el momento y reinicia la cuenta de 5 s si el temporizador está activo (supuesto S-5; pregunta 4). Escribe «Momento n de N» en `#memAnnounce` (pregunta 8).
 - **Anuncio:** solo los cambios pedidos por el visitante escriben en `#memAnnounce`; los automáticos no (CA-27). No hay botón de pausa (RN-13 retirada).
@@ -91,7 +93,7 @@ El carrusel no crea encabezados por momento ni landmarks nuevos: el encabezado d
 
 ## Coordinación con web-011 (TulanPedia)
 
-`web-011` (plan aprobado el 2026-11-13) edita los mismos archivos compartidos. Esta tabla fija el punto de contacto de cada uno. Las dos specs no tocan el contenido de las otras secciones.
+`web-011` edita los mismos archivos compartidos. Esta tabla fija el punto de contacto de cada uno. Las dos specs no tocan el contenido de las otras secciones.
 
 | Archivo | web-010 toca | web-011 toca | Regla de integración |
 |---|---|---|---|
@@ -163,7 +165,7 @@ getMemories: function (options) {
 ```
 
 - Los `id` son únicos en la página. Ningún elemento nuevo es `section`, `header` ni `h3` (CA-10).
-- Las flechas no tienen texto visible; su nombre accesible es su `aria-label` (CA-25). No hay indicadores ni botón de pausa (enmienda del 2026-11-13). Las flechas se colocan sobre los bordes de la caja de la foto y no ocupan una fila propia.
+- Las flechas no tienen texto visible; su nombre accesible es su `aria-label` (CA-25). No hay indicadores ni botón de pausa. Las flechas se colocan sobre los bordes de la caja de la foto y no ocupan una fila propia.
 - Pausa `#memPause`, indicadores `#memIndicators` y el texto de «Carrusel en pausa.» se retiran del marcado y del módulo (CA-23 retirado, CA-27).
 
 ## Seguridad, offline y operación
@@ -200,14 +202,14 @@ Todas las pruebas están en `apps/web/src/tests/memories.test.mjs`, con nombres 
 | CA-13 | Test que lee el propio archivo y comprueba que cada CA vigente (CA-01 a CA-22 y CA-24 a CA-27) aparece como test; CA-23 solo en su test de retirada | `web` / `memories.test.mjs` | — |
 | CA-14 | `apps/web/package.json` no existe; `index.html` no añade `<script src>` ni `<link>` remotos; `memories.js`, `memories-carousel.js`, `memories.css` y `api.js` no usan `localStorage`, `sessionStorage`, `document.cookie` ni `credentials` distinto de `'omit'` | `web` / `memories.test.mjs` | — |
 | CA-15 | Una sola petición con `limit=6` (sin `page`, sin «Cargar más»); 8 respuestas → 6; 1 a 5 → esos; 0 → vacío | `web` / `memories.test.mjs` | T-15 |
-| CA-16 | Con 3 momentos y sin movimiento reducido: cambia cada 5 s con `setInterval` simulado, vuelve al primero desde el último y cada cambio muestra un slide completo (imagen y opinión); enmienda 2026-11-13 | `web` / `memories.test.mjs` | T-15 (cronometrado) |
+| CA-16 | Con 3 momentos y sin movimiento reducido: cambia cada 5 s con `setInterval` simulado, vuelve al primero desde el último y cada cambio muestra un slide completo (imagen y opinión); enmienda | `web` / `memories.test.mjs` | T-15 (cronometrado) |
 | CA-17 | Un momento: sin `#memPrev` ni `#memNext` (`hidden`) y sin temporizador | `web` / `memories.test.mjs` | — |
 | CA-18 | Con 2 a 6 momentos: flechas `#memPrev` y `#memNext`; izquierda y derecha del teclado cambian el momento solo con el foco dentro del carrusel; pulsar no llama a `focus()` | `web` / `memories.test.mjs` | — |
 | CA-19 | Orden del DOM: momentos, «Momento anterior», «Momento siguiente»; controles son `button`; `role="region"` con nombre «Momentos para recordar»; slides con `role="group"` y «Momento n de N»; un cambio automático no llama a `focus()` | `web` / `memories.test.mjs` | T-15 (lector de pantalla y teclado) |
 | CA-20 | Con `matchMedia` que coincide con `reduce`: sin temporizador, sin fundido ni acercamiento, flechas operativas; sin `scrollTo`/`scrollIntoView` con `smooth` | `web` / `memories.test.mjs` | T-15 (preferencia del sistema) |
 | CA-21 | Cursor dentro (`mouseenter`) detiene el temporizador; `mouseleave` lo reanuda; foco dentro (`focusin`) lo detiene; `focusout` fuera lo reanuda | `web` / `memories.test.mjs` | — |
 | CA-22 | Estático: sin `localStorage` ni `sessionStorage`; sin `package.json`, librerías ni scripts nuevos; textos de carga, vacío y error sin cambios | `web` / `memories.test.mjs` | — |
-| CA-23 | Retirado (2026-11-13): sin «Pausar carrusel», «Reanudar carrusel» ni anuncios de pausa; la prueba de retirada está en CA-27 | `web` / `memories.test.mjs` | — |
+| CA-23 | Retirado: sin «Pausar carrusel», «Reanudar carrusel» ni anuncios de pausa; la prueba de retirada está en CA-27 | `web` / `memories.test.mjs` | — |
 | CA-24 | Fundido de 600 ms con opacidad; momentos apilados sin desplazamiento lateral; sin fundido con `reduce` | `web` / `memories.test.mjs` (CSS y módulo) | T-15 (visual) |
 | CA-25 | `aria-label` «Momento anterior» y «Momento siguiente» en `#memPrev` y `#memNext`; sin texto visible; icono `aria-hidden`; `position: absolute` sobre la caja de la foto; área mínima de 44 px; foco visible | `web` / `memories.test.mjs` (marcado y CSS) | T-15 (tamaño y 360 px) |
 | CA-26 | Animación `scale` de 0,96 a 1,00 sobre la imagen visible durante el ciclo; no existe con `reduce`; sujeta a la pregunta 7 | `web` / `memories.test.mjs` (CSS) | T-15 (sin recorte) |
@@ -233,21 +235,21 @@ Contenido mínimo, en español:
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
-| I. Stack mínimo y portable | Parcial | HTML, CSS y JavaScript estáticos, sin dependencias, sin build, sin `package.json`, sin servicios propietarios; la galería funciona con la misma API en local y en cualquier servidor estático. El stack declarado para el portal es React 19 + TS + Vite (`apps/web/AGENTS.md`). **Excepción:** ADR 0027 (Aceptado 2026-11-12), condiciones 1 a 7 y alcance acotado, con la enmienda del carrusel (punto 7). |
-| II. La spec manda | Sí, con condición de dependencias | Spec `web-010` Aprobada el 2026-11-12, con plan y tasks aprobados el 2026-11-13. No hay código hasta cumplir la dependencia de `api-012` implementada. |
+| I. Stack mínimo y portable | Parcial | HTML, CSS y JavaScript estáticos, sin dependencias, sin build, sin `package.json`, sin servicios propietarios; la galería funciona con la misma API en local y en cualquier servidor estático. El stack declarado para el portal es React 19 + TS + Vite (`apps/web/AGENTS.md`). **Excepción:** ADR 0027, condiciones 1 a 7 y alcance acotado, con la enmienda del carrusel (punto 7). |
+| II. La spec manda | Sí, con condición de dependencias | Spec `web-010` Aprobada, con plan y tasks aprobados. No hay código hasta cumplir la dependencia de `api-012` implementada. |
 | III. Lógica separada de la interfaz | Parcial | No hay reglas de negocio en el portal: la visibilidad, la vigencia, el orden y la cantidad de momentos los decide la API (RN-01); el `limit=6` es un parámetro de presentación pedido por la spec (CA-15). `fetch` solo en `js/api.js`. **Excepción:** no hay `@arca/api-client` ni hooks (ADR 0027, condición 1). |
 | IV. Un test por criterio | Sí, con runner distinto | Un test por CA vigente (CA-01 a CA-22 y CA-24 a CA-27; CA-23 retirado) con `node --test` y nombres `CA-NN dynamic-memories`, como `web-009`. Vitest no se usa (ADR 0027, condición 3). CA-13 comprueba la cobertura. Este plan no afirma que ninguna prueba pase: el resultado se registra en T-18. |
 | V. Una sola fuente de verdad para los datos | Sí | El portal no guarda ni cachea datos. La API es la única fuente. Sin escritura. No hay tablas nuevas ni migraciones (RN-02 de `api-012`). |
 | VI. Código en inglés, personas en español | Sí | Identificadores en inglés (`memories.js`, `memories-carousel.js`, `getMemories`, `mem-*`, `ArcaMemories`); textos visibles, de estado, de error y de anuncio en español. |
 
-Excepciones registradas: ADR 0027 (Aceptado 2026-11-12). Si el ADR se revoca, este plan no se implementa.
+Excepciones registradas: ADR 0027. Si el ADR se revoca, este plan no se implementa.
 
 ## Riesgos y decisiones
 
-- **ADR requerido/aprobado:** ADR 0027, Aceptado el 2026-11-12. No se requiere ADR de dependencia: no hay paquetes nuevos.
+- **ADR requerido/aprobado:** ADR 0027, Aceptado. No se requiere ADR de dependencia: no hay paquetes nuevos.
 - **Plazo de 7 días (`api-010` RN-21):** la galería tendrá pocos momentos o ninguno con frecuencia. Mitigación: estado de vacío (CA-03), sin relleno (RN-12) y un solo momento sin controles (CA-17). Esta situación es normal y no es un error.
 - **Carrusel con pocos momentos:** con 2 momentos el avance alterna dos fotos cada 5 s; con 2 a 6, las flechas están siempre visibles. Mitigación: flechas y pausa por cursor y foco (CA-18, CA-21, CA-25). Es un riesgo de experiencia que se revisa en T-15.
-- **Distracción y WCAG 2.2.2:** el avance automático dura más de 5 s y se mueve solo. Mitigación: pausa por cursor y foco (CA-21) y movimiento reducido (CA-20). Sin botón de pausa (enmienda del 2026-11-13), la cobertura de WCAG 2.2.2 se aceptó el 2026-11-14 (pregunta 5 de la spec) con pausa por cursor o foco y movimiento reducido.
+- **Distracción y WCAG 2.2.2:** el avance automático dura más de 5 s y se mueve solo. Mitigación: pausa por cursor y foco (CA-21) y movimiento reducido (CA-20). Sin botón de pausa, la cobertura de WCAG 2.2.2 se aceptó (pregunta 5 de la spec) con pausa por cursor o foco y movimiento reducido.
 - **Anuncios de lectores de pantalla:** `role="status"` en `#memAnnounce` depende del lector de pantalla y del navegador. Se verifica en T-15 con al menos un lector; no se asume compatibilidad universal. `aria-roledescription` (en español) tiene soporte variable; si falla, la etiqueta `aria-label` de cada momento sigue dando la posición.
 - **Bionic Reading (`008`) con contenido dinámico:** `accessibility.js` aplica las transformaciones al cargar la página. Los momentos llegan después y podrían no recibir el formato. Se registra en T-15. Cambiar `accessibility.js` requiere aprobación separada (igual que `web-009` T-12).
 - **Retirada tardía:** una foto retirada del dashboard antes de su vencimiento puede seguir visible hasta recargar (`api-010` pregunta 1).
@@ -270,10 +272,10 @@ Excepciones registradas: ADR 0027 (Aceptado 2026-11-12). Si el ADR se revoca, es
 
 Secuencia de implementación (detalle en `apps/web/tasks/010-dynamic-memories.md`):
 
-0. Precondiciones (T-01): `api-012` implementada con evidencia; DBR-012 aplicada en `arca_pruebas`; plan y tasks aprobados (cumplido el 2026-11-13); línea base de `index.html`, `relocation.test.mjs` y `news-events.test.mjs`; estado de web-011 acordado.
+0. Precondiciones (T-01): `api-012` implementada con evidencia; DBR-012 aplicada en `arca_pruebas`; plan y tasks aprobados; línea base de `index.html`, `relocation.test.mjs` y `news-events.test.mjs`; estado de web-011 acordado.
 1. `js/api.js` (`getMemories`) y el archivo de pruebas con su estructura (T-02).
 2. `js/memories.js` helpers y seguridad de URL (T-03), construcción de momentos (T-04), estados y reintento (T-05), carga de 6 y vigencia (T-06).
-3. `js/memories-carousel.js`: núcleo de flechas (T-07), temporizador y pausa por cursor y foco (T-08), anuncio y movimiento reducido (T-09), teclado y lector de pantalla (T-10). Enmienda del 2026-11-13: fundido (T-19), flechas grandes (T-20), acercamiento (T-21, sujeto a la pregunta 7), retirada de numeración, contador y pausa (T-22), teclado con flechas y anuncio manual (T-23) y movimiento reducido sin animaciones (T-24).
+3. `js/memories-carousel.js`: núcleo de flechas (T-07), temporizador y pausa por cursor y foco (T-08), anuncio y movimiento reducido (T-09), teclado y lector de pantalla (T-10). Enmienda: fundido (T-19), flechas grandes (T-20), acercamiento (T-21, sujeto a la pregunta 7), retirada de numeración, contador y pausa (T-22), teclado con flechas y anuncio manual (T-23) y movimiento reducido sin animaciones (T-24).
 4. Pruebas estáticas de seguridad, almacenamiento y dependencias (T-11).
 5. `memories.css` (T-12).
 6. `index.html`: marcado de `#galeria`, head y scripts (T-13), siguiendo el orden de «Coordinación con web-011».
@@ -288,28 +290,28 @@ Secuencia de implementación (detalle en `apps/web/tasks/010-dynamic-memories.md
 
 | Rol | Aprueba | Estado |
 |---|---|---|
-| Responsable funcional | Spec `web-010` | Aprobada (Jonathan, responsable de backend, 2026-11-12). Solicitante original: Aksel. |
-| Equipo técnico | Este plan, Constitution Check, excepción ADR 0027, respuestas a las preguntas 1 a 7 | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
+| Responsable funcional | Spec `web-010` | Aprobada (Backend). |
+| Equipo técnico | Este plan, Constitution Check, excepción ADR 0027, respuestas a las preguntas 1 a 7 | Aprobado por Backend, en nombre del equipo |
 | Backend | `api-012` implementada con evidencia (PHPUnit y `curl`) | **Pendiente** |
-| Responsable de BD | DBR-012 aplicada en `arca_pruebas` | Cumplido el 2026-11-11 (según `api-012` y `api-010`) |
-| Responsable de backend (enmienda 2026-11-13) | Rediseño del carrusel (CA-08, CA-13, CA-16 a CA-27; RN-13 a RN-15) | Aprobado: Jonathan, responsable de backend, 2026-11-13. Preguntas 5 a 8 de la spec resueltas el 2026-11-14 (Jonathan) |
-| Equipo (ADR) | ADR 0027 | Aceptado (2026-11-12) |
+| Responsable de BD | DBR-012 aplicada en `arca_pruebas` | Cumplido (según `api-012` y `api-010`) |
+| Responsable de backend | Rediseño del carrusel (CA-08, CA-13, CA-16 a CA-27; RN-13 a RN-15) | Aprobado por Backend. Preguntas 5 a 8 de la spec resueltas |
+| Equipo (ADR) | ADR 0027 | Aceptado |
 
 Evidencias requeridas para marcar la spec como Implementada: las de T-18 y los resultados de T-15. Este plan no cambia el estado de la spec ni de las tasks.
 
-## Preguntas (resueltas el 2026-11-13)
+## Preguntas
 
-1. **Elementos inválidos en `data`.** Si un elemento de `data` no es un objeto, ¿se omite (propuesta, como `web-011` pregunta 4) o se trata la respuesta como error? **Resuelta (2026-11-13, Jonathan): se omite**, como en `web-011`.
-2. **Rutas `//host/…`.** La spec dice «rutas relativas del mismo origen» (RN-04). ¿Se confirma que `//host/…` se rechaza (propuesta) aunque sea `http` o `https` implícito? **Resuelta (2026-11-13, Jonathan): se rechaza.**
-3. **Bloque `.foto` de `script.js`.** ¿Se deja como está en `web-010` (propuesta, sin tocar `script.js` ni el ancla de `relocation.test.mjs` línea 288), o se elimina en una tarea posterior acordada con `web-011`? **Resuelta (2026-11-13, Jonathan): se deja como está** (propuesta).
-4. **Reinicio de la cuenta de 5 s.** Al pulsar anterior, siguiente o un indicador con el avance activo, ¿la cuenta se reinicia (propuesta) o sigue su curso? **Resuelta (2026-11-13, Jonathan): se reinicia** (propuesta).
-5. **Orden con web-011.** ¿`web-010` se implementa después de `web-011` (propuesta, un solo PR de `index.html`), o en paralelo con rebase sobre el orden de la tabla de coordinación? **Resuelta (2026-11-13, Jonathan): `web-010` después de `web-011`**, en un solo PR de `index.html` (propuesta).
-6. **Aprobador técnico.** La spec deja «Responsable técnico: por identificar». ¿Quién aprueba este plan y sus tasks (propuesta: el equipo técnico, con Jonathan como responsable funcional)? **Resuelta (2026-11-13): plan y tasks aprobados por Jonathan en nombre del equipo.** El responsable técnico de la implementación es Jonathan (coordina las sesiones de Claude Code), 2026-11-13.
-7. **Archivo de carrusel.** ¿Dos archivos JavaScript (`js/memories.js` y `js/memories-carousel.js`, propuesta) requieren solo la nota de este plan, o también una enmienda del ADR 0027 (su «Reevaluación» menciona «más lógica de cliente»)? **Resuelta (2026-11-13): solo la nota de este plan.** El carrusel ya está en el alcance del ADR 0027 (punto 7, con su enmienda del 2026-11-12); separar el código en dos archivos no añade alcance. Opción propuesta por la sesión de documentación, aceptada por Jonathan.
+1. **Elementos inválidos en `data`.** Si un elemento de `data` no es un objeto, ¿se omite (propuesta, como `web-011` pregunta 4) o se trata la respuesta como error? **Resuelta: se omite**, como en `web-011`.
+2. **Rutas `//host/…`.** La spec dice «rutas relativas del mismo origen» (RN-04). ¿Se confirma que `//host/…` se rechaza (propuesta) aunque sea `http` o `https` implícito? **Resuelta: se rechaza.**
+3. **Bloque `.foto` de `script.js`.** ¿Se deja como está en `web-010` (propuesta, sin tocar `script.js` ni el ancla de `relocation.test.mjs` línea 288), o se elimina en una tarea posterior acordada con `web-011`? **Resuelta: se deja como está** (propuesta).
+4. **Reinicio de la cuenta de 5 s.** Al pulsar anterior, siguiente o un indicador con el avance activo, ¿la cuenta se reinicia (propuesta) o sigue su curso? **Resuelta: se reinicia** (propuesta).
+5. **Orden con web-011.** ¿`web-010` se implementa después de `web-011` (propuesta, un solo PR de `index.html`), o en paralelo con rebase sobre el orden de la tabla de coordinación? **Resuelta: `web-010` después de `web-011`**, en un solo PR de `index.html` (propuesta).
+6. **Aprobador técnico.** La spec deja «Responsable técnico: por identificar». ¿Quién aprueba este plan y sus tasks (propuesta: el equipo técnico, con Backend como responsable funcional)? **Resuelta: plan y tasks aprobados por Backend en nombre del equipo.** El responsable técnico de la implementación es Backend (coordina las sesiones de implementación).
+7. **Archivo de carrusel.** ¿Dos archivos JavaScript (`js/memories.js` y `js/memories-carousel.js`, propuesta) requieren solo la nota de este plan, o también una enmienda del ADR 0027 (su «Reevaluación» menciona «más lógica de cliente»)? **Resuelta: solo la nota de este plan.** El carrusel ya está en el alcance del ADR 0027; separar el código en dos archivos no añade alcance. Opción propuesta por la sesión de documentación, aceptada por Backend.
 
-## Enmienda 2026-11-13: rediseño del carrusel (plan)
+## Enmienda: rediseño del carrusel (plan)
 
-Aprobada por Jonathan (responsable de backend), 2026-11-13. Spec: enmienda del mismo día. La petición, los estados, `js/api.js` y `api-012` no cambian. Coordinación con `web-011`: sin cambios, porque el carrusel nuevo es solo de `#galeria` y `web-011` no tiene carrusel en `#animales`.
+Aprobada por Backend. Spec: enmienda registrada. La petición, los estados, `js/api.js` y `api-012` no cambian. Coordinación con `web-011`: sin cambios, porque el carrusel nuevo es solo de `#galeria` y `web-011` no tiene carrusel en `#animales`.
 
 ### Decisiones de diseño
 
@@ -333,22 +335,22 @@ Aprobada por Jonathan (responsable de backend), 2026-11-13. Spec: enmienda del m
 | `apps/web/src/js/api.js` | Sin cambios. |
 | `apps/web/src/tests/memories.test.mjs` | Tests de CA-16 a CA-27 según la tabla de mapeo; CA-13 (T-25). |
 | `apps/web/docs/momentos-galeria.md` | Reflejar el carrusel nuevo (T-16 reabierta). |
-| `docs/adr/0027-dynamic-public-memories-gallery.md` | Solo nota de enmienda fechada 2026-11-14 (pregunta 6 de la spec; el punto 7 no se reescribe). |
+| `docs/adr/0027-dynamic-public-memories-gallery.md` | Solo nota de enmienda fechada (pregunta 6 de la spec; el punto 7 no se reescribe). |
 
 ### Bloqueos y orden
 
-- **T-21 (CA-26)** desbloqueada el 2026-11-14 (pregunta 7 resuelta); pendiente de implementar.
-- **T-27 (decisión de WCAG 2.2.2 y del ADR 0027)** resuelta el 2026-11-14 (preguntas 5 y 6). No es código.
+- **T-21 (CA-26)** desbloqueada (pregunta 7 resuelta); pendiente de implementar.
+- **T-27 (decisión de WCAG 2.2.2 y del ADR 0027)** resuelta (preguntas 5 y 6). No es código.
 - Orden sugerido: T-19 y T-22 (marcado y retirada), después T-20, T-23, T-24 y T-25; T-21 cuando se responda la pregunta 7; T-16 y T-26 al final; T-15 y T-18 al cerrar.
 
 ### Preguntas de la enmienda
 
 Son las preguntas 5 a 8 de la spec, con la misma numeración aquí:
 
-- **E-1 (pregunta 5 de la spec).** Cobertura de WCAG 2.2.2 sin botón de pausa. **Resuelta (2026-11-14, Jonathan): se acepta** (pausa por cursor o foco, movimiento reducido y flechas). Desbloquea T-27.
-- **E-2 (pregunta 6).** Divergencia con el punto 7 del ADR 0027. **Resuelta (2026-11-14): se anota la divergencia** en el ADR 0027 con una nota de enmienda fechada 2026-11-14; el punto 7 no se reescribe. Desbloquea T-27.
-- **E-3 (pregunta 7).** Magnitud del acercamiento y riesgo de recorte. **Resuelta (2026-11-14): 0,96 a 1,00**, sin recorte. Desbloquea T-21 y CA-26.
-- **E-4 (pregunta 8).** Anuncio de los cambios del visitante. **Resuelta (2026-11-14): se acepta**, solo tras cambio del visitante. Desbloquea la parte de `#memAnnounce` de T-23 y CA-27.
+- **E-1 (pregunta 5 de la spec).** Cobertura de WCAG 2.2.2 sin botón de pausa. **Resuelta: se acepta** (pausa por cursor o foco, movimiento reducido y flechas). Desbloquea T-27.
+- **E-2 (pregunta 6).** Divergencia con el punto 7 del ADR 0027. **Resuelta: se anota la divergencia** en el ADR 0027 con una nota de enmienda fechada; el punto 7 no se reescribe. Desbloquea T-27.
+- **E-3 (pregunta 7).** Magnitud del acercamiento y riesgo de recorte. **Resuelta: 0,96 a 1,00**, sin recorte. Desbloquea T-21 y CA-26.
+- **E-4 (pregunta 8).** Anuncio de los cambios del visitante. **Resuelta: se acepta**, solo tras cambio del visitante. Desbloquea la parte de `#memAnnounce` de T-23 y CA-27.
 
 ## Supuestos del plan
 

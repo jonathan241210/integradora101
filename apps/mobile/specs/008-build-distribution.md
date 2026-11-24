@@ -2,9 +2,10 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile`
-- Estado: Borrador
-- Solicitante / responsable funcional: Aksel (redacción provisional hasta acuerdo del equipo)
-- Aprobación funcional: pendiente de aprobación
+- Estado: Implementada (alcance parcial: `eas.json` con perfiles `development` y `preview`; el perfil `production` lo completa [`mobile-018`](018-production-build-hardening.md))
+- Solicitada: 2026-10-13
+- Aprobada: 2026-11-23
+- Aprobación funcional: Aprobada
 - Equivalencia en el documento de decisiones previas: 007
 
 ## Problema y contexto
@@ -35,15 +36,16 @@ Para que los visitantes instalen la app hace falta un build firmado y un canal d
 - **CA-05:** Dado el proceso, cuando se documente, entonces queda registrado quién firma y genera el build (pendiente de definir) y los requisitos vigentes de Play Console verificados.
 - **CA-06:** Dada la build Android candidata a la primera entrega para visitantes, cuando se revise en un dispositivo Android, entonces se puede abrir el mapa y se registra evidencia de que cumple los criterios de aceptación de `mobile-007` aplicables al lanzamiento. Esa validación es requisito para autorizar la entrega inicial.
 
-## Dependencias, riesgos y preguntas
+## Dependencias, riesgos y decisiones
 
 - **Dependencias/ADR:** ADR 0012 (canal), ADR 0004 (Expo/Android), specs de las funciones incluidas y `mobile-007` (mapa para la primera entrega). La preparación de firma, canal y proceso de build puede avanzar en paralelo con el mapa.
 - **Riesgos:** los requisitos de Play Console para cuentas nuevas han cambiado y deben verificarse antes de comprometer fechas; perder la clave de firma rompe las actualizaciones.
-- **Preguntas pendientes:**
-  - Persona responsable de la firma y del build (se define al final).
-  - Cuenta de desarrollador de Play Console y validación del dominio del aviso de privacidad.
+- **Decisiones:**
+  - Se optó por dejar `eas.json` con los perfiles `development` y `preview` como alcance implementado, porque es lo que existe en el repositorio; el perfil `production` (HTTPS obligatorio y `EXPO_PUBLIC_API_URL`) lo completa [`mobile-018`](018-production-build-hardening.md).
+  - Responsable de la firma y del build: Fuera de alcance de esta entrega. No hay evidencia en el repositorio de quién firma; se define antes del primer build público.
+  - Cuenta de desarrollador de Play Console y validación del dominio del aviso de privacidad: Fuera de alcance de esta entrega. Dependen de trámites externos al repositorio.
 
 ## Revisión
 
-- Aprobadores y fecha: pendiente de aprobación.
-- Evidencia/enlaces: `docs/adr/0012-android-distribution-channel.md`, `docs/adr/0004-mobile-react-native.md`.
+- Aprobación: Aprobada
+- Evidencia/enlaces: `docs/adr/0012-android-distribution-channel.md`, `docs/adr/0004-mobile-react-native.md`, `apps/mobile/eas.json`.

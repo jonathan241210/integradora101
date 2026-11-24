@@ -1,8 +1,10 @@
 # Tareas · 008 · cognitive-accessibility-assistant
 
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
 - Spec: `apps/web/specs/008-cognitive-accessibility-assistant.md` (Estado: **En progreso**)
 - Plan: `apps/web/plan/008-cognitive-accessibility-assistant.md` (Estado técnico: **Implementado y verificado localmente**)
-- Checklist: Aprobado por el solicitante, 2026-10-08
+- Checklist: Aprobado por el solicitante
 
 ## Trazabilidad
 
@@ -41,5 +43,5 @@
 - T-02 precede a T-03..T-09 porque define el marcado y los selectores semánticos.
 - T-03 precede a T-04..T-07 y T-10.
 - T-08 y T-09 preceden a la verificación visual T-12.
-- Aprobación funcional de la spec: Solicitante, 2026-10-08.
-- Aprobación técnica del plan: Solicitante, 2026-10-08.
+- Aprobación funcional de la spec: Aprobada.
+- Aprobación técnica del plan: Aprobada.

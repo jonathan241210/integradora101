@@ -2,9 +2,11 @@
 
 - Spec: `apps/web/specs/010-custom-not-found-page.md`
 - Estado de spec: Aprobada
-- Estado técnico: Implementado y verificado, 2026-11-10
-- Responsable técnico: Por identificar
-- Fecha: 2026-11-10
+- Solicitada: 2026-11-10
+- Aprobada: 2026-11-10
+- Estado técnico: Implementado y verificado
+- Responsable técnico: Frontend
+- Aprobación técnica: Aprobada
 
 ## Diseño de solución
 
@@ -64,7 +66,7 @@ El hosting de producción sigue sin definirse. Por ello no se añadirá configur
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Solo HTML, CSS, PHP 8.4 ya declarado y `node:test`; no se agrega dependencia ni configuración propietaria. El router local es portable y producción queda como requisito neutral hasta definir hosting. |
-| II. La spec manda | Sí | `apps/web/specs/010-custom-not-found-page.md` está Aprobada por Gregorio el 2026-11-10; este plan y las tasks compartirán `010-custom-not-found-page`. |
+| II. La spec manda | Sí | `apps/web/specs/010-custom-not-found-page.md` está Aprobada; este plan y las tasks compartirán `010-custom-not-found-page`. |
 | III. Lógica separada de la interfaz | Sí | No hay lógica de negocio ni acceso a datos. El portal estático conserva la excepción aceptada en ADR 0024; el router solo resuelve archivos y estado HTTP. |
 | IV. Un test por criterio | Sí, planeado | CA-01..CA-06 están mapeados explícitamente a `not-found.test.mjs`; CA-04 incluye integración HTTP real con PHP. |
 | V. Una sola fuente de verdad para los datos | Sí | No se leen, crean ni modifican datos o esquema; no aplica DBR. |
@@ -84,7 +86,7 @@ No se propone ninguna excepción nueva a la Constitución.
 
 ## Orden y aprobación
 
-1. Aprobación técnica otorgada por Gregorio el 2026-11-10.
+1. Aprobación técnica otorgada.
 2. Redactar y aprobar `apps/web/tasks/010-custom-not-found-page.md` con trazabilidad CA/RN.
 3. Crear primero las pruebas CA-01..CA-06 y confirmar que fallen por la ausencia de la feature.
 4. Implementar `404.html` y los estilos institucionales adaptables.
@@ -93,4 +95,4 @@ No se propone ninguna excepción nueva a la Constitución.
 7. Ejecutar la suite enfocada, las suites existentes del portal, comprobaciones HTTP, `git diff --check`, revisión visual y `/verify`.
 8. Ejecutar `/constitution-check`, cerrar las tasks y cambiar la spec a Implementada únicamente si todos los criterios quedan verificados.
 
-Aprobación funcional: Gregorio, 2026-11-10. Aprobación técnica del plan: Gregorio, 2026-11-10.
+Aprobación funcional: Aprobada. Aprobación técnica del plan: Aprobada.

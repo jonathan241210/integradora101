@@ -1,9 +1,10 @@
 # ADR 0032 — PoC ARCore/ARKit con ViroReact para anclaje AR en mobile
 
 - Estado: Aceptado
-- Fecha: 2026-11-21
-- Responsables: Equipo mobile / Victor Adrian (funcional)
-- Aprobación: Victor Adrian (2026-11-21, conversación)
+- Solicitada: 2026-11-21
+- Aprobada: 2026-11-21
+- Responsables: Equipo móvil (funcional)
+- Aprobación: Equipo ARCA-NB
 - Apps afectadas: `apps/mobile`
 
 ## Contexto
@@ -14,7 +15,7 @@ La spec `015-spatial-ar-tour` implementó AR location-based (GPS + brújula + c�
 
 Realizar un **PoC** con `@reactvision/react-viro@3.1.1` para renderizar marcadores AR anclados en sesión AR (ARCore en Android, ARKit en iOS), manteniendo el modo location-based actual como fallback.
 
-### Compatibilidad verificada (2026-11-21)
+### Compatibilidad verificada
 
 - App actual: Expo `~57.0.33`, React Native `0.86.3`, React `19.2.3`.
 - ViroReact candidato: `@reactvision/react-viro@3.1.1` declara peer deps `expo >=57 <58` y `react-native >=0.86 <0.87`.

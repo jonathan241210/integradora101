@@ -1,6 +1,6 @@
 # Cambios recientes de DevOps: progreso del visitante
 
-**Fecha de integración:** 2026-10-26
+**Fecha de integración:** registrada en el historial del repositorio
 
 **Origen:** PR #48, commits `ee8055b` y `10ce81e`
 
@@ -26,7 +26,7 @@
 
 Esta integración no crea migraciones. Usa el esquema de progreso ya aprobado en DBR-004 y existente en `apps/api/src/database/migrations/2026_10_15_000004_visitor_progress_schema.php`.
 
-## Verificación local del 2026-10-26
+## Verificación local
 
 - API: `php artisan test` — 72 pruebas aprobadas y 936 aserciones, usando `arca_pruebas`. No se ejecutaron migraciones.
 - Mobile: `npm test -- --runInBand` no inició los casos; Jest no encontró `@react-native-async-storage/async-storage` en `node_modules`. La dependencia figura en `apps/mobile/package.json`, pero no estaba instalada localmente. No se instalaron paquetes.

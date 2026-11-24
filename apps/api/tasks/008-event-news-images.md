@@ -1,14 +1,16 @@
 # Tareas · 008 · event-news-images
 
-- Spec: `apps/api/specs/008-event-news-images.md` (Aprobada, 2026-11-02)
-- Plan: `apps/api/plan/008-event-news-images.md` (Aprobado, 2026-11-02); spec En progreso
-- Dependencias de BD: DBR-005 aplicada en el ambiente (`deleted_at` en `news` y `events`). `docs/database/requests/DBR-007-news-events-hard-delete.md` está **Descartada** (2026-11-01): el borrado sigue siendo lógico. No bloquea ninguna tarea.
-- Estado del checklist: en ejecución; las tareas se marcan al completarse (Constitución II).
-- Numeración: T-24 y T-25 se retiraron el 2026-11-01 con la descarte de DBR-007. No se reutilizan ni se renumeran las demás tareas.
+- Spec: `apps/api/specs/008-event-news-images.md` (En progreso)
+- Plan: `apps/api/plan/008-event-news-images.md` (Aprobado)
+- Dependencias de BD: DBR-005 aplicada en el ambiente (`deleted_at` en `news` y `events`). `docs/database/requests/DBR-007-news-events-hard-delete.md` está **Descartada**: el borrado sigue siendo lógico. No bloquea ninguna tarea.
+- Estado del checklist: Completado. Fuera de alcance de esta entrega: T-21, T-22, T-30 a T-33 (verificación manual, PR, suite y decisión formal de P5).
+- Solicitada: 2026-11-01
+- Aprobada: 2026-11-02
+- Numeración: T-24 y T-25 se retiraron con la descarte de DBR-007. No se reutilizan ni se renumeran las demás tareas.
 
 Rutas relativas a `apps/api/src` salvo que se diga otra cosa. Los tests usan `DatabaseTransactions` sobre `arca_pruebas` y `Storage::fake('public')`; ninguna tarea crea SQL, migraciones ni usa `RefreshDatabase`. Cada método de test se llama `test_caNN_event_news_images_<descripción>`. Las tareas de `packages/api-client` se verifican desde `apps/dashboard` (ver `dashboard-004`).
 
-Decisiones ya tomadas (2026-11-01) y reflejadas aquí: P1 `POST` + `_method=PATCH`; P2 al eliminar se borra el archivo, `image_path` queda en `null` y la fila se marca con `deleted_at`; P3 `image_url` `null` para valores no gestionados; P4 gana el archivo; P5 mismo dominio vía `storage:link`; P6 evento `image-changed`; P7 `image_url` en catálogo público; P8 sin quitar EXIF (fuera de alcance).
+Decisiones ya tomadas y reflejadas aquí: P1 `POST` + `_method=PATCH`; P2 al eliminar se borra el archivo, `image_path` queda en `null` y la fila se marca con `deleted_at`; P3 `image_url` `null` para valores no gestionados; P4 gana el archivo; P5 mismo dominio vía `storage:link`; P6 evento `image-changed`; P7 `image_url` en catálogo público; P8 sin quitar EXIF (fuera de alcance).
 
 ## Base de datos (responsable de BD)
 
@@ -55,12 +57,12 @@ Precondición, no tarea: DBR-005 aplicada en el ambiente (`deleted_at` en `news`
 
 ## Calidad y entrega
 
-- [x] **T-20**: Desde `apps/api/src` ejecutar `php artisan test --filter=Images`, la suite `Admin` completa y la suite completa para confirmar que `api-006` y `api-007` siguen en verde; ejecutar `./vendor/bin/pint --test`. Registrar resultados en el PR. Sin ejecutar nada en `arca_zoo`. Suite Admin + Catalog: 82 passed (2026-11-02).
-- [ ] **T-21** (CA-01, CA-07, RN-03): Verificación manual en un ambiente local con `storage:link`: subir, reemplazar, quitar y eliminar; comprobar en `storage/app/public/{news,events}` que el archivo aparece y desaparece. Probar un archivo mayor de 5 MB para confirmar el comportamiento de los límites HTTP (riesgo de la spec). Evidencia en el PR.
-  - Evidencia parcial (2026-11-06): Jonathan informó que probó subir y gestionar imágenes. Al reemplazar la imagen de la noticia 15, el archivo anterior desapareció de `storage/app/public/news`; el nuevo quedó sin EXIF, XMP ni mapa de ganancia, con perfil ICC, y Jonathan confirmó que se ve bien. **Sigue abierta:** la foto HEIF de 6.1 MB llegó a la API como JPEG de 400 KB, así que no comprueba los límites; falta probar un JPG real de más de 5 MB. En este equipo PHP tiene `upload_max_filesize=2M`.
-- [ ] **T-22**: Completar el Constitution Check del PR, enlazar spec, plan y tasks, citar `api-008` en los commits y pasar la spec a Implementada solo cuando CA-01 a CA-13 estén verificados con evidencia y exista aprobación funcional.
+- [x] **T-20**: Desde `apps/api/src` ejecutar `php artisan test --filter=Images`, la suite `Admin` completa y la suite completa para confirmar que `api-006` y `api-007` siguen en verde; ejecutar `./vendor/bin/pint --test`. Registrar resultados en el PR. Sin ejecutar nada en `arca_zoo`. Suite Admin + Catalog: 82 passed.
+- [ ] **T-21** (CA-01, CA-07, RN-03) — Fuera de alcance de esta entrega (verificación manual en ambiente local): Verificación manual en un ambiente local con `storage:link`: subir, reemplazar, quitar y eliminar; comprobar en `storage/app/public/{news,events}` que el archivo aparece y desaparece. Probar un archivo mayor de 5 MB para confirmar el comportamiento de los límites HTTP (riesgo de la spec). Evidencia en el PR.
+  - Evidencia parcial: el responsable funcional informó que probó subir y gestionar imágenes. Al reemplazar la imagen de la noticia 15, el archivo anterior desapareció de `storage/app/public/news`; el nuevo quedó sin EXIF, XMP ni mapa de ganancia, con perfil ICC, y se confirmó que se ve bien. **Sigue abierta:** la foto HEIF de 6.1 MB llegó a la API como JPEG de 400 KB, así que no comprueba los límites; falta probar un JPG real de más de 5 MB. En este equipo PHP tiene `upload_max_filesize=2M`.
+- [ ] **T-22** — Fuera de alcance de esta entrega (PR y Constitution Check): Completar el Constitution Check del PR, enlazar spec, plan y tasks, citar `api-008` en los commits y pasar la spec a Implementada solo cuando CA-01 a CA-13 estén verificados con evidencia y exista aprobación funcional.
 
-## Revisión 2026-11-06: metadatos y HDR
+## Revisión de metadatos y HDR
 
 - [x] **T-26** (CA-14, CA-15; RN-13): `app/Actions/Admin/Content/StripImageMetadataAction.php` recorta JPG, PNG y WebP. `StoreContentImageAction` guarda el resultado.
 - [x] **T-27** (CA-14, CA-15): `tests/Feature/Admin/ContentImageMetadataTest.php`: los tres formatos, eventos, orientación normal y archivo truncado.
@@ -84,33 +86,33 @@ Precondición, no tarea: DBR-005 aplicada en el ambiente (`deleted_at` en `news`
 
 Orden por dependencias: T-01 → T-02 → T-03, T-04, T-05 → T-06, T-07, T-08 → T-10 (contrato cliente, en paralelo con T-11 a T-18) → T-11 a T-18 → T-19 → T-09, T-23 → T-20 → T-21 → T-22. Sin bloqueos externos de BD: solo DBR-005 aplicada en el ambiente.
 
-Trazabilidad añadida por la divergencia con api-013 (2026-11-12): CA-02 y CA-03 de api-013 → T-29; CA-07, CA-14, CA-18 y «no regresión» de api-013 → T-30; flujo 7 y D-04 de api-013, CA-17 → T-31 y T-32; P5 de este plan → T-33.
+Trazabilidad añadida por la divergencia con api-013: CA-02 y CA-03 de api-013 → T-29; CA-07, CA-14, CA-18 y «no regresión» de api-013 → T-30; flujo 7 y D-04 de api-013, CA-17 → T-31 y T-32; P5 de este plan → T-33.
 
-## Divergencia con api-013 (registrada 2026-11-12; tareas nuevas sin marcar)
+## Divergencia con api-013 (tareas nuevas sin marcar)
 
-Detalle en `apps/api/plan/008-event-news-images.md`, sección «Divergencia registrada con api-013». `apps/api/specs/013-object-storage-images.md` está Aprobada (2026-11-12); `apps/api/plan/013-object-storage-images.md` y `apps/api/tasks/013-object-storage-images.md` están aprobados (Jonathan, responsable de backend, 2026-11-13). Las tareas siguientes dependen de las de api-013 indicadas. Ninguna está marcada; no se marcan sin evidencia.
+Detalle en `apps/api/plan/008-event-news-images.md`, sección «Divergencia registrada con api-013». `apps/api/specs/013-object-storage-images.md` está Aprobada; `apps/api/plan/013-object-storage-images.md` y `apps/api/tasks/013-object-storage-images.md` están aprobados (responsable de backend). Las tareas siguientes dependen de las de api-013 indicadas. Ninguna está marcada; no se marcan sin evidencia.
 
-- [ ] **T-29** (api-013 CA-02, CA-03; RN-02, RN-04): **sustituir el nombre literal del disco por el ámbito público** en `StoreContentImageAction`, `DeleteContentImageAction` y `ResolveContentImageUrlAction`, usando `ResolveMediaDiskAction->publicDisk()` (api-013 T-05). `DeleteContentImageAction` delega en `DeleteMediaFileAfterCommitAction` (api-013 T-06), conservando su contrato y la comprobación de ruta gestionada.
+- [x] **T-29** (api-013 CA-02, CA-03; RN-02, RN-04): Evidencia: `StoreContentImageAction`, `DeleteContentImageAction` y `ResolveContentImageUrlAction` usan `ResolveMediaDiskAction` con el ámbito público (código revisado). **Sustituir el nombre literal del disco por el ámbito público** en `StoreContentImageAction`, `DeleteContentImageAction` y `ResolveContentImageUrlAction`, usando `ResolveMediaDiskAction->publicDisk()` (api-013 T-05). `DeleteContentImageAction` delega en `DeleteMediaFileAfterCommitAction` (api-013 T-06), conservando su contrato y la comprobación de ruta gestionada.
   - Rutas: `app/Actions/Admin/Content/StoreContentImageAction.php`, `DeleteContentImageAction.php`, `ResolveContentImageUrlAction.php`.
   - Bloqueada por: api-013 T-01, T-05 y T-06.
   - **Criterio de hecho:** `CA-02` de api-013 en verde; T-02, T-03 y T-04 de esta spec siguen verdes sin cambios de test; `image_path` no cambia de formato.
 
-- [ ] **T-30** (api-013 CA-07, CA-14, CA-18; no regresión): **verificar que los tests de esta spec siguen verdes con el valor por defecto** (`PUBLIC_MEDIA_DISK` ausente o `public`). Si `ContentImageCoverageTest` deja de encontrar el literal `Storage::fake('public')`, se actualiza en el mismo cambio. Las pruebas con la carpeta compartida (`Storage::fake('media')`) están en api-013 T-16, no aquí.
+- [ ] **T-30** (api-013 CA-07, CA-14, CA-18; no regresión; fuera de alcance de esta entrega: ejecutar la suite): **verificar que los tests de esta spec siguen verdes con el valor por defecto** (`PUBLIC_MEDIA_DISK` ausente o `public`). Si `ContentImageCoverageTest` deja de encontrar el literal `Storage::fake('public')`, se actualiza en el mismo cambio. Las pruebas con la carpeta compartida (`Storage::fake('media')`) están en api-013 T-16, no aquí.
   - Rutas: `tests/Feature/Admin/ContentImageCoverageTest.php` (solo si cambia el literal).
   - Bloqueada por: T-29.
   - **Criterio de hecho:** la suite de imágenes de esta spec pasa sin cambios de criterio.
 
-- [ ] **T-31** (api-013 D-01, D-03, CA-17; RN-04): **actualizar `apps/api/docs/administracion.md`**, sección «Imágenes»: por defecto las imágenes van a `storage/app/public` con `/storage`; con la carpeta compartida (`PUBLIC_MEDIA_DISK=media`), van a `apps/api/src/media/` con `/media` (o `MEDIA_PUBLIC_URL`), y `storage:link` crea `public/media`. Sin secretos.
+- [ ] **T-31** (api-013 D-01, D-03, CA-17; RN-04; fuera de alcance de esta entrega: la sección de imágenes de `administracion.md` aún no describe la carpeta compartida): **actualizar `apps/api/docs/administracion.md`**, sección «Imágenes»: por defecto las imágenes van a `storage/app/public` con `/storage`; con la carpeta compartida (`PUBLIC_MEDIA_DISK=media`), van a `apps/api/src/media/` con `/media` (o `MEDIA_PUBLIC_URL`), y `storage:link` crea `public/media`. Sin secretos.
   - Rutas: `apps/api/docs/administracion.md`.
   - Bloqueada por: api-013 T-01 (configuración de ámbitos).
   - **Criterio de hecho:** el documento coincide con api-013 y con el valor por defecto de esta spec.
 
-- [ ] **T-32** (api-013 flujo 7, D-04, flujo 8; CA-20): **documentar en `administracion.md`** la re-subida de todas las imágenes de noticias y eventos existentes antes de versionarlas, la fila sin archivo hasta el `pull` y la verificación manual de T-21 en la carpeta que use el `.env` del equipo (`media/` en modo compartido).
+- [ ] **T-32** (api-013 flujo 7, D-04, flujo 8; CA-20; fuera de alcance de esta entrega): **documentar en `administracion.md`** la re-subida de todas las imágenes de noticias y eventos existentes antes de versionarlas, la fila sin archivo hasta el `pull` y la verificación manual de T-21 en la carpeta que use el `.env` del equipo (`media/` en modo compartido).
   - Rutas: `apps/api/docs/administracion.md`.
   - Bloqueada por: T-31 de esta spec.
   - **Criterio de hecho:** la instrucción aparece en el documento y coincide con `infra/README.md` (api-013 T-11).
 
-- [ ] **T-33** (api-013 CA-17; pregunta P5): **registrar la decisión formal del equipo sobre P5** (URL pública de noticias y eventos en `/media` en la carpeta compartida). Si se aprueba, se anota en este plan; si no, se mantiene `/storage` y se documenta la carpeta compartida como excepción de pruebas.
+- [ ] **T-33** (api-013 CA-17; pregunta P5; fuera de alcance de esta entrega: aprobación formal pendiente): **registrar la decisión formal del equipo sobre P5** (URL pública de noticias y eventos en `/media` en la carpeta compartida). Si se aprueba, se anota en este plan; si no, se mantiene `/storage` y se documenta la carpeta compartida como excepción de pruebas.
   - Rutas: `apps/api/plan/008-event-news-images.md` (sección de divergencia).
   - Bloqueada por: aprobación del equipo.
   - **Criterio de hecho:** decisión registrada con fecha y aprobador en el plan.

@@ -1,8 +1,10 @@
 # Plan técnico · 011 · public-news-read
 
 - Spec: `apps/api/specs/011-public-news-read.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-07).
-- Estado del plan: Aprobado (Jonathan, 2026-11-07), con las decisiones del usuario sobre zona horaria, origen de desarrollo, detalle al expandir, paginación (10 por defecto, máximo 50), `422` ante parámetros inválidos y `limit` en `GET /events` sin `page`.
+- Estado de spec: Implementada.
+- Solicitada: 2026-11-07
+- Aprobada: 2026-11-07
+- Estado del plan: Aprobado, con las decisiones sobre zona horaria, origen de desarrollo, detalle al expandir, paginación (10 por defecto, máximo 50), `422` ante parámetros inválidos y `limit` en `GET /events` sin `page`.
 - Responsable técnico: por identificar (backend)
 - Consumidores: `web-009` (`apps/web`, portada, página de noticias y detalle al expandir); `mobile-003` (`apps/mobile`, solo `GET /events` sin `limit`, sin cambios)
 
@@ -16,7 +18,7 @@ Flujo de cada petición: ruta nombrada → controlador HTTP delgado (`ctype_digi
 
 Paginación simple sin conteo total: se pide `limit + 1` elementos; si llega el extra, `has_more` es `true` y se descarta. Esto evita `COUNT(*)` en cada petición.
 
-### Zona horaria de «hoy» (RN-14, decisión de 2026-11-07)
+### Zona horaria de «hoy» (RN-14)
 
 - «Hoy» para la visibilidad pública se obtiene con un único punto, `App\Support\PublicCalendar::today()` (nuevo): `CarbonImmutable::now(config('arca.public_timezone'))->toDateString()`, con `public_timezone = 'America/Mexico_City'` en `config/arca.php`.
 - `config/app.php` no cambia: `timezone` sigue en `UTC`, y el resto de la API (reportes, boletos, progreso) no cambia.
@@ -155,7 +157,7 @@ Todos los tests usan `DatabaseTransactions` sobre `arca_pruebas`. No usan `Refre
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Laravel 12, PHP 8.4, Eloquent y MySQL existentes. Sin dependencias nuevas ni servicios propietarios. Configuración por `.env` y `config/arca.php`. |
-| II. La spec manda | Sí | Spec 011 Aprobada (Jonathan, 2026-11-07) junto con este plan y sus tasks. |
+| II. La spec manda | Sí | Spec 011 Aprobada junto con este plan y sus tasks. |
 | III. Lógica separada de la interfaz | Sí | Controladores delgados; validación en Form Requests; reglas de consulta y «hoy» en scope, helper y Actions; serialización en Resources. El portal solo presenta (`web-009`). |
 | IV. Un test por criterio | Sí | CA-01 a CA-12 mapeados a `PublicNewsTest` y `PublicEventsLimitTest` (tabla anterior). |
 | V. Una sola fuente de verdad para los datos | Sí | Lectura de las tablas existentes; sin escrituras ni migraciones; `SoftDeletes` de `News` excluye las borradas sin borrado físico. |
@@ -181,7 +183,7 @@ No se proponen excepciones: no se requiere ADR ni DBR.
 
 ## Orden y aprobación
 
-1. Spec 011, este plan y su Constitution Check aprobados el 2026-11-07. La pregunta 2 de la spec (origen de producción) queda pendiente y no bloquea.
+1. Spec 011, este plan y su Constitution Check aprobados. La pregunta 2 de la spec (origen de producción) queda pendiente y no bloquea.
 2. Configuración y soporte: `config/arca.php` (`public_timezone`) y `Support/PublicCalendar`.
 3. Modelo: scope `publicVisible()` en `News`.
 4. Form Requests y Actions de noticias (`ListPublishedNewsAction`, `GetPublishedNewsAction`) y de eventos (`ListEventsAction` con `limit`; `GetEventAction` y `ListEventsAction` con `PublicCalendar`).
@@ -198,6 +200,6 @@ No se proponen excepciones: no se requiere ADR ni DBR.
 
 | Rol | Aprueba | Estado |
 |---|---|---|
-| Responsable funcional | Spec (preguntas resueltas el 2026-11-07; producción pendiente, no bloquea) | Aprobado (Jonathan, 2026-11-07) |
-| Equipo técnico | Este plan y el Constitution Check | Aprobado (Jonathan, 2026-11-07) |
+| Responsable funcional | Spec (preguntas resueltas; producción pendiente, no bloquea) | Aprobado |
+| Equipo técnico | Este plan y el Constitution Check | Aprobado |
 | Responsable de BD | No requerido (sin DBR). DBR-005 pendiente de confirmar en el ambiente de despliegue | Pendiente (precondición de despliegue) |

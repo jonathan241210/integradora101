@@ -2,8 +2,7 @@
 
 - **Spec:** [009-ar-3d-map-guide.md](../specs/009-ar-3d-map-guide.md)
 - **ADR:** [0025-mobile-ar-3d-camera-threejs.md](../../../docs/adr/0025-mobile-ar-3d-camera-threejs.md)
-- **Responsable:** Víctor Adrián
-- **Fecha:** 2026-11-05
+- **Responsable:** Frontend
 
 ---
 

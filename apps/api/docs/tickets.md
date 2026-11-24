@@ -2,16 +2,16 @@
 
 Referencia de `/api/v1/admin/tickets*` y `/api/v1/admin/ticket-prices*`, contrato de `api-009`. Spec: `apps/api/specs/009-ticket-sales.md`. Plan: `apps/api/plan/009-ticket-sales.md`. Consumidor: `dashboard-005`, vía `@arca/api-client`.
 
-Describe el código implementado y el contrato tras la revisión de 2026-11-02. No certifica que las pruebas pasen: la verificación se registra en `apps/api/tasks/009-ticket-sales.md`. No contiene secretos.
+Describe el código implementado y el contrato tras la revisión. No certifica que las pruebas pasen: la verificación se registra en `apps/api/tasks/009-ticket-sales.md`. No contiene secretos.
 
-Quedan **diferidos** (decisión 2026-11-02) y no existen en la API: avisos de cambio de precio, rutas `/notifications`, acuse y correo. `staff_notifications` existe en la base de datos (DBR-006) pero no tiene modelo ni uso.
+Quedan **diferidos** y no existen en la API: avisos de cambio de precio, rutas `/notifications`, acuse y correo. `staff_notifications` existe en la base de datos (DBR-006) pero no tiene modelo ni uso.
 
-## Cambios de la revisión de 2026-11-02
+## Cambios de la revisión
 
-Aprobados por Jonathan sobre la spec 009 (que sigue Aprobada):
+Aprobados por el responsable funcional sobre la spec 009 (que sigue Aprobada):
 
 - **Cancelación sin `timezone`.** La zona del día de cancelación es siempre la del zoológico, `config('arca.timezone')` (America/Mexico_City). La API ignora cualquier `timezone` del cuerpo de `POST .../cancel`, y ese campo sale del contrato. `cancellable` del historial usa la misma zona.
-- **Tope de 50 boletos en total.** `adult_quantity` + `child_quantity` admiten como máximo 50 (revisión de 2026-11-06, que sustituye el tope de 100 por tipo). Valor en `config/arca.php`, clave `ticket_sale_max_tickets`; cambiarlo requiere desplegar. Más de 50 responde 422. La opción de editarlo sin desplegar está en la spec 010 (`apps/api/specs/010-configurable-system-settings.md`, Borrador, sin aprobar).
+- **Tope de 50 boletos en total.** `adult_quantity` + `child_quantity` admiten como máximo 50 (revisión, que sustituye el tope de 100 por tipo). Valor en `config/arca.php`, clave `ticket_sale_max_tickets`; cambiarlo requiere desplegar. Más de 50 responde 422. Editarlo sin desplegar no está planificado en esta versión.
 - **Cantidades estrictas.** Booleanos, cantidades con fracción y cadenas no numéricas responden 422.
 - **Límites de frecuencia (429).** Por usuario autenticado: 60 ventas por minuto en `POST /tickets` y 20 cancelaciones por minuto en `POST /tickets/{ticket}/cancel`.
 - **Límite de `effective_at`.** Un cambio programado no puede tener `effective_at` más de un año adelante (422).
@@ -39,13 +39,13 @@ Errores de validación: `422 { "message": "<primer error>", "errors": { "campo":
 
 Cuerpo: `adult_quantity`, `child_quantity`.
 
-- Enteros JSON reales, cada uno entre 0 y 50, con suma no mayor que 50 (revisión de 2026-11-06); al menos uno > 0. Se valida antes de calcular el total, así que un valor enorme responde 422 y nunca 500.
+- Enteros JSON reales, cada uno entre 0 y 50, con suma no mayor que 50; al menos uno > 0. Se valida antes de calcular el total, así que un valor enorme responde 422 y nunca 500.
 - Más de 50 boletos en total → 422 «No puedes vender más de 50 boletos en una misma venta.» (texto propuesto por el redactor; pendiente de confirmar el texto, no el tope).
 - Booleanos, cantidades con fracción (p. ej. `1.5`), el número `2.0` y cualquier cadena, incluidas las numéricas (`"2"`), → 422 por campo (implementado según la propuesta por defecto de R1: `integer:strict`; pendiente de confirmación en la spec).
 - Un total por encima de 999,999.99 → 422 «El total de la venta excede el importe máximo permitido.» (tope de `DECIMAL(8,2)`).
 - El cliente nunca envía montos; el total y los precios los fija la API.
 
-201 `data` (forma aprobada por Jonathan el 2026-11-06; pregunta R-B1 de `api-009`):
+201 `data` (forma aprobada por el responsable funcional; pregunta R-B1 de `api-009`):
 
 Una venta crea **un boleto por unidad vendida**: 1 adulto y 3 niños son 4 boletos, cada uno con su folio y su QR, cancelables por separado. Los boletos salen primero los adultos y después los niños, con folios ascendentes.
 
@@ -97,7 +97,7 @@ Respuesta 200, con importes como cadena de dos decimales:
 
 - No crea boleto, no emite token QR, no escribe auditoría y no cambia precios (CA-49).
 - 401 sin sesión y 403 sin `tickets.create`, incluidos `admin` y `zoo-admin` (CA-47).
-- 422 con los mismos mensajes que la venta: cantidades, tope de 50 boletos en total (revisión de 2026-11-06), sin precio vigente e importe máximo (CA-48).
+- 422 con los mismos mensajes que la venta: cantidades, tope de 50 boletos en total, sin precio vigente e importe máximo (CA-48).
 - 429 si se superan 120 cotizaciones por minuto por usuario; no consume el límite de ventas (RN-33).
 - La cotización es informativa: si el precio cambia antes de confirmar, la venta cobra el vigente al registrarse y el boleto muestra ese importe real (RN-32).
 
@@ -164,7 +164,7 @@ Ruta `admin.tickets.cancellation-reasons`. Permiso `tickets.cancel` **o** `repor
 Cuerpo: `adult_amount`, `child_amount` (numéricos > 0, máximo dos decimales), `mode` (`immediate`|`scheduled`), `effective_at` (obligatorio en `scheduled`).
 
 - `effective_at` es ISO 8601. **Sin desfase** (por ejemplo `2026-12-01T09:00:00`) se interpreta en la zona de negocio `arca.timezone` (api-025 RN-12); **con desfase o `Z`** (por ejemplo `2026-12-01T09:00:00-06:00`) se respeta el instante indicado. La API lo guarda en UTC.
-- En `scheduled`, `effective_at` no puede ser anterior al momento de la operación (422, CA-20) ni posterior a **un año** desde ese momento (422, CA-45; revisión de 2026-11-02). El mensaje es «La fecha de entrada en vigor no puede ser mayor a un año a partir de hoy.» (exactamente un año se admite). Una fecha inexistente (p. ej. `2026-02-31`) responde 422; no se desborda al mes siguiente.
+- En `scheduled`, `effective_at` no puede ser anterior al momento de la operación (422, CA-20) ni posterior a **un año** desde ese momento. El mensaje es «La fecha de entrada en vigor no puede ser mayor a un año a partir de hoy.» (exactamente un año se admite). Una fecha inexistente (p. ej. `2026-02-31`) responde 422; no se desborda al mes siguiente.
 - En `immediate`, `effective_at` es el instante de la operación (UTC, sin fracción de segundo). El límite de un año no aplica.
 - Crea dos filas (adulto y niño), nunca modifica las anteriores, y audita `ticket-price-changed` por fila. No crea avisos ni correos.
 
@@ -174,9 +174,9 @@ Cuerpo: `adult_amount`, `child_amount` (numéricos > 0, máximo dos decimales), 
 
 `purchased_at`, `cancelled_at` y `effective_at` se devuelven en UTC, ISO 8601 con sufijo `Z`. Las columnas son `DATETIME`/`TIMESTAMP` sin fracción de segundo: una venta en el mismo segundo que un cambio inmediato ya usa el precio nuevo, y una anterior al segundo usa el viejo. La presentación usa la zona `timezone` que informa la API (historial, recibo y precios vigentes).
 
-## Tipo de dato de `total_amount` (nota de la revisión de 2026-11-02)
+## Tipo de dato de `total_amount`
 
-Según la información de Jonathan del 2026-11-02, en la base de datos real la columna `tickets.total_amount` es **`DECIMAL(8,2)`**, con tope de **$999,999.99**. Un total que lo supere responde 422. Este redactor no verificó la columna: no hay acceso a la base de datos en esta sesión.
+Según la información del responsable funcional, en la base de datos real la columna `tickets.total_amount` es **`DECIMAL(8,2)`**, con tope de **$999,999.99**. Un total que lo supere responde 422. Este redactor no verificó la columna: no hay acceso a la base de datos en esta sesión.
 
 `docs/database/esquema-ingles.md` documenta `total_amount` como `DECIMAL(10,2)`. **Esa documentación está desactualizada y no se corrige en esta revisión.** El responsable de BD debe corregirla (tarea T-58 de `apps/api/tasks/009-ticket-sales.md`). Si el negocio necesita totales mayores, se abre una DBR nueva; la migración aprobada no cambia.
 

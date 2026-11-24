@@ -2,9 +2,10 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `apps/mobile`, `apps/api` (exposición/contrato de datos geográficos), `@arca/api-client` (tipos/consumo si aplica), `docs/database/requests/` (DBR de aristas si aplica)
-- Estado: Aprobada
-- Solicitante / responsable funcional: Victor Adrian (backend)
-- Aprobación funcional: Victor Adrian (2026-11-20, confirmación en conversación)
+- Estado: Implementada
+- Solicitada: 2026-11-20
+- Aprobada: 2026-11-20
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -39,7 +40,7 @@ Se aprueba evolucionar el modo AR a un enfoque **location-based** (cámara + GPS
 |---|---|---|
 | Visitante | Ver recintos cercanos en AR y seguir orientación/ruta | `CAMERA` (primer plano), ubicación en primer plano, brújula/magnetómetro/sensores de movimiento |
 | Visitante sin permisos/soporte | Usar alternativa segura | Sin cámara; Mapa 2D disponible |
-| Responsable funcional (Victor Adrian, backend) | Validar alcance, datos y comportamiento | N/A en app móvil |
+| Responsable funcional (Backend) | Validar alcance, datos y comportamiento | N/A en app móvil |
 
 ## Historias de usuario
 
@@ -78,7 +79,7 @@ Se aprueba evolucionar el modo AR a un enfoque **location-based** (cámara + GPS
 
 ## Datos, privacidad y auditoría
 
-### Consulta previa de esquema vivo (2026-11-20, `arca_pruebas`, solo lectura)
+### Consulta previa de esquema vivo (, `arca_pruebas`, solo lectura)
 - Existen `zoo_places` y `path_nodes`; **no existe `path_edges`**.
 - Existe `enclosures` con coordenadas. Existe `animals` con relación a `enclosure_id` y `species_id`.
 - Resultado: hace falta DBR para `path_edges` y contrato API para consumo mobile; no hay esquema de aristas listo.
@@ -132,7 +133,7 @@ flowchart TD
   - `map_x/map_y` nulos en `zoo_places/path_nodes`: no bloquea GPS, pero sí cualquier fallback basado en mapa SVG.
   - Consumo batería por cámara+GPS+sensores.
 
-## Decisiones confirmadas (2026-11-20, enmienda 2026-11-21)
+## Decisiones confirmadas
 
 1. **AR location-based** confirmado (GPS + brújula + cámara), no ARCore/ARKit SLAM en esta fase.
 2. **`path_nodes`** son coordenadas de inicio de camino/intersecciones/pasos/fines para ruteo; **no** se muestran como puntos AR.
@@ -141,21 +142,21 @@ flowchart TD
 5. **Mapa 2D** se mantiene como está por ahora.
 6. **Offline** debe incluir recintos, info básica de animales dentro de recintos, `zoo_places`, `path_nodes` y datos de ruta necesarios.
 7. **Ruteo mientras no exista `path_edges`**: fallback temporal manteniendo `zooPaths.ts` actual; no se inventan aristas. Cuando exista DBR/contrato de `path_edges`, se migra el ruteo a la red por BD.
-8. **Aprobación funcional** confirmada por Victor Adrian (backend).
-9. **Enmienda 2026-11-21 (confirmada por Victor Adrian):** quitar botones Anterior/Siguiente recinto; quitar tour estático; agregar panel dinámico "Cerca de ti" con recintos/`zoo_places` cercanos; al tocar mostrar tarjeta simple; llegada <=20 m muestra "Llegaste a X" y marca visitado en sesión; mantener componentes de animales por recinto (`ArAnimalProximityCard`, `EnclosureDetailModal`).
-10. **Enmienda 2026-11-21 (path_nodes):** `path_nodes` no se renderizan como puntos AR, pero sí pueden mostrarse como tarjeta contextual cercana (intersección/inicio/fin/paso) para orientar al visitante.
+8. **Aprobación funcional** confirmada (backend).
+9. **Enmienda (confirmada por backend):** quitar botones Anterior/Siguiente recinto; quitar tour estático; agregar panel dinámico "Cerca de ti" con recintos/`zoo_places` cercanos; al tocar mostrar tarjeta simple; llegada <=20 m muestra "Llegaste a X" y marca visitado en sesión; mantener componentes de animales por recinto (`ArAnimalProximityCard`, `EnclosureDetailModal`).
+10. **Enmienda (path_nodes):** `path_nodes` no se renderizan como puntos AR, pero sí pueden mostrarse como tarjeta contextual cercana (intersección/inicio/fin/paso) para orientar al visitante.
 
 ## Pendientes para plan
 
 - Validar en campo los valores iniciales de FOV/rango definidos en CA-03 (FOV 70°, máx. 120 m, máx. 8 puntos, etiqueta ≤50 m) y ajustar.
 - Definir contrato API y estrategia de caché offline (campos mínimos exactos, TTL/versionado).
 - **Ruteo sin path_edges:** confirmado fallback temporal con zooPaths.ts mientras no exista DBR/contrato de path_edges. path_nodes se integran como datos, pero CA-06 completo por BD queda diferido hasta que exista red de aristas aprobada.
-- Confirmar si zoo_places se muestran en alguna lista/UI no AR en esta fase o solo quedan como datos preparados.
+- Fuera de alcance de esta entrega: definir si `zoo_places` se muestran en alguna lista o UI no AR; en esta fase quedan como datos preparados.
 
 ## Revisión
 
-- **Responsable funcional:** Victor Adrian (backend).
-- **Aprobación funcional:** Confirmada 2026-11-20.
+- **Responsable funcional:** Backend.
+- **Aprobación funcional:** Aprobada.
 - **Evidencia/enlaces:**
   - `apps/mobile/specs/009-ar-3d-map-guide.md`
   - `docs/database/requests/DBR-008-enclosure-gps-coordinates.md`

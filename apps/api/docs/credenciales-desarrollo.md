@@ -1,10 +1,10 @@
 # Usuarios de prueba (demo staff) · `apps/api`
 
-- **Fecha:** 2026-10-15
-- **Responsable de base de datos:** Victor Adrian
+- **Fecha:**
+- **Responsable de base de datos:** Responsable de BD Adrian
 - **Responsable de implementación (seeders):** equipo backend, dentro de `api-003`
 - **Feature SDD relacionada:** `apps/api/specs/003-staff-authentication.md` (CA-14, CA-15, CA-18)
-- **Estado:** Activo en `arca_pruebas` desde 2026-10-17 (seeders ejecutados con `php artisan db:seed`). Las cuentas administradoras quedan sin 2FA configurado: cada administrador lo enrola en su primer acceso.
+- **Estado:** Activo en `arca_pruebas` (seeders ejecutados con `php artisan db:seed`). Las cuentas administradoras quedan sin 2FA configurado: cada administrador lo enrola en su primer acceso.
 
 ---
 
@@ -88,4 +88,4 @@ php artisan tinker
 - `php artisan arca:create-staff` (no admin) y `php artisan arca:admin:create` (admin) son las herramientas para crear cuentas reales sin dejar credenciales en el repositorio. `arca:create-staff-simple` se retiró (api-023).
 - Si un administrador pierde su celular y también sus códigos de recuperación, por ahora lo resuelve el responsable de BD; el procedimiento formal queda para la feature «Gestión de usuarios».
 - Esta documentación complementa el [inventario de BD inicial](./inventario-bd-inicial.md) y la spec `003-staff-authentication`.
-- Ajustado el 2026-10-15 por decisión de Jonathan: `admin` para Presidencia, nuevo `zoo-admin`, área `presidency`, cuenta `ejecutivo@arca.local`, contraseña desde `.env` y retiro de `migrate:fresh`.
+- Ajustado por decisión del responsable de backend: `admin` para Presidencia, nuevo `zoo-admin`, área `presidency`, cuenta `ejecutivo@arca.local`, contraseña desde `.env` y retiro de `migrate:fresh`.

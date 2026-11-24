@@ -1,7 +1,6 @@
 # Catálogo de Procedimientos Almacenados de Referencia · ARCA-NB
 
-- **Responsable de base de datos:** Victor Adrian
-- **Fecha de registro:** 2026-10-14
+- **Responsable de base de datos:** Responsable de BD (rol)
 - **Estado:** Referencia documental (Pendiente de solicitud formal vía DBR)
 - **Ubicación:** `docs/database/procedimientos-almacenados-referencia.md`
 
@@ -14,7 +13,7 @@ Este documento almacena las propuestas de **6 Stored Procedures** diseñados par
 ### Reglas para su adopción futura:
 1. **No ejecutados directamente:** Ningún procedimiento se ejecuta manualmente en MySQL (`CREATE PROCEDURE` directo está prohibido por la Constitución).
 2. **Activación vía DBR:** Cuando el equipo de backend o la app respectiva (Dashboard de taquilla, PWA veterinaria o App móvil) desarrolle su feature, evaluará si necesita el procedimiento almacenado o si la lógica se maneja en Actions de Laravel. De requerirse, se solicitará mediante una **DBR formal** en `docs/database/requests/`.
-3. **Adaptación a inglés:** Al implementarse mediante una DBR aprobada, el responsable de BD (Victor Adrian) adaptará los identificadores y tablas al esquema normalizado en inglés (ej. `animals`, `tickets`, `clinical_evaluations`) y los empaquetará en una **Migración Laravel**.
+3. **Adaptación a inglés:** Al implementarse mediante una DBR aprobada, el responsable de BD adaptará los identificadores y tablas al esquema normalizado en inglés (ej. `animals`, `tickets`, `clinical_evaluations`) y los empaquetará en una **Migración Laravel**.
 
 ---
 

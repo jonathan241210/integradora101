@@ -2,9 +2,10 @@
 
 - App dueña: `pwa`
 - Apps/paquetes afectados: `pwa`, `api`
-- Estado: Aprobada
-- Solicitante / responsable funcional: Victor Adrian (alineación operativa veterinaria)
-- Aprobación funcional: Victor Adrian, 2026-11-13 ("ok apruebo eso", con decisiones 1A, 2A, 3 ambos opcionales, 4 identificador como está)
+- Estado: Implementada
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-13
+- Aprobación funcional: Aprobada (con decisiones 1A, 2A, 3 ambos opcionales, 4 identificador como está)
 
 ## Problema y contexto
 
@@ -67,7 +68,7 @@ Como personal veterinario, quiero ver en el perfil del animal su información in
 - **`species`** (lectura/referencia): `feeding`, `longevity`, `reproduction` y datos de catálogo.
 - **`enclosures`**: referencia para selección.
 - Datos de gestión zoológica (no clínicos/financieros en este alcance). Sin guardado offline.
-- DBR asociada: **DBR-014** (`species-feeding-and-animal-identity-fields`), estado **Lista para backend** (aplicada en `arca_pruebas`, 2026-11-13; evidencia detallada pendiente de adjuntar). No hay cambios de esquema adicionales en este alcance.
+- DBR asociada: **DBR-014** (`species-feeding-and-animal-identity-fields`), estado **Lista para backend** (aplicada en `arca_pruebas`; evidencia detallada pendiente de adjuntar). No hay cambios de esquema adicionales en este alcance.
 
 ## Flujos y errores
 
@@ -79,10 +80,10 @@ Como personal veterinario, quiero ver en el perfil del animal su información in
 
 - Dependencias/ADR: DBR-014 Lista para backend (aplicada en `arca_pruebas`); endpoint de catálogo `GET /api/v1/species`; sesión Sanctum staff.
 - Riesgos: consumidores aún leyendo `animals.age/diet/longevity/reproduction` (rotura si no se alinean); contrato de alta cambia (soporte `species_id` o nombre nuevo, nacimiento/edad); datos históricos con `age` migrados a `birth_date/estimated_age` según DBR.
-- Decisiones resueltas (2026-11-13, Victor Adrian): **1A** especie seleccionable + creación/reuso por nombre si es nueva (como ahora); **2A** sexo solo Macho/Hembra (`M/F`); **3** ajustada: el alta captura solo `birth_date` (opcional); `estimated_age` permanece en BD/contrato para otros casos pero no se pide en el alta; **4** identificador (`tag_number`) igual que actualmente (campo, obligatoriedad, validación y texto).
+- Decisiones resueltas: **1A** especie seleccionable + creación/reuso por nombre si es nueva (como ahora); **2A** sexo solo Macho/Hembra (`M/F`); **3** ajustada: el alta captura solo `birth_date` (opcional); `estimated_age` permanece en BD/contrato para otros casos pero no se pide en el alta; **4** identificador (`tag_number`) igual que actualmente (campo, obligatoriedad, validación y texto).
 - Pendiente operativo: adjuntar evidencia detallada de DBR-014 (`SHOW CREATE TABLE`/conteos) en su documento.
 
 ## Revisión
 
-- Aprobadores y fecha: Victor Adrian (funcional), 2026-11-13.
+- Aprobadores: Responsable funcional (aprobación registrada).
 - Evidencia/enlaces: `docs/database/requests/DBR-014-species-feeding-and-animal-identity-fields.md`, `docs/database/alineacion-formularios-pwa-veterinaria.md`, implementación previa `004`.

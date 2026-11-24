@@ -1,8 +1,10 @@
 # Plan técnico · 003 · staff-authentication
 
 - Spec: `apps/api/specs/003-staff-authentication.md`
-- Estado de spec: Implementada (aprobada por Jonathan, 2026-10-15; cerrada 2026-10-17)
-- Responsable técnico: Jonathan (backend) / Victor Adrian (BD)
+- Estado de spec: Implementada
+- Solicitada: 2026-10-15
+- Aprobada: 2026-10-15
+- Responsable técnico: Backend / Responsable de BD
 - Consumidores: dashboard (`dashboard-002`) y PWA veterinaria (spec futura)
 
 ## Diseño de solución
@@ -90,7 +92,7 @@ Los endpoints no dependen del cliente: el dashboard y la futura PWA los consumen
 | `GET /api/v1/auth/user/two-factor-recovery-codes` | `two-factor.recovery-codes` | `auth` | Fortify |
 | `GET /api/v1/auth/me` | `auth.me` | `auth:sanctum` | Propia (`MeController`) |
 
-Nombres confirmados con `php artisan route:list` (2026-10-16). Fortify registra además, con la feature de 2FA, estas rutas que se aceptan sin cambios:
+Nombres confirmados con `php artisan route:list`. Fortify registra además, con la feature de 2FA, estas rutas que se aceptan sin cambios:
 
 | Método y ruta | Nombre | Decisión |
 |---|---|---|
@@ -200,7 +202,7 @@ Todas las pruebas Feature usan `DatabaseTransactions` y el trait `InteractsWithA
 - Cookie de Sanctum entre dominios en producción con hosting aún por definir: API, dashboard y PWA deben compartir dominio raíz.
 - La caché de permisos de Spatie se limpia tras los seeders.
 - Si un administrador pierde su celular y sus códigos de recuperación, no hay herramienta para restablecer el 2FA; lo resuelve provisionalmente el responsable de BD y el procedimiento formal queda para «Gestión de usuarios».
-- DBR-001/002 aún dicen que se aplican en `arca_zoo`; corresponde a Victor actualizarlas.
+- DBR-001/002 aún dicen que se aplican en `arca_zoo`; corresponde al Responsable de BD actualizarlas.
 
 ## Orden y aprobación
 
@@ -210,4 +212,4 @@ Todas las pruebas Feature usan `DatabaseTransactions` y el trait `InteractsWithA
 4. BD: sembrar `arca_pruebas` con `php artisan db:seed` y verificar las cuentas.
 5. Prueba manual con las cuentas demo; después inicia `dashboard-002`.
 
-Aprobación técnica: Jonathan, 2026-10-16 (plan y tasks).
+Aprobación técnica: Aprobada (plan y tasks).
