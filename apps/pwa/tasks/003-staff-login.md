@@ -1,8 +1,10 @@
 # Tareas · 003 · staff-login
 
+- Solicitada: 2026-11-04
+- Aprobada: 2026-11-04
 - Spec: `apps/pwa/specs/003-staff-login.md`
 - Plan: `apps/pwa/plan/003-staff-login.md`
-- Aprobación del checklist: solicitante, 2026-11-04, en esta conversación.
+- Aprobación del checklist: Aprobada (solicitante, en la conversación de aprobación).
 
 ## Implementación
 
@@ -25,3 +27,10 @@
 - Vitest: 36 pruebas aprobadas en 9 archivos. Compilación TypeScript y Vite correcta.
 - Se ejecutaron los scripts desde el workspace `apps/pwa`, donde está el manifiesto. La ruta `apps/pwa/src/package.json` que espera `/verify` no existe.
 - Recorrido HTTP por el origen local de ZooHealth en `arca_pruebas` con la cuenta veterinaria: CSRF 204, login 200, dos consultas de perfil 200 con destino `pwa`, cierre 204 y perfil 401 después de cerrar. El recorrido usó un cliente HTTP con cookies.
+
+## Revisión: contador de bloqueo
+
+- [x] **T-08** (CA-04, CA-05, CA-07): utilidad `countdown.ts`, hook `useCountdown` y `retryAfterSeconds` en `signInStaff`.
+- [x] **T-09** (CA-06, CA-08): `LockoutNotice` y botón deshabilitado en `LoginView`.
+- [x] **T-10** (CA-04 a CA-08): pruebas en `login-lockout-countdown.test.tsx`. Vitest: 127 pruebas aprobadas en 16 archivos; `tsc -b` sin errores.
+- [x] **T-11** (CA-09): contador de bloqueo movido a `@arca/ui`; prueba en `shared-ui-pagination-and-countdown.test.tsx`.

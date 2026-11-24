@@ -16,7 +16,16 @@ const actions: EnclosuresViewModel["actions"] = {
   closeDialog: vi.fn(),
   dismissNotice: vi.fn(),
   save: vi.fn(),
+  goToPage: vi.fn(),
+  toggleStatus: vi.fn(),
+  requestDelete: vi.fn(),
+  confirm: vi.fn(),
+  openQr: vi.fn(),
+  setHasQr: vi.fn(),
+  qrNotFound: vi.fn(),
 };
+
+const paging = (items: unknown[]) => ({ canManage: true, page: 1, pageCount: 1, pageItems: items as never[] });
 
 const ready = {
   ...initialEnclosuresState,
@@ -25,15 +34,14 @@ const ready = {
 };
 
 describe("CA-09 administration-sections", () => {
-  it("lista los recintos con su número de animales, permite crear y renombrar, y no ofrece eliminar", () => {
-    const markup = renderToStaticMarkup(<EnclosuresView state={ready} actions={actions} />);
+  it("lista los recintos con su número de animales, permite crear y renombrar", () => {
+    const markup = renderToStaticMarkup(<EnclosuresView state={ready} actions={actions} {...paging(ready.items)} />);
 
     expect(markup).toContain("Zona de felinos");
     expect(markup).toContain("3 animales");
     expect(markup).toContain("1 animal<");
     expect(markup).toContain("Crear recinto");
     expect(markup).toContain("Renombrar");
-    expect(markup).not.toContain("Eliminar");
     expect(markup).not.toContain("Prototipo de demostración");
   });
 
@@ -67,7 +75,7 @@ describe("CA-09 administration-sections", () => {
     });
 
     const ok = await saveEnclosure(api, h.dispatch, h.state.dialog, "aviario");
-    const markup = renderToStaticMarkup(<EnclosuresView state={h.state} actions={actions} />);
+    const markup = renderToStaticMarkup(<EnclosuresView state={h.state} actions={actions} {...paging(h.state.items)} />);
 
     expect(ok).toBe(false);
     expect(h.state.dialog).not.toBeNull();

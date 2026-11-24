@@ -2,15 +2,16 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard`, `packages/api-client`, `packages/ui` (solo si falta algún componente compartido)
-- Estado: Aprobada · En progreso (revisión aprobada por Jonathan el 2026-11-05; estado previo: Implementada)
-- Solicitante / responsable funcional: Jonathan
-- Aprobación funcional: Jonathan, 2026-10-30
+- Estado: Implementada
+- Solicitada: 2026-10-30
+- Aprobada: 2026-10-30
+- Aprobación funcional: Aprobada
 
-> **Nota de vigencia (2026-11-01):** en Noticias y Eventos, el «sin campo de subida de imagen» (CA-08 y «Fuera de alcance») y en Usuarios, el uso de diálogos para alta, edición, eliminación, activar/desactivar, restablecer contraseña y restablecer 2FA (CA-06, CA-08 y RN-09 en esas secciones) quedan reemplazados por `dashboard-004` (formulario fijo, caja de imagen, paneles colapsables y confirmación en línea) y `api-008` (subida de imágenes). Recintos, Venta e Historial y el resto de criterios no cambian. El texto original se conserva como historial.
+> **Nota de vigencia:** en Noticias y Eventos, el «sin campo de subida de imagen» (CA-08 y «Fuera de alcance») y en Usuarios, el uso de diálogos para alta, edición, eliminación, activar/desactivar, restablecer contraseña y restablecer 2FA (CA-06, CA-08 y RN-09 en esas secciones) quedan reemplazados por `dashboard-004` (formulario fijo, caja de imagen, paneles colapsables y confirmación en línea) y `api-008` (subida de imágenes). Recintos, Venta e Historial y el resto de criterios no cambian. El texto original se conserva como historial.
 
-> **Nota de vigencia (2026-11-02):** en CA-02, Venta e Historial de taquilla dejan de ser demostrativos por `dashboard-005` (`apps/dashboard/specs/005-ticket-sales.md`), que reemplaza para esas dos vistas el aviso de demostración de CA-02 y `dashboard-001` CA-04, CA-11 y CA-15. El texto de CA-02 y la mención a Venta e Historial en el resto de la spec se conservan como historial. El estado de esta spec (Implementada) y sus demás criterios no cambian.
+> **Nota de vigencia:** en CA-02, Venta e Historial de taquilla dejan de ser demostrativos por `dashboard-005` (`apps/dashboard/specs/005-ticket-sales.md`), que reemplaza para esas dos vistas el aviso de demostración de CA-02 y `dashboard-001` CA-04, CA-11 y CA-15. El texto de CA-02 y la mención a Venta e Historial en el resto de la spec se conservan como historial. El estado de esta spec (Implementada) y sus demás criterios no cambian.
 
-> **Nota de vigencia (2026-11-05, aprobada):** la sección Usuarios solo se muestra con `users.manage` (`admin`). `zoo-admin` deja de ver y gestionar cuentas del personal; el permiso `operational-staff.manage` se retira. Afecta a la navegación (CA-01), al formulario de alta (CA-04), a la tabla de actores, a la historia de `zoo-admin` y a los objetivos. Ver «Revisión 2026-11-05». El resto de criterios no cambia.
+> **Nota de vigencia:** la sección Usuarios solo se muestra con `users.manage` (`admin`). `zoo-admin` deja de ver y gestionar cuentas del personal; el permiso `operational-staff.manage` se retira. Afecta a la navegación (CA-01), al formulario de alta (CA-04), a la tabla de actores, a la historia de `zoo-admin` y a los objetivos. Ver «Revisión». El resto de criterios no cambia.
 
 ## Problema y contexto
 
@@ -23,7 +24,7 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 - Gestionar cuentas del personal desde el dashboard: listar, buscar y filtrar, crear, editar, activar/desactivar, eliminar, restablecer contraseña y restablecer 2FA.
 - Gestionar noticias, eventos y recintos con datos reales (según `api-007`).
 - Mostrar el Panel principal y el Reporte de boletos con datos reales, con periodo semanal o mensual y exportación a CSV, Excel y PDF.
-- Que la misma interfaz sirva a `admin` y `zoo-admin`, mostrando solo las opciones que sus permisos permiten (Usuarios, solo para `admin` desde 2026-11-05).
+- Que la misma interfaz sirva a `admin` y `zoo-admin`, mostrando solo las opciones que sus permisos permiten (Usuarios, solo para `admin`).
 - Mantener MVVM, accesibilidad, diseño adaptable y tokens semánticos.
 
 ## Fuera de alcance
@@ -42,14 +43,14 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 | Actor/rol | Necesidad | Permisos requeridos |
 |---|---|---|
 | `admin` | Todas las secciones de administración y todas las cuentas | `users.manage`, `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view` |
-| `zoo-admin` | Las mismas secciones excepto Usuarios (decisión de 2026-11-05) | `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view` |
+| `zoo-admin` | Las mismas secciones excepto Usuarios | `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view` |
 | `executive` | Panel y Reporte en solo lectura, con exportación | `dashboard.view`, `reports.view` |
 | `cashier` | Sin cambios (Venta e Historial demostrativos) | `tickets.*` |
 
 ## Historias de usuario
 
 - Como `admin`, quiero administrar las cuentas de todo el personal desde una tabla con búsqueda y filtros para mantener los accesos al día.
-- *(Retirada, decisión de 2026-11-05.)* Como `zoo-admin`, quería ver y gestionar solo las cuentas de taquilla y veterinaria.
+- ** Como `zoo-admin`, quería ver y gestionar solo las cuentas de taquilla y veterinaria.
 - Como administrador, quiero restablecer la contraseña o el 2FA de una cuenta para devolver el acceso a quien lo perdió.
 - Como administrador, quiero crear, editar y retirar noticias y eventos, y renombrar recintos, para mantener la información al día.
 - Como administrador o directivo, quiero ver el reporte semanal o mensual y exportarlo en PDF, Excel o CSV.
@@ -58,7 +59,7 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 
 ### Navegación y estructura
 
-- **CA-01:** Dada una sesión con `home: administration`, cuando se presenta la navegación, entonces muestra Panel principal, Noticias, Eventos, Reporte, Recintos y Usuarios según los permisos de `me` (Usuarios solo con `users.manage`; `zoo-admin` no ve Usuarios desde 2026-11-05); la etiqueta de la sección es «Usuarios» y deja de decir «Usuarios de taquilla».
+- **CA-01:** Dada una sesión con `home: administration`, cuando se presenta la navegación, entonces muestra Panel principal, Noticias, Eventos, Reporte, Recintos y Usuarios según los permisos de `me` (Usuarios solo con `users.manage`; `zoo-admin` no ve Usuarios); la etiqueta de la sección es «Usuarios» y deja de decir «Usuarios de taquilla».
 - **CA-02:** Dadas las secciones conectadas a la API, cuando se presentan, entonces no muestran el aviso de demostración ni datos ficticios; Venta e Historial de taquilla conservan el suyo.
 
 ### Usuarios
@@ -91,7 +92,7 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 
 ### Zona horaria
 
-- **CA-19:** Dado el Panel principal o el Reporte, cuando se piden el panel, el reporte o su exportación, entonces `@arca/api-client` envía en `timezone` la zona horaria del navegador (`Intl.DateTimeFormat().resolvedOptions().timeZone`) en las tres llamadas, y ni la vista ni el ViewModel calculan periodos, días ni fechas con esa zona. Si el navegador no informa la zona, la llamada se hace sin `timezone` y la API responde con su zona por defecto. Aclaración (decisión de Jonathan, 2026-10-30; `api-007` RN-14 y CA-28). Confirmado por Jonathan, 2026-10-30.
+- **CA-19:** Dado el Panel principal o el Reporte, cuando se piden el panel, el reporte o su exportación, entonces `@arca/api-client` envía en `timezone` la zona horaria del navegador (`Intl.DateTimeFormat.resolvedOptions.timeZone`) en las tres llamadas, y ni la vista ni el ViewModel calculan periodos, días ni fechas con esa zona. Si el navegador no informa la zona, la llamada se hace sin `timezone` y la API responde con su zona por defecto. Aclaración (decisión del responsable funcional; `api-007` RN-14 y CA-28). Confirmado por el responsable funcionalhan.
 
 - **CA-20:** Dadas las seis secciones administrativas, cuando se presentan entre 360 y 1366 px, entonces comparten una jerarquía visual más clara en encabezados, tarjetas, formularios, filtros y tablas, conservan la paleta y tipografía vigentes, y no cambian acciones, datos, permisos ni navegación. La mejora no se aplica a las pantallas de taquilla.
 
@@ -106,8 +107,8 @@ La vista «Usuarios» pasa de ser una demostración a gestionar cuentas reales d
 - **RN-07:** La contraseña capturada para crear o restablecer una cuenta no se guarda en el cliente y se descarta tras enviarla.
 - **RN-08:** Esta feature depende de `api-007`; mientras no esté implementada, el desarrollo usa un cliente simulado en tests.
 - **RN-09:** La presentación de las secciones administrativas puede mejorar su jerarquía, orden, espaciado y legibilidad sin alterar su comportamiento. Se conserva la paleta y tipografía vigentes y se usan tokens semánticos; las pantallas de taquilla quedan fuera del rediseño.
-- **RN-10:** La feature se entrega completa en conjunto (Usuarios, Noticias, Eventos, Recintos, Panel y Reporte), no por etapas. Los formatos CSV, Excel y PDF se ofrecen siempre en la interfaz. La API (`api-007`, RN-12 y CA-23) tiene habilitados los tres desde la aceptación del ADR 0017 (2026-10-30); la API solo responde 422 para un formato fuera de su lista («Formato de exportación no disponible.») o para PDF sobre el tope de boletos, y la interfaz muestra ese error según CA-12.
-- **RN-11:** (Decisión y redacción confirmadas por Jonathan, 2026-10-30: zona del dispositivo con respaldo en `America/Mexico_City`.) La zona horaria con la que se calculan los periodos, los días y la exportación es la del dispositivo que consulta. La obtiene y la envía `@arca/api-client` (en el parámetro `timezone` del Panel, del Reporte y de su exportación), no las vistas ni los ViewModels. El cliente no calcula periodos, días ni totales con esa zona: los recibe de la API (RN-04; `api-007` RN-14).
+- **RN-10:** La feature se entrega completa en conjunto (Usuarios, Noticias, Eventos, Recintos, Panel y Reporte), no por etapas. Los formatos CSV, Excel y PDF se ofrecen siempre en la interfaz. La API (`api-007`, RN-12 y CA-23) tiene habilitados los tres desde la aceptación del ADR 0017; la API solo responde 422 para un formato fuera de su lista («Formato de exportación no disponible.») o para PDF sobre el tope de boletos, y la interfaz muestra ese error según CA-12.
+- **RN-11:** (Decisión y redacción confirmadas por el responsable funcional: zona del dispositivo con respaldo en `America/Mexico_City`.) La zona horaria con la que se calculan los periodos, los días y la exportación es la del dispositivo que consulta. La obtiene y la envía `@arca/api-client` (en el parámetro `timezone` del Panel, del Reporte y de su exportación), no las vistas ni los ViewModels. El cliente no calcula periodos, días ni totales con esa zona: los recibe de la API (RN-04; `api-007` RN-14).
 
 ## Datos, privacidad y auditoría
 
@@ -122,39 +123,54 @@ El dashboard muestra datos personales del personal (nombre, correo, área, rol) 
 
 ## Dependencias, riesgos y preguntas
 
-- **Dependencias/ADR:** `api-007` (esta feature no puede cerrarse sin ella; para la zona horaria, `api-007` RN-14 y CA-28), `dashboard-002`, ADR 0002; ADR 0017 (Excel y PDF, aceptado el 2026-10-30) en el lado de la API.
+- **Dependencias/ADR:** `api-007` (esta feature no puede cerrarse sin ella; para la zona horaria, `api-007` RN-14 y CA-28), `dashboard-002`, ADR 0002; ADR 0017 en el lado de la API.
 - **Riesgos:**
   - Sin ventas reales el Panel y el Reporte se verán vacíos.
   - El volumen de componentes nuevos (tablas, diálogos, formularios) puede requerir ampliar `@arca/ui`; se resolverá en el plan sin nuevas dependencias.
   - La spec es amplia y se entrega completa; el plan ordenará el trabajo internamente por sección sin cambiar el alcance ni dividir la entrega.
-- **Preguntas resueltas (Jonathan):**
+- **Decisiones:**
   1. Columnas y filtros propuestos para la tabla de Usuarios: suficientes.
   2. Entrega: todo junto, no por etapas.
-  3. Diseño (decisión inicial, reemplazada por la revisión visual de 2026-11-12): no cambia colores ni tipografía; las vistas nuevas siguen los patrones de las pantallas actuales. Se pueden agregar secciones, botones, ventanas (diálogos) y similares, siempre con los mismos patrones y componentes ya definidos.
-- **Pregunta de zona horaria (2026-10-30): confirmada por Jonathan, 2026-10-30.**
-  4. ¿El Panel y el Reporte deben mostrar la zona horaria que la API usó (p. ej. «Hora de Ciudad de México»)? Respuesta: no. La interfaz no muestra la zona usada y esta feature no añade ese texto. Confirmado por Jonathan, 2026-10-30.
+  3. Diseño (decisión inicial, reemplazada por la revisión visual): no cambia colores ni tipografía; las vistas nuevas siguen los patrones de las pantallas actuales. Se pueden agregar secciones, botones, ventanas (diálogos) y similares, siempre con los mismos patrones y componentes ya definidos.
+- **Zona horaria (decisión confirmada):**
+  4. ¿El Panel y el Reporte deben mostrar la zona horaria que la API usó (p. ej. «Hora de Ciudad de México»)? Decisión: no. La interfaz no muestra la zona usada y esta feature no añade ese texto.
 
-## Revisión 2026-11-05 (aprobada por Jonathan el 2026-11-05)
+## Revisión (aprobada)
 
-Decisión de Jonathan del 2026-11-05. **Estado: revisión aprobada por Jonathan el 2026-11-05.** Sin CA ni RN nuevos: se modifican CA-01 y CA-04, la tabla de actores, la historia de `zoo-admin` y los objetivos.
+Revisión aprobada. **Estado: revisión aprobada.** Sin CA ni RN nuevos: se modifican CA-01 y CA-04, la tabla de actores, la historia de `zoo-admin` y los objetivos.
 
-- **Usuarios solo con `users.manage`.** La sección aparece solo para quien tiene `users.manage` (`admin`). `zoo-admin` no la ve (CA-01, RN-01). La API responde 403 por permiso y `api-007` retira `operational-staff.manage` (revisión de 2026-11-05).
+- **Usuarios solo con `users.manage`.** La sección aparece solo para quien tiene `users.manage` (`admin`). `zoo-admin` no la ve (CA-01, RN-01). La API responde 403 por permiso y `api-007` retira `operational-staff.manage`.
 - **Alta sin filtro por actor.** Los roles que propone el formulario son los de `users/options` (CA-04). Para `admin`, los cinco roles.
 - **Sin cambios** en Noticias, Eventos, Recintos, Panel, Reporte ni exportación (incluido `zoo-admin` en esas secciones).
 - **Efectos en otras specs:** `dashboard-004` (`zoo-admin` deja de tener Usuarios en su tabla de actores; ver su revisión), `dashboard-002` (CA-06 ajustado: Usuarios solo con `users.manage`), `apps/dashboard/docs/arquitectura.md` y `manual-demo.md`.
 - **Tareas:** T-33 a T-38 en `tasks/003-administration-sections.md`.
 
-## Revisión visual 2026-11-12
+## Revisión visual
 
 La persona usuaria confirmó el rediseño visual de las seis secciones administrativas, sin cambios de color, funcionalidad ni pantallas de taquilla. Se reemplaza la decisión anterior de RN-09, se añade CA-20 y se amplía CA-18 para cubrirlo.
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan (responsable funcional), 2026-10-30.
+- Aprobadores: Equipo ARCA-NB (responsable funcional).
 - Evidencia/enlaces: `apps/api/specs/007-administration-management.md`, `apps/dashboard/specs/002-real-staff-login.md`, `apps/dashboard/specs/001-admin-dashboard-prototype.md`, `docs/03-roles-y-permisos.md`.
-- Cambio de 2026-10-30 (decisión de Jonathan, responsable funcional): zona horaria del dispositivo, con respaldo en `America/Mexico_City`. Jonathan confirmó la decisión y aprobó proceder con la implementación. Se añaden RN-11 y CA-19; CA-18 se amplía para incluir los criterios vigentes.
-- La redacción literal de CA-19 y RN-11 la proveyó el documentador y fue confirmada por Jonathan, 2026-10-30.
-- Confirmado por Jonathan, 2026-10-30: la interfaz no muestra la zona usada (pregunta 4).
-- Confirmado por Jonathan, 2026-10-30: redacción reconciliada de RN-10 y CA-12 (divergencia de `apps/dashboard/plan/003-administration-sections.md`); Excel y PDF se ofrecen en la interfaz y dependen de la API (ADR 0017).
-- Actualización de 2026-10-30 (aceptación del ADR 0017 por el equipo, solicitada por la sesión principal): la API ya habilita CSV, Excel y PDF. RN-10 y CA-12 se actualizan para que el 422 quede solo para formato fuera de la lista o PDF sobre el tope. Los criterios no cambian. Pendiente de confirmación funcional de Jonathan de esta redacción.
-- Estado cambiado a Implementada el 2026-10-30: CA verificados con pruebas, revisión de calidad y de seguridad, Constitution Check y pruebas manuales de Jonathan.
+- Cambio (decisión del responsable funcional): zona horaria del dispositivo, con respaldo en `America/Mexico_City`. Se confirmó la decisión y se aprobó proceder con la implementación. Se añaden RN-11 y CA-19; CA-18 se amplía para incluir los criterios vigentes.
+- La redacción literal de CA-19 y RN-11 la proveyó el documentador y fue confirmada por el responsable funcional.
+- Confirmado: la interfaz no muestra la zona usada (pregunta 4).
+- Confirmado: redacción reconciliada de RN-10 y CA-12 (divergencia de `apps/dashboard/plan/003-administration-sections.md`); Excel y PDF se ofrecen en la interfaz y dependen de la API (ADR 0017).
+- Actualización (aceptación del ADR 0017 por el equipo, solicitada por la sesión principal): la API ya habilita CSV, Excel y PDF. RN-10 y CA-12 se actualizan para que el 422 quede solo para formato fuera de la lista o PDF sobre el tope. Los criterios no cambian. Pendiente de confirmación funcional de esta redacción.
+- Estado cambiado a Implementada: CA verificados con pruebas, revisión de calidad y de seguridad, Constitution Check y pruebas manuales del responsable funcional.
+
+## Nota de revisión
+
+- Sustituido en lo que contradiga `dashboard-017`: CA-04 (el formulario de alta ya no ofrece «los cinco roles»: ofrece los roles de `users/options`, sin `admin`; las cuentas `admin` son de solo lectura) y CA-06 (el perfil `executive` pasa a etiquetarse «Consulta directiva»).
+- La sección Usuarios sigue solo para `users.manage`. Para `admin`, las cuentas `admin` se ven sin acciones (`dashboard-017` CA-04).
+- Las tablas de actores de esta spec que dicen «`admin` (cinco roles)» o «`executive`» quedan leídas según `apps/api/specs/023-fixed-roles-and-console-admins.md`. Esta nota no cambia los CA ni las RN de la spec, salvo lo indicado.
+
+> Nota de revisión: `dashboard-019` sustituye RN-11 y CA-19 en lo que toca a la zona del dispositivo: el cliente ya no envía `timezone` y la presentación usa la zona que informa la API. No cambia ningún otro requisito de esta spec.
+
+## Nota de revisión
+
+- La entrada «Reporte de boletos» de la navegación pasa a la pestaña «Boletos» dentro de «Reportes» (`dashboard-020` CA-01, CA-02). Su permiso (`reports.view`), sus periodos y su exportación no cambian en cuanto al contrato; la exportación usa botones compartidos (`dashboard-020` CA-13, CA-15).
+- El reporte de boletos sigue disponible para `admin`, `zoo-admin` y `executive` (`dashboard-020` CA-03). Esta nota no cambia los CA ni las RN de la spec.
+
+- Nota (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.

@@ -3,6 +3,7 @@
 namespace App\Actions\Admin\Content;
 
 use App\Actions\Admin\LogAdminActivityAction;
+use App\Actions\Push\QueueVisibleContentPushAction;
 use App\Models\Event;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -67,6 +68,10 @@ class SaveEventAction
                 'image_changed' => true,
                 'action' => $imageAction,
             ]);
+        }
+
+        if (Event::query()->publicVisible()->whereKey($event->id)->exists()) {
+            app(QueueVisibleContentPushAction::class)->execute('event', (int) $event->id);
         }
 
         return $event;

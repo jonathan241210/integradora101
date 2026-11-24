@@ -256,7 +256,7 @@ Cobertura:
 
 ---
 
-**Última actualización:** Noviembre 2026
+**Última actualización:** (sin fecha)
 **Archivos de referencia:**
 - `/apps/pwa/README.md`
 - `/apps/pwa/EJECUCION_RAPIDA.md`

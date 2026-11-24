@@ -1,4 +1,4 @@
-import { createMapRepository, createAnimalRepository, ApiMapRepository, ApiAnimalRepository } from '../repositories';
+import { createMapRepository, createAnimalRepository } from '../repositories';
 import { defaultStorage } from '../repositories/storage';
 
 export const LAST_SYNC_KEY = '@arca:last_sync_timestamp';
@@ -27,26 +27,10 @@ export async function syncZooData(): Promise<ZooSyncResult> {
     try {
       const mapRepo = createMapRepository();
       const animalRepo = createAnimalRepository();
-
-      // 1. Prioridad: Guardar los recintos y sus animales reales de la BD
-      let placesCount = 0;
-      if (mapRepo instanceof ApiMapRepository) {
-        const places = await mapRepo.fetchAndCachePlaces();
-        placesCount = places.length;
-      } else {
-        const places = await mapRepo.getPlaces();
-        placesCount = places.length;
-      }
-
-      // 2. Guardar en caché el catálogo completo de especies
-      let animalsCount = 0;
-      if (animalRepo instanceof ApiAnimalRepository) {
-        const animals = await animalRepo.fetchAndCacheAllAnimals();
-        animalsCount = animals.length;
-      } else {
-        const animals = await animalRepo.getAllAnimals();
-        animalsCount = animals.length;
-      }
+      const places = await mapRepo.getPlaces();
+      const animals = await animalRepo.getAllAnimals();
+      const placesCount = places.length;
+      const animalsCount = animals.length;
 
       const now = Date.now();
       await defaultStorage.setItem(LAST_SYNC_KEY, String(now));

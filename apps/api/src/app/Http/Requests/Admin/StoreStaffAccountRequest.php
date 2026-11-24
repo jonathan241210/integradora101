@@ -2,9 +2,8 @@
 
 namespace App\Http\Requests\Admin;
 
-use App\Actions\Admin\Users\ResolveManageableRolesAction;
-use App\Models\User;
-use Illuminate\Support\Facades\Gate;
+use App\Actions\Admin\Users\GuardAssignableRoleAction;
+use App\Actions\Admin\Users\ResolveAssignableRolesAction;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -13,12 +12,11 @@ class StoreStaffAccountRequest extends AdminFormRequest
 {
     public function authorize(): bool
     {
-        $role = $this->input('role');
+        // El rol admin responde 403 y se audita (CA-12). Un rol desconocido lo rechaza la validación (422).
+        app(GuardAssignableRoleAction::class)
+            ->execute($this->input('role'), null, $this->input('email'), $this->route()?->getName());
 
-        // Un rol desconocido lo rechaza la validación (422), no la autorización.
-        return ! is_string($role)
-            || ! array_key_exists($role, ResolveManageableRolesAction::LABELS)
-            || Gate::forUser($this->user())->allows('assignRole', [User::class, $role]);
+        return true;
     }
 
     protected function prepareForValidation(): void
@@ -36,7 +34,7 @@ class StoreStaffAccountRequest extends AdminFormRequest
             'last_name' => ['required', 'string', 'max:255'],
             'second_last_name' => ['nullable', 'string', 'max:255'],
             'department_id' => ['required', 'integer', Rule::exists('departments', 'id')->where('is_active', true)],
-            'role' => ['required', 'string', Rule::in(array_keys(ResolveManageableRolesAction::LABELS))],
+            'role' => ['required', 'string', Rule::in(app(ResolveAssignableRolesAction::class)->execute($this->user()))],
             'password' => ['required', 'string', Password::defaults()],
         ];
     }

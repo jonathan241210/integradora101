@@ -2,9 +2,10 @@
 
 - App dueña: `pwa`
 - Apps/paquetes afectados: `pwa`, `api` (contrato/guardado de evaluaciones clínicas), `docs/database` (DBR-016)
-- Estado: Aprobada
-- Solicitante / responsable funcional: Victor Adrian
-- Aprobación funcional: Victor Adrian, 2026-11-14 (aprobada; catálogos definitivos para esta iteración). Revisión de flujo aprobada 2026-11-14: menú con formatos Intenso/Rápido, seguimiento capturado en ventana de confirmación al guardar, confirmación Cancelar/Confirmar en diagnósticos intenso y rápido.
+- Estado: Implementada
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Aprobación funcional: Aprobada (catálogos definitivos para esta iteración). Revisión de flujo aprobada: menú con formatos Intenso/Rápido, seguimiento capturado en ventana de confirmación al guardar, confirmación Cancelar/Confirmar en diagnósticos intenso y rápido.
 
 ## Problema y contexto
 
@@ -12,7 +13,7 @@ El seguimiento clínico (revisión rutinaria, control de tratamiento, observaci�
 
 Se requiere que **cada diagnóstico/atención** (intenso o rápido) se registre como una **nueva evaluación clínica** con su propio historial (fecha, edad del momento, hallazgos) e incluya obligatoriamente **contexto de seguimiento** (motivo, estado del animal y próxima revisión) para dar continuidad al tratamiento, evaluar la mejoría del ejemplar y planear próximas revisiones. El historial clínico del animal ya se acumula en `clinical_evaluations` y se visualiza en el perfil; debe permitir consultar cada evento sin saturar la interfaz.
 
-DBR-016 (Lista para backend, aplicada en `arca_pruebas` 2026-11-14) agrega `follow_up_status`, `next_review_date`, `is_follow_up` en `clinical_evaluations`. La edad por diagnóstico se guarda en `patient_age` (DBR-015) y el perfil debe reflejar la edad del diagnóstico más reciente cuando exista (ya preparado en UI).
+DBR-016 (Lista para backend, aplicada en `arca_pruebas`) agrega `follow_up_status`, `next_review_date`, `is_follow_up` en `clinical_evaluations`. La edad por diagnóstico se guarda en `patient_age` (DBR-015) y el perfil debe reflejar la edad del diagnóstico más reciente cuando exista (ya preparado en UI).
 
 ## Objetivos
 
@@ -63,7 +64,7 @@ DBR-016 (Lista para backend, aplicada en `arca_pruebas` 2026-11-14) agrega `foll
 ## Datos, privacidad y auditoría
 
 - **Datos:** `clinical_evaluations` (`animal_id`, `veterinarian_id`, `evaluation_type`, `evaluation_reason`, `evaluation_date`, `patient_age`, `follow_up_status`, `next_review_date`, `is_follow_up`, signos/diagnósticos según formato) y tablas hijas (`clinical_evaluation_findings`, `animal_restraints`, `lab_samples`) cuando aplique.
-- **Esquema:** DBR-016 **Lista para backend** (aplicada en `arca_pruebas` 2026-11-14, evidencia post-migración detallada pendiente) agrega `follow_up_status`, `next_review_date`, `is_follow_up`. DBR-015 (aplicada) aporta `patient_age` y `deleted_at` en tablas clínicas. Sin nuevas DBR salvo que surja un cambio adicional.
+- **Esquema:** DBR-016 **Lista para backend** (aplicada en `arca_pruebas`, evidencia post-migración detallada pendiente) agrega `follow_up_status`, `next_review_date`, `is_follow_up`. DBR-015 (aplicada) aporta `patient_age` y `deleted_at` en tablas clínicas. Sin nuevas DBR salvo que surja un cambio adicional.
 - **Clínico/auditoría:** datos clínicos sin borrado físico (SoftDeletes) y auditables según Constitución V y modelos vigentes.
 
 ## Flujos y errores
@@ -75,12 +76,12 @@ DBR-016 (Lista para backend, aplicada en `arca_pruebas` 2026-11-14) agrega `foll
 
 ## Dependencias, riesgos y preguntas
 
-- **Dependencias/ADR:** DBR-016 “Lista para backend” (aplicada en `arca_pruebas`, 2026-11-14; evidencia detallada pendiente); specs 002/006/007; historial en perfil ya ajustado a tabla con detalle/PDF por historial y edad desde último diagnóstico.
+- **Dependencias/ADR:** DBR-016 “Lista para backend” (aplicada en `arca_pruebas`; evidencia detallada pendiente); specs 002/006/007; historial en perfil ya ajustado a tabla con detalle/PDF por historial y edad desde último diagnóstico.
 - **Riesgos:** coexistencia temporal con `ReviewFormView`/`kind=review` y datos previos con seguimiento en texto; necesidad de alinear contrato API/PWA y validaciones; impacto en UX de guardado (modal de confirmación/seguimiento) en formatos intenso y rápido.
-- **Decisiones incorporadas (2026-11-14, Victor Adrian):** (1) menú/inicio mantiene **Diagnóstico intenso** y **Diagnóstico rápido** (sin entrada separada “Nueva atención/revisión”); (2) **cada diagnóstico requiere seguimiento obligatorio** (motivo, estado y próxima revisión) para evaluar mejoría y planear próximas revisiones; (3) al guardar un formato completo se muestra **ventana emergente de confirmación** con mini-formulario de seguimiento y opciones **Cancelar** (revisar) / **Confirmar guardado** (alcance: diagnósticos intenso y rápido); (4) historial muestra estado y próxima revisión. Detalle de `ReviewFormView`/compatibilidad se define en plan manteniendo capacidad de registro.
+- **Decisiones incorporadas:** (1) menú/inicio mantiene **Diagnóstico intenso** y **Diagnóstico rápido** (sin entrada separada “Nueva atención/revisión”); (2) **cada diagnóstico requiere seguimiento obligatorio** (motivo, estado y próxima revisión) para evaluar mejoría y planear próximas revisiones; (3) al guardar un formato completo se muestra **ventana emergente de confirmación** con mini-formulario de seguimiento y opciones **Cancelar** (revisar) / **Confirmar guardado** (alcance: diagnósticos intenso y rápido); (4) historial muestra estado y próxima revisión. Detalle de `ReviewFormView`/compatibilidad se define en plan manteniendo capacidad de registro.
 - **Preguntas pendientes:** ninguna bloqueante identificada; validar en aprobación funcional si el catálogo de motivos (`rutina`, `control de tratamiento`, `observación`) y estados (`stable`, `monitoring`, `follow_up`) es definitivo o extensible.
 
 ## Revisión
 
-- Aprobadores y fecha: Victor Adrian, 2026-11-14 (aprobación funcional inicial y revisión de flujo: menú intenso/rápido + confirmación con seguimiento al guardar)
+- Aprobadores: Responsable funcional (aprobación funcional inicial y revisión de flujo: menú intenso/rápido + confirmación con seguimiento al guardar)
 - Evidencia/enlaces: `docs/database/requests/DBR-016-clinical-evaluation-follow-up-fields.md`, `apps/pwa/src/views/AnimalProfileView.tsx`, `apps/api/src/app/Http/Controllers/Api/ClinicalEvaluationController.php`, specs 002/006/007.

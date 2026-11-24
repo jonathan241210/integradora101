@@ -1,11 +1,13 @@
 # Plan técnico · 007 · map-location
 
 - Spec: `apps/mobile/specs/007-map-location.md`
-- Estado de spec: Aprobada (2026-10-22)
-- Estado del plan: Aprobado (2026-10-22)
-- Responsable técnico: Víctor Adrián
-- Revisión móvil: Aksel
-- ADR de renderizado: `docs/adr/0015-mobile-svg-map-rendering.md` (Aceptado 2026-10-22)
+- Estado de spec: Implementada
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
+- Estado del plan: Aprobado
+- Responsable técnico: Frontend
+- Revisión técnica: pendiente de registro
+- ADR de renderizado: `docs/adr/0015-mobile-svg-map-rendering.md` (Aceptado)
 - Brief del SVG: `apps/mobile/docs/007-svg-brief.md`
 - Borrador visual: `apps/mobile/docs/007-map-v1-draft.svg`
 
@@ -175,7 +177,7 @@ No se muestra un estado “sin conexión” artificial porque la V1 no consume r
 
 ## Verificación
 
-- `npx jest --runInBand` en `apps/mobile`: 27 suites y 132 pruebas aprobadas (2026-10-22).
+- `npx jest --runInBand` en `apps/mobile`: 27 suites y 132 pruebas aprobadas (registro de la V1).
 - `npx tsc --noEmit` en `apps/mobile`: sin errores.
 - Revisión visual en Expo Go/Android con el SVG final: pendiente.
 - `/verify` para las apps tocadas.
@@ -183,16 +185,16 @@ No se muestra un estado “sin conexión” artificial porque la V1 no consume r
 
 ## Aprobación
 
-- Plan aprobado funcional y técnicamente el 2026-10-22.
-- ADR 0015 aceptado el 2026-10-22.
-- Implementación V1 ejecutada; revisión técnica de Aksel y validación visual en Android/Expo Go pendientes.
+- Plan aprobado funcional y técnicamente.
+- ADR 0015 aceptado.
+- Implementación V1 ejecutada; la validación visual en Android/Expo Go se registra en `tasks/007-map-location.md` (T-17). La revisión técnica queda pendiente de registro.
 
 ---
 
 ## Enmienda V2 — GPS, Punto Azul y Detección de Llegada
 
-- Spec: `apps/mobile/specs/007-map-location.md` (enmienda V2, Aprobada 2026-10-29)
-- Estado del plan: **Aprobado** (Víctor Adrián, 2026-10-29)
+- Spec: `apps/mobile/specs/007-map-location.md` (enmienda V2, Aprobada)
+- Estado del plan: **Aprobado**
 - ADR habilitador: `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado
 - `expo-location ~57.0.22` instalada en `package.json` ✓
 - `app.json` con permiso `ACCESS_FINE_LOCATION` y plugin `expo-location` ✓
@@ -372,7 +374,7 @@ dismissArrival: () => void;
 
 ### Riesgos y decisiones
 
-- **ADR 0016** — Aceptado (2026-10-29). `expo-location ~57.0.22` instalada.
+- **ADR 0016** — Aceptado. `expo-location ~57.0.22` instalada.
 - **SVG de prueba:** el punto azul no será preciso visualmente hasta tener el SVG real y las coordenadas medidas en campo. No bloquea el desarrollo; sí bloquea la demo real en el zoológico.
 - **Coordenadas sintéticas en POIs:** los campos `gpsLat`/`gpsLon` del fixture serán `null` o valores aproximados hasta la medición. La geocerca funcionará en Jest con coords sintéticas.
 - **`watchPositionAsync` en Jest:** se mockea completamente en `test-support/locationMocks.ts`; no hay llamadas reales al GPS en tests.
@@ -399,8 +401,8 @@ dismissArrival: () => void;
 
 ### Aprobación
 
-- **Plan aprobado por:** Víctor Adrián (2026-10-29)
-- **Revisión técnica:** Aksel (pendiente — no bloquea inicio de tareas para Víctor como responsable de 007)
+- **Plan aprobado:** Aprobado (funcional y técnico).
+- **Revisión técnica:** pendiente de registro; no bloquea las tareas.
 - **Alcance V2 (este plan):** CA-08, CA-09, CA-10, CA-11 — punto azul, permiso GPS, posición inicial en entrada, transformación geoTransform. Sin línea al destino ni detección de llegada.
 - **Alcance V2.1 (plan futuro):** CA-12 — selección de recinto destino, línea SVG hacia el destino, detección de llegada (haversine), `ArrivalBanner`. Requiere su propia enmienda de plan y tasks cuando se inicie.
 
@@ -408,8 +410,8 @@ dismissArrival: () => void;
 
 ## Enmienda V2.1 — Ruta hacia el destino y Detección de Llegada (CA-12, CA-14)
 
-- Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V2.1, Aprobada 2026-11-01)
-- Estado del plan: **Aprobado** (Víctor Adrián, 2026-11-01)
+- Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V2.1, Aprobada)
+- Estado del plan: **Aprobado**
 - Alcance: CA-12, CA-14 (Ruta punteada SVG, cálculo Haversine de proximidad ≤ 10 m y banner visual de llegada).
 
 ### Diseño técnico detallado V2.1
@@ -464,8 +466,8 @@ $d = R \cdot c$ (con $R = 6,371,000\text{ m}$).
 
 ## Enmienda V2.2 — Controles Interactivos del Mapa: Zoom, Desplazamiento y Centrado (CA-15, CA-16, CA-17)
 
-- Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V2.2, Aprobada 2026-11-04)
-- Estado del plan: **Aprobado** (Víctor Adrián, 2026-11-04)
+- Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V2.2, Aprobada)
+- Estado del plan: **Aprobado**
 - Alcance: CA-15, CA-16, CA-17 (Zoom `+`/`-`/`1x`, desplazamiento acotado del lienzo y centrado en la ubicación del visitante).
 
 ### Diseño técnico detallado V2.2
@@ -517,8 +519,8 @@ Barra flotante de botones accesibles sobre la esquina del mapa (usando solo toke
 
 ## Enmienda V3 — Grafo de Senderos Peatonales, Pathfinding y Estimación de Caminata (CA-18, CA-19, CA-20)
 
-- **Spec:** `apps/mobile/specs/007-map-location.md` (Enmienda V3, Aprobada 2026-11-04)
-- **Estado del plan:** **Aprobado** (Víctor Adrián, 2026-11-04)
+- **Spec:** `apps/mobile/specs/007-map-location.md` (Enmienda V3, Aprobada)
+- **Estado del plan:** **Aprobado**
 - **Alcance:** CA-18, CA-19, CA-20 (Grafo de andadores peatonales, algoritmo Dijkstra en memoria, polilínea SVG por pasillos e insignia accesible de distancia/tiempo a pie).
 
 ### Arquitectura V3
@@ -567,7 +569,7 @@ flowchart LR
 
 ## Enmienda correctiva — CA-07 y CA-17
 
-- Estado: aprobado por el usuario solicitante, 2026-11-09.
+- Estado: aprobado (Equipo ARCA-NB).
 - Los criterios CA-07 y CA-17 ya están aprobados en la spec; esta enmienda corrige divergencias detectadas por las pruebas existentes, sin cambiar su comportamiento esperado.
 
 La prueba de CA-17 demuestra que el botón de centrar no aplica el zoom previsto de 2x. La corrección usará `CENTER_LOCATION_ZOOM` al actualizar la escala y calculará el desplazamiento con esa misma escala para que el punto azul quede centrado.

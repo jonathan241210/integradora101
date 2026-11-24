@@ -11,6 +11,8 @@ export default function MapRoute() {
   const {
     sections,
     filteredPlaces,
+    zooPlaces,
+    pathNodes,
     filter,
     selectedPlace,
     focusedSectionId,
@@ -53,6 +55,8 @@ export default function MapRoute() {
     <MapScreen
       sections={sections}
       filteredPlaces={filteredPlaces}
+      zooPlaces={zooPlaces}
+      pathNodes={pathNodes}
       filter={filter}
       selectedPlace={selectedPlace}
       focusedSectionId={focusedSectionId}

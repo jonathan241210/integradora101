@@ -167,29 +167,47 @@ export async function createAnimal(animal: NewAnimal): Promise<AnimalSummary> {
   })).data;
 }
 
+/** Mensaje de la API cuando existe; si no, el texto por defecto en español. */
+function apiMessage(error: unknown, fallback: string): string {
+  const genericShared = 'No fue posible completar la solicitud.';
+  if (error instanceof Error && error.message && error.message !== genericShared) return error.message;
+  return fallback;
+}
+
+function errorStatus(error: unknown): number {
+  return typeof error === 'object' && error !== null && 'status' in error && typeof error.status === 'number'
+    ? error.status
+    : 0;
+}
+
 export async function createAnimalWithPhoto(formData: FormData): Promise<AnimalSummary> {
+  // Pasa por el cliente compartido: cookie de sesión y X-XSRF-TOKEN (pwa-012 CA-01).
   try {
-    const response = await globalThis.fetch('/api/v1/staff/animals', {
+    return (await http.request<{ data: AnimalSummary }>('/api/v1/staff/animals', {
       method: 'POST',
       body: formData,
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new ApiError(
-        errorData.message || 'No se pudo guardar el animal con foto.',
-        response.status,
-      );
-    }
-
-    const data = await response.json();
-    return data.data;
+    })).data;
   } catch (error) {
-    if (error instanceof ApiError) throw error;
-    throw new ApiError('No se pudo guardar el animal con foto.', 0);
+    const status = errorStatus(error);
+    throw new ApiError(apiMessage(status === 0 ? null : error, 'No se pudo guardar el animal con foto.'), status);
+  }
+}
+
+export async function uploadAnimalPhoto(animalId: number, file: File): Promise<{ photo_path: string | null }> {
+  const formData = new FormData();
+  formData.append('photo', file);
+  try {
+    const data = await http.request<{ data?: { photo_path: string | null } } & { photo_path?: string | null }>(
+      `/api/v1/staff/animals/${animalId}/photo`,
+      { method: 'POST', body: formData },
+    );
+    return (data?.data ?? data ?? { photo_path: null }) as { photo_path: string | null };
+  } catch (error) {
+    const status = errorStatus(error);
+    const message = status === 404 || status === 405
+      ? 'La carga de foto desde el perfil aún no está disponible en el servidor.'
+      : apiMessage(status === 0 ? null : error, 'No se pudo actualizar la foto del animal.');
+    throw new ApiError(message, status);
   }
 }
 
@@ -205,4 +223,55 @@ export async function createEvaluation(
       body: { kind, animal_id: animalId, data: { ...data, is_follow_up: '1' } },
     },
   )).data;
+}
+
+export type SyncBootstrapResponse = {
+  profile: { id: number | string; name: string };
+  animals: Array<AnimalSummary & { updated_at?: string | null; deleted_at?: string | null }>;
+  enclosures: Array<EnclosureOption & { updated_at?: string | null; deleted_at?: string | null }>;
+  species: Array<SpeciesOption & { updated_at?: string | null; deleted_at?: string | null }>;
+  cursor?: string;
+  server_time?: string;
+};
+
+export type SyncChangesResponse = {
+  animals: Array<AnimalSummary & { updated_at?: string | null; deleted_at?: string | null }>;
+  enclosures: Array<EnclosureOption & { updated_at?: string | null; deleted_at?: string | null }>;
+  species: Array<SpeciesOption & { updated_at?: string | null; deleted_at?: string | null }>;
+  cursor?: string;
+  has_more?: boolean;
+};
+
+export type SyncOperationInput = {
+  operation_uuid: string;
+  entity_type: 'animal' | 'clinical_evaluation';
+  client_entity_id?: string | null;
+  depends_on_client_entity_id?: string | null;
+  payload: Record<string, unknown>;
+};
+
+export type SyncOperationResult = {
+  operation_uuid: string;
+  status: 'completed' | 'duplicate' | 'rejected' | 'retry' | string;
+  entity_type?: string;
+  server_id?: number | null;
+  server_entity_type?: string | null;
+  error_code?: string | null;
+  message?: string | null;
+};
+
+export async function syncBootstrap(): Promise<SyncBootstrapResponse> {
+  return (await request<{ data: SyncBootstrapResponse }>('/api/v1/staff/sync/bootstrap')).data;
+}
+
+export async function syncChanges(cursor?: string): Promise<SyncChangesResponse> {
+  const params = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
+  return (await request<{ data: SyncChangesResponse }>(`/api/v1/staff/sync/changes${params}`)).data;
+}
+
+export async function syncOperations(operations: SyncOperationInput[]): Promise<SyncOperationResult[]> {
+  return (await request<{ data: { results: SyncOperationResult[] } }>('/api/v1/staff/sync/operations', {
+    method: 'POST',
+    body: { operations },
+  })).data.results;
 }

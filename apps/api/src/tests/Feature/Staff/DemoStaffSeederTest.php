@@ -6,17 +6,29 @@ use App\Models\User;
 use Database\Seeders\DemoStaffSeeder;
 use Database\Seeders\DepartmentSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 use Tests\FeatureTestCase;
 
 class DemoStaffSeederTest extends FeatureTestCase
 {
+    /** arca_pruebas puede traer cuentas demo eliminadas con borrado lógico: dentro de la transacción de la prueba se quitan para partir de cero. */
+    private function forgetDeletedDemoAccounts(): void
+    {
+        $this->assertGreaterThan(0, DB::transactionLevel());
+        // No se borra físicamente (hay claves foráneas): se libera el correo, y todo se revierte al terminar.
+        foreach (User::onlyTrashed()->where('email', 'like', '%@arca.local')->get() as $trashed) {
+            DB::table('users')->where('id', $trashed->id)->update(['email' => "liberado-{$trashed->id}@trashed.invalid"]);
+        }
+    }
+
     /** CA-18 staff-authentication */
     public function test_ca18_staff_authentication_demo_seeder_is_idempotent_and_assigns_all_six_accounts(): void
     {
         (new DepartmentSeeder)->run();
         (new RolesAndPermissionsSeeder)->run();
         config(['arca.demo_staff_password' => 'SafePassphrase12!']);
+        $this->forgetDeletedDemoAccounts();
 
         (new DemoStaffSeeder)->run();
         (new DemoStaffSeeder)->run();
@@ -37,6 +49,27 @@ class DemoStaffSeederTest extends FeatureTestCase
         }
 
         $this->assertSame(6, User::query()->whereIn('email', array_keys($expected))->count());
+    }
+
+    /** CA-18 staff-authentication: una cuenta demo eliminada con borrado lógico se respeta y el seeder no falla. */
+    public function test_ca18_staff_authentication_demo_seeder_skips_soft_deleted_accounts(): void
+    {
+        (new DepartmentSeeder)->run();
+        (new RolesAndPermissionsSeeder)->run();
+        config(['arca.demo_staff_password' => 'SafePassphrase12!']);
+        $this->forgetDeletedDemoAccounts();
+        (new DemoStaffSeeder)->run();
+
+        $deleted = User::query()->where('email', 'admin@arca.local')->firstOrFail();
+        $deleted->delete();
+
+        (new DemoStaffSeeder)->run();
+        (new DemoStaffSeeder)->run();
+
+        $this->assertNull(User::query()->where('email', 'admin@arca.local')->first());
+        $this->assertNotNull(User::onlyTrashed()->where('email', 'admin@arca.local')->first());
+        $this->assertSame(1, User::withTrashed()->where('email', 'admin@arca.local')->count());
+        $this->assertSame(5, User::query()->whereIn('email', ['presidencia@arca.local', 'direccion_zoo@arca.local', 'ejecutivo@arca.local', 'boletaje@arca.local', 'veterinario@arca.local'])->count());
     }
 
     /** CA-18 staff-authentication */

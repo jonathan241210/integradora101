@@ -54,7 +54,7 @@ class EnclosuresAdminTest extends AdminFeatureTestCase
     }
 
     /** CA-18 */
-    public function test_ca18_administration_management_creates_renames_and_rejects_duplicates_without_delete_route(): void
+    public function test_ca18_administration_management_creates_renames_and_rejects_duplicates(): void
     {
         $admin = $this->createAccount('admin');
         $name = 'Sabana '.bin2hex(random_bytes(4));
@@ -77,8 +77,8 @@ class EnclosuresAdminTest extends AdminFeatureTestCase
         $this->actAs($admin)->patchJson('/api/v1/admin/enclosures/999999999', ['name' => 'Inexistente '.bin2hex(random_bytes(4))])
             ->assertNotFound();
 
-        $this->assertFalse(Route::has('admin.enclosures.destroy'));
-        $this->actAs($admin)->deleteJson("/api/v1/admin/enclosures/{$id}")->assertStatus(405);
+        // Enmienda api-019 (CA-05): la eliminación existe como borrado lógico (ver EnclosureDeleteTest).
+        $this->assertTrue(Route::has('admin.enclosures.destroy'));
         $this->assertNotNull(Enclosure::query()->find($id));
     }
 }

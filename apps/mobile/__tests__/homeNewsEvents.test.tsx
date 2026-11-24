@@ -38,11 +38,25 @@ describe('mobile-003 enmienda de inicio', () => {
   afterEach(() => {
     cleanup();
   });
+
+  it('mobile-002 CA-17: muestra las secciones de Inicio mientras se sincronizan', async () => {
+    const view = await render(<HomeScreen appName="ARCA-NB" featuredAnimals={[]} news={[]} events={[]} loading />);
+    expect(view.getByText('Animales favoritos')).toBeTruthy();
+    expect(view.getByText('Noticias actuales')).toBeTruthy();
+    expect(view.getByText('Próximos eventos')).toBeTruthy();
+    expect(view.getByText('Cargando noticias…')).toBeTruthy();
+    expect(view.getByText('Cargando eventos…')).toBeTruthy();
+    expect(view.queryByText('Cargando el zoológico...')).toBeNull();
+  });
   it('CA-10: usa la URL pública, el enlace externo y descarta la ruta relativa', () => {
     expect(resolveUsableImageUrl('https://img.test/a.jpg', 'events/a.jpg')).toBe('https://img.test/a.jpg');
     expect(resolveUsableImageUrl(null, 'https://images.unsplash.com/photo.jpg')).toBe('https://images.unsplash.com/photo.jpg');
     expect(resolveUsableImageUrl(null, 'events/archivo.jpg', 'http://10.0.2.2:8000/api/v1'))
       .toBe('http://10.0.2.2:8000/storage/events/archivo.jpg');
+    expect(resolveUsableImageUrl(null, 'species/llama.jpg', 'http://10.0.2.2:8000/api/v1'))
+      .toBe('http://10.0.2.2:8000/media/species/llama.jpg');
+    expect(resolveUsableImageUrl('http://localhost/media/species/llama.jpg', null, 'http://10.0.2.2:8000/api/v1'))
+      .toBe('http://10.0.2.2:8000/media/species/llama.jpg');
     expect(resolveUsableImageUrl(null, 'events/archivo.jpg', null)).toBeUndefined();
     expect(resolveUsableImageUrl(
       'http://localhost/storage/events/a.jpg',

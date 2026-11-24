@@ -56,7 +56,34 @@ export const fichaFieldOptions = [
   { key: "scientific_name", label: "Nombre científico" },
   { key: "origin", label: originLabel },
   { key: "habitat", label: "Hábitat" },
+  { key: "fun_fact", label: "Dato curioso" },
 ] as const;
+
+/** «Dato curioso» (api-026): texto plano de 20 a 500 caracteres, obligatorio solo si se muestra. */
+export const FUN_FACT_MIN = 20;
+export const FUN_FACT_MAX = 500;
+export const FUN_FACT_HELP =
+  "Escribe una o dos frases para quien visita el zoológico. No incluyas datos clínicos ni de personas.";
+export const funFactLabel = "Dato curioso";
+
+/** Valida el dato curioso; el mínimo solo aplica si el campo se muestra (dashboard-010 CA-76). */
+export function validateFunFact(
+  value: string,
+  selected: boolean,
+): { value: string; error: string } {
+  const trimmed = value.trim();
+  const length = Array.from(trimmed).length;
+
+  if (length > FUN_FACT_MAX) {
+    return { value: trimmed, error: `Dato curioso: máximo ${FUN_FACT_MAX} caracteres.` };
+  }
+
+  if (selected && length < FUN_FACT_MIN) {
+    return { value: trimmed, error: `Dato curioso: escribe al menos ${FUN_FACT_MIN} caracteres.` };
+  }
+
+  return { value: trimmed, error: "" };
+}
 
 export const SCIENTIFIC_NAME_PREVIEW_MAX = 60;
 export const CORRECTION_MAX = 150;
@@ -73,6 +100,7 @@ export const PUBLISHED_FORBIDDEN_MESSAGE =
   "No tienes permiso para gestionar especies publicadas.";
 export const REQUEST_NOT_FOUND_MESSAGE = "Solicitud no encontrada.";
 export const SPECIES_NOT_FOUND_MESSAGE = "Especie no encontrada.";
+export const PHOTO_HELP_TEXT = "JPG o PNG · máximo 5 MB";
 export const PHOTO_LOAD_ERROR = "No se pudo cargar la foto.";
 
 /** Texto largo recortado con «…» (CA-03). */
@@ -215,6 +243,7 @@ export type SpeciesSheetDraft = {
   scientific_name: string;
   habitat: string;
   origin: string;
+  fun_fact: string;
   category: SpeciesCategory | "";
   published_fields: SpeciesFichaField[];
 };
@@ -223,6 +252,7 @@ type SheetSource = {
   scientific_name: string | null;
   habitat: string | null;
   origin: string | null;
+  fun_fact?: string | null;
   category: SpeciesCategory | null;
   published_fields: string[] | null;
 };
@@ -235,6 +265,7 @@ export function draftFromSheet(source: SheetSource): SpeciesSheetDraft {
     scientific_name: source.scientific_name ?? "",
     habitat: source.habitat ?? "",
     origin: source.origin ?? "",
+    fun_fact: source.fun_fact ?? "",
     category: source.category ?? "",
     published_fields: fichaKeys.filter((key) => (source.published_fields ?? []).includes(key)),
   };
@@ -256,6 +287,8 @@ export function sheetIsDirty(
     baseline.scientific_name.trim() !== draft.scientific_name.trim() ||
     baseline.habitat.trim() !== draft.habitat.trim() ||
     baseline.origin.trim() !== draft.origin.trim() ||
+    (draft.published_fields.includes("fun_fact") &&
+      baseline.fun_fact.trim() !== draft.fun_fact.trim()) ||
     baseline.category !== draft.category ||
     !sameSelection(baseline.published_fields, draft.published_fields)
   );
@@ -283,6 +316,20 @@ export function buildSheetUpdate(
 
   if (draft.category === "") fieldErrors.category = ["Elige el tipo de animal."];
   else input.category = draft.category;
+
+  // Dato curioso (api-026): sin marcar, el texto no se envía (CA-75).
+  const funFactSelected = draft.published_fields.includes("fun_fact");
+  const funFact = validateFunFact(draft.fun_fact, funFactSelected);
+
+  if (funFactSelected) {
+    if (funFact.error) fieldErrors.fun_fact = [funFact.error];
+    else if (
+      funFact.value !== baseline.fun_fact.trim() ||
+      !baseline.published_fields.includes("fun_fact")
+    ) {
+      input.fun_fact = funFact.value;
+    }
+  }
 
   if (!sameSelection(baseline.published_fields, draft.published_fields)) {
     input.published_fields = draft.published_fields;

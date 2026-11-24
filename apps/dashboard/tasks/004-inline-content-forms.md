@@ -1,13 +1,15 @@
 # Tareas · 004 · inline-content-forms
 
-- Spec: `apps/dashboard/specs/004-inline-content-forms.md` (Aprobada, 2026-11-02)
-- Plan: `apps/dashboard/plan/004-inline-content-forms.md` (Aprobado 2026-11-02 por el usuario al ordenar implementar)
+- Spec: `apps/dashboard/specs/004-inline-content-forms.md`
+- Plan: `apps/dashboard/plan/004-inline-content-forms.md` (Aprobado por el usuario al ordenar implementar)
 - Dependencia: `apps/api/specs/008-event-news-images.md` y su plan (aprobados) para noticias y eventos; `api-007` para Usuarios (sin cambios)
 - Estado del checklist: En progreso. Spec Aprobada y En progreso; plan aprobado; quedan abiertas T-37, T-38, T-39 y T-42.
+- Solicitada: 2026-11-01
+- Aprobada: 2026-11-02
 
 Rutas relativas a `apps/dashboard` salvo que se indique `packages/…`. Cada prueba nombra su criterio con el bloque `describe("CA-NN inline-content-forms", …)`. Se desarrolla contra un `AdminApi` simulado (RN-07) hasta que `api-008` esté disponible. No se instalan dependencias ni se toca `package.json`. No se tocan `.github/workflows` (fuera de alcance).
 
-Decisiones ya tomadas (2026-11-01): D1 archivo no válido no se adjunta y muestra error; D2 con arrastrar y soltar (eventos nativos), sin recorte ni varias imágenes; D3 «sin modales» también en Usuarios; panel colapsable en las tres secciones, expandido por defecto.
+Decisiones ya tomadas: D1 archivo no válido no se adjunta y muestra error; D2 con arrastrar y soltar (eventos nativos), sin recorte ni varias imágenes; D3 «sin modales» también en Usuarios; panel colapsable en las tres secciones, expandido por defecto.
 
 ## Base de datos (responsable de BD)
 
@@ -54,6 +56,7 @@ No hay tareas de BD. Esta feature no cambia el esquema ni requiere DBR (`api-008
 - [x] **T-23** (CA-07): 422 con `errors.image` y otros campos en Noticias, Eventos y Usuarios: cada mensaje junto a su campo; se conserva lo escrito y el archivo.
 - [x] **T-24** (CA-08): Eliminar abre `InlineConfirm` en Noticias, Eventos y Usuarios con el nombre y el efecto (en noticias y eventos, el elemento se elimina y deja de mostrarse, y su imagen se borra; en Usuarios, baja lógica); la API no se llama hasta «Confirmar»; «Cancelar» no hace nada. El texto de noticias y eventos depende de `api-008` CA-07 (P2).
 - [x] **T-25** (CA-09): Activar/desactivar abre la confirmación con su efecto en las tres secciones; la API no se llama hasta confirmar.
+- [x] **Enmienda de T-25** (CA-09, CA-12): Reutilizar el diálogo centrado en Noticias para activar y desactivar. Verificar el texto, la ubicación modal de ambas confirmaciones y el flujo de cancelación.
 - [x] **T-26** (CA-10): Restablecer contraseña en línea: campo con mostrar/ocultar accesible; la API no se llama hasta confirmar; la contraseña no queda en el estado del ViewModel tras enviar (`staff-accounts.test.tsx`, ampliado).
 - [x] **T-27** (CA-11): Restablecer 2FA abre confirmación en línea con el nombre de la cuenta y el efecto; la API no se llama hasta confirmar (`staff-accounts.test.tsx`, ampliado).
 - [x] **T-28** (CA-12): Escape cancela; solo una acción en línea abierta por sección; foco inicial en «Cancelar»; `role="group"` y `aria-label` presentes.
@@ -70,11 +73,11 @@ No hay tareas de BD. Esta feature no cambia el esquema ni requiere DBR (`api-008
 ## Calidad y entrega
 
 - [x] **T-37** (CA-12, CA-18): Revisión manual documentada en el PR: navegación con teclado en formularios, paneles colapsables, confirmaciones y campo de contraseña (foco visible, Escape); ausencia de desbordamiento horizontal a 360, 768 y 1366 px en Noticias, Eventos y Usuarios.
-  - Evidencia: Jonathan informó el 2026-11-06 que probó todo y está correcto.
+  - Evidencia: el responsable funcional informó que probó todo y está correcto.
 - [x] **T-38** (CA-01 a CA-15): Recorrido de extremo a extremo contra la API real en `arca_pruebas` con `presidencia@arca.local` o `direccion_zoo@arca.local`. Usuarios puede verificarse con la API de `api-007`; Noticias y Eventos (subir, reemplazar, quitar y eliminar; comprobar que el archivo desaparece de `storage/app/public/{news,events}`) **dependen de `api-008` implementada**. Registrar evidencia sin contraseñas ni secretos.
-  - Evidencia: Jonathan informó el 2026-11-06 que probó todo y está correcto.
+  - Evidencia: el responsable funcional informó que probó todo y está correcto.
 - [x] **T-39**: Desde `apps/dashboard` ejecutar `npm run types`, `npm test` y `npm run build`; correr `/verify` y registrar resultados en el PR. Sin ejecutar nada en `arca_zoo`.
-  - Evidencia (2026-11-06, `/verify`): `npm run types` exit 0; `npm test` exit 0, 24 archivos y 290 pruebas en verde; `npm run build` exit 0. `format:check` y `lint` no existen como scripts en el dashboard, así que no se ejecutaron. Falta registrar la salida en el PR.
+  - Evidencia (, `/verify`): `npm run types` exit 0; `npm test` exit 0, 24 archivos y 290 pruebas en verde; `npm run build` exit 0. `format:check` y `lint` no existen como scripts en el dashboard, así que no se ejecutaron. Falta registrar la salida en el PR.
 - [x] **T-40**: Actualizar `apps/dashboard/docs/arquitectura.md` (formularios en línea, paneles colapsables, `image-preview`, `InlineConfirm`, `InlinePasswordReset`) y `apps/dashboard/docs/manual-demo.md` (Noticias, Eventos y Usuarios ya no usan diálogos ni son demostrativos).
 - [x] **T-41**: Actualizar las notas de vigencia de `apps/dashboard/specs/003-administration-sections.md`, `plan/003-administration-sections.md` y `tasks/003-administration-sections.md` para que digan que Usuarios también cambia de interacción (D3). Sin cambiar criterios ni estados.
 - [ ] **T-42**: Completar el Constitution Check del PR, enlazar spec, plan y tasks de `dashboard-004` y de `api-008`, citar `dashboard-004` en los commits y pasar la spec a Implementada solo cuando CA-01 a CA-20 estén verificados con evidencia y exista aprobación funcional.

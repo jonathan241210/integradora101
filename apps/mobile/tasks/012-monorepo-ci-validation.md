@@ -2,8 +2,10 @@
 
 - Spec: `apps/mobile/specs/012-monorepo-ci-validation.md`
 - Plan: `apps/mobile/plan/012-monorepo-ci-validation.md`
-- Spec y plan aprobados por: usuario solicitante, 2026-11-09
-- Estado: Implementada; checklist aprobado por el usuario solicitante, 2026-11-09
+- Spec y plan aprobados.
+- Estado: Implementada; checklist aprobado.
+- Solicitada: 2026-11-09
+- Aprobada: 2026-11-09
 
 ## Implementación
 
@@ -25,11 +27,11 @@
 
 ## Aprobación
 
-- Checklist: aprobado por el usuario solicitante, 2026-11-09.
+- Checklist: aprobado.
 - No hay tareas de BD, dependencias nuevas, Web ni E2E en esta feature.
 - El trabajo local existente de otras features no forma parte de este checklist.
 
-## Evidencia local — 2026-11-09
+## Evidencia local
 
 | Verificación | Resultado |
 |---|---|
@@ -51,6 +53,6 @@ No se instalaron dependencias ni se modificaron manifests, lockfiles o datos por
 
 T-07 tiene su comprobación local aprobada; queda pendiente la corrida en GitHub Actions y su conclusión agregada. La evidencia remota se registrará tras publicar el workflow y estos artefactos SDD. No se declara la feature Implementada hasta contar con esa evidencia.
 
-## Cierre de T-07 — 2026-11-09
+## Cierre de T-07
 
 [Actions 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501), commit `e59793b`: conclusión `success`, los siete jobs aprobaron independientemente. Se confirmó la publicación de `mobile-coverage-report` y su contenido HTML/LCOV. La comprobación remota antes pendiente queda completada.

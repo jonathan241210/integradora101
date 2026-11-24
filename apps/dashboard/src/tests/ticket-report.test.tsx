@@ -103,7 +103,11 @@ describe("CA-11 administration-sections", () => {
     api.reports.tickets.mockRejectedValueOnce(apiError(422, "El rango no puede superar 366 días."));
     const h = createHarness(ticketReportReducer, initialTicketReportState);
 
-    expect(render(h.state)).toContain("Cargando el reporte…");
+    const loading = render(h.state);
+    // dashboard-020 rev. (e): la carga es un esqueleto con aviso accesible (sin contador).
+    expect(loading).toContain('aria-busy="true"');
+    expect(loading).toContain('role="status">Cargando el reporte…');
+    expect(loading).not.toContain("loading-indicator__elapsed");
 
     await loadTicketReport(api, h.dispatch, { period: "custom", from: "2025-01-01", to: "2026-12-31" });
     const markup = render(h.state);
@@ -111,6 +115,7 @@ describe("CA-11 administration-sections", () => {
     expect(markup).toContain('role="alert"');
     expect(markup).toContain("El rango no puede superar 366 días.");
     expect(markup).toContain("Reintentar");
+    expect(markup).not.toContain("loading-indicator__elapsed");
   });
 });
 
@@ -141,34 +146,18 @@ describe("CA-12 administration-sections", () => {
     expect(h.state.exportError).toBe("");
   });
 
-  it("exporta con la zona del reporte visible y respeta un timezone explícito", async () => {
+  it("CA-05 single-business-timezone: la exportación envía solo periodo y formato (CSV, XLSX y PDF)", async () => {
     const api = createAdminApiMock();
     const report = ticketReport({
       period: { ...ticketReport().period, timezone: "America/Tijuana" },
     });
     const h = createHarness(ticketReportReducer, readyState({ report }));
 
-    await exportTicketReport(api, h.dispatch, h.state.query, "csv", vi.fn(), report);
-    expect(api.reports.exportTickets).toHaveBeenLastCalledWith(
-      { ...h.state.query, timezone: "America/Tijuana" },
-      "csv",
-    );
-
-    await exportTicketReport(
-      api,
-      h.dispatch,
-      { ...h.state.query, timezone: "Europe/Madrid" },
-      "csv",
-      vi.fn(),
-      report,
-    );
-    expect(api.reports.exportTickets).toHaveBeenLastCalledWith(
-      { ...h.state.query, timezone: "Europe/Madrid" },
-      "csv",
-    );
-
-    await exportTicketReport(api, h.dispatch, h.state.query, "csv", vi.fn(), null);
-    expect(api.reports.exportTickets).toHaveBeenLastCalledWith(h.state.query, "csv");
+    for (const format of ["csv", "xlsx", "pdf"] as const) {
+      await exportTicketReport(api, h.dispatch, h.state.query, format, vi.fn());
+      expect(api.reports.exportTickets).toHaveBeenLastCalledWith(h.state.query, format);
+      expect(JSON.stringify(api.reports.exportTickets.mock.lastCall)).not.toContain("timezone");
+    }
   });
 
   it("muestra el error de formato no disponible y conserva el reporte", async () => {

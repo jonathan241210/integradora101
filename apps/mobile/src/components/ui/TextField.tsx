@@ -13,6 +13,7 @@ interface TextFieldProps {
   keyboardType?: 'default' | 'email-address' | 'number-pad';
   autoCapitalize?: 'none' | 'words' | 'sentences';
   maxLength?: number;
+  multiline?: boolean;
   leadingIcon?: string;
   trailing?: ReactNode;
 }
@@ -26,6 +27,7 @@ export function TextField({
   keyboardType = 'default',
   autoCapitalize = 'none',
   maxLength,
+  multiline = false,
   leadingIcon,
   trailing,
 }: TextFieldProps) {
@@ -45,7 +47,9 @@ export function TextField({
           autoCapitalize={autoCapitalize}
           autoCorrect={false}
           maxLength={maxLength}
-          style={styles.input}
+          multiline={multiline}
+          textAlignVertical={multiline ? 'top' : 'center'}
+          style={[styles.input, multiline && styles.multiline]}
         />
         {trailing}
       </View>
@@ -81,4 +85,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingVertical: spacing.sm,
   },
+  multiline: { minHeight: 96 },
 });

@@ -1,8 +1,10 @@
 # Tareas · 007 · header-walker-layer
 
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
 - Spec: `apps/web/specs/007-header-walker-layer.md` (Estado: **Aprobada**)
 - Plan: `apps/web/plan/007-header-walker-layer.md` (Estado técnico: **Aprobado para tareas**)
-- Checklist: Aprobado por el solicitante, 2026-10-08
+- Checklist: Aprobado por el solicitante
 
 ## Trazabilidad
 
@@ -35,8 +37,8 @@
 - T-02 y T-03 preceden a T-04..T-06.
 - T-07 debe quedar junto con la cobertura de CA-01..CA-04.
 - T-08 y T-09 cierran la verificación.
-- Aprobación funcional de la spec: Solicitante, 2026-10-08.
-- Aprobación técnica del plan: Solicitante, 2026-10-08.
+- Aprobación funcional de la spec: Aprobada.
+- Aprobación técnica del plan: Aprobada.
 
 ## Evidencia de ejecución
 

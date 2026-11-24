@@ -14,11 +14,15 @@ const hiddenPlace = {
 const filterRepository: MapRepository = {
   getPlaces: async () => [tiger, hiddenPlace, restrooms],
   getSections: async () => MOCK_MAP_SECTIONS,
+  getZooPlaces: async () => [],
+  getPathNodes: async () => [],
 };
 
 const emptyRepository: MapRepository = {
   getPlaces: async () => [],
   getSections: async () => MOCK_MAP_SECTIONS,
+  getZooPlaces: async () => [],
+  getPathNodes: async () => [],
 };
 
 function createFlakyRepository(): MapRepository {
@@ -32,6 +36,8 @@ function createFlakyRepository(): MapRepository {
       return MOCK_MAP_PLACES;
     },
     getSections: async () => MOCK_MAP_SECTIONS,
+    getZooPlaces: async () => [],
+    getPathNodes: async () => [],
   };
 }
 

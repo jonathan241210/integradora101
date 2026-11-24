@@ -1,10 +1,14 @@
 # Plan técnico · 003 · api-read-integration
 
 - Spec: `apps/mobile/specs/003-api-read-integration.md`
-- Estado de spec: Aprobada
-- Responsable técnico: Víctor Adrián (responsable BD / plan técnico); Aksel (revisión móvil)
+- Estado de spec: Implementada
+- Solicitada: 2026-10-20
+- Aprobada: 2026-10-20
+- Responsable técnico: Backend (responsable BD / plan técnico); Frontend (revisión móvil)
 
 ## Diseño de solución
+
+Para CA-05, el repositorio entrega de inmediato la lista cacheada de noticias o eventos y pasa el resultado de una revalidación exitosa al ViewModel. Inicio sustituye cada lista cuando llega y descarta resultados anteriores a una actualización manual. Se conserva el esquema de caché local de cinco minutos y se usan los endpoints públicos existentes. La consulta del esquema de `arca_pruebas` del 2026-11-24 confirmó las tablas `news` y `events` mediante `db:table` y `migrate:status`. La corrección no requiere DBR.
 
 Este plan técnico implementa la integración de lectura entre la aplicación móvil (`apps/mobile`) y la API central Laravel (`apps/api`) para el catálogo de especies/animales y eventos del zoológico, conforme a la spec aprobada `mobile-003` y los estándares de arquitectura móvil (`apps/mobile/docs/estandares-integracion-api.md`).
 
@@ -129,10 +133,11 @@ Los campos que `api-006` no expone (`avg_weight`, `fun_fact`, `placeholder_tint`
    - No se exponen claves de base de datos ni tokens en la app móvil.
 2. **Estrategia Offline y Almacenamiento Local (ADR 0014):**
    - Persistencia real con `@react-native-async-storage/async-storage`; `MemoryKeyValueStorage` queda disponible solo para inyección en pruebas.
-   - Detección de conectividad con `expo-network` mediante `useNetworkStatus` (`isConnected === false` o `isInternetReachable === false`). El estado offline **no** se infiere de un fallo HTTP.
+   - Detección de conectividad con `expo-network` mediante `useNetworkStatus` (`isConnected === false` o `isInternetReachable === false`). Mientras Expo siga notificando que está sin conexión, se comprueba la red tres segundos después de cada lectura. Si la lectura falla, se conserva el último estado y se programa otra comprobación. El estado offline **no** se infiere de un fallo HTTP.
    - Llaves en `AsyncStorage`:
-     - `@arca:cache:species_list`
+     - `@arca:cache:species_list_v2`, con respaldo de lectura en `@arca:cache:species_list`. La primera lectura de la clave anterior devuelve los datos de inmediato y revalida en segundo plano.
      - `@arca:cache:species:{id}`
+     - `@arca:cache:visitor_catalog` guarda los IDs visitables y sus URLs de foto pública. Si falta o falla su renovación, se pueden usar los IDs vigentes de `@arca:cache:visitor_species_ids`.
      - `@arca:cache:events_list`
      - `@arca:cache:event:{id}`
    - Estructura del registro de caché:
@@ -162,6 +167,7 @@ Los campos que `api-006` no expone (`avg_weight`, `fun_fact`, `placeholder_tint`
 | **CA-04** (Gestión de los 5 estados de UI: loading, empty, error, success, offline) | `CA-04: OfflineBanner se muestra cuando isOffline es verdadero` + `useNetworkStatus` marca offline con `isConnected: false` | `apps/mobile/__tests__/catalogUiStates.test.tsx`, `apps/mobile/__tests__/networkStatus.test.tsx` |
 | **CA-05** (Caché SWR y TTL de 5 minutos) | `should return cached data immediately and revalidate in background when TTL > 5 mins` | `apps/mobile/__tests__/apiAnimalRepository.test.ts` |
 | **CA-06** (Imágenes con respaldo y tolerancia a fallos) | `should display placeholder tint and fallback component when image fails or loads` | `apps/mobile/__tests__/catalogUiStates.test.tsx` |
+| **CA-01, CA-02, CA-05 y CA-06** (foto de especie y compatibilidad de caché) | Foto de catálogo y ficha con URL primaria ausente o inválida. Reapertura sin red con caché anterior y renovación al volver la conexión. | `apps/mobile/__tests__/apiAnimalRepository.test.ts` |
 | **CA-07** (Arquitectura MVVM y ejecución Jest `--runInBand`) | `suite passes with no direct fetch in screens and covers all CA-xx tags` | `apps/mobile/__tests__/*` |
 
 ---
@@ -171,7 +177,7 @@ Los campos que `api-006` no expone (`avg_weight`, `fun_fact`, `placeholder_tint`
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | **I. Stack mínimo y portable** | SÍ | Se utiliza el stack declarado (React Native / Expo con TypeScript, `@arca/api-client`) y dos dependencias aprobadas por el ADR 0014: `@react-native-async-storage/async-storage` y `expo-network`. La BD es MySQL 8.0.x compatible, en Aiven o local, sin dependencias propietarias de nube. |
-| **II. La spec manda** | SÍ | La spec `apps/mobile/specs/003-api-read-integration.md` está en estado **Aprobada**. Este plan cubre exactamente su alcance sin añadir funcionalidades no contempladas. |
+| **II. La spec manda** | SÍ | La spec `apps/mobile/specs/003-api-read-integration.md` está en estado **Implementada**. Este plan cubre exactamente su alcance sin añadir funcionalidades no contempladas. |
 | **III. Lógica separada de la interfaz** | SÍ | Las pantallas (`screens/`) no realizan llamadas HTTP. Toda la comunicación con la API se delega en Repositorios y `@arca/api-client`. Los ViewModels gestionan el estado y las vistas solo renderizan. |
 | **IV. Un test por criterio** | SÍ | Cada criterio `CA-01` a `CA-07` tiene asignada una prueba unitaria específica en Jest nombrada con el código del criterio. |
 | **V. Una sola fuente de verdad para los datos** | SÍ | La base de datos MySQL en `apps/api` es la única autoridad de datos. La app móvil almacena en `AsyncStorage` solo copias de lectura transitorias para disponibilidad offline. |
@@ -184,7 +190,7 @@ Los campos que `api-006` no expone (`avg_weight`, `fun_fact`, `placeholder_tint`
 - **ADRs aplicables:**
   - [ADR 0004](../../../docs/adr/0004-mobile-react-native.md): React Native y Expo para aplicación de visitantes.
   - [ADR 0011](../../../docs/adr/0011-visitor-identity-and-mobile-session.md): Desacoplamiento de cliente público y arquitectura de sesión.
-  - [ADR 0014](../../../docs/adr/0014-mobile-offline-cache-and-connectivity.md): caché offline con AsyncStorage y detección de conectividad con `expo-network` (Aceptado, 2026-10-22).
+  - [ADR 0014](../../../docs/adr/0014-mobile-offline-cache-and-connectivity.md): caché offline con AsyncStorage y detección de conectividad con `expo-network` (Aceptado).
 - **Riesgo:** Si los endpoints Laravel aún no están desplegados en el backend mientras se prueba la UI en dispositivo.
   - **Mitigación:** La arquitectura conserva el switch `EXPO_PUBLIC_USE_MOCKS`. Si la variable está en `true`, la app utiliza los mocks locales; si está en `false`, conecta a la API real. De este modo el desarrollo no se bloquea.
 - **Riesgo:** Concurrencia de hilos en pruebas Jest bajo entorno Windows.
@@ -210,15 +216,15 @@ Los campos que `api-006` no expone (`avg_weight`, `fun_fact`, `placeholder_tint`
    - Ejecutar suite completa con `/verify` (`npm test -- --runInBand`).
 
 ### Aprobación:
-- **Aprobador funcional y técnico:** Víctor Adrián (2026-10-20)
-- **ADR 0014 (caché y conectividad):** aceptado por Víctor Adrián (2026-10-22)
-- **Coordinación móvil:** Aksel
+- **Aprobación funcional y técnica:** Aprobada.
+- **ADR 0014 (caché y conectividad):** Aceptado.
+- **Coordinación móvil:** Frontend.
 
 ---
 
-## Enmienda 2026-11-10 · inicio de noticias y eventos
+## Enmienda · inicio de noticias y eventos
 
-La spec sigue Aprobada. Esta sección sustituye, para el inicio, el listado completo de `GET /events` descrito arriba. El detalle por id no cambia de pantalla.
+La spec mantiene su alcance. Esta sección sustituye, para el inicio, el listado completo de `GET /events` descrito arriba. El detalle por id no cambia de pantalla.
 
 ### Diseño
 
@@ -257,13 +263,13 @@ La pantalla de detalle de noticia no llama a la red: el route usa `useHomeViewMo
 | Principio | Cumple | Evidencia |
 |---|---|---|
 | I | Sí | No hay dependencia nueva. El portal se abre con `Linking`, ya presente en React Native. |
-| II | Sí | La enmienda está en la spec 003 Aprobada. No se abre otra spec. |
+| II | Sí | La enmienda está en la spec 003. No se abre otra spec. |
 | III | Sí | La vista no llama a la API. El aviso y `Linking` viven en el route. |
 | IV | Sí | CA-03, CA-08, CA-09 y CA-10 tienen prueba que los nombra. |
 | V | Sí | La API sigue siendo la fuente. No hay migración ni DBR. |
 | VI | Sí | Identificadores en inglés. Textos de la interfaz en español. |
 
-## Enmienda 2026-11-10 · deslizar para actualizar
+## Enmienda · deslizar para actualizar
 
 `ZooRepository.refreshNewsAndEvents()` llama a la red de noticias y de eventos aunque la caché tenga menos de 5 minutos, y vuelve a guardarla. El route del inicio sustituye solo `events` y `news`. Animales y progreso no se vuelven a pedir. Si la llamada falla, la pantalla conserva lo que ya mostraba.
 

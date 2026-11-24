@@ -1,8 +1,8 @@
-import { Alert, Badge, Button, Card } from '@arca/ui';
-import { Fragment, useState } from 'react';
+import { Alert, Badge, Button, Card, Dialog } from '@arca/ui';
+import { Fragment, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { exportSheetPdf } from '@/viewmodels/pdfExport';
-import type { AnimalEvaluation, AnimalProfile } from '@/services/apiClient';
+import { useAnimalActions, type AnimalEvaluation, type AnimalProfile } from '@/viewmodels/useAnimalActions';
 import { institution, usePrintDocument, physicalRestraints } from '@/viewmodels/diagnosisForms';
 import { useAnimal } from '@/viewmodels/useApiData';
 import { LoadingScreen, Spinner } from '@/views/Spinner';
@@ -513,44 +513,106 @@ function SingleEvaluationPrintSheet({ animal, evaluation }: { animal: AnimalProf
   );
 }
 
-function ProfilePhoto({ name, path }: { name: string; path: string | null }) {
-  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading');
-
-  if (!path) {
-    return <span className="profile-avatar" aria-label="Sin fotografía">{name.slice(0, 1)}</span>;
-  }
+export function ProfilePhoto({
+  name,
+  path,
+  onUpload,
+  uploading,
+  canUpload,
+}: {
+  name: string;
+  path: string | null;
+  onUpload?: (file: File) => void;
+  uploading?: boolean;
+  canUpload?: boolean;
+}) {
+  const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>(path ? 'loading' : 'loaded');
+  const [expanded, setExpanded] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const source = path && (/^https?:\/\//i.test(path) ? path : `/storage/${path.replace(/^\/?(?:storage\/)?/, '')}`);
+  const canExpand = Boolean(source && status === 'loaded');
 
   return (
-    <>
-      {status === 'loading' && <span className="profile-photo-status" role="status">Cargando foto…</span>}
-      {status === 'error' && <span className="profile-photo-status" role="alert">No se pudo cargar la foto</span>}
-      {status !== 'error' && (
-        <img
-          src={/^https?:\/\//i.test(path) ? path : `/storage/${path.replace(/^\/?(?:storage\/)?/, '')}`}
-          alt={`Foto de ${name}`}
-          className="profile-avatar-image"
-          hidden={status !== 'loaded'}
-          onLoad={() => setStatus('loaded')}
-          onError={() => setStatus('error')}
-        />
+    <div className="profile-photo-wrapper">
+      <div className="profile-avatar-container">
+        {!source && <span className="profile-avatar" aria-label="Sin fotografía">{name.slice(0, 1)}</span>}
+        {source && status === 'loading' && <span className="profile-photo-status"><Spinner label="Cargando foto…" /></span>}
+        {source && status === 'error' && <span className="profile-photo-status" role="alert">No se pudo cargar la foto</span>}
+        {source && status !== 'error' && (
+          <button
+            type="button"
+            className="profile-photo-trigger"
+            aria-label={`Ampliar foto de ${name}`}
+            aria-haspopup="dialog"
+            hidden={!canExpand}
+            onClick={(event) => {
+              event.currentTarget.focus();
+              setExpanded(true);
+            }}
+          >
+            <img
+              src={source}
+              alt={`Foto de ${name}`}
+              className="profile-avatar-image"
+              onLoad={() => setStatus('loaded')}
+              onError={() => setStatus('error')}
+            />
+            <span aria-hidden="true" className="profile-photo-zoom">⤢ Ampliar</span>
+          </button>
+        )}
+      </div>
+      {canUpload && (
+        <div className="no-print">
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/jpg"
+            hidden
+            disabled={uploading}
+            onChange={(e) => {
+              const file = e.currentTarget.files?.[0];
+              if (file) onUpload?.(file);
+              e.currentTarget.value = '';
+            }}
+          />
+          <Button type="button" variant="secondary" disabled={uploading} onClick={() => inputRef.current?.click()}>
+            {uploading ? <Spinner label="Subiendo foto…" /> : (path ? 'Cambiar foto' : 'Agregar foto')}
+          </Button>
+        </div>
       )}
-    </>
+      {canExpand && source && (
+        <Dialog open={expanded} title={`Foto de ${name}`} className="profile-photo-dialog no-print" onClose={() => setExpanded(false)}>
+          <div className="profile-photo-dialog-actions">
+            <Button type="button" variant="secondary" onClick={() => setExpanded(false)}>Cerrar</Button>
+          </div>
+          {expanded && <img className="profile-photo-full" src={source} alt={`Foto ampliada de ${name}`} />}
+        </Dialog>
+      )}
+    </div>
   );
 }
 
 export function AnimalProfileView({
   animalId,
   onBack,
+  userScope,
 }: {
   animalId: number | null;
   onBack: () => void;
+  userScope?: string;
+  onNavigate?: unknown;
+  onOpenAnimal?: unknown;
+  mvzName?: string;
 }) {
-  const { animal, loading, error, reload } = useAnimal(animalId);
+  const { animal, loading, error, reload } = useAnimal(animalId, userScope);
+  const { uploadAnimalPhoto } = useAnimalActions();
   const { error: printError } = usePrintDocument();
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState('');
   const [openEvaluationId, setOpenEvaluationId] = useState<number | null>(null);
   const [singlePdfEvaluation, setSinglePdfEvaluation] = useState<AnimalEvaluation | null>(null);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const [photoMessage, setPhotoMessage] = useState('');
 
   const downloadFullPdf = async () => {
     const sheet = document.getElementById('profile-full-sheet');
@@ -603,22 +665,43 @@ export function AnimalProfileView({
     );
   }
 
+  async function handlePhotoUpload(file: File) {
+    if (!animal) return;
+    setPhotoBusy(true);
+    setPhotoMessage('');
+    try {
+      await uploadAnimalPhoto(animal.id, file);
+      setPhotoMessage('Foto actualizada correctamente.');
+      reload();
+    } catch (err) {
+      setPhotoMessage(err instanceof Error ? err.message : 'No se pudo actualizar la foto del animal.');
+    } finally {
+      setPhotoBusy(false);
+    }
+  }
+
   return (
     <section className="page-section printable-document profile-page">
       <div className="profile-toolbar no-print">
         <Button onClick={onBack} variant="ghost">← Volver a animales</Button>
         <Button disabled={pdfBusy} onClick={downloadFullPdf} variant="secondary">
-          {pdfBusy ? <Spinner label="Cargando…" /> : 'Descargar historial completo (PDF)'}
+          {pdfBusy ? <Spinner label="Generando PDF…" /> : 'Descargar historial completo (PDF)'}
         </Button>
       </div>
       {(printError || pdfError) && <Alert className="no-print" role="alert">{printError || pdfError}</Alert>}
+      {photoMessage && <Alert className="no-print" role="status">{photoMessage}</Alert>}
       {createPortal(<ProfilePrintSheet animal={animal} />, document.body)}
       {singlePdfEvaluation && createPortal(<SingleEvaluationPrintSheet animal={animal} evaluation={singlePdfEvaluation} />, document.body)}
 
       <Card className="profile-hero">
-        <div className="profile-avatar-container">
-          <ProfilePhoto key={`${animal.id}:${animal.photo_path ?? ''}`} name={animal.name} path={animal.photo_path} />
-        </div>
+        <ProfilePhoto
+          key={`${animal.id}:${animal.photo_path ?? ''}`}
+          name={animal.name}
+          path={animal.photo_path}
+          canUpload
+          uploading={photoBusy}
+          onUpload={(file) => void handlePhotoUpload(file)}
+        />
         <div className="profile-hero-text">
           <p className="eyebrow">Perfil del animal</p>
           <h2>{animal.name}</h2>

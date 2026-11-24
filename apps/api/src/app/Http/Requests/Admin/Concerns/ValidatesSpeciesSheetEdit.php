@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin\Concerns;
 
 use App\Enums\SpeciesCategory;
 use App\Http\Requests\Concerns\ValidatesPublishedFields;
+use App\Support\FunFactRules;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\Rule;
 
@@ -16,7 +17,7 @@ trait ValidatesSpeciesSheetEdit
     private const TEXT_FIELDS = ['scientific_name', 'habitat', 'origin'];
 
     /** @var list<string> */
-    private const EDITABLE = ['scientific_name', 'habitat', 'origin', 'category', 'published_fields', 'image'];
+    private const EDITABLE = ['scientific_name', 'habitat', 'origin', 'category', 'fun_fact', 'published_fields', 'image'];
 
     public function rules(): array
     {
@@ -25,6 +26,7 @@ trait ValidatesSpeciesSheetEdit
             'habitat' => ['sometimes', 'nullable', 'string', 'max:150'],
             'origin' => ['sometimes', 'nullable', 'string', 'max:150'],
             'category' => ['sometimes', 'required', 'string', Rule::in(SpeciesCategory::values())],
+            'fun_fact' => ['sometimes', 'nullable', 'string', 'max:500'],
             'published_fields' => ['sometimes', 'nullable'],
             'image' => ['sometimes', 'file', 'image', 'mimes:jpg,jpeg,png', 'max:5120'],
         ];
@@ -41,6 +43,8 @@ trait ValidatesSpeciesSheetEdit
             'habitat.string' => 'Hábitat: máximo 150 caracteres.',
             'origin.max' => 'Área de distribución natural: máximo 150 caracteres.',
             'origin.string' => 'Área de distribución natural: máximo 150 caracteres.',
+            'fun_fact.string' => 'Dato curioso: texto no válido.',
+            'fun_fact.max' => 'Dato curioso: máximo 500 caracteres.',
             'category.required' => 'Tipo de animal requerido.',
             'category.string' => 'Tipo de animal no válido.',
             'category.in' => 'Tipo de animal no válido.',
@@ -90,6 +94,10 @@ trait ValidatesSpeciesSheetEdit
                 $value = trim((string) $this->input($field));
                 $data[$field] = $value === '' ? null : $value;
             }
+        }
+
+        if ($this->exists('fun_fact')) {
+            $data['fun_fact'] = FunFactRules::normalize($this->input('fun_fact'));
         }
 
         if ($this->exists('category')) {

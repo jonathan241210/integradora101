@@ -3,7 +3,6 @@
 namespace App\Actions\Catalog;
 
 use App\Models\Event;
-use App\Support\PublicCalendar;
 use Illuminate\Database\Eloquent\Collection;
 
 class ListEventsAction
@@ -14,11 +13,7 @@ class ListEventsAction
     public function execute(?int $limit = null): Collection
     {
         return Event::query()
-            ->where('is_active', true)
-            ->where(function ($query) {
-                $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', PublicCalendar::today());
-            })
+            ->publicVisible()
             ->orderBy('start_date')
             ->orderBy('start_time')
             ->when($limit !== null, fn ($query) => $query->limit($limit))

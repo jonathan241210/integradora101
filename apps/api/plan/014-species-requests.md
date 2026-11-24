@@ -1,24 +1,26 @@
 # Plan técnico · 014 · species-requests
 
 - Spec: `apps/api/specs/014-species-requests.md`
-- Estado de spec: Aprobada (2026-11-12, Jonathan, responsable de backend). Aprobar no autoriza implementar.
-- Estado: **Aprobado** (Jonathan, responsable de backend, 2026-11-13). Implementación pendiente de iniciar; coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
-  - Aviso vigente: las precondiciones que sigan «Pendiente» en la tabla bloquean sus tareas. La brecha de la Constitución V (P5, `BaseModel`) queda registrada como excepción (decisión F, SoftDeletes sobre `Model`) el 2026-11-13.
-- Responsable técnico: Jonathan (responsable de backend). Aprobación del 2026-11-13 en nombre del equipo.
-- Tasks: `apps/api/tasks/014-species-requests.md` (Aprobado, Jonathan, 2026-11-13).
-- Bloqueo de implementación: **DBR-013 en «Lista para backend»** (migración `2026_11_12_000013_species_publication_requests_schema` aplicada en `arca_pruebas` con evidencia). Desde el 2026-11-12 esa condición se cumple: la migración está aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura. Quedan pendientes de BD los EXPLAIN y el registro de la fecha y del responsable de la aplicación. Sigue bloqueando P2 (`api-013`).
+- Estado de spec: Implementada.
+- Solicitada: 2026-11-12
+- Aprobada: 2026-11-12
+- Estado: **Aprobado**. Coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+  - Aviso vigente: las precondiciones que sigan «Pendiente» en la tabla bloquean sus tareas. La brecha de la Constitución V (P5, `BaseModel`) queda registrada como excepción (decisión F, SoftDeletes sobre `Model`).
+- Responsable técnico: Backend. Aprobación en nombre del equipo.
+- Tasks: `apps/api/tasks/014-species-requests.md`.
+- Bloqueo de implementación: **DBR-013 en «Lista para backend»** (migración `2026_11_12_000013_species_publication_requests_schema` aplicada en `arca_pruebas` con evidencia). Desde esa condición se cumple: la migración está aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura. Quedan pendientes de BD los EXPLAIN y el registro de la fecha y del responsable de la aplicación. Sigue bloqueando P2 (`api-013`).
 
 ## Precondiciones y bloqueos
 
 Antes de la primera tarea de código (T-03 en adelante) deben cumplirse todas. La tarea T-01 las verifica en solo lectura.
 
-| # | Precondición | Responsable | Estado el 2026-11-12 | Evidencia requerida |
+| # | Precondición | Responsable | Estado | Evidencia requerida |
 |---|---|---|---|---|
-| P1 | Migración DBR-013 aplicada en `arca_pruebas` y DBR-013 en «Lista para backend» | BD (Víctor Adrián) | Cumplida el 2026-11-12: migración aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura. Pendiente de BD: EXPLAIN y registro de fecha y responsable de la aplicación | `php artisan migrate:status` (solo lectura) con la migración en estado «Ran» y tabla `species_publication_requests` existente |
-| P2 | Disco `media` definido (`config/filesystems.php`) y `.env` `PUBLIC_MEDIA_DISK=media` | Backend, según `api-013` | Pendiente. Hoy solo existe el disco `public`; `api-013` está Aprobada (2026-11-12; D-01/D-02), pero el disco aún no está configurado | `api-013` aprobada y configuración del disco revisada en el PR |
-| P3 | ADR 0026: riesgos (a), (b), (c), (g) y (m) confirmados por el equipo | Equipo | Cumplida. Confirmados por Jonathan (responsable de backend) el 2026-11-12, válido para pruebas; revisar antes de producción | Registro de confirmación en el ADR o en el PR |
-| P4 | Plan y tasks aprobados | Equipo / responsable de backend | Cumplida el 2026-11-13 (Jonathan, responsable de backend) | Firma del plan y de tasks en el PR |
-| P5 | Brecha de Constitución V (`BaseModel`) resuelta o registrada como excepción | Equipo | **Cumplida el 2026-11-13:** registrada como excepción (decisión F: SoftDeletes sobre `Model`, sin `BaseModel`), aceptada por Jonathan en nombre del equipo; la misma que `api-010` D-M1 | Acuerdo registrado en este plan; ADR propio si el equipo lo exige |
+| P1 | Migración DBR-013 aplicada en `arca_pruebas` y DBR-013 en «Lista para backend» | BD (Responsable de BD) | Cumplida: migración aplicada en `arca_pruebas` (lote 5), verificada por consulta de solo lectura. Pendiente de BD: EXPLAIN y registro de fecha y responsable de la aplicación | `php artisan migrate:status` (solo lectura) con la migración en estado «Ran» y tabla `species_publication_requests` existente |
+| P2 | Disco `media` definido (`config/filesystems.php`) y `.env` `PUBLIC_MEDIA_DISK=media` | Backend, según `api-013` | Pendiente. Hoy solo existe el disco `public`; `api-013` está Aprobada, pero el disco aún no está configurado | `api-013` aprobada y configuración del disco revisada en el PR |
+| P3 | ADR 0026: riesgos (a), (b), (c), (g) y (m) confirmados por el equipo | Equipo | Cumplida. Confirmados por Backend, válido para pruebas; revisar antes de producción | Registro de confirmación en el ADR o en el PR |
+| P4 | Plan y tasks aprobados | Equipo / responsable de backend | Cumplida (el responsable de backend, responsable de backend) | Firma del plan y de tasks en el PR |
+| P5 | Brecha de Constitución V (`BaseModel`) resuelta o registrada como excepción | Equipo | **Cumplida:** registrada como excepción (decisión F: SoftDeletes sobre `Model`, sin `BaseModel`), aceptada por el responsable de backend en nombre del equipo; la misma que `api-010` D-M1 | Acuerdo registrado en este plan; ADR propio si el equipo lo exige |
 
 Nota de dependencia: la tarea «Species con SoftDeletes» no puede ser precondición porque es trabajo de backend (DBR-013, decisión 13; RN-22). Se implementa en T-03 y se verifica en sus tests.
 
@@ -103,18 +105,18 @@ Antes de confirmar la transacción de «Eliminar publicación», la lista de rut
 | API / seeder | `apps/api/src/database/seeders/RolesAndPermissionsSeeder.php` (modificar) | T-SEED: `species.review` y `memories.review`, asignados solo a `zoo-admin` y excluidos de `admin` |
 | API / pruebas | `apps/api/src/tests/Feature/SpeciesPublication/*.php` (nuevos), `apps/api/src/tests/Feature/Staff/SeedersTest.php` (ampliar, CA-20) | Un test por CA (ver «Mapeo de criterios a pruebas») |
 | API / documentación | `apps/api/docs/` (sección nueva de publicación de especies), `infra/README.md` (checklist) | Operación y referencia local |
-| Paquetes | Ninguno en esta spec | `packages/api-client` (métodos y tipos) se implementa en las specs consumidoras (`pwa-005`, `dashboard-010`); Q7 resuelta (2026-11-13): se adopta la propuesta |
-| Datos | Ninguno. La migración DBR-013 ya existe; no se crea otra (decisión del usuario 2026-11-12) | — |
+| Paquetes | Ninguno en esta spec | `packages/api-client` (métodos y tipos) se implementa en las specs consumidoras (`pwa-005`, `dashboard-010`); Q7 resuelta: se adopta la propuesta |
+| Datos | Ninguno. La migración DBR-013 ya existe; no se crea otra | — |
 
 ## Contrato y datos
 
 ### Endpoints y rutas nombradas
 
-Los nombres marcados con `(propuesto)` no están fijados en la spec; siguen la convención de `routes/api.php` (`<grupo>.<recurso>.<acción>`) y se confirman en el PR (pregunta Q5 resuelta el 2026-11-13: se aceptan).
+Los nombres marcados con `(propuesto)` no están fijados en la spec; siguen la convención de `routes/api.php` (`<grupo>.<recurso>.<acción>`) y se confirman en el PR.
 
 | Método y ruta | Nombre de ruta | Middleware y permiso | CA | Respuesta |
 |---|---|---|---|---|
-| `GET /api/v1/veterinarian/species` | `veterinarian.species.index` (propuesto) | `auth:sanctum`, `staff.user`, rol `veterinarian` | CA-26 | 200 `data` sin paginar |
+| `GET /api/v1/veterinarian/species` | `veterinarian.species.index` (propuesto) | `auth:sanctum`, `staff.user`, rol `veterinarian` | CA-26 | 200 `data` sin paginar; cada fila incluye `published_fields` (de `species.published_fields`, `null` si nunca se publicó; enmienda) |
 | `POST /api/v1/veterinarian/species-publication-requests` | `veterinarian.species-publication-requests.store` (propuesto) | igual | CA-01, CA-02, CA-03, CA-04 | 201 (multipart) |
 | `GET /api/v1/veterinarian/species-publication-requests` | `veterinarian.species-publication-requests.index` | igual | CA-33 | 200 paginado de 10 |
 | `GET /api/v1/admin/species-publication-requests` | `admin.species-publication-requests.index` (propuesto) | `admin` + 2FA + `permission:species.review` | CA-05 | 200 paginado de 10 |
@@ -134,7 +136,7 @@ Los nombres marcados con `(propuesto)` no están fijados en la spec; siguen la c
 Notas de contrato:
 
 - El grupo `admin` ya existe con `->name('admin.')` y `administrator.two-factor` (`routes/api.php`). Esta spec añade un subgrupo con `permission:species.review`, como hace el grupo `users.manage` y `news.manage` del mismo archivo.
-- **Enmienda 2026-11-13 (G-1 a G-3 de `dashboard-010`, adoptada por Jonathan):** el listado (CA-05) incluye `publication_status` en cada fila (G-1); el detalle (CA-06) incluye `species_id` (G-2) y `current.publication_status` (G-3). Sus pruebas quedan dentro de `test_ca05_…` y `test_ca06_…`. **Ajuste (revisión 2026-11-13):** `publication_status` de la fila y de `current` se calcula con `derive->execute($species, false)`, es decir, sin contar la propia solicitud, para que una especie despublicada con solicitud `submitted` devuelva `unpublished`; el listado de publicadas (`admin.published-species.*`) conserva `pending`. Prueba: `ReviewFixesTest::test_ca05_ca06_unpublished_species_with_pending_request_reports_unpublished`.
+- **Enmienda (G-1 a G-3 de `dashboard-010`, adoptada por el responsable de backend):** el listado (CA-05) incluye `publication_status` en cada fila (G-1); el detalle (CA-06) incluye `species_id` (G-2) y `current.publication_status` (G-3). Sus pruebas quedan dentro de `test_ca05_…` y `test_ca06_…`. **Ajuste:** `publication_status` de la fila y de `current` se calcula con `derive->execute($species, false)`, es decir, sin contar la propia solicitud, para que una especie despublicada con solicitud `submitted` devuelva `unpublished`; el listado de publicadas (`admin.published-species.*`) conserva `pending`. Prueba: `ReviewFixesTest::test_ca05_ca06_unpublished_species_with_pending_request_reports_unpublished`.
 - Los identificadores `{id}` deben ser numéricos (`whereNumber`). La respuesta `404` con el mensaje «Solicitud no encontrada.» o «Especie no encontrada.» se produce en la Action (búsqueda explícita sin SoftDeletes), no por el binding implícito de Laravel, porque el mensaje del binding no es el de la spec.
 - **Subida con archivo:** PHP no interpreta multipart en `PATCH`. Cuando la petición lleva archivo, el cliente envía `POST` con `_method=PATCH` (decisión G1). Laravel resuelve el `_method` de formularios en `POST` y enruta a la ruta `PATCH`; esta suposición se confirma con una prueba de integración (CA-23, CA-37). La ruta `PATCH` sin archivo sigue funcionando en JSON.
 
@@ -195,7 +197,7 @@ Regla de tamaño de subida: 5 MB (5120 KB). El despliegue necesita `upload_max_f
 
 Convención: PHPUnit, `apps/api/src/tests/Feature/SpeciesPublication/`, clase que extiende `FeatureTestCase` (`DatabaseTransactions`) y `InteractsWithArcaPruebas` (falla si `DB_DATABASE` no es `arca_pruebas`). Prohibido `RefreshDatabase` y cualquier migración desde tests. Fotos con `Storage::fake('media')`. Las imágenes válidas son fixtures binarios pequeños en `tests/Fixtures/`; `UploadedFile::fake()->image()` requiere `ext-gd`, que se confirma en T-01 (riesgo R8).
 
-Los nombres son los de la spec. Cuando la spec no fija nombre (CA-19, CA-23, CA-39), el nombre es propuesto y se adopta (pregunta Q6 resuelta el 2026-11-13).
+Los nombres son los de la spec. Cuando la spec no fija nombre (CA-19, CA-23, CA-39), el nombre es propuesto y se adopta.
 
 | Criterio | Prueba automatizada (nombre) | Archivo previsto | Tarea |
 |---|---|---|---|
@@ -224,7 +226,7 @@ Los nombres son los de la spec. Cuando la spec no fija nombre (CA-19, CA-23, CA-
 | CA-23 | `test_ca23_patch_replaces_photo_and_deletes_previous_after_commit`; `test_ca23_failed_transaction_removes_new_photo_keeps_previous` (propuestos) | `UpdateSpeciesRequestPhotoTest.php` | T-16 |
 | CA-24 | `test_ca24_request_never_creates_or_deletes_species_rows` | `SpeciesPublicationInvariantsTest.php` | T-11 (submit), T-26 (todas) |
 | CA-25 | `test_ca25_store_requires_category`; `test_ca25_store_rejects_category_outside_closed_list` (T-10); `test_ca25_update_replaces_category_and_audits_change`; `test_ca25_update_rejects_empty_or_unknown_category` (T-15); `test_ca25_accept_writes_effective_category_to_species` (T-18) | varios | T-10, T-15, T-18 |
-| CA-26 | `test_ca26_veterinarian_lists_species_with_publication_status`; `test_ca26_last_rejection_reason_full_text` | `VeterinarianSelectorTest.php` | T-09 |
+| CA-26 | `test_ca26_veterinarian_lists_species_with_publication_status`; `test_ca26_last_rejection_reason_full_text`; `test_ca26_selector_exposes_published_fields` | `VeterinarianSelectorTest.php` | T-09, T-30 |
 | CA-27 | `test_ca27_eligibility_by_publication_status` | `SubmitSpeciesRequestTest.php` | T-11 |
 | CA-28 | `test_ca28_rejected_species_accepts_new_publish_request` | `SubmitSpeciesRequestTest.php` | T-11 |
 | CA-29 | `test_ca29_submit_rejects_common_name_and_creates_no_species` | `SubmitSpeciesRequestValidationTest.php` | T-10 |
@@ -248,26 +250,26 @@ Nota: las pruebas de la misma CA sobre `api-015` (lectura pública, CA-17 y CA-1
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Sin dependencias nuevas (regla `image`, `mimes`, `max` y `Storage` de Laravel; Spatie y Activitylog ya instalados). Sin servicios propietarios; disco configurable por `.env` (api-013). Requiere `fileinfo` en PHP 8.4 (sin paquete). Sin ADR de dependencia |
-| II. La spec manda | Sí, con condición de implementación | Spec Aprobada (2026-11-12) con este plan y `tasks/014-species-requests.md` del mismo NNN-slug, aprobados el 2026-11-13 (P4). Ningún código antes de P1 y P2 |
+| II. La spec manda | Sí, con condición de implementación | Spec Aprobada con este plan y `tasks/014-species-requests.md` del mismo NNN-slug, aprobados (P4). Ningún código antes de P1 y P2 |
 | III. Lógica separada de la interfaz | Sí (propuesto) | Reglas, transacciones, fotos y auditoría en Actions. Controladores delgados. Form Requests solo validan forma. Los clientes (PWA, dashboard) quedan fuera de esta spec |
-| IV. Un test por criterio | Sí (propuesto) | Tabla de «Mapeo de criterios a pruebas»: CA-01 a CA-41 con al menos un test nombrado; `SpeciesPublicationCoverageTest` (CA-13). **Brecha menor:** CA-19, CA-23 y CA-39 no traen nombre de test en la spec (nombres propuestos; Q6 resuelta el 2026-11-13). CA-41 se verifica de forma secuencial; no hay prueba de concurrencia real (R5). CI en verde: pendiente de evidencia |
-| V. Una sola fuente de verdad para los datos | **Excepción aceptada (decisión F)** | (1) Migración DBR-013 aplicada en `arca_pruebas` (lote 5, verificada el 2026-11-12; P1 cumplida). (2) Constitución V pide que los modelos de negocio extiendan `BaseModel`. `BaseModel` no existe; `Species` y `SpeciesPublicationRequest` usan `SoftDeletes` sobre `Model` por la decisión F (válida para pruebas; revisar antes de producción). **Excepción aceptada el 2026-11-13 (Jonathan, en nombre del equipo):** decisión F, registrada aquí, igual que `api-010` D-M1. No se crea ADR nuevo: la aceptación de Jonathan en nombre del equipo basta (2026-11-13; regla de la Constitución: un PR que viole un principio no se mergea). (3) No se borra ninguna fila física: las solicitudes eliminadas tienen `deleted_at`; `species` nunca se borra. Los archivos sí se borran (no son datos clínicos ni financieros) |
+| IV. Un test por criterio | Sí (propuesto) | Tabla de «Mapeo de criterios a pruebas»: CA-01 a CA-41 con al menos un test nombrado; `SpeciesPublicationCoverageTest` (CA-13). **Brecha menor:** CA-19, CA-23 y CA-39 no traen nombre de test en la spec. CA-41 se verifica de forma secuencial; no hay prueba de concurrencia real (R5). CI en verde: pendiente de evidencia |
+| V. Una sola fuente de verdad para los datos | **Excepción aceptada (decisión F)** | (1) Migración DBR-013 aplicada en `arca_pruebas`. (2) Constitución V pide que los modelos de negocio extiendan `BaseModel`. `BaseModel` no existe; `Species` y `SpeciesPublicationRequest` usan `SoftDeletes` sobre `Model` por la decisión F (válida para pruebas; revisar antes de producción). **Excepción aceptada (el responsable de backend, en nombre del equipo):** decisión F, registrada aquí, igual que `api-010` D-M1. No se crea ADR nuevo: la aceptación del responsable de backend en nombre del equipo basta (; regla de la Constitución: un PR que viole un principio no se mergea). (3) No se borra ninguna fila física: las solicitudes eliminadas tienen `deleted_at`; `species` nunca se borra. Los archivos sí se borran (no son datos clínicos ni financieros) |
 | VI. Código en inglés, personas en español | Sí | Clases, rutas, columnas y permisos en inglés. Mensajes de validación, respuestas y textos de Activitylog en español (CA-03, CA-16, CA-37). Las etiquetas de Activitylog se dejan en español como las de `api-008` |
 
-Ninguna excepción se implementa sin acuerdo. La excepción de la fila V está aceptada el 2026-11-13; no se crea ADR nuevo.
+Ninguna excepción se implementa sin acuerdo. La excepción de la fila V está aceptada; no se crea ADR nuevo.
 
 ## Riesgos y decisiones
 
-### Decisiones del plan (aprobadas el 2026-11-13)
+### Decisiones del plan
 
-Las preguntas Q3 a Q8 se citan en el plan sin lista propia; su respuesta figura en cada línea citada. Se resolvieron con la propuesta citada, aceptada por Jonathan el 2026-11-13.
+Las preguntas Q3 a Q8 se citan en el plan sin lista propia; su respuesta figura en cada línea citada. Se resolvieron con la propuesta citada, aceptada por el responsable de backend.
 
 - **D-R1 Bloqueo por orden fijo.** Especie antes que solicitud (sección «Orden de bloqueos»).
 - **D-R2 Fotos antes de la transacción en el envío y en las ediciones; copia dentro de la transacción en la aceptación.** Así un fallo nunca deja una foto publicada sin registro en la base, y un fallo tras el commit solo deja un archivo huérfano.
 - **D-R3 Borrado por expresión regular.** Solo rutas `species/` y `species-requests/` con nombre UUID.
-- **D-R4 Rol `veterinarian`.** Propuesta: registrar el alias `role` de Spatie en `bootstrap/app.php` (hoy solo existen `permission` y `administrator.two-factor`). Alternativa: un middleware propio de comprobación de rol. Q4 resuelta (2026-11-13): se adopta la propuesta del alias `role`.
+- **D-R4 Rol `veterinarian`.** Propuesta: registrar el alias `role` de Spatie en `bootstrap/app.php` (hoy solo existen `permission` y `administrator.two-factor`). Alternativa: un middleware propio de comprobación de rol. Q4 resuelta: se adopta la propuesta del alias `role`.
 - **D-R5 `$fillable` en `SpeciesPublicationRequest`** (explícito) y en `Species` solo después de revisar `AnimalController::store`.
-- **D-R6 Nombres de rutas** marcados como propuestos; Q5 resuelta (2026-11-13): se aceptan, como en la spec (pregunta 19).
+- **D-R6 Nombres de rutas** marcados como propuestos; Q5 resuelta: se aceptan, como en la spec (pregunta 19).
 
 ### Riesgos
 
@@ -279,16 +281,16 @@ Las preguntas Q3 a Q8 se citan en el plan sin lista propia; su respuesta figura 
 - **R6 Multipart en `PATCH`** (G1): `POST` + `_method=PATCH` en peticiones con archivo. Riesgo: un cliente que envíe multipart a `PATCH` pierde el archivo sin error visible. Mitigación: prueba de integración y nota en el cliente (`packages/api-client`).
 - **R7 Archivos huérfanos** (CA-08, G3): reintento manual. Sin mecanismo automático en esta spec.
 - **R8 Fixtures de imagen y `ext-gd`:** `UploadedFile::fake()->image()` depende de GD. Mitigación: fixtures binarios pequeños o confirmación de `ext-gd` en T-01.
-- **R9 Versionado en git** de `apps/api/src/media/species/` y `species-requests/`. `infra/README.md` indica versionar `media/` para noticias, eventos y momentos. Decisión tomada (Q3, 2026-11-13): `species/` y `species-requests/` se versionan en pruebas, según la enmienda del ADR 0026; las fotos pendientes solo quedan en el historial por ser datos de prueba (riesgo m).
+- **R9 Versionado en git** de `apps/api/src/media/species/` y `species-requests/`. `infra/README.md` indica versionar `media/` para noticias, eventos y momentos. Decisión tomada: `species/` y `species-requests/` se versionan en pruebas, según la enmienda del ADR 0026; las fotos pendientes solo quedan en el historial por ser datos de prueba (riesgo m).
 - **R10 Riesgos de privacidad y publicación de `media/`** (ADR 0026, riesgo m; spec «Recomendación antes de producción»). Aceptados solo para pruebas con datos de prueba.
-- **R11 Dependencia de `memories.review`** en T-SEED: el permiso pertenece a `api-010` (Aprobada 2026-11-12). La spec pide incluirlo en el mismo cambio del seeder. Si `api-010` no se implementa, el permiso queda creado sin uso. Q8 resuelta (2026-11-13): se adopta un único cambio del seeder con `species.review` y `memories.review`, compartido con `api-010` T-06.
+- **R11 Dependencia de `memories.review`** en T-SEED: el permiso pertenece a `api-010`. La spec pide incluirlo en el mismo cambio del seeder. Si `api-010` no se implementa, el permiso queda creado sin uso. Q8 resuelta: se adopta un único cambio del seeder con `species.review` y `memories.review`, compartido con `api-010` T-06.
 - **R12 Lock y transacciones en MySQL 8.0 con Aiven:** `lockForUpdate` estándar; sin `SKIP LOCKED`. Riesgo de espera en la misma especie: aceptable para la carga de un zoológico.
 - **R13 Efecto en la app móvil:** publicar cambia la fila de `species` que lee `api-006`. Decisión registrada en la spec (RN-21, riesgos). Sin cambio de código de mobile.
-- **R14 Datos de prueba existentes en `arca_pruebas` (verificado 2026-11-12):** `arca_pruebas` ya contiene 5 filas de prueba en `species_publication_requests` y 6 en `species` (0 publicadas). Se conservan a propósito (decisión del usuario 2026-11-12). Los tests no deben asumir tablas vacías: usan fixtures propios, no modifican las filas existentes y limpian solo lo que crean dentro de `DatabaseTransactions`. Ojo con el índice único `uq_species_publication_requests_submitted_species`: si una fila existente está `submitted` para una especie, un test que cree otra solicitud `submitted` para esa especie fallará (1062); en ese caso el fixture debe usar otra especie.
+- **R14 Datos de prueba existentes en `arca_pruebas`:** `arca_pruebas` ya contiene 5 filas de prueba en `species_publication_requests` y 6 en `species` (0 publicadas). Se conservan a propósito. Los tests no deben asumir tablas vacías: usan fixtures propios, no modifican las filas existentes y limpian solo lo que crean dentro de `DatabaseTransactions`. Ojo con el índice único `uq_species_publication_requests_submitted_species`: si una fila existente está `submitted` para una especie, un test que cree otra solicitud `submitted` para esa especie fallará (1062); en ese caso el fixture debe usar otra especie.
 
 ### ADR
 
-- ADR requerido para v1: ninguno nuevo. Riesgos del ADR 0026 confirmados por Jonathan el 2026-11-12 (P3 cumplida, válido para pruebas). La excepción de la Constitución V (fila V) requiere acuerdo del equipo o ADR (P5).
+- ADR requerido para v1: ninguno nuevo. Riesgos del ADR 0026 confirmados por el responsable de backend (P3 cumplida, válido para pruebas). La excepción de la Constitución V (fila V) requiere acuerdo del equipo o ADR (P5).
 
 ### Alternativas consideradas
 
@@ -297,13 +299,19 @@ Las preguntas Q3 a Q8 se citan en el plan sin lista propia; su respuesta figura 
 - Índice único parcial: MySQL 8.0 no lo tiene; se usa la columna generada (DBR-013, 14).
 - Almacenamiento de objetos: fuera de alcance (ADR 0026, `docs/propuestas/almacenamiento-objetos-s3.md`).
 
+## Nota: paginación con total (CA-42, CA-43)
+
+- `ListSpeciesPublicationRequestsAction`, `ListPublishedSpeciesAction` (admin) y `ListOwnSpeciesPublicationRequestsAction` pasan de `simplePaginate` a `paginate(10)` y devuelven `LengthAwarePaginator`. Los controladores arman `meta` con `App\Support\PaginationMeta::from()` (`current_page`, `last_page`, `per_page`, `total`, `has_more`).
+- `PageGuard::empty()` devuelve ahora un paginador con total: una página absurda responde vacía con el `total` real (conteo sin orden). Orden y desempate por `id` sin cambio.
+- Consumidores: `GET /api/v1/published-species` (público, `api-015`) no cambia.
+
 ## Orden y aprobación
 
 ### Secuencia de implementación
 
 Ver la lista ordenada de tareas en `apps/api/tasks/014-species-requests.md`. Resumen:
 
-1. Bloqueo: P2 (`api-013`) antes de cualquier código; P1 (BD) cumplida el 2026-11-12. T-01 verifica solo lectura.
+1. Bloqueo: P2 (`api-013`) antes de cualquier código; P1 (BD) cumplida. T-01 verifica solo lectura.
 2. Base: modelos, enums, almacenamiento de fotos y T-SEED (T-03 a T-07).
 3. Rutas, autorización y lectura del veterinario (T-08 a T-13).
 4. Revisión de la Dirección: listado, edición, rechazo, aceptación (T-14 a T-19).
@@ -315,11 +323,11 @@ Ver la lista ordenada de tareas en `apps/api/tasks/014-species-requests.md`. Res
 
 | Rol | Quién | Estado |
 |---|---|---|
-| Responsable funcional de la spec | Jonathan (aprobación de la spec, 2026-11-12) | Aprobada |
-| Responsable técnico del plan | Jonathan (responsable de backend) | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 |
-| Equipo (solución técnica y Constitution Check) | Equipo | Aprobado: Jonathan, responsable de backend, en nombre del equipo, 2026-11-13 (P4; P5 aceptada como decisión F) |
-| Responsable de BD (migración DBR-013 en `arca_pruebas`) | Víctor Adrián | Cumplida (P1, 2026-11-12); EXPLAIN y registro de fecha y responsable pendientes |
-| Confirmación de riesgos ADR 0026 (a), (b), (c), (g), (m) | Equipo | Cumplida (P3): confirmado por Jonathan, 2026-11-12, válido para pruebas |
+| Responsable funcional de la spec | el responsable de backend | Aprobada |
+| Responsable técnico del plan | Backend | Aprobado: el responsable de backend, responsable de backend, en nombre del equipo |
+| Equipo (solución técnica y Constitution Check) | Equipo | Aprobado: el responsable de backend, responsable de backend, en nombre del equipo (P4; P5 aceptada como decisión F) |
+| Responsable de BD (migración DBR-013 en `arca_pruebas`) | Responsable de BD | Cumplida; EXPLAIN y registro de fecha y responsable pendientes |
+| Confirmación de riesgos ADR 0026 (a), (b), (c), (g), (m) | Equipo | Cumplida (P3): confirmado por el responsable de backend, válido para pruebas |
 | Dependencia `api-013` (disco `media`) | Responsable de la spec `api-013` | Pendiente (P2) |
 
 Evidencias requeridas al cerrar el plan: salida de `php artisan migrate:status` (solo lectura), enlace a la aprobación de `api-013`, confirmación de ADR 0026 y enlace al PR con spec, plan y tasks.

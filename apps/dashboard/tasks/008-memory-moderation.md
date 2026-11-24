@@ -1,12 +1,14 @@
 # Tareas · 008 · memory-moderation
 
-- Spec: `apps/dashboard/specs/008-memory-moderation.md` (Estado: **Aprobada**, Jonathan, 2026-11-12).
-- Plan: `apps/dashboard/plan/008-memory-moderation.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
-- Estado del checklist: **En progreso** (actualizado 2026-11-13; plan y tasks aprobados por Jonathan, responsable de backend). Coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+- Spec: `apps/dashboard/specs/008-memory-moderation.md` (Estado: **Aprobada**).
+- Plan: `apps/dashboard/plan/008-memory-moderation.md` (Estado: **Aprobado**).
+- Estado del checklist: **En progreso** (plan y tasks aprobados por el responsable de backend). Coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+- Solicitada: 2026-11-12
+- Aprobada: 2026-11-12
 - Checklist: cada T-xx marcada tiene su evidencia en la misma línea (salida de `npm test`, `npm run types`, `npm run build`, o enlace a la prueba). Ningún agente marca una tarea sin evidencia de la sesión principal.
 - Alcance: sección «Momentos» del dashboard (revisión de peticiones de visitantes, `zoo-admin` con `memories.review` y 2FA). Solo presentación: la API decide estados, plazos, permisos y auditoría. No incluye la publicación de especies (`dashboard-010`), ni el envío de momentos (`mobile-010`), ni retirar una foto aceptada antes del vencimiento (fuera de alcance).
 - Dependencias: `api-010` fase 1 y `api-013` Aprobadas, **sin implementar**; DBR-012 Lista para backend. Las tareas de base de datos (DBR, migración, pruebas, seeder de `memories.review`) pertenecen al responsable de BD y a `apps/api`; esta lista no las incluye. Solo aparecen como precondición en T-01.
-- Inicio: las tareas de cliente (T-02 a T-16) pueden empezar con contratos simulados. La integración (T-17) y el cierre (T-18, T-19) requieren además `api-010` fase 1 implementada en `arca_pruebas` y datos de prueba (preguntas 1 y 6 del plan, resueltas el 2026-11-13: los datos los crea el backend).
+- Inicio: las tareas de cliente (T-02 a T-16) pueden empezar con contratos simulados. La integración (T-17) y el cierre (T-18, T-19) requieren además `api-010` fase 1 implementada en `arca_pruebas` y datos de prueba (preguntas 1 y 6 del plan, resueltas: los datos los crea el backend).
 - Coordinación: T-03, T-04 y T-06 tocan puntos compartidos con `dashboard-010` (shell, `Icon.tsx`, `HasMorePage`, `HasMorePaginationBar`, `blob-preview.ts`). Ver la tabla «Coordinación» del plan antes de integrar.
 - Convención de tests: el nombre empieza por el CA y el prefijo `memory-` (`CA-xx memory-…: …`). Los tests de cobertura solo leen archivos `memory-*`.
 
@@ -48,8 +50,8 @@ Cobertura: CA vigentes sin tarea = **0** (19 de 19: CA-01 a CA-19). RN vigentes 
 ## Precondiciones
 
 - [ ] **T-01** (RN-01, RN-07, RN-08; precondición de CA-16): verificar dependencias y contratos, y registrar las decisiones en el PR o en el hilo de aprobación.
-  - Nota S3 (2026-11-13): pendiente de integración (S1): api-010 fase 1 está en la rama de S2.
-  - Contenido: (a) `api-010` fase 1 Aprobada con el contrato del plan («Endpoints consumidos» y «Tipos»); (b) M-1 (campos de la fila de la lista), M-2 (envolturas `{data}` y `{data, meta:{page,limit,has_more}}`) y M-3 (`published_at` en el detalle, pregunta 2) confirmados o rechazados explícitamente; (c) respuestas a las preguntas 1 a 8 del plan, incluida la coordinación de la shell con `dashboard-010` (pregunta 4) y la paginación compartida (pregunta 3); (d) `api-013` CA-10 (ruta de imagen) confirmada para el proxy de mismo origen; (e) estado de DBR-012 (Lista para backend) y datos de prueba acordados (pregunta 6). **Registrado en el plan el 2026-11-13:** M-1 y M-2 aceptadas; M-3 aceptada como `published_at` (incorporada en `api-010` el 2026-11-13); preguntas 1 a 8 resueltas. Falta la evidencia en el PR.
+  - Nota S3: pendiente de integración (S1): api-010 fase 1 está en la rama de S2.
+  - Contenido: (a) `api-010` fase 1 Aprobada con el contrato del plan («Endpoints consumidos» y «Tipos»); (b) M-1 (campos de la fila de la lista), M-2 (envolturas `{data}` y `{data, meta:{page,limit,has_more}}`) y M-3 (`published_at` en el detalle, pregunta 2) confirmados o rechazados explícitamente; (c) respuestas a las preguntas 1 a 8 del plan, incluida la coordinación de la shell con `dashboard-010` (pregunta 4) y la paginación compartida (pregunta 3); (d) `api-013` CA-10 (ruta de imagen) confirmada para el proxy de mismo origen; (e) estado de DBR-012 (Lista para backend) y datos de prueba acordados (pregunta 6). **Registrado en el plan:** M-1 y M-2 aceptadas; M-3 aceptada como `published_at` (incorporada en `api-010`); preguntas 1 a 8 resueltas. Falta la evidencia en el PR.
   - Archivos: ninguno (sin código).
   - Hecho cuando: el PR o el hilo enlaza las respuestas; M-1 a M-3 están aceptadas o rechazadas. Si M-1 o M-2 se rechazan, T-02 se marca como bloqueada, no se resuelve en la UI. Si M-3 se rechaza, T-08 muestra solo `published_until`.
 
@@ -58,7 +60,7 @@ Cobertura: CA vigentes sin tarea = **0** (19 de 19: CA-01 a CA-19). RN vigentes 
 - [x] **T-02** (CA-02, CA-05, CA-08, CA-17; RN-07, RN-08, RN-09): tipos y métodos de `memoryReview` (`list`, `get`, `image`, `accept`, `reject`) y `HasMorePage<T>`.
   - Archivos: `packages/api-client/admin-types.ts` (tipos del plan: `MemoryReviewStatus`, `MemoryRejectedField`, `HasMorePage<T>`, `MemoryReviewListQuery`, `MemoryReviewSummaryDto`, `MemoryReviewDetailDto`, `MemoryRejectInput`), `packages/api-client/admin.ts` (namespace `memoryReview`; `image` usa `http.download`; `accept` y `reject` usan `http.post`), `packages/api-client/index.ts` (exports de tipos nuevos), `apps/dashboard/src/viewmodels/admin-types.ts` (reexport).
   - Test: `apps/dashboard/src/tests/memory-api-client.test.tsx` con `fetch` simulado. Nombres: `CA-02 memory-api-client: list envía status solo con filtro y page; no envía limit`, `CA-05 memory-api-client: get usa la ruta del detalle`, `CA-08 memory-api-client: accept es POST sin cuerpo`, `CA-17 memory-api-client: image pide la ruta relativa del mismo origen, devuelve blob y no hay URL absoluta`, `RN-09 memory-api-client: la imagen usa /api/v1/admin/memories/{id}/image sin CORS`, `RN-05 memory-api-client: reject envía rejection_reason y rejected_fields como array`.
-  - Bloqueo: M-1 y M-2 (T-01), resueltas en el plan el 2026-11-13; la tarea sigue sin hacer hasta tener evidencia en el PR.
+  - Bloqueo: M-1 y M-2 (T-01), resueltas en el plan; la tarea sigue sin hacer hasta tener evidencia en el PR.
   - Hecho cuando: `npm run types` sin errores y las pruebas nombradas en verde.
 
 ## Base compartida y shell
@@ -102,7 +104,7 @@ Cobertura: CA vigentes sin tarea = **0** (19 de 19: CA-01 a CA-19). RN vigentes 
 
 - [x] **T-08** (CA-05, CA-06, CA-07, CA-15, CA-18, CA-19; RN-02, RN-04, RN-06): vista del detalle e imagen.
   - Archivos: `apps/dashboard/src/views/MemoryReviewDetailView.tsx` (opinión como texto, estado, fecha y reenvíos; bloque de decisión según estado; «Volver a la lista»; textos de CA-19 según `is_published`), `apps/dashboard/src/components/MemoryImage.tsx` (estados `loading`, `ready`, `error`, `not-found`; `alt="Foto enviada por un visitante"`; `object-fit: contain`), `apps/dashboard/src/styles.css` (bloque `memory-review__*`).
-  - Contenido: `submitted` e `in_review` → «Aceptar» y «Rechazar»; «Aceptar» deshabilitado con «No se puede aceptar sin la imagen.» si `not-found`, y también mientras carga y ante error 5xx o red (pregunta 5 resuelta el 2026-11-13). `rejected` → «Esperando la corrección del visitante.», motivo y «La foto» / «La opinión». `accepted` → «Publicada en la galería hasta el {fecha}.» si `is_published`, «La publicación venció el {fecha}.» si no. «Fecha de publicación» desde `published_at` del detalle (M-3 resuelta el 2026-11-13; incorporada en `api-010`).
+  - Contenido: `submitted` e `in_review` → «Aceptar» y «Rechazar»; «Aceptar» deshabilitado con «No se puede aceptar sin la imagen.» si `not-found`, y también mientras carga y ante error 5xx o red. `rejected` → «Esperando la corrección del visitante.», motivo y «La foto» / «La opinión». `accepted` → «Publicada en la galería hasta el {fecha}.» si `is_published`, «La publicación venció el {fecha}.» si no. «Fecha de publicación» desde `published_at` del detalle (M-3 resuelta; incorporada en `api-010`).
   - Test: `apps/dashboard/src/tests/memory-detail.test.tsx` (marcado). Nombres: `CA-05 memory-detail: muestra la opinión y la imagen antes de decidir`, `CA-06 memory-detail: imagen completa con alt «Foto enviada por un visitante»; opinión como texto, no HTML`, `CA-06 memory-detail: error de imagen muestra «No se pudo cargar la imagen.»`, `CA-07 memory-detail: acciones por estado; Rechazada y Aceptada solo lectura`, `CA-15 memory-detail: estados con icono y texto`, `CA-18 memory-detail: Aceptar deshabilitado con «No se puede aceptar sin la imagen.»; Rechazar disponible`, `CA-19 memory-detail: texto de vigencia según is_published; el estado sigue Aceptada`, `RN-06 memory-detail: textos de la vista en español`.
   - Hecho cuando: pruebas en verde.
 
@@ -158,29 +160,31 @@ Cobertura: CA vigentes sin tarea = **0** (19 de 19: CA-01 a CA-19). RN vigentes 
   - Hecho cuando: los archivos reflejan lo implementado y no marcan nada como hecho sin evidencia.
 
 - [ ] **T-17** (CA-06, CA-12, CA-13; RN-06): verificación manual en navegador contra la API en `arca_pruebas`. Requiere `api-010` fase 1 implementada y datos de prueba (preguntas 1 y 6).
-  - Nota S3 (2026-11-13): pendiente de integración (S1): navegador contra la API real; foco y retorno de foco sin probar.
+  - Nota S3: pendiente de integración (S1): navegador contra la API real; foco y retorno de foco sin probar.
   - Contenido: (a) teclado: abrir y cerrar cada diálogo con Escape; el foco queda dentro; el foco vuelve al botón que lo abrió; (b) diseño adaptable a 360, 768, 1024 y 1366 px sin desbordamiento horizontal, con tabla o tarjetas según el ancho; (c) imagen completa y centrada (CA-06) con una foto real; (d) flujo completo contra la API: lista y filtros, revisar (pasa a En proceso), aceptar, rechazar con motivo y casillas, decisión tardía con dos sesiones; (e) con `admin` (Presidencia): la sección no aparece y, si la API responde 403, se muestra el aviso; (f) textos en español revisados (RN-06); (g) la imagen no aparece en la URL ni en el almacenamiento del navegador (DevTools).
   - Evidencia: notas o capturas en el PR. Incidencias abiertas, registradas.
   - Pendiente: verificación manual en navegador.
   - Hecho cuando: la evidencia está en el PR y las incidencias quedan registradas. Sin datos de prueba, esta tarea queda pendiente y no se marca.
 
 - [ ] **T-18** (todos los CA; DoD): verificación automatizada y CI.
-  - Nota S3 (2026-11-13): pendiente de integración (S1): CI.
-  - Ejecutado (2026-11-13, sesión principal): `npm test` 455/455 aprobadas; `npm run types` y `npm run build` OK. Pendiente: `git diff --check`, `/verify` y CI en el PR; no se marca hasta tenerlos.
+  - Nota S3: pendiente de integración (S1): CI.
+  - Ejecutado: `npm test` 455/455 aprobadas; `npm run types` y `npm run build` OK. Pendiente: `git diff --check`, `/verify` y CI en el PR; no se marca hasta tenerlos.
   - Contenido: `npm test` (`vitest run`), `npm run types` (`tsc --noEmit`) y `npm run build` del dashboard; `git diff --check`; `/verify` del dashboard; CI en verde en el PR. Registrar número de pruebas, aprobadas, fallidas y fallos preexistentes. Si algo no se ejecuta, se anota como no ejecutado; no se afirma que pasa.
   - Hecho cuando: los resultados están en el PR y el CI está en verde. Un CI en rojo no se mergea (Constitución IV).
 
 - [ ] **T-19** (todos): entrega.
-  - Nota S3 (2026-11-13): pendiente de integración (S1).
+  - Nota S3: pendiente de integración (S1).
   - Contenido: el PR enlaza `specs/008-memory-moderation.md`, `plan/008-memory-moderation.md` y `tasks/008-memory-moderation.md`; el commit cita `dashboard-008`; el estado de la spec pasa a «En progreso» al empezar y a «Implementada» solo con evidencia de T-17 y T-18 y con el visto bueno del responsable. `apps/dashboard/AGENTS.md` se actualiza solo en ese momento.
   - Hecho cuando: el PR está revisado y el estado de la spec coincide con la evidencia.
   - Pendiente: PR, commit citando `dashboard-008` y estado de la spec (integración S1). La spec sigue Aprobada.
 
-## Verificación (2026-11-13)
+## Verificación
 
 - Tests: `npm test` 455/455 en verde (suite del dashboard, sesión principal). `npm run types` y `npm run build` OK.
 - Tests con nombre por CA: CA-01 a CA-19 aparecen en `memory-*.test.tsx` (cobertura en `memory-coverage.test.tsx`, CA-16).
 - Regresión (T-15): el diff vacío de `administration-navigation.test.tsx`, `real-staff-login.test.tsx`, `ticket-sales-quality.test.tsx`, `content-image-display.test.tsx` y `responsive.test.tsx` no se pudo comprobar desde esta sesión (sin shell); la suite completa pasa.
 - Pendientes: T-17 (verificación manual en navegador), T-18 (`git diff --check`, `/verify` y CI), T-19 (PR y estado de la spec), T-01 (registro en el PR).
 
-Estado final de estas tareas: **En progreso** (plan y tasks aprobados por Jonathan, 2026-11-13). La spec sigue **Aprobada**.
+Estado final de estas tareas: **En progreso** (plan y tasks aprobados por el responsable de backend). La spec sigue **Aprobada**.
+
+- [x] **T-20** (CA-49): paginación con total en Momentos (tarea T-28 de `dashboard-020`).

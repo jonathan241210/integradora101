@@ -1,16 +1,26 @@
 # Plan técnico · 005 · visitor-progress
 
 - Spec: `apps/api/specs/005-visitor-progress.md`
-- Estado de spec: Implementada (2026-11-01; aprobación funcional Aksel, 2026-10-22)
-- Estado del plan: Aprobado (Aksel, 2026-10-22)
-- Responsable técnico: Aksel
-- Responsable de BD: Victor Adrian. DBR-004 está en `Lista para backend`. La migración `2026_10_15_000004_visitor_progress_schema.php` ya existe. Este plan no crea ni edita migraciones.
+- Estado de spec: Implementada
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
+- Estado del plan: Aprobado
+- Responsable técnico: Backend
+- Responsable de BD: Responsable de BD (rol). DBR-004 está en `Lista para backend`. La migración `2026_10_15_000004_visitor_progress_schema.php` ya existe. Este plan no crea ni edita migraciones.
+
+## Enmienda · Misiones correspondientes a logros
+
+- Estado del plan de la enmienda: Aprobado por la persona solicitante, 2026-11-24.
+- `VisitorProgressQuery` incluirá la misión activa por especie si comparte tipo, parámetro y meta con un logro activo o si tiene una especie visitable. La regla se aplica en la ruta autenticada `visitor.missions.index`. Aventura consume la misma respuesta mediante su repositorio actual.
+- Los estados, las métricas, la acreditación y el formato JSON conservan sus contratos. Las tablas existentes bastan para el cambio en MySQL local y Aiven.
+- CA-15, CA-16 y CA-19: `ProgressTest.php` verificará misiones asociadas y sin asociación, progreso en cero cuando la especie no sea visitable y retención de los estados completados.
+- Constitución I–VI: stack vigente, spec aprobada, regla en la API, prueba de contrato PHPUnit, esquema vigente de DBR-004 e identificadores en inglés.
 
 ## Diseño de solución
 
 La API calcula el progreso del visitante autenticado con el token `visitor`. El cliente envía el código del QR; el servidor decide las especies, los puntos, el nivel y los logros. No hay tabla de líderes ni premios.
 
-Flujo: `POST discoveries` valida la ventana y el límite, registra el intento en `visitor_scans` y, si el código está activo, descubre las especies en exhibición de ese recinto. Un `client_scan_id` repetido devuelve el mismo `result` sin filas nuevas. Las consultas `progress`, `collection`, `achievements` y `missions` solo leen.
+Flujo: `POST discoveries` valida la ventana y el límite, registra el intento en `visitor_scans` y, si el código está activo, descubre las especies en exhibición de ese recinto. Un `client_scan_id` repetido devuelve el mismo `result` sin filas nuevas. Las consultas `progress`, `achievements` y `missions` también evalúan las metas pendientes. La consulta `collection` lee los descubrimientos.
 
 ## Cambios por área
 
@@ -38,6 +48,8 @@ Rutas bajo el prefijo ya existente `api/v1`, grupo `visitor`, middleware `auth:s
 | `GET /api/v1/visitor/missions` | `visitor.missions.index` | Igual que logros, más `objective` |
 
 `RecordVisitorDiscoveryAction` corre en una transacción. Antes de insertar, busca `(visitor_id, client_scan_id)`. Si existe, reconstruye la respuesta con las filas de esa hora (`discovered_at` / `unlocked_at` / `completed_at` iguales a `received_at`) y no inserta nada.
+
+Las consultas de progreso, logros y misiones también llaman a `EvaluateVisitorProgressAction` para acreditar descubrimientos anteriores. Esta Action ejecuta su propia transacción, anidada cuando se llama desde el registro del escaneo, para que el desbloqueo y sus puntos se confirmen juntos (CA-09).
 
 `enclosure_count` (RN-10): recintos distintos del QR que originó cada descubrimiento y que todavía apunta a un recinto.
 
@@ -86,9 +98,28 @@ El visitante solo ve su progreso. El código QR no se registra en logs de aplica
 
 ## Orden y aprobación
 
-1. Spec aprobada por Aksel el 2026-10-22.
-2. Este plan, aprobado por Aksel el 2026-10-22.
+1. Spec aprobada.
+2. Este plan, aprobado.
 3. Checklist y después el código en `apps/api/src`.
 4. La app móvil consume el contrato cuando su propio plan esté aprobado.
 
-Aprobador funcional: Aksel. Fecha: 2026-10-22.
+Aprobación funcional: Aprobada.
+
+## Enmienda · Logros y misiones de especies visitables
+
+Autorización registrada. `VisitorProgressQuery` reutiliza el criterio de exhibición y recinto activo del conteo de progreso. Para `species_keyword` añade la publicación de la especie y excluye animales y especies con baja lógica. Usa la misma consulta para el listado y para los nombres descubiertos por la cuenta. Conserva el reconocimiento por palabra completa y la transacción, el historial y la idempotencia de `EvaluateVisitorProgressAction`. Los endpoints autenticados mantienen su contrato JSON y el cliente móvil presenta el resultado de la API.
+
+| Criterio | Prueba en `tests/Feature/Visitor/ProgressTest.php` |
+|---|---|
+| CA-15 | Mostrar las metas por palabra completa según publicación, exhibición, actividad y baja lógica. |
+| CA-16 | Acreditar descubrimientos visitables por cuenta y conservar el historial y los puntos durante cambios del catálogo. |
+
+Constitution Check I–VI. Se usan el stack existente y las columnas verificadas en MySQL (I y V). La enmienda se limita a CA-15, CA-16 y RN-12 (II). La regla queda en la API y conserva Sanctum (III). Cada criterio tiene su prueba con transacciones en `arca_pruebas` (IV). El código usa nombres en inglés y los criterios se documentan en español (VI).
+## Enmienda de QR y logros · 2026-11-24
+
+- Estado del plan de la enmienda: Aprobado por la persona solicitante, 2026-11-24.
+- En `RecordVisitorDiscoveryAction`, consultar las especies publicadas de ejemplares visitables del recinto usando los filtros de baja lógica y recinto activo. Seleccionar las especies por ID único y usar sus nombres públicos. Conservar la transacción, el resultado `empty_enclosure` y la idempotencia de `POST /api/v1/visitor/discoveries`. Mantener las reglas históricas de progreso y verificar que una repetición no acredite puntos otra vez. En el cliente, comprobar que cada ficha elegible conserve nombre y enlace. El efecto de cuarentena con visita habilitada sigue pendiente de validación del dominio.
+- En `VisitorProgressQuery`, evaluar la visibilidad por especie solo para misiones. Mantener el cálculo de avance por especies visitables para ambos catálogos. En `AchievementSeeder`, establecer explícitamente el estado activo por código para las 24 definiciones existentes. Ejecutar el seeder idempotente como parte de la aplicación controlada de datos por ambiente, preservando IDs, acreditaciones y puntos. Los endpoints de logros y misiones conservan sus contratos y autenticación de visitante. Sin migración ni DBR.
+- CA-17: PHPUnit con un recinto con tres o más especies, duplicados por ejemplar, bajas lógicas, especies sin publicar y ejemplares no visitables. Jest para los nombres y acciones de la pantalla, incluida navegación entre fichas. CA-18: PHPUnit para los 24 códigos activos tras el seeder, visibilidad con y sin especies coincidentes, retención de acreditaciones y reglas de misiones.
+- Constitución I–VI: Laravel, React Native y MySQL 8.0 existentes, criterios y plan de la enmienda aprobados, reglas en Actions y consulta de progreso, cobertura PHPUnit y Jest, catálogo actualizado por seeder sin cambios de esquema, identificadores en inglés y mensajes en español.
+- Orden aprobado: desglosar tareas, probar con `DatabaseTransactions` en `arca_pruebas`, aplicar el seeder al ambiente autorizado y comprobar respuesta de la API y pantalla.

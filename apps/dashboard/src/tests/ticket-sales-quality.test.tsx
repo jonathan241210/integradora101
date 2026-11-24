@@ -29,6 +29,7 @@ import {
 } from "../viewmodels/ticket-sale";
 import { apiError, createHarness } from "./admin-fixtures";
 import {
+  cancelInput,
   createTicketSalesApiMock,
   historyRow,
   printSettingsViewModel,
@@ -72,6 +73,7 @@ const historyActions: TicketHistoryViewModel["actions"] = {
   reload: noop,
   openCancel: noop,
   closeCancel: noop,
+  changeReasonCode: noop,
   changeReason: noop,
   confirmCancel: noop,
   dismissNotice: noop,
@@ -201,7 +203,7 @@ describe("CA-22 ticket-sales", () => {
     const history = createHarness(ticketHistoryReducer, initialTicketHistoryState);
     await loadTicketHistory(api, history.dispatch, { page: 1 });
     history.dispatch({ type: "cancel-opened", target: historyRow() });
-    await cancelTicket(api, history.dispatch, historyRow(), "Motivo", { page: 1 });
+    await cancelTicket(api, history.dispatch, historyRow(), cancelInput("Motivo"), { page: 1 });
 
     const prices = createHarness(ticketPricesReducer, initialTicketPricesState);
     await loadTicketPrices(api, prices.dispatch);

@@ -16,6 +16,7 @@ use App\Http\Requests\Admin\UpdateSpeciesPublicationRequest;
 use App\Http\Resources\Admin\SpeciesPublicationDetailResource;
 use App\Http\Resources\Admin\SpeciesPublicationRequestDetailResource;
 use App\Http\Resources\Admin\SpeciesPublicationRequestResource;
+use App\Support\PaginationMeta;
 use Illuminate\Http\JsonResponse;
 
 class SpeciesPublicationRequestController extends Controller
@@ -26,7 +27,7 @@ class SpeciesPublicationRequestController extends Controller
 
         return response()->json([
             'data' => SpeciesPublicationRequestResource::collection($page->getCollection())->resolve($request),
-            'meta' => ['has_more' => $page->hasMorePages()],
+            'meta' => PaginationMeta::from($page),
         ]);
     }
 

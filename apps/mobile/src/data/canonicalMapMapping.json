@@ -1,0 +1,654 @@
+{
+  "enclosures": [
+    {
+      "suggestedId": "recinto-recinto-lemur",
+      "nameOriginal": "Recinto Lémur",
+      "svgId": "recinto_lemur",
+      "mapX": 0.4256,
+      "mapY": 0.6436,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-lemur-2",
+      "nameOriginal": "Recinto Lémur 2",
+      "svgId": "recinto_mono2",
+      "mapX": 0.452,
+      "mapY": 0.6362,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-capichino",
+      "nameOriginal": "Recinto Capichino",
+      "svgId": "recinto_capuchino",
+      "mapX": 0.4639,
+      "mapY": 0.6294,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-halcon",
+      "nameOriginal": "Recinto halcón",
+      "svgId": "recinto_halcon",
+      "mapX": 0.5554,
+      "mapY": 0.7228,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-aguila",
+      "nameOriginal": "Recinto Águila",
+      "svgId": "recinto_aguilas",
+      "mapX": 0.5185,
+      "mapY": 0.7879,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-leones",
+      "nameOriginal": "Recinto Leones",
+      "svgId": "recinto_leones",
+      "mapX": 0.5648,
+      "mapY": 0.7831,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-buitres",
+      "nameOriginal": "Recinto buitres",
+      "svgId": "recinto_buitres",
+      "mapX": 0.6187,
+      "mapY": 0.7791,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-tortugas",
+      "nameOriginal": "Recinto tortugas",
+      "svgId": "recinto_tortugas",
+      "mapX": 0.5974,
+      "mapY": 0.7135,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-hipopotamo",
+      "nameOriginal": "Recinto hipopótamo",
+      "svgId": "recinto_hipopotamo",
+      "mapX": 0.6746,
+      "mapY": 0.75,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-patos",
+      "nameOriginal": "Recinto patos",
+      "svgId": "recinto_patos_gansos",
+      "mapX": 0.6468,
+      "mapY": 0.6673,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-coyote",
+      "nameOriginal": "Recinto coyote",
+      "svgId": "recinto_coyote",
+      "mapX": 0.7044,
+      "mapY": 0.6749,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-codorniz",
+      "nameOriginal": "Recinto codorniz",
+      "svgId": "recinto_codorniz",
+      "mapX": 0.7019,
+      "mapY": 0.6377,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-codorniz-2",
+      "nameOriginal": "Recinto codorniz 2",
+      "svgId": "recinto_codrniz2",
+      "mapX": 0.7011,
+      "mapY": 0.6028,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-codorniz-3",
+      "nameOriginal": "Recinto codorniz 3",
+      "svgId": "recinto_codrniz3",
+      "mapX": 0.7011,
+      "mapY": 0.5748,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-codorniz-4",
+      "nameOriginal": "Recinto codorniz 4",
+      "svgId": "recinto_codorniz4",
+      "mapX": 0.7011,
+      "mapY": 0.5475,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-mapache",
+      "nameOriginal": "Recinto mapache",
+      "svgId": "recinto_mapache",
+      "mapX": 0.7008,
+      "mapY": 0.499,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-codorniz-4-2",
+      "nameOriginal": "Recinto codorniz 4",
+      "svgId": "recinto_codorniz5",
+      "mapX": 0.7009,
+      "mapY": 0.5222,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-aviario",
+      "nameOriginal": "Aviario",
+      "svgId": "recinto_aviario",
+      "mapX": 0.6828,
+      "mapY": 0.4407,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-cocodrilo",
+      "nameOriginal": "Recinto cocodrilo",
+      "svgId": "recinto_cocodrilos",
+      "mapX": 0.632,
+      "mapY": 0.6214,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-tigre",
+      "nameOriginal": "Recinto tigre",
+      "svgId": "recinto_tigre1",
+      "mapX": 0.6235,
+      "mapY": 0.5352,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-tigre-2",
+      "nameOriginal": "Recinto tigre 2",
+      "svgId": "recinto_tigre2",
+      "mapX": 0.5734,
+      "mapY": 0.6044,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-mono-arana",
+      "nameOriginal": "Recinto mono araña",
+      "svgId": "recinto_monoara__a",
+      "mapX": 0.502,
+      "mapY": 0.6073,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-oso",
+      "nameOriginal": "Recinto oso",
+      "svgId": "recinto_oso",
+      "mapX": 0.5216,
+      "mapY": 0.5157,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-reinto-tigre-2-arriba",
+      "nameOriginal": "Reinto tigre 2 arriba",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "recinto-recinto-iguanas",
+      "nameOriginal": "Recinto iguanas",
+      "svgId": "recintos_iguanas",
+      "mapX": 0.5963,
+      "mapY": 0.4798,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-desconocido",
+      "nameOriginal": "Recinto desconocido",
+      "svgId": "recinto_reptiles_desconocido",
+      "mapX": 0.6304,
+      "mapY": 0.4482,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-jaguar",
+      "nameOriginal": "Recinto jaguar",
+      "svgId": "recinto_jaguar",
+      "mapX": 0.6499,
+      "mapY": 0.4032,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-halcon-2",
+      "nameOriginal": "Recinto halcón 2",
+      "svgId": "recinto_halcon2",
+      "mapX": 0.6511,
+      "mapY": 0.3625,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-halcon-3",
+      "nameOriginal": "Recinto halcon 3",
+      "svgId": "recinto_halcon3",
+      "mapX": 0.6411,
+      "mapY": 0.3662,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-martucha",
+      "nameOriginal": "Recinto martucha",
+      "svgId": "recinto_martucha",
+      "mapX": 0.6327,
+      "mapY": 0.3708,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-aguililla-negra",
+      "nameOriginal": "Recinto águililla negra",
+      "svgId": "recinto_aguililla_negra",
+      "mapX": 0.6176,
+      "mapY": 0.3809,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-tigre-3",
+      "nameOriginal": "Recinto tigre 3",
+      "svgId": "recinto_tigre3",
+      "mapX": 0.5912,
+      "mapY": 0.4165,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-chester",
+      "nameOriginal": "Recinto Chester",
+      "svgId": "recinto_chester",
+      "mapX": 0.553,
+      "mapY": 0.4347,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-tigre-blanco",
+      "nameOriginal": "Recinto tigre blanco",
+      "svgId": "recinto_tigre_blanco",
+      "mapX": 0.4608,
+      "mapY": 0.4921,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-coyote-2",
+      "nameOriginal": "Recinto coyote 2",
+      "svgId": "recinto_coyote2",
+      "mapX": 0.4341,
+      "mapY": 0.4284,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-coati",
+      "nameOriginal": "Recinto coati",
+      "svgId": "recinto_coati",
+      "mapX": 0.4287,
+      "mapY": 0.4097,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-coati-2",
+      "nameOriginal": "Recinto coati 2",
+      "svgId": "recinto_coati2",
+      "mapX": 0.4208,
+      "mapY": 0.3831,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-zorro-gris",
+      "nameOriginal": "Recinto zorro gris",
+      "svgId": "recinto_zorro_gris",
+      "mapX": 0.409,
+      "mapY": 0.3475,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-buhos",
+      "nameOriginal": "Recinto búhos",
+      "svgId": "recinto_buho",
+      "mapX": 0.442,
+      "mapY": 0.2717,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-animales-hervivoros",
+      "nameOriginal": "Recinto animales hervivoros",
+      "svgId": "recinto_hervivoros",
+      "mapX": 0.4455,
+      "mapY": 0.2211,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-hervivoros-2",
+      "nameOriginal": "Recinto hervivoros 2",
+      "svgId": "recinto_herviboros2",
+      "mapX": 0.4832,
+      "mapY": 0.2038,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-hervivoro-3",
+      "nameOriginal": "Recinto hervivoro 3",
+      "svgId": "recintos_herviboros3",
+      "mapX": 0.5306,
+      "mapY": 0.1894,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-hervivora-4",
+      "nameOriginal": "Recinto hervivora 4",
+      "svgId": "recintos_herviboros4",
+      "mapX": 0.5848,
+      "mapY": 0.1659,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-hervovoros-4-vista-lateral",
+      "nameOriginal": "Recinto hervovoros 4 vista lateral",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "recinto-recinto-avestruz",
+      "nameOriginal": "Recinto avestruz",
+      "svgId": "recintos_aveztruz",
+      "mapX": 0.5581,
+      "mapY": 0.0865,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-chivos",
+      "nameOriginal": "Recinto chivos",
+      "svgId": "recintos_chivos",
+      "mapX": 0.5333,
+      "mapY": 0.1044,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-emu",
+      "nameOriginal": "Recinto emu",
+      "svgId": "recinto_emu",
+      "mapX": 0.5042,
+      "mapY": 0.0859,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-camello",
+      "nameOriginal": "Recinto camello",
+      "svgId": "recinto_camello",
+      "mapX": 0.5131,
+      "mapY": 0.1507,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-desconocido-zig-zag",
+      "nameOriginal": "Recinto desconocido zig zag",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "recinto-recinto-venadito",
+      "nameOriginal": "Recinto venadito",
+      "svgId": "recinto_venadito",
+      "mapX": 0.4687,
+      "mapY": 0.1083,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-jabali",
+      "nameOriginal": "Recinto jabali",
+      "svgId": "recinto_jabali",
+      "mapX": 0.4018,
+      "mapY": 0.2246,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-tucaneta",
+      "nameOriginal": "Recinto tucaneta",
+      "svgId": "recinto_tucaneta",
+      "mapX": 0.414,
+      "mapY": 0.4821,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-serpentario",
+      "nameOriginal": "Recinto serpentario",
+      "svgId": "recinto_serpentario",
+      "mapX": 0.3183,
+      "mapY": 0.5374,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-ardillon",
+      "nameOriginal": "Recinto ardillon",
+      "svgId": "recinto_ardillon",
+      "mapX": 0.3418,
+      "mapY": 0.4949,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-loro-corona-azul",
+      "nameOriginal": "Recinto loro corona azul",
+      "svgId": "recinto_corona_azul",
+      "mapX": 0.382,
+      "mapY": 0.5301,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-halcon-caracara",
+      "nameOriginal": "Recinto halcón caracara",
+      "svgId": "recinto_halcon_caracara",
+      "mapX": 0.4485,
+      "mapY": 0.5557,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-de-tucan",
+      "nameOriginal": "Recinto de tucan",
+      "svgId": "recinto_tucan",
+      "mapX": 0.386,
+      "mapY": 0.6508,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-aves-pequenas",
+      "nameOriginal": "Recinto aves pequeñas",
+      "svgId": "recinto_aves_peque__as",
+      "mapX": 0.3679,
+      "mapY": 0.684,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-tortuga",
+      "nameOriginal": "Recinto tortuga",
+      "svgId": "recinto_tortuga_tierra",
+      "mapX": 0.3712,
+      "mapY": 0.625,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-sapos",
+      "nameOriginal": "Recinto sapos",
+      "svgId": "recintos_sapos",
+      "mapX": 0.3809,
+      "mapY": 0.6108,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-loro-cachetes",
+      "nameOriginal": "Recinto loro cachetes",
+      "svgId": "recinto_loro_cachetes",
+      "mapX": 0.3187,
+      "mapY": 0.5945,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-guacamayo",
+      "nameOriginal": "Recinto guacamayo",
+      "svgId": "recintos_guacamayos",
+      "mapX": 0.3135,
+      "mapY": 0.5793,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "recinto-recinto-pericos",
+      "nameOriginal": "Recinto pericos",
+      "svgId": "recintos_pericos",
+      "mapX": 0.3094,
+      "mapY": 0.5633,
+      "status": "clear"
+    }
+  ],
+  "zoo_places": [
+    {
+      "suggestedId": "lugar-inicio",
+      "nameOriginal": "Inicio",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-banos",
+      "nameOriginal": "Baños",
+      "svgId": "banos",
+      "mapX": 0.5145,
+      "mapY": 0.7343,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "lugar-entrada-tortugas",
+      "nameOriginal": "Entrada tortugas",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-area-fotos-oso",
+      "nameOriginal": "Area fotos oso",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-zona-comun",
+      "nameOriginal": "Zona comun",
+      "svgId": "zona_comun",
+      "mapX": 0.5653,
+      "mapY": 0.5485,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "lugar-vista-aviario-arriba",
+      "nameOriginal": "Vista aviario arriba",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-zona-huertos",
+      "nameOriginal": "Zona  huertos",
+      "svgId": "zona_comun_huertas",
+      "mapX": 0.4222,
+      "mapY": 0.1215,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "lugar-zona-comun-2",
+      "nameOriginal": "Zona  comun",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-fuente",
+      "nameOriginal": "Fuente",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-establecimientos-de-comida",
+      "nameOriginal": "Establecimientos de comida",
+      "svgId": "zona_verde_establecimeintos_comida",
+      "mapX": 0.3856,
+      "mapY": 0.3984,
+      "status": "clear"
+    },
+    {
+      "suggestedId": "lugar-zona-ninos",
+      "nameOriginal": "Zona niños",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-escaleras-para-serpientes",
+      "nameOriginal": "Escaleras para serpientes",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-cafeteria",
+      "nameOriginal": "Cafeteria",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-area-comun-lemur",
+      "nameOriginal": "Area comun lemur",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-fuente-2",
+      "nameOriginal": "Fuente",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-cafeteria-entrada-2",
+      "nameOriginal": "Cafeteria entrada 2",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-area-comun-2",
+      "nameOriginal": "Area comun 2",
+      "svgId": null,
+      "mapX": null,
+      "mapY": null,
+      "status": "pending"
+    },
+    {
+      "suggestedId": "lugar-boletaje",
+      "nameOriginal": "Boletaje",
+      "svgId": "boletaje",
+      "mapX": 0.3066,
+      "mapY": 0.6847,
+      "status": "clear"
+    }
+  ]
+}

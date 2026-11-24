@@ -2,14 +2,17 @@
 
 - Spec: `apps/api/specs/003-staff-authentication.md`
 - Plan: `apps/api/plan/003-staff-authentication.md`
+- Estado del checklist: Completado
+- Solicitada: 2026-10-15
+- Aprobada: 2026-10-15
 
 Todas las pruebas usan `DatabaseTransactions` sobre `arca_pruebas`; nunca `RefreshDatabase`, `migrate:fresh` ni migraciones. Ninguna tarea toca `arca_zoo`.
 
-## Base de datos (responsable de BD: Victor Adrian)
+## Base de datos (responsable de BD)
 
 - [x] **T-01** (CA-15, CA-17): DBR-001 y DBR-002 en `Lista para backend`, con migraciones aplicadas y verificadas en `arca_pruebas` (evidencia registrada en las DBR).
 - [x] **T-02** (CA-12): confirmar que `cache` y `cache_locks` existen en `arca_pruebas` (`php artisan db:table cache`, `db:table cache_locks`) y registrar la evidencia.
-  - 2026-10-16: `migrate:status` muestra `0001_01_01_000001_create_cache_table` como Ran y `db:table cache_locks` responde en `arca_pruebas` (3 columnas).
+  - `migrate:status` muestra `0001_01_01_000001_create_cache_table` como Ran y `db:table cache_locks` responde en `arca_pruebas` (3 columnas).
 
 ## Implementación (backend)
 
@@ -60,12 +63,12 @@ Todas las pruebas usan `DatabaseTransactions` sobre `arca_pruebas`; nunca `Refre
 ## Calidad y entrega
 
 - [x] **T-32**: ejecutar `composer test` y `vendor/bin/pint --test` en `apps/api/src`, y `/verify`; registrar resultados.
-  - 2026-10-16: `php artisan test` → 30 tests, 238 assertions, en verde (incluye `DbConnectionTest`); conteo de `users` 0 antes y 0 después de la suite. `pint --test` en verde sobre los 48 archivos PHP de esta feature; el Pint global falla solo por estilo preexistente en `config/auth.php`, `database/factories/UserFactory.php` y cuatro migraciones de BD, que no se modifican aquí. Paquetes: Sanctum 4.3.3, Fortify 1.41.0 (trae `laravel/passkeys` como dependencia transitiva, sin habilitar), Permission 6.25.0, Activitylog 4.12.3. Sin archivos nuevos en `database/migrations`.
+  - `php artisan test` → 30 tests, 238 assertions, en verde (incluye `DbConnectionTest`); conteo de `users` 0 antes y 0 después de la suite. `pint --test` en verde sobre los 48 archivos PHP de esta feature; el Pint global falla solo por estilo preexistente en `config/auth.php`, `database/factories/UserFactory.php` y cuatro migraciones de BD, que no se modifican aquí. Paquetes: Sanctum 4.3.3, Fortify 1.41.0 (trae `laravel/passkeys` como dependencia transitiva, sin habilitar), Permission 6.25.0, Activitylog 4.12.3. Sin archivos nuevos en `database/migrations`.
 - [x] **T-33**: actualizar el estado de la spec (`En progreso` al iniciar, `Implementada` al cerrar) y los documentos de `apps/api/docs` (`credenciales-desarrollo.md` a «Activo en `arca_pruebas`»).
-  - 2026-10-17: spec en `Implementada`; `credenciales-desarrollo.md` en «Activo en `arca_pruebas`».
+  - spec en `Implementada`; `credenciales-desarrollo.md` en «Activo en `arca_pruebas`».
 - [x] **T-34** (BD, CA-18): con `DEMO_STAFF_PASSWORD` en su `.env`, el responsable de BD ejecuta `php artisan db:seed` sobre `arca_pruebas`, verifica las cuentas con tinker (§5 de `credenciales-desarrollo.md`) y comparte la contraseña por fuera del repositorio.
-  - 2026-10-17: con acuerdo del responsable de BD, el equipo ejecutó `php artisan db:seed` en ambiente `local` sobre `arca_pruebas` (0 usuarios antes). Resultado: 5 áreas, 5 roles, 17 permisos y 6 cuentas demo activas (`presidencia@`/`admin@` → `admin`, `direccion_zoo@` → `zoo-admin`, `ejecutivo@` → `executive`, `boletaje@` → `cashier`, `veterinario@` → `veterinarian`), todas con la contraseña de `DEMO_STAFF_PASSWORD` verificada con `Hash::check`. La contraseña se comparte fuera del repositorio.
+  - con acuerdo del responsable de BD, el equipo ejecutó `php artisan db:seed` en ambiente `local` sobre `arca_pruebas` (0 usuarios antes). Resultado: 5 áreas, 5 roles, 17 permisos y 6 cuentas demo activas (`presidencia@`/`admin@` → `admin`, `direccion_zoo@` → `zoo-admin`, `ejecutivo@` → `executive`, `boletaje@` → `cashier`, `veterinario@` → `veterinarian`), todas con la contraseña de `DEMO_STAFF_PASSWORD` verificada con `Hash::check`. La contraseña se comparte fuera del repositorio.
 - [x] **T-35**: prueba manual contra la API local: `presidencia@` y `direccion_zoo@` (enrolamiento 2FA y reto en un segundo acceso), `ejecutivo@`, `boletaje@`, `veterinario@` (`pwa_url`), logout y expiración.
-  - 2026-10-17: peticiones HTTP reales con cookies, CSRF y `Origin: http://localhost:5174` contra `php artisan serve`. `ejecutivo@`, `boletaje@` y `veterinario@`: login 200, `me` con `home` `executive`/`ticket`/`pwa` (`pwa_url` presente solo en veterinario), logout 204 y `me` 401 después. Login con contraseña incorrecta: 422 «Correo o contraseña incorrectos.». `presidencia@` (`admin`) y `direccion_zoo@` (`zoo-admin`): `two_factor_setup_required=true`, QR en SVG, confirmación TOTP, reto TOTP en el segundo acceso y reto con código de recuperación en el tercero; al final se desactivó el 2FA por la API para que cada administrador lo enrole con su celular (secreto, códigos y `two_factor_confirmed_at` en null). Expiración con `SESSION_LIFETIME=1`: `me` 401 tras 70 s. Bitácora `auth`: login, logout, failed y two_factor_confirmed, sin contraseñas. Aún no hay rutas de negocio con `administrator.two-factor`; su 403 lo cubre `AdministratorTwoFactorTest`.
+  - peticiones HTTP reales con cookies, CSRF y `Origin: http://localhost:5174` contra `php artisan serve`. `ejecutivo@`, `boletaje@` y `veterinario@`: login 200, `me` con `home` `executive`/`ticket`/`pwa` (`pwa_url` presente solo en veterinario), logout 204 y `me` 401 después. Login con contraseña incorrecta: 422 «Correo o contraseña incorrectos.». `presidencia@` (`admin`) y `direccion_zoo@` (`zoo-admin`): `two_factor_setup_required=true`, QR en SVG, confirmación TOTP, reto TOTP en el segundo acceso y reto con código de recuperación en el tercero; al final se desactivó el 2FA por la API para que cada administrador lo enrole con su celular (secreto, códigos y `two_factor_confirmed_at` en null). Expiración con `SESSION_LIFETIME=1`: `me` 401 tras 70 s. Bitácora `auth`: login, logout, failed y two_factor_confirmed, sin contraseñas. Aún no hay rutas de negocio con `administrator.two-factor`; su 403 lo cubre `AdministratorTwoFactorTest`.
   - Hallazgo: `DemoStaffSeederTest` (producción) pasaba por un falso positivo con la base vacía (`firstOrFail` lanzaba la excepción). Se corrigió para fijar `$this->app['env']` y comprobar el mensaje exacto; los 4 tests CA-18 pasan con las cuentas sembradas.
   - El `.env` local no tenía `APP_KEY`; la prueba usó una clave temporal por proceso. Cada integrante debe ejecutar `php artisan key:generate` en su `.env`.

@@ -2,9 +2,10 @@
 
 - App dueña: `api` (automatización transversal de CI)
 - Apps/paquetes afectados: `dashboard` y GitHub Actions
-- Estado: Aprobada
-- Solicitante / responsable funcional: usuario solicitante
-- Aprobación funcional: aprobada por el usuario solicitante el 2026-10-27
+- Estado: Implementada
+- Solicitada: 2026-10-27
+- Aprobada: 2026-10-27
+- Aprobación funcional: aprobada por el usuario solicitante
 
 ## Problema y contexto
 
@@ -71,9 +72,9 @@ La feature solo procesa archivos estáticos generados durante el build del Dashb
 
 - Dependencias/ADR: usa las dependencias ya declaradas y bloqueadas por `package-lock.json`; usa GitHub Actions `actions/upload-artifact@v4`. No agrega dependencias de la aplicación.
 - Riesgos: los jobs de GitHub Actions tienen entornos aislados, por lo que el job de build debe instalar por sí mismo las dependencias del monorepo.
-- Preguntas pendientes: ninguna; la app objetivo es Dashboard y la salida acordada es un ZIP de `dist/`.
+- Decisiones: ninguna pendiente; la app objetivo es Dashboard y la salida acordada es un ZIP de `dist/`.
 
 ## Revisión
 
-- Aprobadores y fecha: usuario solicitante, 2026-10-27.
+- Aprobación: usuario solicitante.
 - Evidencia/enlaces: pendiente de implementación y primera ejecución de GitHub Actions.

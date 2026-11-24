@@ -6,6 +6,8 @@
 
 Se prevé un `docker-compose` para servicios locales de desarrollo, incluido MySQL 8.0.x. Aún no existe archivo Compose ni configuración de contenedores. El equipo debe decidir puertos, volúmenes, datos semilla y estrategia de respaldos en una spec.
 
+Para levantar la API y conectar un dispositivo, sigue [Requisitos y arranque de la API](../apps/api/docs/requisitos-entorno.md). Incluye el caso local, una computadora visible en la red y un servidor compartido por HTTPS. El cliente se configura desde la [guía móvil](../apps/mobile/README.md#conectar-la-api).
+
 ## Alojamiento previsto
 
 La base de datos administrada es Aiven MySQL (ADR 0013), con TLS configurado por `DB_SSL_CA` en `.env`; `arca_pruebas` es la base de trabajo y PHPUnit, y `arca_zoo` es producción. Google Cloud dejó de ser el destino del sistema: el hosting de la API Laravel y de los clientes queda por definir. El almacenamiento de archivos que se agregue usará discos configurables de Laravel Filesystem, no llamadas a SDK desde dominio.
@@ -16,7 +18,7 @@ La familia MySQL 8.0.x es obligatoria en todos los ambientes; la revisión míni
 
 ## Portabilidad
 
-- Usar capacidades compatibles con MySQL 8.0.x; no depender de extensiones exclusivas de Aiven ni de MySQL 8.4.
+- Usar capacidades compatibles con MySQL 8.0.x; no depender de extensiones exclusivas de Aiven ni de funciones posteriores a la familia 8.0.x.
 - Configurar acceso, host, base, usuario y secreto mediante variables de entorno; no versionar credenciales.
 - Mantener datos persistentes en migraciones Laravel y planear exportación, respaldo y restauración verificables.
 - Para migrar a MySQL Server local, apuntar conexiones a la instancia local mediante `.env`, validar collation/versión y probar restauración; revisar por separado el driver de archivos.
@@ -25,6 +27,27 @@ La familia MySQL 8.0.x es obligatoria en todos los ambientes; la revisión míni
 ## Checklist obligatorio de despliegue de la API
 
 Ninguno de estos ajustes viaja con el código: la configuración local no se copia al servidor, y sin ellos la app arranca pero falla después. Se repite en cada ambiente y se registra con su evidencia. Es el mínimo conocido, no sustituye al checklist operativo aprobado que falta definir, y se amplía si aparece otro requisito.
+
+**Zona horaria (api-025)**
+
+- [ ] `ARCA_TIMEZONE` tiene la zona de negocio (por defecto y en producción `America/Mexico_City`, a confirmar por operaciones). Debe ser un identificador IANA: si está vacía o es inválida, la API no arranca.
+- [ ] `DB_TIMEZONE=+00:00` (valor por defecto): la sesión MySQL va en UTC.
+- [ ] Tras cambiar `.env` se ejecutó `php artisan config:clear` o `config:cache`.
+- [ ] **Evidencia antes de desplegar (operaciones, sobre `arca_zoo`):** `@@session.time_zone` y `@@system_time_zone`, y que `tickets.purchased_at` y `cancelled_at` guardados están en UTC.
+
+**Consola de administradores (api-023)**
+
+- [ ] `ARCA_PRIMARY_ADMIN_EMAIL` apunta a un administrador activo (titular) y `ARCA_ADMIN_RECOVERY=false`. Sin titular los comandos `arca:admin:*` de nivel alto fallan; el modo recuperación solo se activa durante el procedimiento de `apps/api/docs/administracion.md` y se desactiva al terminar (api-023).
+
+**Seguridad de la configuración**
+
+- [ ] `APP_ENV=production` y `APP_DEBUG=false` en producción; nunca `APP_DEBUG=true` fuera de desarrollo.
+- [ ] `LOG_LEVEL=warning` (o superior) en producción: el nivel `debug` registra datos de las peticiones (api-028).
+- [ ] `TRUSTED_PROXIES` con la IP o el CIDR del balanceador o proxy inverso (lista separada por comas; `*` solo si el servidor no es alcanzable sin pasar por el proxy). Sin esto, detrás de un balanceador `$request->ip()` es la IP del proxy y los límites por IP (`throttle`) se vuelven globales; con un valor demasiado amplio, un cliente puede falsear su IP con `X-Forwarded-For` (api-028).
+- [ ] El proxy o el hosting agrega las cabeceras de seguridad (no se fijan en el código de la API): `Content-Security-Policy`, `Strict-Transport-Security` (HSTS), `X-Frame-Options` (`DENY` o `SAMEORIGIN`) y `Referrer-Policy` (por ejemplo `strict-origin-when-cross-origin`) (api-028).
+- [ ] Los scripts `docs/database/backups/reset-and-init.php` y `restore.php` y los seeders `Dbr019*` se niegan a correr con `APP_ENV=production` o `DB_DATABASE=arca_zoo`; no se ejecutan contra producción (api-028).
+- [ ] El bloqueo por intentos fallidos de confirmación del titular (api-023) y los límites de frecuencia (`throttle`) viven en la caché: `CACHE_STORE=database` o `redis` (persistente y compartida entre procesos); **nunca** `array` ni `file` en producción, porque el bloqueo se perdería al reiniciar o no se compartiría.
+- [ ] `DEMO_STAFF_PASSWORD` vacía en producción y el comando `arca:demo:cancellation-reviews` (cuentas `demo-cancel-*`) **no se ejecuta nunca** en producción; el comando se niega fuera de `arca_pruebas` y con `APP_ENV=production`.
 
 **Imágenes de noticias y eventos**
 
@@ -40,20 +63,21 @@ El límite de 5 MB también está en la validación de la API, en la pantalla y 
 
 Las fotos de especies (api-014: envío del veterinario y edición de la Dirección, JPEG o PNG) usan el mismo límite de 5 MB y los mismos ajustes de PHP y del servidor web de este checklist; no requieren un valor distinto. Las peticiones de edición con foto viajan como `multipart/form-data` con `_method=PATCH`.
 
-**Medios de prueba compartidos** (decisión del responsable 2026-11-10; ADR 0026 Aceptado el 2026-11-12 y `apps/api/specs/013-object-storage-images.md` Aprobada el 2026-11-12)
+**Medios de prueba compartidos** (decisión del responsable; ADR 0026 Aceptado y `apps/api/specs/013-object-storage-images.md` Aprobada)
 
 - [ ] `.env` de cada equipo de pruebas: `PUBLIC_MEDIA_DISK=media` y `PRIVATE_MEDIA_DISK=media`. Sin ellas, las imágenes van a `storage/` y no se versionan. Sin `PUBLIC_MEDIA_DISK=media` y `PRIVATE_MEDIA_DISK=media` en el mismo equipo, los momentos aceptados se publican sin imagen (api-013 CA-11).
 - [ ] `MEDIA_PUBLIC_URL` vacía (por defecto `APP_URL` + `/media`) o con una URL alcanzable desde el equipo que consulta.
 - [ ] `php artisan storage:link` desde `apps/api/src` crea `public/media` apuntando a `media/`. Los medios de prueba no usan `public/storage`. `public/media` no se versiona.
-- [ ] Se versiona toda `apps/api/src/media/` (`news/`, `events/`, `memories/`, `species/` y `species-requests/`; las dos últimas por la enmienda del 2026-11-11 del ADR 0026). Solo se versionan imágenes `.jpg`, `.jpeg`, `.png` y `.webp` y los `.gitkeep`; tope de 100 imágenes o 100 MB (api-013 CA-22). Solo datos de prueba: nunca visitantes reales, producción ni `arca_zoo` (api-013 CA-22). Los momentos pendientes y rechazados también se versionan (api-013 D-02); su contenido queda en el historial de git aunque se borre (ADR 0026, riesgo a).
-- [ ] Fotos de especies (api-014, RN-04, RN-22): las carpetas `apps/api/src/media/species/` (foto publicada) y `apps/api/src/media/species-requests/` (foto pendiente de revisión) existen en el disco `media` y su `storage:link` es el mismo de arriba. Se versionan en pruebas (api-014, Q3 resuelta el 2026-11-13, según la enmienda del ADR 0026); las fotos pendientes quedan en el historial de git aunque se rechacen (riesgo m). Antes de producción se revisa esta decisión. La API solo borra archivos de esas dos carpetas con nombre UUID, y solo después de confirmar la transacción.
-- [ ] Hay que volver a subir todas las imágenes ya subidas de noticias y eventos desde el dashboard antes del commit (api-013 D-04; confirmado por Jonathan el 2026-11-10).
+- [ ] Se versiona toda `apps/api/src/media/` (`news/`, `events/`, `memories/`, `species/` y `species-requests/`; las dos últimas por la enmienda del ADR 0026). Solo se versionan imágenes `.jpg`, `.jpeg`, `.png` y `.webp` y los `.gitkeep`; tope de 100 imágenes o 100 MB (api-013 CA-22). Solo datos de prueba: nunca visitantes reales, producción ni `arca_zoo` (api-013 CA-22). Los momentos pendientes y rechazados también se versionan (api-013 D-02); su contenido queda en el historial de git aunque se borre (ADR 0026, riesgo a).
+- [ ] Fotos de especies (api-014, RN-04, RN-22): las carpetas `apps/api/src/media/species/` (foto publicada) y `apps/api/src/media/species-requests/` (foto pendiente de revisión) existen en el disco `media` y su `storage:link` es el mismo de arriba. Se versionan en pruebas (api-014, Q3 resuelta, según la enmienda del ADR 0026); las fotos pendientes quedan en el historial de git aunque se rechacen (riesgo m). Antes de producción se revisa esta decisión. La API solo borra archivos de esas dos carpetas con nombre UUID, y solo después de confirmar la transacción.
+- [ ] Hay que volver a subir todas las imágenes ya subidas de noticias y eventos desde el dashboard antes del commit (api-013 D-04).
 - [ ] Flujo: subir o recibir (noticia, evento, momento o especie) → revisar → `git add apps/api/src/media` → commit citando `api-013` → `git pull` en los demás equipos. Reemplazos, borrados y rechazos se confirman igual (api-013 CA-18, CA-20).
 - [ ] La API no devuelve la URL de un momento pendiente, pero su archivo es alcanzable por `/media/memories/<uuid>` si se conoce (api-013 RN-16).
-- [ ] `.env` de momentos (api-010): `MEMORIES_PUBLICATION_DAYS` (vigencia en el portal; 7 días por defecto, decisión del usuario 2026-11-12) y `MEMORIES_TERMS_VERSION` (versión de términos aceptada al enviar). `MEMORIES_TERMS_VERSION` vale `v1` por defecto; si se deja vacía en `.env`, se usa `v1`.
+- [ ] `.env` de momentos (api-010): `MEMORIES_PUBLICATION_DAYS` (vigencia en el portal; 7 días por defecto, decisión del usuario) y `MEMORIES_TERMS_VERSION` (versión de términos aceptada al enviar). `MEMORIES_TERMS_VERSION` vale `v1` por defecto; si se deja vacía en `.env`, se usa `v1`.
 - [ ] Momentos (api-010): el seeder de permisos debe incluir `memories.review` solo para `zoo-admin` (`admin` queda excluido). La subida de fotos de visitantes admite JPG, PNG o WebP de hasta 5 MB: el servidor web y PHP (`upload_max_filesize`, `post_max_size`) deben permitir al menos ese tamaño; la app muestra los 413 y 415 con el mismo mensaje de tamaño o formato.
-- [x] Quién commitea los momentos recibidos y con qué frecuencia: el mismo día, por quien recibió el envío (api-013, pregunta 5, resuelta el 2026-11-12).
-- [x] El equipo registra la aceptación de los riesgos a, b, c y g del ADR 0026 antes de la primera subida de un momento. (Confirmados por Jonathan, responsable de backend, el 2026-11-12, válido para pruebas; el ADR también confirma el riesgo m. Revisar antes de producción.)
+- [ ] Avisos del visitante (api-017): un proceso ejecuta `php artisan queue:work` y otro `php artisan schedule:run` cada minuto. `PUSH_ENABLED`, `EXPO_PUSH_URL` y `EXPO_ACCESS_TOKEN` se configuran por ambiente. El token no se versiona: es un token de acceso de la organización de Expo `arca-nb`. El proyecto de EAS es esa organización (`owner` y `projectId` en `apps/mobile/app.json`); no se crea otro. La credencial FCM vive en ese proyecto, fuera de Git. Quien compila entra con una cuenta invitada a la organización. El push no funciona en Expo Go. El APK de prueba es el perfil `preview` de EAS; la URL queda en ese entorno, no en `apps/mobile/.env`. Los comandos están en `apps/mobile/docs/013-permiso-notificaciones.md`. La cola, también si la API corre en un contenedor, está en `apps/api/docs/visitante-push.md`. Cuando la API esté en un servidor, el teléfono usa su HTTPS. El perfil `preview` no sirve para eso, y el build de producción usa el perfil `production` de EAS (`mobile-008`, `mobile-018`).
+- [x] Quién commitea los momentos recibidos y con qué frecuencia: el mismo día, por quien recibió el envío.
+- [x] El equipo registra la aceptación de los riesgos a, b, c y g del ADR 0026 antes de la primera subida de un momento. (Confirmados por el responsable de backend, válido para pruebas; el ADR también confirma el riesgo m. Revisar antes de producción.)
 - [ ] Antes de producción se retira `memories/` del repositorio y de su historial (api-013, pregunta 4: se fija en una spec propia antes de cualquier uso fuera de pruebas; pendiente de producción).
 - [ ] Sin dependencias nuevas en `composer.json`. Git no es respaldo ni producción; `arca_zoo` no usa esta carpeta.
 - [ ] **Evidencia:** otro equipo, con `pull` del mismo commit, abre la URL de una imagen publicada y responde 200 con `image/*` (api-013 CA-21).

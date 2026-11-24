@@ -2,12 +2,19 @@
 
 namespace App\Providers;
 
+use App\Actions\Admin\Enclosures\Qr\EnclosureQrCodeGenerator;
+use App\Actions\Admin\Enclosures\Qr\QrCodeValueGenerator;
+use App\Listeners\ClearStepUpWindow;
 use App\Listeners\RecordAuthenticationEvent;
+use App\Push\ExpoPushGateway;
+use App\Push\PushGateway;
+use App\Support\BusinessTimezone;
 use Closure;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -25,6 +32,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(PushGateway::class, ExpoPushGateway::class);
+        $this->app->bind(QrCodeValueGenerator::class, EnclosureQrCodeGenerator::class);
+
         $this->app->bind('visitor.password', function () {
             $rule = Password::min(8)->letters()->numbers();
 
@@ -43,15 +53,40 @@ class AppServiceProvider extends ServiceProvider
             return app()->environment('local') ? $rule : $rule->uncompromised();
         });
 
+        // api-025 CA-14: una zona de negocio inválida impide el arranque (sin respaldo silencioso).
+        BusinessTimezone::assertValid();
+
         DB::prohibitDestructiveCommands();
         $this->forceHttps();
+        $this->configureTrustedProxies();
         $this->registerVisitorLimiters();
+        $this->registerReadLimiters();
         $this->registerTicketLimiters();
+        $this->registerSearchLimiter();
+        $this->registerPendingCountsLimiter();
+        $this->registerCancellationReportLimiter();
+        $this->registerPasswordConfirmationLimiter();
+        $this->registerStaffApiLimiter();
 
+        // api-021 CA-10: la ventana de confirmación no sobrevive a un inicio ni a un cierre de sesión.
+        Event::listen(Login::class, ClearStepUpWindow::class);
+        Event::listen(Logout::class, ClearStepUpWindow::class);
         Event::listen(Login::class, RecordAuthenticationEvent::class);
         Event::listen(Failed::class, RecordAuthenticationEvent::class);
         Event::listen(Logout::class, RecordAuthenticationEvent::class);
         Event::listen(TwoFactorAuthenticationConfirmed::class, RecordAuthenticationEvent::class);
+    }
+
+    /** api-028 CA-11: `TRUSTED_PROXIES` (IP/CIDR separados por coma, o `*`); vacío: ningún proxy es de confianza. */
+    public function configureTrustedProxies(): void
+    {
+        $value = config('arca.trusted_proxies');
+
+        if (! is_string($value) || trim($value) === '') {
+            return;
+        }
+
+        TrustProxies::at(trim($value) === '*' ? '*' : array_values(array_filter(array_map('trim', explode(',', $value)))));
     }
 
     public function forceHttps(): void
@@ -72,7 +107,11 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('visitor-login', function (Request $request) use ($response) {
             $key = Str::lower((string) $request->input('email')).'|'.$request->ip();
 
-            return Limit::perMinute(5)->by($key)->response($response);
+            // api-028: tope adicional solo por IP contra pruebas de una contraseña en muchos correos.
+            return [
+                Limit::perMinute(5)->by($key)->response($response),
+                Limit::perMinute(20)->by('ip:'.$request->ip())->response($response),
+            ];
         });
 
         RateLimiter::for('visitor-resend', function (Request $request) use ($response) {
@@ -85,7 +124,44 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('visitor-forgot', function (Request $request) use ($response) {
-            return Limit::perHour(3)->by(Str::lower((string) $request->input('email')))->response($response);
+            return [
+                Limit::perHour(3)->by(Str::lower((string) $request->input('email')))->response($response),
+                Limit::perHour(10)->by('ip|'.$request->ip())->response($response),
+            ];
+        });
+
+        // api-028 CA-09: verificación de código, renovación de sesión y restablecimiento con límite por IP.
+        RateLimiter::for('visitor-verify', fn (Request $request) => Limit::perMinute(10)->by('verify|'.$request->ip())->response($response));
+        RateLimiter::for('visitor-refresh', fn (Request $request) => Limit::perMinute(30)->by('refresh|'.$request->ip())->response($response));
+        RateLimiter::for('visitor-reset', fn (Request $request) => Limit::perMinute(10)->by('reset|'.$request->ip())->response($response));
+    }
+
+    /**
+     * El catálogo público se cuenta por IP: 1 800 por minuto cabe en una apertura
+     * simultánea del zoológico y corta un bombardeo. La sesión del visitante se
+     * cuenta por cuenta: 120 por minuto. Las pruebas no consumen cupo.
+     */
+    private function registerReadLimiters(): void
+    {
+        $response = $this->visitorThrottleResponse();
+        $open = fn () => $this->app->runningUnitTests();
+
+        RateLimiter::for('public-read', function (Request $request) use ($response, $open) {
+            if ($open()) {
+                return Limit::none();
+            }
+
+            return Limit::perMinute(1800)->by((string) $request->ip())->response($response);
+        });
+
+        RateLimiter::for('visitor-session', function (Request $request) use ($response, $open) {
+            if ($open()) {
+                return Limit::none();
+            }
+
+            $key = (string) ($request->user()?->getAuthIdentifier() ?? $request->ip());
+
+            return Limit::perMinute(120)->by($key)->response($response);
         });
     }
 
@@ -110,6 +186,72 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('ticket-cancel', fn (Request $request) => $request->user()?->can('tickets.cancel')
             ? Limit::perMinute(20)->by($key($request))->response($response)
             : Limit::none());
+    }
+
+    /** CA-47: 30 búsquedas por minuto y usuario; el 429 no consulta nada ni registra el término. */
+    private function registerSearchLimiter(): void
+    {
+        RateLimiter::for('admin-search', fn (Request $request) => Limit::perMinute(30)
+            ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip()))
+            ->response(fn (Request $request, array $headers) => response()->json([
+                'message' => 'Demasiadas búsquedas. Espera un minuto e inténtalo de nuevo.',
+            ], 429, $headers)));
+    }
+
+    /** api-024 CA-10: 60 consultas por minuto y usuario; quien no tiene permiso no consume cuota y recibe 403. */
+    private function registerPendingCountsLimiter(): void
+    {
+        RateLimiter::for('admin-pending-counts', function (Request $request) {
+            $user = $request->user();
+
+            if (! $user?->hasAnyPermission(['species.review', 'memories.review', 'reports.cancellations.view'])) {
+                return Limit::none();
+            }
+
+            return Limit::perMinute(60)
+                ->by((string) $user->getAuthIdentifier())
+                ->response(fn (Request $request, array $headers) => response()->json([
+                    'message' => 'Demasiadas consultas. Espera un minuto e inténtalo de nuevo.',
+                ], 429, $headers));
+        });
+    }
+
+    /** api-022: 60 consultas por minuto y usuario a las lecturas del reporte de cancelaciones; sin permiso no consume cuota. */
+    private function registerCancellationReportLimiter(): void
+    {
+        RateLimiter::for('cancellation-report', function (Request $request) {
+            $user = $request->user();
+
+            if (! $user?->can('reports.cancellations.view')) {
+                return Limit::none();
+            }
+
+            return Limit::perMinute(60)
+                ->by((string) $user->getAuthIdentifier())
+                ->response(fn (Request $request, array $headers) => response()->json([
+                    'message' => 'Demasiadas consultas al reporte. Espera un minuto e inténtalo de nuevo.',
+                ], 429, $headers));
+        });
+    }
+
+    /** api-028 CA-06: límite por usuario en /staff/*; el tope sale de `arca.staff_api_limit` (por minuto). */
+    private function registerStaffApiLimiter(): void
+    {
+        RateLimiter::for('staff-api', fn (Request $request) => Limit::perMinute(max(1, (int) config('arca.staff_api_limit', 120)))
+            ->by('staff|'.($request->user()?->getAuthIdentifier() ?? $request->ip()))
+            ->response(fn (Request $request, array $headers) => response()->json([
+                'message' => 'Demasiadas solicitudes. Intenta de nuevo en unos instantes.',
+            ], 429, $headers)));
+    }
+
+    /** api-021: 10 confirmaciones por minuto y usuario, antes de verificar la contraseña. */
+    private function registerPasswordConfirmationLimiter(): void
+    {
+        RateLimiter::for('password-confirmation', fn (Request $request) => Limit::perMinute(10)
+            ->by((string) ($request->user()?->getAuthIdentifier() ?? $request->ip()))
+            ->response(fn (Request $request, array $headers) => response()->json([
+                'message' => 'Demasiadas solicitudes de confirmación. Espera un minuto e inténtalo de nuevo.',
+            ], 429, $headers)));
     }
 
     private function visitorThrottleResponse(): Closure

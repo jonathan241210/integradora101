@@ -1,7 +1,9 @@
 import type { FormEvent } from "react";
-import { Alert, Badge, Card, Field, SelectField, TextAreaField } from "@arca/ui";
+import { Badge, Card, Field, Pagination, SelectField, TextAreaField } from "@arca/ui";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ContentCardActions } from "@/components/ContentCardActions";
 import { ContentThumbnail } from "@/components/ContentThumbnail";
+import { ActionError } from "@/components/DashboardNotifications";
 import { fieldErrorProps } from "@/components/FieldErrors";
 import { FormField } from "@/components/FormField";
 import { FormPanel } from "@/components/FormPanel";
@@ -9,14 +11,31 @@ import { triggerKey, useInlineFocus } from "@/components/inline-focus";
 import { ImageUploadBox } from "@/components/ImageUploadBox";
 import { InlineFormFooter } from "@/components/InlineFormFooter";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { CardGridSkeleton } from "@/components/LoadingSkeletons";
 import { NoticeBar } from "@/components/NoticeBar";
 import { SectionHeading } from "@/components/SectionHeading";
 import { formatDate } from "@/viewmodels/formatters";
 import { visibleImageUrl } from "@/viewmodels/inline-content";
+import { confirmationFromCopy } from "@/viewmodels/confirmation";
 import { getNewsConfirmation, type NewsFormValues, type NewsViewModel } from "@/viewmodels/news-management";
+import { useContentPagination } from "@/viewmodels/useEventsPagination";
 
-export function NewsView({ state, actions }: NewsViewModel) {
+export function NewsView({ state, actions, focus = null }: NewsViewModel & {
+  focus?: { id: number; nonce: number } | null;
+}) {
   const { form, editing, fieldErrors: errors, pendingAction } = state;
+  const pagination = useContentPagination(state.items, pendingAction, state.actionBusy, 6, focus);
+  const confirmingVisibleItem = pendingAction !== null && pagination.items.some((item) => item.id === pendingAction.id);
+  // Estado y eliminación se confirman en ventana modal (dashboard-020, revisión 2026-11-21 (b)).
+  const pendingTarget = pendingAction
+    ? state.items.find((item) => item.id === pendingAction.id)
+    : undefined;
+  const pendingCopy = pendingAction && pendingTarget
+    ? confirmationFromCopy(
+        getNewsConfirmation(pendingAction.type, pendingTarget),
+        pendingAction.type === "status" ? "Confirmar cambio de estado" : undefined,
+      )
+    : null;
   const editingNow = editing !== null;
   const { registerTrigger, noticeRef } = useInlineFocus({
     pendingAction,
@@ -43,11 +62,7 @@ export function NewsView({ state, actions }: NewsViewModel) {
         description="Crea, edita y retira las noticias del zoológico."
       />
       <NoticeBar message={state.notice} onDismiss={actions.dismissNotice} focusRef={noticeRef} />
-      {state.actionError && pendingAction === null && (
-        <Alert className="inline-alert" role="alert" aria-live="assertive">
-          {state.actionError}
-        </Alert>
-      )}
+      <ActionError message={pendingAction === null ? state.actionError : ""} />
 
       <FormPanel
         id="news-form"
@@ -160,6 +175,7 @@ export function NewsView({ state, actions }: NewsViewModel) {
         status={state.status}
         error={state.error}
         loadingText="Cargando noticias…"
+        skeleton={<CardGridSkeleton kind="news" label="Cargando noticias…" />}
         emptyText="Aún no hay noticias registradas."
         onRetry={actions.reload}
       />
@@ -172,11 +188,9 @@ export function NewsView({ state, actions }: NewsViewModel) {
             </div>
           </div>
           <div className="content-card-grid">
-            {state.items.map((item) => {
-              const pending = pendingAction?.id === item.id ? pendingAction.type : null;
-
+            {pagination.items.map((item) => {
               return (
-                <Card className="content-card" key={item.id}>
+                <Card className="content-card" key={item.id} data-search-id={`news:${item.id}`}>
                   <ContentThumbnail url={item.image_url} name={item.title} />
                   <div className="content-card__body">
                     <div className="content-card__meta">
@@ -190,23 +204,34 @@ export function NewsView({ state, actions }: NewsViewModel) {
                     <ContentCardActions
                       subject={`la noticia ${item.title}`}
                       isActive={item.is_active}
-                      pending={pending}
-                      copy={pending ? getNewsConfirmation(pending, item) : null}
-                      busy={state.actionBusy}
-                      error={pending ? state.actionError : ""}
                       registerTrigger={(type) => registerTrigger(triggerKey({ type, id: item.id }))}
                       onEdit={() => actions.startEdit(item)}
                       onOpen={(type) => actions.openAction({ type, id: item.id })}
-                      onConfirm={actions.confirmAction}
-                      onCancel={actions.closeAction}
                     />
                   </div>
                 </Card>
               );
             })}
           </div>
+          {pagination.lastPage > 1 && (
+            <Pagination
+              page={pagination.page}
+              lastPage={pagination.lastPage}
+              total={state.items.length}
+              busy={confirmingVisibleItem || state.actionBusy}
+              onPageChange={pagination.changePage}
+            />
+          )}
         </section>
       )}
+      <ConfirmDialog
+        copy={pendingCopy}
+        idleTitle="Confirmar acción de noticia"
+        busy={state.actionBusy}
+        error={state.actionError}
+        onConfirm={actions.confirmAction}
+        onCancel={actions.closeAction}
+      />
     </>
   );
 }

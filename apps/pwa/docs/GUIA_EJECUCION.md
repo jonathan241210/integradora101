@@ -547,10 +547,10 @@ npm install
 ## 📚 Documentación relacionada
 
 - [README.md](../README.md) - Guía general del proyecto
-- [Arquitectura del sistema](../../docs/02-arquitectura.md)
-- [Sistema de diseño](../../docs/04-sistema-de-diseno.md)
-- [Convenciones del código](../../docs/06-convenciones.md)
+- [Arquitectura del sistema](../../../docs/02-arquitectura.md)
+- [Sistema de diseño](../../../docs/04-sistema-de-diseno.md)
+- [Convenciones del código](../../../docs/06-convenciones.md)
 
 ---
 
-**Última actualización:** Noviembre 2026
+**Última actualización:** (sin fecha)

@@ -1,6 +1,7 @@
 import type { HttpClient } from "./http";
 import type { PageMeta } from "./admin-types";
 import type {
+  CancellationReasonDto,
   TicketCancelInput,
   TicketHistoryPage,
   TicketHistoryQuery,
@@ -58,33 +59,22 @@ function normalizeHistory(
       total: data.length,
     };
 
-  return { data, meta };
-}
+  const timezone =
+    !Array.isArray(response) && typeof response.timezone === "string" && response.timezone
+      ? response.timezone
+      : undefined;
 
-export type CreateTicketSalesApiOptions = {
-  /** Zona horaria del dispositivo; por defecto la del navegador. */
-  deviceTimeZone?: () => string | undefined;
-};
-
-function browserTimeZone(): string | undefined {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
-  } catch {
-    return undefined;
-  }
+  return timezone ? { data, meta, timezone } : { data, meta };
 }
 
 /**
  * Cliente de venta, historial y precios de boletos (`api-009`). Solo usa
- * `http.get` y `http.post`. `timezone` se envía solo en el historial (presentación);
- * ni la venta ni la cancelación lo envían (la API compara el día en la zona del zoológico).
+ * `http.get` y `http.post`. Ninguna petición envía `timezone` (`dashboard-019`): la API
+ * decide el día con su zona de negocio y la informa en la respuesta.
  */
 export function createTicketSalesApi(
   http: Pick<HttpClient, "get" | "post">,
-  options: CreateTicketSalesApiOptions = {},
 ) {
-  const zone = () => (options.deviceTimeZone ?? browserTimeZone)() || undefined;
-
   return {
     sales: {
       /** Cotiza sin registrar venta; la API calcula todos los importes. */
@@ -116,7 +106,6 @@ export function createTicketSalesApi(
               to: query.to,
               page: query.page,
               per_page: query.per_page,
-              timezone: query.timezone || zone(),
             })}`,
           ),
         );
@@ -128,9 +117,21 @@ export function createTicketSalesApi(
         return unwrap(
           await http.post<Enveloped<TicketHistoryRowDto>>(
             `${base}/tickets/${encodeURIComponent(String(id))}/cancel`,
-            { reason: input.reason },
+            { reason_code: input.reason_code, reason: input.reason ?? null },
           ),
         );
+      },
+    },
+    tickets: {
+      /** Catálogo cerrado de motivos de cancelación (`api-022` CA-10). */
+      async cancellationReasons(): Promise<CancellationReasonDto[]> {
+        const list = unwrap(
+          await http.get<Enveloped<CancellationReasonDto[]>>(
+            `${base}/tickets/cancellation-reasons`,
+          ),
+        );
+
+        return Array.isArray(list) ? list : [];
       },
     },
     prices: {
@@ -142,7 +143,7 @@ export function createTicketSalesApi(
         );
       },
       async schedule(
-        input: TicketPriceScheduleInput,
+        input: TicketPriceScheduleInput & { password?: string },
       ): Promise<TicketPriceChangeDto> {
         return unwrap(
           await http.post<Enveloped<TicketPriceChangeDto>>(

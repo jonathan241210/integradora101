@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Actions\Catalog\ResolvePublishedSpeciesImageUrlAction;
 use App\Models\Animal;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -26,8 +27,8 @@ class SpeciesResource extends JsonResource
             'gestation_period' => $this->gestation_period ?? null,
             'size_cm' => $this->size_cm !== null ? (float) $this->size_cm : null,
             'model_3d_path' => $this->model_3d_path ?? null,
+            'image_url' => app(ResolvePublishedSpeciesImageUrlAction::class)->execute($this->image_path),
             'photo_path' => $animal?->photo_path,
-            'characteristics' => $animal?->characteristics,
             'zone_name' => $animal?->enclosure?->name,
         ];
     }

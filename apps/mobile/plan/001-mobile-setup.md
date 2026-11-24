@@ -2,6 +2,8 @@
 
 - Spec: `apps/mobile/specs/001-mobile-setup.md`
 - Estado de spec: Implementada
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
 - Responsable técnico: Equipo Técnico ARCA-NB
 
 ## Diseño de solución

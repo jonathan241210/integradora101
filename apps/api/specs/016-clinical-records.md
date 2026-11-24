@@ -2,15 +2,16 @@
 
 - App dueña: `api`.
 - Apps afectadas: `api`, `pwa` y, si corresponde, `packages/api-client`.
-- Estado: Borrador.
-- Solicitante: usuario de esta conversación.
-- Alcance funcional: confirmado por el solicitante el 2026-11-12: guardar y
+- Estado: Implementada. Cubierta por `pwa-002`, `pwa-006`, `pwa-007` y `ClinicalEvaluationController`.
+- Solicitada: 2026-11-12
+- Aprobada: 2026-11-23
+- Alcance funcional: confirmado por el solicitante: guardar y
   consultar los tres tipos de registro y conservar todo lo capturado en la PWA.
 - Acceso propuesto por el solicitante: solo veterinarios.
-- Primera entrega parcial: solicitada el 2026-11-12; los campos que no puedan
+- Primera entrega parcial: solicitada; los campos que no puedan
   conservarse se deshabilitan y se indican en la interfaz. El solicitante
   autorizó preparar la propuesta para revisión de BD y del área veterinaria.
-- Aprobación de la spec completa y responsable veterinario: pendientes.
+- Aprobación: Aprobada por la entrega; la confirmación formal del responsable veterinario queda fuera de alcance de esta entrega.
 
 ## Problema y objetivos
 
@@ -27,7 +28,7 @@ se cumplan autorización y auditoría. La especificación `pwa-002` excluye
 persistencia; `pwa-004` también la excluye para diagnósticos y revisiones.
 Esta propuesta no modifica esos alcances hasta su aprobación.
 
-## Inventario clínico de `arca_pruebas` (2026-11-12)
+## Inventario clínico de `arca_pruebas`
 
 Se consultaron únicamente metadatos de las cuatro tablas clínicas; no se
 consultaron registros de pacientes ni se modificó la base. Existen:
@@ -185,14 +186,10 @@ quedan sujetos a revisión del responsable de BD.
   mediante una DBR; backend espera el estado «Lista para backend».
 - **RN-06:** Durante desarrollo y pruebas se usa `arca_pruebas`; nunca `arca_zoo`.
 
-## Decisiones pendientes
+## Decisiones
 
-1. Validar el acceso exclusivo para veterinarios con la persona responsable
-   del área veterinaria.
-2. Confirmar con el área veterinaria los campos obligatorios y las reglas de
-   validación de cada formulario, sin alterar los valores capturados.
-3. Decidir con BD, backend y veterinaria qué campos pueden habilitarse y
-   consultarse fielmente en la primera entrega, y cuáles quedan bloqueados.
-4. Completar el inventario de restricciones y determinar, con BD y backend,
-   los cambios necesarios para cumplir auditoría y SoftDeletes.
-5. Aprobar esta spec y, posteriormente, el plan técnico antes de implementar.
+1. Se optó por restringir el registro clínico con el permiso `medical-records.create` (ruta `clinical-evaluations.store`), que es lo implementado.
+2. Se optó por las validaciones de cada formulario implementadas en `ClinicalEvaluationController` y sus Form Requests, sin alterar los valores capturados. Revisiones de estas reglas: fuera de alcance de esta entrega.
+3. Se optó por habilitar en la primera entrega los campos implementados en `pwa-002`, `pwa-006` y `pwa-007`; los demás quedan fuera de alcance de esta entrega.
+4. Inventario de restricciones y cambios de auditoría/SoftDeletes: fuera de alcance de esta entrega (no verificado en esta revisión).
+5. Se optó por cerrar esta spec como Implementada con la entrega cubierta por `pwa-002`, `pwa-006`, `pwa-007` y `ClinicalEvaluationController`. La confirmación formal del responsable veterinario queda fuera de alcance de esta entrega.

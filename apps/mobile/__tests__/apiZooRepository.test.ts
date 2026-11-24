@@ -1,5 +1,5 @@
 import { ApiZooRepository } from '../src/repositories/apiZooRepository';
-import { defaultStorage } from '../src/repositories/storage';
+import { defaultStorage, MemoryKeyValueStorage } from '../src/repositories/storage';
 import type { HttpClient } from '@arca/api-client';
 
 describe('ApiZooRepository (mobile-003: api-read-integration)', () => {
@@ -114,9 +114,47 @@ describe('ApiZooRepository (mobile-003: api-read-integration)', () => {
     expect(detail?.title).toBe('Aviso de hoy');
     expect(detail?.content).toBe('Texto completo de la noticia.');
     expect(detail?.date).toBe('10 de noviembre de 2026');
+
+    mockHttpClient.get.mockResolvedValueOnce({
+      data: {
+        id: 25,
+        title: 'Aviso actualizado',
+        published_date: '2026-11-10',
+        content: 'Texto nuevo.',
+        image_url: 'http://localhost:8000/media/news/aviso.jpg',
+      },
+    });
+    const reloaded = await repository.reloadNewsById('25');
+    expect(reloaded?.title).toBe('Aviso actualizado');
+    expect(reloaded?.imageUrl).toContain('/media/news/aviso.jpg');
   });
 
-  it('CA-11: refreshNewsAndEvents pide la red aunque la caché esté vigente', async () => {
+  it('CA-05: entrega las listas vencidas y publica los resultados de la revalidación', async () => {
+    const responses = (suffix: string) => async (path: string) => ({
+      data: path.startsWith('/news')
+        ? [{ id: 1, title: `Noticia ${suffix}` }]
+        : [{ id: 2, name: `Evento ${suffix}`, start_date: '2026-11-25' }],
+    });
+    mockHttpClient.get.mockImplementation(responses('anterior') as HttpClient['get']);
+    const repository = new ApiZooRepository(mockHttpClient, new MemoryKeyValueStorage(), 0);
+    await repository.getNews();
+    await repository.getEvents();
+
+    mockHttpClient.get.mockImplementation(responses('nuevo') as HttpClient['get']);
+    const onNews = jest.fn();
+    const onEvents = jest.fn();
+    const [cachedNews, cachedEvents] = await Promise.all([
+      repository.getNews(onNews),
+      repository.getEvents(onEvents),
+    ]);
+    expect(cachedNews[0].title).toBe('Noticia anterior');
+    expect(cachedEvents[0].title).toBe('Evento anterior');
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    expect(onNews).toHaveBeenCalledWith([expect.objectContaining({ title: 'Noticia nuevo' })]);
+    expect(onEvents).toHaveBeenCalledWith([expect.objectContaining({ title: 'Evento nuevo' })]);
+  });
+
+  it('CA-11 y mobile-013 CA-14: respeta la caché fresca en primer plano y consulta la red por push o actualización manual', async () => {
     mockHttpClient.get.mockImplementation(async (path: string) => {
       if (String(path).startsWith('/news')) {
         return { data: [{ id: 1, title: 'Noticia en caché', description: 'Antes' }] };
@@ -136,9 +174,16 @@ describe('ApiZooRepository (mobile-003: api-read-integration)', () => {
     });
 
     expect((await repository.getNews())[0].title).toBe('Noticia en caché');
+    const unchanged = await repository.refreshNewsAndEvents('stale');
+    expect(unchanged.news[0].title).toBe('Noticia en caché');
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(callsBeforeRefresh);
+    const pushed = await repository.refreshNewsAndEvents('push');
+    expect(pushed.news[0].title).toBe('Noticia nueva');
+    expect(pushed.events[0].title).toBe('Evento nuevo');
+    const callsAfterPush = mockHttpClient.get.mock.calls.length;
     const fresh = await repository.refreshNewsAndEvents();
 
-    expect(mockHttpClient.get.mock.calls.length).toBeGreaterThan(callsBeforeRefresh);
+    expect(mockHttpClient.get).toHaveBeenCalledTimes(callsAfterPush + 2);
     expect(fresh.news[0].title).toBe('Noticia nueva');
     expect(fresh.events[0].title).toBe('Evento nuevo');
     expect(mockHttpClient.get).toHaveBeenCalledWith('/news?limit=3');

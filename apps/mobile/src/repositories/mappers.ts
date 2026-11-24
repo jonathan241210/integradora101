@@ -1,6 +1,15 @@
 import { Animal, MapPlace, News, ZooEvent } from '../models';
 import { SVG_HEIGHT, SVG_WIDTH, ZOO_BOUNDS } from '../constants/zoo';
 import { geoTransform } from '../utils/geoTransform';
+import canonicalMapMapping from '../data/canonicalMapMapping.json';
+
+type CanonicalMapEntry = { suggestedId: string; nameOriginal: string; svgId: string | null; mapX: number | null; mapY: number | null; status: string };
+const canonicalEnclosureByName = new Map<string, CanonicalMapEntry>(
+  (((canonicalMapMapping as any).enclosures ?? []) as CanonicalMapEntry[]).map((e) => [String(e.nameOriginal).trim().toLowerCase(), e])
+);
+const canonicalPlaceByName = new Map<string, CanonicalMapEntry>(
+  (((canonicalMapMapping as any).zoo_places ?? []) as CanonicalMapEntry[]).map((e) => [String(e.nameOriginal).trim().toLowerCase(), e])
+);
 
 export interface ApiSpeciesResponse {
   id: number | string;
@@ -64,15 +73,16 @@ const MONTHS_ES = [
 /**
  * Elige una URL que el teléfono pueda abrir.
  * Cumple CA-10 y RN-08: http(s) primero. Una ruta `news/` o `events/`
- * se sirve desde `{origen}/storage/`. localhost se reescribe al origen de la API.
+ * se sirve desde `{origen}/storage/`. Una ruta `species/` se sirve desde `{origen}/media/`.
+ * localhost se reescribe al origen de la API.
  */
 export function resolveUsableImageUrl(
   imageUrl?: string | null,
   imagePath?: string | null,
   apiBaseUrl: string | null | undefined = process.env.EXPO_PUBLIC_API_URL,
 ): string | undefined {
-  const chosen = absoluteHttp(imageUrl) ?? absoluteHttp(imagePath);
-  if (chosen) return rewriteLoopbackHost(chosen, apiBaseUrl);
+  const chosen = absoluteHttp(imageUrl, apiBaseUrl) ?? absoluteHttp(imagePath, apiBaseUrl);
+  if (chosen) return chosen;
   const stored = storagePath(imageUrl) ?? storagePath(imagePath);
   return stored ? storagePublicUrl(stored, apiBaseUrl) : undefined;
 }
@@ -91,33 +101,35 @@ export function usableImageList(
   return fromPath ? [fromPath] : [];
 }
 
-function absoluteHttp(value?: string | null): string | undefined {
+function absoluteHttp(value?: string | null, apiBaseUrl?: string | null): string | undefined {
   const trimmed = value?.trim() ?? '';
-  return ABSOLUTE_HTTP.test(trimmed) ? trimmed : undefined;
+  if (!ABSOLUTE_HTTP.test(trimmed)) return undefined;
+  return rewriteLoopbackHost(trimmed, apiBaseUrl);
 }
 
 function storagePath(value?: string | null): string | undefined {
   const trimmed = value?.trim().replace(/^\/+/, '') ?? '';
   if (!trimmed || trimmed.includes('..') || trimmed.includes('\\')) return undefined;
-  return /^(news|events)\/[^/]+\.(jpg|jpeg|png|webp)$/i.test(trimmed) ? trimmed : undefined;
+  return /^(news|events|species)\/[^/]+\.(jpg|jpeg|png|webp)$/i.test(trimmed) ? trimmed : undefined;
 }
 
 function storagePublicUrl(path: string, apiBaseUrl?: string | null): string | undefined {
   const base = apiBaseUrl?.trim();
   if (!base) return undefined;
   try {
-    return `${new URL(base).origin}/storage/${path}`;
+    const folder = path.startsWith('species/') ? 'media' : 'storage';
+    return `${new URL(base).origin}/${folder}/${path}`;
   } catch {
     return undefined;
   }
 }
 
-function rewriteLoopbackHost(url: string, apiBaseUrl?: string | null): string {
+function rewriteLoopbackHost(url: string, apiBaseUrl?: string | null): string | undefined {
   let parsed: URL;
   try {
     parsed = new URL(url);
   } catch {
-    return url;
+    return undefined;
   }
   if (parsed.hostname !== 'localhost' && parsed.hostname !== '127.0.0.1') return url;
   const base = apiBaseUrl?.trim();
@@ -155,8 +167,12 @@ function normalizeCategory(category?: string): 'mammals' | 'birds' | 'reptiles' 
  * Mapea una especie o animal de la API a la interfaz Animal de UI (camelCase).
  * Cumple con CA-01, CA-02 y RN-02.
  */
-export function mapSpeciesToAnimalModel(item: ApiSpeciesResponse): Animal {
-  const imageUrl = resolveUsableImageUrl(item.image_url, item.photo_path);
+export function mapSpeciesToAnimalModel(
+  item: ApiSpeciesResponse,
+  apiBaseUrl?: string,
+  publishedImage?: string,
+): Animal {
+  const imageUrl = resolveUsableImageUrl(item.image_url, item.photo_path, apiBaseUrl) ?? publishedImage;
   const sizeValue = item.size ? String(item.size) : item.size_cm ? `${item.size_cm} cm` : '';
   const longevityValue = item.life_expectancy || item.longevity || '';
 
@@ -227,11 +243,12 @@ export interface ApiEnclosureAnimal {
   name: string;
   sex?: string | null;
   age?: string | null;
+  birth_date?: string | null;
   origin?: string | null;
   longevity?: string | null;
   diet?: string | null;
   reproduction?: string | null;
-  characteristics?: string | null;
+  fun_fact?: string | null;
   photo_path?: string | null;
   stay_status?: string | null;
   can_receive_visits?: boolean | number | null;
@@ -247,6 +264,7 @@ export interface ApiEnclosureAnimal {
     conservation_status?: string | null;
     habitat?: string | null;
     gestation_period?: string | null;
+    fun_fact?: string | null;
     size_cm?: number | null;
     model_3d_path?: string | null;
   } | null;
@@ -263,22 +281,27 @@ export interface ApiEnclosureResponse {
   animals?: ApiEnclosureAnimal[];
 }
 
+function ageFromBirthDate(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  const born = new Date(value);
+  if (Number.isNaN(born.getTime())) return undefined;
+  const now = new Date();
+  let years = now.getFullYear() - born.getFullYear();
+  const beforeBirthday = now.getMonth() < born.getMonth()
+    || (now.getMonth() === born.getMonth() && now.getDate() < born.getDate());
+  if (beforeBirthday) years -= 1;
+  if (years < 1) return 'Menos de un año';
+  return years === 1 ? '1 año' : `${years} años`;
+}
+
 /**
  * Mapea un recinto de la API al modelo MapPlace de UI (camelCase).
  * Cumple con CA-21 y RN-20.
  */
 export function mapEnclosureToMapPlace(item: ApiEnclosureResponse): MapPlace {
-  let mapX = 0.5;
-  let mapY = 0.5;
-
-  if (item.map_x != null && item.map_y != null) {
-    mapX = Number(item.map_x);
-    mapY = Number(item.map_y);
-  } else if (item.gps_lat != null && item.gps_lon != null) {
-    const { svgX, svgY } = geoTransform(Number(item.gps_lat), Number(item.gps_lon));
-    mapX = svgX / SVG_WIDTH;
-    mapY = svgY / SVG_HEIGHT;
-  }
+  const hasMapCoords = item.map_x != null && item.map_y != null;
+  const mapX = hasMapCoords ? Number(item.map_x) : 0;
+  const mapY = hasMapCoords ? Number(item.map_y) : 0;
 
   const animalsList = Array.isArray(item.animals) && item.animals.length > 0
     ? item.animals.map((a) => a.name || a.species_name).filter(Boolean).join(', ')
@@ -298,37 +321,99 @@ export function mapEnclosureToMapPlace(item: ApiEnclosureResponse): MapPlace {
           speciesName,
           scientificName,
           sex: a.sex ?? undefined,
-          age: a.age ?? undefined,
+          age: a.age ?? ageFromBirthDate(a.birth_date) ?? undefined,
           origin: a.origin ?? undefined,
           longevity: a.longevity ?? undefined,
           diet: a.diet ?? undefined,
           reproduction: a.reproduction ?? undefined,
           veterinaryStatus: a.stay_status ? `Estatus: ${a.stay_status}` : undefined,
-          characteristics: a.characteristics ?? undefined,
-          funFact: a.characteristics ?? undefined,
+          funFact: a.fun_fact ?? a.species?.fun_fact ?? undefined,
           photoPath: a.photo_path ?? undefined,
         };
       })
     : undefined;
 
-  const gpsLat = item.gps_lat != null
+  const hasRealGps = item.gps_lat != null && item.gps_lon != null;
+  const gpsLat = hasRealGps
     ? Number(item.gps_lat)
-    : Math.round((ZOO_BOUNDS.latMax - mapY * (ZOO_BOUNDS.latMax - ZOO_BOUNDS.latMin)) * 1000000) / 1000000;
-  const gpsLon = item.gps_lon != null
+    : undefined;
+  const gpsLon = hasRealGps
     ? Number(item.gps_lon)
-    : Math.round((ZOO_BOUNDS.lonMin + mapX * (ZOO_BOUNDS.lonMax - ZOO_BOUNDS.lonMin)) * 1000000) / 1000000;
+    : undefined;
+
+  const canonical = canonicalEnclosureByName.get(String(item.name).trim().toLowerCase());
+  const svgId = canonical?.svgId ?? undefined;
 
   return {
     id: String(item.id),
     name: item.name,
     kind: 'animal',
-    sectionId: `enclosure-${item.id}`,
+    sectionId: svgId ?? `enclosure-${item.id}`,
     description,
     mapX,
     mapY,
-    visible: true,
+    visible: hasMapCoords,
     gpsLat,
     gpsLon,
     animals,
+    svgId,
+  };
+}
+
+export interface ApiZooPlaceResponse {
+  id: number | string;
+  name: string;
+  name_original?: string | null;
+  place_type: string;
+  gps_lat?: number | null;
+  gps_lon?: number | null;
+  map_x?: number | null;
+  map_y?: number | null;
+  is_visible?: boolean | number | null;
+  description?: string | null;
+}
+
+export interface ApiPathNodeResponse {
+  id: number | string;
+  name?: string | null;
+  node_type: string;
+  gps_lat?: number | null;
+  gps_lon?: number | null;
+  map_x?: number | null;
+  map_y?: number | null;
+}
+
+export function mapZooPlaceToModel(item: ApiZooPlaceResponse) {
+  const canonical = canonicalPlaceByName.get(String(item.name_original ?? item.name).trim().toLowerCase());
+  const nameKey = String(item.name_original ?? item.name).trim().toLowerCase();
+  const isInicio = nameKey === 'inicio';
+  const isComida = nameKey.includes('establecimiento') && nameKey.includes('comida');
+  const inicioSvg = { mapX: 523 / SVG_WIDTH, mapY: 828 / SVG_HEIGHT, svgId: 'Inicio' };
+  const comidaSvg = { mapX: 599 / SVG_WIDTH, mapY: 551 / SVG_HEIGHT, svgId: 'establecimientos_comida' };
+  const svgOverride = isInicio ? inicioSvg : isComida ? comidaSvg : null;
+  return {
+    id: String(item.id),
+    name: item.name,
+    nameOriginal: item.name_original ?? null,
+    placeType: item.place_type,
+    gpsLat: item.gps_lat != null ? Number(item.gps_lat) : null,
+    gpsLon: item.gps_lon != null ? Number(item.gps_lon) : null,
+    mapX: svgOverride ? svgOverride.mapX : (item.map_x != null ? Number(item.map_x) : null),
+    mapY: svgOverride ? svgOverride.mapY : (item.map_y != null ? Number(item.map_y) : null),
+    isVisible: Boolean(item.is_visible ?? true),
+    description: item.description ?? null,
+    svgId: svgOverride ? svgOverride.svgId : (canonical?.svgId ?? null),
+  };
+}
+
+export function mapPathNodeToModel(item: ApiPathNodeResponse) {
+  return {
+    id: String(item.id),
+    name: item.name ?? null,
+    nodeType: item.node_type,
+    gpsLat: item.gps_lat != null ? Number(item.gps_lat) : null,
+    gpsLon: item.gps_lon != null ? Number(item.gps_lon) : null,
+    mapX: item.map_x != null ? Number(item.map_x) : null,
+    mapY: item.map_y != null ? Number(item.map_y) : null,
   };
 }

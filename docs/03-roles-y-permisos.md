@@ -2,59 +2,75 @@
 
 Los nombres de roles, permisos, recursos y acciones son identificadores en inglés. Los textos visibles y sus descripciones son en español. La autorización se aplica en la API con Policies y Spatie Permission; ocultar una opción en la interfaz no protege un endpoint.
 
+> **Estado de esta versión.** Recoge los roles y permisos finales aprobados por el responsable de backend (`api-021`, `api-022`, `api-023`). **Entra en vigor al implementarse `api-021`, `api-022` y `api-023`.** Hasta entonces, la matriz describe el estado objetivo y la base puede seguir con el estado anterior.
+
 ## Roles
 
-- `admin` — Administrador General (Presidencia); control total del sistema, incluida la administración de todas las cuentas. Requiere 2FA.
-- `zoo-admin` — Administrador del Zoológico; administra noticias, eventos y recintos, y consulta boletos, cierres de caja, panel y reportes. No administra cuentas del personal desde el 2026-11-05 (decisión de Jonathan, aprobada en `api-007`). Revisa solicitudes de especie y momentos de visitantes. Requiere 2FA.
-- `executive` — Altos Directivos; métricas y reportes de solo lectura.
-- `cashier` — Cajero; operación de taquilla y cierre de caja.
-- `veterinarian` — Médico Veterinario; expedientes y datos clínicos de ejemplares. Envía solicitudes de publicación o actualización de especies existentes desde la PWA y consulta sus solicitudes («Mis solicitudes»).
+Cada cuenta de personal tiene exactamente un rol (`api-023` RN-01). No hay roles ni permisos creados desde la interfaz.
+
+- `admin` — Administrador general (Presidencia e Informática). Control total de la administración y de los permisos de la matriz. Gestiona las cuentas **no admin** desde la administración (`users.manage`). Las cuentas `admin` **solo se gestionan desde la consola del servidor** (`arca:admin:*`): no se crean, promueven, editan, desactivan, eliminan ni restablecen desde la API ni el dashboard. Ve el reporte de cancelaciones (`reports.cancellations.view`). Requiere 2FA.
+- `zoo-admin` — Administrador del Zoológico (Dirección). Administra noticias, eventos y recintos; consulta boletos de todos los cajeros, cierres de caja, panel y reportes de boletos; revisa solicitudes de especie y momentos de visitantes. No administra cuentas del personal (`api-007`). No ve el reporte de cancelaciones. Requiere 2FA.
+- `executive` — **Consulta directiva**. Panel y reporte de boletos en solo lectura. Código conservado; solo cambia la etiqueta (`api-023` RN-04). Requiere 2FA.
+- `communications` — **Comunicación**. Publica noticias, eventos, momentos y TulanPedia (solicitudes de especie). Sin panel, sin reportes y sin cuentas. Pantalla de inicio: Noticias. Requiere 2FA.
+- `cashier` — Cajero; venta de boletos, cancelación de boletos propios del mismo día con motivo, historial propio y cierre de caja. Requiere 2FA (obligatorio desde el despliegue de `api-021`).
+- `veterinarian` — Médico Veterinario; expedientes y datos clínicos de ejemplares. Envía solicitudes de publicación o actualización de especies existentes desde la PWA y consulta sus solicitudes («Mis solicitudes»). **No usa 2FA** (trabajo de campo offline).
 - **Visitante anónimo** — consulta de contenido institucional y pedagógico público; no requiere una cuenta interna ni un rol asignado.
 
-El 2FA obligatorio se configura en la API (`config('arca.two_factor_roles')` = `['admin', 'zoo-admin']`, `api-003`). El destino (`home`) por rol es: `admin` y `zoo-admin` → `administration`, `executive` → `executive`, `cashier` → `ticket`, `veterinarian` → `pwa`.
+### Segundo factor (2FA)
+
+Exigen 2FA confirmado: `admin`, `zoo-admin`, `cashier`, `executive` y `communications` (`config('arca.two_factor_roles')`, `api-021` RN-09 y `api-023` RN-05). `veterinarian` no usa 2FA. Una cuenta de un rol obligado sin 2FA confirmado recibe 403 `two_factor_setup_required` en las rutas protegidas, salvo `me`, `logout` y el enrolamiento.
+
+### Inicio por permiso
+
+El destino (`home`) se decide por permiso, no por nombre de rol (`api-023` RN-03), en este orden: `users.manage` o `enclosures.manage` → `administration`; `dashboard.view` → `executive`; `tickets.create` → `ticket`; `medical-records.view` → `pwa` (con `pwa_url`); cualquier otro caso de personal sin inicio propio (p. ej. `communications`) → `administration` con la sección de inicio Noticias.
+
+### Confirmación de contraseña
+
+Las operaciones sensibles piden la contraseña de quien opera (`api-021`): modo Siempre (la contraseña viaja con cada operación) o modo Ventana (una confirmación vale 10 minutos en la sesión que confirmó). El detalle de qué operación pide qué modo está en `api-021`.
 
 ## Convención
 
 Cada permiso usa `<resource>.<action>` en inglés, por ejemplo `tickets.create` o `medical-records.view`. Debe ser específico, asignarse según mínimo privilegio y comprobarse en el servidor. Acciones habituales: `view`, `create`, `update`, `delete`, `manage`; `manage` se reserva para administración completa del recurso. Datos financieros y clínicos no se eliminan físicamente: cualquier baja usa SoftDeletes y conserva auditoría.
 
-## Matriz inicial
+## Matriz
 
-✓ indica permiso inicial; — indica que no se otorga por defecto. El rol `admin` puede administrar las capacidades privadas aquí enumeradas. La matriz deberá ampliarse mediante una spec aprobada al introducir nuevos recursos.
+✓ indica permiso del rol; — indica que no se otorga. La matriz deberá ampliarse mediante una spec aprobada al introducir nuevos recursos.
 
-| Permiso | Etiqueta en español | `admin` | `zoo-admin` | `executive` | `cashier` | `veterinarian` | Anónimo |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|
-| `dashboard.view` | Ver panel ejecutivo | ✓ | ✓ | ✓ | — | — | — |
-| `reports.view` | Ver reportes ejecutivos | ✓ | ✓ | ✓ | — | — | — |
-| `tickets.view` | Consultar boletos | ✓ | ✓ | — | ✓ | — | — |
-| `tickets.create` | Registrar venta de boletos | — | — | — | ✓ | — | — |
-| `tickets.cancel` | Cancelar boletos propios del mismo día, con motivo | — | — | — | ✓ | — | — |
-| `ticket-prices.manage` | Administrar precios de boletos (con 2FA) | ✓ | — | — | — | — | — |
-| `cash-closings.view` | Consultar cierres de caja | ✓ | ✓ | — | ✓ | — | — |
-| `cash-closings.create` | Crear cierre/arqueo de caja | ✓ | — | — | ✓ | — | — |
-| `medical-records.view` | Consultar expedientes clínicos | ✓ | — | — | — | ✓ | — |
-| `medical-records.create` | Crear expediente clínico | ✓ | — | — | — | ✓ | — |
-| `medical-records.update` | Actualizar expediente clínico | ✓ | — | — | — | ✓ | — |
-| `specimens.view` | Consultar ejemplares | ✓ | — | — | — | ✓ | — |
-| `specimens.update` | Actualizar datos del ejemplar | ✓ | — | — | — | ✓ | — |
-| `users.manage` | Administrar usuarios y permisos | ✓ | — | — | — | — | — |
-| `news.manage` | Administrar noticias | ✓ | ✓ | — | — | — | — |
-| `events.manage` | Administrar eventos | ✓ | ✓ | — | — | — | — |
-| `enclosures.manage` | Administrar recintos | ✓ | ✓ | — | — | — | — |
-| `species.review` | Revisar, editar, publicar, aceptar sin publicar o rechazar solicitudes de publicación de especies existentes; despublicar, republicar, editar una especie despublicada y eliminar la publicación (con 2FA). Un único permiso (decidido 2026-11-12). *Pendiente de implementar en el seeder (tarea futura T-SEED de `api-014`).* | — | ✓ | — | — | — | — |
-| `memories.review` | Revisar y decidir momentos de visitantes (con 2FA). *Pendiente de implementar en el seeder. Cadena de momentos: `api-010` RN-07 y CA-16, `dashboard-008`; el cambio de seeder se comparte con la tarea T-SEED de `api-014`.* | — | ✓ | — | — | — | — |
-| `public-content.view` | Consultar contenido público | ✓ | ✓ | ✓ | ✓ | ✓ | Público |
+| Permiso | Etiqueta en español | `admin` | `zoo-admin` | `executive` | `communications` | `cashier` | `veterinarian` | Anónimo |
+|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| `dashboard.view` | Ver panel ejecutivo | ✓ | ✓ | ✓ | — | — | — | — |
+| `reports.view` | Ver reportes de boletos | ✓ | ✓ | ✓ | — | — | — | — |
+| `reports.cancellations.view` | Ver reporte de cancelaciones, con conciliación y exportación (`api-022`). No se reutiliza `reports.view` | ✓ | — | — | — | — | — | — |
+| `tickets.view` | Consultar boletos (historial propio o, con `tickets.view-all`, de todos) | ✓ | ✓ | — | — | ✓ | — | — |
+| `tickets.view-all` | Consultar el historial de boletos de todos los cajeros (`api-023` CA-08). Sustituye la decisión por nombre de rol | ✓ | ✓ | — | — | — | — | — |
+| `tickets.create` | Registrar venta de boletos | — | — | — | — | ✓ | — | — |
+| `tickets.cancel` | Cancelar boletos propios del mismo día, con motivo y confirmación de contraseña (`api-021`, `api-022`) | — | — | — | — | ✓ | — | — |
+| `ticket-prices.manage` | Administrar precios de boletos (con 2FA y contraseña, modo Siempre) | ✓ | — | — | — | — | — | — |
+| `cash-closings.view` | Consultar cierres de caja | ✓ | ✓ | — | — | ✓ | — | — |
+| `cash-closings.create` | Crear cierre/arqueo de caja | ✓ | — | — | — | ✓ | — | — |
+| `medical-records.view` | Consultar expedientes clínicos | ✓ | — | — | — | — | ✓ | — |
+| `medical-records.create` | Crear expediente clínico | ✓ | — | — | — | — | ✓ | — |
+| `medical-records.update` | Actualizar expediente clínico | ✓ | — | — | — | — | ✓ | — |
+| `specimens.view` | Consultar ejemplares | ✓ | — | — | — | — | ✓ | — |
+| `specimens.update` | Actualizar datos del ejemplar | ✓ | — | — | — | — | ✓ | — |
+| `users.manage` | Administrar cuentas **no admin** desde la administración. Las cuentas `admin` solo se gestionan desde la consola | ✓ | — | — | — | — | — | — |
+| `news.manage` | Administrar noticias | ✓ | ✓ | — | ✓ | — | — | — |
+| `events.manage` | Administrar eventos | ✓ | ✓ | — | ✓ | — | — | — |
+| `enclosures.manage` | Administrar recintos (regenerar QR y eliminar con contraseña en modo Ventana, `api-021`) | ✓ | ✓ | — | — | — | — | — |
+| `species.review` | Revisar, editar, publicar, aceptar sin publicar o rechazar solicitudes de publicación de especies existentes; despublicar, republicar y eliminar la publicación (con 2FA). Un único permiso (decidido). Cola de pendientes: `api-024` | — | ✓ | — | ✓ | — | — | — |
+| `memories.review` | Revisar y decidir momentos de visitantes (con 2FA). Cadena de momentos: `api-010` RN-07 y CA-16, `dashboard-008`. Cola de pendientes: `api-024` | — | ✓ | — | ✓ | — | — | — |
+| `public-content.view` | Consultar contenido público | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | Público |
 
-Cambios de `apps/api/specs/009-ticket-sales.md` vigentes desde su aprobación (Jonathan, 2026-11-02): `tickets.create` es solo de `cashier` (se retiró de `admin`); `tickets.cancel` es solo de `cashier`; `ticket-prices.manage` es solo de `admin`, con 2FA. `admin` y `zoo-admin` conservan `tickets.view` para consultar el historial en lectura. `RolesAndPermissionsSeeder` refleja esta matriz para los permisos de boletos (verificado el 2026-11-02); el retiro de `operational-staff.manage` (decisión del 2026-11-05) está pendiente de implementar.
+Notas de la matriz:
 
-`users.manage` permite administrar todas las cuentas y es el único permiso de gestión de cuentas desde el 2026-11-05 (decisión de Jonathan, aprobada en `api-007`). El permiso `operational-staff.manage` se retira del catálogo y del código, y ya no figura en esta matriz. Una fila de ese permiso que quede en `permissions` de bases existentes no tiene efecto, porque el seeder no borra. La gestión de cuentas desde el dashboard la expone `api-007` (`/api/v1/admin/users`, solo con `users.manage`). Hasta que se aplique `api-007` T-42, el seeder del código todavía contiene `operational-staff.manage`; esta matriz describe el estado objetivo.
+- `operational-staff.manage` queda **sin efecto** (decisión registrada en `api-023` H-01). Una fila de ese permiso que quede en `permissions` de bases existentes no tiene efecto; su limpieza es un cambio de datos aparte.
+- El permiso `species.review` y `memories.review` se crean con `Permission::findOrCreate`. El seeder da a `admin` todos los permisos de su arreglo salvo los de boletos, así que `admin` se excluye de `species.review` y `memories.review` de forma explícita.
+- `tickets.create` y `tickets.cancel` son solo de `cashier`; `ticket-prices.manage` es solo de `admin`, con 2FA (`api-009`).
 
-### Permisos de solicitudes de especie (`dashboard-010`) y de momentos (`dashboard-008`) (2026-11-11)
+### Permisos de solicitudes de especie (`dashboard-010`) y de momentos (`dashboard-008`)
 
-- `species.review` (`api-014`) y `memories.review` (`api-010`) se crean con `Permission::findOrCreate` y se asignan **solo a `zoo-admin`**, con 2FA.
-- El seeder da a `admin` todos los permisos de su arreglo salvo los de boletos. Por eso `admin` debe excluirse de `species.review` y de `memories.review` **de forma explícita** (`array_diff`), no por omisión (`api-014` RN-10 y CA-20; `api-010` RN-07 y CA-16). Presidencia no revisa estas solicitudes ni momentos.
-- Estado: **pendiente de implementar en el seeder** (tarea futura T-SEED de `api-014`). La matriz describe el estado objetivo.
-- Historial (2026-11-11): `species.review` cubre solicitudes de **publicación** de especies que ya existen en el catálogo (`api-014`), no la creación de especies. Las descripciones de la matriz se actualizan en consecuencia.
-- **Envío de solicitudes de especie:** no tiene fila en la matriz. Lo autoriza el rol `veterinarian` (regla de rol de `pwa-005` RN-01 y `api-014` RN-01), no un permiso. Si el equipo decide convertirlo en permiso (por ejemplo, `species-publication-requests.create`), esta matriz se revisa (pregunta abierta en `api-014`, pregunta 6). El envío solo puede elegir una especie existente; no crea especies (`api-014` CA-29). El mismo rol consulta «Mis solicitudes» (`api-014` CA-33). Desde el 2026-11-12, el veterinario también puede enviar una actualización sobre una especie despublicada (`api-014` CA-27).
+- `species.review` (`api-014`) y `memories.review` (`api-010`) se asignan a `zoo-admin` y a `communications`, con 2FA. Presidencia no revisa estas solicitudes ni momentos.
+- **Envío de solicitudes de especie:** no tiene fila en la matriz. Lo autoriza el rol `veterinarian` (regla de rol de `pwa-005` RN-01 y `api-014` RN-01), no un permiso. El envío solo puede elegir una especie existente; no crea especies (`api-014` CA-29). El mismo rol consulta «Mis solicitudes» (`api-014` CA-33). El veterinario también puede enviar una actualización sobre una especie despublicada (`api-014` CA-27).
 
 La lista no sustituye Policies por registro ni restricciones de datos sensibles. El acceso de visitantes se limita a contenido marcado explícitamente como público; no se le asigna `public-content.view` como permiso de cuenta.
 
@@ -64,13 +80,13 @@ La lista no sustituye Policies por registro ni restricciones de datos sensibles.
 
 | code | name (UI) | Rol sugerido |
 |---|---|---|
-| `presidency` | Presidencia | `admin` |
-| `information-technology` | Informática | `admin` |
+| `presidency` | Presidencia | `executive` (Consulta directiva) |
+| `information-technology` | Informática | `executive` (Consulta directiva) |
 | `management` | Dirección | `zoo-admin` |
 | `box-office` | Taquilla | `cashier` |
 | `veterinary` | Servicios veterinarios | `veterinarian` |
 
-`executive` no tiene área sugerida: se elige manualmente al crear la cuenta. El área **no otorga acceso**: solo organiza al personal para reportes, filtros y auditoría. La autorización la dan exclusivamente los roles y permisos de esta matriz, verificados en el servidor.
+La sugerencia nunca es `admin`: las cuentas `admin` se crean solo desde la consola (`api-023` CA-09, RN-06). `executive` y `communications` no tienen área sugerida: se eligen manualmente al crear la cuenta. El área **no otorga acceso**: solo organiza al personal para reportes, filtros y auditoría. La autorización la dan exclusivamente los roles y permisos de esta matriz, verificados en el servidor.
 
 ## Visitantes con cuenta
 

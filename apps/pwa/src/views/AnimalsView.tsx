@@ -1,5 +1,5 @@
-import { Badge, Card, Field } from '@arca/ui';
-import { useState } from 'react';
+import { Badge, Card, Field, Pagination } from '@arca/ui';
+import { useEffect, useMemo, useState } from 'react';
 import { useAnimals } from '@/viewmodels/useApiData';
 import { Spinner } from '@/views/Spinner';
 
@@ -7,15 +7,45 @@ const sexLabels: Record<string, string> = {
   F: 'Hembra',
   M: 'Macho',
   I: 'No identificado',
+  hembra: 'Hembra',
+  macho: 'Macho',
 };
+
+type SortMode = 'recent' | 'name';
 
 export function AnimalsView({
   onOpenAnimal,
+  userScope,
 }: {
   onOpenAnimal?: (animalId: number) => void;
+  userScope?: string;
+  animalId?: number | null;
+  onNavigate?: unknown;
+  mvzName?: string;
 }) {
   const [search, setSearch] = useState('');
-  const { animals, loading, error, reload } = useAnimals(search);
+  const [sort, setSort] = useState<SortMode>('recent');
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+  const { animals, loading, error, reload } = useAnimals(search, userScope);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, sort]);
+
+  const sorted = useMemo(() => {
+    const list = [...animals];
+    if (sort === 'recent') {
+      list.sort((a, b) => b.id - a.id);
+    } else {
+      list.sort((a, b) => a.name.localeCompare(b.name, 'es'));
+    }
+    return list;
+  }, [animals, sort]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paged = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <section className="page-section">
@@ -36,9 +66,18 @@ export function AnimalsView({
             type="search"
             value={search}
           />
+        </div>
+        <div className="animals-results-toolbar">
           <span className="sample-count">
-            {loading ? <Spinner label="Cargando…" /> : `${animals.length} animales`}
+            {loading ? <Spinner label="Cargando animales…" /> : `${sorted.length} animales`}
           </span>
+          <label className="animals-sort">
+            <span>Orden</span>
+            <select value={sort} onChange={(e) => setSort(e.target.value as SortMode)} aria-label="Ordenar animales">
+              <option value="recent">Más recientes creados</option>
+              <option value="name">Nombre (A-Z)</option>
+            </select>
+          </label>
         </div>
         {error && (
           <p role="alert">
@@ -46,11 +85,11 @@ export function AnimalsView({
             <button onClick={reload} type="button">Reintentar</button>
           </p>
         )}
-        {!loading && !error && animals.length === 0 && (
+        {!loading && !error && sorted.length === 0 && (
           <p>No hay animales que coincidan. Usa «Registrar animal» para agregar uno.</p>
         )}
         <div className="animal-list" role="list" aria-label="Animales registrados">
-          {animals.map((animal) => (
+          {paged.map((animal) => (
             <article className="animal-row" key={animal.id} role="listitem">
               <button
                 aria-label={`Ver perfil de ${animal.name}`}
@@ -72,6 +111,10 @@ export function AnimalsView({
             </article>
           ))}
         </div>
+
+        {sorted.length > pageSize && (
+          <Pagination page={currentPage} lastPage={totalPages} total={sorted.length} onPageChange={setPage} />
+        )}
       </Card>
     </section>
   );

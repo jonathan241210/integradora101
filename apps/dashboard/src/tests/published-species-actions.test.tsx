@@ -159,7 +159,7 @@ it("CA-56 published-species-actions: DELETE solo al confirmar", async () => {
   expect(dialog).toContain(
     "Esto eliminará la foto y los datos publicados de la especie y marcará sus solicitudes como eliminadas. La especie y sus animales seguirán existiendo.",
   );
-  expect(dialog).toMatch(/dialog-actions[\s\S]*Cancelar[\s\S]*Eliminar publicación<\/button>/);
+  expect(dialog).toMatch(/arca-confirm-dialog__actions[\s\S]*Cancelar[\s\S]*Eliminar publicación<\/button>/);
   expect(dialog).not.toContain('type="checkbox"');
   // RN-16: sin líneas sobre correcciones.
   expect(dialog).not.toMatch(/correccion|revert/i);

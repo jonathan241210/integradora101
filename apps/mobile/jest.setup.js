@@ -25,6 +25,11 @@ jest.mock('expo-network', () => ({
     isConnected: true,
     isInternetReachable: true,
   })),
+  getNetworkStateAsync: jest.fn(async () => ({
+    type: 'WIFI',
+    isConnected: true,
+    isInternetReachable: true,
+  })),
 }));
 
 jest.mock('expo-location', () => ({
@@ -61,6 +66,20 @@ installAuthFixturesForTests([
   { email: 'sin-verificar@ejemplo.com', firstName: 'Luis', nickname: 'Luis', password: 'secreta', avatarCode: 'wolf', verified: false },
 ]);
 authRepository.reset();
+
+jest.mock('@reactvision/react-viro', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const Stub = (props) => React.createElement(View, props, props.children);
+  return {
+    ViroARScene: Stub,
+    ViroARSceneNavigator: Stub,
+    ViroNode: Stub,
+    ViroText: Stub,
+    ViroBox: Stub,
+    ViroAmbientLight: Stub,
+  };
+});
 
 jest.mock('react-native-safe-area-context', () => {
   const RNActual = jest.requireActual('react-native-safe-area-context');

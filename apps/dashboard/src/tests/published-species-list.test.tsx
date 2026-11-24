@@ -21,7 +21,7 @@ import { PublishedSpeciesDetailView } from "../views/PublishedSpeciesDetailView"
 const listState = (items: ReturnType<typeof row>[], hasMore = false, page = 1) =>
   publishedStateWith({
     page,
-    list: { status: "ready", items, hasMore, error: "", forbidden: false },
+    list: { status: "ready", items, hasMore, lastPage: hasMore ? page + 1 : page, total: items.length, error: "", forbidden: false },
     thumbs: Object.fromEntries(
       items.map((item) => [
         item.id,
@@ -55,7 +55,7 @@ it("CA-51 published-species-list: status y category en la query; paginación; «
 
   species.list.mockResolvedValueOnce({
     data: [row(), row({ id: 4, common_name: "Cebra", has_image: false, status: "unpublished" })],
-    meta: { has_more: true },
+    meta: { current_page: 1, last_page: 2, per_page: 10, total: 11, has_more: true },
   });
   await loadPublishedList(h.ctx, { status: "", category: "", page: 1 });
   await loadPublishedList(h.ctx, { status: "unpublished", category: "bird", page: 2 });
@@ -79,7 +79,7 @@ it("CA-51 published-species-list: status y category en la query; paginación; «
   // Miniatura solo con has_image (una sola descarga); «Sin foto» en la otra.
   species.list.mockResolvedValueOnce({
     data: [row(), row({ id: 4, common_name: "Cebra", has_image: false })],
-    meta: { has_more: true },
+    meta: { current_page: 1, last_page: 2, per_page: 10, total: 11, has_more: true },
   });
   species.image.mockClear();
   const withThumbs = publishedHarness(api);
@@ -114,7 +114,7 @@ it("CA-51 published-species-list: status y category en la query; paginación; «
   // Vacío, cargando y error.
   expect(
     renderList(
-      publishedStateWith({ list: { status: "empty", items: [], hasMore: false, error: "", forbidden: false } }),
+      publishedStateWith({ list: { status: "empty", items: [], hasMore: false, lastPage: 1, total: 0, error: "", forbidden: false } }),
     ),
   ).toContain("No hay especies con este estado.");
   expect(renderList(initialPublishedSpeciesState)).toContain("Cargando especies…");

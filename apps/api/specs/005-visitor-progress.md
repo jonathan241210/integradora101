@@ -1,11 +1,33 @@
 # 005 · visitor-progress
 
+## Enmienda · Misiones correspondientes a logros
+
+- Estado: Aprobada
+- Aprobación funcional: persona solicitante, 2026-11-24.
+- **CA-19.** El catálogo autenticado de misiones muestra las misiones activas asociadas a logros activos aunque la especie correspondiente no tenga un ejemplar visitable. En Aventura aparecen como pendientes si la persona aún no las ha completado. Las misiones completadas conservan su estado y los puntos ya acreditados.
+- **RN-14.** Para misiones por especie, compartir `rule_type`, `rule_param` y `rule_target` con un logro activo determina la correspondencia. CA-15 se aplica a la visibilidad de misiones por especie sin esa correspondencia. CA-16 sigue determinando qué descubrimientos cuentan para el progreso.
+- **Estado actual, 2026-11-24.** `php artisan db:table missions`, `php artisan db:table achievements` y `php artisan migrate:status` en `arca_pruebas` confirmaron las columnas de regla y estado de DBR-004 y su migración aplicada. Se usan estas columnas. No se requiere DBR.
+
+## Enmienda · Disponibilidad en QR y catálogo de logros
+
+- Estado: Aprobada
+- Aprobación funcional: persona solicitante, 2026-11-24. Alcance móvil y API. «Activos» se interpreta como disponibles para obtener por cualquier visitante conforme a sus reglas.
+- **CA-17.** Al escanear un recinto con dos o más especies, la API descubre solo especies publicadas y sin baja lógica que tengan en ese recinto al menos un ejemplar sin baja lógica y habilitado para visitas. Devuelve cada especie elegible una sola vez, con ID y nombre público para el botón «Ver {nombre}». Si no hay especies elegibles, responde `empty_enclosure`.
+- **CA-18.** Los 24 logros definidos por el catálogo están activos y aparecen en el Salón de logros, incluidos «Misión cumplida» y «Maestro de misiones». Los ya obtenidos conservan su estado. Los demás conservan sus criterios y no otorgan puntos por el solo hecho de activarse.
+- **RN-13.** La visibilidad de los logros del catálogo es independiente de que hoy haya una especie que permita completarlos. CA-19 regula la visibilidad de las misiones correspondientes. El cálculo de avance por especie sigue CA-16.
+- **Decisión pendiente.** Confirmar si la cuarentena por sí sola debe impedir que un ejemplar cuente como visitable aun cuando esté marcado para visitas y su especie esté publicada.
+
+### Estado actual, 2026-11-24
+
+`php artisan migrate:status` y `php artisan db:table` en `arca_pruebas` confirman las estructuras de progreso, publicación y visita documentadas en DBR-004, DBR-013 y el diccionario de datos. Una lectura del recinto Águila mostró un jaguar publicado y un cocodrilo de pantano sin publicar, en cuarentena de ingreso. Ambos ejemplares tienen `can_receive_visits = 1`. El catálogo versionado define 24 logros. En la base hay 24 registros, de los cuales 22 están activos, y 23 misiones activas. Se usarían las columnas existentes. No se requiere una DBR de esquema.
+
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `mobile` (consumidor), `packages/api-client`
-- Estado: Implementada (2026-11-01; aprobación funcional 2026-10-22)
-- Solicitante / responsable funcional: Aksel
-- Responsable de BD: Victor Adrian
-- Aprobación funcional: Aksel, 2026-10-22
+- Estado: Implementada
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
+- Responsable de BD: Responsable de BD (rol)
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -25,7 +47,7 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 
 - Tabla de líderes, premios físicos y contenido social entre visitantes (decisión confirmada: sin líderes ni premios).
 - Actualización dinámica de misiones: son contenido estático definido una vez por seeder.
-- Impresión, colocación y reposición física de los QR. El comando solo genera los códigos; la operación en el zoológico queda fuera de esta spec.
+- Colocación y reposición física de los QR (operación del zoológico). La hoja imprimible pasa a `dashboard-013` (la API no imprime) y la regeneración por API a `api-020`.
 - La interfaz móvil del progreso (spec `mobile-005`) ni el escaneo de cámara (spec `mobile-006`).
 - Favoritos y recorrido 3D real.
 
@@ -44,24 +66,28 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 
 ## Criterios de aceptación
 
+Las consultas de progreso, logros y misiones acreditan las reglas que ya cumplen los descubrimientos guardados, incluidos los anteriores a un logro nuevo. El registro del logro o misión y sus puntos se confirman en la misma transacción (CA-09).
+
+**Estado actual del esquema.** En `arca_pruebas`, `db:table` confirmó que `visitor_achievements`, `visitor_mission_completions` y `visitor_point_entries` usan InnoDB y tienen las claves primaria o única de DBR-004. `migrate:status` confirmó que la migración `2026_10_15_000004_visitor_progress_schema` se aplicó en el lote 1. La corrección reutiliza esas tablas y no requiere DBR ni migración.
+
 - **CA-01:** Dado un visitante autenticado, cuando envía `POST /api/v1/visitor/discoveries` con `{ code, scanned_at, client_scan_id }`, entonces la API responde de forma idempotente por `client_scan_id`: un segundo envío con el mismo `client_scan_id` devuelve el resultado ya registrado sin duplicar puntos ni especies.
 - **CA-02:** Dado un escaneo, cuando `scanned_at` tiene más de 24 h de antigüedad o más de 5 minutos en el futuro, entonces la API lo rechaza con `expired_scan` y lo registra en `visitor_scans`.
 - **CA-03:** Dado un visitante, cuando supera 30 escaneos por minuto, entonces la API responde 429 con mensaje en español.
 - **CA-04:** Dado un código QR válido y activo, cuando se procesa el descubrimiento, entonces la API registra en la colección las especies de los animales con `can_receive_visits=1` de ese recinto y otorga puntos por cada especie nueva (cantidad configurable, 100 por defecto) en `visitor_point_entries`.
 - **CA-05:** Dada una respuesta de `discoveries`, cuando el cliente la consume, entonces tiene la forma `{ result, new_species[], already_known_species[], points_awarded, unlocked_achievements[], completed_missions[], progress }` con `201` para `discovered`, `200` para `already_discovered` y para `empty_enclosure`, y `422` para `invalid_code`, `expired_scan` o `inactive_code`.
-- **CA-06:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/progress`, entonces recibe puntos totales (suma del libro mayor), nivel, rango, siguiente umbral y especies descubiertas / total disponibles (especies con al menos un animal en exhibición, aunque su recinto aún no tenga QR).
+- **CA-06:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/progress`, entonces recibe puntos totales (suma del libro mayor), nivel, rango, siguiente umbral y especies descubiertas / total disponibles (especies con al menos un animal en exhibición, aunque su recinto aún no tenga QR). *Enmienda `api-019`:* el total «disponibles» y el numerador «descubiertas» excluyen las especies cuyos animales en exhibición están solo en recintos inactivos o eliminados; los registros de descubrimiento no se borran y vuelven a contar si el recinto se reactiva (CA-35 y RN-14 de `api-019`).
 - **CA-07:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/collection`, entonces recibe las especies con `discovered` y `discovered_at`.
-- **CA-08:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/achievements` y `GET /api/v1/visitor/missions`, entonces recibe los catálogos con estado (desbloqueado/completado o pendiente), progreso calculado por el servidor y `rule_param` cuando la regla depende de una categoría. Enmienda de Aksel, 2026-11-01.
-- **CA-09:** Dado un evento de progreso, cuando `EvaluateVisitorProgressAction` evalúa reglas, entonces soporta `species_count`, `category_species_count` (con `rule_param` = categoría), `enclosure_count` y `missions_completed`; los logros y las misiones otorgan sus puntos y el libro mayor (UNIQUE por `visitor_id, source_type, source_id`) garantiza que no se dupliquen; todo ocurre dentro de una transacción.
-- **CA-10:** Dada la configuración de niveles en `config/visitor_progress.php`, cuando se calcula el nivel, entonces aplica los umbrales: 1 Explorador novato (0), 2 Explorador (500), 3 Explorador avanzado (1500), 4 Explorador experto (3000), 5 Guardián de la fauna (6000).
+- **CA-08:** Dado un visitante autenticado, cuando consulta `GET /api/v1/visitor/achievements` y `GET /api/v1/visitor/missions`, entonces recibe los catálogos con estado (desbloqueado/completado o pendiente), progreso calculado por el servidor y `rule_param` cuando la regla depende de una categoría. Enmienda.
+- **CA-09:** Dado un evento de progreso, cuando `EvaluateVisitorProgressAction` evalúa reglas, entonces soporta `species_count`, `category_species_count` (con `rule_param` = categoría), `enclosure_count`, `missions_completed` y `species_keyword` (una palabra completa del nombre común, sin acentos; varias palabras separadas por coma). Los logros y las misiones otorgan sus puntos y el libro mayor (UNIQUE por `visitor_id, source_type, source_id`) garantiza que no se dupliquen; todo ocurre dentro de una transacción. Los logros y las misiones cómicos usan `species_keyword` y el seeder los deja activos. CA-15 y CA-16 definen cuándo se muestran y cómo avanzan.
+- **CA-10:** Dada la configuración de niveles en `config/visitor_progress.php`, cuando se calcula el nivel, entonces aplica los umbrales: 1 Explorador novato (0), 2 Explorador (500), 3 Explorador avanzado (1500), 4 Explorador experto (3000), 5 Guardián de la fauna (4450). Enmienda: 4450 es 18 especies a 100 puntos, más 850 de los logros por cantidad, 900 de los 18 logros por animal y 900 de las misiones, incluidas las 18 que repiten la meta de cada animal. A partir de ahí el rango no cambia.
 - **CA-11:** Dados los seeders, cuando se ejecutan `AchievementSeeder` y `MissionSeeder`, entonces cargan los catálogos de forma idempotente por `code`, basados en los mocks actuales de la app; las recompensas tipo «Certificado» se convierten en puntos o logros porque no hay premios.
-- **CA-12:** Dado el comando `php artisan arca:generate-qr-codes {enclosure}`, cuando el personal lo ejecuta, entonces genera códigos opacos aleatorios para los QR del recinto. La impresión no forma parte de este comando.
-- **CA-13:** Dada la suite de PHPUnit, cuando se ejecuta `php artisan test`, entonces corre contra `arca_pruebas` (nunca `arca_zoo`) y existe al menos un test que nombra cada CA-xx, incluido CA-14.
-- **CA-14 (recinto sin animales en exhibición, Aksel, 2026-11-14):** Dado un código QR válido y activo cuyo recinto no tiene animales con `can_receive_visits = 1`, cuando se escanea, entonces responde `200` con `result` `empty_enclosure`, `points_awarded` `0`, listas vacías y `message` «Este recinto no tiene animales en exhibición.». No crea filas en `visitor_collections` ni en `visitor_point_entries`. Un escaneo posterior del mismo recinto, ya con un animal en exhibición, responde `discovered`. No es `already_discovered`.
+- **CA-12:** Dado el comando `php artisan arca:generate-qr-codes {enclosure}`, cuando el personal lo ejecuta, entonces reutiliza el código QR activo del recinto y solo crea uno nuevo si no hay ninguno; con `--regenerate` desactiva los activos y crea uno nuevo (enmienda `api-020` CA-18, misma Action que los endpoints). La impresión no forma parte de este comando.
+- **CA-13:** Dada la suite de PHPUnit, cuando se ejecuta `php artisan test`, entonces corre contra `arca_pruebas` (nunca `arca_zoo`) y existe al menos un test que nombra cada criterio de esta spec.
+- **CA-14 (recinto sin animales en exhibición):** Dado un código QR válido y activo cuyo recinto no tiene animales con `can_receive_visits = 1`, cuando se escanea, entonces responde `200` con `result` `empty_enclosure`, `points_awarded` `0`, listas vacías y `message` «Este recinto no tiene animales en exhibición.». No crea filas en `visitor_collections` ni en `visitor_point_entries`. Un escaneo posterior del mismo recinto, ya con un animal en exhibición, responde `discovered`. No es `already_discovered`.
 
 ## Reglas de negocio
 
-- **RN-01:** La unidad de descubrimiento es la **especie**: el QR del recinto descubre las especies de sus animales en exhibición (`can_receive_visits=1`).
+- **RN-01:** La unidad de descubrimiento es la **especie**: el QR del recinto descubre las especies publicadas cuyos ejemplares estén en exhibición y sin baja lógica en ese recinto. CA-17 precisa la elegibilidad.
 - **RN-02:** El contenido del QR es un código opaco aleatorio en `enclosure_qr_codes.code`; nunca revela datos del recinto ni del animal.
 - **RN-03:** Puntos, nivel y rango los deriva el servidor; el cliente solo los muestra.
 - **RN-04:** `visitor_scans` es la fuente de idempotencia (`client_scan_id` único por visitante) y de auditoría/antiabuso (`scanned_at` vs `received_at`, `result`).
@@ -92,17 +118,34 @@ Los cambios de esquema se solicitan en DBR-004 (`visitor-progress`, depende de D
 - Código inexistente → 422 `invalid_code`; código desactivado → 422 `inactive_code`.
 - Escaneo >24 h o >5 min en el futuro → 422 `expired_scan`.
 - Ya descubierto → 200 `already_discovered` (sin puntos nuevos).
-- Recinto sin animales en exhibición (`can_receive_visits = 1`) → 200 `empty_enclosure`, mensaje «Este recinto no tiene animales en exhibición.», sin puntos (CA-14, Aksel, 2026-11-14).
+- Recinto sin animales en exhibición (`can_receive_visits = 1`) → 200 `empty_enclosure`, mensaje «Este recinto no tiene animales en exhibición.», sin puntos (CA-14).
 - >30 escaneos/minuto → 429; sin sesión → 401.
 
 ## Dependencias, riesgos y preguntas
 
 - **Dependencias/ADR:** `api-004` (autenticación `visitor`), DBR-001, DBR-003 y DBR-004 (`Lista para backend`), ADR 0011, ADR 0010, catálogo de especies en la base.
 - **Riesgos:** la cola sin conexión admite escaneos hasta 24 h después (se acepta porque no hay premios); el ajuste fino de puntos y umbrales puede requerir cambios de configuración.
-- **Preguntas cerradas (Aksel, 2026-10-22):** la impresión y la reposición de los QR no son de esta spec. Los puntos y umbrales quedan en los valores de CA-04 y CA-10. `enclosure_count` queda definido en RN-10.
+- **Decisiones:**
+  - Se optó por dejar la impresión y la reposición de los QR fuera de esta spec, porque el comando `arca:generate-qr-codes` no imprime.
+  - Se optó por fijar puntos y umbrales en los valores de CA-04 y CA-10, que son los implementados.
+  - Se optó por definir `enclosure_count` en RN-10.
 
 ## Revisión
 
-- Aprobadores y fecha: Aksel, 2026-10-22.
-- Cierre: Implementada el 2026-11-01 tras merge a `DevOps`. Checklist T-01 a T-11 completado. `php artisan test --filter=ProgressTest` sobre `arca_pruebas`: 13 pruebas (CA-01 a CA-13), 98 aserciones en verde. Consumidor `mobile-005` implementado en el mismo ciclo de entrega.
+- Aprobación: Aprobada.
+- Cierre: Implementada tras merge a `DevOps`. Checklist T-01 a T-11 completado. `php artisan test --filter=ProgressTest` sobre `arca_pruebas`: 13 pruebas (CA-01 a CA-13), 98 aserciones en verde. Consumidor `mobile-005` implementado en el mismo ciclo de entrega.
 - Evidencia/enlaces: `docs/adr/0011-visitor-identity-and-mobile-session.md`, `docs/database/requests/DBR-004-visitor-progress.md`, `apps/api/specs/004-visitor-authentication.md`, `apps/mobile/specs/005-visitor-progress.md`.
+
+## Enmienda · Logros y misiones de especies visitables
+
+- Estado: Implementada. Aprobación funcional registrada; implementada con `ProgressTest.php` (T-12 a T-14 de tasks).
+- Alcance: la regla `species_keyword` para mostrar logros y misiones y para acreditar su progreso. El visitante conserva la sesión y los contratos vigentes.
+- Problema: la lista usa cualquier nombre de `species` y la acreditación usa cualquier descubrimiento guardado. Una especie de prueba o retirada puede mostrar una meta, sumar progreso y otorgar puntos.
+
+**CA-15 (visibilidad de misiones).** Para las misiones por palabra clave sin logro asociado según CA-19, la meta aparece si coincide con una palabra completa del nombre común, sin distinguir mayúsculas ni acentos, de una especie publicada y no eliminada que tenga al menos un animal sin baja lógica con `can_receive_visits = 1` en un recinto activo y no eliminado. «León africano» coincide con «leon». «Camaleón» queda fuera. CA-18 regula la visibilidad de los logros.
+
+**CA-16 (acreditación).** Una meta visible avanza y se acredita cuando la cuenta tiene en `visitor_collections` al menos una especie visitable cuyo nombre coincide. Los descubrimientos registrados por QR antes de la evaluación se pueden acreditar al consultar el progreso. Una especie descubierta que ya no es visitable queda fuera del cálculo. Se conservan las acreditaciones y sus puntos. Si la meta vuelve a ser visible, mantiene su estado adquirido y los puntos se otorgan una sola vez.
+
+**RN-12.** La API usa el mismo conjunto de especies visitables al evaluar metas por palabra clave y cuando CA-15 condiciona la visibilidad. La existencia de un QR activo no condiciona la visibilidad. El escaneo que origina el descubrimiento sigue sujeto a la validación vigente de QR y recinto. Las demás reglas de progreso mantienen sus propios criterios.
+
+**Estado actual del esquema.** En `arca_pruebas`, `Schema::getColumns` consultó en solo lectura `species`, `animals`, `enclosures`, `visitor_collections` y `enclosure_qr_codes`. Verificó los indicadores de publicación, exhibición y actividad, los campos de baja lógica y la relación entre visitante y especie. `migrate:status` confirmó aplicadas las migraciones de progreso, publicación y estado de recintos (DBR-004, DBR-013 y DBR-020). Se contrastaron las columnas con el diccionario de datos y las reglas de los modelos de catálogo. Los datos y las rutas existentes bastan. La enmienda no requiere DBR ni migración.

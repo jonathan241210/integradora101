@@ -228,7 +228,7 @@ select:focus-visible {
 }
 
 .desktop-sidebar:hover,
-.desktop-sidebar:focus-within {
+.desktop-sidebar:has(:focus-visible) {
   width: 248px;
 }
 
@@ -248,11 +248,11 @@ select:focus-visible {
 .desktop-sidebar:hover .navigation-label,
 .desktop-sidebar:hover .demo-user > span:last-child,
 .desktop-sidebar:hover .sidebar-logout > span:last-child,
-.desktop-sidebar:focus-within .sidebar-brand-label,
-.desktop-sidebar:focus-within .sidebar-caption,
-.desktop-sidebar:focus-within .navigation-label,
-.desktop-sidebar:focus-within .demo-user > span:last-child,
-.desktop-sidebar:focus-within .sidebar-logout > span:last-child {
+.desktop-sidebar:has(:focus-visible) .sidebar-brand-label,
+.desktop-sidebar:has(:focus-visible) .sidebar-caption,
+.desktop-sidebar:has(:focus-visible) .navigation-label,
+.desktop-sidebar:has(:focus-visible) .demo-user > span:last-child,
+.desktop-sidebar:has(:focus-visible) .sidebar-logout > span:last-child {
   opacity: 1;
   visibility: visible;
 }
@@ -739,6 +739,41 @@ select:focus-visible {
   white-space: nowrap;
 }
 
+.animals-results-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+}
+
+.animals-results-toolbar .sample-count {
+  padding: 0;
+  white-space: normal;
+}
+
+.animals-sort {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-inline-start: auto;
+  color: var(--dashboard-foreground);
+  font-size: 0.875rem;
+}
+
+.animals-sort select {
+  max-width: 100%;
+  min-height: 44px;
+  padding-inline: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: inherit;
+}
+
 .animal-list {
   display: grid;
 }
@@ -766,10 +801,6 @@ select:focus-visible {
 .animal-form {
   display: grid;
   gap: 24px;
-}
-
-.animal-form-card {
-  max-width: 900px;
 }
 
 .animal-form-container {
@@ -1037,6 +1068,11 @@ select:focus-visible {
     gap: 4px;
   }
 
+  /* Con el ítem de especies (rol veterinarian) el menú tiene seis opciones. */
+  .navigation-mobile:has(> :nth-child(6)) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
   .navigation-mobile .navigation-item {
     display: grid;
     min-height: 58px;
@@ -1280,6 +1316,15 @@ select:focus-visible {
     padding: 8px;
     font-size: 12px;
   }
+
+  /* pwa-005: en 360 px el botón principal va arriba. */
+  .species-request-form .form-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .species-request-form .form-actions [type="submit"] {
+    order: -1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1292,7 +1337,8 @@ select:focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
-
+
+
 .spinner {
   display: inline-flex;
   align-items: center;
@@ -1300,13 +1346,25 @@ select:focus-visible {
 }
 
 .spinner-ring {
-  width: 1em;
-  height: 1em;
+  position: relative;
+  width: 1.125em;
+  height: 1.125em;
   flex: none;
-  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+  border: 0.15em solid color-mix(in srgb, currentColor 24%, transparent);
   border-top-color: currentColor;
   border-radius: 50%;
-  animation: spinner-rotate 0.8s linear infinite;
+  animation: spinner-rotate 0.85s linear infinite;
+}
+
+.spinner-ring::after {
+  position: absolute;
+  inset-block-start: -0.15em;
+  inset-inline-start: 50%;
+  width: 0.18em;
+  height: 0.18em;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
 }
 
 .loading-screen {
@@ -1318,7 +1376,25 @@ select:focus-visible {
 }
 
 .loading-screen .spinner-label {
+  color: var(--dashboard-foreground);
   font-size: 1rem;
+  font-weight: 600;
+}
+
+.loading-screen .spinner {
+  flex-direction: column;
+  gap: 14px;
+  min-width: min(14rem, 100%);
+  padding: 24px 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.loading-screen .spinner-ring {
+  font-size: 2rem;
 }
 
 @keyframes spinner-rotate {
@@ -1329,11 +1405,84 @@ select:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   .spinner-ring {
-    animation-duration: 2s !important;
-    animation-iteration-count: infinite !important;
+    animation: none;
   }
 }
-
+
+.sync-notices {
+  position: fixed;
+  inset-inline-end: max(12px, env(safe-area-inset-right));
+  inset-block-end: max(12px, env(safe-area-inset-bottom));
+  z-index: 20;
+  display: grid;
+  gap: 8px;
+  width: min(23rem, calc(100% - 24px));
+  max-height: 55dvh;
+  overflow-y: auto;
+  pointer-events: none;
+}
+
+.sync-notice {
+  --notice-color: var(--primary);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-inline-start: 4px solid var(--notice-color);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--dashboard-foreground);
+  box-shadow: var(--shadow-card);
+  pointer-events: auto;
+  animation: sync-notice-enter 180ms ease-out;
+}
+
+.sync-notice--success { --notice-color: var(--success); }
+.sync-notice--warning { --notice-color: var(--warning); }
+.sync-notice--error { --notice-color: var(--danger); }
+
+.sync-notice-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--notice-color) 12%, var(--surface));
+  color: var(--notice-color);
+}
+
+.sync-notice-message {
+  display: grid;
+  gap: 2px;
+  overflow-wrap: anywhere;
+  font-size: 0.875rem;
+}
+
+.sync-notice-close {
+  display: grid;
+  min-width: 44px;
+  min-height: 44px;
+  place-items: center;
+  border-radius: 8px;
+  color: inherit;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+.sync-notice-close:hover { background: var(--surface-subtle); }
+
+@keyframes sync-notice-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-notice { animation: none; }
+}
+
+
 .animal-row {
   display: block;
   padding: 0;
@@ -1406,10 +1555,86 @@ select:focus-visible {
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 180ms ease-out;
 }
 
-.profile-avatar-image[hidden] {
-  display: none;
+.profile-photo-wrapper {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+
+.profile-photo-trigger {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  cursor: zoom-in;
+}
+
+.profile-photo-trigger:focus-visible {
+  outline: 2px solid var(--primary-foreground);
+  outline-offset: -5px;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .profile-photo-trigger:hover .profile-avatar-image {
+    transform: scale(1.06);
+  }
+}
+
+.profile-photo-zoom {
+  position: absolute;
+  inset-inline-end: 5px;
+  inset-block-end: 5px;
+  display: grid;
+  height: 26px;
+  place-items: center;
+  padding-inline: 7px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--dashboard-foreground);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.arca-dialog.profile-photo-dialog {
+  width: min(58rem, calc(100% - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: clamp(12px, 3vw, 24px);
+}
+
+.profile-photo-dialog[open] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-photo-dialog .arca-dialog__title {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.profile-photo-full {
+  grid-column: 1 / -1;
+  display: block;
+  width: 100%;
+  max-height: min(74dvh, calc(100dvh - 110px));
+  object-fit: contain;
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .profile-photo-dialog[open] {
+    animation: profile-photo-enter 180ms ease-out;
+  }
+}
+
+@keyframes profile-photo-enter {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .profile-photo-status {
@@ -2169,3 +2394,361 @@ select:focus-visible {
     flex: 1;
     height: 16mm;
   }
+
+/* pwa-005: solicitud de publicación de especie (tokens semánticos) */
+.species-request-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.species-selector,
+.ficha-fields {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.species-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.species-option--disabled {
+  color: var(--muted-foreground);
+}
+
+.species-option__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.species-option__status {
+  color: var(--dashboard-muted-foreground);
+  font-size: 12px;
+}
+
+.field-help {
+  margin: 0;
+  color: var(--dashboard-muted-foreground);
+  font-size: 14px;
+}
+
+.species-option__notice {
+  overflow-wrap: anywhere;
+  color: var(--danger);
+}
+
+.field-error {
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.species-request-form__notice {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+.own-requests__list {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* pwa-005 (revisión 2026-11-21): tarjeta de «Mis solicitudes», escala 12/16/20 */
+.own-request {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.own-request__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.own-request__row:not(.own-request__head) {
+  justify-content: flex-start;
+}
+
+.own-request__head h3 {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.own-request__type,
+.own-request__meta {
+  margin: 0;
+  color: var(--dashboard-muted-foreground);
+  font-size: 14px;
+}
+
+.own-request__reason {
+  display: grid;
+  gap: 4px;
+}
+
+.own-request__reason p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.own-request__actions {
+  display: flex;
+}
+
+.own-requests__empty {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.own-requests__empty p {
+  margin: 0;
+}
+
+.own-requests__error {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.own-requests__error p {
+  margin: 0;
+}
+
+/* pwa-005 rev. (d): paginación compartida (@arca/ui) dentro de «Mis solicitudes» */
+.own-requests .pagination-bar {
+  margin: 12px 0;
+  padding: 0;
+  border-top: 0;
+  font-size: 14px;
+}
+
+@media (min-width: 481px) {
+  .own-request {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .own-requests .pagination-bar {
+    display: grid;
+    justify-content: stretch;
+  }
+
+  .own-requests .pagination-bar__summary {
+    text-align: center;
+  }
+
+  /* Anterior y Siguiente a 50 % cada uno; los números pasan a la fila de abajo. */
+  .own-requests .pagination-bar__actions {
+    justify-content: center;
+  }
+
+  .own-requests .pagination-bar__actions > .arca-button:first-child,
+  .own-requests .pagination-bar__actions > .arca-button:last-child {
+    flex: 1 1 calc(50% - 4px);
+  }
+
+  .own-requests .pagination-bar__actions > .arca-button:last-child {
+    order: 1;
+  }
+
+  .own-requests .pagination-bar__actions > :not(:first-child):not(:last-child) {
+    order: 2;
+  }
+}
+
+/* pwa-005 (revisión 2026-11-21): formulario por secciones numeradas */
+.form-step {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.form-step__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+}
+
+.form-step__num {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.species-request-data {
+  display: grid;
+  gap: 20px;
+}
+
+.ficha-chip--fixed {
+  background: var(--surface-subtle);
+  color: var(--dashboard-muted-foreground);
+  cursor: not-allowed;
+}
+
+.ficha-chip__icon {
+  display: inline-flex;
+}
+
+.ficha-chip__legend {
+  display: block;
+  font-size: 12px;
+}
+
+.species-request-form__hidden-line {
+  font-weight: 600;
+}
+
+/* pwa-005 (rediseño 2026-11-19) */
+.segmented {
+  display: inline-flex;
+  gap: 2px;
+  margin: 12px 0;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-subtle);
+}
+
+.segmented__item {
+  min-height: 34px;
+  padding: 6px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--dashboard-muted-foreground);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segmented__item[aria-pressed="true"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.visually-hidden-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.image-upload-area:has(.visually-hidden-input:focus-visible) {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.species-request-pick {
+  display: grid;
+  gap: 10px;
+}
+
+.species-summary {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-subtle);
+}
+
+.species-summary__line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.species-summary__notice {
+  overflow-wrap: anywhere;
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+.species-request-form__placeholder {
+  margin: 0;
+  color: var(--dashboard-muted-foreground);
+  font-weight: 600;
+}
+
+.species-request-data {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.species-request-data:disabled {
+  opacity: 0.7;
+}
+
+.ficha-fields__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 8px;
+}
+
+.ficha-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.ficha-chip:has(input:checked) {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+}
+
+.ficha-chip:has(input:focus-visible) {
+  outline: 3px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .species-request-data .image-upload-area {
+    width: 100%;
+  }
+}
+
+/* pwa-005 / api-026: «Dato curioso» ocupa todo el ancho de la rejilla */
+.species-request-form__wide {
+  grid-column: 1 / -1;
+}

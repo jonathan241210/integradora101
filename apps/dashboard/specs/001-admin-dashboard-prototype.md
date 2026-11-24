@@ -2,20 +2,21 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `apps/dashboard`, `packages/ui` (`@arca/ui`), `packages/tokens` (`@arca/tokens`)
-- Estado: Aprobada
-- Solicitante / responsable funcional: Solicitante de esta conversación; nombre por identificar
-- Aprobación funcional de la versión anterior: Solicitante, 2026-10-08; aprobó interfaces, preparación base del dashboard, `@arca/ui` y después la ampliación a `@arca/tokens`
-- Aprobación funcional de esta ampliación: Solicitante, 2026-10-09; aprobó CA-01..CA-12, las credenciales ficticias propuestas y el alcance local sin persistencia.
-- Aprobación funcional de login administrativo, paleta institucional y mantenimiento de React/index.html como entrada: Solicitante, 2026-10-09.
-- Aprobación funcional de esta mejora: Solicitante, 2026-10-13; aprobó conservar un único aviso general en la shell autenticada y retirar sus duplicados de las vistas.
+- Estado: Implementada
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
+- Aprobación funcional de la versión anterior: Solicitante; aprobó interfaces, preparación base del dashboard, `@arca/ui` y después la ampliación a `@arca/tokens`
+- Aprobación funcional de esta ampliación: Solicitante; aprobó CA-01..CA-12, las credenciales ficticias propuestas y el alcance local sin persistencia.
+- Aprobación funcional de login administrativo, paleta institucional y mantenimiento de React/index.html como entrada: Solicitante.
+- Aprobación funcional de esta mejora: Solicitante; aprobó conservar un único aviso general en la shell autenticada y retirar sus duplicados de las vistas.
 
-> **Nota (2026-10-13):** el inicio de sesión ficticio, el selector de perfil y las credenciales de demostración de esta spec quedan **reemplazados por `002-real-staff-login`** (autenticación real contra la API). Los criterios y reglas afectados se marcan con *(Reemplazado por dashboard-002)*; el resto del prototipo sigue vigente hasta que sus propias specs lo sustituyan.
+> **Nota:** el inicio de sesión ficticio, el selector de perfil y las credenciales de demostración de esta spec quedan **reemplazados por `002-real-staff-login`** (autenticación real contra la API). Los criterios y reglas afectados se marcan con *(Reemplazado por dashboard-002)*; el resto del prototipo sigue vigente hasta que sus propias specs lo sustituyan.
 
-> **Vigencia (2026-10-17):** `dashboard-002-real-staff-login` reemplaza los flujos de login ficticio de CA-01, CA-10 y CA-13, y solo la parte de login con cuentas en memoria de CA-12. La creación/lista demostrativa de Usuarios de taquilla sigue vigente; ninguna cuenta ficticia puede iniciar sesión.
+> **Vigencia:** `dashboard-002-real-staff-login` reemplaza los flujos de login ficticio de CA-01, CA-10 y CA-13, y solo la parte de login con cuentas en memoria de CA-12. La creación/lista demostrativa de Usuarios de taquilla sigue vigente; ninguna cuenta ficticia puede iniciar sesión.
 
-> **Vigencia (2026-10-30):** `dashboard-003-administration-sections` sustituye las pantallas demostrativas de administración por secciones conectadas a la API (`api-007`). Quedan **sustituidos** CA-02 (panel e indicadores ficticios), CA-03 (Noticias y Eventos), CA-05 (Reporte de boletos), CA-09 (Modificación de recintos) y CA-12 (Usuarios de taquilla); sus pruebas se reemplazaron por las de `dashboard-003`. CA-15 sigue vigente solo para Venta e Historial de taquilla, que conservan el aviso general. Siguen vigentes CA-04, CA-06, CA-07, CA-08, CA-11 y CA-14; CA-01, CA-10 y CA-13 permanecen reemplazados por `dashboard-002`.
+> **Vigencia:** `dashboard-003-administration-sections` sustituye las pantallas demostrativas de administración por secciones conectadas a la API (`api-007`). Quedan **sustituidos** CA-02 (panel e indicadores ficticios), CA-03 (Noticias y Eventos), CA-05 (Reporte de boletos), CA-09 (Modificación de recintos) y CA-12 (Usuarios de taquilla); sus pruebas se reemplazaron por las de `dashboard-003`. CA-15 sigue vigente solo para Venta e Historial de taquilla, que conservan el aviso general. Siguen vigentes CA-04, CA-06, CA-07, CA-08, CA-11 y CA-14; CA-01, CA-10 y CA-13 permanecen reemplazados por `dashboard-002`.
 
-> **Vigencia (2026-11-02):** `dashboard-005-ticket-sales` (aprobada el 2026-11-02) reemplaza CA-04 (Venta de boletos) y CA-11 (Historial de boletos) de esta spec. Venta e Historial dejan de ser demostrativos: no muestran datos ficticios ni el aviso de demostración (`dashboard-005` CA-02). El plan de `dashboard-005` retira el componente `DemoBanner`, por lo que CA-15 y RN-14 dejan de tener efecto. Los demás criterios conservan el estado indicado arriba.
+> **Vigencia:** `dashboard-005-ticket-sales` reemplaza CA-04 (Venta de boletos) y CA-11 (Historial de boletos) de esta spec. Venta e Historial dejan de ser demostrativos: no muestran datos ficticios ni el aviso de demostración (`dashboard-005` CA-02). El plan de `dashboard-005` retira el componente `DemoBanner`, por lo que CA-15 y RN-14 dejan de tener efecto. Los demás criterios conservan el estado indicado arriba.
 
 ## Problema y contexto
 
@@ -81,7 +82,7 @@ Como personal de taquilla, quiero iniciar sesión con una cuenta de muestra y ve
 - **CA-15:** Dado el perfil administrativo con sesión de demostración activa, cuando se muestre cualquier vista administrativa, entonces la shell presenta una sola advertencia general sobre el carácter ficticio y la falta de persistencia; las vistas administrativas no repiten ese banner.
 - **CA-16:** El icono de la pestaña del dashboard utiliza el mismo logotipo local que el portal de visitantes, tanto en desarrollo como en la compilación, sin cambiar la funcionalidad.
 
-La persona solicitante pidió el favicon del portal de visitantes para el dashboard el 2026-11-12.
+La persona solicitante pidió el favicon del portal de visitantes para el dashboard.
 
 ## Reglas de negocio
 
@@ -125,7 +126,7 @@ No se consulta ni persiste información. Usar solo datos ficticios estáticos o 
 
 ## Revisión
 
-- Aprobadores y fecha de la versión anterior: Solicitante, 2026-10-08; aprobó el alcance inicial de pantallas, la base React del dashboard, los componentes mínimos de `@arca/ui` y tokens semánticos mínimos de `@arca/tokens`.
-- Aprobadores y fecha de esta ampliación: Solicitante, 2026-10-09.
-- Aprobación de esta ampliación (CA-13/CA-14): Solicitante, 2026-10-09.
+- Aprobación de la versión anterior: Solicitante; aprobó el alcance inicial de pantallas, la base React del dashboard, los componentes mínimos de `@arca/ui` y tokens semánticos mínimos de `@arca/tokens`.
+- Aprobación de esta ampliación: Solicitante.
+- Aprobación de esta ampliación (CA-13/CA-14): Solicitante.
 - Evidencia/enlaces: Referencias visuales adjuntas en esta conversación.

@@ -197,7 +197,7 @@ describe("CA-29 ticket-sales", () => {
   it.each(settingsList)(
     "muestra folio, tipo, precio y QR en %s incluso con todos los opcionales desactivados",
     (_name, settings) => {
-      const markup = renderToStaticMarkup(<TicketReceipt ticket={child} settings={settings} />);
+      const markup = renderToStaticMarkup(<TicketReceipt ticket={child} timezone="America/Mexico_City" settings={settings} />);
 
       expect(markup).toContain("Folio <strong>102</strong>");
       expect(markup).toContain("Niño");
@@ -210,11 +210,12 @@ describe("CA-29 ticket-sales", () => {
   );
 
   it("muestra solo los campos activados y no cambia el QR; nunca muestra total ni cantidades de la compra", () => {
-    const full = renderToStaticMarkup(<TicketReceipt ticket={saleDto().tickets[0]} settings={defaultTicketPrintSettings} />);
-    const letterFull = renderToStaticMarkup(<TicketReceipt ticket={saleDto().tickets[0]} settings={letter} />);
+    const full = renderToStaticMarkup(<TicketReceipt ticket={saleDto().tickets[0]} timezone="America/Mexico_City" settings={defaultTicketPrintSettings} />);
+    const letterFull = renderToStaticMarkup(<TicketReceipt ticket={saleDto().tickets[0]} timezone="America/Mexico_City" settings={letter} />);
     const onlyCashier = renderToStaticMarkup(
       <TicketReceipt
         ticket={saleDto().tickets[0]}
+        timezone="America/Mexico_City"
         settings={changeTicketPrintSettings(withFields(defaultTicketPrintSettings, false), {
           type: "field",
           name: "cashier",

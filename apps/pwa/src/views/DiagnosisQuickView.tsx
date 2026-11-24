@@ -1,8 +1,10 @@
 import { Button, Card, Dialog, Field, SelectField, TextAreaField } from '@arca/ui';
 import { useEffect, useState, type FormEvent } from 'react';
-import { createEvaluation, type AnimalSummary } from '@/services/apiClient';
+import { useAnimalActions } from '@/viewmodels/useAnimalActions';
 import { formToRecord, useSaveRequest } from '@/viewmodels/useApiData';
-import { AnimalPicker } from '@/views/AnimalPicker';
+import { AnimalPicker, type PickableAnimal } from '@/views/AnimalPicker';
+import { queueEvaluation } from '@/offline/sync-manager';
+import { isOnline, isTemporarySyncFailure } from '@/offline/utils';
 import { SaveFeedback } from '@/views/SaveFeedback';
 import { quickGroups } from '@/viewmodels/diagnosisForms';
 import {
@@ -35,15 +37,16 @@ function calculateAge(birthDate: string | null): string {
   return `${years} ${years === 1 ? 'año' : 'años'} ${months} ${months === 1 ? 'mes' : 'meses'}`;
 }
 
-export function DiagnosisQuickView({ mvzName = '' }: { mvzName?: string }) {
-  const [selectedAnimal, setSelectedAnimal] = useState<AnimalSummary | null>(null);
+export function DiagnosisQuickView({ mvzName = '', userScope }: { mvzName?: string; userScope?: string }) {
+  const [selectedAnimal, setSelectedAnimal] = useState<PickableAnimal | null>(null);
   const [mvz, setMvz] = useState(mvzName);
   const [species, setSpecies] = useState('');
   const [sex, setSex] = useState('');
   const [age, setAge] = useState('');
   const save = useSaveRequest();
+  const { createEvaluation } = useAnimalActions();
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [pending, setPending] = useState<{ animalId: number; values: Record<string, string> } | null>(null);
+  const [pending, setPending] = useState<{ animalValue: string; values: Record<string, string> } | null>(null);
   const [followUpReason, setFollowUpReason] = useState('');
   const [followUpStatus, setFollowUpStatus] = useState('');
   const [nextReviewDate, setNextReviewDate] = useState('');
@@ -68,9 +71,9 @@ export function DiagnosisQuickView({ mvzName = '' }: { mvzName?: string }) {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    const { 'quick-animal': animalId, ...values } = formToRecord(form);
+    const { 'quick-animal': animalValue, ...values } = formToRecord(form);
 
-    if (!animalId) {
+    if (!animalValue) {
       await save.run(() => Promise.reject(new Error('Selecciona un animal antes de guardar.')), '');
       return;
     }
@@ -79,7 +82,7 @@ export function DiagnosisQuickView({ mvzName = '' }: { mvzName?: string }) {
     setFollowUpReason('');
     setFollowUpStatus('');
     setNextReviewDate('');
-    setPending({ animalId: Number(animalId), values });
+    setPending({ animalValue, values });
     setConfirmOpen(true);
   }
 
@@ -95,10 +98,40 @@ export function DiagnosisQuickView({ mvzName = '' }: { mvzName?: string }) {
       follow_up_status: followUpStatus,
       next_review_date: nextReviewDate,
     };
-    const saved = await save.run(
-      () => createEvaluation('quick', pending.animalId, payload),
-      'Diagnóstico rápido guardado correctamente.',
-    );
+    const isLocal = pending.animalValue.startsWith('local:');
+    const localId = isLocal ? pending.animalValue.slice('local:'.length) : undefined;
+    const serverId = pending.animalValue.startsWith('server:') ? Number(pending.animalValue.slice('server:'.length)) : undefined;
+
+    const saved = await save.run(async () => {
+      if ((isLocal || !isOnline()) && userScope) {
+        await queueEvaluation(userScope, {
+          kind: 'quick',
+          animalLocalId: localId ?? selectedAnimal?.localId,
+          animalServerId: serverId,
+          payload,
+        });
+        return { queued: true };
+      }
+      if (!serverId) {
+        if (userScope && selectedAnimal?.localId) {
+          await queueEvaluation(userScope, { kind: 'quick', animalLocalId: selectedAnimal.localId, payload });
+          return { queued: true };
+        }
+        throw new Error('Selecciona un animal válido antes de guardar.');
+      }
+      try {
+        return await createEvaluation('quick', serverId, payload);
+      } catch (error) {
+        if (userScope && isTemporarySyncFailure(error)) {
+          await queueEvaluation(userScope, { kind: 'quick', animalServerId: serverId, payload });
+          return { queued: true };
+        }
+        throw error;
+      }
+    }, (result) => (result && typeof result === 'object' && 'queued' in (result as object) && (result as { queued?: boolean }).queued)
+      ? 'Diagnóstico rápido guardado localmente (pendiente de sincronización).'
+      : 'Diagnóstico rápido guardado correctamente.');
+
     if (saved) {
       form?.reset();
       setSelectedAnimal(null);
@@ -132,7 +165,7 @@ export function DiagnosisQuickView({ mvzName = '' }: { mvzName?: string }) {
         >
           <h3>Formato de historia clínica</h3>
           <div className="form-grid">
-            <AnimalPicker label="Animal" name="quick-animal" onSelect={setSelectedAnimal} />
+            <AnimalPicker label="Animal" name="quick-animal" onSelect={setSelectedAnimal} userScope={userScope} />
             <Field label="MVZ" name="quick-mvz" value={mvz} onChange={(e) => setMvz(e.target.value)} />
             <Field label="Motivo de la valoración clínica" name="quick-reason" />
             <Field label="Fecha" name="quick-date" type="date" defaultValue={today} />

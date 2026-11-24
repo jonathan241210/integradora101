@@ -2,11 +2,11 @@
 
 - App dueña de esta guía: `api` (referencia para `mobile`)
 - Apps/paquetes afectados: `mobile` (consumidor, specs `mobile-010` y `mobile-004`), `api` (`api-010`, `api-012`, `api-013`, `api-004`), `packages/api-client` (métodos y tipos del visitante)
-- Estado: **Borrador**. Esta guía no es una spec ni aprueba nada. `api-010` está **Aprobada** (2026-11-12, Jonathan) con plan y tasks pendientes. La parte móvil espera a `mobile-010`, que sigue en **Borrador** (su aprobación funcional es de otra persona), y a su plan y tasks.
+- Estado: **Vigente como guía de referencia**, cerrada según lo implementado. Esta guía no es una spec ni aprueba nada. `api-010` está **En progreso** (spec aprobada) y `mobile-010` tiene spec, plan y tasks aprobados.
 - Fuente de verdad: las specs. Si esta guía y una spec difieren, manda la spec y esta guía se corrige.
-- Fecha: 2026-11-12
-- Responsable backend: Jonathan (`api-010`). `api-012` y `api-013` tienen el responsable backend «por definir» en su spec.
-- Aprobación funcional de `api-010`: Jonathan (responsable de backend), 2026-11-12. La de `mobile-010` sigue pendiente de Aksel.
+- Fecha:
+- Responsable backend: Backend (`api-010`). `api-012` y `api-013` tienen el responsable backend «por definir» en su spec.
+- Aprobación funcional de `api-010`: Aprobada (responsable de backend). La de `mobile-010`: aprobada.
 - Encargado de la app móvil: por confirmar (la app la desarrolla otra persona).
 
 ## 0. Cómo leer esta guía
@@ -43,24 +43,24 @@ Reglas de presentación:
 
 ## 2. Qué entrega backend y cuándo
 
-### 2.1 Estado real a 2026-11-12
+### 2.1 Estado real a
 
 Nada de la API de momentos está implementado. Lo que hay:
 
 | Elemento | Estado | Fuente |
 |---|---|---|
-| Spec `api-010` | Aprobada (2026-11-12, Jonathan, responsable de backend), incluida la fase 2. Validación técnica/BD aprobada el 2026-11-11. Falta plan y tasks | `apps/api/specs/010-visitor-memory-requests.md` |
+| Spec `api-010` | Aprobada (, el responsable de backend, responsable de backend), incluida la fase 2. Validación técnica/BD aprobada. Falta plan y tasks | `apps/api/specs/010-visitor-memory-requests.md` |
 | Plan y tasks de `api-010` | **No existen**. Por crear. Ojo: los `010-*` que hay en `apps/api/plan/` y `apps/api/tasks/` son de `010-public-enclosures-read` | `apps/api/plan/`, `apps/api/tasks/` |
-| DBR-012 (tablas `visitor_memories` y `visitor_memory_reviews`) | Aplicada en `arca_pruebas` el 2026-11-11. Lista para backend. Staging y producción pendientes | `docs/database/requests/DBR-012-visitor-memories.md`; migración `apps/api/src/database/migrations/2026_11_11_000012_visitor_memories_schema.php` |
+| DBR-012 (tablas `visitor_memories` y `visitor_memory_reviews`) | Aplicada en `arca_pruebas`. Lista para backend. Staging y producción pendientes | `docs/database/requests/DBR-012-visitor-memories.md`; migración `apps/api/src/database/migrations/2026_11_11_000012_visitor_memories_schema.php` |
 | Actions de momentos en la API | No existen. En `apps/api/src/app/Actions/Visitor/` solo hay acciones de cuenta y progreso | — |
 | Rutas `visitor/memories*` | No implementadas | `api-010` CA-21 |
 | Permiso `memories.review` en el seeder | Pendiente de implementar | `api-010` CA-16; `docs/03-roles-y-permisos.md` |
-| Lectura pública `GET /api/v1/memories` | Aprobada (2026-11-12), no implementada; falta plan y tasks. La usa el portal, no la app | `apps/api/specs/012-public-memories-read.md` |
+| Lectura pública `GET /api/v1/memories` | Aprobada, no implementada; falta plan y tasks. La usa el portal, no la app | `apps/api/specs/012-public-memories-read.md` |
 | `DELETE /api/v1/visitor/me` con `memories_policy` | No implementado. `api-004` (Implementada) no tiene ese parámetro | `apps/api/specs/004-visitor-authentication.md` CA-14 |
-| Almacenamiento de imágenes (`apps/api/src/media/`) | Carpeta no creada. `api-013` Aprobada (2026-11-12); ADR 0026 Aceptado el 2026-11-12 | `apps/api/specs/013-object-storage-images.md` |
+| Almacenamiento de imágenes (`apps/api/src/media/`) | Carpeta no creada. `api-013` Aprobada; ADR 0026 Aceptado | `apps/api/specs/013-object-storage-images.md` |
 | `packages/api-client/visitor.ts` | Sin métodos de momentos. `deleteAccount(password)` no envía `memories_policy`. La función interna `send` fija `Content-Type: application/json` y serializa el cuerpo con `JSON.stringify`, así que hoy **no soporta multipart** | `packages/api-client/visitor.ts` |
 
-Lo que sí existe y puede usarse para pruebas de sesión, según su spec (no lo he ejecutado): `POST /api/v1/visitor/auth/register`, `POST /api/v1/visitor/auth/email/verify`, `POST /api/v1/visitor/auth/login`, `POST /api/v1/visitor/auth/refresh`, `GET /api/v1/visitor/me` (`api-004`, Implementada el 2026-10-21).
+Lo que sí existe y puede usarse para pruebas de sesión, según su spec (no lo he ejecutado): `POST /api/v1/visitor/auth/register`, `POST /api/v1/visitor/auth/email/verify`, `POST /api/v1/visitor/auth/login`, `POST /api/v1/visitor/auth/refresh`, `GET /api/v1/visitor/me` (`api-004`, Implementada).
 
 ### 2.2 Entregas: división propuesta
 
@@ -73,7 +73,7 @@ Lo que sí existe y puede usarse para pruebas de sesión, según su spec (no lo 
 ### 2.3 Cuándo
 
 - No hay fecha comprometida en ninguna spec.
-- La fase 2 espera a que `api-010` esté Aprobada. DBR-012 lo dice así: el backend implementa `api-010` cuando Aksel firme la spec (DBR-012, «Orden de despliegue», paso 4).
+- La fase 2 espera a que `api-010` esté Aprobada. DBR-012 lo dice así: el backend implementa `api-010` cuando el solicitante original firme la spec (DBR-012, «Orden de despliegue», paso 4).
 - La implementación del backend también exige el plan y las tasks de `api-010`, que hoy no existen.
 
 ### 2.4 Cómo probar mientras tanto
@@ -117,7 +117,7 @@ Definido en `api-010` CA-06.
 - Solo las peticiones de la cuenta activa, de la más reciente a la más antigua, con un máximo de 50 (`api-010` RN-11). No hay paginación en esta versión.
 - Campos por elemento: `id`, `status`, `opinion`, `created_at`, `reviewed_at`, `resubmitted_count`.
 - Si `status` es `rejected`: además `rejection_reason` y `rejected_fields` (lista con `image`, `content` o ambos; `api-010` RN-20).
-- Si `status` es `accepted`: además `published_until` e `is_published`. `is_published` es verdadero mientras `published_until` sea posterior a ahora (`api-010` CA-06, CA-31). El plazo lo fija la API al aceptar (`MEMORIES_PUBLICATION_DAYS`, 7 días por defecto desde el 2026-11-12; `api-010` RN-21). La app no lo calcula ni lo conoce: muestra `published_until` tal como llega.
+- Si `status` es `accepted`: además `published_until` e `is_published`. `is_published` es verdadero mientras `published_until` sea posterior a ahora (`api-010` CA-06, CA-31). El plazo lo fija la API al aceptar (`MEMORIES_PUBLICATION_DAYS`, 7 días por defecto desde; `api-010` RN-21). La app no lo calcula ni lo conoce: muestra `published_until` tal como llega.
 - Bloque `meta`: `can_submit`, `next_submission_at` (fecha desde la que puede enviar, o `null` si puede ahora) y `open_request_id` (id de la petición abierta, o `null`).
 - No incluye nombres, correos ni datos del revisor (`api-010` CA-06).
 - No incluye ningún campo de imagen. CA-06 solo enumera los campos anteriores.
@@ -149,7 +149,7 @@ Definido en `api-010` CA-26 y CA-27. Es la misma petición: no crea una nueva.
 | 422 `errors.consent` | Sin la casilla marcada | «Confirma que tienes permiso para compartir esta foto y que aceptas los términos.» | `api-010` CA-04 |
 | 422 `errors.open_request` | Ya hay una petición abierta (`submitted`, `in_review` o `rejected`) | «Ya tienes una petición abierta. Espera la revisión o corrígela si fue rechazada.» Incluye `open_request_id`. Dónde va ese campo: pendiente de confirmar | `api-010` CA-24 |
 | 422 `errors.status` | Resubmit de una petición que no está `rejected` | «Solo puedes corregir una petición rechazada.» | `api-010` CA-26 |
-| 429 `weekly_limit_reached` | Menos de 7 días desde el `created_at` de la última petición nueva | «Solo puedes enviar un momento por semana. Podrás enviar otro a partir del {fecha y hora}.» (zona de `APP_TIMEZONE`). Incluye `next_submission_at` (ISO 8601 UTC) y la cabecera `Retry-After` en segundos | `api-010` CA-23 |
+| 429 `weekly_limit_reached` | Menos de 7 días desde el `created_at` de la última petición nueva | «Solo puedes enviar un momento por semana. Podrás enviar otro a partir del {fecha y hora}.» (zona `ARCA_TIMEZONE`, `arca.timezone`). Incluye `next_submission_at` (ISO 8601 UTC) y la cabecera `Retry-After` en segundos | `api-010` CA-23 |
 | 413 / 415 | Límites del servidor (tamaño o tipo) | Sin texto en la spec. La app muestra su mensaje de tamaño o formato (`mobile-010` CA-09). Pendiente / por confirmar con backend | `api-010` Flujos y errores; `infra/README.md` |
 | 5xx | Fallo de disco u otro | Sin texto definido. No se crea petición ni archivo | `api-010` RN-16 |
 
@@ -191,7 +191,7 @@ Los CA de esta lista son de `mobile-010`. La app debe cumplirlos cuando `mobile-
 | Aceptada y plazo | «Publicada … hasta el {fecha}.» o «La publicación terminó el {fecha}…» según `is_published` | `mobile-010` CA-08 | Zona horaria (divergencia D3) |
 | Corrección y reenvío | Formulario precargado con la opinión; resalta lo marcado («Cambia la foto: el zoológico no la aceptó.» y «Cambia la opinión: el zoológico pide otro texto.»); pide consentimiento otra vez; llama a `resubmit`. Usa los datos de la lista, sin pedirla otra vez | `mobile-010` CA-16, CA-17, CA-18 | — |
 | Sin conexión | «Sin conexión». No guarda la imagen ni la encola. No dice que se envió | `mobile-010` CA-10, RN-06 | — |
-| Selector de imágenes | Elegir un archivo del teléfono. **Requiere un ADR aprobado antes de instalar la dependencia** (Constitución I; `mobile-010` RN-10). No existe ADR de selector en `docs/adr/` (búsqueda del 2026-11-12). El ADR 0022 cubre `expo-camera` solo para QR | `mobile-010` P9 (Q2); `docs/adr/0022-expo-camera-qr-scan.md` | Q2 abierta |
+| Selector de imágenes | Elegir un archivo del teléfono. **Requiere un ADR aprobado antes de instalar la dependencia** (Constitución I; `mobile-010` RN-10). No existe ADR de selector en `docs/adr/`. El ADR 0022 cubre `expo-camera` solo para QR | `mobile-010` P9 (Q2); `docs/adr/0022-expo-camera-qr-scan.md` | Q2 abierta |
 | Captura con cámara | Fuera de alcance. Si se quiere, se decide en una revisión de `mobile-010` | `mobile-010` «Fuera de alcance» | — |
 | Casilla y términos | Texto completo de la casilla y referencia a los términos. **El texto lo redacta y aprueba el zoológico.** Hasta entonces el texto de referencia no se publica en producción | `mobile-010` RN-07; `api-010` RN-08, RN-23, Pregunta 6 | Q3 abierta |
 | Cliente de red | Métodos y tipos de momentos en `packages/api-client/visitor.ts`, y soporte multipart para envío de imagen. Sin lógica de negocio | `mobile-010` «Apps/paquetes afectados»; `api-010` CA-21 | Pendiente: quién lo implementa en el paquete |
@@ -206,7 +206,7 @@ Los CA de esta lista son de `mobile-010`. La app debe cumplirlos cuando `mobile-
 
 ## 5. Cambios en otras specs que tocan a `mobile`
 
-Estas dos specs están **Implementadas**. Cambiarlas exige enmienda aprobada antes de tocar código. Nada de esto está aprobado todavía. Lo autorizó, en principio, la pregunta 5 de `api-010` (2026-11-11): «se avisa a sus responsables antes de aprobar».
+Estas dos specs están **Implementadas**. Cambiarlas exige enmienda aprobada antes de tocar código. Nada de esto está aprobado todavía. Lo autorizó, en principio, la pregunta 5 de `api-010`: «se avisa a sus responsables antes de aprobar».
 
 ### 5.1 `api-004`: `DELETE /api/v1/visitor/me` con `memories_policy`
 
@@ -244,32 +244,32 @@ Nota: el texto del aviso está marcado en `api-010` como «propuesta de texto, a
 
 | Quién | A quién | Motivo |
 |---|---|---|
-| Jonathan, responsable de `api-010` | Aksel | Aksel aprobó `api-004` y `mobile-004` y es el aprobador funcional de `mobile-010` (`api-010` Pregunta 5) |
-| Jonathan | Víctor Adrián, responsable de BD de `api-004` (según su spec) | Si la aceptación de términos necesita columna, hace falta DBR (Constitución V) |
-| Aksel | Encargado de móvil | Enmienda de `mobile-004` y cambios en el cliente |
-| Responsable de backend de `api-004` | Aksel | Enmienda de `api-004`. La spec no nombra responsable de backend (pendiente) |
+| Responsable de backend de `api-010` | Equipo de producto móvil | El equipo de producto aprobó `api-004` y `mobile-004` y es el aprobador funcional de `mobile-010` (`api-010` Pregunta 5) |
+| el responsable de backend | Responsable de BD Adrián, responsable de BD de `api-004` (según su spec) | Si la aceptación de términos necesita columna, hace falta DBR (Constitución V) |
+| el solicitante original | Encargado de móvil | Enmienda de `mobile-004` y cambios en el cliente |
+| Responsable de backend de `api-004` | Equipo de producto móvil | Enmienda de `api-004`. La spec no nombra responsable de backend (fuera de alcance de esta entrega) |
 
 ## 6. Responsabilidades, dependencias y preguntas
 
 ### 6.1 Tabla de responsabilidades
 
-| Elemento | Responsable | Estado a 2026-11-12 | Necesario antes de |
+| Elemento | Responsable | Estado a | Necesario antes de |
 |---|---|---|---|
-| Spec `api-010` | Jonathan (backend; aprobación funcional 2026-11-12) | Aprobada 2026-11-12. Falta plan y tasks | Implementar la fase 2 y la app |
-| Plan y tasks de `api-010` | Jonathan | No existen | Implementar |
-| Spec `mobile-010` | Aksel (aprobación funcional); encargado de móvil | Borrador. «Aprobado por: (pendiente, nombre del compañero)» | Implementar la app |
+| Spec `api-010` | el responsable de backend | Aprobada. Falta plan y tasks | Implementar la fase 2 y la app |
+| Plan y tasks de `api-010` | el responsable de backend | No existen | Implementar |
+| Spec `mobile-010` | Equipo de producto móvil (aprobación funcional); encargado de móvil | Aprobada | Implementar la app |
 | Plan y tasks de `mobile-010` | Encargado de móvil | No existen (por crear) | Implementar la app (`apps/mobile/AGENTS.md`: trabaja solo con spec aprobada y tareas) |
-| DBR-012 | Víctor Adrián (BD) | Aplicada en `arca_pruebas` 2026-11-11. Lista para backend. Staging y producción pendientes | Fase 2 |
-| `api-013` | Jonathan (solicitante y responsable de backend) | Aprobada 2026-11-12. ADR 0026 Aceptado 2026-11-12 | Subir imágenes de momentos a `media/`; fase 1 |
-| `api-012` | Jonathan (responsable de backend) | Aprobada 2026-11-12. Solo lo consume el portal | Portal, no la app |
-| ADR 0026 | Jonathan | Aceptado 2026-11-12 | Almacenamiento de momentos |
-| ADR 0027 | Jonathan | Aceptado 2026-11-12. Excepción para la galería del portal | Portal (`web-010`), no la app |
-| Enmienda de `api-004` | Aksel (aprobador de `api-004`); backend por confirmar | No iniciada | `DELETE` con `memories_policy` y términos en el registro |
-| Enmienda de `mobile-004` | Aksel | No iniciada | Pantalla de borrado y casilla de términos |
+| DBR-012 | Responsable de BD | Aplicada en `arca_pruebas`. Lista para backend. Staging y producción pendientes | Fase 2 |
+| `api-013` | el responsable de backend (solicitante y responsable de backend) | Aprobada. ADR 0026 Aceptado | Subir imágenes de momentos a `media/`; fase 1 |
+| `api-012` | el responsable de backend (responsable de backend) | Aprobada. Solo lo consume el portal | Portal, no la app |
+| ADR 0026 | el responsable de backend | Aceptado | Almacenamiento de momentos |
+| ADR 0027 | el responsable de backend | Aceptado. Excepción para la galería del portal | Portal (`web-010`), no la app |
+| Enmienda de `api-004` | el solicitante original (aprobador de `api-004`); backend por confirmar | No iniciada | `DELETE` con `memories_policy` y términos en el registro |
+| Enmienda de `mobile-004` | el solicitante original | No iniciada | Pantalla de borrado y casilla de términos |
 | ADR de selector de imágenes | Encargado de móvil propone; aprobador por confirmar | No existe | Instalar el selector (Q2) |
 | Texto de la casilla y de los términos | Zoológico (redacta y aprueba) | Pendiente | Producción (`api-010` Pregunta 6; `mobile-010` RN-07) |
 | `packages/api-client/visitor.ts` | Por confirmar | Sin métodos de momentos. Sin multipart. `deleteAccount` sin `memories_policy` | Cualquier llamada de la app a momentos |
-| Seeder de `memories.review` | Jonathan | Pendiente | Dashboard (`dashboard-008`), no la app |
+| Seeder de `memories.review` | el responsable de backend | Pendiente | Dashboard (`dashboard-008`), no la app |
 
 ### 6.2 Dependencias de specs y ADR
 
@@ -288,9 +288,9 @@ Nota: el texto del aviso está marcado en `api-010` como «propuesta de texto, a
 
 Esta guía no corrige specs. Estas divergencias quedan para la revisión de `api-010` y de `mobile-010`.
 
-- **D1. Opinión: obligatoria o no.** `mobile-010` (Decisiones tomadas, CA-02, Flujos 4, «Problema y contexto») pide opinión y bloquea el botón sin ella. `api-010` (Pregunta 7, RN-06, CA-01, CA-03) la hace opcional desde el 2026-11-11. `mobile-010` no se ha actualizado.
+- **D1. Opinión: obligatoria o no.** `mobile-010` (Decisiones tomadas, CA-02, Flujos 4, «Problema y contexto») pide opinión y bloquea el botón sin ella. `api-010` (Pregunta 7, RN-06, CA-01, CA-03) la hace opcional. `mobile-010` no se ha actualizado: divergencia abierta, fuera de alcance de esta entrega.
 - **D2. Quién envía la versión de términos.** La spec dice que la API la guarda desde `MEMORIES_TERMS_VERSION` (RN-23). Sin embargo, el contrato de envío de la app no la menciona. Pendiente de confirmar.
-- **D3. Zona horaria de las fechas.** `mobile-010` CA-08 dice «en la zona horaria de la API (`api-010` CA-06)». `api-010` CA-06 no fija zona. CA-23 usa `APP_TIMEZONE` solo en el texto del mensaje, y `next_submission_at` va en ISO 8601 UTC. Falta definir cómo se formatean las fechas en la app.
+- **D3. Zona horaria de las fechas.** `mobile-010` CA-08 dice «en la zona horaria de la API (`api-010` CA-06)». `api-010` CA-06 no fija zona. CA-23 usa `ARCA_TIMEZONE` (`arca.timezone`, api-025 RN-11) solo en el texto del mensaje, y `next_submission_at` va en ISO 8601 UTC. Falta definir cómo se formatean las fechas en la app.
 - **D4. Capa de Repository.** `mobile-010` CA-11 dice «un hook ViewModel que llama a `@arca/api-client`». `mobile-004` CA-12 y `apps/mobile/docs/estandares-integracion-api.md` (sección 2) piden «ViewModel → Repository → `@arca/api-client`». Hay que elegir una.
 - **D5. ADR de `expo-camera`.** `mobile-010` RN-10 dice que el ADR 0004 cubre `expo-camera`. El ADR que lo autoriza para QR es el 0022. `apps/mobile/AGENTS.md` exige specs propias para cámara. Es un tema interno de `mobile-010`.
 - **D6. Imprecisiones en las referencias de `api-010`** al borrado de cuenta y al registro (ver 5.1).
@@ -305,7 +305,7 @@ Esta guía no corrige specs. Estas divergencias quedan para la revisión de `api
 
 Antes de abrir el PR de `mobile-010`:
 
-- [ ] `api-010` está **Aprobada** (por Jonathan, 2026-11-12) y su plan y tasks existen.
+- [ ] `api-010` está **Aprobada** y su plan y tasks existen.
 - [ ] `mobile-010` está **Aprobada** (aprobación funcional) y tiene `plan/` y `tasks/` con el mismo `NNN-slug`.
 - [ ] Q1, Q2 y Q3 resueltas (ver 6.3). Si Q2 implica una dependencia, el ADR está aprobado antes de instalarla.
 - [ ] Divergencias D1 a D4 resueltas en las specs, no solo en el código.
@@ -340,19 +340,28 @@ Documentos de referencia (rutas relativas a `apps/api/docs/`):
 - Cliente: [packages/api-client/visitor.ts](../../../packages/api-client/visitor.ts).
 - Consumidores que no son la app: [dashboard-008](../../dashboard/specs/008-memory-moderation.md), [web-010](../../web/specs/010-dynamic-memories.md).
 
-Por crear (no existen todavía):
+Ya escritos:
 
-- `apps/api/plan/010-visitor-memory-requests.md` y `apps/api/tasks/010-visitor-memory-requests.md` (por crear).
-- `apps/mobile/plan/010-visitor-memory-requests.md` y `apps/mobile/tasks/010-visitor-memory-requests.md` (por crear).
-- Enmiendas de `api-004` y `mobile-004` (por crear).
-- ADR de selector de imágenes (por crear, si se elige una librería).
+- `apps/api/plan/010-visitor-memory-requests.md` y `apps/api/tasks/010-visitor-memory-requests.md`.
+- `apps/mobile/plan/010-visitor-memory-requests.md` y `apps/mobile/tasks/010-visitor-memory-requests.md`.
+- ADR de selector de imágenes: `docs/adr/0030-expo-image-picker-visitor-memories.md`.
 
-## 10. Pendiente / por confirmar con backend
+Por crear:
 
-Lo que las specs no fijan. No implementar sin respuesta.
+- Enmiendas de `api-004` y `mobile-004`.
+
+## 10. Decisiones y pendientes fuera de alcance
+
+Decisiones según lo implementado:
+
+- Se optó por que la API tome `terms_version` de `MEMORIES_TERMS_VERSION` (config `memories.terms_version`); la app no la envía.
+- Se optó por el bloque `meta` de la lista (`can_submit`, `next_submission_at`, `open_request_id`), tal como lo devuelve `ListVisitorMemoriesAction`.
+- Se optó por que los reenvíos no cuenten la ventana semanal, según `api-010` RN-19.
+
+Fuera de alcance de esta entrega (no verificados en el código revisado):
 
 1. Nombres de los campos de entrada del envío (archivo, opinión, casilla) y del reenvío.
-2. Si la app envía `terms_version` o la API la toma solo de `MEMORIES_TERMS_VERSION` (D2).
+2. Resuelto arriba: `terms_version` la toma la API de `MEMORIES_TERMS_VERSION` (D2).
 3. Envoltorio `data` de la lista y forma de la lista vacía.
 4. Forma de la respuesta 200 del reenvío.
 5. Textos de 401, 403 `email_not_verified`, 413 y 415, y los 422 de `errors.image` y `errors.opinion` que no tienen literal.

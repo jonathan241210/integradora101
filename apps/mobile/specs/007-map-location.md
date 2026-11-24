@@ -2,10 +2,11 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile`; `packages/api-client` solo para el contrato futuro de V1.1
-- Estado: Aprobada
-- Solicitante / responsable funcional: Víctor Adrián
-- Aprobación funcional: Víctor Adrián (2026-10-22)
-- Revisión técnica: Aksel (equipo móvil), pendiente de firma
+- Estado: Implementada (V1 a V4 y enmiendas V2, V2.2 y V3; la enmienda V4 no tiene tareas propias registradas, ver `tasks/007-map-location.md`)
+- Solicitada: 2026-10-22
+- Aprobada: 2026-10-22
+- Aprobación funcional: Aprobada
+- Revisión técnica: Frontend (registro pendiente)
 - Equivalencia en el documento de decisiones previas: 006
 
 ## Problema y contexto
@@ -119,22 +120,22 @@ flowchart TD
   - Cambiar el SVG o la distribución puede desalinear los `mapX`/`mapY`; se mitiga manteniendo posiciones normalizadas y un brief estable.
   - `react-native-svg` requiere verificación en Expo Go y en el build de Android.
   - La V1 no resuelve la ubicación real del visitante; eso debe comunicarse claramente en la UI.
-- **Preguntas abiertas:**
-  - Nombres y distribución definitivos de las secciones del zoológico.
-  - Confirmación de si Aksel hará revisión técnica o aprobación adicional de esta spec.
-  - Validación del estilo visual final con los tokens de marca.
-  - Momento de apertura de la spec de API/DBR para V1.1.
-- **Preguntas resueltas:**
-  - ¿Habrá GPS en la primera versión? No.
-  - ¿Se usarán imágenes aéreas? No; el SVG es esquemático.
-  - ¿El mapa será 3D? No; el 3D queda fuera y depende del ADR 0005.
-  - ¿Se usará un proveedor de mapas? No; SVG propio con `react-native-svg`.
-  - ¿Habrá DBR en V1? No; se usa fixture.
-  - ¿Los puntos se dibujan en el SVG? No; se cargan como datos y se superponen.
+## Decisiones
+
+- Se optó por no incluir GPS en la primera versión, porque la V1 es un plano de consulta; el GPS llegó en la enmienda V2.
+- Se optó por un SVG esquemático y no por imágenes aéreas, porque el plano es de referencia y no geográfico.
+- Se optó por no usar 3D en el mapa, porque el recorrido 3D depende del ADR 0005 y queda fuera de esta spec.
+- Se optó por `react-native-svg` propio y no por un proveedor de mapas, porque evita dependencias de nube y permite el plano offline (ADR 0015).
+- Se optó por no crear DBR en V1 y usar un fixture local, porque la API de recintos no existía; la integración se hizo en la enmienda V4 (`api-010`, DBR-008).
+- Se optó por dibujar los puntos como datos superpuestos y no dentro del SVG, porque agregar un punto no debe requerir editar el plano (RN-01).
+- Se optó por usar las secciones del SVG actual como distribución vigente, porque la distribución definitiva llegó con el SVG canónico de `mobile-017`.
+- Se optó por dejar sin registrar la revisión técnica de la spec: no hay firma en el repositorio y queda como pendiente de registro.
+- Se optó por tokens semánticos de `@arca/tokens` para el estilo visual; la validación visual final queda como limitación de dispositivo.
+- Se optó por integrar la API de recintos en la enmienda V4 (`api-010`) con caché local, porque la app debe funcionar sin conexión dentro del zoológico.
 
 ## Revisión
 
-- **Aprobadores y fecha:** aprobación funcional de Víctor Adrián (2026-10-22). Revisión técnica de Aksel pendiente de firma. El plan y las tareas quedan sujetos a esa revisión antes de implementar.
+- **Aprobación:** funcional aprobada. Revisión técnica pendiente de registro.
 - **Evidencia/enlaces:**
   - `apps/mobile/docs/007-svg-brief.md`
   - `apps/mobile/docs/007-map-v1-draft.svg`
@@ -148,11 +149,10 @@ flowchart TD
 
 ## Enmienda V2 — GPS, Punto Azul y Detección de Llegada
 
-- Estado: **Aprobada**
-- Solicitante / responsable funcional: Víctor Adrián
-- Aprobación funcional: Víctor Adrián (2026-10-29)
-- Fecha: 2026-10-29
-- ADR habilitador: `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado (2026-10-29)
+- Estado: **Implementada**
+- Solicitante / responsable funcional: Equipo ARCA-NB
+- Aprobación funcional: Aprobada
+- ADR habilitador: `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado
 
 ### Problema y contexto (V2)
 
@@ -246,15 +246,14 @@ flowchart TD
   - El SVG de prueba hace que el punto azul no sea visualmente preciso hasta tener el SVG real y la medición en campo.
   - El radio de 10 m puede ser muy pequeño si el GPS tiene deriva; ajustable con `RN-12`.
 
-- **Preguntas abiertas:** ninguna — todas resueltas.
-- **Preguntas resueltas (V2):**
-  1. ¿Cuándo se miden las 4 esquinas + entrada? El zoológico enviará foto/video; Víctor Adrián generará el SVG definitivo a partir de ese material. Hasta entonces se usan coordenadas sintéticas — no bloquea el desarrollo, sí la precisión real.
-  2. ¿Aviso de llegada visual o vibración? Solo visual: banner con "¡Llegaste a [recinto]!". Sin vibración ni sonido en V2.
-  3. ¿Radio de llegada 10 m? Confirmado para V2; se ajustará tras la medición en campo si hay deriva GPS.
+- **Decisiones (V2):**
+  - Se optó por coordenadas sintéticas hasta contar con medición en campo, porque el zoológico enviará foto y video para generar el SVG definitivo y el desarrollo no debe bloquearse; la precisión real queda pendiente de esa medición.
+  - Se optó por un aviso solo visual (banner con "¡Llegaste a [recinto]!"), porque la V2 no incluye vibración ni sonido.
+  - Se optó por un radio de llegada de 10 m, porque se confirmó para V2; se ajustará tras la medición en campo si hay deriva GPS.
 
 ### Revisión (V2)
 
-- **Aprobadores y fecha:** Víctor Adrián (2026-10-29).
+- **Aprobación:** Aprobada.
 - **Evidencia/enlaces:**
   - `docs/adr/0016-expo-location-gps-blue-dot.md` — Aceptado
   - `apps/mobile/docs/007-roadmap-mapa-gps-ar.md`
@@ -263,9 +262,8 @@ flowchart TD
 
 ## Enmienda V2.2 — Controles Interactivos del Mapa (Zoom, Desplazamiento y Centrado)
 
-- Estado: **Aprobada** (2026-11-04)
-- Solicitante / responsable funcional: Víctor Adrián
-- Fecha: 2026-11-03
+- Estado: **Implementada**
+- Solicitante / responsable funcional: Equipo ARCA-NB
 - Sin nuevas dependencias externas (usa primitivas de React Native + controles accesibles para cumplir `CA-07`).
 
 ### Problema y contexto (V2.2)
@@ -299,9 +297,9 @@ En las versiones V1 a V2.1 el lienzo del mapa se muestra fijo al 100 % dentro de
 
 ## Próxima Evolución — Fase V3: Navegación Guiada por Senderos (Pathfinding)
 
-- **Estado:** Propuesta formal planificada
-- **Responsable funcional:** Víctor Adrián
-- **Dependencia bloqueante:** Recepción de fotos/videos con dron del zoológico Nicolás Bravo y generación del SVG cartográfico definitivo.
+- **Estado:** Implementada (enmienda aprobada; ver el estado de aprobación más abajo)
+- **Responsable funcional:** Equipo ARCA-NB
+- **Dependencia para recalibrar:** Recepción de fotos/videos con dron del zoológico Nicolás Bravo y generación del SVG cartográfico definitivo.
 
 ### Justificación de alcance
 En la V2.1 la línea hacia el recinto destino es una recta euclidiana directa (`DestinationRouteLine`). Esta solución es óptima para la fase esquemática porque evita invertir tiempo en trazar senderos matemáticos sobre un plano provisional que cambiará cuando se digitalice la topografía real con dron.
@@ -320,7 +318,7 @@ En la V2.1 la línea hacia el recinto destino es una recta euclidiana directa (`
 
 
 ### Estado de aprobación (Enmienda V3)
-- **Estado:** **Aprobada** (2026-11-04) — Implementada sobre la red de andadores del SVG actual y desacoplada en `src/constants/zooPaths.ts` para recalibración directa con cartografía de dron.
+- **Estado:** **Aprobada** — Implementada sobre la red de andadores del SVG actual y desacoplada en `src/constants/zooPaths.ts` para recalibración directa con cartografía de dron.
 
 ### Historias de usuario (V3)
 - **HU-12 (Ruta por senderos):** Como visitante con un destino activo, quiero que la línea de ruta siga los pasillos peatonales del zoológico para saber por qué camino debo avanzar sin cruzar zonas restringidas.
@@ -340,9 +338,8 @@ En la V2.1 la línea hacia el recinto destino es una recta euclidiana directa (`
 
 ## Enmienda V4 — Integración con API de Recintos (`api-010`) y Caché Offline
 
-- **Estado:** **Aprobada** (2026-11-07)
-- **Responsable funcional:** Víctor Adrián
-- **Fecha:** 2026-11-07
+- **Estado:** **Aprobada**
+- **Responsable funcional:** Equipo ARCA-NB
 - **Spec API vinculada:** `apps/api/specs/010-public-enclosures-read.md`
 - **DBR vinculada:** `docs/database/requests/DBR-008-enclosure-gps-coordinates.md`
 
@@ -361,6 +358,6 @@ En las versiones V1 a V3 del mapa móvil, los recintos y puntos de interés prov
 - **RN-20 (Prioridad de coordenadas):** Si un recinto cuenta con `map_x` y `map_y` explícitos de la API, se utilizan directamente para posicionar el marcador en el SVG; si solo cuenta con `gps_lat` y `gps_lon`, se calcula su posición con `geoTransform(lat, lon)`.
 - **RN-21 (Desacoplamiento MVVM):** El ViewModel `useMapViewModel` consume la interfaz abstracta `MapRepository`, resolviendo la instancia adecuada (`ApiMapRepository` vs `MapRepositoryImpl`) de forma transparente según la configuración del entorno.
 
-## Corrección de regresiones — CA-07 y CA-17 (2026-11-09)
+## Corrección de regresiones — CA-07 y CA-17
 
 Se aplica la corrección aprobada de tokens y centrado: componentes y pantallas consumen roles semánticos compartidos en lugar de colores literales, y centrar la ubicación activa aplica `CENTER_LOCATION_ZOOM` y calcula el desplazamiento con la misma escala. No cambian criterios, dependencias ni contratos. La evidencia de las pruebas existentes se registra en plan y tasks.

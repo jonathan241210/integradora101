@@ -4,6 +4,8 @@ export type DataTableColumn<Row> = {
   key: string;
   header: string;
   render: (row: Row) => ReactNode;
+  /** Clase opcional para encabezado y celdas de la columna (alineación, ancho mínimo). */
+  className?: string;
 };
 
 /**
@@ -16,6 +18,8 @@ export function DataTable<Row>({
   rows,
   rowKey,
   rowDetail,
+  rowSearchId,
+  rowProps,
 }: {
   caption: string;
   columns: DataTableColumn<Row>[];
@@ -23,6 +27,10 @@ export function DataTable<Row>({
   rowKey: (row: Row) => string | number;
   /** Contenido a ancho completo bajo la fila (p. ej. una confirmación en línea). */
   rowDetail?: (row: Row) => ReactNode;
+  /** Marca la fila para el buscador del encabezado (`data-search-id`). */
+  rowSearchId?: (row: Row) => string | undefined;
+  /** `id` (la fila pasa a ser enfocable por código) y clase opcionales de la fila. */
+  rowProps?: (row: Row) => { id?: string; className?: string } | undefined;
 }) {
   return (
     <div
@@ -36,7 +44,7 @@ export function DataTable<Row>({
         <thead>
           <tr>
             {columns.map((column) => (
-              <th scope="col" key={column.key}>
+              <th scope="col" key={column.key} className={column.className}>
                 {column.header}
               </th>
             ))}
@@ -45,12 +53,18 @@ export function DataTable<Row>({
         <tbody>
           {rows.map((row) => {
             const detail = rowDetail?.(row);
+            const extra = rowProps?.(row);
 
             return (
               <Fragment key={rowKey(row)}>
-                <tr>
+                <tr
+                  data-search-id={rowSearchId?.(row)}
+                  id={extra?.id}
+                  className={extra?.className}
+                  tabIndex={extra?.id ? -1 : undefined}
+                >
                   {columns.map((column) => (
-                    <td data-label={column.header} key={column.key}>
+                    <td data-label={column.header} key={column.key} className={column.className}>
                       {column.render(row)}
                     </td>
                   ))}

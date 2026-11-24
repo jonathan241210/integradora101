@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Actions\Auth\RequiresBrowserTwoFactorLoginAction;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,6 +15,14 @@ class EnsureAdministratorTwoFactor
 
         if (! $user || ! $user->hasAnyRole(config('arca.two_factor_roles', []))) {
             return $next($request);
+        }
+
+        // api-021 CA-42: un token personal (emitido antes de esta regla) no sustituye la sesión con 2FA.
+        if (app(RequiresBrowserTwoFactorLoginAction::class)->forPersonalAccessToken($user)) {
+            return response()->json([
+                'message' => RequiresBrowserTwoFactorLoginAction::MESSAGE,
+                'code' => RequiresBrowserTwoFactorLoginAction::CODE,
+            ], Response::HTTP_FORBIDDEN);
         }
 
         $routeName = (string) $request->route()?->getName();

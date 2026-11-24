@@ -1,8 +1,10 @@
 # Plan técnico · 002 · real-staff-login
 
 - Spec: `apps/dashboard/specs/002-real-staff-login.md`
-- Estado de spec: Aprobada (Jonathan, 2026-10-15)
-- Responsable técnico: Jonathan
+- Estado de spec: Implementada
+- Solicitada: 2026-10-15
+- Aprobada: 2026-10-15
+- Responsable técnico: Backend y Frontend
 - Precondición: `api-003` implementada y cuentas demo sembradas en `arca_pruebas`
 
 ## Diseño de solución
@@ -65,7 +67,7 @@ El módulo `auth` de `@arca/api-client` no contiene nada propio del dashboard, p
   - Mensajes: 422 → mensaje de la API («Correo o contraseña incorrectos.»); 429 → mensaje de la API con segundos; 401 tras estar autenticado → «Tu sesión expiró» (CA-08); 401 inicial en `me` → `anonymous` sin mensaje.
   - `two_factor_setup_required: true` en `me` o 403 `two_factor_setup_required` → `two-factor-setup`.
 - `useAuthSession.ts`: hook delgado (`useReducer` + efecto inicial `checkSession`); con `home: pwa` pasa a `redirecting-pwa` y llama a `window.location.assign(pwa_url)`.
-- `navigation.ts`: `home` → perfil de presentación; en `administration` filtra secciones por permisos: Dashboard (`dashboard.view`), Noticias (`news.manage`), Eventos (`events.manage`), Reporte (`reports.view`), Recintos (`enclosures.manage`), Usuarios (`users.manage`; revisión de 2026-11-05, aprobada). El mismo filtro sirve para `admin` y `zoo-admin`; `zoo-admin` no ve Usuarios. `executive` → Dashboard y Reporte en solo lectura; `ticket` → Venta e Historial.
+- `navigation.ts`: `home` → perfil de presentación; en `administration` filtra secciones por permisos: Dashboard (`dashboard.view`), Noticias (`news.manage`), Eventos (`events.manage`), Reporte (`reports.view`), Recintos (`enclosures.manage`), Usuarios (`users.manage`; revisión, aprobada). El mismo filtro sirve para `admin` y `zoo-admin`; `zoo-admin` no ve Usuarios. `executive` → Dashboard y Reporte en solo lectura; `ticket` → Venta e Historial.
 - `dashboard-demo.ts`: se eliminan `select-profile`, `login-administration` y `login-ticket`; se añade `start-session(profile)`; `DemoProfile` incluye `executive` con secciones `dashboard` y `reports`; `sign-out` limpia la vista.
 - `demo-data.ts`: se retiran `demoAdministrationCredentials` y las contraseñas de las cuentas de taquilla; `TicketUsersView` queda demostrativa (CA-10).
 
@@ -137,4 +139,4 @@ Tests de `dashboard-001`: los criterios reemplazados (CA-01, CA-10, CA-13 y la p
 2. `npm run types`, `npm test`, `npm run build`, `/verify`.
 3. Prueba manual con las cuentas demo contra la API local.
 
-Aprobación técnica: Jonathan, 2026-10-17 (plan y tasks).
+Aprobación técnica: registrada (plan y tasks).

@@ -2,9 +2,10 @@
 
 - App dueña: `web`
 - Apps/paquetes afectados: `apps/web`
-- Estado: En progreso
-- Solicitante / responsable funcional: Solicitante de esta conversación; nombre por identificar
-- Aprobación funcional: Solicitante, 2026-10-08; aprobó la spec y la reducción visual.
+- Estado: Implementada
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
+- Aprobación funcional: Aprobada (incluye la reducción visual).
 
 ## Problema y contexto
 
@@ -75,5 +76,5 @@ No se crean, consultan ni modifican datos. No se tratan datos personales, clíni
 
 ## Revisión
 
-- Aprobadores y fecha: Solicitante, 2026-10-08.
+- Aprobación: Aprobada.
 - Evidencia/enlaces: El solicitante pidió mover los animalitos a la franja superior marcada en la imagen y confirmó que deben quedar detrás del menú con textos y botones legibles y operables. También autorizó reducirlos visualmente para que quepan en la cabecera. Las pruebas específicas CA-01..CA-05 pasan. En navegador se comprobaron anchos de 390, 768, 1024 y 1366 px, límite de capa de 76 px, dibujos de 40–48 px, rotación responsive, menú, enlaces, buscador y compra de boletos sin desbordamiento horizontal. La suite completa tiene 37/38 pruebas aprobadas; queda un fallo preexistente en `visit-info-icons-and-favicon` por la regla de margen de los iconos, sin relación con esta feature. La spec permanece En progreso hasta resolver el bloqueo de la suite.

@@ -1,8 +1,10 @@
 # Plan técnico · 009 · expo-sdk57-dependency-alignment
 
 - Spec: `apps/mobile/specs/009-expo-sdk57-dependency-alignment.md`
-- Estado de spec: Aprobada
-- Estado del plan: Aprobado por el usuario solicitante, 2026-10-27
+- Estado de spec: Implementada
+- Solicitada: 2026-10-27
+- Aprobada: 2026-10-27
+- Estado del plan: Aprobado
 - Responsable técnico: pendiente de revisión del equipo
 
 ## Diseño de solución
@@ -62,6 +64,6 @@ El cambio reemplaza la resolución accidental de Reanimated 4.7.1 con el par com
 
 ## Orden y aprobación
 
-1. La spec `mobile-009` fue aprobada por el usuario solicitante el 2026-10-27.
+1. La spec `mobile-009` fue aprobada.
 2. Aprobar la revisión técnica de este plan y el checklist actualizado.
 3. Editar el manifiesto raíz y regenerar el lockfile; validar instalación, tests y build.

@@ -2,10 +2,13 @@ import { useCallback } from 'react';
 import {
   AnimalRepository,
   ZooRepository,
+  type HomeListRefresh,
   createAnimalRepository,
   createZooRepository,
 } from '../repositories';
 import { Animal, ZooEvent, News } from '../models';
+
+export type { HomeListRefresh };
 
 export function useHomeViewModel(
   animalRepo: AnimalRepository = defaultAnimalRepository,
@@ -31,15 +34,22 @@ export function useHomeViewModel(
     return await zooRepo.getNewsById(id);
   }, [zooRepo]);
 
-  const refreshNewsAndEvents = useCallback(async () => {
-    return await zooRepo.refreshNewsAndEvents();
+  const reloadNewsDetails = useCallback(async (id: string): Promise<News | null> => {
+    return await zooRepo.reloadNewsById(id);
   }, [zooRepo]);
 
-  const loadHomeData = useCallback(async () => {
+  const refreshNewsAndEvents = useCallback(async (mode?: HomeListRefresh) => {
+    return await zooRepo.refreshNewsAndEvents(mode);
+  }, [zooRepo]);
+
+  const loadHomeData = useCallback(async (onRevalidated?: {
+    news: (news: News[]) => void;
+    events: (events: ZooEvent[]) => void;
+  }) => {
     const [animals, zooEvents, zooNews] = await Promise.all([
       animalRepo.getAllAnimals(),
-      zooRepo.getEvents(),
-      zooRepo.getNews(),
+      zooRepo.getEvents(onRevalidated?.events),
+      zooRepo.getNews(onRevalidated?.news),
     ]);
     return {
       animals,
@@ -54,6 +64,7 @@ export function useHomeViewModel(
     getEventDetails,
     getNews,
     getNewsDetails,
+    reloadNewsDetails,
     refreshNewsAndEvents,
     loadHomeData,
   };

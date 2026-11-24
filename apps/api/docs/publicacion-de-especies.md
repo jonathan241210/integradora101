@@ -28,6 +28,16 @@ Estado derivado de la especie: `not_published`, `published`, `unpublished` o `pe
 | GET, PATCH, DELETE | `/admin/species/{id}/publication` | `admin.species.publication.*` | Ver, editar despublicada, eliminar publicación |
 | POST | `/admin/species/{id}/unpublish` y `/republish` | | Despublicar y republicar |
 
+### Paginación con total
+
+Las tres listas (`/veterinarian/species-publication-requests`, `/admin/species-publication-requests` y `/admin/published-species`) paginan de 10 en 10 y responden:
+
+```json
+{ "data": [], "meta": { "current_page": 1, "last_page": 3, "per_page": 10, "total": 25, "has_more": true } }
+```
+
+`has_more` se conserva por compatibilidad. Orden por fecha descendente con desempate por `id` descendente. Una `page` mayor que 100000 responde `200` con `data` vacío, `has_more` en `false` y el `total` real.
+
 Los nombres exactos están en `apps/api/src/routes/api.php`. Los errores de validación responden `422` en español; una solicitud inexistente o eliminada, `404` con «Solicitud no encontrada.»; sin permiso, `403`.
 
 ## Archivos de fotos

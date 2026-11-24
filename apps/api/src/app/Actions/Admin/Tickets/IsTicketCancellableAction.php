@@ -4,6 +4,7 @@ namespace App\Actions\Admin\Tickets;
 
 use App\Models\Ticket;
 use App\Models\User;
+use App\Support\BusinessTimezone;
 use Carbon\CarbonImmutable;
 
 /**
@@ -26,7 +27,7 @@ class IsTicketCancellableAction
     public function isSameDay(Ticket $ticket, ?CarbonImmutable $now = null): bool
     {
         $now ??= CarbonImmutable::now('UTC');
-        $timezone = (string) config('arca.report_timezone');
+        $timezone = BusinessTimezone::name();
 
         return $ticket->purchased_at->copy()->setTimezone($timezone)->toDateString()
             === $now->setTimezone($timezone)->toDateString();

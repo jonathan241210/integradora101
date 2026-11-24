@@ -1,13 +1,25 @@
 # 017 · visitor-push-notifications
 
+## Enmienda · Diagnóstico de envíos
+
+- Estado: Aprobada
+- Aprobación funcional: persona solicitante, 2026-11-24. La comprobación en teléfono usa una cuenta que haya activado «Noticias y eventos» y un dispositivo Android registrado.
+- **CA-17.** En el diagnóstico de un trabajo de noticia o evento se distingue entre ausencia de destinatarios elegibles, envío deshabilitado y una solicitud aceptada por el proveedor. La evidencia no expone tokens ni datos privados.
+- **RN-15.** Se conserva la adhesión explícita a «Noticias y eventos». La constancia del trabajo de la cola y la aceptación de Expo son señales distintas de la recepción en el teléfono.
+
+### Estado actual, 2026-11-24
+
+`php artisan migrate:status` y `php artisan db:table` en `arca_pruebas` confirman DBR-017. La consulta agregada encontró cuatro trabajos de noticias y dos de eventos con estado `sent` y ninguna fila de preferencias. Las lecturas públicas del servidor tienen cinco noticias y cuatro eventos visibles. El trabajo puede terminar en `sent` sin llamar al proveedor. El diagnóstico propuesto usa el esquema actual.
+
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña de cuándo se avisa, a quién, el texto, las preferencias y los tokens); `mobile` (permiso de Android, registro del teléfono y aviso en la barra del sistema, spec `mobile-013`); `packages/api-client` (métodos y tipos del visitante, sin lógica de negocio).
-- Estado: Aprobada
-- Solicitante / responsable funcional: Aksel
-- Aprobación funcional: Aksel, 2026-11-14
-- Decisiones de alcance confirmadas el 2026-11-14: solo push a la barra del sistema; sin correo; un momento se avisa al aceptarlo o al rechazarlo; noticias y eventos solo a cuentas con sesión que activaron ese aviso; dos preferencias distintas. `news_and_events` nace en `false` y `memory_status` nace en `true`.
-- Dependencias: `api-004` (sesión de visitante y borrado de cuenta), `api-010` (transiciones de un momento), `api-011` (cuándo una noticia es visible) y `api-006` (cuándo un evento es visible). El envío real espera plan y tasks aprobados, DBR-017 en `Lista para backend` y la aceptación del ADR 0029.
-- Aprobar esta spec no autoriza implementar: faltan el plan técnico del equipo, las tasks y la DBR en `Lista para backend`.
+- Estado: Implementada
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Aprobación funcional: Equipo de producto móvil
+- Decisiones de alcance confirmadas: solo push a la barra del sistema; sin correo; un momento se avisa al aceptarlo o al rechazarlo; noticias y eventos solo a cuentas con sesión que activaron ese aviso; dos preferencias distintas. `news_and_events` nace en `false` y `memory_status` nace en `true`.
+- Dependencias: `api-004` (sesión de visitante y borrado de cuenta), `api-010` (transiciones de un momento), `api-011` (cuándo una noticia es visible) y `api-006` (cuándo un evento es visible). El plan y el ADR 0029 ya están aceptados, y DBR-017 está Lista para backend. Las tasks están hechas. Equipo de producto móvil confirmó la verificación y el pull.
+- Aprobar esta spec no autoriza implementar por sí sola. La implementación y la verificación ya quedaron confirmadas.
 
 ## Problema y contexto
 
@@ -75,7 +87,7 @@ Afecta a quien tiene cuenta de visitante en la app Android. El portal, el dashbo
 
 - **RN-01 (la API redacta y decide):** La API decide si un aviso corresponde, a qué cuenta y con qué texto. El teléfono solo lo muestra. El texto visible va en el payload porque la app puede estar cerrada.
 - **RN-02 (dos preferencias):** `news_and_events` cubre noticias y eventos. `memory_status` cubre la aceptación y el rechazo de un momento. Una no enciende la otra.
-- **RN-03 (valores iniciales):** Al crear las preferencias, `news_and_events` nace en `false` y `memory_status` nace en `true`. Confirmado por Aksel el 2026-11-14.
+- **RN-03 (valores iniciales):** Al crear las preferencias, `news_and_events` nace en `false` y `memory_status` nace en `true`. Confirmado por Equipo de producto móvil.
 - **RN-04 (visibilidad):** Una noticia se puede avisar solo cuando es visible según `api-011` RN-03, con «hoy» en `America/Mexico_City` (`api-011` RN-14). Un evento, solo cuando es visible según `api-006`. El aviso espera a ese momento si al guardar todavía no lo es.
 - **RN-05 (una vez por contenido):** Cada noticia y cada evento generan como máximo un push, el de la primera vez que fueron visibles. Editar, ocultar o volver a publicar no genera otro.
 - **RN-06 (transiciones del momento):** Solo el paso a `accepted` y el paso a `rejected` generan push. Cada transición genera uno. En proceso, el envío, el reenvío y el vencimiento no generan push.
@@ -93,7 +105,7 @@ Afecta a quien tiene cuenta de visitante en la app Android. El portal, el dashbo
 - Se guardan las dos preferencias de la cuenta y, por teléfono, el token push, la plataforma `android` y la cuenta dueña. El token es un identificador del dispositivo: no se escribe en logs de aplicación ni en Activitylog.
 - El payload de un momento no lleva motivo, opinión ni imagen (CA-14). Esos datos siguen en «Mis momentos», con sesión.
 - No son datos clínicos ni financieros.
-- Requiere DBR: sí. La acompaña `docs/database/requests/DBR-017-visitor-push-notifications.md` (Borrador, abierta). Esta spec no incluye SQL ni migración. Hasta que esa DBR esté en `Lista para backend` no se implementan modelos ni endpoints.
+- Requiere DBR: sí. La acompaña `docs/database/requests/DBR-017-visitor-push-notifications.md` (Aprobada y Lista para backend). Esta spec no incluye SQL ni migración. Hasta que las tasks estén aprobadas no se implementan modelos ni endpoints.
 - El borrado de cuenta de `api-004` CA-14 debe incluir estas filas. Esta spec no modifica el texto de `api-004`; el plan de implementación engancha `DeleteVisitorAccountAction`.
 - El aviso de privacidad oficial, antes del público, debe decir que la app registra el token del teléfono para estos avisos. Esta spec no cambia ese texto.
 
@@ -108,12 +120,14 @@ Afecta a quien tiene cuenta de visitante en la app Android. El portal, el dashbo
 
 ## Dependencias, riesgos y preguntas
 
-- Dependencias y ADR: el proveedor push queda propuesto en el ADR 0029 (push de Expo sobre FCM, HTTP de Laravel sin paquete nuevo en la API, `expo-notifications` en la app). El ADR está Propuesto y no autoriza instalar la dependencia ni enviar avisos reales. Credenciales solo en `.env`. El PR de implementación anota el requisito en `infra/README.md` (scheduler, worker de cola, credenciales y build de Play Store: el push no funciona en Expo Go).
+- Dependencias y ADR: el ADR 0029 está Aceptado. El envío es HTTP de Laravel hacia Expo, sin paquete nuevo en la API. `expo-notifications` se instala con las tasks. Credenciales solo en `.env`. El PR de implementación anota el requisito en `infra/README.md` (scheduler, worker de cola, credenciales y build de Play Store: el push no funciona en Expo Go).
 - Divergencia: `api-010` y `mobile-010` citan esta spec en su «Fuera de alcance». `mobile-002` CA-14 cita los interruptores de `mobile-013`.
 - Riesgos: sin el permiso de Android o sin token, la persona no se entera hasta abrir la app. Una noticia con `published_date` futuro espera a ese día y el ambiente necesita el pase programado encendido. El título que viaja es el de ese momento; una edición posterior no actualiza el aviso ya enviado.
-- Preguntas pendientes: ninguna. El alcance y los valores iniciales quedaron confirmados por Aksel el 2026-11-14.
+- Decisiones: ninguna pendiente. El alcance y los valores iniciales quedaron confirmados por Equipo de producto móvil.
 
 ## Revisión
 
-- Aprobadores y fecha: Aksel, 2026-11-14 (aprobación funcional). La aprobación técnica del plan sigue pendiente.
+- Aprobación: Equipo de producto móvil (aprobación funcional). Plan aprobado técnicamente por Responsable de BD Adrian. Faltan las tasks.
 - Evidencia/enlaces: `apps/mobile/specs/013-visitor-push-notifications.md`, `apps/api/plan/017-visitor-push-notifications.md`, `docs/database/requests/DBR-017-visitor-push-notifications.md`, `docs/adr/0029-visitor-android-push.md`, `apps/api/specs/010-visitor-memory-requests.md`, `apps/api/specs/011-public-news-read.md`, `apps/api/specs/006-public-catalog-read.md`, `apps/api/specs/004-visitor-authentication.md`, `docs/adr/0004-mobile-react-native.md`, `docs/adr/0011-visitor-identity-and-mobile-session.md`, `docs/adr/0012-android-distribution-channel.md`.
+
+> **Nota de revisión (, sin cambio de requisitos ni de estado):** `api-025` no cambia esta spec: no calcula días ni horas de negocio. Sin cambio.

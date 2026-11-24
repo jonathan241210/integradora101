@@ -27,7 +27,7 @@ class StaffAccountSessionsTest extends AdminFeatureTestCase
         $this->assertInstanceOf(DatabaseSessionHandler::class, $session->getHandler());
         $this->assertDatabaseHas('sessions', ['id' => $sessionId, 'user_id' => $cashier->id]);
 
-        $this->actAs($admin)->putJson("/api/v1/admin/users/{$cashier->id}/password", ['password' => 'N3w!Passphrase#77'])->assertNoContent();
+        $this->actAs($admin)->putJson("/api/v1/admin/users/{$cashier->id}/password", ['current_password' => self::STEP_UP_PASSWORD, 'password' => 'N3w!Passphrase#77'])->assertNoContent();
         $this->assertSame(0, DB::table('sessions')->where('user_id', $cashier->id)->count());
 
         $this->app['session']->forgetDrivers();

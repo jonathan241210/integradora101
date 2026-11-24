@@ -1,7 +1,9 @@
 # Plan técnico · 007 · diagnostico-intenso-parte1-guardado
 
 - Spec: `apps/pwa/specs/007-diagnostico-intenso-parte1-guardado.md`
-- Estado de spec: Borrador con decisiones registradas (modalidad B, DBR-015 aprobada; pendiente aplicación/evidencia DBR-015 y aprobación funcional del alcance de implementación)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-13
+- Aprobada: 2026-11-13
 - Responsable técnico: Por identificar
 
 ## Resumen

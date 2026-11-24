@@ -1,10 +1,17 @@
 # 002 · mobile-ui-base-visitor-journey
 
+## Enmienda · Arranque
+
+- Estado: Aprobada
+- Aprobación funcional: persona solicitante, 2026-11-24. Queda identificar en el teléfono si la pantalla reportada pertenece al arranque nativo o a la vista de carga de Inicio.
+- **CA-17.** En un arranque en frío, la app muestra el acceso o el Inicio según la sesión, sin interponer una pantalla con el círculo de carga. Si las secciones de Inicio siguen consultando datos, conservan sus estados de carga accesibles en la pantalla de destino.
+
 - App dueña: `mobile`
 - Apps/paquetes afectados: `@arca/tokens`, `@arca/api-client`
 - Estado: Implementada
-- Solicitante / responsable funcional: Solicitante / responsable funcional (sin registrar nombre personal, según acuerdo en sesión)
-- Aprobación funcional: Solicitante / responsable funcional, 2026-10-09
+- Solicitada: 2026-10-09
+- Aprobada: 2026-10-09
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 Tras establecer la base técnica en la Spec 001, se requiere implementar la capa de interfaz de usuario (UI) para el visitante. El objetivo es materializar el flujo de navegación y las pantallas definidas en la referencia visual, permitiendo la validación de la experiencia de usuario (UX) y la estructura de navegación antes de integrar la lógica real de negocio y los servicios de hardware (Cámara, GPS, 3D).
@@ -35,7 +42,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
 ## Criterios de aceptación
 - **CA-01 (Arquitectura MVVM):** Dado cualquier flujo de pantalla, cuando se analice el código, entonces se debe cumplir estrictamente la jerarquía: `Routes` $\rightarrow$ `ViewModels` $\rightarrow$ `Repositories` $\rightarrow$ `Models`. No debe existir importación de mocks o repositorios directamente en `src/screens/` ni en `app/`.
     - *Prueba:* `test-ca-01`: Análisis estático mediante script de grep/lint para detectar imports prohibidos en las capas de vista y rutas.
-- **CA-02 (Navegación por Tabs):** Dado el arranque de la app, cuando se interactúe con la TabBar, entonces se debe navegar correctamente entre las 5 pestañas principales: Home, Mapa, Escanear, Colección y Perfil. El círculo de la pestaña activa se desliza hacia la pestaña elegida. En Escanear ese círculo es dorado y un poco mayor. En la ficha de un animal descubierto, el mapa se abre con un icono de ubicación arriba a la derecha. El gesto o botón atrás del sistema no recorre las pestañas principales ya visitadas: en la raíz de una de esas cinco pestañas no deshace el cambio de pestaña. Desde una ruta secundaria, atrás vuelve a la pantalla que la abrió (Ajustes vuelve a Perfil). En el mapa y en el recorrido, «Buscar animales» es un enlace de texto. Enmienda de Aksel, 2026-11-01.
+- **CA-02 (Navegación por Tabs):** Dado el arranque de la app, cuando se interactúe con la TabBar, entonces se debe navegar correctamente entre las 5 pestañas principales: Home, Mapa, Escanear, Colección y Perfil. El círculo de la pestaña activa se desliza hacia la pestaña elegida. En Escanear ese círculo es dorado y un poco mayor. En la ficha de un animal descubierto, el mapa se abre con un icono de ubicación arriba a la derecha. El gesto o botón atrás del sistema no recorre las pestañas principales ya visitadas: en la raíz de una de esas cinco pestañas no deshace el cambio de pestaña. Desde una ruta secundaria, atrás vuelve a la pantalla que la abrió (Ajustes vuelve a Perfil). En el mapa y en el recorrido, «Buscar animales» es un enlace de texto. Enmienda visual.
     - *Prueba:* `test-ca-02`: Test de integración con `@testing-library/react-native` verificando el cambio de pantalla al presionar tabs.
 - **CA-03 (Rutas Secundarias):** Dado que el usuario navega a rutas como Search, Game, Tour 3D, detalles de eventos/misiones o Resultados QR, entonces la TabBar debe permanecer visible y resaltar la pestaña principal asociada (ej. Game $\rightarrow$ Home, Tour 3D $\rightarrow$ Mapa).
     - *Prueba:* `test-ca-03`: Test de renderizado de `AppTabBar` verificando el estado `active` basado en la ruta actual.
@@ -48,12 +55,12 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     2. Correcto renderizado de carruseles horizontales sin cortes abruptos.
     3. Coincidencia de jerarquía visual con la referencia (Header $\rightarrow$ Body $\rightarrow$ Footer).
     4. El teclado no tapa los campos de contraseña. El contenedor con scroll desplaza el formulario. En iOS usa el ajuste del sistema. En Android reserva la altura del teclado y sube el campo activo, además de `softwareKeyboardLayoutMode: resize`.
-    5. El título de cada pantalla usa el mismo tamaño que «Mi Colección». Mientras carga, ese título se queda en su sitio y el indicador queda centrado debajo. Enmienda de Aksel, 2026-11-01.
+    5. El título de cada pantalla usa el mismo tamaño que «Mi Colección». Mientras carga, ese título se queda en su sitio y el indicador queda centrado debajo. Enmienda visual.
     - *Prueba:* `test-ca-06-manual`: Validación manual en emulador/dispositivo Android.
     - *Prueba:* `test-ca-06-auto`: Snapshot tests de los componentes base de la UI para asegurar consistencia estructural.
 - **CA-07 (Integración de Tokens):** Dado cualquier componente visual, cuando se verifique su estilo, entonces debe utilizar valores provenientes de `@arca/tokens` a través de un adaptador de tema.
     - *Prueba:* `test-ca-07`: Análisis de estilos en componentes seleccionados verificando la procedencia de los valores desde el adaptador.
-    - **Aclaración aprobada el 2026-10-11:** el adaptador nativo y sus consumidores deben respetar los defaults de `docs/04-sistema-de-diseno.md`: `color-base` `#661a2f`, `color-primario` `#87293a`, `color-secundario` `#b79159`, `color-complemento` `#DEC9A3`, `colorFuenteB` `#ffffff` y `colorFuenteN` `#000000`. Los colores de marca se centralizan en `@arca/tokens`; no se define una paleta verde/amarilla independiente para Mobile. El color semántico de error se alinea con `danger` de los tokens compartidos (`#c34242`). Los cinco tintes mock de placeholders por especie se conservan porque solo ilustran tarjetas y fichas sin fotografía.
+    - **Aclaración aprobada:** el adaptador nativo y sus consumidores deben respetar los defaults de `docs/04-sistema-de-diseno.md`: `color-base` `#661a2f`, `color-primario` `#87293a`, `color-secundario` `#b79159`, `color-complemento` `#DEC9A3`, `colorFuenteB` `#ffffff` y `colorFuenteN` `#000000`. Los colores de marca se centralizan en `@arca/tokens`; no se define una paleta verde/amarilla independiente para Mobile. El color semántico de error se alinea con `danger` de los tokens compartidos (`#c34242`). Los cinco tintes mock de placeholders por especie se conservan porque solo ilustran tarjetas y fichas sin fotografía.
 - **CA-08 (Pruebas Automatizadas):** Dado el desarrollo de la funcionalidad, entonces se deben implementar y pasar los siguientes tests:
     1. **Views:** Tests de renderizado y disparo de callbacks (Jest + RTL).
     2. **ViewModels:** Tests de transformación de datos y gestión de estado de presentación.
@@ -62,7 +69,7 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     - *Prueba:* `test-ca-08`: Ejecución de `npm test` con reporte de cobertura $\ge 80\%$ en las capas de ViewModel y Repository.
 - **CA-09 (Detalles visuales):** Dado que la persona visitante selecciona un evento o misión, entonces verá una pantalla de detalle con la información mock disponible. Eventos muestran título, fecha, horario, ubicación, descripción e imágenes desplazables cuando existan; misiones muestran objetivo, progreso realizado/restante y premio. Desde el mapa o el recorrido 3D, seleccionar un animal en Búsqueda define el destino y regresa al recorrido 3D; la búsqueda iniciada desde Home conserva la ficha normal del animal.
     - *Prueba:* `test-ca-09`: pruebas de navegación y renderizado de detalles de eventos/misiones y selección de destino.
-- **CA-10 (Aventura, logros y colección):** La tarjeta de noticias no promociona misiones; una tarjeta separada conduce a Aventura en el Zoo. La pestaña de misiones lista solo misiones. Los logros obtenidos y pendientes tienen lista y detalle propios, se abren desde Perfil, se filtran por estado y se ordenan por nombre o fecha de obtención. Los animales pendientes abren una vista previa con imagen difuminada y bloqueo de características y curiosidades; «Escanear QR para descubrir» abre el escáner encima de la ficha. Atrás vuelve a esa ficha y el siguiente atrás vuelve a la pantalla que abrió el animal, sin regresar al escáner. Enmienda visual, 2026-11-11.
+- **CA-10 (Aventura, logros y colección):** La tarjeta de noticias no promociona misiones; una tarjeta separada conduce a Aventura en el Zoo. La pestaña de misiones lista solo misiones. Los logros obtenidos y pendientes tienen lista y detalle propios, se abren desde Perfil, se filtran por estado y se ordenan por nombre o fecha de obtención. Los animales pendientes abren una vista previa con imagen difuminada y bloqueo de características y curiosidades; «Escanear QR para descubrir» abre el escáner encima de la ficha. Atrás vuelve a esa ficha y el siguiente atrás vuelve a la pantalla que abrió el animal, sin regresar al escáner. Enmienda visual.
     - *Prueba:* `test-ca-10`: pruebas automatizadas de navegación, filtros/orden de logros y vista previa de animales pendientes.
 - **CA-11 (Acceso visual):** Dado el arranque sin sesión, cuando se abre la app, entonces se muestra el inicio de sesión con el panel de marca redondeado, sin el título «Login». Iniciar sesión con correo y contraseña, o Entrar como invitado, abre el inicio. Debajo del botón principal hay un separador «o» y el acceso de invitado en texto más pequeño. ¿Olvidaste tu contraseña? y Regístrate abren sus pantallas. Cerrar sesión en Ajustes vuelve al inicio de sesión. Nada de esto comprueba ni guarda una cuenta.
     - *Prueba:* `test-ca-11`: resolución de la compuerta visual y navegación de Login.
@@ -70,11 +77,11 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     - *Prueba:* `test-ca-12`: campos, advertencia, confirmación distinta y regreso a Login.
 - **CA-13 (Recuperación visual):** Dado el olvido de contraseña, cuando se envía un correo, entonces la app muestra un aviso genérico que no revela si la cuenta existe y continúa a una pantalla con código de 6 dígitos, nueva contraseña y confirmación. Al completarla, vuelve a Login. En la demostración el correo no se envía y cualquier código de 6 dígitos permite continuar.
     - *Prueba:* `test-ca-13`: aviso genérico, código incompleto y regreso a Login.
-- **CA-14 (Ajustes):** Dado Perfil, cuando se abre Ajustes desde el botón circular junto al título «Perfil», entonces se ve la ficha de la cuenta, el interruptor de cámara, el de ubicación y las filas Privacidad, Ayuda y soporte y Acerca de ARCA-NB. La pestaña Perfil permanece activa. La cámara pide el permiso del teléfono o abre los ajustes del sistema; la ubicación solo cambia en pantalla. Cada fila abre su pantalla. No hay modo oscuro, selector de idioma ni interruptor de sonidos. La app permanece en modo claro. Enmienda de Aksel, 2026-11-01. Enmienda de Aksel, 2026-11-14: los interruptores «Noticias y eventos» y «Estado de mis momentos» los añade `mobile-013` y ya no aplica el «no hay notificaciones» de esta versión.
+- **CA-14 (Ajustes):** Dado Perfil, cuando se abre Ajustes desde el botón circular junto al título «Perfil», entonces se ve la ficha de la cuenta, el interruptor de cámara, el de ubicación y las filas Privacidad, Ayuda y soporte y Acerca de ARCA-NB. La pestaña Perfil permanece activa. La cámara y la ubicación piden el permiso del teléfono o abren los ajustes del sistema. Enmienda: el interruptor de ubicación ya no cambia solo en pantalla. Cada fila abre su pantalla. No hay modo oscuro, selector de idioma ni interruptor de sonidos. La app permanece en modo claro. Enmienda visual. Enmienda: los interruptores «Noticias y eventos» y «Estado de mis momentos» los añade `mobile-013` y ya no aplica el «no hay notificaciones» de esta versión.
     - *Prueba:* `test-ca-14`: acceso desde Perfil, interruptores, filas y pestaña activa.
 - **CA-15 (Aviso de privacidad de demostración):** Dada Privacidad, cuando se muestra el aviso, entonces explica qué datos recopila la demostración, para qué se utilizarían, cómo se protegerían y cómo ejercer derechos. El texto se identifica como explicación de demostración; el aviso oficial lo publicará el zoológico.
     - *Prueba:* `test-ca-15`: presencia de las cuatro secciones del aviso. La prueba comparte el caso de filas de `test-ca-14`.
-- **CA-16 (Favoritos del visitante):** Dada la ficha de un animal, cuando el visitante toca el corazón, entonces ese animal entra en «Animales favoritos» del inicio. Al marcarlo, el corazón se llena con una animación breve y queda relleno; al quitarlo, vuelve al contorno. La marca se guarda en el teléfono y no se envía al servidor. No hay filtro de favoritos en Colección. Enmienda, 2026-11-11. Nota del 2026-11-14: el reemplazo es guardar la especie en la cuenta (`mobile-014`, Aprobada por Aksel; `api-018`, aprobación funcional de Aksel y conformidad del equipo pendiente). Hasta que `api-018` esté Aprobada y ambas se implementen, sigue vigente esta lista local.
+- **CA-16 (Favoritos del visitante):** Dada la ficha de un animal, cuando el visitante toca el corazón, entonces ese animal entra en «Animales favoritos» del inicio. Al marcarlo, el corazón se llena con una animación breve y queda relleno; al quitarlo, vuelve al contorno. La marca se guarda en el teléfono y no se envía al servidor. No hay filtro de favoritos en Colección. Enmienda visual. Nota: esta CA queda sustituida por `mobile-014` (En progreso). La cuenta es la lista y el teléfono guarda la última respuesta para mostrarla sin red.
     - *Prueba:* `CA-16 favoritos en el teléfono`.
 
 ## Reglas de negocio
@@ -87,8 +94,8 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
     - `Services (opcional)`: Operaciones reutilizables del cliente que no duplican lógica del backend Laravel.
 - **RN-02 (Nombre Oficial):** El nombre de la aplicación será `ARCA-NB` (provisional), centralizado en una constante global.
 - **RN-03 (Accesos Especiales):** 
-    - El acceso a **Game** se realiza mediante un elemento visual en la pantalla de Home (confirmado funcionalmente el 2026-10-09).
-    - El acceso a **Tour 3D** se realiza mediante una opción de cambio de recorrido en la pantalla de Mapa (confirmado funcionalmente el 2026-10-09).
+    - El acceso a **Game** se realiza mediante un elemento visual en la pantalla de Home (confirmado funcionalmente).
+    - El acceso a **Tour 3D** se realiza mediante una opción de cambio de recorrido en la pantalla de Mapa (confirmado funcionalmente).
 - **RN-04 (Perfil):** Se mostrarán puntos, nivel, rango, logros y estadísticas utilizando datos simulados, sin implementar reglas de cálculo ni persistencia.
 - **RN-05 (Animales):** Se permite la consulta de la ficha de cualquier animal desde la búsqueda, independientemente de su estado de descubrimiento.
 - **RN-06 (Dependencias):** No se añadirán dependencias externas sin aprobación previa.
@@ -97,11 +104,11 @@ Como `visitante del zoo`, quiero `navegar por una interfaz intuitiva` para `expl
 - **RN-09 (Paleta institucional):** Los tokens móviles de marca derivan exclusivamente de los valores iniciales documentados en `docs/04-sistema-de-diseno.md`. El token semántico `danger` usa el valor compartido `#c34242`; los tintes mock específicos de especie se conservan solo como placeholders ilustrativos, no como colores de marca. No se consulta ni modifica `settings_colores`.
 - **RN-10 (Acceso solo visual):** Login, registro, recuperación, ajustes y cierre de sesión no crean sesión, no envían correo y no guardan credenciales ni preferencias. La cuenta real, la verificación de mayoría de edad, el avatar y el aviso oficial siguen en la spec `004`, todavía en borrador.
 - **RN-11 (Recuperación prevista):** La recuperación visual sigue el flujo ya descrito para la API: correo con respuesta genérica, código de 6 dígitos y nueva contraseña con confirmación. Esta versión no entrega el código.
-- **RN-12 (Preferencias de pantalla):** El interruptor de cámara solicita el permiso del teléfono; si el sistema ya no vuelve a preguntar, o si se quiere desactivar, abre los ajustes del sistema. La app no puede revocar el permiso por sí sola. El interruptor de ubicación no solicita la ubicación ni cambia el tema. La app permanece en modo claro. Enmienda de Aksel, 2026-11-01.
+- **RN-12 (Preferencias de pantalla):** El interruptor de cámara solicita el permiso del teléfono; si el sistema ya no vuelve a preguntar, o si se quiere desactivar, abre los ajustes del sistema. La app no puede revocar el permiso por sí sola. El interruptor de ubicación solicita el permiso del teléfono; si el sistema ya no vuelve a preguntar, o si se quiere desactivar, abre los ajustes del sistema. La app no puede revocar el permiso por sí sola. No cambia el tema. La app permanece en modo claro.
 - **RN-13 (Aviso de demostración):** El texto de Privacidad explica el tratamiento de esta versión y el previsto al conectar la cuenta. No sustituye el aviso que debe proveer el zoológico.
 
 ## Datos, privacidad y auditoría
-En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `src/mocks/`. La compuerta de Login vive en memoria y desaparece al recargar. No hay tokens ni envío de credenciales. La única persistencia de esta spec es la lista local de animales favoritos (CA-16): identificadores en el teléfono, sin enviarse al servidor. El aviso de Privacidad describe ese límite y el tratamiento previsto cuando la spec `004` conecte la cuenta.
+En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `src/mocks/`. La compuerta de Login vive en memoria y desaparece al recargar. No hay tokens ni envío de credenciales. La persistencia de favoritos de esta spec pasó a la cuenta en `mobile-014`: el teléfono guarda la última respuesta para mostrarla sin red. El aviso de Privacidad describe el límite de esta fase y el tratamiento previsto cuando la spec `004` conecte la cuenta.
 
 ## Flujos y errores
 - **Flujo Principal:** Home $\rightarrow$ Search $\rightarrow$ Animal Detail $\rightarrow$ Map.
@@ -111,17 +118,19 @@ En esta fase se utilizan exclusivamente datos simulados (mocks) definidos en `sr
 - **Manejo de Errores:** Se implementará una pantalla de "No encontrado" para rutas dinámicas (animal/[id]) donde el ID no coincida con los mocks. Los formularios de acceso muestran en español si faltan datos, el correo no tiene forma válida, las contraseñas no coinciden o el código no tiene 6 dígitos.
 
 ## Dependencias, riesgos y preguntas
-- **Dependencias/ADR:** ADR 0004 (Expo/Android), Spec 001 (Setup). La lista de favoritos reutiliza `AsyncStorage`, ya aceptado en el ADR 0014; la enmienda del 2026-11-11 deja constancia de esos identificadores locales.
+- **Dependencias/ADR:** ADR 0004 (Expo/Android), Spec 001 (Setup). La copia offline de favoritos reutiliza `AsyncStorage`, ya aceptado en el ADR 0014; una enmienda posterior deja la lista en la cuenta (`mobile-014`).
 - **Riesgos:** 
     - Conflictos de resolución de módulos en el monorepo al importar `@arca/tokens`.
     - Discrepancias visuales entre el diseño y la renderización real en Android.
-- **Preguntas pendientes:** Ninguna para la enmienda de CA-07/RN-09, aprobada funcionalmente el 2026-10-11. Las decisiones de acceso a Game y Tour 3D fueron confirmadas por la persona solicitante el 2026-10-09.
+- **Decisiones:**
+    - Se optó por alinear el adaptador nativo con los defaults institucionales (enmienda CA-07/RN-09), porque los colores de marca deben centralizarse en `@arca/tokens`.
+    - Se optó por dar acceso a Game desde Home y a Tour 3D desde Mapa (RN-03), porque fueron confirmados funcionalmente por el equipo.
 - **Ajustes visuales aprobados:** Se agregan detalles mock básicos para eventos/misiones, tarjeta independiente de aventura, lista/detalle de logros y vista previa de animales pendientes; se corrigen desplazamiento y legibilidad, y la selección de destino del recorrido 3D queda como flujo visual local. No se agregan dependencias de iconos: la UI usa los símbolos disponibles mediante `expo-symbols`.
 
 ## Revisión
-- Aprobación funcional: Solicitante / responsable funcional, 2026-10-09.
-- Aprobación técnica del plan: Solicitante, 2026-10-09.
-- **Enmienda CA-07/RN-09:** Aprobada funcional y técnicamente el 2026-10-11; implementación y verificación completadas.
-- **Cierre de entrega:** PR aprobado e integrado vía DevOps / rama principal (confirmado equipo, 2026-10-14). Spec en estado **Implementada**.
-- **Enmienda de acceso y ajustes (CA-11 a CA-15, RN-10 a RN-13):** Confirmada por la persona solicitante el 2026-10-15. Agrega Login, registro, recuperación y Ajustes como interfaz de demostración, sin sustituir la spec `004`. El mismo día el equipo retiró Idioma y Sonidos y efectos: no forman parte del alcance.
+- Aprobación funcional: Aprobada.
+- Aprobación técnica del plan: Aprobada.
+- **Enmienda CA-07/RN-09:** Aprobada funcional y técnicamente; implementación y verificación completadas.
+- **Cierre de entrega:** PR aprobado e integrado vía DevOps / rama principal. Spec en estado **Implementada**.
+- **Enmienda de acceso y ajustes (CA-11 a CA-15, RN-10 a RN-13):** Confirmada por el equipo. Agrega Login, registro, recuperación y Ajustes como interfaz de demostración, sin sustituir la spec `004`. El mismo día el equipo retiró Idioma y Sonidos y efectos: no forman parte del alcance.
 - Evidencia/enlaces: Referencia de UI en `apps/mobile/arca-ui-reference`; spec, plan y tasks en `apps/mobile/specs|plan|tasks/002-*`; guías en `apps/mobile/docs/002-mobile-ui-visitor-journey.md` y `apps/mobile/README.md`.

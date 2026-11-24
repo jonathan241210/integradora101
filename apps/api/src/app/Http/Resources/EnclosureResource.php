@@ -2,8 +2,10 @@
 
 namespace App\Http\Resources;
 
+use Carbon\CarbonInterface;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Carbon;
 
 class EnclosureResource extends JsonResource
 {
@@ -27,9 +29,17 @@ class EnclosureResource extends JsonResource
                     'id' => (int) $animal->id,
                     'name' => (string) $animal->name,
                     'sex' => (string) ($animal->sex ?? ''),
-                    'birth_date' => $animal->birth_date ? (string) $animal->birth_date : null,
+                    'age' => $this->ageLabel($animal->birth_date),
                     'origin' => (string) ($animal->origin ?? ''),
-                    'characteristics' => (string) ($animal->characteristics ?? ''),
+                    'longevity' => $animal->relationLoaded('species') && $animal->species !== null
+                        ? (string) ($animal->species->longevity ?? '')
+                        : '',
+                    'diet' => $animal->relationLoaded('species') && $animal->species !== null
+                        ? (string) ($animal->species->feeding ?? '')
+                        : '',
+                    'reproduction' => $animal->relationLoaded('species') && $animal->species !== null
+                        ? (string) ($animal->species->reproduction ?? '')
+                        : '',
                     'photo_path' => $animal->photo_path ? (string) $animal->photo_path : null,
                     'stay_status' => (string) ($animal->stay_status ?? ''),
                     'can_receive_visits' => (bool) ($animal->can_receive_visits ?? true),
@@ -60,5 +70,21 @@ class EnclosureResource extends JsonResource
                 ])->values()->all()
                 : [],
         ];
+    }
+
+    private function ageLabel(mixed $birthDate): ?string
+    {
+        if ($birthDate === null || $birthDate === '') {
+            return null;
+        }
+
+        $born = $birthDate instanceof CarbonInterface ? $birthDate : Carbon::parse((string) $birthDate);
+        $years = (int) abs($born->diffInYears(now()));
+
+        if ($years < 1) {
+            return 'Menos de un año';
+        }
+
+        return $years === 1 ? '1 año' : $years.' años';
     }
 }

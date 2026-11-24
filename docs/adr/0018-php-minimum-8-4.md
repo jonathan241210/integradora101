@@ -1,7 +1,8 @@
 # 0018 · PHP mínimo de la API en 8.4
 
 - Estado: Aceptado
-- Fecha: 2026-10-30
+- Solicitada: 2026-10-30
+- Aprobada: 2026-10-30
 - Spec relacionada: N/A (decisión transversal de stack). Motivada por `apps/api/specs/007-administration-management.md` (CA-22 y CA-23) a través del ADR 0017.
 
 ## Contexto
@@ -19,7 +20,7 @@ Subir el mínimo de PHP es un cambio al stack declarado en la Constitución I, p
 3. Este ADR **no aprueba por sí mismo** ninguna dependencia nueva. OpenSpout y Dompdf siguen condicionados a la aprobación del ADR 0017 y a su tarea en `apps/api/tasks/`. Este ADR solo habilita técnicamente la versión mínima de PHP que OpenSpout ≥5.4 necesita.
 4. Se mantiene la portabilidad (Constitución I): el cambio no introduce servicios propietarios ni configuración fuera de `.env`.
 
-**Aprobación:** el equipo aprobó el cambio. La aprobación fue comunicada por Jonathan el 2026-10-30, en representación del equipo, igual que en el ADR 0013.
+**Aprobación:** el equipo aprobó el cambio, igual que en el ADR 0013.
 
 ## Alternativas consideradas
 
@@ -38,14 +39,14 @@ Subir el mínimo de PHP es un cambio al stack declarado en la Constitución I, p
 
 ### Riesgos o costos
 - **Hosting y equipos:** cualquier entorno que ejecute la API debe tener PHP ≥8.4 (equipos de desarrollo, servidor de pruebas, hosting de la API cuando se defina; ADR 0013 deja el hosting pendiente). Un entorno en PHP 8.2 o 8.3 dejará de instalar dependencias.
-- **Consistencia de manifiestos:** `composer.json` y `composer.lock` deben reflejar PHP ^8.4. Al 2026-10-30 el `composer.json` del árbol de trabajo ya lo declara; la verificación del lock y del CI corresponde a la tarea de backend.
+- **Consistencia de manifiestos:** `composer.json` y `composer.lock` deben reflejar PHP ^8.4. El `composer.json` del árbol de trabajo ya lo declara; la verificación del lock y del CI corresponde a la tarea de backend.
 - **Workflow residual:** `.github/workflows/cii.yml` todavía prepara PHP 8.2. Queda fuera de este ADR; debe revisarse por separado.
 - **Documentación histórica:** las specs y planes ya aprobados que mencionan PHP 8.2+ (por ejemplo, `apps/api/specs/002-initial-db-connection.md`, CA-05) no se reescriben aquí. Su corrección requiere el flujo SDD de su propia app.
 - **Cambio de Constitución:** el principio I se actualiza junto con este ADR (ver validación).
 
 ## Validación y revisión
 
-- Aprobado por el equipo; aprobación comunicada por Jonathan el 2026-10-30.
+- Aprobado por el equipo.
 - Enmienda la mención de PHP en el principio I de `CONSTITUTION.md`, con la misma convención que el ADR 0013 («Cambio registrado en ADR 0018»). Aplicación pendiente en el archivo raíz: el escritor de documentación no tiene permiso sobre `CONSTITUTION.md`.
 - Actualiza la tabla de stack de `README.md`, `AGENTS.md` y `apps/api/AGENTS.md`. Aplicación pendiente por el mismo motivo.
 - Añade una nota de actualización a `docs/adr/0001-api-central-laravel.md` sin reescribir su historia (aplicada).

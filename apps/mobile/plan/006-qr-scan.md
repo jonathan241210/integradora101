@@ -1,14 +1,16 @@
 # Plan técnico · 006 · qr-scan
 
 - Spec: `apps/mobile/specs/006-qr-scan.md`
-- Estado de spec: Implementada (2026-11-01; aprobación funcional Aksel, 2026-11-01)
-- Estado del plan: Aprobado e implementado (Aksel, 2026-11-01)
-- Responsable técnico: Aksel
-- ADR: `docs/adr/0022-expo-camera-qr-scan.md` (Aceptado, 2026-11-01; renumerado 0022 el 2026-11-04)
+- Estado de spec: Implementada
+- Solicitada: 2026-11-01
+- Aprobada: 2026-11-01
+- Estado del plan: Aprobado e implementado
+- Responsable técnico: Frontend
+- ADR: `docs/adr/0022-expo-camera-qr-scan.md` (Aceptado; renumerado a 0022)
 
 ## Diseño de solución
 
-La pestaña `scan` comprueba sesión visitante, gestiona permiso de cámara y muestra `CameraView` de `expo-camera`. Al leer un barcode, normaliza el payload y llama `submitScan` (`mobile-005`). La respuesta se presenta con `presentScanResult` → ruta `scan-result`. Si no hay permiso, la misma pantalla ofrece entrada manual. La solicitud de permiso es una frase y el botón «Permitir cámara»; el marco de la cámara sigue en `accent` sobre el fondo `primary`. Enmienda visual, 2026-11-11.
+La pestaña `scan` comprueba sesión visitante, gestiona permiso de cámara y muestra `CameraView` de `expo-camera`. Al leer un barcode, normaliza el payload y llama `submitScan` (`mobile-005`). La respuesta se presenta con `presentScanResult` → ruta `scan-result`. Si no hay permiso, la misma pantalla ofrece entrada manual. La solicitud de permiso es una frase y el botón «Permitir cámara»; el marco de la cámara sigue en `accent` sobre el fondo `primary`. Enmienda visual.
 
 No hay cambios en Laravel ni en `@arca/api-client`.
 
@@ -60,8 +62,8 @@ Sin almacenamiento de imagen. HTTPS en APK. QA con `php artisan arca:generate-qr
 
 ## Orden y aprobación
 
-1. Spec y ADR aprobados 2026-11-01.
-2. Este plan aprobado 2026-11-01.
+1. Spec y ADR aprobados.
+2. Este plan aprobado.
 3. Implementación según `tasks/006-qr-scan.md`.
 
-Aprobador funcional: Aksel. Fecha: 2026-11-01.
+Aprobación funcional: Aprobada.

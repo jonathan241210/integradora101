@@ -1,8 +1,8 @@
 import type { ReactNode, SVGProps } from "react";
 
 export type IconName =
+  | "alert"
   | "animals"
-  | "bell"
   | "building"
   | "calendar"
   | "camera"
@@ -12,6 +12,7 @@ export type IconName =
   | "dashboard"
   | "dots"
   | "enter"
+  | "info"
   | "menu"
   | "minus"
   | "news"
@@ -22,8 +23,8 @@ export type IconName =
   | "users";
 
 const iconPaths: Record<IconName, ReactNode> = {
+  alert: <><path d="M12 3 2 20h20L12 3Z" /><path d="M12 10v4M12 17h.01" /></>,
   animals: <><circle cx="7" cy="7" r="2" /><circle cx="17" cy="7" r="2" /><circle cx="4" cy="13" r="2" /><circle cx="20" cy="13" r="2" /><path d="M12 12c-3.3 0-6 3.1-6 6.2 0 1.6 1.2 2.8 2.7 2.8.9 0 2.1-.6 3.3-.6s2.4.6 3.3.6c1.5 0 2.7-1.2 2.7-2.8C18 15.1 15.3 12 12 12Z" /></>,
-  bell: <><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" /><path d="M10 21h4" /></>,
   building: <><path d="M4 21V5l8-3 8 3v16" /><path d="M2 21h20M8 8h1m6 0h1M8 12h1m6 0h1M10 21v-5h4v5" /></>,
   calendar: <><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" /></>,
   camera: <><path d="M4 8h3l1.5-2h7L17 8h3v11H4Z" /><circle cx="12" cy="13" r="3.5" /></>,
@@ -33,6 +34,7 @@ const iconPaths: Record<IconName, ReactNode> = {
   dashboard: <><rect x="3" y="3" width="8" height="8" rx="1.5" /><rect x="13" y="3" width="8" height="5" rx="1.5" /><rect x="13" y="10" width="8" height="11" rx="1.5" /><rect x="3" y="13" width="8" height="8" rx="1.5" /></>,
   dots: <><circle cx="5" cy="12" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /></>,
   enter: <><path d="M10 17l5-5-5-5" /><path d="M15 12H3" /><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7" /></>,
+  info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 8h.01" /></>,
   menu: <><path d="M4 6h16M4 12h16M4 18h16" /></>,
   minus: <path d="M5 12h14" />,
   news: <><path d="M5 4h14a2 2 0 0 1 2 2v14H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3Z" /><path d="M7 8h10M7 12h10M7 16h6" /></>,

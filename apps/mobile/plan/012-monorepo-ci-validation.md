@@ -1,9 +1,10 @@
 # Plan técnico · 012 · monorepo-ci-validation
 
 - Spec: `apps/mobile/specs/012-monorepo-ci-validation.md`
-- Estado de spec: Aprobada
-- Estado del plan: Aprobado — usuario solicitante, 2026-11-09
-- Solicitante y aprobador: usuario solicitante
+- Estado de spec: Implementada
+- Solicitada: 2026-11-09
+- Aprobada: 2026-11-09
+- Estado del plan: Aprobado
 
 ## Diseño de solución
 
@@ -78,7 +79,7 @@ Los jobs ejecutan suites automatizadas existentes; no se añadirán tests que so
 3. Modificar el workflow y ejecutar las verificaciones locales disponibles sin instalar dependencias.
 4. Registrar resultados y, si se publica el cambio, evidencia de la corrida de Actions.
 
-Aprobación técnica: usuario solicitante, 2026-11-09, en este chat. Workflow ampliado localmente; verificación remota pendiente.
+Aprobación técnica: aprobada. Workflow ampliado localmente; la verificación remota se registra en la aceptación remota.
 
 ## Evidencia local
 
@@ -86,4 +87,4 @@ La implementación sigue el diseño de siete jobs. Dashboard y PWA aprobaron sus
 
 ## Evidencia remota final
 
-La [ejecución 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501) acredita los siete jobs del diseño aprobados sobre `e59793b`; verificación remota completada el 2026-11-09.
+La [ejecución 42762293501](https://github.com/jonathan241210/integradora101/actions/runs/42762293501) acredita los siete jobs del diseño aprobados sobre `e59793b`; verificación remota completada.

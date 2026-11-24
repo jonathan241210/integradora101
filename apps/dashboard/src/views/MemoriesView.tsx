@@ -1,7 +1,7 @@
-import { Alert, Button, Card, SelectField } from "@arca/ui";
+import { Alert, Button, Card, Pagination, SelectField } from "@arca/ui";
 import { DataTable, type DataTableColumn } from "@/components/DataTable";
-import { HasMorePaginationBar } from "@/components/HasMorePaginationBar";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { TableSkeleton } from "@/components/LoadingSkeletons";
 import { MemoryStatusBadge } from "@/components/MemoryStatusBadge";
 import { SectionHeading } from "@/components/SectionHeading";
 import type { MemoryReviewSummaryDto } from "@/viewmodels/admin-types";
@@ -83,6 +83,7 @@ export function MemoriesView({
               status={state.status}
               error={state.error}
               loadingText="Cargando peticiones…"
+              skeleton={<TableSkeleton columns={columns} caption="Peticiones de visitantes" label="Cargando peticiones…" />}
               emptyText="No hay peticiones con este estado."
               onRetry={actions.reload}
             />
@@ -93,16 +94,23 @@ export function MemoriesView({
                   columns={columns}
                   rows={state.items}
                   rowKey={(row) => row.id}
+                  rowSearchId={(row) => `memories:${row.id}`}
                 />
-                <HasMorePaginationBar
+                <Pagination
                   page={state.page}
-                  hasMore={state.hasMore}
+                  lastPage={state.lastPage}
+                  total={state.total}
                   onPageChange={actions.goToPage}
                 />
               </>
             )}
             {state.status === "empty" && state.page > 1 && (
-              <HasMorePaginationBar page={state.page} hasMore={false} onPageChange={actions.goToPage} />
+              <Pagination
+                page={state.page}
+                lastPage={state.lastPage}
+                total={state.total}
+                onPageChange={actions.goToPage}
+              />
             )}
           </Card>
         </>

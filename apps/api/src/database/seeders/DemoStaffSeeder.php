@@ -39,6 +39,14 @@ class DemoStaffSeeder extends Seeder
         }
 
         foreach ($this->accounts() as $account) {
+            // Una cuenta eliminada (borrado lógico, p. ej. con `arca:admin:delete`) se respeta: restaurarla se
+            // saltaría las reglas de la consola. Se omite con un aviso.
+            if (User::onlyTrashed()->where('email', $account['email'])->exists()) {
+                $this->command?->warn("Cuenta demo eliminada, se omite: {$account['email']}");
+
+                continue;
+            }
+
             $department = Department::query()->where('code', $account['department'])->firstOrFail();
             $user = User::updateOrCreate(
                 ['email' => $account['email']],

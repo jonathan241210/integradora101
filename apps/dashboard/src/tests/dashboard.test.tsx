@@ -33,6 +33,12 @@ describe("CA-10 administration-sections", () => {
     expect(markup).toContain("$1,234.50");
     expect(markup).toContain("$9,876.00");
     expect(markup).toContain("Ingresos por día");
+    expect(markup).toContain('class="bar-chart__bar" style="width:50%"');
+    expect(markup).toContain('class="bar-chart__bar" style="width:100%"');
+    expect(markup).toContain('class="bar-chart__bar" style="width:0%"');
+    expect(markup).toContain('class="bar-chart__amount">$0.00</span>');
+    expect(markup).toMatch(/class="bar-chart__tooltip">[^<]+ · <strong>\$0\.00<\/strong>/);
+    expect(markup).toMatch(/class="bar-chart__tooltip">[^<]+ · <strong>\$200\.00<\/strong>/);
     expect(markup).toContain("Ver reporte");
     expect(markup).not.toContain("Muestra");
     expect(markup).not.toContain("Prototipo de demostración");

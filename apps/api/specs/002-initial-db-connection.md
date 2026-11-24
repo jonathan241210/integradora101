@@ -3,9 +3,10 @@
 - App dueña: `api`
 - Apps/paquetes afectados: `api`
 - Estado: Implementada
-- Solicitante / responsable funcional: Jonathan
-- Responsable de BD: Victor Adrian
-- Aprobación funcional: Victor Adrian, 2026-10-11
+- Solicitada: 2026-10-11
+- Aprobada: 2026-10-11
+- Responsable de BD: Responsable de BD (rol)
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -42,7 +43,7 @@ pero sí requiere su propio SDD, configuración por `.env` y ausencia de secreto
 
 | Actor/rol | Necesidad | Permisos requeridos |
 |---|---|---|
-| Responsable backend (Jonathan) | Inicializar Laravel y configurar `.env` local | Acceso de escritura al repo; credenciales Aiven por canal externo |
+| Responsable backend | Inicializar Laravel y configurar `.env` local | Acceso de escritura al repo; credenciales Aiven por canal externo |
 | Integrantes del equipo | Configurar su propio `.env` local y verificar conectividad | Credenciales Aiven recibidas por canal externo |
 | Responsable de BD | Validar inventario y decidir estrategia de baseline | Revisión del inventario documentado |
 
@@ -99,12 +100,13 @@ El inventario documentado no debe incluir credenciales ni hosts privados con con
   - Aiven requiere CA certificate SSL; debe descargarse desde el panel de Aiven y referenciarse por ruta local en `.env`, nunca versionarse en el repo.
   - Un `.env` con credenciales reales commiteado por error expondría la base de datos del equipo.
   - La revisión exacta de MySQL 8.0.x se conocerá al conectar; debe registrarse para completar el inventario de api-001.
-- **Respuestas confirmadas:**
-  1. ✅ Aiven requiere CA certificate (`ca.pem`); no requiere certificado de cliente adicional.
-  2. ✅ Usuario responsable de BD: `avnadmin` (Victor Adrian). Usuario para el resto del equipo: `desarrollador`.
-  3. ✅ Sin IP allowlist activa por ahora; todos los integrantes pueden conectarse directamente.
+## Decisiones
+
+- Se optó por usar el CA certificate de Aiven (`ca.pem`) y no exigir certificado de cliente adicional, porque Aiven lo requiere solo como CA.
+- Se optó por dos cuentas: `avnadmin` para el Responsable de BD y `desarrollador` para el resto del equipo, para acotar privilegios.
+- Se optó por no activar IP allowlist por ahora; los integrantes se conectan directamente.
 
 ## Revisión
 
-- Aprobadores y fecha: pendiente de aprobación funcional por Jonathan.
+- Aprobación: Aprobada (funcional, Responsable de BD). Estado: Implementada.
 - Evidencia/enlaces: api-001 (Implementada), ADR 0010.

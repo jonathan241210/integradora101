@@ -9,8 +9,9 @@ class GetEnclosureAction
     public function execute(int $id): ?Enclosure
     {
         return Enclosure::query()
-            ->with(['animals.species'])
-            ->withCount('animals')
+            ->where('is_active', 1)
+            ->with(['animals' => fn ($query) => $query->publiclyVisible(), 'animals.species'])
+            ->withCount(['animals' => fn ($query) => $query->publiclyVisible()])
             ->find($id);
     }
 }

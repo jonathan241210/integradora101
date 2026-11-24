@@ -11,7 +11,7 @@ class TicketPriceAccessTest extends TicketFeatureTestCase
         $admin = $this->createAccount('admin');
         $this->setPrices($admin);
         $rows = TicketPrice::query()->count();
-        $payload = ['adult_amount' => 30, 'child_amount' => 20, 'mode' => 'immediate'];
+        $payload = ['adult_amount' => 30, 'child_amount' => 20, 'password' => self::STEP_UP_PASSWORD, 'mode' => 'immediate'];
 
         foreach (['zoo-admin', 'cashier', 'executive', 'veterinarian'] as $role) {
             $this->actAs($this->createAccount($role))->postJson('/api/v1/admin/ticket-prices', $payload)->assertForbidden();

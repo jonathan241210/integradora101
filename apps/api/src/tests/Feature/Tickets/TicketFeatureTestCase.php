@@ -6,15 +6,15 @@ use App\Models\Ticket;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Spatie\Activitylog\Models\Activity;
+use Tests\Concerns\ConfirmsStepUp;
 use Tests\Concerns\CreatesAdministrators;
 use Tests\FeatureTestCase;
 
 abstract class TicketFeatureTestCase extends FeatureTestCase
 {
-    use CreatesAdministrators;
+    use ConfirmsStepUp, CreatesAdministrators;
 
     protected function tearDown(): void
     {
@@ -23,11 +23,13 @@ abstract class TicketFeatureTestCase extends FeatureTestCase
         parent::tearDown();
     }
 
+    /**
+     * Sesión de navegador con una ventana de confirmación de contraseña vigente (api-021), para que las pruebas de
+     * otras specs no tengan que repetir la confirmación. Las pruebas de api-021 usan actAsWithoutWindow().
+     */
     protected function actAs(User $user): static
     {
-        Auth::forgetGuards();
-
-        return $this->actingAs($user, 'web');
+        return $this->actAsConfirmed($user, 86400);
     }
 
     /** Sustituye los precios dentro de la transacción de la prueba (se revierte al terminar). */

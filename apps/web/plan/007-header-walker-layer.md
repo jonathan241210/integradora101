@@ -1,9 +1,11 @@
 # Plan técnico · 007 · header-walker-layer
 
 - Spec: `apps/web/specs/007-header-walker-layer.md`
-- Estado de spec: Aprobada
+- Estado de spec: Implementada
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
 - Estado técnico: Aprobado para tareas
-- Responsable técnico: Por identificar
+- Responsable técnico: Frontend
 
 ## Diseño de solución
 
@@ -74,6 +76,6 @@ No se proponen excepciones.
 4. Ejecutar pruebas enfocadas y suite completa; comprobar escritorio, móvil, menú abierto, foco, clics y superposición en navegador.
 5. Ejecutar `/verify` para `apps/web`, registrar si la app no está inicializada, ejecutar `git diff --check` y actualizar estados/evidencias.
 
-Dependencias: T-01 cubre el montaje simulado antes de validar cambios al DOM; T-02 y T-03 preceden a T-04..T-08; validación visual browser depende del código y pruebas. El solicitante aprobó el plan técnico el 2026-10-08. Responsable técnico por identificar; no se asigna una persona no confirmada.
+Dependencias: T-01 cubre el montaje simulado antes de validar cambios al DOM; T-02 y T-03 preceden a T-04..T-08; validación visual browser depende del código y pruebas. El solicitante aprobó el plan técnico. Responsable técnico por identificar; no se asigna una persona no confirmada.
 
 Evidencia de implementación: la capa se monta en `.topbar` con clase `is-header-layer` y queda limitada a 76 px; los controles directos usan z-index 2 sobre la capa z-index 1. El contenedor no intercepta puntero, los dibujos se limitan a 48 px de alto, y los elementos conservan su evento click. En navegador, 390/768/1024/1366 px sin desbordamiento horizontal; menú móvil, enlace de navegación, campo de búsqueda y acción de boletos utilizables. Las 5 pruebas específicas pasan. La suite general tiene un fallo previo fuera del alcance: CA-04 de `visit-info-icons-and-favicon` espera una declaración ausente en `styles.css`. `apps/web` no está inicializada con npm.

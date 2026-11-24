@@ -3,7 +3,7 @@
 ## 1. Control
 
 - **Estado:** Borrador (generado a partir de la implementación de `api-009`; pendiente de revisión del equipo).
-- **Responsable:** Jonathan (backend); Víctor Adrián (BD).
+- **Responsable:** el responsable de backend (backend); Responsable de BD Adrián (BD).
 - **PR de aprobación:** pendiente.
 - **Capacidades descritas:** `actual` salvo indicación. Cubre lo verificable en `apps/api/src` hasta `api-009`; las demás features se enlazan a su spec sin repetirlas.
 
@@ -20,8 +20,9 @@
 |---|---|---|
 | `cashier` | Vender, cancelar sus boletos del día, ver su historial, leer precios | `tickets.create`, `tickets.cancel`, `tickets.view` |
 | `admin` | Cambiar precios, administrar contenido y cuentas, ver historial | `ticket-prices.manage`, `tickets.view`, 2FA obligatorio |
-| `zoo-admin` | Historial en lectura, administración operativa | `tickets.view`, 2FA obligatorio |
-| `executive` | Panel y reportes de solo lectura | `dashboard.view`, `reports.view` |
+| `zoo-admin` | Historial en lectura, administración operativa | `tickets.view`, `tickets.view-all`, 2FA obligatorio |
+| `executive` (Consulta directiva) | Panel y reportes de solo lectura; 2FA obligatorio (api-023) | `dashboard.view`, `reports.view` |
+| `communications` (Comunicación) | Noticias, eventos, momentos y TulanPedia; 2FA obligatorio (api-023) | `news.manage`, `events.manage`, `memories.review`, `species.review` |
 | `veterinarian` | Sin acceso a `/admin` | — |
 | Visitante | Cuenta y progreso en la app móvil | Token de visitante |
 
@@ -116,9 +117,9 @@ sequenceDiagram
 | Riesgo/pregunta | Mitigación o decisión requerida | ADR/spec | Responsable |
 |---|---|---|---|
 | Sin `BaseModel` | Auditoría propia por modelo; decidir si se crea | ADR 0021 | Equipo |
-| Doble envío de venta | Sin idempotencia; el cliente bloquea el botón | `api-009` plan | Jonathan |
-| Evidencia de DBR-006 en otros ambientes | Aportarla antes de desplegar | DBR-006 | Víctor Adrián |
-| Avisos y correo diferidos | Reactivar con revisión de la spec | ADR 0020 | Jonathan |
+| Doble envío de venta | Sin idempotencia; el cliente bloquea el botón | `api-009` plan | el responsable de backend |
+| Evidencia de DBR-006 en otros ambientes | Aportarla antes de desplegar | DBR-006 | Responsable de BD Adrián |
+| Avisos y correo diferidos | Reactivar con revisión de la spec | ADR 0020 | el responsable de backend |
 
 ## 16. Validación
 

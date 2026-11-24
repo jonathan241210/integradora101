@@ -1,5 +1,7 @@
 # Tareas · 002 · real-staff-login
 
+- Solicitada: 2026-10-16
+- Aprobada: 2026-10-17
 - Spec: `apps/dashboard/specs/002-real-staff-login.md`
 - Plan: `apps/dashboard/plan/002-real-staff-login.md`
 
@@ -39,6 +41,6 @@ Precondición: `api-003` implementada y cuentas demo sembradas en `arca_pruebas`
 ## Calidad y entrega
 
 - [x] **T-26**: actualizar `apps/dashboard/docs/arquitectura.md` (autenticación actual, endpoints consumidos, diagramas), `docs/manual-demo.md` y `packages/api-client/README.md`.
-- [x] **T-27**: ejecutar `npm run types`, `npm test` y `npm run build` en `apps/dashboard`, y revisar `/verify`; registrar resultados. Evidencia (2026-10-17): types y build con código 0; Vitest 14 archivos/50 tests aprobados; grep sin `fetch`/`axios` en vistas/componentes/`App.tsx`, sin hex en las vistas nuevas ni almacenamiento local. `@arca/api-client` aparece enlazado en npm. `/verify` clasifica la app como aún no inicializada por exigir `apps/dashboard/src/package.json`; el manifiesto real y los scripts están en `apps/dashboard/package.json`, y se ejecutaron directamente allí.
+- [x] **T-27**: ejecutar `npm run types`, `npm test` y `npm run build` en `apps/dashboard`, y revisar `/verify`; registrar resultados. Evidencia: types y build con código 0; Vitest 14 archivos/50 tests aprobados; grep sin `fetch`/`axios` en vistas/componentes/`App.tsx`, sin hex en las vistas nuevas ni almacenamiento local. `@arca/api-client` aparece enlazado en npm. `/verify` clasifica la app como aún no inicializada por exigir `apps/dashboard/src/package.json`; el manifiesto real y los scripts están en `apps/dashboard/package.json`, y se ejecutaron directamente allí.
 - [ ] **T-28**: prueba manual con las cuentas demo contra la API local: `presidencia@` (admin) y `direccion_zoo@` (zoo-admin) con enrolamiento 2FA y reto en un segundo acceso; `ejecutivo@` solo lectura; `boletaje@` taquilla; `veterinario@` redirección a la PWA; logout y sesión expirada.
 - [ ] **T-29**: actualizar el estado de la spec (`En progreso` / `Implementada`), enlazar spec, plan y tasks en el PR y citar `dashboard-002` en el commit.

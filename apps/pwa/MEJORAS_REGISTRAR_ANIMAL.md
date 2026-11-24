@@ -137,6 +137,6 @@ function clearImage()
 
 ---
 
-**Fecha de implementación:** 2025-11-14
+**Fecha de implementación:**
 **Versión:** 1.0
 **Estado:** ✅ Completado

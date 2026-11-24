@@ -23,8 +23,6 @@ import {
 } from '../utils/tourPlanner';
 import type { UserPosition } from './useLocationViewModel';
 
-export type ArVisualMode = 'camera-ar' | 'scene-3d';
-
 interface UseArTourViewModelParams {
   places: MapPlace[];
   userPosition?: UserPosition | null;
@@ -43,7 +41,6 @@ export function useArTourViewModel({
   onSelectDestination,
 }: UseArTourViewModelParams) {
   const [isTourOpen, setIsTourOpen] = useState(false);
-  const [visualMode, setVisualMode] = useState<ArVisualMode>('camera-ar');
   const [currentStopIndex, setCurrentStopIndex] = useState(0);
   const [visitedStopIds, setVisitedStopIds] = useState<string[]>([]);
   const [manualHeading, setManualHeading] = useState(0);
@@ -311,17 +308,12 @@ export function useArTourViewModel({
     alignToStop(currentStop);
   }, [alignToStop, currentStop]);
 
-  const toggleVisualMode = useCallback(() => {
-    setVisualMode((prev) => (prev === 'camera-ar' ? 'scene-3d' : 'camera-ar'));
-  }, []);
-
   const stepAnimation = useCallback(() => {
     setAnimationPhase((prev) => (prev + 0.25) % 1);
   }, []);
 
   return {
     isTourOpen,
-    visualMode,
     headingDegrees: effectiveHeading,
     tourStops,
     currentStopIndex: safeStopIndex,
@@ -342,7 +334,6 @@ export function useArTourViewModel({
     rotateLeft,
     rotateRight,
     alignFront,
-    toggleVisualMode,
     stepAnimation,
   };
 }

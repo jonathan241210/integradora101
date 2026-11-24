@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { AppText, ScreenContainer, TitledLoading } from '../../components/ui';
+import { ScreenContainer, TitledLoading, VisitorDataGate } from '../../components/ui';
 import { CollectionScreen } from '../../screens/CollectionScreen';
 import { Animal } from '../../models';
 import { useAnimalViewModel } from '../../viewmodels/useAnimalViewModel';
@@ -11,10 +11,11 @@ import { useNetworkStatus } from '../../viewmodels/useNetworkStatus';
 export default function CollectionRoute() {
   const router = useRouter();
   const { getAnimals } = useAnimalViewModel();
-  const { user, error } = useUserViewModel();
+  const { user, error, status, refresh } = useUserViewModel();
   const progress = useVisitorProgress();
   const { isOffline } = useNetworkStatus();
   const [animals, setAnimals] = useState<Animal[]>([]);
+  const [catalogReady, setCatalogReady] = useState(false);
 
   useEffect(() => {
     let isActive = true;
@@ -22,17 +23,26 @@ export default function CollectionRoute() {
       .then((allAnimals) => {
         if (isActive) setAnimals(allAnimals);
       })
-      .catch((error: unknown) => console.error('Error loading collection:', error));
+      .catch((error: unknown) => console.error('Error loading collection:', error))
+      .finally(() => {
+        if (isActive) setCatalogReady(true);
+      });
     return () => {
       isActive = false;
     };
   }, [getAnimals]);
 
-  if (error) {
+  if (status === 'guest' || status === 'error') {
     return (
-      <ScreenContainer>
-        <AppText variant="body" color="danger">No se pudo cargar la colección: {error}</AppText>
-      </ScreenContainer>
+      <VisitorDataGate
+        title="Mi Colección"
+        status={status}
+        error={error}
+        onLogin={() => router.replace('/login')}
+        onRetry={refresh}
+      >
+        {null}
+      </VisitorDataGate>
     );
   }
 
@@ -46,12 +56,18 @@ export default function CollectionRoute() {
 
   const live = progress.snapshot;
   const shownAnimals = mergeDiscoveredSpecies(animals, live);
+  const catalogProgress = {
+    discovered: shownAnimals.filter((animal) => animal.isDiscovered).length,
+    total: shownAnimals.length,
+  };
 
   return (
     <CollectionScreen
       animals={shownAnimals}
-      progress={countsFromCollection(live)
-        ?? { discovered: user?.discoveredCount ?? 0, total: user?.totalAnimals ?? 0 }}
+      progress={catalogReady
+        ? catalogProgress
+        : (countsFromCollection(live)
+          ?? { discovered: user?.discoveredCount ?? 0, total: user?.totalAnimals ?? 0 })}
       isOffline={isOffline}
       onAnimalPress={(id) => router.push({ pathname: '/animal/[id]', params: { id } })}
     />

@@ -272,7 +272,7 @@ In-person admission ticket sales at the box office.
 
 Notas de la tabla `tickets`:
 
-- Columnas verificadas en `arca_pruebas` el 2026-11-02 (ver DBR-006, «Pruebas y evidencia»). Las columnas nuevas vienen de DBR-006 (migración `2026_11_02_000006_ticket_sales_schema`).
+- Columnas verificadas en `arca_pruebas` (ver DBR-006, «Pruebas y evidencia»). Las columnas nuevas vienen de DBR-006 (migración `2026_11_02_000006_ticket_sales_schema`).
 - Índices: `tickets_qr_code_unique` (UNIQUE sobre `qr_code`), `idx_tickets_cashier_purchased` (`cashier_id`, `purchased_at`) e `idx_tickets_purchased_at` (`purchased_at`).
 - Diferencias con la DBR-006 original (planeadas como NOT NULL, a decidir por BD): `qr_code`, `adult_unit_price` y `child_unit_price` son NULL en la base real.
 
@@ -341,7 +341,7 @@ Visitor-submitted photos and opinions for the public "Momentos para recordar" ga
 
 Notas de la tabla `visitor_memories`:
 
-- La API expone `rejected_fields` como lista (`["image"]`, `["content"]` o ambos); el Resource la construye desde `rejected_image` y `rejected_content` (decisión BD 2026-11-11).
+- La API expone `rejected_fields` como lista (`["image"]`, `["content"]` o ambos); el Resource la construye desde `rejected_image` y `rejected_content` (decisión de BD).
 - Índices: `idx_visitor_memories_status_publication`, `idx_visitor_memories_status_created`, `idx_visitor_memories_visitor_created` (`visitor_id`, `created_at`) e `idx_visitor_memories_visitor_status`.
 - No se agregan `created_by`/`updated_by`: el creador es `visitor_id` y el actor de la revisión es `reviewed_by`.
 

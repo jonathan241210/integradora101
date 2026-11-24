@@ -1,16 +1,18 @@
 # Plan técnico · 008 · seguimiento-revisiones
 
 - Spec: `apps/pwa/specs/008-seguimiento-revisiones.md`
-- Estado de spec: Aprobada
+- Estado de spec: Implementada
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
 - Responsable técnico: `<por definir / backend + PWA>`
 
 ## Diseño de solución
 
 Se extiende el flujo de diagnóstico clínico para que **cada diagnóstico (intenso o rápido)** registre seguimiento obligatorio y sea una nueva atención en `clinical_evaluations`. La API sigue siendo autoridad: recibe y valida el contrato de evaluación (incluido seguimiento), persiste en tablas clínicas y expone el historial; la PWA captura datos, consume `@arca/api-client` y renderiza historial/PDF sin reglas de negocio de dominio.
 
-- **Esquema:** DBR-016 en “Lista para backend” (aplicada en `arca_pruebas` 2026-11-14, evidencia `SHOW CREATE TABLE` pendiente) agrega `follow_up_status`, `next_review_date`, `is_follow_up` en `clinical_evaluations`. DBR-015 aporta `patient_age` y `deleted_at`. Ningún agente crea/aplica migraciones ni SQL.
+- **Esquema:** DBR-016 en “Lista para backend” (aplicada en `arca_pruebas`, evidencia `SHOW CREATE TABLE` pendiente) agrega `follow_up_status`, `next_review_date`, `is_follow_up` en `clinical_evaluations`. DBR-015 aporta `patient_age` y `deleted_at`. Ningún agente crea/aplica migraciones ni SQL.
 - **Contrato/guardado:** `POST /api/v1/staff/clinical-evaluations` (ruta nombrada existente, JSON) recibe campos de seguimiento para `kind=intense|quick` (y compatibilidad `kind=review`). Validación server-side obligatoria: `is_follow_up=1`, `follow_up_status` ∈ {`stable`,`monitoring`,`follow_up`}, `next_review_date` (DATE) y motivo presentes; errores en español (422). `evaluation_type` sigue como formato (`Historia_Clinica_Completa` / `Revision_Rapida`); `destination_ruling` no sustituye `follow_up_status`.
-- **PWA (revisión aprobada 2026-11-14):** menú/inicio conserva accesos a **Diagnóstico intenso** y **Diagnóstico rápido**. Al guardar un formato clínico completo se abre una **ventana emergente de confirmación** con mini-formulario de seguimiento (motivo, estado, próxima revisión) y acciones **Cancelar** (revisar/editar) / **Confirmar guardado**. `ReviewFormView`/atajo de revisión mantienen capacidad de registro vía formatos. Historial en perfil muestra Estado y Próxima revisión. Sin modo offline (online, sesión staff).
+- **PWA (revisión aprobada):** menú/inicio conserva accesos a **Diagnóstico intenso** y **Diagnóstico rápido**. Al guardar un formato clínico completo se abre una **ventana emergente de confirmación** con mini-formulario de seguimiento (motivo, estado, próxima revisión) y acciones **Cancelar** (revisar/editar) / **Confirmar guardado**. `ReviewFormView`/atajo de revisión mantienen capacidad de registro vía formatos. Historial en perfil muestra Estado y Próxima revisión. Sin modo offline (online, sesión staff).
 - **Sin borrado físico:** SoftDeletes/auditoría según esquema/modelos vigentes (Constitución V); no se sobrescriben atenciones previas.
 
 ## Cambios por área
@@ -32,7 +34,7 @@ Se extiende el flujo de diagnóstico clínico para que **cada diagnóstico (inte
 
 - **Endpoint:** `POST /api/v1/staff/clinical-evaluations` (ruta nombrada `staff.clinical-evaluations.store` o equivalente según rutas actuales), autenticación staff (Sanctum/web), autorización por permisos de evaluaciones clínicas existentes. Request body: `{ kind: 'intense'|'quick'|'review' (compat transitoria si se mantiene), animal_id, data: { ...campos formato..., follow_up_status, next_review_date, follow_up_reason, is_follow_up } }`.
 - **Validación/Actions/Resources:** Form Request o validación en controlador (consistente con código actual) que exija seguimiento para diagnósticos del flujo: `follow_up_status` in `stable,monitoring,follow_up`, `next_review_date` date required, motivo required, `is_follow_up` true. Mapear motivo a `evaluation_reason` (catálogo: `routine`/`treatment`/`observation` con etiquetas en español) y persistir campos DBR-016. Respuesta JSON 201 con evaluación creada; errores 422 en español.
-- **DBR relacionada:** DBR-016 `docs/database/requests/DBR-016-clinical-evaluation-follow-up-fields.md` — **Lista para backend**, aplicada en `arca_pruebas` 2026-11-14, evidencia `SHOW CREATE TABLE` pendiente. DBR-015 aplicada (edad/SoftDeletes). No se crean migraciones en este cambio.
+- **DBR relacionada:** DBR-016 `docs/database/requests/DBR-016-clinical-evaluation-follow-up-fields.md` — **Lista para backend**, aplicada en `arca_pruebas`, evidencia `SHOW CREATE TABLE` pendiente. DBR-015 aplicada (edad/SoftDeletes). No se crean migraciones en este cambio.
 - **Historial/lectura:** serializar `follow_up_status`, `next_review_date`, `is_follow_up` en evaluaciones devueltas por perfil/listado de animal para CA-05.
 - **Errores y compatibilidad:** mantener compatibilidad razonable con registros previos sin seguimiento estructurado (mostrar “—”); el flujo `kind=review` existente se alinea al nuevo modelo (campos estructurados) o se retira a favor del flujo unificado.
 
@@ -63,7 +65,7 @@ Se extiende el flujo de diagnóstico clínico para que **cada diagnóstico (inte
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | Laravel 12/PHP 8.4, React 19/Vite/Tailwind, MySQL 8.0.x portable Aiven/local; sin dependencias nuevas planeadas. DBR-016 aplicada en `arca_pruebas`. |
-| II. La spec manda | Sí | Spec `008-seguimiento-revisiones.md` Aprobada (2026-11-14); plan trazado a CA/RN; sin implementación fuera de alcance. |
+| II. La spec manda | Sí | Spec `008-seguimiento-revisiones.md` Aprobada; plan trazado a CA/RN; sin implementación fuera de alcance. |
 | III. Lógica separada de la interfaz | Sí | Validación/persistencia/reglas en API (controlador/validación/modelos); PWA solo captura, consume `@arca/api-client` y presenta historial. |
 | IV. Un test por criterio | Sí (planificado) | Tabla de mapeo CA→prueba; ejecución en entorno con toolchain (`arca_pruebas`, sin RefreshDatabase). |
 | V. Una sola fuente de verdad para los datos | Sí | `clinical_evaluations` en MySQL como autoridad; sin borrado físico; seguimiento estructurado en columnas DBR-016; cliente no autoritativo. |
@@ -87,4 +89,4 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos.
 2. **API (contrato y persistencia):** ampliar validación/guardado en `ClinicalEvaluationController` + modelo/recursos para seguimiento obligatorio y exposición en historial; pruebas Feature.
 3. **PWA (flujo y UI):** bloque de seguimiento en intenso/rápido, nuevo punto de entrada desde pantalla inicial, reemplazo/redirección de `ReviewFormView`, columnas Estado/Próxima revisión en historial; pruebas PWA.
 4. **Verificación y docs:** ejecutar `/verify` y suites relevantes en `arca_pruebas`; actualizar docs PWA y adjuntar evidencia DBR-016.
-5. **Aprobación:** revisión técnica de API/PWA y validación funcional por Victor Adrian (solicitante/responsable funcional) con evidencia de CA-01..CA-08 antes de dar por cerrado el cambio.
+5. **Aprobación:** revisión técnica de API/PWA y validación funcional por el solicitante (responsable funcional) con evidencia de CA-01..CA-08 antes de dar por cerrado el cambio.

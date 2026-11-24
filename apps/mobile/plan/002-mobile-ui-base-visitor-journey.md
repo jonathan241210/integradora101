@@ -1,10 +1,12 @@
 # Plan técnico · 002 · mobile-ui-base-visitor-journey
 
 - Spec: `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md`
-- Estado de spec: Aprobada
-- Aprobación funcional: Solicitante / responsable funcional, 2026-10-09
-- Aprobación técnica: Solicitante, 2026-10-09
-- Aprobación funcional de enmienda CA-07/RN-09: Solicitante, 2026-10-11
+- Estado de spec: Implementada
+- Solicitada: 2026-10-09
+- Aprobada: 2026-10-09
+- Aprobación funcional: Aprobada
+- Aprobación técnica: Aprobada
+- Aprobación funcional de enmienda CA-07/RN-09: Aprobada
 - Estado del plan: Aprobado
 
 ## Diseño de solución
@@ -75,8 +77,8 @@ Dado que esta Spec es puramente de UI y utiliza mocks, no se definen endpoints d
 - **Resolución de Metro:** Configuración de `metro.config.js` ya implementada en Spec 001 para soportar workspaces y `@arca/tokens`.
 - **Rendimiento Visual:** Riesgo de solapamientos en Android. Mitigación: Uso obligatorio de `react-native-safe-area-context`.
 - **Activos de animales:** La referencia no incluye fotos; el UI usará placeholders de forma segura si no hay URL, sin depender de archivos de `arca-ui-reference`.
-- **Validación CA-06:** La inspección manual en Android con Expo Go fue confirmada por la persona solicitante el 2026-10-09; queda registrada en T-28.
-- **Atrás y teclado (enmienda 2026-10-23):** Las pestañas usan `backBehavior="none"`. El gesto atrás no deshace Home → Mapa → Colección. En una ruta secundaria vuelve a la pantalla que la abrió. Los formularios con scroll usan `KeyboardAvoidingView` y Android `softwareKeyboardLayoutMode: resize`. La comprobación en dispositivo queda en T-55; la automática cubre la historia de rutas y las props del contenedor.
+- **Validación CA-06:** La inspección manual en Android con Expo Go fue confirmada por el equipo; queda registrada en T-28.
+- **Atrás y teclado (enmienda):** Las pestañas usan `backBehavior="none"`. El gesto atrás no deshace Home → Mapa → Colección. En una ruta secundaria vuelve a la pantalla que la abrió. Los formularios con scroll usan `KeyboardAvoidingView` y Android `softwareKeyboardLayoutMode: resize`. La comprobación en dispositivo queda en T-55; la automática cubre la historia de rutas y las props del contenedor.
 - **Paleta móvil desalineada:** `packages/tokens/index.ts` todavía exporta verde/amarillo aunque la guía de diseño y `tokens.css` definen los valores institucionales; la enmienda los alinea y añade comprobaciones del contrato.
 - **Contraste de acento:** El acento claro no debe utilizarse como texto sobre superficies blancas; se reemplazará ese uso por el primario y se verificará el contraste de las combinaciones expuestas.
 
@@ -89,15 +91,15 @@ Dado que esta Spec es puramente de UI y utiliza mocks, no se definen endpoints d
 6. **T6: Pantallas de Soporte:** Collection, Game, Profile.
 7. **T7: Flujos secundarios:** Scanner, estados QR, Tour 3D, detalles mock de eventos/misiones/logros, filtros de logros y selección visual de destino.
 8. **T8: Verificación Final:** Ejecución de todos los tests y validación visual en Android, incluyendo legibilidad, iconografía y desplazamiento.
-9. **Enmienda CA-07 (aprobada técnicamente el 2026-10-11):** Alinear `@arca/tokens` para React Native con los defaults institucionales, conservar tintes de placeholders por especie, alinear el color semántico `danger`, corregir usos de acento con contraste insuficiente, ampliar `test-ca-07` y actualizar documentación móvil y del paquete.
+9. **Enmienda CA-07 (aprobada técnicamente):** Alinear `@arca/tokens` para React Native con los defaults institucionales, conservar tintes de placeholders por especie, alinear el color semántico `danger`, corregir usos de acento con contraste insuficiente, ampliar `test-ca-07` y actualizar documentación móvil y del paquete.
 
-**Aprobación funcional:** Solicitante / responsable funcional, 2026-10-09.
-**Revisión y aprobación técnica:** Solicitante, 2026-10-09.
-**Enmienda CA-07/RN-09:** Aprobada funcionalmente y técnicamente por la persona solicitante el 2026-10-11.
+**Aprobación funcional:** Aprobada.
+**Revisión y aprobación técnica:** Aprobada.
+**Enmienda CA-07/RN-09:** Aprobada funcional y técnicamente.
 
-## Enmienda 2026-10-15 · Acceso y ajustes visuales
+## Enmienda · Acceso y ajustes visuales
 
-La persona solicitante confirmó cuatro pantallas de demostración y que las filas de Ajustes navegan. No se implementa la spec `004`.
+El equipo confirmó cuatro pantallas de demostración y que las filas de Ajustes navegan. No se implementa la spec `004`.
 
 | Pantalla | Ruta | Comportamiento |
 |---|---|---|
@@ -133,12 +135,20 @@ La compuerta vive en memoria (`signedOut` / `entered`). No usa almacenamiento se
 | V. Una sola fuente de verdad para los datos | Conforme | El estado visual vive en un repositorio en memoria y se pierde al recargar. No hay segunda base de datos. |
 | VI. Código en inglés, personas en español | Conforme | Rutas e identificadores en inglés. Textos de interfaz en español. |
 
-## Enmienda 2026-11-01 · Pestañas, mapa y títulos
+## Enmienda · Pestañas, mapa y títulos
 
-El círculo de la pestaña activa se desliza hacia la elegida; en Escanear es dorado y un poco mayor. En la ficha de un animal descubierto, el mapa se abre con un icono de ubicación arriba a la derecha. En el mapa y en el recorrido, «Buscar animales» es un enlace de texto. El título de cada pantalla usa el mismo tamaño que «Mi Colección». Mientras carga, ese título permanece en su sitio y el indicador queda centrado debajo. Enmienda de Aksel, 2026-11-01.
+El círculo de la pestaña activa se desliza hacia la elegida; en Escanear es dorado y un poco mayor. En la ficha de un animal descubierto, el mapa se abre con un icono de ubicación arriba a la derecha. En el mapa y en el recorrido, «Buscar animales» es un enlace de texto. El título de cada pantalla usa el mismo tamaño que «Mi Colección». Mientras carga, ese título permanece en su sitio y el indicador queda centrado debajo. Enmienda visual.
 
-## Enmienda 2026-11-11 · Corazón de favorito
+## Enmienda · Corazón de favorito
 
 El corazón de la ficha usa los iconos ya registrados. En reposo se ve el contorno. Al marcarlo, el relleno crece por encima del contorno y se queda lleno, en `primary`, con el borde del botón en el mismo color. Al quitarlo, el relleno se reduce y queda otra vez solo el contorno. La animación vive en la vista.
 
 La lista de identificadores vive en el teléfono (`visitor.favorite-animal-ids`). Las frases anteriores de este plan que dicen que no hay persistencia local no cubren esta lista. No hay favorito de cuenta ni filtro en Colección. Pruebas: `CA-16 favoritos en el teléfono` en `__tests__/favorites.test.ts` y el anuncio del corazón en `__tests__/exploration.test.tsx`. El movimiento del relleno no tiene aserción de fotogramas.
+## Enmienda de arranque · 2026-11-24
+
+- Estado del plan de la enmienda: Aprobado por la persona solicitante, 2026-11-24.
+- Reproducir un arranque en frío en el APK con y sin sesión. Identificar si el círculo aparece antes de montar la raíz de React Native o durante la carga de Inicio, anotando el perfil del APK. Si pertenece a Inicio, renderizar su estructura primero y trasladar la carga a sus secciones. Si pertenece al arranque nativo, revisar el recurso del perfil Android y usar el fondo del tema, preservando el arranque hasta que Expo monte la vista de destino.
+- Contrato y datos: la compuerta de sesión y las rutas existentes determinan el destino. Se conservan el reintento y los datos cacheados sin conexión. Sin cambio de API, permisos, persistencia, dependencias o esquema.
+- CA-17: prueba de Inicio con carga para verificar que la estructura y el estado accesible se muestran juntos. Verificación manual del APK en arranque en frío con y sin sesión para cubrir el sistema nativo.
+- Constitución I–VI: Expo y tokens existentes, alcance y plan de CA-17 aprobados, solo presentación en móvil, prueba automatizada y evidencia Android, sin cambio de datos, identificadores en inglés y estados en español.
+- Orden aprobado: quitar el indicador central del Inicio identificado en el código y verificar el arranque en frío en el APK.

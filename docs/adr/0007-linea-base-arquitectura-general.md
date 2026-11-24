@@ -1,7 +1,8 @@
 # 0007 · Línea base de arquitectura general
 
-- Estado: Propuesto
-- Fecha: 2026-10-06
+- Estado: Aceptado
+- Solicitada: 2026-10-06
+- Aprobada: 2026-11-23
 - Spec relacionada: N/A; línea base documental transversal
 
 ## Contexto
@@ -14,7 +15,7 @@ Adoptar diez dominios estables: Identity & Access, Ticketing, Payments, Cash Man
 
 La API usa MVC en límites Laravel con Actions; clientes React/React Native usan MVVM explícito y `@arca/api-client`. Los paquetes compartidos propuestos son `ui`, `tokens`, `api-client`, `config` y `assets`. Cada app documentará su arquitectura mediante la plantilla común y la aprobará por PR. Entidades, tablas, endpoints y clases requieren specs posteriores.
 
-El PR de esta línea base debe ser revisado por todo el equipo. Solo su aprobación completa y merge permiten cambiar este ADR a **Aceptado**.
+La línea base está reflejada en la estructura del monorepo: las cinco apps, los paquetes `ui`, `tokens`, `api-client`, `config` y `assets`, y los documentos de arquitectura por app.
 
 ## Alternativas consideradas
 
@@ -34,4 +35,4 @@ Requiere coordinación y mantener diagramas. Los límites podrían ajustarse med
 
 ## Validación y revisión
 
-Revisar la [línea base](../02-arquitectura.md), [vistas](../arquitectura/README.md), [patrones](../08-patrones-arquitectonicos.md) y arquitecturas por app. Este estado Propuesto no autoriza implementación.
+Revisar la [línea base](../02-arquitectura.md), [vistas](../arquitectura/README.md), [patrones](../08-patrones-arquitectonicos.md) y arquitecturas por app. Este ADR no autoriza por sí mismo implementaciones nuevas: cada feature requiere su spec aprobada.

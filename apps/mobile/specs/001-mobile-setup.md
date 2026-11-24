@@ -3,8 +3,9 @@
 - App dueña: `mobile`
 - Apps/paquetes afectados: `@arca/api-client`, `@arca/tokens`
 - Estado: Implementada
-- Solicitante / responsable funcional: Equipo Técnico (Arquitectura ARCA-NB)
-- Aprobación funcional: Equipo Técnico, 2026-10-08
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 Se requiere establecer la base estructural para la aplicación móvil nativa de ARCA-NB, destinada a los visitantes del parque. Conforme a las decisiones del ADR 0004, se utilizará React Native y Expo como marco de trabajo. Es necesario proveer un entorno mínimo configurado en el monorepo y compatible con el estándar local de desarrollo, preparando el terreno para las futuras funcionalidades, sin desarrollar aún el lado de negocio.
@@ -52,10 +53,10 @@ En esta etapa estructural no se manipula información clínica o de usuarios ni 
 ## Dependencias, riesgos y preguntas
 - **Dependencias/ADR:** ADR 0004 (Aprobado).
 - **Riesgos:** Retrasos técnicos configurando el enlazado local (Workspaces) con el empaquetador Metro y Jest, ya que requiere plugins y resoluciones particulares en monorepos.
-- **Preguntas pendientes:** Ninguna; las decisiones de router y testing están resueltas.
+- **Sin preguntas abiertas:** las decisiones de router y testing están resueltas.
 
 ## Revisión
-- Aprobadores y fecha: Equipo Técnico ARCA-NB, 2026-10-08
+- Aprobación: Aprobada
 - Evidencia/enlaces: (PR asociado en el futuro)
 
 ## Evolución

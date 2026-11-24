@@ -78,7 +78,7 @@ export function blobFile(name = "foto.png") {
 /** Cliente simulado con las rutas de api-014 que usan los ViewModels. */
 export function fakeApi(overrides: Record<string, unknown> = {}) {
   const requests = {
-    list: vi.fn(async () => ({ data: [summary()], meta: { has_more: false } })),
+    list: vi.fn(async () => ({ data: [summary()], meta: { current_page: 1, last_page: 1, per_page: 10, total: 1, has_more: false } })),
     get: vi.fn(async () => requestDetail()),
     update: vi.fn(async (_id: number, _input: unknown) => requestDetail()),
     accept: vi.fn(async (_id: number, _input: unknown) => ({})),

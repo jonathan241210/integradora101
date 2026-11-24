@@ -31,6 +31,7 @@ class StoreSpeciesPublicationRequest extends JsonFormRequest
             'habitat' => ['nullable', 'string', 'max:150'],
             'origin' => ['nullable', 'string', 'max:150'],
             'category' => ['required', 'string', Rule::in(SpeciesCategory::values())],
+            'fun_fact' => ['nullable', 'string', 'max:500'],
             'published_fields' => ['nullable'],
             'image' => $image,
         ];
@@ -50,6 +51,8 @@ class StoreSpeciesPublicationRequest extends JsonFormRequest
             'habitat.string' => 'Hábitat: máximo 150 caracteres.',
             'origin.max' => 'Área de distribución natural: máximo 150 caracteres.',
             'origin.string' => 'Área de distribución natural: máximo 150 caracteres.',
+            'fun_fact.string' => 'Dato curioso: texto no válido.',
+            'fun_fact.max' => 'Dato curioso: máximo 500 caracteres.',
             'category.required' => 'Tipo de animal requerido.',
             'category.string' => 'Tipo de animal no válido.',
             'category.in' => 'Tipo de animal no válido.',

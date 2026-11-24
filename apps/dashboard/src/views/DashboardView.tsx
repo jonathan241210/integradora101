@@ -1,5 +1,6 @@
 import { Button, Card } from "@arca/ui";
 import { ListStatusMessage } from "@/components/ListStatusMessage";
+import { DashboardSummarySkeleton } from "@/components/LoadingSkeletons";
 import { SalesTotals } from "@/components/SalesTotals";
 import { SectionHeading } from "@/components/SectionHeading";
 import {
@@ -35,6 +36,7 @@ export function DashboardView({
         status={state.status === "empty" ? "ready" : state.status}
         error={state.error}
         loadingText="Cargando el resumen…"
+        skeleton={<DashboardSummarySkeleton />}
         emptyText=""
         onRetry={actions.reload}
       />
@@ -68,13 +70,18 @@ export function DashboardView({
               >
                 {toRevenueBars(summary.series).map((bar) => (
                   <div className="bar-chart__item" key={bar.date}>
+                    <time className="bar-chart__day" dateTime={bar.date}>
+                      {formatWeekday(bar.date)}
+                    </time>
+                    <div className="bar-chart__plot" aria-hidden="true">
+                      <div className="bar-chart__track">
+                        <div className="bar-chart__bar" style={{ width: `${bar.height}%` }} />
+                      </div>
+                      <span className="bar-chart__tooltip">
+                        {formatWeekday(bar.date)} · <strong>{formatCurrency(bar.revenue)}</strong>
+                      </span>
+                    </div>
                     <span className="bar-chart__amount">{formatCurrency(bar.revenue)}</span>
-                    <div
-                      className="bar-chart__bar"
-                      style={{ height: `${bar.height}%` }}
-                      aria-hidden="true"
-                    />
-                    <span className="bar-chart__day">{formatWeekday(bar.date)}</span>
                   </div>
                 ))}
               </div>

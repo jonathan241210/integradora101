@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Auth\RequiresBrowserTwoFactorLoginAction;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class AuthController extends Controller
 {
-    public function login(Request $request): JsonResponse
+    public function login(Request $request, RequiresBrowserTwoFactorLoginAction $requiresTwoFactor): JsonResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -21,7 +22,10 @@ class AuthController extends Controller
 
         $throttleKey = 'login:'.strtolower($credentials['email']).'|'.$request->ip();
 
-        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+        // api-028: además del límite por correo+IP, un tope solo por IP evita probar una contraseña contra muchos correos.
+        $ipThrottleKey = 'login-ip:'.$request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5) || RateLimiter::tooManyAttempts($ipThrottleKey, 20)) {
             return response()->json([
                 'message' => 'Demasiados intentos. Inténtalo de nuevo en unos minutos.',
             ], 429);
@@ -31,8 +35,18 @@ class AuthController extends Controller
 
         if (! $user || ! $user->is_active || ! Hash::check($credentials['password'], $user->password)) {
             RateLimiter::hit($throttleKey, 300);
+            RateLimiter::hit($ipThrottleKey, 300);
 
             return response()->json(['message' => 'Credenciales incorrectas.'], 422);
+        }
+
+        // api-021 CA-42: el rechazo por rol va después de validar la contraseña (no permite enumerar cuentas),
+        // no limpia el límite de intentos, no actualiza last_login_at y no emite token.
+        if ($requiresTwoFactor->forRole($user)) {
+            return response()->json([
+                'message' => RequiresBrowserTwoFactorLoginAction::MESSAGE,
+                'code' => RequiresBrowserTwoFactorLoginAction::CODE,
+            ], 403);
         }
 
         RateLimiter::clear($throttleKey);

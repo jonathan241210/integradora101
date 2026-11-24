@@ -2,6 +2,7 @@
 
 namespace App\Actions\Admin\Reports;
 
+use App\Support\BusinessTimezone;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\ValidationException;
 
@@ -12,14 +13,12 @@ class ResolveReportPeriodAction
         7 => 'julio', 8 => 'agosto', 9 => 'septiembre', 10 => 'octubre', 11 => 'noviembre', 12 => 'diciembre',
     ];
 
-    public function __construct(private ResolveRequestedTimezoneAction $resolveTimezone) {}
-
     /**
-     * @param  array  $input  filtros validados más `timezone` sin validar (RN-14)
+     * @param  array  $input  filtros validados; la zona es siempre la de negocio (api-025 RN-04)
      */
     public function execute(array $input): ReportPeriod
     {
-        $timezone = $this->resolveTimezone->execute($input['timezone'] ?? null);
+        $timezone = BusinessTimezone::name();
         $today = CarbonImmutable::now($timezone)->startOfDay();
         $type = $input['period'] ?? 'week';
         $reference = isset($input['date'])

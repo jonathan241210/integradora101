@@ -15,6 +15,8 @@ const noop = () => undefined;
 const emptyRepository: MapRepository = {
   getPlaces: async () => [],
   getSections: async () => MOCK_MAP_SECTIONS,
+  getZooPlaces: async () => [],
+  getPathNodes: async () => [],
 };
 
 function createFlakyRepository(): MapRepository {
@@ -28,6 +30,8 @@ function createFlakyRepository(): MapRepository {
       return MOCK_MAP_PLACES;
     },
     getSections: async () => MOCK_MAP_SECTIONS,
+    getZooPlaces: async () => [],
+    getPathNodes: async () => [],
   };
 }
 
@@ -77,7 +81,7 @@ describe('MapScreen', () => {
 
     expect(view.getByTestId('zoo-map-svg')).toBeTruthy();
     expect(view.getByText('Mapa del zoológico')).toBeTruthy();
-    expect(view.getByLabelText(/Mapa esquemático del zoológico con secciones/)).toBeTruthy();
+    expect(view.getByLabelText(/Mapa canónico del zoológico/)).toBeTruthy();
     expect(view.getByText('Toca un punto del mapa para ver su información.')).toBeTruthy();
     expect(view.queryByText('8 min')).toBeNull();
     expect(view.queryByText('450 m')).toBeNull();

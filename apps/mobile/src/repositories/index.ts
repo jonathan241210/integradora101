@@ -1,4 +1,4 @@
-import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection } from '../models';
+import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection, ZooPlace, PathNode } from '../models';
 import { MOCK_ANIMALS, MOCK_USER, MOCK_MISSIONS, MOCK_EVENTS, MOCK_NEWS, MOCK_ACHIEVEMENTS, MOCK_MILESTONES, MOCK_MAP_SECTIONS, MOCK_MAP_PLACES } from '../mocks/zoo';
 
 export interface AnimalRepository {
@@ -14,17 +14,22 @@ export interface UserRepository {
   getMilestones(): Promise<{ id: string; title: string; date: string }[]>;
 }
 
+export type HomeListRefresh = 'manual' | 'push' | 'stale';
+
 export interface ZooRepository {
-  getEvents(): Promise<ZooEvent[]>;
+  getEvents(onRevalidated?: (events: ZooEvent[]) => void): Promise<ZooEvent[]>;
   getEventById(id: string): Promise<ZooEvent | null>;
-  getNews(): Promise<News[]>;
+  getNews(onRevalidated?: (news: News[]) => void): Promise<News[]>;
   getNewsById(id: string): Promise<News | null>;
-  refreshNewsAndEvents(): Promise<{ news: News[]; events: ZooEvent[] }>;
+  reloadNewsById(id: string): Promise<News | null>;
+  refreshNewsAndEvents(mode?: HomeListRefresh): Promise<{ news: News[]; events: ZooEvent[] }>;
 }
 
 export interface MapRepository {
   getPlaces(): Promise<MapPlace[]>;
   getSections(): Promise<MapSection[]>;
+  getZooPlaces(): Promise<ZooPlace[]>;
+  getPathNodes(): Promise<PathNode[]>;
 }
 
 export class AnimalRepositoryImpl implements AnimalRepository {
@@ -78,6 +83,10 @@ export class ZooRepositoryImpl implements ZooRepository {
     return Promise.resolve(MOCK_NEWS.id === id ? MOCK_NEWS : null);
   }
 
+  async reloadNewsById(id: string): Promise<News | null> {
+    return this.getNewsById(id);
+  }
+
   async refreshNewsAndEvents(): Promise<{ news: News[]; events: ZooEvent[] }> {
     const [news, events] = await Promise.all([this.getNews(), this.getEvents()]);
     return { news, events };
@@ -91,6 +100,14 @@ export class MapRepositoryImpl implements MapRepository {
 
   async getSections(): Promise<MapSection[]> {
     return MOCK_MAP_SECTIONS;
+  }
+
+  async getZooPlaces(): Promise<ZooPlace[]> {
+    return [];
+  }
+
+  async getPathNodes(): Promise<PathNode[]> {
+    return [];
   }
 }
 
@@ -107,32 +124,24 @@ export * from './storage';
 import { ApiAnimalRepository } from './apiAnimalRepository';
 import { ApiZooRepository } from './apiZooRepository';
 import { ApiMapRepository } from './apiMapRepository';
+import { isMockDataEnabled } from '../config/runtime';
 
 export function createAnimalRepository(): AnimalRepository {
-  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
-    return new AnimalRepositoryImpl();
-  }
-  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+  if (isMockDataEnabled()) {
     return new AnimalRepositoryImpl();
   }
   return new ApiAnimalRepository();
 }
 
 export function createZooRepository(): ZooRepository {
-  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
-    return new ZooRepositoryImpl();
-  }
-  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+  if (isMockDataEnabled()) {
     return new ZooRepositoryImpl();
   }
   return new ApiZooRepository();
 }
 
 export function createMapRepository(): MapRepository {
-  if (process.env.EXPO_PUBLIC_USE_MOCKS === 'true') {
-    return new MapRepositoryImpl();
-  }
-  if (process.env.NODE_ENV === 'test' && process.env.EXPO_PUBLIC_USE_API !== 'true') {
+  if (isMockDataEnabled()) {
     return new MapRepositoryImpl();
   }
   return new ApiMapRepository();

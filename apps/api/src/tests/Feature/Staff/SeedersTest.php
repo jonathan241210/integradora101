@@ -37,10 +37,12 @@ class SeedersTest extends FeatureTestCase
             'veterinary',
         ])->count());
 
-        $this->assertSame(5, Role::query()->whereIn('name', [
+        // api-023: seis roles (se añade `communications`).
+        $this->assertSame(6, Role::query()->whereIn('name', [
             'admin',
             'zoo-admin',
             'executive',
+            'communications',
             'cashier',
             'veterinarian',
         ])->where('guard_name', 'web')->count());

@@ -3,12 +3,13 @@
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `dashboard` (consumidor), `packages/api-client`
 - Consumidores: dashboard (`dashboard-002`) y PWA veterinaria (spec futura con su propia pantalla de login)
-- Estado: Aprobada · En progreso (revisión aprobada por Jonathan el 2026-11-05; estado previo: Implementada, 2026-10-17; implementación iniciada 2026-10-16)
-- Solicitante / responsable funcional: Jonathan
-- Responsable de BD: Victor Adrian
-- Aprobación funcional: Jonathan, 2026-10-15
+- Estado: Implementada
+- Solicitada: 2026-10-15
+- Aprobada: 2026-10-15
+- Responsable de BD: Responsable de BD (rol)
+- Aprobación funcional: Aprobada
 
-> **Nota de vigencia (2026-11-05, aprobada):** el permiso `operational-staff.manage` se retira del catálogo de `RolesAndPermissionsSeeder`. `zoo-admin` deja de tener gestión de cuentas del personal; solo `admin` (`users.manage`) gestiona cuentas. Afecta a RN-17, CA-15, a los actores de la tabla y a la línea de «Fuera de alcance». Ver `apps/api/specs/007-administration-management.md`, «Revisión 2026-11-05». Los demás criterios no cambian.
+> **Nota de vigencia (aprobada):** el permiso `operational-staff.manage` se retira del catálogo de `RolesAndPermissionsSeeder`. `zoo-admin` deja de tener gestión de cuentas del personal; solo `admin` (`users.manage`) gestiona cuentas. Afecta a RN-17, CA-15, a los actores de la tabla y a la línea de «Fuera de alcance». Ver `apps/api/specs/007-administration-management.md`, sección de revisión que retira `operational-staff.manage`. Los demás criterios no cambian.
 
 ## Problema y contexto
 
@@ -31,7 +32,7 @@ Los endpoints de esta feature no dependen del cliente que los llama: el dashboar
 
 ## Fuera de alcance
 
-- Gestión de usuarios desde el dashboard (alta, edición, baja). En el sistema final, los administradores crean desde el dashboard las cuentas de taquilla y veterinaria; eso pertenece a la feature siguiente, «Gestión de usuarios». Esta feature solo siembra los permisos `users.manage` y `operational-staff.manage` (este último retirado el 2026-11-05; RN-17).
+- Gestión de usuarios desde el dashboard (alta, edición, baja). En el sistema final, los administradores crean desde el dashboard las cuentas de taquilla y veterinaria; eso pertenece a la feature siguiente, «Gestión de usuarios». Esta feature solo siembra los permisos `users.manage` y `operational-staff.manage` (este último retirado; RN-17).
 - Recuperación de contraseña por correo: el administrador restablece contraseñas en la feature siguiente.
 - Restablecimiento del 2FA de un administrador que perdió su celular y sus códigos de recuperación (feature de gestión de usuarios).
 - Tokens `personal_access_tokens` para mobile (se pedirán en su propia DBR cuando mobile los necesite).
@@ -44,7 +45,7 @@ Los endpoints de esta feature no dependen del cliente que los llama: el dashboar
 | Actor/rol | Necesidad | Permisos requeridos |
 |---|---|---|
 | `admin` (Administrador general, Presidencia) | Control total del panel de administración y de todas las cuentas | Sesión válida + 2FA confirmado; todos los permisos de `docs/03-roles-y-permisos.md`, incluido `users.manage` |
-| `zoo-admin` (Administrador del zoológico) | Administrar contenido y recintos; consultar boletos, arqueos y reportes (sin cuentas del personal desde 2026-11-05) | Sesión válida + 2FA confirmado; `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view`, `tickets.view`, `cash-closings.view`, `public-content.view` |
+| `zoo-admin` (Administrador del zoológico) | Administrar contenido y recintos; consultar boletos, arqueos y reportes (sin cuentas del personal; ver RN-17) | Sesión válida + 2FA confirmado; `news.manage`, `events.manage`, `enclosures.manage`, `dashboard.view`, `reports.view`, `tickets.view`, `cash-closings.view`, `public-content.view` |
 | `executive` | Entrar al panel ejecutivo de solo lectura | Sesión válida; `dashboard.view`, `reports.view`, `public-content.view` |
 | `cashier` | Entrar a venta e historial de taquilla | Sesión válida; `tickets.*`, `cash-closings.*`, `public-content.view` |
 | `veterinarian` | Ser derivado a la PWA veterinaria | Sesión válida; la PWA aplica sus propios permisos clínicos |
@@ -73,7 +74,7 @@ Los endpoints de esta feature no dependen del cliente que los llama: el dashboar
 - **CA-12:** Dada una sesión autenticada, cuando transcurren `SESSION_LIFETIME=30` minutos sin actividad, entonces la sesión expira y las llamadas siguientes responden 401.
 - **CA-13:** Dados los eventos de acceso, cuando ocurre un login exitoso o fallido, un logout o la activación de 2FA, entonces Activitylog registra el evento con correo, IP y user-agent (nunca la contraseña ni secretos), y el login exitoso actualiza `users.last_login_at`.
 - **CA-14:** Dado el comando `php artisan arca:create-staff`, cuando se ejecuta de forma interactiva, entonces solicita correo, nombre, apellidos, área (del catálogo `departments`), rol sugerido por el área pero editable, y contraseña capturada de forma oculta y validada con la política; al finalizar crea la cuenta sin escribir secretos en el repositorio.
-- **CA-15:** Dado el catálogo de áreas, cuando se ejecuta `DepartmentSeeder`, entonces inserta o actualiza los 5 departamentos de forma idempotente por `code` (`presidency` Presidencia, `information-technology` Informática, `management` Dirección, `box-office` Taquilla, `veterinary` Servicios veterinarios), y `RolesAndPermissionsSeeder` crea los roles `admin`, `zoo-admin`, `executive`, `cashier` y `veterinarian` con la matriz de `docs/03-roles-y-permisos.md`, incluyendo `news.manage`, `events.manage`, `enclosures.manage` y `users.manage` (`operational-staff.manage` retirado el 2026-11-05; RN-17).
+- **CA-15:** Dado el catálogo de áreas, cuando se ejecuta `DepartmentSeeder`, entonces inserta o actualiza los 5 departamentos de forma idempotente por `code` (`presidency` Presidencia, `information-technology` Informática, `management` Dirección, `box-office` Taquilla, `veterinary` Servicios veterinarios), y `RolesAndPermissionsSeeder` crea los roles `admin`, `zoo-admin`, `executive`, `cashier` y `veterinarian` con la matriz de `docs/03-roles-y-permisos.md`, incluyendo `news.manage`, `events.manage`, `enclosures.manage` y `users.manage` (`operational-staff.manage` retirado; RN-17).
 - **CA-16:** Dado el `README.md` raíz, cuando un integrante o agente lo consulta, entonces encuentra la sección «Comandos de base de datos (API)» con `php artisan db:show`, `db:show --counts`, `db:table <tabla>` y `migrate:status`, y los avisos de uso.
 - **CA-17:** Dada la suite de PHPUnit, cuando se ejecuta `php artisan test`, entonces corre contra `arca_pruebas` con `DatabaseTransactions`, verifica que la base activa sea `arca_pruebas` (nunca `arca_zoo`) y existe al menos un test que nombra cada CA-xx de esta spec.
 - **CA-18:** Dado `DemoStaffSeeder`, cuando se ejecuta, entonces crea o actualiza las cuentas demo de forma idempotente, solo fuera de producción y nunca en `arca_zoo`, con la contraseña tomada de `DEMO_STAFF_PASSWORD` en `.env`; si la variable falta o no cumple la política de contraseñas, aborta sin crear cuentas.
@@ -96,7 +97,7 @@ Los endpoints de esta feature no dependen del cliente que los llama: el dashboar
 - **RN-14:** No hay recuperación de contraseña por correo en esta feature; el administrador restablece contraseñas en la feature de gestión de usuarios.
 - **RN-15:** `personal_access_tokens` queda fuera de DBR-002; la autenticación del personal es solo por cookie de sesión.
 - **RN-16:** El 2FA es obligatorio para los roles configurados en `config('arca.two_factor_roles')` = `['admin', 'zoo-admin']`; los demás roles no usan 2FA.
-- **RN-17:** *Revisión de 2026-11-05 (decisión de Jonathan, aprobada).* El permiso `operational-staff.manage` se retira del catálogo y del código. La gestión de cuentas del personal la tiene solo quien posee `users.manage` (rol `admin`). `zoo-admin` no gestiona cuentas. La fila de `permissions` que quede en bases existentes no tiene efecto, porque el seeder no borra. Texto anterior (2026-10-15): el permiso distinguía al `zoo-admin`, que solo gestionaba cajeros y veterinarios, del `admin`, que con `users.manage` gestionaba todas las cuentas.
+- **RN-17:** *Revisión (aprobada).* El permiso `operational-staff.manage` se retira del catálogo y del código. La gestión de cuentas del personal la tiene solo quien posee `users.manage` (rol `admin`). `zoo-admin` no gestiona cuentas. La fila de `permissions` que quede en bases existentes no tiene efecto, porque el seeder no borra. Texto anterior: el permiso distinguía al `zoo-admin`, que solo gestionaba cajeros y veterinarios, del `admin`, que con `users.manage` gestionaba todas las cuentas.
 
 ## Datos, privacidad y auditoría
 
@@ -158,12 +159,30 @@ Los endpoints de esta feature no dependen del cliente que los llama: el dashboar
   - Sanctum por cookie requiere que la API, el dashboard y la PWA compartan dominio raíz en producción; el hosting de la API está por definir.
   - Los tests dependen de la disponibilidad de Aiven (`arca_pruebas`).
   - Si un administrador pierde su celular y también sus códigos de recuperación, esta feature no incluye herramienta para restablecer el 2FA; lo resuelve provisionalmente el responsable de BD y el procedimiento formal queda para la gestión de usuarios.
-- **Preguntas resueltas:**
-  - La migración por defecto `0001_01_01_000000_create_users_table.php` fue retirada por el responsable de BD.
-  - `cache` y `cache_locks` existen por `0001_01_01_000001_create_cache_table.php`.
-  - Los valores en español de los CHECK de animales y clínica (`Cuarentena_Ingreso`, `Revision_Rutinaria`) no afectan esta feature; quedan para sus DBR.
+- **Decisiones:**
+  - Se optó por retirar la migración por defecto `0001_01_01_000000_create_users_table.php`, porque el Responsable de BD la sustituye por el esquema de `users`.
+  - Se optó por usar `cache` y `cache_locks` tal como los crea `0001_01_01_000001_create_cache_table.php`, sin tablas adicionales.
+  - Se optó por dejar los valores en español de los CHECK de animales y clínica (`Cuarentena_Ingreso`, `Revision_Rutinaria`) fuera de esta feature, porque no la afectan y se tratan en sus DBR.
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan (responsable funcional), 2026-10-15.
+- Aprobación: Aprobada (responsable funcional).
 - Evidencia/enlaces: `docs/database/requests/DBR-001-english-schema-normalization.md`, `docs/database/requests/DBR-002-staff-authentication.md`, `docs/03-roles-y-permisos.md`, `apps/api/docs/inventario-bd-inicial.md`, `apps/api/docs/credenciales-desarrollo.md`, `docs/adr/0013-aiven-managed-mysql.md`.
+
+## Nota de revisión (Borrador)
+
+El rol `cashier` pasa a exigir 2FA (`config('arca.two_factor_roles')` = `['admin', 'zoo-admin', 'cashier']`), y las operaciones sensibles piden confirmación de contraseña. Ver `apps/api/specs/021-staff-step-up-confirmation.md`, que lo define. Esta nota no cambia CA-01 a CA-18 ni RN-01 a RN-17; RN-16 queda ampliada solo en su lista de roles mientras `api-021` no esté aprobada.
+
+## Nota de revisión (api-023, fixed roles)
+
+Aprobada en `apps/api/specs/023-fixed-roles-and-console-admins.md`. Sustituye en lo que contradiga:
+
+- **RN-01 (catálogo de roles y sugerencia por área):** el catálogo es `admin`, `zoo-admin`, `executive` («Consulta directiva»), `communications` («Comunicación»), `cashier` y `veterinarian`. La sugerencia para Presidencia e Informática es `executive`, nunca `admin` (`api-023` RN-01, RN-03, CA-09).
+- **RN-16 (2FA obligatorio):** `arca.two_factor_roles` = `admin`, `zoo-admin`, `cashier`, `executive`, `communications` (`api-023` RN-05, CA-04). `veterinarian` no usa 2FA.
+- **RN-17 (permiso huérfano):** `operational-staff.manage` queda sin efecto; su limpieza es un cambio de datos aparte (`api-023` H-01, CA-27).
+- **CA-05 (`me` y `home`):** `executive` sigue con `home` `executive`; `communications` tiene `home` `administration` con la sección de inicio Noticias (`api-023` CA-06, CA-07).
+- **CA-15 (seeder de departamentos):** la sugerencia de rol por área nunca es `admin`; Presidencia e Informática sugieren `executive` (`api-023` CA-09).
+- **Tabla de actores:** Presidencia e Informática ya no se sugieren como `admin`; el rol `executive` cambia su etiqueta a «Consulta directiva» y se añade `communications`.
+- **Complemento (no sustitución):** las cuentas `admin` solo se gestionan desde la consola `arca:admin:*`, y el historial completo de boletos se decide por el permiso `tickets.view-all` (`api-023` RN-06, RN-03, CA-11, CA-12, CA-08).
+
+Esta nota no cambia la numeración ni el estado de la spec.

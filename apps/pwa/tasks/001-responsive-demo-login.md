@@ -1,5 +1,7 @@
 # Tareas · 001 · responsive-demo-login
 
+- Solicitada: 2026-10-10
+- Aprobada: 2026-10-10
 - Spec: `apps/pwa/specs/001-responsive-demo-login.md`
 - Plan: `apps/pwa/plan/001-responsive-demo-login.md`
 

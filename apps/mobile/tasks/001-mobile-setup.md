@@ -1,5 +1,7 @@
 # Tareas · 001 · mobile-setup
 
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
 - Spec: `apps/mobile/specs/001-mobile-setup.md`
 - Plan: `apps/mobile/plan/001-mobile-setup.md`
 
@@ -12,11 +14,11 @@
 
 ## Pruebas automatizadas y operativas
 
-- [x] **T-05** (CA-01, CA-02, CA-03): Validación manual en Android con Expo Go confirmada por la persona solicitante el 2026-10-09. La ruta inicial actual de visitante abre Home mediante el grupo Tabs de la spec 002.
+- [x] **T-05** (CA-01, CA-02, CA-03): Validación manual en Android con Expo Go confirmada por el equipo. La ruta inicial actual de visitante abre Home mediante el grupo Tabs de la spec 002.
   - **Evidencia automatizada:** `npx expo install --check`, `npx tsc --noEmit`, `npx expo export --platform android` y las 10 suites/56 pruebas pasan en la validación de la etapa 002.
 - [x] **T-06** (CA-04, CA-02): Codificar test automatizado base en `apps/mobile/__tests__/index.test.tsx` garantizando la correcta ejecución de Jest (CA-04) e incluyendo una validación unitaria secundaria comprobando que el front testeado soporte los imports locales.
 
 ## Calidad y entrega
 
 - [x] **T-07**: Revisar las herramientas estáticas existentes. No hay scripts de lint/formato configurados; TypeScript, pruebas Jest y Expo install check se ejecutaron como parte de la verificación móvil 002.
-- [x] **T-08**: Spec, plan y tasks vinculados con la entrega móvil integrada en rama principal vía DevOps (2026-10-14; cadena validada con spec 002).
+- [x] **T-08**: Spec, plan y tasks vinculados con la entrega móvil integrada en rama principal vía DevOps (cadena validada con spec 002).

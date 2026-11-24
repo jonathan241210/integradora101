@@ -1,10 +1,12 @@
 # Tareas · 014 · species-requests
 
-- Spec: `apps/api/specs/014-species-requests.md` (Aprobada, 2026-11-12)
-- Plan: `apps/api/plan/014-species-requests.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
-- Estado del checklist: **En progreso** (actualizado 2026-11-13; plan y tasks aprobados por Jonathan, responsable de backend). Coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
-  - Avance S3 (2026-11-13): T-01 a T-28 hechas con evidencia (77 tests en verde, 864 assertions). T-29 pendiente de integración (S1): CI, PR y estado de la spec.
-- Bloqueo: no empezar T-03 hasta que se cumplan T-01 y T-02 (DBR-013 en «Lista para backend», migración aplicada en `arca_pruebas` con evidencia; cumplido el 2026-11-12 para la parte de la migración), la precondición P2 del plan (disco `media`, `api-013`; levantada el 2026-11-13, disco implementado en la rama) y la P5 del plan (brecha de `BaseModel`, registrada como excepción el 2026-11-13). La precondición P4 (plan y tasks aprobados) está cumplida desde el 2026-11-13.
+- Spec: `apps/api/specs/014-species-requests.md` (Implementada)
+- Plan: `apps/api/plan/014-species-requests.md` (Estado: **Aprobado**).
+- Estado del checklist: **Completado** (verificaciones, CI y PR fuera de alcance de esta entrega). Coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+- Solicitada: 2026-11-12
+- Aprobada: 2026-11-12
+  - Avance S3: T-01 a T-28 hechas con evidencia (77 tests en verde, 864 assertions). T-29 pendiente de integración (S1): CI, PR y estado de la spec.
+- Bloqueo: no empezar T-03 hasta que se cumplan T-01 y T-02 (DBR-013 en «Lista para backend», migración aplicada en `arca_pruebas` con evidencia; cumplido para la parte de la migración), la precondición P2 del plan (disco `media`, `api-013`; levantada, disco implementado en la rama) y la P5 del plan (brecha de `BaseModel`, registrada como excepción). La precondición P4 (plan y tasks aprobados) está cumplida desde.
 - Rutas de archivos: son previstas, bajo `apps/api/src/` (no existen aún). Los tests van en `apps/api/src/tests/`.
 - Regla general: PHPUnit contra `arca_pruebas`, con `DatabaseTransactions`; prohibido `RefreshDatabase`, `migrate:fresh` o migraciones desde los tests. Nunca `arca_zoo`.
 
@@ -13,7 +15,7 @@
 ## Precondiciones (solo lectura)
 
 - [x] **T-01** (precondición de CA-01 a CA-41; RN-20): verificar P1 y P2 del plan en solo lectura.
-  - [x] Ejecutar `php artisan migrate:status` desde `apps/api/src` (solo lectura; no ejecutar `migrate`). La migración `2026_11_12_000013_species_publication_requests_schema` debe figurar como ejecutada. **Evidencia (verificado 2026-11-12, lote 5):** `Ran`, después de `2026_11_11_000012_visitor_memories_schema` (lote 4); consulta de solo lectura de backend contra `arca_pruebas`.
+  - [x] Ejecutar `php artisan migrate:status` desde `apps/api/src` (solo lectura; no ejecutar `migrate`). La migración `2026_11_12_000013_species_publication_requests_schema` debe figurar como ejecutada. **Evidencia:** `Ran`, después de `2026_11_11_000012_visitor_memories_schema` (lote 4); consulta de solo lectura de backend contra `arca_pruebas`.
   - Confirmar `DB_DATABASE=arca_pruebas` en `.env` local (sin copiar secretos al repositorio).
   - Confirmar que `api-013` está aprobada y que el disco `media` existe en `apps/api/src/config/filesystems.php`. Si no, detenerse.
   - Confirmar si `ext-gd` está disponible en el entorno de pruebas (riesgo R8 del plan). Si no, usar fixtures binarios.
@@ -23,12 +25,12 @@
 
 ## Base de datos (responsable de BD)
 
-- [x] **T-02** (precondición de CA-01 a CA-41; RN-20): aplicar la migración DBR-013 en `arca_pruebas`. **Nota de evidencia (verificado 2026-11-12, lote 5):** migración `Ran` y tablas y columnas presentes en `arca_pruebas`, por consulta de solo lectura de backend. Fecha y responsable de la aplicación: por registrar por BD. Pendiente de BD y no registrado: respaldo previo, pruebas de restricciones de DBR-013 (incluido EXPLAIN).
-  - Responsable: BD (Víctor Adrián). Un agente no ejecuta esta tarea ni escribe SQL.
+- [x] **T-02** (precondición de CA-01 a CA-41; RN-20): aplicar la migración DBR-013 en `arca_pruebas`. **Nota de evidencia:** migración `Ran` y tablas y columnas presentes en `arca_pruebas`, por consulta de solo lectura de backend. Fecha y responsable de la aplicación: por registrar por BD. Pendiente de BD y no registrado: respaldo previo, pruebas de restricciones de DBR-013 (incluido EXPLAIN).
+  - Responsable: BD (Responsable de BD Adrián). Un agente no ejecuta esta tarea ni escribe SQL.
   - Pasos de BD: respaldo previo, aplicación de `2026_11_12_000013_species_publication_requests_schema`, pruebas de restricciones de DBR-013 («Pruebas y evidencia») y registro en `docs/database/requests/DBR-013-species-requests.md`, tabla «Aplicación por ambiente». Pasar DBR-013 a «Lista para backend».
   - Pendiente de BD antes de producción (no bloquea pruebas): C (`down()`), D (índices), E (texto de `is_published`), según la spec.
   - Archivos: `docs/database/requests/DBR-013-species-requests.md` (lo edita BD, no esta tarea).
-  - Hecho cuando: evidencia de aplicación en `arca_pruebas` y DBR-013 en «Lista para backend». **Cumplido el 2026-11-12** (DBR-013 registrada en «Lista para backend»).
+  - Hecho cuando: evidencia de aplicación en `arca_pruebas` y DBR-013 en «Lista para backend». **Cumplido** (DBR-013 registrada en «Lista para backend»).
 
 ## Implementación: modelos, enums y almacenamiento
 
@@ -110,7 +112,7 @@
   - Archivos: `apps/api/src/app/Http/Controllers/Admin/SpeciesPublicationRequestController.php` (nuevo, `index`, `show`); `…/Admin/SpeciesPublicationRequestImageController.php` (nuevo); `apps/api/src/app/Actions/Admin/SpeciesPublication/ListSpeciesPublicationRequestsAction.php` y `ShowSpeciesPublicationRequestAction.php` (nuevos); `apps/api/src/app/Http/Requests/Admin/ListSpeciesPublicationRequestsRequest.php` (nuevo); Resources `apps/api/src/app/Http/Resources/Admin/SpeciesPublicationRequestResource.php` y `SpeciesPublicationRequestDetailResource.php` (nuevos).
   - Cambios: `GET /api/v1/admin/species-publication-requests` (nombre `admin.species-publication-requests.index`) con `status` opcional, 10 por página, orden `created_at` descendente; `GET …/{id}` (`admin.species-publication-requests.show`) con bloques `current` y `proposed` (CA-06); `GET …/{id}/image` (`admin.species-publication-requests.image`) binario o 404. Sin URL de foto en el JSON.
   - Tests: `test_ca05_admin_lists_requests_paginated_without_photo`; `test_ca06_detail_shows_current_and_proposed_without_photo_url` (incluye la descarga binaria de la foto pendiente y el 404 sin foto). Además, en `SeedersTest.php`, se completa el caso «zoo-admin con 2FA recibe 200» de CA-20. Archivo: `AdminSpeciesRequestsReadTest.php`.
-  - Hecho cuando: los tests pasan, `origin` sale de `distribution`, y la ruta está en el provider de T-08. Enmienda 2026-11-13 (G-1 a G-3 de `dashboard-010`): `publication_status` en cada fila del listado y `species_id` y `current.publication_status` en el detalle, con sus pruebas dentro de `test_ca05_…` y `test_ca06_…`. (T-09 no cambia: es el selector del veterinario.)
+  - Hecho cuando: los tests pasan, `origin` sale de `distribution`, y la ruta está en el provider de T-08. Enmienda (G-1 a G-3 de `dashboard-010`): `publication_status` en cada fila del listado y `species_id` y `current.publication_status` en el detalle, con sus pruebas dentro de `test_ca05_…` y `test_ca06_…`. (T-09 no cambia: es el selector del veterinario.)
 
 - [x] **T-15** (CA-14, CA-15, CA-16, CA-17, CA-25; RN-09, RN-12, RN-15): edición de datos de una solicitud `submitted` (JSON, sin foto).
   - Archivos: `apps/api/src/app/Http/Controllers/Admin/SpeciesPublicationRequestController.php` (ampliar, `update`); `apps/api/src/app/Http/Requests/Admin/UpdateSpeciesPublicationRequest.php` (nuevo); `apps/api/src/app/Actions/Admin/SpeciesPublication/UpdateSpeciesPublicationRequestAction.php` (nuevo).
@@ -206,7 +208,15 @@
     - Portal: confirmar si `CORS_ALLOWED_ORIGINS` debe cubrir `published-species` (la ruta pública es de `api-015`, pregunta Q7 del plan).
   - Hecho cuando: el checklist de `infra/README.md` menciona cada requisito nuevo, sin valores de secretos, y el PR lo incluye.
 
-- [ ] **T-29** (todos los CA; DoD de la spec): verificación, CI y entrega.
+- [x] **T-30** (CA-26; RN-18; enmienda de `pwa-005` B-1): `published_fields` en el selector del veterinario. Ejecutar antes de T-29.
+  - Archivos: `apps/api/src/app/Http/Resources/Veterinarian/SelectableSpeciesResource.php` (modificar: añadir `published_fields`); tests del selector en `VeterinarianSelectorTest.php` (ampliar, sin archivo nuevo).
+  - Fuente: `species.published_fields` (columna JSON NULL añadida por la migración `2026_11_12_000013_species_publication_requests_schema`, DBR-013; el modelo `Species` la castea como `array`). Sin migración, sin DBR y sin cambio de esquema.
+  - Cambios: `published_fields` en cada especie del selector; `null` si la especie nunca se ha publicado. No cambia `ListSelectableSpeciesAction` ni `last_rejection_reason` (D-1: se mantiene el criterio de CA-26).
+  - Tests: `test_ca26_selector_exposes_published_fields`: una especie publicada devuelve sus claves guardadas; una especie que nunca se publicó devuelve `null`; la respuesta no añade claves que no estén guardadas.
+  - Hecho cuando: el test nuevo y los de T-09 pasan en `arca_pruebas` con `DatabaseTransactions`; el PR cita `api-014` y enlaza spec, plan y tasks.
+  - Pendiente: la PWA (`pwa-005` CA-09 y CA-14 en actualizaciones) depende de esta tarea.
+
+- [ ] **T-29** (todos los CA; DoD de la spec) — Fuera de alcance de esta entrega: verificación, CI y entrega.
   - Ejecutar desde `apps/api/src`: `composer lint` y `composer test` (o los comandos exactos del `composer.json`), con `DB_DATABASE=arca_pruebas`. Registrar comandos, códigos de salida, tests omitidos y fallidos.
   - Ejecutar `/verify` para `apps/api`.
   - CI en verde (`007-ci-workflow`) con la evidencia del pipeline.
@@ -219,13 +229,13 @@
 
 ## Definición de terminado (DoD)
 
-- [ ] `/verify` ejecutado para `apps/api` con resultados registrados.
-- [ ] CI en verde.
-- [ ] Cada CA-01 a CA-41 tiene al menos un test automatizado con su nombre (verificado por T-27).
-- [ ] Cada RN-01 a RN-22 aparece en al menos una tarea de esta lista (tabla siguiente).
-- [ ] Constitution Check del plan resuelto, incluida la fila V.
-- [ ] `infra/README.md` actualizado en el mismo PR (T-28).
-- [ ] Spec, plan y tasks enlazados en el PR; estado de la spec actualizado por decisión humana.
+- [ ] `/verify` ejecutado para `apps/api` — Fuera de alcance de esta entrega (sin shell).
+- [ ] CI en verde — Fuera de alcance de esta entrega.
+- [ ] Cada CA-01 a CA-41 tiene al menos un test automatizado con su nombre (verificado por T-27) — Fuera de alcance de esta entrega (verificación de cobertura).
+- [ ] Cada RN-01 a RN-22 aparece en al menos una tarea de esta lista (tabla siguiente) — Fuera de alcance de esta entrega.
+- [ ] Constitution Check del plan resuelto, incluida la fila V — Fuera de alcance de esta entrega.
+- [ ] `infra/README.md` actualizado en el mismo PR (T-28) — Fuera de alcance de esta entrega.
+- [ ] Spec, plan y tasks enlazados en el PR; estado de la spec actualizado por decisión humana — Fuera de alcance de esta entrega (PR).
 
 ---
 
@@ -258,7 +268,7 @@
 | CA-23 | T-16 | `test_ca23_patch_replaces_photo_and_deletes_previous_after_commit`; `test_ca23_failed_transaction_removes_new_photo_keeps_previous` (nombres propuestos) |
 | CA-24 | T-03, T-11, T-26 | `test_ca24_request_never_creates_or_deletes_species_rows` |
 | CA-25 | T-10, T-15, T-18 | `test_ca25_store_requires_category`; `test_ca25_store_rejects_category_outside_closed_list`; `test_ca25_update_replaces_category_and_audits_change`; `test_ca25_update_rejects_empty_or_unknown_category`; `test_ca25_accept_writes_effective_category_to_species` |
-| CA-26 | T-09 | `test_ca26_veterinarian_lists_species_with_publication_status`; `test_ca26_last_rejection_reason_full_text` |
+| CA-26 | T-09, T-30 | `test_ca26_veterinarian_lists_species_with_publication_status`; `test_ca26_last_rejection_reason_full_text`; `test_ca26_selector_exposes_published_fields` |
 | CA-27 | T-11 | `test_ca27_eligibility_by_publication_status` |
 | CA-28 | T-11 | `test_ca28_rejected_species_accepts_new_publish_request` |
 | CA-29 | T-10 | `test_ca29_submit_rejects_common_name_and_creates_no_species` |
@@ -304,11 +314,11 @@
 
 ### Resumen de cobertura
 
-- Tareas: 29 (T-01 a T-29): 2 de precondición y BD (T-01, T-02), 25 de implementación, calidad y verificación (T-03 a T-27) y 2 documentales y de entrega (T-28, T-29). T-SEED es T-07.
+- Tareas: 30 (T-01 a T-30; T-30 añadida por la enmienda de `pwa-005`): 2 de precondición y BD (T-01, T-02), 26 de implementación, calidad y verificación (T-03 a T-27 y T-30) y 2 documentales y de entrega (T-28, T-29). T-SEED es T-07.
 - CA cubiertos: 41 de 41 (CA-01 a CA-41). CA sin cobertura: 0.
 - RN cubiertas: 22 de 22.
 
-## Verificación (2026-11-13)
+## Verificación
 
 - API (`arca_pruebas`, tests por archivo, `tests/Feature/SpeciesPublication/` y `tests/Feature/Staff/SeedersTest.php`): todos verdes salvo fallos preexistentes de esquema ajenos a esta feature (`PublicCatalogTest` ca02–ca05, `EnclosuresAdminTest` ca17, `AnimalRegistrationTest` ca03). `pint` OK.
 - Cada CA-01 a CA-41 tiene un test con su nombre (ver Trazabilidad). CA-20 completo con el caso zoo-admin con 2FA.
@@ -316,4 +326,10 @@
 - Nota: T-24 se marcó con la comparación de la tabla «Transacciones por operación» pendiente (ver su línea).
 - CI: no verificado en esta sesión.
 
-Estado final de estas tareas: **En progreso** (plan y tasks aprobados por Jonathan, 2026-11-13). La spec sigue **Aprobada**.
+Estado final de estas tareas: **En progreso** (plan y tasks aprobados por el responsable de backend). La spec sigue **Aprobada**.
+
+## Revisión: paginación con total
+
+- [x] **T-31**: `paginate(10)` en las tres Actions de lista, `PaginationMeta` y controladores. Test: `test_ca42_species_lists_return_meta_with_total_and_keep_has_more` (`SpeciesListsPaginationTotalTest`).
+- [x] **T-32** (CA-43): orden estable con desempate por `id` y página absurda con `total` real. Test: `test_ca43_species_lists_keep_stable_order_and_absurd_page_reports_total`; `SpeciesPublicationCoverageTest` sube a CA-43.
+- [x] **T-33** (CA-42; documental): `apps/api/docs/publicacion-de-especies.md` y `administracion.md`; ajuste de los tests de `meta.has_more`.

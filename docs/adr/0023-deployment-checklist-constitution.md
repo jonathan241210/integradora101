@@ -1,19 +1,20 @@
 # 0023 · Checklist de despliegue en la Constitución
 
-- Estado: Propuesto (2026-11-05); pendiente del acuerdo del equipo
-- Fecha: 2026-11-05
+- Estado: Aceptado
+- Solicitada: 2026-11-05
+- Aprobada: 2026-11-05
 - Spec relacionada: N/A (decisión transversal). Motivada por `apps/api/specs/008-event-news-images.md` y `apps/api/specs/009-ticket-sales.md`.
 
 ## Contexto
 
-El 2026-11-05, durante las pruebas en `arca_pruebas`, aparecieron dos fallos con el código correcto y la configuración del ambiente incompleta:
+Durante las pruebas en `arca_pruebas`, aparecieron dos fallos con el código correcto y la configuración del ambiente incompleta:
 
 - Las imágenes de noticias y eventos no se veían tras subirlas, porque `APP_URL` no tenía el puerto y faltaba `storage:link`.
 - Presidencia veía «Venta» en lugar de «Precios», porque `RolesAndPermissionsSeeder` no se había aplicado a esa base.
 
 Las pruebas automatizadas no detectaron ninguno de los dos. Además, el límite de subida de PHP (2 MB por defecto) rechaza fotos que la app permite (5 MB). Estos requisitos no viajan con el código y volverán a aparecer en producción si nadie los revisa.
 
-Jonathan pidió que esto quede también en la Constitución. Para cambiarla se requiere el acuerdo del equipo y un ADR.
+Se pidió que esto quede también en la Constitución. Para cambiarla se requiere el acuerdo del equipo y un ADR.
 
 ## Decisión
 

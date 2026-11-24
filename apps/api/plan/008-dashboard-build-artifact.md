@@ -2,8 +2,10 @@
 
 - Spec: `apps/api/specs/008-dashboard-build-artifact.md`
 - Estado: Aprobado
-- Estado de spec: Aprobada
-- Aprobación del plan: aprobada por el usuario solicitante el 2026-10-27
+- Solicitada: 2026-10-27
+- Aprobada: 2026-10-27
+- Estado de spec: Implementada
+- Aprobación del plan: aprobada por el usuario solicitante
 - Responsable técnico: pendiente de revisión del equipo
 
 ## Diseño de solución

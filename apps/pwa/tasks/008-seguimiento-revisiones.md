@@ -1,11 +1,13 @@
 # Tareas · 008 · seguimiento-revisiones
 
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
 - Spec: `apps/pwa/specs/008-seguimiento-revisiones.md`
 - Plan: `apps/pwa/plan/008-seguimiento-revisiones.md`
 
 ## Base de datos (responsable de BD)
 
-- [x] **T-00** (CA-01, CA-03, CA-05, CA-07): DBR-016 aprobada y aplicada en `arca_pruebas` (2026-11-14, estado “Lista para backend”). **Pendiente:** adjuntar evidencia `SHOW CREATE TABLE clinical_evaluations` en `docs/database/requests/DBR-016-clinical-evaluation-follow-up-fields.md`. Sin nuevas migraciones por agente.
+- [x] **T-00** (CA-01, CA-03, CA-05, CA-07): DBR-016 aprobada y aplicada en `arca_pruebas` (estado “Lista para backend”). **Pendiente:** adjuntar evidencia `SHOW CREATE TABLE clinical_evaluations` en `docs/database/requests/DBR-016-clinical-evaluation-follow-up-fields.md`. Sin nuevas migraciones por agente.
 
 ## Implementación API
 
@@ -22,12 +24,12 @@
 - [x] **T-08** (CA-02, CA-03, RN-03, RN-05): `apps/pwa/src/services/apiClient.ts` actualizado (tipos `AnimalEvaluation` con seguimiento, envío de `is_follow_up`).
 - [x] **T-09** (CA-02, CA-03): Bloque de seguimiento obligatorio en `DiagnosisIntenseView.tsx` (motivo/estado/próxima revisión) con validación cliente en español.
 - [x] **T-10** (CA-02, CA-03): Bloque de seguimiento obligatorio en `DiagnosisQuickView.tsx` con validación cliente.
-- [x] **T-11** (CA-04, CA-06, RN-06): *(Revisado 2026-11-14 por cambio de flujo aprobado)* Punto de entrada inicial implementado; sustituido por T-17 para restaurar accesos directos a formatos Intenso/Rápido en menú/inicio. Compatibilidad de revisión cubierta por T-20.
+- [x] **T-11** (CA-04, CA-06, RN-06): *(Revisado por cambio de flujo aprobado)* Punto de entrada inicial implementado; sustituido por T-17 para restaurar accesos directos a formatos Intenso/Rápido en menú/inicio. Compatibilidad de revisión cubierta por T-20.
 - [x] **T-12** (CA-05, RN-04): Historial en `AnimalProfileView.tsx` con columnas **Estado** y **Próxima revisión** (y detalle con seguimiento), manteniendo “Ver”/PDF por historial.
 - [ ] **T-13** (CA-02, CA-04): Prueba automatizada PWA pendiente (infraestructura/runner a confirmar).
 - [ ] **T-14** (CA-05): Prueba automatizada PWA pendiente (render de Estado/Próxima revisión).
 
-## Revisión de flujo (aprobada 2026-11-14)
+## Revisión de flujo (aprobada)
 
 - [x] **T-17** (CA-04, RN-06): Restaurar en menú/inicio accesos a **Diagnóstico intenso** y **Diagnóstico rápido** (como antes), eliminando la entrada “Nueva atención/revisión”; ajustar `HomeView`, `pwaDemo`, `AppShell`, `DiagnosisChooserView`.
 - [x] **T-18** (CA-02, CA-03): En `DiagnosisIntenseView`, retirar seguimiento inline y al “Guardar” (formato completo) mostrar ventana emergente de confirmación con mini-formulario de seguimiento (motivo, estado, próxima revisión) y acciones **Cancelar** / **Confirmar guardado**.

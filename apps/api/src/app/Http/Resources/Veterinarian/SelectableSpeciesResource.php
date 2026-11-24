@@ -18,6 +18,8 @@ class SelectableSpeciesResource extends JsonResource
             'habitat' => $this->habitat,
             'origin' => $this->distribution,
             'category' => $this->category,
+            'fun_fact' => $this->fun_fact,
+            'published_fields' => $this->published_fields,
             'publication_status' => $status->value,
             'next_request_type' => $status->nextRequestType()?->value,
             'last_rejection_reason' => $this->resource->getAttribute('last_rejection_reason'),

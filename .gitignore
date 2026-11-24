@@ -13,6 +13,8 @@ apps/mobile/.expo/
 apps/mobile/coverage/
 apps/mobile/dist/
 /SSL_CA/ca.pem
+apps/mobile/google-services.json
+apps/mobile/arca-nb-firebase-adminsdk-fbsvc-1d6f157491.json
 
 # Local Claude Code configuration
 CLAUDE.md

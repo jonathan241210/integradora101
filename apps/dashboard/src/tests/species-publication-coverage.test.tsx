@@ -22,13 +22,13 @@ const range = (from: number, to: number) =>
   Array.from({ length: to - from + 1 }, (_, index) => from + index);
 const label = (number: number) => `CA-${String(number).padStart(2, "0")}`;
 
-it("CA-46 species-publication-coverage: cada CA-01 a CA-17 y CA-49 a CA-65 de la spec aparece en al menos un test de species-*.test.tsx; y que ningún test nombra CA-18 a CA-38 (retirados)", () => {
+it("CA-46 species-publication-coverage: cada CA-01 a CA-17 y CA-49 a CA-79 y CA-81 a CA-82 de la spec aparece en al menos un test de species-*.test.tsx; y que ningún test nombra CA-18 a CA-38 (retirados)", () => {
   expect(sectionTests.length).toBeGreaterThan(5);
 
-  // CA-01 a CA-17 y CA-49 a CA-65 de dashboard-010 (incluida la enmienda 2026-11-13).
-  const required = [...range(1, 17), ...range(49, 65)];
+  // CA-01 a CA-17 y CA-49 a CA-79 de dashboard-010 (enmienda 2026-11-13 y revisión 2026-11-21).
+  const required = [...range(1, 17), ...range(49, 79), 81, 82];
 
-  expect(required).toHaveLength(34);
+  expect(required).toHaveLength(50);
 
   for (const number of required) {
     expect(named.has(number), `${label(number)} sin prueba nombrada`).toBe(true);

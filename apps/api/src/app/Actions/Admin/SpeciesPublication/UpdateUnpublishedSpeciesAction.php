@@ -9,6 +9,7 @@ use App\Actions\SpeciesPublication\Media\DeleteManagedSpeciesImageAction;
 use App\Actions\SpeciesPublication\Media\StoreSpeciesImageAction;
 use App\Enums\PublicationStatus;
 use App\Models\User;
+use App\Support\FunFactRules;
 use App\Support\SpeciesMedia;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -68,6 +69,19 @@ class UpdateUnpublishedSpeciesAction
 
         $before = [];
         $after = [];
+
+        // Final state under the lock (api-026 CA-08).
+        $funFact = FunFactRules::resolve(
+            array_key_exists('fun_fact', $data) ? $data['fun_fact'] : $species->fun_fact,
+            $publishedFields ?? $species->published_fields,
+        );
+        unset($data['fun_fact']);
+
+        if ($funFact !== $species->fun_fact) {
+            $before['fun_fact'] = $species->fun_fact;
+            $after['fun_fact'] = $funFact;
+            $species->fun_fact = $funFact;
+        }
 
         foreach ($data as $field => $value) {
             $column = $field === 'origin' ? 'distribution' : $field;

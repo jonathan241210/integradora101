@@ -1,11 +1,11 @@
 # DBR-008 · enclosure-gps-coordinates
 
-- Estado: Aprobada
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-03
+- Aprobada: 2026-11-03
 - Feature/spec origen: `apps/mobile/specs/007-map-location.md` (Enmienda V2 — GPS y mapa)
-- Solicitante: Víctor Adrián (mobile)
-- Responsable de BD: Víctor Adrián
-- Responsable backend: Víctor Adrián
-- Fecha: 2026-11-03
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 - Depende de: DBR-001 (`english-schema-normalization`), ya aplicada
 
 ## Problema y justificación
@@ -162,15 +162,15 @@ No aplica.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Víctor Adrián | 2026-11-03 | Aprobada |
-| Responsable backend | Víctor Adrián | 2026-11-03 | Aprobada |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada | Registro de esta DBR |
+| Backend | Aprobada | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas | pendiente | | |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Pendiente de confirmar en arca_pruebas (consulta `migrate:status`; migración `2026_11_03_000008` presente) | |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

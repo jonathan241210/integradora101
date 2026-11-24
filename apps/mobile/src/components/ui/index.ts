@@ -23,3 +23,5 @@ export { TextField, PasswordVisibilityToggle } from './TextField';
 export { OfflineBanner } from './OfflineBanner';
 export { LoadingView, TitledLoading, EmptyView, ErrorView, BusyOverlay } from './StateViews';
 export { RemoteImage } from './RemoteImage';
+export { VisitorDataGate, VisitorDataNotice } from './VisitorDataGate';
+export type { VisitorDataStatus } from './VisitorDataGate';

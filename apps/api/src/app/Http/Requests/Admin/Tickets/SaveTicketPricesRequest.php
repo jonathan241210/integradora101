@@ -4,13 +4,17 @@ namespace App\Http\Requests\Admin\Tickets;
 
 use App\Actions\Admin\Tickets\ScheduleTicketPriceChangeAction;
 use App\Http\Requests\Admin\AdminFormRequest;
+use App\Support\BusinessTimezone;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\Validator;
 
 class SaveTicketPricesRequest extends AdminFormRequest
 {
-    /** ISO 8601 con desfase horario o «Z» (api-009 plan, decisión 3). */
-    private const ISO_WITH_OFFSET = '/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})$/';
+    /**
+     * ISO 8601 con desfase horario o «Z» (se respeta el instante) o sin desfase (se interpreta en la zona de
+     * negocio `arca.timezone`; api-025 RN-12 y decisión de coordinación P-03b).
+     */
+    private const ISO_DATETIME = '/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?$/';
 
     private ?CarbonImmutable $effectiveAt = null;
 
@@ -22,7 +26,7 @@ class SaveTicketPricesRequest extends AdminFormRequest
             'adult_amount' => $amount,
             'child_amount' => $amount,
             'mode' => ['required', 'in:immediate,scheduled'],
-            'effective_at' => ['required_if:mode,scheduled', 'nullable', 'string', 'regex:'.self::ISO_WITH_OFFSET],
+            'effective_at' => ['required_if:mode,scheduled', 'nullable', 'string', 'regex:'.self::ISO_DATETIME],
         ];
     }
 
@@ -33,7 +37,7 @@ class SaveTicketPricesRequest extends AdminFormRequest
             'mode.required' => 'Indica si el cambio es inmediato o programado.',
             'mode.in' => 'El modo debe ser «immediate» o «scheduled».',
             'effective_at.required_if' => 'Indica la fecha y hora en que entra en vigor el cambio.',
-            'effective_at.regex' => 'La fecha y hora debe estar en formato ISO 8601 con zona horaria, por ejemplo 2026-12-01T09:00:00-06:00.',
+            'effective_at.regex' => 'La fecha y hora debe estar en formato ISO 8601, por ejemplo 2026-12-01T09:00:00 (hora del zoológico) o 2026-12-01T09:00:00-06:00.',
         ];
         foreach ($fields as $field => $label) {
             $messages["{$field}.required"] = "Indica el monto {$label}.";
@@ -57,7 +61,7 @@ class SaveTicketPricesRequest extends AdminFormRequest
                 $raw = (string) $this->input('effective_at');
 
                 try {
-                    $effective = CarbonImmutable::parse($raw)->utc();
+                    $effective = CarbonImmutable::parse($raw, BusinessTimezone::name())->utc();
                 } catch (\Throwable) {
                     $validator->errors()->add('effective_at', 'La fecha y hora indicada no es válida.');
 

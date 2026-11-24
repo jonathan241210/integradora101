@@ -1,14 +1,16 @@
 # Plan técnico · 003 · administration-sections
 
 - Spec: `apps/dashboard/specs/003-administration-sections.md`
-- Estado de spec: Aprobada (revisión aprobada por Jonathan el 2026-11-05; estado previo: Aprobada, Jonathan, 2026-10-30)
-- Responsable técnico: Jonathan (frontend)
+- Estado de spec: Implementada
+- Solicitada: 2026-10-30
+- Aprobada: 2026-10-30
+- Responsable técnico: Frontend
 - Contrato que consume: `apps/api/specs/007-administration-management.md` y su plan `apps/api/plan/007-administration-management.md`
-- Estado del plan: Aprobado; revisión de 2026-11-05 aprobada (solo cambia la navegación de Usuarios, CA-01, y las tareas T-33 a T-38 de `tasks/003-administration-sections.md`).
-- Actualización de 2026-10-30: zona horaria del dispositivo (RN-11, CA-19). Implementada (T-31 y T-32, según reporta la sesión principal); la redacción de RN-11 y CA-19 la proveyó el documentador y Jonathan la confirmó el 2026-10-30.
-- Actualización de 2026-10-30 (exportación): la API habilita Excel y PDF (ADR 0017 aceptado). Se actualizan RN-10, CA-12 y las decisiones de exportación de esta app; no hay cambios de código ni de criterios.
+- Estado del plan: Aprobado; revisión aprobada (solo cambia la navegación de Usuarios, CA-01, y las tareas T-33 a T-38 de `tasks/003-administration-sections.md`).
+- Actualización: zona horaria del dispositivo (RN-11, CA-19). Implementada (T-31 y T-32, según reporta la sesión principal); la redacción de RN-11 y CA-19 la proveyó el documentador y el responsable funcional la confirmó.
+- Actualización (exportación): la API habilita Excel y PDF (ADR 0017 aceptado). Se actualizan RN-10, CA-12 y las decisiones de exportación de esta app; no hay cambios de código ni de criterios.
 
-> **Nota de vigencia (2026-11-01):** en Noticias y Eventos, el «sin campo de imagen» (Vistas y CA-08) quedan reemplazados por `dashboard-004` y `api-008`. En Noticias, Eventos y Usuarios, el uso de `Dialog`/`ConfirmDialog` (Vistas, CA-06 y CA-08) queda reemplazado por `dashboard-004` (formulario fijo, paneles colapsables y confirmación en línea). Recintos, Venta e Historial no cambian.
+> **Nota de vigencia:** en Noticias y Eventos, el «sin campo de imagen» (Vistas y CA-08) quedan reemplazados por `dashboard-004` y `api-008`. En Noticias, Eventos y Usuarios, el uso de `Dialog`/`ConfirmDialog` (Vistas, CA-06 y CA-08) queda reemplazado por `dashboard-004` (formulario fijo, paneles colapsables y confirmación en línea). Recintos, Venta e Historial no cambian.
 
 ## Diseño de solución
 
@@ -35,9 +37,9 @@ Los permisos solo cambian qué se muestra (RN-01). Los roles asignables, el alca
 - **Refresco tras escribir.** Cada operación exitosa recarga la lista actual y emite un aviso accesible (`role="status"`) en la propia sección; el aviso global de la shell queda para las demos.
 - **Navegación sin router (RN-06).** Se mantiene `DashboardSection` en el reducer de `dashboard-demo.ts`; solo cambia el identificador `ticket-users` por `users` y desaparece el estado ficticio de recintos y usuarios.
 - **Aviso de demostración (CA-02).** `DemoBanner` se muestra únicamente cuando la sección activa es `tickets` o `ticket-history`.
-- **Exportación (CA-12, RN-10).** Los tres botones están siempre visibles y habilitados. La API habilita CSV, Excel y PDF (ADR 0017 aceptado el 2026-10-30) y responde 422 solo para un formato fuera de su lista («Formato de exportación no disponible.») o para PDF sobre el tope de boletos; si ocurre, se muestra ese mensaje de la API en `role="alert"` y el reporte en pantalla se conserva.
+- **Exportación (CA-12, RN-10).** Los tres botones están siempre visibles y habilitados. La API habilita CSV, Excel y PDF y responde 422 solo para un formato fuera de su lista («Formato de exportación no disponible.») o para PDF sobre el tope de boletos; si ocurre, se muestra ese mensaje de la API en `role="alert"` y el reporte en pantalla se conserva.
 - **Contraseñas (RN-07).** Los campos de contraseña viven en estado local del formulario; el ViewModel recibe el valor, lo envía y no lo guarda en ningún estado ni lo muestra.
-- **Zona horaria del dispositivo (RN-11, CA-19).** `createAdminApi` acepta un segundo argumento opcional `{ deviceTimeZone?: () => string | undefined }`. Por defecto lee `Intl.DateTimeFormat().resolvedOptions().timeZone`; los tests lo sustituyen por una función fija. `dashboard.summary()`, `reports.tickets(query)` y `reports.exportTickets(query, format)` añaden `timezone` a la URL. Si el llamador ya pasa `timezone` en `query`, prevalece; si no hay zona, el parámetro se omite. Los ViewModels, las vistas y `formatters.ts` no cambian: `purchased_at` llega como texto `Y-m-d H:i:s` ya en la zona de la API, y `formatDateTime` no lo desplaza. `last_login_at` sigue formateándose con `America/Mexico_City` en `formatters.ts`; eso queda fuera de este cambio. La API acepta la zona según `api-007` RN-14 (`UTC` o nombres con «/» del catálogo de PHP, incluidos alias) y, si no es aceptada, responde con su zona por defecto sin error [confirmado por Jonathan, 2026-10-30]. La interfaz no muestra la zona usada [confirmado por Jonathan, 2026-10-30].
+- **Zona horaria del dispositivo (RN-11, CA-19).** `createAdminApi` acepta un segundo argumento opcional `{ deviceTimeZone?: () => string | undefined }`. Por defecto lee `Intl.DateTimeFormat().resolvedOptions().timeZone`; los tests lo sustituyen por una función fija. `dashboard.summary()`, `reports.tickets(query)` y `reports.exportTickets(query, format)` añaden `timezone` a la URL. Si el llamador ya pasa `timezone` en `query`, prevalece; si no hay zona, el parámetro se omite. Los ViewModels, las vistas y `formatters.ts` no cambian: `purchased_at` llega como texto `Y-m-d H:i:s` ya en la zona de la API, y `formatDateTime` no lo desplaza. `last_login_at` sigue formateándose con `America/Mexico_City` en `formatters.ts`; eso queda fuera de este cambio. La API acepta la zona según `api-007` RN-14 (`UTC` o nombres con «/» del catálogo de PHP, incluidos alias) y, si no es aceptada, responde con su zona por defecto sin error [confirmado por el responsable funcional]. La interfaz no muestra la zona usada [confirmado por el responsable funcional].
 - **Qué NO se toca.** El buscador y las notificaciones de la barra superior siguen siendo controles de demostración (fuera del alcance de la spec); se anota como pendiente en Riesgos.
 - **Mejora visual (CA-20).** Un modificador de presentación en `App.tsx` delimita los estilos del administrador y del panel ejecutivo, evitando afectar los perfiles de taquilla. Las vistas conservan sus componentes y contenido; los cambios se concentran en jerarquía de encabezados, densidad y espaciado de tarjetas/formularios/tablas, y adaptación de recintos y controles del reporte. Se usan los tokens actuales y no se cambian acciones, datos, permisos ni navegación.
 
@@ -116,7 +118,7 @@ Convención: bloque `describe("CA-NN administration-sections", …)` como en `da
 
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
-| CA-01 | Navegación por permisos (solo `users.manage` muestra «Usuarios»; `zoo-admin` y un perfil solo con `operational-staff.manage` no la ven desde la revisión de 2026-11-05; ya no existe «Usuarios de taquilla») | `administration-navigation.test.tsx` (nuevo; absorbe `getNavigationForProfile`) |
+| CA-01 | Navegación por permisos (solo `users.manage` muestra «Usuarios»; `zoo-admin` y un perfil solo con `operational-staff.manage` no la ven desde la revisión; ya no existe «Usuarios de taquilla») | `administration-navigation.test.tsx` (nuevo; absorbe `getNavigationForProfile`) |
 | CA-02 | `App` no renderiza `DemoBanner` en las seis secciones conectadas y sí en Venta e Historial | `global-demo-banner.test.tsx` (se actualiza) |
 | CA-03 | Tabla con columnas, filtros y paginación; estados cargando, vacío y error con `role="alert"` | `staff-accounts.test.tsx` (reemplaza `ticket-users.test.tsx`) |
 | CA-04 | Alta: rol sugerido por área, solo roles asignables, errores 422 por campo | `staff-accounts.test.tsx` |
@@ -152,7 +154,7 @@ Además se actualizan las pruebas de `dashboard-001` que verifican el comportami
 
 ## Riesgos y decisiones
 
-- **ADR requerido:** ninguno para esta app. El ADR 0017 de la API (Excel y PDF) está aceptado desde el 2026-10-30; la interfaz no requiere cambios para los formatos habilitados y muestra el 422 de la API cuando corresponde (tope de PDF o formato fuera de la lista).
+- **ADR requerido:** ninguno para esta app. El ADR 0017 de la API (Excel y PDF) está aceptado desde; la interfaz no requiere cambios para los formatos habilitados y muestra el 422 de la API cuando corresponde (tope de PDF o formato fuera de la lista).
 - **Dependencia fuerte de `api-007`.** La interfaz no se puede validar de punta a punta hasta que existan los endpoints. Mitigación: desarrollar contra el cliente simulado y hacer una pasada manual contra `arca_pruebas` cuando la API lo permita. Un cambio de contrato en la API obliga a actualizar `admin-types.ts` y este plan en el mismo cambio.
 - **`previous_date`/`next_date` no están en la spec de la API.** Se agregan como detalle de contrato en `apps/api/plan/007` para que el cliente no calcule periodos (Constitución III); no cambia ningún CA.
 - **Alcance amplio entregado junto (RN-10).** Se ordena internamente por sección y se integra al final; si una sección se atrasa, el plan permite desactivar su entrada de navegación sin afectar las demás.
@@ -165,9 +167,9 @@ Además se actualizan las pruebas de `dashboard-001` que verifican el comportami
 
 | Divergencia | Origen | Decisión |
 |---|---|---|
-| Exportación Excel/PDF. La spec (RN-10 y CA-12, texto aprobado) decía que solo CSV estaba activo. El plan (Decisiones de diseño, Exportación) y la vista `src/views/TicketReportView.tsx` implementan los tres botones siempre visibles y habilitados; la API responde 422 «Formato de exportación no disponible.» para `xlsx` y `pdf` mientras el ADR 0017 esté Propuesto. | `specs/003-administration-sections.md`, RN-10 y CA-12 frente a este plan y la vista | Se adopta lo implementado. La spec se actualiza en RN-10 y CA-12 para describirlo. No se retira ningún criterio y la intención se conserva: Excel y PDF se habilitan cuando la API los entregue, sin cambios de interfaz. **Resuelta el 2026-10-30:** el ADR 0017 está aceptado y la API habilita `xlsx` y `pdf`; el 422 de la API queda solo para el tope de PDF o un formato fuera de la lista. |
+| Exportación Excel/PDF. La spec (RN-10 y CA-12, texto aprobado) decía que solo CSV estaba activo. El plan (Decisiones de diseño, Exportación) y la vista `src/views/TicketReportView.tsx` implementan los tres botones siempre visibles y habilitados; la API responde 422 «Formato de exportación no disponible.» para `xlsx` y `pdf` mientras el ADR 0017 esté Propuesto. | `specs/003-administration-sections.md`, RN-10 y CA-12 frente a este plan y la vista | Se adopta lo implementado. La spec se actualiza en RN-10 y CA-12 para describirlo. No se retira ningún criterio y la intención se conserva: Excel y PDF se habilitan cuando la API los entregue, sin cambios de interfaz. **Resuelta:** el ADR 0017 está aceptado y la API habilita `xlsx` y `pdf`; el 422 de la API queda solo para el tope de PDF o un formato fuera de la lista. |
 
-- **Confirmado por Jonathan (responsable funcional), 2026-10-30:** el texto reconciliado de RN-10 y CA-12 de `specs/003-administration-sections.md` es el vigente.
+- **Confirmado por el responsable funcional:** el texto reconciliado de RN-10 y CA-12 de `specs/003-administration-sections.md` es el vigente.
 - El campo `Estado:` de la spec no cambia y sigue como Aprobada.
 - No hay cambios de código. El cliente sigue sin calcular formatos ni permisos (RN-02).
 
@@ -192,10 +194,10 @@ Además se actualizan las pruebas de `dashboard-001` que verifican el comportami
 
 | Rol | Aprueba | Estado |
 |---|---|---|
-| Responsable funcional | Spec (ya aprobada) | Jonathan, 2026-10-30 |
-| Equipo | Solución técnica y Constitution Check de este plan | Jonathan, 2026-10-30 |
-| Responsable funcional | Zona horaria del dispositivo (RN-11, CA-19) | Confirmado por Jonathan, 2026-10-30: zona con respaldo en `America/Mexico_City`, redacción de CA-19 y RN-11 (proveída por el documentador) y no mostrar la zona en la interfaz. Aprobó proceder con la implementación |
-| Solicitante | Alcance visual (RN-09, CA-20) | Confirmó el rediseño de las seis secciones administrativas sin cambiar colores, tipografía, funcionalidad ni pantallas de taquilla, 2026-11-12 |
+| Responsable funcional | Spec (ya aprobada) | Aprobada |
+| Equipo | Solución técnica y Constitution Check de este plan | Aprobado |
+| Responsable funcional | Zona horaria del dispositivo (RN-11, CA-19) | Confirmado por el responsable funcional: zona con respaldo en `America/Mexico_City`, redacción de CA-19 y RN-11 (proveída por el documentador) y no mostrar la zona en la interfaz. Aprobó proceder con la implementación |
+| Solicitante | Alcance visual (RN-09, CA-20) | Confirmó el rediseño de las seis secciones administrativas sin cambiar colores, tipografía, funcionalidad ni pantallas de taquilla |
 
 **Verificación antes de cerrar:** `npm run types`, `npm test` y `npm run build` en `apps/dashboard`; pruebas de `packages/api-client` si existe runner (si no, se prueban desde `apps/dashboard`); `/verify`; revisión manual con teclado y a 360, 768 y 1366 px; y recorrido de punta a punta contra la API real en `arca_pruebas` con cuentas demo `presidencia@arca.local`, `direccion_zoo@arca.local` y `ejecutivo@arca.local`.
 

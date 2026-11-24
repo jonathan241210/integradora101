@@ -1,6 +1,8 @@
 import { vi } from "vitest";
 import type { ApiError } from "@arca/api-client";
 import type {
+  CancellationReasonDto,
+  TicketHistoryPage,
   TicketHistoryRowDto,
   TicketPriceCurrentDto,
   TicketQuoteDto,
@@ -52,6 +54,7 @@ export function saleDto(overrides: Partial<TicketSaleBatchDto> = {}): TicketSale
     total_amount: "73.00",
     purchased_at: "2026-11-02T18:30:15Z",
     cashier_name: "Caja Prueba",
+    timezone: "America/Mexico_City",
     tickets: [
       ticketDto(),
       ...[102, 103, 104].map((folio) =>
@@ -91,6 +94,20 @@ export function historyRow(
   };
 }
 
+/** Catálogo de motivos tal como lo entregaría `api-022` (CA-10 de la API). */
+export const cancellationReasonsCatalog: CancellationReasonDto[] = [
+  { code: "capture_error", label: "Error de captura", comment_policy: "optional" },
+  { code: "duplicate_charge", label: "Cobro duplicado", comment_policy: "optional" },
+  { code: "wrong_ticket_type", label: "Tipo de boleto incorrecto", comment_policy: "optional" },
+  { code: "visitor_withdrew", label: "El visitante desistió", comment_policy: "optional" },
+  { code: "other", label: "Otro", comment_policy: "required" },
+];
+
+/** Entrada de `cancelTicket` con motivo de lista y catálogo de la API. */
+export function cancelInput(reason = "", reasonCode = "capture_error") {
+  return { reasonCode, reason, reasons: cancellationReasonsCatalog };
+}
+
 export function priceCurrent(
   overrides: Partial<TicketPriceCurrentDto> = {},
 ): TicketPriceCurrentDto {
@@ -101,9 +118,10 @@ export function priceCurrent(
   };
 }
 
-export const historyPage = (rows: TicketHistoryRowDto[]) => ({
+export const historyPage = (rows: TicketHistoryRowDto[]): TicketHistoryPage => ({
   data: rows,
   meta: { current_page: 1, last_page: 1, per_page: 25, total: rows.length },
+  timezone: "America/Mexico_City",
 });
 
 export function createTicketSalesApiMock() {
@@ -111,6 +129,9 @@ export function createTicketSalesApiMock() {
     sales: {
       quote: vi.fn(async (..._args: unknown[]) => quoteDto()),
       create: vi.fn(async (..._args: unknown[]) => saleDto()),
+    },
+    tickets: {
+      cancellationReasons: vi.fn(async (..._args: unknown[]) => cancellationReasonsCatalog),
     },
     history: {
       list: vi.fn(async (..._args: unknown[]) => historyPage([historyRow()])),

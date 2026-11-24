@@ -2,10 +2,11 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `apps/mobile`, `@arca/tokens`
-- Estado: Borrador (listo para aprobación funcional)
-- Solicitante / responsable funcional: Víctor Adrián
-- Aprobación funcional: Víctor Adrián (pendiente de firma final para pasar a Plan/Tasks)
-- ADR relacionado: `docs/adr/0025-mobile-ar-3d-camera-threejs.md` (Propuesto)
+- Estado: Implementada
+- Solicitada: 2026-11-05
+- Aprobada: 2026-11-23
+- Aprobación funcional: Aprobada
+- ADR relacionado: `docs/adr/0025-mobile-ar-3d-camera-threejs.md` (Aceptado)
 
 ---
 
@@ -119,13 +120,17 @@ flowchart TD
 - **Riesgos y mitigaciones:**
   - **Visitante sin internet dentro del zoológico:** Mitigado por diseño (`CA-05`, `RN-01`) ya que Three.js genera las flechas, líneas y bifurcaciones proceduralmente y los datos viven en local/`AsyncStorage`.
   - **Brújula inestable o ausente:** Mitigado con filtro de paso bajo circular y botones de giro manual en el HUD (`CA-06`).
-- **Preguntas abiertas:** Ninguna — todas las decisiones funcionales (acceso desde la pantalla del Mapa 2D, recorrido secuencial desde la entrada con flechas/líneas/bifurcaciones dinámicas y soporte 100 % offline) han sido definidas por el responsable funcional (Víctor Adrián, 2026-11-05).
+## Decisiones
+
+- Se optó por el acceso desde la pantalla del Mapa 2D, porque la visita física necesita la guía sin salir del plano ya conocido.
+- Se optó por un recorrido secuencial desde la entrada con flechas, líneas y bifurcaciones dinámicas, porque es la guía paso a paso que pide el visitante en el recorrido.
+- Se optó por operación 100 % offline, porque el zoológico puede no tener cobertura y el recorrido debe funcionar sin red.
 
 ---
 
 ## Revisión
 
-- **Responsable funcional:** Víctor Adrián (2026-11-05).
+- **Responsable funcional:** Equipo ARCA-NB.
 - **Evidencia/enlaces:**
   - `docs/adr/0025-mobile-ar-3d-camera-threejs.md`
   - `apps/mobile/docs/009-guia-mapa-3d-ar-threejs.md`

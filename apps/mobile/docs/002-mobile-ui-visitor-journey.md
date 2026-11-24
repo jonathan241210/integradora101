@@ -1,6 +1,6 @@
 # Guía de validación · 002 · Experiencia visitante
 
-La spec **002** está **Implementada** (PR aprobado e integrado vía DevOps / main, 2026-10-14). Esta guía sirve para validar manualmente el prototipo con Expo Router, datos simulados y las vistas en `src/screens/`. La especificación define el alcance funcional y el plan describe su arquitectura:
+La spec **002** está **Implementada** (PR aprobado e integrado vía DevOps / main). Esta guía sirve para validar manualmente el prototipo con Expo Router, datos simulados y las vistas en `src/screens/`. La especificación define el alcance funcional y el plan describe su arquitectura:
 
 - [Spec 002](../specs/002-mobile-ui-base-visitor-journey.md)
 - [Plan 002](../plan/002-mobile-ui-base-visitor-journey.md)
@@ -56,20 +56,24 @@ npm run test:coverage -- --runInBand
 npx tsc --noEmit
 ```
 
-La verificación manual de Android con Expo Go fue confirmada por la persona solicitante el 2026-10-09. Tras retirar Idioma y Sonidos y efectos, la suite pasó con 11 suites, 70 tests y 1 snapshot, y TypeScript no reportó errores. La prueba `user_logic.test.tsx` todavía imprime advertencias React `act(...)`, pero no provoca fallos. Los flujos de Login y Ajustes (CA-11–CA-15) se verificaron con `access.test.tsx` el 2026-10-16; la revisión visual complementaria en Android queda registrada en la tabla de ítems 12–15 más abajo.
+La verificación manual de Android con Expo Go fue confirmada por el equipo. Tras retirar Idioma y Sonidos y efectos, la suite pasó con 11 suites, 70 tests y 1 snapshot, y TypeScript no reportó errores. La prueba `user_logic.test.tsx` todavía imprime advertencias React `act(...)`, pero no provoca fallos. Los flujos de Login y Ajustes (CA-11–CA-15) se verificaron con `access.test.tsx`; la revisión visual complementaria en Android queda registrada en la tabla de ítems 12–15 más abajo.
 
 ## Límites de esta etapa
 
-- Los datos de animales, perfil, eventos, mapa y escaneo son mocks accesibles mediante Repositories y ViewModels.
-- El mapa y el recorrido 3D son placeholders. No se solicita ubicación, cámara, linterna ni renderizado 3D real.
+Esta guía describe la validación de la spec 002. Lo que sigue ya no es el estado de la app:
+
+- El catálogo, la cuenta, el progreso, los favoritos y las memorias usan la API cuando existe `EXPO_PUBLIC_API_URL`.
+- El QR pide la cámara. En Ajustes, cámara y ubicación piden el permiso del teléfono.
+- El listado de logros se llama «Salón de logros». La sección de Perfil se llama «Mis memorias».
+- El círculo del perfil muestra el PNG del avatar (`src/assets/avatars/<código>.png`), no el nombre del animal.
+- El mapa y el recorrido 3D no están cerrados. Los avisos push no se revalidan en esta nota.
 - Los botones para simular resultados QR solo aparecen en builds de desarrollo.
 - Las fotos no vienen incluidas en la referencia; las tarjetas muestran placeholders si falta una URL. La app no carga recursos desde `arca-ui-reference`.
-- No hay favoritos en el servidor. El corazón de la ficha guarda la marca en el teléfono y el inicio lista solo esos animales, bajo «Animales favoritos». Al marcarlo se llena y queda relleno; al quitarlo vuelve al contorno. Colección no tiene filtro de favoritos.
-- Login, registro, recuperación y Ajustes son interfaz de demostración. No hay sesión, correo ni preferencias guardadas. Los interruptores no activan notificaciones ni ubicación. No hay modo oscuro. El aviso de privacidad de esta versión no sustituye el que publicará el zoológico.
+- El aviso de privacidad de esta versión no sustituye el que publicará el zoológico. No hay modo oscuro.
 
 ## Verificación manual (Android)
 
-La persona solicitante confirmó haber completado la validación en Android con Expo Go el 2026-10-09. El modelo de dispositivo y evidencia gráfica no se registraron.
+El equipo confirmó haber completado la validación en Android con Expo Go. El modelo de dispositivo y evidencia gráfica no se registraron.
 
 La lista de comprobación aplicada fue:
 
@@ -89,14 +93,14 @@ Con la app iniciada mediante `npx expo start` y abierta en Android/Expo Go o un 
 
 ### Enmienda acceso y ajustes (ítems 12–15)
 
-| Ítem | Comprobación en Android / Expo Go | Cobertura automatizada (2026-10-16) |
+| Ítem | Comprobación en Android / Expo Go | Cobertura automatizada |
 |------|-----------------------------------|-------------------------------------|
 | 12 | Login al arranque; invitado e inicio de sesión válido entran al inicio; cerrar sesión vuelve a Login. | `test-ca-11` en `__tests__/access.test.tsx` |
 | 13 | Registro con cuatro campos, advertencia de demostración y regreso a Login. | `test-ca-12` |
 | 14 | Olvido con aviso genérico; restablecer con código de 6 dígitos y nueva contraseña. | `test-ca-13` |
 | 15 | Ajustes desde Perfil: interruptores, Mi cuenta, Privacidad, Ayuda, Acerca de; pestaña Perfil activa; sin idioma ni sonidos. | `test-ca-14`, `test-ca-15`, `navigation.test.tsx` |
 
-**Registro de verificación (2026-10-16):** suite mobile `npm test -- --runInBand` — 11 suites, 70 tests OK; `npx tsc --noEmit` sin errores. Los flujos funcionales de los ítems 12–15 quedan cubiertos por las pruebas anteriores.
+**Registro de verificación:** suite mobile `npm test -- --runInBand` — 11 suites, 70 tests OK; `npx tsc --noEmit` sin errores. Los flujos funcionales de los ítems 12–15 quedan cubiertos por las pruebas anteriores.
 
 La spec 004 retiró «Entrar como invitado» al integrar la cuenta real. Los pasos 12 a 15 de abajo describen el prototipo de esta spec, antes de ese cambio. La cuenta vigente está en el README de la app y en `specs/004-visitor-account.md`.
 

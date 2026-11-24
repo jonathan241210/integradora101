@@ -32,7 +32,9 @@
     { key: 'gestation_period', label: 'Gestación' },
     { key: 'diet', label: 'Alimentación' },
     { key: 'longevity', label: 'Esperanza de vida' },
-    { key: 'characteristics', label: 'Características' }
+    { key: 'characteristics', label: 'Características' },
+    /* api-026: texto plano que la API publica solo si la Dirección lo marcó; se muestra con textContent (CA-11). */
+    { key: 'fun_fact', label: 'Dato curioso' }
   ];
 
   /* ---------- Helpers puros ---------- */
@@ -135,6 +137,11 @@
 
   function buildCard(species) {
     var card = el('article', 'animal-card');
+    var id = Number(species && species.id);
+    if (Number.isSafeInteger(id) && id > 0) {
+      card.setAttribute('id', 'animal-' + id);
+      card.setAttribute('tabindex', '-1');
+    }
     card.appendChild(buildMedia(species));
     var body = el('div', 'animal-card-body');
     body.appendChild(el('h3', null, species.common_name));
@@ -336,7 +343,33 @@
       });
     }
 
-    return { load: load };
+    var initialFocusAllowed = true;
+
+    function focusCard(id) {
+      var number = Number(id);
+      if (!Number.isSafeInteger(number) || number < 1) return false;
+      var card = doc.getElementById('animal-' + number);
+      if (!card) return false;
+      if (card.hidden) {
+        ['species', 'habitat', 'category'].forEach(function (name) {
+          if (selects[name]) selects[name].value = '';
+        });
+        apply();
+      }
+      var reduceMotion = typeof root.matchMedia === 'function' && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (typeof card.scrollIntoView === 'function') card.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+      if (typeof card.focus === 'function') card.focus({ preventScroll: true });
+      if (root.ArcaSearchTarget) root.ArcaSearchTarget.highlight(card);
+      return true;
+    }
+
+    function focusHash() {
+      if (!initialFocusAllowed) return;
+      var match = /^#animal-([1-9]\d*)$/.exec(root.location && root.location.hash || '');
+      if (match) focusCard(match[1]);
+    }
+
+    return { load: load, focusCard: focusCard, focusHash: focusHash, cancelInitialFocus: function () { initialFocusAllowed = false; } };
   }
 
   var instance = null;
@@ -344,7 +377,7 @@
   function init() {
     if (!root.document || !root.ArcaApi) return null;
     instance = controller();
-    if (instance) instance.load();
+    if (instance) instance.load().then(function () { instance.focusHash(); });
     return instance;
   }
 
@@ -359,11 +392,17 @@
       CATEGORY_LABELS: CATEGORY_LABELS
     },
     init: init,
-    load: function (opts) { return instance ? instance.load(opts) : Promise.resolve(null); }
+    load: function (opts) { return instance ? instance.load(opts) : Promise.resolve(null); },
+    focusCard: function (id) { return instance ? instance.focusCard(id) : false; },
+    cancelInitialFocus: function () { if (instance) instance.cancelInitialFocus(); }
   };
 
   if (root.document) {
     if (root.document.readyState === 'loading') root.document.addEventListener('DOMContentLoaded', init);
     else init();
+    if (typeof root.addEventListener === 'function') root.addEventListener('hashchange', function () {
+      var match = /^#animal-([1-9]\d*)$/.exec(root.location && root.location.hash || '');
+      if (match && root.ArcaTulanpedia) root.ArcaTulanpedia.focusCard(match[1]);
+    });
   }
 })(globalThis);

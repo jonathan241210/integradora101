@@ -168,6 +168,7 @@ describe('CA-07 PWA diagnóstico intenso y rápido', () => {
         activeSection="diagnosis-quick"
         onLogout={() => undefined}
         onNavigate={() => undefined}
+        userScope="user:test"
       />,
     );
     expect(markup).toContain('Formato de historia clínica');

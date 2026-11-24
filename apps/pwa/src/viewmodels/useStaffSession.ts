@@ -1,11 +1,22 @@
 import { createAuthApi, createHttpClient, type AuthApi, type StaffProfile } from '@arca/api-client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { clearToasts } from '@/offline/notifications';
+import { validRetryAfter } from '@arca/ui';
+import { getUserScope } from '@/offline/scope';
+import { clearUserOfflineData, countPendingOperations } from '@/offline/session-cleanup';
 
 type SessionApi = Pick<AuthApi, 'login' | 'me' | 'logout'>;
-type SessionResult = { session: 'anonymous' | 'authenticated'; error: string; profile: StaffProfile | null };
+type SessionResult = {
+  session: 'anonymous' | 'authenticated';
+  error: string;
+  profile: StaffProfile | null;
+  /** Segundos de bloqueo (429 con `Retry-After`); activa el contador de pwa-003 CA-04. */
+  retryAfterSeconds?: number | null;
+};
 
 const api = createAuthApi(createHttpClient({ baseUrl: '' }));
 const anonymous: SessionResult = { session: 'anonymous', error: '', profile: null };
+export const expiredSession: SessionResult = { ...anonymous, error: 'Tu sesión expiró.' };
 const denied = 'Esta cuenta no tiene acceso al módulo veterinario.';
 
 function hasStatus(error: unknown, status: number) {
@@ -27,6 +38,10 @@ function staffName(profile: StaffProfile): string {
 
 export function getStaffDisplayName(profile: StaffProfile | null): string {
   return profile ? staffName(profile) : '';
+}
+
+export function getStaffUserScope(profile: StaffProfile | null): string {
+  return profile ? getUserScope(profile.id) : 'user:anonymous';
 }
 
 export async function restoreStaffSession(auth: SessionApi): Promise<SessionResult> {
@@ -53,6 +68,10 @@ export async function signInStaff(auth: SessionApi, email: string, password: str
 
     return { session: 'authenticated', error: '', profile };
   } catch (error) {
+    if (hasStatus(error, 429)) {
+      const retryAfterSeconds = validRetryAfter((error as { retryAfterSeconds?: unknown }).retryAfterSeconds);
+      return { ...anonymous, error: requestError(error), retryAfterSeconds };
+    }
     if (hasStatus(error, 422)) return { ...anonymous, error: 'Correo o contraseña incorrectos.' };
     return {
       ...anonymous,
@@ -71,6 +90,40 @@ export async function signOutStaff(auth: SessionApi): Promise<SessionResult> {
   }
 }
 
+export const cleanupWarning = 'No se pudieron borrar los datos locales. Cierra el navegador para proteger la información.';
+
+/**
+ * Cierra la sesión y borra los datos offline del usuario (pwa-012 CA-03, RN-01).
+ * Si el borrado falla, la sesión se cierra igual y se devuelve un aviso.
+ */
+export async function closeStaffSession(
+  auth: SessionApi,
+  userScope: string | null,
+  clear: (scope: string) => Promise<void> = clearUserOfflineData,
+): Promise<SessionResult> {
+  const result = await signOutStaff(auth);
+  if (result.session !== 'anonymous' || !userScope) return result;
+  try {
+    await clear(userScope);
+  } catch {
+    return { ...result, error: cleanupWarning };
+  }
+  return result;
+}
+
+/** Operaciones pendientes que se perderían al cerrar sesión (pwa-012 CA-04); 0 si no se puede consultar. */
+export async function pendingOperationsBeforeLogout(
+  userScope: string | null,
+  count: (scope: string) => Promise<number> = countPendingOperations,
+): Promise<number> {
+  if (!userScope) return 0;
+  try {
+    return await count(userScope);
+  } catch {
+    return 0;
+  }
+}
+
 export function useStaffSession() {
   const [state, setState] = useState<SessionResult | { session: 'restoring'; error: ''; profile: null }>({
     session: 'restoring',
@@ -78,6 +131,17 @@ export function useStaffSession() {
     profile: null,
   });
   const [busy, setBusy] = useState(false);
+  const [pendingLogout, setPendingLogout] = useState<number | null>(null);
+  const previousScopeRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const nextScope = state.profile ? getUserScope(state.profile.id) : null;
+    if (previousScopeRef.current !== nextScope) {
+      // Cambio de usuario o cierre de sesión: eliminar avisos/estado efímero del usuario anterior.
+      clearToasts();
+      previousScopeRef.current = nextScope;
+    }
+  }, [state.profile]);
 
   useEffect(() => {
     let active = true;
@@ -113,6 +177,9 @@ export function useStaffSession() {
     };
   }, [state.session, busy]);
 
+  // 401 en cualquier llamada de la sección de solicitudes (pwa-005, CA-19).
+  const expireSession = useCallback(() => setState(expiredSession), []);
+
   async function login(email: string, password: string) {
     setBusy(true);
     setState(anonymous);
@@ -120,12 +187,28 @@ export function useStaffSession() {
     setBusy(false);
   }
 
-  async function logout() {
+  async function finishLogout() {
+    setPendingLogout(null);
     setBusy(true);
-    const result = await signOutStaff(api);
+    const scope = state.profile ? getUserScope(state.profile.id) : null;
+    const result = await closeStaffSession(api, scope);
     setState(result);
     setBusy(false);
   }
 
-  return { ...state, busy, login, logout };
+  /** Primer paso: si hay pendientes avisa y espera confirmación (RN-02). */
+  async function logout() {
+    const scope = state.profile ? getUserScope(state.profile.id) : null;
+    const pending = await pendingOperationsBeforeLogout(scope);
+    if (pending > 0) {
+      setPendingLogout(pending);
+      return;
+    }
+    await finishLogout();
+  }
+
+  const confirmLogout = finishLogout;
+  const cancelLogout = () => setPendingLogout(null);
+
+  return { ...state, retryAfterSeconds: 'retryAfterSeconds' in state ? (state.retryAfterSeconds ?? null) : null, busy, login, logout, pendingLogout, confirmLogout, cancelLogout, expireSession };
 }

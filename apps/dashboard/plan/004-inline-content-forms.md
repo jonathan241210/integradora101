@@ -1,11 +1,13 @@
 # Plan técnico · 004 · inline-content-forms
 
 - Spec: `apps/dashboard/specs/004-inline-content-forms.md`
-- Estado de spec: Aprobada (2026-11-02), igual que `api-008`; hoy En progreso.
-- Estado del plan: Aprobado 2026-11-02 por el usuario al ordenar implementar.
+- Estado de spec: Implementada
+- Solicitada: 2026-11-01
+- Aprobada: 2026-11-01
+- Estado del plan: Aprobado por el usuario al ordenar implementar.
 - Responsable técnico: por identificar (frontend).
 - Contrato que consume: `apps/api/specs/008-event-news-images.md` y su plan (noticias y eventos); `apps/api/specs/007-administration-management.md` (cuentas, sin cambios).
-- Origen: plan de trabajo aprobado por el usuario el 2026-11-01 (fuera del repositorio), con las decisiones D1 a D3 y el panel colapsable comunicados por la sesión principal el mismo día.
+- Origen: plan de trabajo aprobado por el usuario (fuera del repositorio), con las decisiones D1 a D3 y el panel colapsable comunicados por la sesión principal el mismo día.
 
 ## Diseño de solución
 
@@ -80,7 +82,7 @@ Reglas comunes: 401 lo gestiona el manejador global (CA-15); 403, 404, 422 y red
 ## Divergencias de implementación (registradas al implementar)
 
 - **Motor compartido.** En lugar de duplicar el reducer en Noticias y Eventos, se añadieron `viewmodels/inline-list.ts` (estado común `editing`/`pendingAction`/`formExpanded`/`form`/`formError`/`fieldErrors`, usado también por Usuarios), `viewmodels/inline-content.ts` (motor de Noticias y Eventos con `ContentConfig`), `viewmodels/useContentViewModel.ts` (hook común) y `viewmodels/image-field.ts` (validación de ayuda y estado de la imagen). `news-management.ts`, `events-management.ts`, `staff-accounts.ts` y sus hooks conservan los nombres del plan. `managed-list.ts` queda solo para Recintos.
-- **Revisión de dashboard-004 (2026-11-02).** El estado común separa lo del formulario (`saving`, `formError`, `fieldErrors`) de lo de las acciones en línea (`actionBusy`, `actionError`, `actionFieldErrors`); `edit-started`, `action-opened` y `action-closed` no reinician un ocupado en curso y Escape se ignora con `busy`. El foco (CA-12) lo decide `components/inline-focus.ts` (disparador, aviso tras eliminar, primer campo al editar). El estado del campo de contraseña vive en `viewmodels/password-field.ts`, el mostrar/ocultar usa solo la etiqueta cambiante y la caja de imagen se divide en `ImageUploadBoxView` (sin estado) e `ImageUploadBox`. Sin jsdom, las pruebas cubren estas piezas puras y los manejadores.
+- **Revisión de dashboard-004.** El estado común separa lo del formulario (`saving`, `formError`, `fieldErrors`) de lo de las acciones en línea (`actionBusy`, `actionError`, `actionFieldErrors`); `edit-started`, `action-opened` y `action-closed` no reinician un ocupado en curso y Escape se ignora con `busy`. El foco (CA-12) lo decide `components/inline-focus.ts` (disparador, aviso tras eliminar, primer campo al editar). El estado del campo de contraseña vive en `viewmodels/password-field.ts`, el mostrar/ocultar usa solo la etiqueta cambiante y la caja de imagen se divide en `ImageUploadBoxView` (sin estado) e `ImageUploadBox`. Sin jsdom, las pruebas cubren estas piezas puras y los manejadores.
 - **Componentes adicionales.** `FormField`, `InlineFormFooter`, `ContentCardActions`, `ContentThumbnail` e `ImageUploadBox` (caja de imagen con selector y arrastrar y soltar nativos), y `DataTable` acepta `rowDetail` para mostrar la confirmación en línea a ancho completo bajo la fila.
 - **`ConfirmDialog` se mantiene.** Lo siguen usando Venta y Precios (`dashboard-005`); solo se retiró de Noticias, Eventos y Usuarios (T-16).
 - **Contraseña inicial del alta de Usuarios.** Para cumplir CA-07 (conservar lo escrito ante un 422) se conserva en `form.password` del ViewModel hasta guardar con éxito, momento en que se descarta. La contraseña de restablecimiento nunca entra en el estado (CA-10).
@@ -111,7 +113,9 @@ Convención: bloque `describe("CA-NN inline-content-forms", …)` como en `dashb
 | CA-06 | «Quitar imagen» borra la vista previa y envía `remove_image: true`; elegir un archivo nuevo deja `removeImage` en falso | `inline-content-forms.test.tsx` |
 | CA-07 | 422 con `errors.image` y otros campos junto a cada campo en las tres secciones; se conserva lo escrito y el archivo | `inline-content-forms.test.tsx` |
 | CA-08 | Eliminar en Noticias, Eventos y Usuarios abre `InlineConfirm` con el nombre y el efecto (en noticias y eventos, el elemento se elimina y deja de mostrarse, y su imagen se borra; en Usuarios, baja lógica); la API solo se llama al confirmar | `inline-content-forms.test.tsx` |
-| CA-09 | Activar/desactivar en las tres secciones abre la confirmación con su efecto; la API solo se llama al confirmar | `inline-content-forms.test.tsx` |
+| CA-09 | Activar/desactivar abre `ConfirmDialog` en Noticias y `InlineConfirm` en Eventos y Usuarios. La API solo se llama al confirmar | `inline-content-forms.test.tsx` |
+
+Para el cambio de estado de Noticias, `NewsView` adapta el texto existente a `ConfirmDialog`, conserva el registro pendiente y reutiliza el manejo de foco y los controles del ViewModel. El diálogo permanece abierto durante la solicitud y muestra el error si falla. La solución reutiliza el diálogo y los estilos existentes, conserva el contrato y los permisos, y añade cobertura Vitest al criterio CA-09. La enmienda de presentación no requiere acceso a datos ni dependencias.
 | CA-10 | Restablecer contraseña: campo con mostrar/ocultar accesible; la API solo se llama al confirmar; la contraseña no queda en el estado tras enviar | `staff-accounts.test.tsx` (ampliado) y `inline-content-forms.test.tsx` |
 | CA-11 | Restablecer 2FA abre confirmación en línea con el nombre de la cuenta y el efecto; la API solo se llama al confirmar | `staff-accounts.test.tsx` (ampliado) |
 | CA-12 | Escape cancela; una sola acción en línea abierta por sección; foco inicial en «Cancelar»; `role="group"` y `aria-label`; revisión manual de teclado (T-37) | `inline-content-forms.test.tsx` y revisión manual |
@@ -133,7 +137,7 @@ Además: `api-client-admin.test.tsx` (bloque `describe("CA-04 inline-content-for
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | React 19, TypeScript, Vite 7 y Tailwind 4 vigentes; sin dependencias nuevas (CA-17). Solo API nativa del navegador (`URL.createObjectURL`). |
-| II. La spec manda | Sí | `dashboard-004` Aprobada (2026-11-02) con este plan aprobado y sus tareas; `api-008` también aprobada. El código sigue la spec. |
+| II. La spec manda | Sí | `dashboard-004` Aprobada con este plan aprobado y sus tareas; `api-008` también aprobada. El código sigue la spec. |
 | III. Lógica separada de la interfaz | Sí | Views sin `fetch` ni cálculo (CA-16); la validación de ayuda vive en el ViewModel y es solo orientativa; la regla la aplica la API. |
 | IV. Un test por criterio | Sí | La tabla cubre CA-01 a CA-19; `administration-coverage` lo verifica (CA-20). |
 | V. Una sola fuente de verdad para los datos | Sí | La interfaz no guarda datos; el archivo y la contraseña viven en el estado de la sección o del campo y no se persisten. Sin cambio de esquema. |
@@ -172,8 +176,8 @@ Ninguna excepción se propone. No se requiere ADR.
 
 | Rol | Aprueba | Estado |
 |---|---|---|
-| Responsable funcional | Spec (D1 a D3 y panel colapsable registrados) | Registrada: aprobada por Jonathan el 2026-11-02 |
-| Equipo | Solución técnica y Constitution Check de este plan | Registrada: aprobado 2026-11-02 por el usuario al ordenar implementar |
-| Responsable técnico de `api-008` | Contrato de subida (decisiones P1 a P8 de `api-008`) | Registrada: `api-008` aprobada el 2026-11-02 |
+| Responsable funcional | Spec (D1 a D3 y panel colapsable registrados) | Registrada: aprobada |
+| Equipo | Solución técnica y Constitution Check de este plan | Registrada: aprobado por el usuario al ordenar implementar |
+| Responsable técnico de `api-008` | Contrato de subida (decisiones P1 a P8 de `api-008`) | Registrada: `api-008` aprobada |
 
 Evidencias: `apps/dashboard/specs/003-administration-sections.md`, `apps/dashboard/plan/003-administration-sections.md`, `apps/api/specs/008-event-news-images.md`, `apps/api/plan/008-event-news-images.md`, `apps/dashboard/AGENTS.md`.

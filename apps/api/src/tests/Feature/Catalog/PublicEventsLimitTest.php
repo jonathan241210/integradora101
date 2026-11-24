@@ -50,6 +50,22 @@ class PublicEventsLimitTest extends FeatureTestCase
         $this->assertSame('UTC', config('app.timezone'));
     }
 
+    /** CA-09 single-business-timezone */
+    public function test_ca09_current_events_use_arca_timezone(): void
+    {
+        Carbon::setTestNow(Carbon::parse('2026-11-07 05:30:00', 'UTC'));
+        Event::query()->update(['is_active' => false]);
+        $event = $this->createEvent(['start_date' => '2026-11-01', 'end_date' => '2026-11-06']);
+
+        config(['arca.timezone' => 'America/Mexico_City']);
+        $this->assertContains($event->id, array_column($this->getJson('/api/v1/events?timezone=Asia/Tokyo')->assertOk()->json('data'), 'id'));
+
+        config(['arca.timezone' => 'UTC']);
+        $this->assertNotContains($event->id, array_column($this->getJson('/api/v1/events')->assertOk()->json('data'), 'id'));
+        $this->getJson('/api/v1/events/'.$event->id)->assertNotFound();
+        $this->assertSame('UTC', config('app.timezone'));
+    }
+
     private function createEvent(array $attributes = []): Event
     {
         return Model::unguarded(fn () => Event::query()->create(array_merge([

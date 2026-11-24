@@ -2,9 +2,10 @@
 
 - App dueña: `pwa`
 - Apps/paquetes afectados: `apps/pwa`
-- Estado: Aprobada
-- Solicitante / responsable funcional: Solicitante de esta conversación; responsable veterinario por identificar
-- Aprobación funcional: Solicitante, 2026-10-14
+- Estado: Implementada
+- Solicitada: 2026-10-14
+- Aprobada: 2026-10-14
+- Aprobación funcional: Aprobada (solicitante)
 
 ## Problema y contexto
 
@@ -74,5 +75,5 @@ Se capturan datos clínicos de animales (no personales) solo en memoria, sin per
 
 ## Revisión
 
-- Aprobadores y fecha: Solicitante, 2026-10-14.
+- Aprobadores: Solicitante (aprobación funcional registrada).
 - Evidencia/enlaces: tres formatos adjuntos en la conversación.

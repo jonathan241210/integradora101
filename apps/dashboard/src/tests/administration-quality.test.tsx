@@ -47,10 +47,11 @@ const adminVisualStyles = styles.slice(
 const actions: StaffAccountsViewModel["actions"] = {
   changeQuery: vi.fn(),
   reload: vi.fn(),
+  reloadOptions: vi.fn(),
   dismissNotice: vi.fn(),
   toggleForm: vi.fn(),
   changeForm: vi.fn(),
-  changeDepartment: vi.fn(),
+  changeDepartment: vi.fn(), changeRole: vi.fn(),
   startEdit: vi.fn(),
   cancelEdit: vi.fn(),
   submit: vi.fn(),
@@ -154,13 +155,14 @@ describe("CA-16 administration-sections", () => {
   const render = (overrides: Partial<StaffState> = {}) =>
     renderToStaticMarkup(<UsersView state={{ ...state, ...overrides }} actions={actions} />);
 
-  it("etiqueta el panel y las confirmaciones en línea y los controles con label", () => {
+  it("etiqueta el panel, el diálogo de confirmación y los controles con label", () => {
     const form = render();
     const confirmation = render({ pendingAction: { type: "delete", id: 7 } });
 
     expect(form).toContain('aria-labelledby="staff-form-title"');
     expect(form).toContain('id="staff-form-title"');
-    expect(confirmation).toContain('aria-label="Confirmar eliminar la cuenta de Ana López Pérez"');
+    // dashboard-020 revisión 2026-11-21 (b): la confirmación es un diálogo con ese título.
+    expect(confirmation).toContain("Confirmar eliminar la cuenta de Ana López Pérez</h2>");
     for (const id of ["staff-first_name", "staff-last_name", "staff-email", "staff-role", "users-search"]) {
       expect(form).toContain(`for="${id}"`);
     }
@@ -320,7 +322,8 @@ describe("CA-18 inline-content-forms", () => {
     expect(inlineStyles).toMatch(/\.upload-box__preview\s*\{[^}]*max-width:\s*260px/s);
     expect(inlineStyles).toMatch(/\.content-card__thumb\s*\{[^}]*width:\s*100%/s);
     expect(inlineStyles).toMatch(/\.form-panel__header\s*\{[^}]*flex-wrap:\s*wrap/s);
-    expect(inlineStyles).toMatch(/\.inline-confirm__actions\s*\{[^}]*flex-wrap:\s*wrap/s);
+    // dashboard-010 CA-73: `.inline-confirm*` quedó sin uso (confirmaciones en modal) y se eliminó.
+    expect(inlineStyles).not.toMatch(/\.inline-confirm/);
     expect(inlineStyles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.data-table__detail td/);
     expect(styles).toMatch(/\.table-scroll\s*\{[^}]*overflow-x:\s*auto/s);
     expect(styles).toMatch(/\.upload-box:focus-within\s*\{[^}]*outline/s);

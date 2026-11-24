@@ -24,7 +24,7 @@ El paquete no guarda credenciales, perfiles ni códigos de recuperación. Cada c
 
 `createHttpClient` devuelve un `ExtendedHttpClient`: el `HttpClient` de siempre (firma sin cambios, para no afectar a la PWA ni a mobile) más `patch`, `put` y `download(path)`. `patch` y `put` comparten con `post` el manejo de `XSRF-TOKEN`, el reintento tras 419 y el aviso de 401. `download` hace un `GET` con cookies y devuelve `{ blob, filename }`; si la respuesta no es 2xx lanza `ApiError` con el JSON de error, y el nombre sale de `Content-Disposition` saneado (sin separadores de ruta ni caracteres de control; respaldo `descarga`). No hay funciones de lógica de negocio.
 
-`createAdminApi(http)` entrega el contrato tipado de `/api/v1/admin`: `users` (`list`, `options`, `create`, `get`, `update`, `setStatus`, `remove`, `resetPassword`, `resetTwoFactor`), `news` y `events` (`list`, `create`, `update`, `setStatus`, `remove`), `enclosures` (`list`, `create`, `rename`), `dashboard.summary()` y `reports` (`tickets`, `exportTickets`). Los DTO viven en `admin-types.ts`, en `snake_case` como los entrega la API; los importes son cadenas con dos decimales y no se suman en el cliente. `createAdminApi(http, { deviceTimeZone })` envía en `timezone` la zona del dispositivo (`Intl.DateTimeFormat().resolvedOptions().timeZone` por defecto, inyectable en pruebas) en `dashboard.summary()`, `reports.tickets()` y `reports.exportTickets()`; la exportación usa la misma zona que el reporte. Si el navegador no la informa el parámetro se omite, y un `timezone` explícito en la consulta prevalece. El cliente no calcula periodos ni totales con esa zona. Los listados se normalizan a `{ data, meta }` y el reporte a `{ period, totals, daily, tickets, meta }`, tolerando que la API envuelva la respuesta en `data`.
+`createAdminApi(http)` entrega el contrato tipado de `/api/v1/admin`: `users` (`list`, `options`, `create`, `get`, `update`, `setStatus`, `remove`, `resetPassword`, `resetTwoFactor`), `passwordConfirmation.confirm(password)` (`POST /api/v1/admin/password-confirmation`, `dashboard-015`; `users.update` y `users.resetTwoFactor` aceptan `password` y `users.resetPassword(id, password, currentPassword?)` envía `current_password` como confirmación de quien opera; `prices.schedule` acepta `password`). `ApiError.mode` (`window` o `always`) llega en el 403 `password_confirmation_required`, y `createHttpClient` acepta `onTwoFactorSetupRequired?` (aditivo; la PWA y mobile no lo pasan), `news` y `events` (`list`, `create`, `update`, `setStatus`, `remove`), `enclosures` (`list`, `create`, `rename`), `dashboard.summary()` y `reports` (`tickets`, `exportTickets`, `cancellations`, `exportCancellations`, `cancellationCashiers`; `dashboard-016`, sin `timezone`). Los DTO viven en `admin-types.ts`, en `snake_case` como los entrega la API; los importes son cadenas con dos decimales y no se suman en el cliente. `dashboard.summary()`, `reports.tickets()` y `reports.exportTickets()` no envían `timezone` (`dashboard-019`): la API decide el día con su zona de negocio (`api-025`) y la informa en `timezone` del panel y en `period.timezone` del reporte; el cliente no lee la zona del dispositivo ni calcula periodos ni totales. Los listados se normalizan a `{ data, meta }` y el reporte a `{ period, totals, daily, tickets, meta }`, tolerando que la API envuelva la respuesta en `data`.
 
 ### Imágenes de noticias y eventos (`api-008`)
 
@@ -64,17 +64,22 @@ Los `422` de estado de estas rutas llegan como `ApiError` con `errors.species` (
 
 Los `422` por campo llegan en `ApiError.errors.rejection_reason`, `errors.rejected_fields` o `errors.image`; las decisiones tardías llegan con el mensaje de la API («Esta petición ya fue revisada.»).
 
+## Conteos de pendientes (`api-024`, consumida por `dashboard-018`)
+
+`admin.pendingCounts()`: `GET /api/v1/admin/pending-counts`. Devuelve `PendingReviewCountsDto` tal cual, sin `data`: `{ species_requests?: number; memories?: number }`. Cada clave solo llega si el usuario tiene `species.review` o `memories.review`. Sin lógica de negocio; un `403`, `429` o `5xx` sale como `ApiError`.
+
 ## Venta de boletos (`api-009`)
 
-`createTicketSalesApi(http, { deviceTimeZone })` entrega el contrato tipado de la venta, el historial y los precios de `/api/v1/admin`. Solo usa `http.get` y `http.post`; `http.ts`, `createAdminApi` y `createAuthApi` no cambian, así que la PWA y mobile no se ven afectados. Los DTO viven en `ticket-sales-types.ts`, en `snake_case`; los importes son cadenas y no se suman ni se multiplican en el cliente.
+`createTicketSalesApi(http)` entrega el contrato tipado de la venta, el historial y los precios de `/api/v1/admin`. Solo usa `http.get` y `http.post`; `http.ts`, `createAdminApi` y `createAuthApi` no cambian, así que la PWA y mobile no se ven afectados. Los DTO viven en `ticket-sales-types.ts`, en `snake_case`; los importes son cadenas y no se suman ni se multiplican en el cliente.
 
 - `sales.create({ adult_quantity, child_quantity })`: `POST /tickets`. Devuelve el boleto con `total_amount` y `qr_svg`. No envía zona horaria.
-- `history.list(query)`: `GET /tickets` con `folio`, `status`, `from`, `to`, `page`, `per_page` y `timezone`. Se normaliza a `{ data, meta }`.
-- `history.cancel(folio, { reason })`: `POST /tickets/{folio}/cancel`; no envía `timezone` (la API compara el día en la zona del zoológico). Devuelve la fila del historial.
+- `history.list(query)`: `GET /tickets` con `folio`, `status`, `from`, `to`, `page` y `per_page`, sin `timezone`. Se normaliza a `{ data, meta, timezone? }`, donde `timezone` es la zona de negocio que informa la API.
+- `tickets.cancellationReasons()`: `GET /tickets/cancellation-reasons` (catálogo cerrado de `api-022`; etiquetas y `comment_policy` los entrega la API).
+- `history.cancel(folio, { reason_code, reason? })`: `POST /tickets/{folio}/cancel` con motivo de lista y comentario (`api-022`, `dashboard-016`); no envía `timezone` (la API compara el día en la zona del zoológico). Devuelve la fila del historial.
 - `prices.current()`: `GET /ticket-prices/current` (`adult` y `child` con vigente y `next`).
-- `prices.schedule(input)`: `POST /ticket-prices` con `mode` `immediate` o `scheduled`; `effective_at` en ISO 8601 con desfase.
+- `prices.schedule(input)`: `POST /ticket-prices` con `mode` `immediate` o `scheduled`; `effective_at` como `AAAA-MM-DDTHH:mm:ss` sin desfase (la API lo interpreta en su zona de negocio, `api-025` RN-12).
 
-`timezone` usa la zona del dispositivo (`Intl.DateTimeFormat().resolvedOptions().timeZone`, inyectable en pruebas) solo en el historial; un `timezone` explícito prevalece. El cliente no decide `cancellable`, precios ni permisos. Los 403 `two_factor_setup_required` llegan como `ApiError` con `code`.
+Ninguna petición de venta, historial, cancelación ni precios envía `timezone` (`dashboard-019`); `prices.schedule` envía `effective_at` sin desfase y la API lo interpreta en su zona de negocio. El cliente no decide `cancellable`, precios ni permisos. Los 403 `two_factor_setup_required` llegan como `ApiError` con `code`.
 
 ## Sesión de visitante
 

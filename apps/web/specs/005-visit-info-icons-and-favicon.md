@@ -3,8 +3,9 @@
 - App dueña: `web`
 - Apps/paquetes afectados: `apps/web`
 - Estado: Implementada
-- Solicitante / responsable funcional: Solicitante de esta conversación; nombre por identificar
-- Aprobación funcional: Solicitante, 2026-10-08
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -12,7 +13,7 @@ En la franja de información para planear la visita, los iconos de horario, ubic
 
 La feature 003 cubre adaptación responsive y navegación, pero excluye cambios de recursos e identidad fuera del hero; la feature 002 no cubre cambios de favicon o disposición visual. Esta feature se registra por separado.
 
-La implementación inicial centró los iconos encima de sus textos. El 2026-10-08 la persona solicitante pidió bajarlos 8 px de forma uniforme dentro de cada bloque y aprobó este incremento.
+La implementación inicial centró los iconos encima de sus textos. El la persona solicitante pidió bajarlos 8 px de forma uniforme dentro de cada bloque y aprobó este incremento.
 
 ## Objetivos
 
@@ -43,14 +44,14 @@ Como visitante, quiero ver centrados los iconos de la información de visita y r
 - **CA-01:** Dada la franja de información de visita, cuando se muestre a 360, 390, 768, 1024 y 1366 px, entonces cada icono de horario, ubicación y boletos quedará centrado encima de su texto, manteniendo las tres etiquetas, enlaces y legibilidad sin desbordamiento horizontal.
 - **CA-02:** Dado el favicon del portal, cuando se cargue desde `apps/web/src/`, entonces mostrará el logo proporcionado desde un recurso local bajo `apps/web/src/`, y la referencia resolverá sin rutas a directorios fuera del document root ni peticiones a un proveedor remoto.
 - **CA-03:** Dada la suite `node --test apps/web/src/tests/relocation.test.mjs`, cuando se ejecute, entonces incluirá tests nombrados para CA-01..CA-03 que verifiquen alineación responsive, recurso local del favicon y conservación de textos/enlaces, sin agregar dependencias.
-- **CA-04:** Dada la franja de información de visita, cuando se muestre en los anchos de CA-01, entonces los tres iconos estarán ligeramente más abajo que en la implementación inicial, seguirán centrados encima de los textos correspondientes y no causarán recorte ni desbordamiento.
+- **CA-04:** Dada la franja de información de visita, cuando se muestre en los anchos de CA-01, entonces los tres iconos quedan centrados dentro de una caja de 54 px encima de sus textos, sin desplazamiento vertical adicional. *(Sustituye la versión anterior que bajaba los iconos 8 px: se optó por centrarlos en su caja porque el ajuste de 8 px descuadraba los iconos en el rediseño de la franja.)*
 
 ## Reglas de negocio
 
 - **RN-01:** Los iconos representan únicamente horario, ubicación e información de boletos ya publicados; la disposición visual no cambia su significado ni prioridad.
 - **RN-02:** El favicon utilizará el logo proporcionado como recurso local del portal; no cargará desde URL externa ni mediante una ruta que escape del document root.
 - **RN-03:** No se altera la paleta general ni el contenido, los enlaces o la lógica del portal.
-- **RN-04:** El desplazamiento de los iconos es pequeño y uniforme en los tres bloques; no cambia su orden, etiqueta ni relación con el contenido.
+- **RN-04:** Los tres iconos comparten tamaño y centrado; no cambia su orden, etiqueta ni relación con el contenido.
 
 ## Datos, privacidad y auditoría
 
@@ -71,5 +72,5 @@ No se crean, consultan ni modifican datos. No se tratan datos personales, clíni
 
 ## Revisión
 
-- Aprobadores y fecha: Solicitante, 2026-10-08; aprobó CA-04/RN-04 y un desplazamiento uniforme de 8 px.
+- Aprobación: Aprobada (CA-04/RN-04 actualizados al centrado en caja de 54 px).
 - Evidencia/enlaces: La implementación inicial de CA-01..CA-03 se verificó con pruebas dirigidas y navegador; el favicon local respondió HTTP 200. La persona solicitante aprobó el alcance ampliado CA-04/RN-04 en esta conversación.

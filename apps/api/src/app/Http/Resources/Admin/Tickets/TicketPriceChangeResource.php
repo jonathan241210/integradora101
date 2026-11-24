@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Admin\Tickets;
 
+use App\Support\BusinessTimezone;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,6 +13,7 @@ class TicketPriceChangeResource extends JsonResource
     {
         return [
             'prices' => TicketPriceResource::collection($this->resource['prices'])->resolve($request),
+            'timezone' => BusinessTimezone::name(),
             'current' => (new TicketPriceCurrentResource($this->resource['current']))->resolve($request),
         ];
     }

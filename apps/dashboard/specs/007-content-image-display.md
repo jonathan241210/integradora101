@@ -2,9 +2,10 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` (dueña: `ContentThumbnail`, `ImageUploadBoxView` y las reglas CSS de tarjetas y caja de imagen); `api` (sin cambios: `image_url` ya existe, `api-008`); `packages/ui` (sin cambios; `Card` se reutiliza tal como está).
-- Estado: Aprobada (Jonathan, 2026-11-07)
-- Solicitante / responsable funcional: Jonathan
-- Aprobación funcional: aprobada por Jonathan, 2026-11-07
+- Estado: Implementada
+- Solicitada: 2026-11-07
+- Aprobada: 2026-11-07
+- Aprobación funcional: aprobada
 - Responsable de BD: no aplica. Sin DBR ni migración: solo marcado y CSS del dashboard.
 - Dependencias: `api-008` (subida, `image_url` y RN-13, que quita metadatos al guardar; el redimensionado en servidor está fuera de alcance de `api-008`, así que el problema se resuelve en la presentación); `dashboard-004` (formularios en línea y caja de imagen); `dashboard-003` (secciones de administración de noticias y eventos).
 - Relación: mismo criterio de imagen completa que `web-009` CA-15 (portal público). Son independientes entre sí.
@@ -18,7 +19,7 @@ En el dashboard, las imágenes de noticias y eventos se recortan en dos sitios:
 
 Resultado: un cartel vertical o una foto cuadrada pierde gran parte de su contenido, y la vista previa al subir no coincide con la imagen tal como se guardó. El personal publica sin ver la imagen completa.
 
-**Causa observada** (revisión del código el 2026-11-07; no verificada en navegador):
+**Causa observada** (revisión del código; no verificada en navegador):
 
 1. `apps/dashboard/src/styles.css`, regla `.content-card__thumb` (alrededor de la línea 2398): `height: 130px; object-fit: cover;`. Cualquier imagen se llena a 130 px de alto y los bordes sobrantes se cortan.
 2. `apps/dashboard/src/styles.css`, regla `.upload-box__preview` (alrededor de la línea 2390): `max-width: 260px; max-height: 160px; object-fit: cover;`. La vista previa se recorta igual.
@@ -103,12 +104,12 @@ Esta feature no crea permisos ni roles (RN-01).
   - **Imágenes pequeñas:** con la regla de no ampliar (CA-04), una imagen menor que la caja se verá pequeña y centrada. Es intencional.
   - **Imágenes muy altas o muy anchas en tarjetas estrechas:** se verán completas, con más fondo visible. Es el efecto buscado; la pregunta 2 decide si la altura de 130 px se mantiene.
   - **Imagen rota:** sin cambio. No hay respaldo visual en el dashboard hoy; se puede tratar en una spec aparte.
-- **Preguntas (estado tras la aprobación del 2026-11-07):**
-  1. **Resuelta (2026-11-07):** las imágenes no se amplían por encima de su tamaño natural (CA-04).
-  2. **Resuelta (2026-11-07, con la propuesta):** se mantiene la altura fija de 130 px; no se adopta proporción fija.
-  3. **Resuelta (2026-11-07):** el mismo criterio de imagen completa, centrada y sin ampliar aplica a la vista previa de la caja de imagen.
+- **Preguntas:**
+  1. **Resuelta:** las imágenes no se amplían por encima de su tamaño natural (CA-04).
+  2. **Resuelta:** se mantiene la altura fija de 130 px; no se adopta proporción fija.
+  3. **Resuelta:** el mismo criterio de imagen completa, centrada y sin ampliar aplica a la vista previa de la caja de imagen.
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan, 2026-11-07 (aprobación explícita del usuario sobre spec, plan y tasks). Estado Aprobada.
+- Aprobadores: aprobación explícita del responsable sobre spec, plan y tasks. Estado Aprobada.
 - Evidencia/enlaces: `apps/dashboard/specs/004-inline-content-forms.md` (caja de imagen y miniaturas), `apps/api/specs/008-event-news-images.md` (subida, `image_url`, sin recorte en servidor), `apps/web/specs/009-dynamic-news-events.md` (CA-15, mismo criterio en el portal), `apps/dashboard/src/tests/administration-quality.test.tsx` (CA-18, valores fijados).

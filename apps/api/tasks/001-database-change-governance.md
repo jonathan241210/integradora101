@@ -2,7 +2,9 @@
 
 - Spec: `apps/api/specs/001-database-change-governance.md`
 - Plan: `apps/api/plan/001-database-change-governance.md`
-- Estado del checklist: Aprobado por Jonathan, 2026-10-09
+- Estado del checklist: Completado
+- Solicitada: 2026-10-09
+- Aprobada: 2026-10-09
 
 ## Preparación
 
@@ -54,7 +56,6 @@
 
 ## Evidencia de verificación
 
-- Fecha: 2026-10-09
 - Comando: `node --test apps/api/src/tests/database-governance.test.mjs`
 - Resultado: 10 tests, 10 pass, 0 fail (CA-01 a CA-10 cubiertos).
 - `git diff --check`: limpio, sin errores de espacios ni conflictos.

@@ -9,7 +9,7 @@ class CreateTicketSaleAccessTest extends TicketFeatureTestCase
 {
     public function test_ca06_ticket_sales_only_cashier_may_sell(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $this->setPrices($cashier);
         $tickets = $this->ticketCount();
 

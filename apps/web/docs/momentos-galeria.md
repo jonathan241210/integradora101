@@ -41,7 +41,7 @@ Todo dato de la API se escribe como texto (`textContent`). Las URLs de imagen se
 
 ## 7. Excepción de arquitectura
 
-ADR 0027 (Aceptado 2026-11-12, condiciones 1 a 7 y enmienda del carrusel): sin React, TypeScript, Vite ni `@arca/api-client`; sin `package.json`, build ni librerías de carrusel. Separar el código en dos archivos no añade alcance. Si la galería necesita paginación, filtros, página propia o visor, se reevalúa el ADR.
+ADR 0027 (Aceptado, condiciones 1 a 7 y enmienda del carrusel): sin React, TypeScript, Vite ni `@arca/api-client`; sin `package.json`, build ni librerías de carrusel. Separar el código en dos archivos no añade alcance. Si la galería necesita paginación, filtros, página propia o visor, se reevalúa el ADR.
 
 ## 8. Cómo probar
 

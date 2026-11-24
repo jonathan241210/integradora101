@@ -2,23 +2,23 @@
 
 Referencia de `/api/v1/admin/tickets*` y `/api/v1/admin/ticket-prices*`, contrato de `api-009`. Spec: `apps/api/specs/009-ticket-sales.md`. Plan: `apps/api/plan/009-ticket-sales.md`. Consumidor: `dashboard-005`, vía `@arca/api-client`.
 
-Describe el código implementado y el contrato tras la revisión de 2026-11-02. No certifica que las pruebas pasen: la verificación se registra en `apps/api/tasks/009-ticket-sales.md`. No contiene secretos.
+Describe el código implementado y el contrato tras la revisión. No certifica que las pruebas pasen: la verificación se registra en `apps/api/tasks/009-ticket-sales.md`. No contiene secretos.
 
-Quedan **diferidos** (decisión 2026-11-02) y no existen en la API: avisos de cambio de precio, rutas `/notifications`, acuse y correo. `staff_notifications` existe en la base de datos (DBR-006) pero no tiene modelo ni uso.
+Quedan **diferidos** y no existen en la API: avisos de cambio de precio, rutas `/notifications`, acuse y correo. `staff_notifications` existe en la base de datos (DBR-006) pero no tiene modelo ni uso.
 
-## Cambios de la revisión de 2026-11-02
+## Cambios de la revisión
 
-Aprobados por Jonathan sobre la spec 009 (que sigue Aprobada):
+Aprobados por el responsable funcional sobre la spec 009 (que sigue Aprobada):
 
-- **Cancelación sin `timezone`.** La zona del día de cancelación es siempre la del zoológico, `config('arca.report_timezone')` (America/Mexico_City). La API ignora cualquier `timezone` del cuerpo de `POST .../cancel`, y ese campo sale del contrato. `cancellable` del historial usa la misma zona.
-- **Tope de 50 boletos en total.** `adult_quantity` + `child_quantity` admiten como máximo 50 (revisión de 2026-11-06, que sustituye el tope de 100 por tipo). Valor en `config/arca.php`, clave `ticket_sale_max_tickets`; cambiarlo requiere desplegar. Más de 50 responde 422. La opción de editarlo sin desplegar está en la spec 010 (`apps/api/specs/010-configurable-system-settings.md`, Borrador, sin aprobar).
+- **Cancelación sin `timezone`.** La zona del día de cancelación es siempre la del zoológico, `config('arca.timezone')` (America/Mexico_City). La API ignora cualquier `timezone` del cuerpo de `POST .../cancel`, y ese campo sale del contrato. `cancellable` del historial usa la misma zona.
+- **Tope de 50 boletos en total.** `adult_quantity` + `child_quantity` admiten como máximo 50 (revisión, que sustituye el tope de 100 por tipo). Valor en `config/arca.php`, clave `ticket_sale_max_tickets`; cambiarlo requiere desplegar. Más de 50 responde 422. Editarlo sin desplegar no está planificado en esta versión.
 - **Cantidades estrictas.** Booleanos, cantidades con fracción y cadenas no numéricas responden 422.
 - **Límites de frecuencia (429).** Por usuario autenticado: 60 ventas por minuto en `POST /tickets` y 20 cancelaciones por minuto en `POST /tickets/{ticket}/cancel`.
 - **Límite de `effective_at`.** Un cambio programado no puede tener `effective_at` más de un año adelante (422).
 
 ## Acceso común
 
-Todas las rutas están en el grupo `admin` y aplican, en orden: `auth:sanctum` (401), `staff.user` (401 si la cuenta está inactiva), `administrator.two-factor` (solo `admin` y `zoo-admin`; 403 `two_factor_setup_required` sin 2FA confirmado) y `permission:<permiso>` (403 «No tienes permiso para realizar esta acción.»). `cashier` no pasa por 2FA.
+Todas las rutas están en el grupo `admin` y aplican, en orden: `auth:sanctum` (401), `staff.user` (401 si la cuenta está inactiva), `administrator.two-factor` (`admin`, `zoo-admin` y `cashier` desde api-021; 403 `two_factor_setup_required` sin 2FA confirmado) y `permission:<permiso>` (403 «No tienes permiso para realizar esta acción.»). Las escrituras añaden después `step-up:<modo>` (api-021): cancelar un boleto es **Ventana** (confirmar la contraseña en `POST /api/v1/admin/password-confirmation`, vale 10 minutos; sin ella, 403 `password_confirmation_required`), y cambiar precios es **Siempre** (`password` en el cuerpo). Vender y cotizar no piden contraseña. Ver `docs/administracion.md`.
 
 Las rutas de venta (`POST /tickets`) y de cancelación (`POST /tickets/{ticket}/cancel`) añaden un límite de frecuencia por usuario después de `permission:`. Un 403 no consume cuota. Al superarlo responden **429** con el mensaje «Demasiados intentos. Intenta de nuevo en :seconds segundos.» (texto de `lang/es/auth.php`).
 
@@ -39,13 +39,13 @@ Errores de validación: `422 { "message": "<primer error>", "errors": { "campo":
 
 Cuerpo: `adult_quantity`, `child_quantity`.
 
-- Enteros JSON reales, cada uno entre 0 y 50, con suma no mayor que 50 (revisión de 2026-11-06); al menos uno > 0. Se valida antes de calcular el total, así que un valor enorme responde 422 y nunca 500.
+- Enteros JSON reales, cada uno entre 0 y 50, con suma no mayor que 50; al menos uno > 0. Se valida antes de calcular el total, así que un valor enorme responde 422 y nunca 500.
 - Más de 50 boletos en total → 422 «No puedes vender más de 50 boletos en una misma venta.» (texto propuesto por el redactor; pendiente de confirmar el texto, no el tope).
 - Booleanos, cantidades con fracción (p. ej. `1.5`), el número `2.0` y cualquier cadena, incluidas las numéricas (`"2"`), → 422 por campo (implementado según la propuesta por defecto de R1: `integer:strict`; pendiente de confirmación en la spec).
 - Un total por encima de 999,999.99 → 422 «El total de la venta excede el importe máximo permitido.» (tope de `DECIMAL(8,2)`).
 - El cliente nunca envía montos; el total y los precios los fija la API.
 
-201 `data` (forma aprobada por Jonathan el 2026-11-06; pregunta R-B1 de `api-009`):
+201 `data` (forma aprobada por el responsable funcional; pregunta R-B1 de `api-009`):
 
 Una venta crea **un boleto por unidad vendida**: 1 adulto y 3 niños son 4 boletos, cada uno con su folio y su QR, cancelables por separado. Los boletos salen primero los adultos y después los niños, con folios ascendentes.
 
@@ -97,44 +97,51 @@ Respuesta 200, con importes como cadena de dos decimales:
 
 - No crea boleto, no emite token QR, no escribe auditoría y no cambia precios (CA-49).
 - 401 sin sesión y 403 sin `tickets.create`, incluidos `admin` y `zoo-admin` (CA-47).
-- 422 con los mismos mensajes que la venta: cantidades, tope de 50 boletos en total (revisión de 2026-11-06), sin precio vigente e importe máximo (CA-48).
+- 422 con los mismos mensajes que la venta: cantidades, tope de 50 boletos en total, sin precio vigente e importe máximo (CA-48).
 - 429 si se superan 120 cotizaciones por minuto por usuario; no consume el límite de ventas (RN-33).
 - La cotización es informativa: si el precio cambia antes de confirmar, la venta cobra el vigente al registrarse y el boleto muestra ese importe real (RN-32).
 
 ### Historial: `GET /tickets`
 
-Query opcional: `folio`, `status` (`completed`|`cancelled`), `from`, `to` (`AAAA-MM-DD`, rango de `purchased_at`), `timezone`, `page`, `per_page` (<= 100, 25 por defecto).
+Query opcional: `folio`, `status` (`completed`|`cancelled`), `from`, `to` (`AAAA-MM-DD`, rango de `purchased_at`), `page`, `per_page` (<= 100, 25 por defecto).
 
-- `timezone` (revisión de 2026-11-02): solo interpreta `from` y `to` y la presentación. No afecta a la cancelación ni a `cancellable`. Si falta o no es válida, se usa `America/Mexico_City` sin 422.
+- `timezone` (api-025): el parámetro del cliente se ignora. `from` y `to` se interpretan en la zona de negocio y la respuesta incluye `timezone` en la raíz, junto a `data` y `meta`.
 
 Respuesta paginada de Laravel (`data`, `links`, `meta`), orden `purchased_at` descendente. Cada elemento:
 
 ```json
 { "folio": 123, "purchased_at": "…Z", "adult_quantity": 2, "child_quantity": 1,
   "total_amount": "66.00", "status": "completed", "cancelled_at": null,
+  "cancellation_reason_code": null, "cancellation_reason_label": null,
   "cancellation_reason": null, "cashier_name": "…", "cancellable": true }
 ```
 
-- Alcance: `cashier` solo ve sus boletos (ningún filtro lo amplía; `cashier_id` en la query se ignora). `admin` y `zoo-admin` ven todos. `executive` y `veterinarian` reciben 403.
+`cancellation_reason_code` y `cancellation_reason_label` (api-022) son aditivos. La etiqueta se deriva del código en la API (no se guarda); en un boleto cancelado anterior a la feature (código nulo) es «Sin clasificar (anterior)». `cancellation_reason` pasa a ser solo el **comentario** (nulo si no hay).
+
+- Alcance: `cashier` solo ve sus boletos (ningún filtro lo amplía; `cashier_id` en la query se ignora). Quien tiene el permiso `tickets.view-all` (`admin` y `zoo-admin`) ve todos; la decisión es por permiso, no por nombre de rol (api-023). `executive`, `communications` y `veterinarian` reciben 403.
 - Nunca incluye `qr_code` ni `qr_svg`.
-- `cancellable` lo calcula la API (`IsTicketCancellableAction`): el usuario es el cajero del boleto, tiene `tickets.cancel`, el boleto está `completed` y se vendió el mismo día de hoy en la zona del zoológico (`config('arca.report_timezone')`). El cliente no replica esta regla.
+- `cancellable` lo calcula la API (`IsTicketCancellableAction`): el usuario es el cajero del boleto, tiene `tickets.cancel`, el boleto está `completed` y se vendió el mismo día de hoy en la zona del zoológico (`config('arca.timezone')`). El cliente no replica esta regla.
 
 ### Cancelación: `POST /tickets/{ticket}/cancel`
 
-Cuerpo: `reason` (obligatorio, texto, <= 255). **No se envía `timezone`**: si llega, la API lo ignora.
+Cuerpo (api-022, cambio de contrato de api-009): `reason_code` (obligatorio, uno de los cinco códigos del catálogo) y `reason` (comentario). El comentario es **obligatorio solo con `other`** (15 a 255 caracteres tras recortar espacios) y opcional, hasta 255, con los demás motivos; vacío se guarda como nulo. **No se envía `timezone`**: si llega, la API lo ignora. Un cliente que envíe solo `reason` recibe 422.
 
 Orden de validación (RN-16):
 
 1. 403 sin `tickets.cancel` (`admin`, `zoo-admin`, `executive`, `veterinarian`).
 2. 429 si se superan 20 cancelaciones por minuto por usuario (CA-44). Se evalúa después de `permission:`.
 3. 404 «Boleto no encontrado.» si el boleto no existe o no lo vendió el cajero (se resuelve antes de validar el cuerpo; ADR 0021, excepción c).
-4. 422 motivo vacío o ausente: «Indica el motivo de la cancelación.».
+4. 422 por campo: `reason_code` ausente «Selecciona un motivo de cancelación.» o fuera del catálogo «El motivo elegido no es válido.»; `reason` con `other` menor de 15 caracteres «Describe el motivo con al menos 15 caracteres.»; `reason` mayor de 255 «El comentario de la cancelación no puede superar 255 caracteres.».
 5. 422 «Este boleto ya está cancelado.».
 6. 422 «Solo se pueden cancelar boletos el mismo día en que se vendieron.».
 
-200 `data`: el boleto con el mismo formato del historial (`status` `cancelled`, `cancelled_at`, `cancellation_reason`, `cancellable` `false`). El boleto permanece en la base de datos; se usa `lockForUpdate()` para que dos cancelaciones simultáneas no pasen ambas.
+200 `data`: el boleto con el mismo formato del historial (`status` `cancelled`, `cancelled_at`, `cancellation_reason_code`, `cancellation_reason_label`, `cancellation_reason`, `cancellable` `false`). El boleto permanece en la base de datos; se usa `lockForUpdate()` para que dos cancelaciones simultáneas no pasen ambas.
 
-El día de la venta y el de la cancelación se comparan siempre en `config('arca.report_timezone')` (America/Mexico_City). Un boleto de un día anterior no se cancela, sin importar la zona del dispositivo que cancela.
+El día de la venta y el de la cancelación se comparan siempre en `config('arca.timezone')` (America/Mexico_City). Un boleto de un día anterior no se cancela, sin importar la zona del dispositivo que cancela.
+
+### Catálogo de motivos: `GET /tickets/cancellation-reasons` (api-022)
+
+Ruta `admin.tickets.cancellation-reasons`. Permiso `tickets.cancel` **o** `reports.cancellations.view` (el `admin` lo usa para el filtro «Motivo» del reporte). `200 {"data": [{"code", "label", "comment_policy"}]}` con los cinco motivos en este orden: `capture_error` «Error de captura», `duplicate_charge` «Cobro duplicado», `wrong_ticket_type` «Tipo de boleto equivocado», `visitor_withdrew` «El visitante desistió» (`comment_policy` `optional`) y `other` «Otro» (`required`). El catálogo es el enum `App\Enums\TicketCancellationReason`.
 
 ### Precio vigente: `GET /ticket-prices/current`
 
@@ -144,8 +151,11 @@ El día de la venta y el de la cancelación se comparan siempre en `config('arca
 { "adult": { "amount": "25.00", "effective_at": "2026-01-01T00:00:00Z", "message": null,
              "next": { "amount": "28.00", "effective_at": "2026-11-10T12:00:00Z" } },
   "child": { "amount": null, "effective_at": null,
-             "message": "No hay un precio vigente configurado para este tipo de boleto.", "next": null } }
+             "message": "No hay un precio vigente configurado para este tipo de boleto.", "next": null },
+  "timezone": "America/Mexico_City" }
 ```
+
+`timezone` (api-025 RN-13) es la zona de negocio; el recibo de venta (`POST /tickets`) también incluye `data.timezone`.
 
 `next` es el cambio programado más próximo del tipo, o `null`. El precio vigente de un tipo es la fila no eliminada con `effective_at` <= ahora y mayor `effective_at` (desempate por `id`); no hay job ni scheduler.
 
@@ -153,26 +163,26 @@ El día de la venta y el de la cancelación se comparan siempre en `config('arca
 
 Cuerpo: `adult_amount`, `child_amount` (numéricos > 0, máximo dos decimales), `mode` (`immediate`|`scheduled`), `effective_at` (obligatorio en `scheduled`).
 
-- `effective_at` es ISO 8601 **con desfase horario o `Z`** (por ejemplo `2026-12-01T09:00:00-06:00`). Sin zona responde 422. La API lo convierte y guarda en UTC.
-- En `scheduled`, `effective_at` no puede ser anterior al momento de la operación (422, CA-20) ni posterior a **un año** desde ese momento (422, CA-45; revisión de 2026-11-02). El mensaje es «La fecha de entrada en vigor no puede ser mayor a un año a partir de hoy.» (exactamente un año se admite). Una fecha inexistente (p. ej. `2026-02-31`) responde 422; no se desborda al mes siguiente.
+- `effective_at` es ISO 8601. **Sin desfase** (por ejemplo `2026-12-01T09:00:00`) se interpreta en la zona de negocio `arca.timezone` (api-025 RN-12); **con desfase o `Z`** (por ejemplo `2026-12-01T09:00:00-06:00`) se respeta el instante indicado. La API lo guarda en UTC.
+- En `scheduled`, `effective_at` no puede ser anterior al momento de la operación (422, CA-20) ni posterior a **un año** desde ese momento. El mensaje es «La fecha de entrada en vigor no puede ser mayor a un año a partir de hoy.» (exactamente un año se admite). Una fecha inexistente (p. ej. `2026-02-31`) responde 422; no se desborda al mes siguiente.
 - En `immediate`, `effective_at` es el instante de la operación (UTC, sin fracción de segundo). El límite de un año no aplica.
 - Crea dos filas (adulto y niño), nunca modifica las anteriores, y audita `ticket-price-changed` por fila. No crea avisos ni correos.
 
-201 `data`: `{ "prices": [{ "id", "ticket_type", "amount", "effective_at" }, …], "current": <igual que GET current> }`.
+201 `data`: `{ "timezone", "prices": [{ "id", "ticket_type", "amount", "effective_at" }, …], "current": <igual que GET current> }`.
 
 ## Fechas
 
-`purchased_at`, `cancelled_at` y `effective_at` se devuelven en UTC, ISO 8601 con sufijo `Z`. Las columnas son `DATETIME`/`TIMESTAMP` sin fracción de segundo: una venta en el mismo segundo que un cambio inmediato ya usa el precio nuevo, y una anterior al segundo usa el viejo. La presentación en la zona del dispositivo es del dashboard.
+`purchased_at`, `cancelled_at` y `effective_at` se devuelven en UTC, ISO 8601 con sufijo `Z`. Las columnas son `DATETIME`/`TIMESTAMP` sin fracción de segundo: una venta en el mismo segundo que un cambio inmediato ya usa el precio nuevo, y una anterior al segundo usa el viejo. La presentación usa la zona `timezone` que informa la API (historial, recibo y precios vigentes).
 
-## Tipo de dato de `total_amount` (nota de la revisión de 2026-11-02)
+## Tipo de dato de `total_amount`
 
-Según la información de Jonathan del 2026-11-02, en la base de datos real la columna `tickets.total_amount` es **`DECIMAL(8,2)`**, con tope de **$999,999.99**. Un total que lo supere responde 422. Este redactor no verificó la columna: no hay acceso a la base de datos en esta sesión.
+Según la información del responsable funcional, en la base de datos real la columna `tickets.total_amount` es **`DECIMAL(8,2)`**, con tope de **$999,999.99**. Un total que lo supere responde 422. Este redactor no verificó la columna: no hay acceso a la base de datos en esta sesión.
 
 `docs/database/esquema-ingles.md` documenta `total_amount` como `DECIMAL(10,2)`. **Esa documentación está desactualizada y no se corrige en esta revisión.** El responsable de BD debe corregirla (tarea T-58 de `apps/api/tasks/009-ticket-sales.md`). Si el negocio necesita totales mayores, se abre una DBR nueva; la migración aprobada no cambia.
 
 ## Auditoría
 
-Activitylog (`log_name` `admin`) registra `ticket-sold`, `ticket-cancelled` y `ticket-price-changed` con actor y recurso. Las propiedades llevan total, motivo o monto; `LogAdminActivityAction` descarta `password`, `qr_code`, `qr_svg` y otros secretos.
+Activitylog (`log_name` `admin`) registra `ticket-sold`, `ticket-cancelled` y `ticket-price-changed` con actor y recurso. Las propiedades llevan total, monto y, en la cancelación, `reason_code` y el comentario (`reason`); `LogAdminActivityAction` descarta `password`, `qr_code`, `qr_svg` y otros secretos.
 
 ## Requisitos y dependencias
 
@@ -184,3 +194,7 @@ Activitylog (`log_name` `admin`) registra `ticket-sold`, `ticket-cancelled` y `t
 ## Pruebas
 
 `apps/api/src/tests/Feature/Tickets/`. Cada test lleva `test_caNN_ticket_sales_…`. `TicketSalesCoverageTest` (CA-30) verifica que cada CA vigente (CA-01 a CA-22, CA-27 a CA-31, CA-34 y CA-42 a CA-45; 32 CA) tenga su test y que la suite use `arca_pruebas`. CA-34 vive en `tests/Feature/Admin/ReportExcludesCancelledTicketsTest.php`.
+
+## Semáforo de cancelaciones (api-027)
+
+El cajero entrega solo el dinero al cierre; ningún texto del semáforo pide boletos físicos. Las señales, los niveles, la revisión por cajero y día y los datos de demostración están en `docs/administracion.md` («Semáforo y revisión de cancelaciones»). Las cancelaciones de demostración se escriben directo (no con `POST /tickets/{ticket}/cancel`) porque la cancelación solo permite el mismo día.

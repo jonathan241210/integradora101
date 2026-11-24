@@ -1,13 +1,13 @@
 # DBR-017 · visitor-push-notifications
 
-- Estado: Migración creada y probada en base MySQL 8.0 aislada sin errores (aprobación de BD registrada; pendiente aprobación de backend para `Aprobada`/`Lista para backend`)
-- Feature/spec origen: `apps/api/specs/017-visitor-push-notifications.md` (Aprobada, Aksel, 2026-11-14). Consumidor: `apps/mobile/specs/013-visitor-push-notifications.md`. Plan: `apps/api/plan/017-visitor-push-notifications.md` (aprobado técnicamente, Victor Adrian, 2026-11-14).
-- Solicitante: Aksel
-- Responsable de BD: Victor Adrian
-- Responsable backend: por identificar
-- Fecha: 2026-11-14
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-14
+- Aprobada: 2026-11-14
+- Feature/spec origen: `apps/api/specs/017-visitor-push-notifications.md` (Aprobada). Consumidor: `apps/mobile/specs/013-visitor-push-notifications.md`. Plan: `apps/api/plan/017-visitor-push-notifications.md` (aprobado técnicamente).
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Equipo móvil (backend de la feature)
 
-Aprobación de BD registrada y migración probada por BD (2026-11-14, sin errores). Falta la aprobación separada de backend para pasar a `Aprobada`/`Lista para backend` y habilitar integración backend.
+Aprobación de BD y de backend. La migración ya estaba probada en MySQL 8.0 aislado. Con las dos firmas queda Aprobada. La evidencia sigue siendo ese MySQL aislado: esta firma no aplica la migración en `arca_pruebas` ni en `arca_zoo`.
 
 ## Problema y justificación
 
@@ -23,7 +23,7 @@ No existen `visitor_notification_preferences`, `visitor_push_tokens` ni `push_di
 - Varios tokens por visitante, uno por teléfono. El token es único en toda la tabla. `platform` solo admite `android` en la API; la columna guarda ese valor.
 - Una fila de dispatch por noticia, por evento o por transición de momento. La clave única es `(subject_type, subject_id, transition_key)`. No guarda `visitor_id`, nombre, correo, opinión ni motivo.
 - Al borrar el visitante, sus preferencias y sus tokens desaparecen en cascada. Las filas de `push_dispatches` se conservan.
-- Sin SoftDeletes, sin `created_by` y sin `updated_by`. No son datos clínicos ni financieros (`api-017` RN-12). La excepción queda propuesta en el plan de `api-017` y en el ADR 0029, ambos sin aprobar.
+- Sin SoftDeletes, sin `created_by` y sin `updated_by`. No son datos clínicos ni financieros (`api-017` RN-12). La excepción queda aceptada en el plan de `api-017` y en el ADR 0029.
 
 ## Elementos afectados
 
@@ -129,21 +129,21 @@ No aplica. No se crean funciones, procedimientos, vistas ni triggers. La regla d
 
 ## Pruebas y evidencia
 
-- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: completadas (2026-11-14, Victor Adrian), sin errores.
-- Resultado y evidencia (sin secretos ni datos sensibles): migraciones Laravel de DBR-017 creadas y ejecutadas en entorno MySQL 8.0 aislado sin errores (2026-11-14). Detalle de comandos/salida no adjuntado en este documento.
+- Pruebas de esquema/objeto ejecutadas por BD en base MySQL 8.0 aislada: completadas, sin errores.
+- Resultado y evidencia (sin secretos ni datos sensibles): migraciones Laravel de DBR-017 creadas y ejecutadas en entorno MySQL 8.0 aislado sin errores. Detalle de comandos/salida no adjuntado en este documento.
 - Pruebas integradas del backend: pendiente. Empiezan cuando esta DBR esté en `Lista para backend`.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Victor Adrian | 2026-11-14 | Aprobado |
-| Responsable backend | | | Pendiente |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobado | Registro de esta DBR |
+| Backend | Aprobado | Registro de esta DBR |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas | aplicada/probada | 2026-11-14 | Migraci�n ejecutada en base MySQL 8.0 aislada sin errores (Victor Adrian) |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Pendiente de aplicar (migración probada en MySQL 8.0 aislada sin errores) | Pendiente de confirmar en `arca_pruebas` (`migrate:status`) |
+| staging | Pendiente de despliegue (ver checklist de `infra/README.md`) | |
+| producción | Pendiente de despliegue (ver checklist de `infra/README.md`) | |

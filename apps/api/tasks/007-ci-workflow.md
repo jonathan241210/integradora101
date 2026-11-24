@@ -1,6 +1,8 @@
 # Tareas · 007 · ci-workflow
+- Solicitada: 2026-10-26
+- Aprobada: 2026-10-26
 
-## Corrección residual — 2026-11-09
+## Corrección residual
 
 - [x] **T-10** (CA-02): corregir `php-version` y el nombre del paso en `.github/workflows/main.yml` a PHP 8.4; aplicar la decisión de runtime aprobada en T-02 sin cambiar dependencias ni lockfiles.
 - [x] **T-11** (CA-01, CA-02): validar YAML y comprobar el runtime de los jobs Composer activados en `DevOps`. Los cuatro YAML parsearon sin errores; `ci.yml` y `main.yml` preparan PHP 8.4 y ejecutan PHPUnit Unit. `git diff --check`: exit 0. La corrección no cambia código de aplicación; no se repitieron las suites funcionales. La verificación previa de API en este chat aprobó 1 prueba unitaria con PHP 8.5.12 local.
@@ -27,12 +29,12 @@
 
 ## Aprobación
 
-- Spec aprobada por el usuario el 2026-10-26.
-- Plan aprobado por el usuario el 2026-10-26.
-- Implementación solicitada directamente por el usuario el 2026-10-26.
-- El workflow demostrativo de fallo fue solicitado directamente por el usuario el 2026-10-26; queda aislado a ejecución manual.
+- Spec aprobada por el usuario.
+- Plan aprobado por el usuario.
+- Implementación solicitada directamente por el usuario.
+- El workflow demostrativo de fallo fue solicitado directamente por el usuario; queda aislado a ejecución manual.
 
-## Consolidación en un único workflow — 2026-11-10
+## Consolidación en un único workflow
 
 Solicitud directa del usuario: conservar `ci.yml` y borrar los demás YAML de workflows. Sustituye el requisito anterior de conservar el demostrativo; T-07 y T-08 quedan como historial.
 

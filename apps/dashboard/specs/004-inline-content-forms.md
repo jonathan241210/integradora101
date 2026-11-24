@@ -2,12 +2,13 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard` (dueña de las vistas Noticias, Eventos y Usuarios); `packages/api-client` (envío con archivo para noticias y eventos, ver `api-008` T-10); `api-008` (contrato de subida de imágenes, dependencia fuerte para noticias y eventos); `api-007` (contrato de cuentas, sin cambios).
-- Estado: Aprobada · En progreso (revisión aprobada por Jonathan el 2026-11-05; estado previo: En progreso)
-- Solicitante / responsable funcional: Jonathan
-- Aprobación funcional: aprobada por Jonathan el 2026-11-02. `api-008` también aprobada; la parte de imágenes depende de su implementación.
+- Estado: Implementada
+- Solicitada: 2026-11-02
+- Aprobada: 2026-11-02
+- Aprobación funcional: aprobada. `api-008` también aprobada; la parte de imágenes depende de su implementación.
 - Relación con otras specs: reemplaza parcialmente `dashboard-003` en Noticias, Eventos y Usuarios (formularios en modal, diálogos de confirmación, «sin campo de imagen»). Ver RN-09.
 
-> **Nota de vigencia (2026-11-05, aprobada):** `zoo-admin` deja de gestionar cuentas del personal (sección Usuarios solo para `admin`, decisión de 2026-11-05; ver `dashboard-003`). Los formularios en línea de Usuarios se aplican solo a `admin`. Noticias y Eventos no cambian para `zoo-admin`.
+> **Nota de vigencia:** `zoo-admin` deja de gestionar cuentas del personal (sección Usuarios solo para `admin`, decisión; ver `dashboard-003`). Los formularios en línea de Usuarios se aplican solo a `admin`. Noticias y Eventos no cambian para `zoo-admin`.
 
 ## Problema y contexto
 
@@ -15,7 +16,7 @@ En `dashboard-003`, Noticias, Eventos y Usuarios se gestionan con un botón de c
 
 Esta feature devuelve el formulario a la página en las tres secciones, sin ventanas emergentes; añade la subida real de imágenes para noticias y eventos (`api-008`); pide las confirmaciones en línea dentro de cada tarjeta o fila; y permite minimizar o expandir cada formulario.
 
-Afectados: `admin` (noticias, eventos y cuentas) y `zoo-admin` (noticias y eventos; sin Usuarios desde el 2026-11-05). `executive` no ve acciones de edición (`dashboard-003` CA-13).
+Afectados: `admin` (noticias, eventos y cuentas) y `zoo-admin` (noticias y eventos; sin Usuarios desde). `executive` no ve acciones de edición (`dashboard-003` CA-13).
 
 ## Objetivos
 
@@ -43,14 +44,14 @@ Afectados: `admin` (noticias, eventos y cuentas) y `zoo-admin` (noticias y event
 | Actor/rol | Necesidad | Permisos requeridos |
 |---|---|---|
 | `admin` | Crear, editar, subir o quitar imagen, activar/desactivar y eliminar noticias y eventos; gestionar cuentas del personal | `news.manage`, `events.manage`, `users.manage` |
-| `zoo-admin` | Lo mismo para noticias y eventos; sin Usuarios desde el 2026-11-05 | `news.manage`, `events.manage` |
+| `zoo-admin` | Lo mismo para noticias y eventos; sin Usuarios desde | `news.manage`, `events.manage` |
 | `executive` | Solo consulta; sin formularios de edición ni acciones | — (sin acciones de escritura) |
 
 La interfaz solo presenta lo que `me` permite. La autorización real la aplica la API (`api-007`, `api-008`).
 
 ## Historias de usuario
 
-- Como `admin` o `zoo-admin`, quiero escribir la noticia o el evento en un formulario fijo en la página, para no perder el contexto de la lista. Como `admin`, quiero hacer lo mismo con la cuenta del personal (`zoo-admin` no gestiona cuentas desde el 2026-11-05).
+- Como `admin` o `zoo-admin`, quiero escribir la noticia o el evento en un formulario fijo en la página, para no perder el contexto de la lista. Como `admin`, quiero hacer lo mismo con la cuenta del personal (`zoo-admin` no gestiona cuentas desde).
 - Como `admin` o `zoo-admin`, quiero subir, cambiar o quitar la imagen de una noticia o evento desde ese mismo formulario y ver una vista previa antes de guardar.
 - Como `admin` o `zoo-admin`, quiero confirmar en línea antes de eliminar o desactivar noticias y eventos. Como `admin`, quiero confirmar en línea antes de desactivar, eliminar, restablecer una contraseña o restablecer un 2FA de una cuenta, para no hacerlo por error.
 - Como `admin` o `zoo-admin`, quiero minimizar el formulario cuando solo necesito la lista, y volver a expandirlo sin perder lo escrito.
@@ -76,7 +77,14 @@ La interfaz solo presenta lo que `me` permite. La autorización real la aplica l
 ### Confirmación en línea
 
 - **CA-08:** Dado un elemento de Noticias, Eventos o Usuarios, cuando se pulsa «Eliminar», entonces aparece una confirmación en línea dentro de su tarjeta o fila que nombra el elemento y el efecto, con «Confirmar» y «Cancelar». En noticias y eventos el efecto es que el elemento se elimina y deja de mostrarse en la lista, y que su imagen se borra del servidor (`api-008` CA-07, P2). En Usuarios, el efecto es la baja lógica de la cuenta (`api-007`). Solo al pulsar «Confirmar» se llama a la API; «Cancelar» no hace nada.
-- **CA-09:** Dado un elemento de Noticias, Eventos o Usuarios, cuando se pulsa «Activar» o «Desactivar», entonces aparece la misma confirmación en línea con el efecto de la acción, y solo al confirmar se llama a la API.
+- **CA-09:** Al pulsar «Activar» o «Desactivar», Noticias muestra una confirmación centrada y Eventos y Usuarios la muestran en línea. La confirmación explica el efecto de la acción. Solo al confirmar se llama a la API.
+
+### Enmienda aprobada para CA-09
+
+- **Aprobación funcional:** confirmada por la persona solicitante en la conversación.
+- **Noticias:** al pulsar «Activar» o «Desactivar», aparece un diálogo centrado con el nombre de la noticia y su efecto en el portal público. El diálogo ofrece «Cancelar» y la acción correspondiente. Solo al confirmar se envía la solicitud. Escape cancela mientras no haya una solicitud en curso y el foco vuelve al control que abrió el diálogo.
+- **Alcance:** la enmienda aplica a los dos cambios de estado de Noticias. Eliminar y las acciones de Eventos y Usuarios siguen sus criterios vigentes.
+- **Datos y permisos:** la enmienda modifica la presentación de la confirmación y usa el contrato actual de la API.
 - **CA-10:** Dada una cuenta de Usuarios, cuando se pulsa «Restablecer contraseña», entonces aparece en línea un campo para la nueva contraseña con botón de mostrar/ocultar accesible y las acciones «Confirmar» y «Cancelar». Solo al confirmar se llama a la API. Tras enviarla, la contraseña se descarta de la interfaz (`dashboard-003` RN-07).
 - **CA-11:** Dada una cuenta de Usuarios, cuando se pulsa «Restablecer 2FA», entonces aparece la confirmación en línea que nombra la cuenta y explica que su segundo factor se borrará y tendrá que volver a configurarlo; solo al confirmar se llama a la API.
 - **CA-12:** Dada una confirmación en línea o un campo de contraseña en línea abierto, cuando se usa el teclado, entonces el foco es visible, «Cancelar» y «Confirmar» se alcanzan con Tab y se activan con Enter, Escape cancela la acción, y solo una acción en línea puede estar abierta a la vez en cada sección.
@@ -135,15 +143,26 @@ La interfaz solo presenta lo que `me` permite. La autorización real la aplica l
   - **Límites HTTP:** un archivo que supera el límite del servidor puede llegar como error de red o como respuesta sin el formato de la API. Mitigación: aviso genérico de error y prueba manual (`api-008` T-21).
   - **Confirmaciones dentro de la lista:** en pantallas estrechas, la confirmación y el campo de contraseña ocupan espacio en la tarjeta o fila. Mitigación: diseño apilado y desplazamiento propio de la tabla (CA-18).
   - **Contraseñas en pantalla:** el campo de restablecer contraseña muestra el texto si se pulsa «Mostrar». Mitigación: el botón vuelve a ocultarlo al confirmar o cancelar.
-- **Decisiones tomadas (2026-11-01):**
+- **Decisiones tomadas:**
   - **D1 (archivo no válido):** no se adjunta; se muestra un error en español en la caja de imagen (CA-05).
-  - **D2 (alcance de la caja de imagen):** con arrastrar y soltar (eventos nativos, cambio solicitado el 2026-11-01), sin recorte y sin varias imágenes.
+  - **D2 (alcance de la caja de imagen):** con arrastrar y soltar, sin recorte y sin varias imágenes.
   - **D3 (Usuarios):** «sin modales» aplica también a Usuarios (RN-01, RN-09); Usuarios recibe formulario fijo, edición en línea y confirmación en línea.
-  - **Panel colapsable (requisito nuevo del usuario, 2026-11-01):** cada formulario de Noticias, Eventos y Usuarios puede minimizarse y expandirse (CA-03), visible y expandido por defecto.
+  - **Panel colapsable:** cada formulario de Noticias, Eventos y Usuarios puede minimizarse y expandirse (CA-03), visible y expandido por defecto.
 - **Preguntas pendientes:** ninguna en esta ronda.
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan (solicitante / responsable funcional), 2026-11-02.
+- Aprobadores: Equipo ARCA-NB (solicitante / responsable funcional).
 - Evidencia/enlaces: `apps/dashboard/specs/003-administration-sections.md`, `apps/dashboard/plan/003-administration-sections.md`, `apps/api/specs/008-event-news-images.md`, `apps/api/specs/007-administration-management.md`, `apps/dashboard/specs/002-real-staff-login.md`.
-- Origen: plan de trabajo aprobado por el usuario el 2026-11-01 (fuera del repositorio), y decisiones D1 a D3 y del panel colapsable comunicadas por la sesión principal el mismo día.
+- Origen: plan de trabajo aprobado por el usuario (fuera del repositorio), y decisiones D1 a D3 y del panel colapsable comunicadas por la sesión principal el mismo día.
+
+## Nota de revisión
+
+- En Usuarios, el alta usa los roles de `users/options` (sin `admin`) y las cuentas `admin` no tienen acciones de escritura (`dashboard-017` CA-01 y CA-04). Los formularios en línea de Usuarios no cambian por esto.
+- Restablecer contraseña o 2FA, cambiar rol y las operaciones de Siempre y Ventana de `api-021` piden la confirmación de contraseña de `dashboard-015`. **Conflicto pendiente:** `dashboard-015` usa un diálogo modal para esa confirmación, y RN-01 de esta spec prohíbe modales en Usuarios. No se resuelve aquí; queda para decidir en la siguiente revisión de `dashboard-004` o `dashboard-015`.
+- Esta nota no cambia los CA ni las RN de la spec. Ver `apps/dashboard/specs/017-fixed-roles-account-management.md`.
+
+- Decisión (responsable funcional): el diálogo de confirmación de contraseña de `dashboard-015` es una excepción explícita a RN-01; ningún otro modal se permite en Usuarios.
+- Nota de revisión ( (b), `dashboard-020` CA-33 a CA-37): las confirmaciones de Usuarios, Noticias y Eventos (CA-08 a CA-12 y RN-02) pasan de «en línea» a un diálogo modal `ConfirmDialog`, con el mismo texto, el foco devuelto al botón disparador y el error dentro del diálogo; `InlineConfirm` e `InlinePasswordReset` se eliminan. El formulario de alta y edición sigue en línea y sin modal. Ver `apps/dashboard/specs/020-unified-reports-and-feedback.md`.
+
+- Nota (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.

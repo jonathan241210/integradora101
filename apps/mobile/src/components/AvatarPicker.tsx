@@ -1,8 +1,7 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { AVATAR_CODES, AVATAR_LABELS, AvatarCode } from '../constants/avatarCatalog';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { AVATAR_CODES, AVATAR_IMAGES, AVATAR_LABELS, AvatarCode } from '../constants/avatarCatalog';
 import { colors, spacing } from '../theme/tokens';
-import { AppText } from './ui';
 
 interface AvatarPickerProps {
   value: AvatarCode | null;
@@ -24,7 +23,7 @@ export function AvatarPicker({ value, onChange }: AvatarPickerProps) {
             style={styles.choice}
           >
             <View style={[styles.circle, selected ? styles.selected : null]}>
-              <AppText variant="small" center bold={selected}>{AVATAR_LABELS[code]}</AppText>
+              <Image source={AVATAR_IMAGES[code]} accessible={false} style={styles.image} />
             </View>
           </Pressable>
         );
@@ -45,7 +44,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.sm,
+    overflow: 'hidden',
   },
-  selected: { borderColor: colors.secondary, backgroundColor: colors.accent, borderWidth: 3 },
+  image: { width: 88, height: 88 },
+  selected: { borderColor: colors.secondary, borderWidth: 3 },
 });

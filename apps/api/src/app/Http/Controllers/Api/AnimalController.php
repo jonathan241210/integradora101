@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Animal;
 use App\Models\ClinicalEvaluation;
+use App\Models\Enclosure;
 use App\Models\Species;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -87,7 +88,7 @@ class AnimalController extends Controller
             'species_id' => ['nullable', 'integer', 'exists:species,id'],
             'species' => ['nullable', 'string', 'max:100'],
             'tag_number' => ['required', 'string', 'max:50', 'unique:animals,tag_number'],
-            'enclosure_id' => ['required', 'integer', 'exists:enclosures,id'],
+            'enclosure_id' => ['required', 'integer', Enclosure::assignableRule()],
             'sex' => ['required', Rule::in(['hembra', 'macho'])],
             'birth_date' => ['nullable', 'date'],
             'origin' => ['nullable', 'in:rescue,birth,transfer'],
@@ -95,7 +96,7 @@ class AnimalController extends Controller
             'photo' => ['nullable', 'image', 'max:5120', 'mimes:jpg,jpeg,png'], // Foto del animal
         ], [
             'enclosure_id.required' => 'Selecciona un recinto.',
-            'enclosure_id.exists' => 'El recinto seleccionado no existe.',
+            'enclosure_id.exists' => 'Este recinto no está disponible para asignar animales.',
             'sex.in' => 'Selecciona un sexo válido.',
             'photo.image' => 'El archivo debe ser una imagen válida.',
             'photo.max' => 'La imagen no debe superar 5 MB.',
@@ -165,5 +166,25 @@ class AnimalController extends Controller
             'stay_status' => $animal->stay_status,
             'photo_path' => $animal->photo_path,
         ]], 201);
+    }
+
+    public function updatePhoto(Request $request, Animal $animal): JsonResponse
+    {
+        $request->validate([
+            'photo' => ['required', 'image', 'max:5120', 'mimes:jpg,jpeg,png'],
+        ], [
+            'photo.required' => 'Selecciona una imagen para actualizar la foto.',
+            'photo.image' => 'El archivo debe ser una imagen válida.',
+            'photo.max' => 'La imagen no debe superar 5 MB.',
+            'photo.mimes' => 'La imagen debe ser JPG, JPEG o PNG.',
+        ]);
+
+        $photo = $request->file('photo');
+        $path = $photo->store("animals/{$animal->id}", 'public');
+        $animal->update(['photo_path' => $path]);
+
+        return response()->json(['data' => [
+            'photo_path' => $animal->photo_path,
+        ]]);
     }
 }

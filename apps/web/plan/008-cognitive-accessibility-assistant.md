@@ -2,8 +2,10 @@
 
 - Spec: `apps/web/specs/008-cognitive-accessibility-assistant.md`
 - Estado de spec: Implementada
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
 - Estado técnico: Implementado y verificado localmente
-- Responsable técnico: Por identificar
+- Responsable técnico: Frontend
 
 ## Diseño de solución
 
@@ -107,4 +109,4 @@ No se proponen excepciones. Si el comportamiento de texto biónico no puede pres
 - `/verify`: `apps/web` aún no inicializada porque no existe `apps/web/src/package.json`; no se instalaron herramientas ni se creó un manifiesto.
 - `git diff --check`: aprobado.
 
-Dependencias: T-01 precede a implementación y tests; T-02 precede a controlador y verificaciones semánticas; T-03/T-04 preceden a pruebas de flujo y responsive. La persona solicitante aprobó funcionalmente la spec y el plan técnico el 2026-10-08. No se asigna responsable técnico no identificado.
+Dependencias: T-01 precede a implementación y tests; T-02 precede a controlador y verificaciones semánticas; T-03/T-04 preceden a pruebas de flujo y responsive. La persona solicitante aprobó funcionalmente la spec y el plan técnico. No se asigna responsable técnico no identificado.

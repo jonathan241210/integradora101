@@ -3,7 +3,8 @@
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `dashboard`, `pwa`, `web`, `mobile`, documentación e infraestructura
 - Estado: Implementada
-- Solicitante / responsable funcional: Jonathan
+- Solicitada: 2026-10-09
+- Aprobada: 2026-10-09
 - Aprobación funcional: Aprobada
 
 ## Problema y contexto
@@ -126,9 +127,12 @@ La conexión tiene su propio SDD mínimo. Inventariará versión, charset/collat
 - Dependencias/ADR: ADR 0001 (API central), ADR 0006 (portabilidad) y nuevo ADR 0010 para MySQL 8.0.x y gobierno de cambios.
 - Riesgos: bloqueo de backend si BD no entrega migración; diferencias entre revisiones 8.0.x; migraciones destructivas; acoplamiento por objetos almacenados; esquema existente sin baseline; evidencia con datos sensibles.
 - Mitigaciones: estados visibles, revisión mínima tras inventario, cambios expansivos antes que destructivos, respaldo/reversión, pruebas MySQL reales y secretos fuera del repositorio.
-- Preguntas pendientes: nombre de las personas responsables de BD y backend; revisión mínima 8.0.x; estrategia de baseline o reconstrucción tras inventario.
+- Decisiones:
+  - Los roles se nombran por función (Responsable de BD, Backend) y no por personas; los accesos reales se administran fuera del repositorio.
+  - Se optó por MySQL 8.0.x como familia obligatoria. La revisión mínima exacta queda pendiente del inventario inicial (CA-01); ver `docs/database/README.md`.
+  - Se optó por no adoptar el esquema existente como baseline automáticamente; la estrategia de baseline o reconstrucción controlada se define tras el inventario (CA-09). Fuera de alcance de esta entrega.
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan (funcional y técnica), 2026-10-09; acuerdo del equipo para modificar la Constitución registrado en ADR 0010.
+- Aprobación: Aprobada (funcional y técnica); acuerdo del equipo para modificar la Constitución registrado en ADR 0010.
 - Evidencia/enlaces: `CONSTITUTION.md`, `AGENTS.md`, `apps/api/AGENTS.md`, `docs/05-flujo-sdd.md`, `apps/api/plan/001-database-change-governance.md`, `apps/api/tasks/001-database-change-governance.md`, `docs/database/README.md`, `docs/adr/0010-mysql-8-0-database-change-governance.md`, `apps/api/src/tests/database-governance.test.mjs`, ADR 0001 y ADR 0006.

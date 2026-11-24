@@ -1,6 +1,6 @@
 import { Button, Card } from '@arca/ui';
 import { Icon } from '@/components/Icon';
-import type { PwaSection } from '@/viewmodels/pwaDemo';
+import { canRequestSpeciesPublication, type PwaSection } from '@/viewmodels/pwaDemo';
 
 const shortcuts: {
   title: string;
@@ -34,11 +34,24 @@ const shortcuts: {
   },
 ];
 
+const speciesRequestShortcut: (typeof shortcuts)[number] = {
+  title: 'Solicitar publicación de especie',
+  description: 'Proponer una especie para el catálogo público y ver tus solicitudes',
+  section: 'species-request',
+  icon: 'paw',
+};
+
 export function HomeView({
   onNavigate,
+  roles,
 }: {
   onNavigate: (section: PwaSection) => void;
+  roles?: readonly string[];
 }) {
+  const visibleShortcuts = canRequestSpeciesPublication(roles)
+    ? [...shortcuts, speciesRequestShortcut]
+    : shortcuts;
+
   return (
     <div className="home-view">
       <section className="welcome-section">
@@ -60,7 +73,7 @@ export function HomeView({
           </div>
         </div>
         <div className="shortcut-grid">
-          {shortcuts.map((shortcut) => (
+          {visibleShortcuts.map((shortcut) => (
             <Card className="shortcut-card" key={shortcut.section}>
               <span className="shortcut-icon" aria-hidden="true">
                 <Icon name={shortcut.icon} size={32} />

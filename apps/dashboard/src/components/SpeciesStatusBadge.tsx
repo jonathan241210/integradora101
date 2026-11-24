@@ -16,7 +16,7 @@ const badges: Record<
   accepted: { label: "Publicada", tone: "success", icon: "check" },
   rejected: { label: "Rechazada", tone: "danger", icon: "close" },
   published: { label: "Publicada", tone: "success", icon: "check" },
-  unpublished: { label: "Despublicada", tone: "neutral", icon: "minus" },
+  unpublished: { label: "Despublicada", tone: "warning", icon: "minus" },
 };
 
 /** Estado con icono y texto, no solo color (CA-03). */

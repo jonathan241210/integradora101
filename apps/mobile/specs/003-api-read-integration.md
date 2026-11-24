@@ -2,12 +2,19 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile`, `packages/api-client`
-- Estado: Aprobada
-- Solicitante / responsable funcional: Víctor Adrián (redacción spec / responsable BD); Aksel (revisión móvil)
-- Aprobación funcional: Víctor Adrián (2026-10-20). Enmienda de inicio (noticias, eventos e imágenes) confirmada con el plan el 2026-11-10.
+- Estado: Implementada
+- Solicitada: 2026-10-20
+- Aprobada: 2026-10-20
+- Aprobación funcional: Aprobada. Enmienda de inicio (noticias, eventos e imágenes) confirmada con el plan.
 - Equivalencia en el documento de decisiones previas: 003
 
-## Enmienda 2026-11-10
+## Enmienda
+
+El catálogo que ve el visitante no es la lista cruda de `GET /species`. La app cruza `GET /published-species` con los animales de `GET /enclosures` cuyo `can_receive_visits` está activo. Solo esa intersección se muestra en Inicio, Colección, Perfil y ficha. Si las tres lecturas responden y la especie queda fuera, el detalle no se abre. Los conteos usan esa lista. La API de `GET /species` no cambia. Si falla la lectura de visibilidad, se conserva el comportamiento anterior de caché.
+
+Para CA-01, CA-02 y CA-06, el catálogo y la ficha usan la foto usable de la especie y recurren a la foto de `GET /published-species` cuando falta o su URL no es usable. Las rutas relativas `species/…` se resuelven bajo `/media/` y las URLs locales se resuelven con el origen efectivo de la API. Para CA-05, si una actualización cambia la clave de caché del catálogo, la lista anterior sigue disponible sin conexión hasta que la app pueda renovar los datos.
+
+## Enmienda de inicio
 
 El inicio deja de volcar la lista completa de eventos y pasa a mostrar una noticia y un evento, con despliegue hasta tres y salida avisada al portal. No hay spec nueva: esta enmienda reescribe el CA-03 y agrega CA-08, CA-09 y CA-10. La API no cambia. Las noticias salen de `GET /api/v1/news?limit=3` y `GET /api/v1/news/{id}`; los eventos, de `GET /api/v1/events?limit=3` y `GET /api/v1/events/{id}`. El orden lo decide la API: la noticia más nueva primero y el evento de inicio más próximo primero. La app no reordena.
 
@@ -67,9 +74,10 @@ Esta especificación define la integración de lectura entre las pantallas de ca
   - Si ocurre un error de red o de servidor (códigos HTTP 4xx/5xx o timeout) sin datos previos en caché, muestra el mensaje de error en español y un botón accesible para reintentar (`error`).
   - Si la petición es exitosa, presenta el contenido en pantalla (`success`).
   - Si no hay red pero existen datos cacheados, muestra los datos y un indicador visible de "Modo sin conexión" (`offline`).
+  - Cuando se recupera la conexión, el aviso desaparece sin salir de la app, aunque el proveedor de conectividad tarde en actualizar su estado. Si una comprobación de la red falla, se conserva el último estado y se vuelve a comprobar.
 - **CA-05 (Caché Stale-While-Revalidate y TTL de 5 minutos):** Dado que existen datos previamente guardados en `AsyncStorage`:
   - Si la última sincronización ocurrió hace menos de 5 minutos (TTL fresco), la app sirve inmediatamente los datos locales sin bloquear la interfaz.
-  - Si han transcurrido más de 5 minutos (datos *stale*), la app muestra los datos locales de inmediato y lanza en segundo plano una revalidación contra la API para actualizar la caché local y refrescar la vista al completarse.
+  - Si han transcurrido más de 5 minutos (datos *stale*), la app muestra los datos locales de inmediato y lanza en segundo plano una revalidación contra la API para actualizar la caché local y refrescar la vista al completarse. En Inicio, cada lista de noticias y eventos se sustituye cuando termina su propia revalidación.
   - Si la revalidación en segundo plano falla por desconexión, los datos cacheados permanecen visibles sin interrumpir al usuario.
 - **CA-06 (Imágenes con respaldo y tolerancia a fallos):** Dada una imagen de animal o evento cargada por URL remota, cuando la imagen está descargando o si la URL es inválida/inaccesible, entonces el componente visual muestra un placeholder accesible o tinte de respaldo predeterminado sin romper el layout.
 - **CA-07 (Arquitectura MVVM y cobertura de pruebas Jest):** Dado el repositorio de pruebas en `apps/mobile`, cuando se ejecute la suite de Jest (`npm test -- --runInBand`), entonces:
@@ -87,7 +95,7 @@ Esta especificación define la integración de lectura entre las pantallas de ca
 - **RN-05 (Exclusión de progreso de visitante):** Las propiedades asociadas al progreso personal (tales como `isDiscovered` o puntos) no se consultan ni se alteran en esta spec. El modelo de UI de catálogo presenta los datos puramente zoológicos y educativos de la especie.
 - **RN-06 (Textos y localización):** Todos los mensajes informativos, estados vacíos, alertas de error y etiquetas de accesibilidad deben estar redactados en español claro.
 - **RN-07 (Inicio acotado):** El inicio no muestra más de tres noticias ni más de tres eventos. «Ver todos» no lista el resto dentro de la app: advierte y abre el portal. El detalle de una noticia o un evento sí permanece en la app.
-- **RN-08 (Foto usable):** Al componente de imagen solo llega una URL `http` o `https`. Una ruta `news/` o `events/` se convierte en la URL pública de almacenamiento. El host local se reescribe al origen de la API configurada en la app. Un enlace externo que la API deja solo en `image_path` sí se muestra. Una recarga del inicio no vuelve a montar las fotos que ya están en pantalla.
+- **RN-08 (Foto usable):** Al componente de imagen solo llega una URL `http` o `https`, o la copia local de esa foto. Una ruta `news/` o `events/` se convierte en la URL pública de almacenamiento. El host local se reescribe al origen de la API configurada en la app. Un enlace externo que la API deja solo en `image_path` sí se muestra. La foto de una noticia o un evento se descarga una vez y se reutiliza durante 5 minutos, aunque se vuelva a entrar al inicio o al detalle. Deslizar el inicio hacia abajo, o una recarga forzada del detalle, la vuelve a pedir. Una recarga del inicio no vuelve a montar las fotos que ya están en pantalla.
 - **RN-09 (Actualización del inicio):** Deslizar el inicio hacia abajo solo sustituye noticias y eventos. No vuelve a consultar animales ni el progreso del visitante. Si esa petición falla, se quedan las listas que ya estaban en pantalla. El indicador y las secciones usan los colores del tema (`primary`, `secondary`, `accent`, `surface`); no se introducen colores nuevos.
 
 ## Datos, privacidad y auditoría
@@ -145,15 +153,15 @@ flowchart TD
 - **Riesgos:**
   - Si el backend de Laravel demora en desplegar formalmente los endpoints públicos (`/species`, `/events`), la implementación móvil dependerá temporalmente de mocks o interceptores de prueba. No obstante, al respetar la interfaz del repositorio, el cambio es instantáneo vía variable de entorno (`EXPO_PUBLIC_USE_MOCKS=false`).
   - Imágenes pesadas servidas por el catálogo web podrían saturar la memoria o tardar en redes celulares 3G/4G del parque. Se mitigará usando componentes optimizados con fallback.
-- **Preguntas resueltas:**
-  - *¿Cómo se aborda la falta de spec previa en API?* Se redacta la spec cliente asumiendo las rutas estándar documentadas en `estandares-integracion-api.md`.
-  - *¿Política de caché?* Stale-While-Revalidate con TTL de 5 minutos en `AsyncStorage`.
-  - *¿Alcance de `isDiscovered`?* Excluido; pertenece al progreso del visitante (`mobile-005`).
-  - *¿Detalle de eventos?* Incluido formalmente junto con el listado.
+- **Decisiones:**
+  - Se optó por redactar la spec cliente asumiendo las rutas estándar documentadas en `estandares-integracion-api.md`, porque no existía spec previa de API.
+  - Se optó por Stale-While-Revalidate con TTL de 5 minutos en `AsyncStorage`, porque el visitante ve datos al instante y se actualizan en segundo plano.
+  - Se optó por excluir `isDiscovered`, porque pertenece al progreso del visitante (`mobile-005`).
+  - Se optó por incluir el detalle de eventos junto con el listado, porque la pantalla de evento lo necesita.
 
 ## Revisión
 
-- **Aprobadores y fecha:** Aprobada por Víctor Adrián (2026-10-20). Revisión móvil técnica coordinada con Aksel. Enmienda de inicio confirmada con el plan el 2026-11-10: reescribe CA-03 y agrega CA-08, CA-09 y CA-10. El 2026-11-10 se agrega CA-11: deslizar el inicio actualiza solo noticias y eventos. No cubre la petición de fotos del visitante (`mobile-010`).
+- **Aprobación:** Aprobada. Revisión móvil técnica coordinada con el equipo móvil. Enmienda de inicio confirmada con el plan: reescribe CA-03 y agrega CA-08, CA-09 y CA-10; CA-11 indica que deslizar el inicio actualiza solo noticias y eventos. No cubre la petición de fotos del visitante (`mobile-010`).
 - **Evidencia/enlaces:**
   - `apps/mobile/docs/estandares-integracion-api.md`
   - `apps/mobile/specs/002-mobile-ui-base-visitor-journey.md`

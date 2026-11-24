@@ -4,6 +4,7 @@ namespace App\Actions\Memories\Review;
 
 use App\Actions\Admin\LogAdminActivityAction;
 use App\Actions\Media\ResolveMediaDiskAction;
+use App\Actions\Push\QueueMemoryPushAction;
 use App\Enums\MemoryReviewDecision;
 use App\Enums\MemoryStatus;
 use App\Models\User;
@@ -51,7 +52,7 @@ class AcceptMemoryAction
                 'published_image_path' => $path,
             ])->save();
 
-            VisitorMemoryReview::query()->create([
+            $review = VisitorMemoryReview::query()->create([
                 'visitor_memory_id' => $memory->id,
                 'decision' => MemoryReviewDecision::Accepted->value,
                 'reviewed_by' => $reviewer->id,
@@ -59,6 +60,8 @@ class AcceptMemoryAction
             ]);
 
             $this->audit->execute('accepted', 'Petición de momento aceptada.', $memory, ['memory_id' => $memory->id]);
+
+            app(QueueMemoryPushAction::class)->execute($memory, 'accepted', (int) $review->id);
 
             return $memory;
         });

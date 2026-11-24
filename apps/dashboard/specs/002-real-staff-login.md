@@ -2,13 +2,14 @@
 
 - App dueña: `dashboard`
 - Apps/paquetes afectados: `dashboard`, `packages/api-client`
-- Estado: Aprobada · En progreso (implementación iniciada 2026-10-17)
-- Solicitante / responsable funcional: Jonathan
-- Aprobación funcional: Jonathan, 2026-10-15
+- Estado: Implementada
+- Solicitada: 2026-10-15
+- Aprobada: 2026-10-15
+- Aprobación funcional: Aprobada
 
-> **Vigencia (2026-11-02):** `dashboard-005-ticket-sales` (aprobada el 2026-11-02) conecta Venta e Historial de taquilla con la API, así que dejan de ser datos ficticios. RN-02 deja de aplicarse a esas dos pantallas; sigue vigente para las demás que no conecte otra spec.
+> **Vigencia:** `dashboard-005-ticket-sales` conecta Venta e Historial de taquilla con la API, así que dejan de ser datos ficticios. RN-02 deja de aplicarse a esas dos pantallas; sigue vigente para las demás que no conecte otra spec.
 
-> **Vigencia (2026-11-05, aprobada):** `dashboard-003` y `api-007` dejan la gestión de usuarios solo con `users.manage`. Se ajusta CA-06: `zoo-admin` deja de ver Usuarios y se retira `operational-staff.manage`.
+> **Vigencia:** `dashboard-003` y `api-007` dejan la gestión de usuarios solo con `users.manage`. Se ajusta CA-06: `zoo-admin` deja de ver Usuarios y se retira `operational-staff.manage`.
 
 ## Problema y contexto
 
@@ -96,5 +97,11 @@ El dashboard no almacena credenciales ni datos personales: solo transporta corre
 
 ## Revisión
 
-- Aprobadores y fecha: Jonathan (responsable funcional), 2026-10-15.
+- Aprobadores: Equipo ARCA-NB (responsable funcional).
 - Evidencia/enlaces: `apps/api/specs/003-staff-authentication.md`, `apps/dashboard/specs/001-admin-dashboard-prototype.md` (criterios reemplazados marcados), `docs/03-roles-y-permisos.md`.
+
+## Nota de revisión
+
+- Los roles que exigen 2FA pasan a ser los de `config('arca.two_factor_roles')`: `admin`, `zoo-admin`, `cashier` (`api-021`), `executive` y `communications` (`api-023`). El enrolamiento de CA-05 aplica a todos ellos; `veterinarian` no usa 2FA.
+- CA-06: el destino (`home`) se decide por permiso (`api-023` RN-03). Quien tiene `users.manage` ve Usuarios; `executive` («Consulta directiva») inicia en el Panel principal; `communications` («Comunicación») inicia en Noticias.
+- Roles, etiquetas, cuentas admin y avisos de consola: ver `apps/dashboard/specs/017-fixed-roles-account-management.md`. Esta nota no cambia los CA ni las RN de esta spec.

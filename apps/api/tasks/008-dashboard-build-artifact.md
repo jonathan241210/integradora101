@@ -3,6 +3,8 @@
 - Spec: `apps/api/specs/008-dashboard-build-artifact.md`
 - Plan: `apps/api/plan/008-dashboard-build-artifact.md`
 - Estado: Implementación local lista; validación remota pendiente
+- Solicitada: 2026-10-27
+- Aprobada: 2026-10-27
 
 ## Implementación
 
@@ -21,9 +23,9 @@
 
 ## Aprobación
 
-- Spec funcional aprobada por el usuario solicitante el 2026-10-27.
-- Plan técnico aprobado por el usuario solicitante el 2026-10-27.
-- Checklist de tareas aprobado por el usuario solicitante el 2026-10-27.
+- Spec funcional aprobada por el usuario solicitante.
+- Plan técnico aprobado por el usuario solicitante.
+- Checklist de tareas aprobado por el usuario solicitante.
 
 ## Evidencia local
 

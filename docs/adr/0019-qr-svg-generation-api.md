@@ -1,8 +1,9 @@
 # 0019 · Generación del QR del boleto en SVG desde la API
 
 - Estado: Aceptado
-- Fecha: 2026-11-01 (propuesto); aceptado el 2026-11-02 por Jonathan; ratificado con visto bueno de BD por Víctor Adrián el 2026-11-04
-- Aprobado por: Jonathan (Backend / Autor spec `api-009`) y Víctor Adrián (Responsable de BD)
+- Solicitada: 2026-11-01
+- Aprobada: 2026-11-01
+- Aprobado por: Backend (autor de la spec `api-009`) y Responsable de BD
 - Spec relacionada: `apps/api/specs/009-ticket-sales.md` (CA-09, RN-07, pregunta 4). Vinculado a `docs/database/requests/DBR-006-ticket-sales.md`; este ADR no cambia el esquema.
 
 ---
@@ -21,7 +22,7 @@ Restricciones normativas aplicables:
 
 ## Decisión aceptada
 
-**Librería: `bacon/bacon-qr-code`, versión `^3.1` (verificada: v3.1.1, publicada el 2026-04-05, licencia BSD-2-Clause).**
+**Librería: `bacon/bacon-qr-code`, versión `^3.1` (verificada: v3.1.1, publicada, licencia BSD-2-Clause).**
 
 Se aprueba y adopta la **Opción B: `bacon/bacon-qr-code` en versión `v3.1.1`** para la generación del código QR en SVG dentro de la API.
 
@@ -63,6 +64,6 @@ Se aprueba y adopta la **Opción B: `bacon/bacon-qr-code` en versión `v3.1.1`**
 
 - **Estado actual:** **Aceptado**.
 - **Aprobado por:**
-  - Jonathan (Backend / Autor spec `api-009`) — 2026-11-02
-  - Víctor Adrián (Responsable de Base de Datos) — 2026-11-04
+  - Backend (autor de la spec `api-009`)
+  - Responsable de Base de Datos
 - **Resolución técnica:** Implementación completada en `RenderTicketQrSvgAction` utilizando `BaconQrCode\Writer` y `BaconQrCode\Renderer\Image\SvgImageBackEnd`.

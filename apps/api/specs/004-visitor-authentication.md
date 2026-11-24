@@ -2,16 +2,17 @@
 
 - App dueña: `api`
 - Apps/paquetes afectados: `api`, `mobile` (consumidor), `packages/api-client`
-- Estado: Implementada (2026-10-21; aprobación funcional 2026-10-20)
-- Solicitante / responsable funcional: Aksel
-- Responsable de BD: Victor Adrian
-- Aprobación funcional: Aksel, 2026-10-20
+- Estado: Implementada
+- Solicitada: 2026-10-20
+- Aprobada: 2026-10-20
+- Responsable de BD: Responsable de BD (rol)
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
 La app móvil necesita cuentas de visitante reales (ADR 0011): solo adultos (18+) crean la cuenta con correo y contraseña, verifican el correo con un código de 6 dígitos y mantienen sesión con tokens de acceso cortos (15 min) y refresh rotatorio (30 días) con detección de reuso. El niño juega con la cuenta del tutor, cuyo perfil visible muestra solo apodo y avatar de catálogo. El borrado de cuenta es físico, inmediato y confirmado con contraseña.
 
-Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de DBR-001). DBR-001 y DBR-003 ya están en `Lista para backend`. El contrato lo dejó documentado el equipo; los endpoints de esta spec los completó el equipo de la cuenta móvil. La aprobación funcional es del 2026-10-20. El plan técnico y el código siguieron el SDD después de esa aprobación. Ese trabajo no modifica el login de personal, `apps/web` ni `apps/dashboard`.
+Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de DBR-001). DBR-001 y DBR-003 ya están en `Lista para backend`. El contrato lo dejó documentado el equipo; los endpoints de esta spec los completó el equipo de la cuenta móvil. El plan técnico y el código siguieron el SDD después de la aprobación funcional. Ese trabajo no modifica el login de personal, `apps/web` ni `apps/dashboard`.
 
 ## Objetivos
 
@@ -47,8 +48,8 @@ Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de
 
 - **CA-01:** Dado un adulto, cuando envía `POST /api/v1/visitor/auth/register` con `email, password, password_confirmation, first_name, nickname, avatar_code, is_adult=true, privacy_notice_version`, entonces la API valida mayoría de edad y aceptación del aviso, crea la cuenta, responde 201 **sin tokens** y envía un código de 6 dígitos al correo.
 - **CA-02:** Dado un registro pendiente, cuando envía `POST /api/v1/visitor/auth/email/verify` con `email` y `code` válidos, entonces responde 200 con el par de tokens y el visitante; un código inválido, vencido, consumido o con 5 intentos fallidos responde 422 sin crear sesión.
-- **CA-03:** Dada una solicitud de reenvío, cuando se llama `POST /api/v1/visitor/auth/email/resend`, entonces responde 202 genérico sin revelar si el correo existe, con límite de 1 por minuto y 5 por hora por correo. Si hay un código vigente de `email_verification` o `registration_notice`, reenvía el más reciente de esos dos. Si la cuenta no está verificada y no hay código vigente, reenvía `email_verification`. Si la cuenta ya está verificada y no hay aviso vigente, no envía correo. Enmienda de Aksel, 2026-11-05.
-- **CA-04:** Dado un visitante con correo verificado, cuando envía `POST /api/v1/visitor/auth/login` con `email, password, device_name`, entonces responde el par de tokens; correo no verificado → envía un código `email_verification` de 6 dígitos y responde 403 `email_not_verified`; credenciales incorrectas → 422 «Correo o contraseña incorrectos.»; más de 5 intentos/minuto por correo+IP → 429 con mensaje en español. Enmienda 2026-11-05.
+- **CA-03:** Dada una solicitud de reenvío, cuando se llama `POST /api/v1/visitor/auth/email/resend`, entonces responde 202 genérico sin revelar si el correo existe, con límite de 1 por minuto y 5 por hora por correo. Si hay un código vigente de `email_verification` o `registration_notice`, reenvía el más reciente de esos dos. Si la cuenta no está verificada y no hay código vigente, reenvía `email_verification`. Si la cuenta ya está verificada y no hay aviso vigente, no envía correo. Enmienda.
+- **CA-04:** Dado un visitante con correo verificado, cuando envía `POST /api/v1/visitor/auth/login` con `email, password, device_name`, entonces responde el par de tokens; correo no verificado → envía un código `email_verification` de 6 dígitos y responde 403 `email_not_verified`; credenciales incorrectas → 422 «Correo o contraseña incorrectos.»; más de 5 intentos/minuto por correo+IP → 429 con mensaje en español. Enmienda.
 - **CA-05:** Dada una sesión emitida, cuando se inspeccionan los tokens, entonces el token de acceso es Sanctum con ability `visitor` y `expires_at` a 15 minutos, y el refresh es opaco de 64 bytes, almacenado solo como hash SHA-256, con vigencia de 30 días por emisión y rotación en cada uso.
 - **CA-06:** Dado un refresh válido, cuando se llama `POST /api/v1/visitor/auth/refresh` con `refresh_token`, entonces rota el par y marca el anterior como reemplazado; si se reusa un refresh revocado, la API revoca toda la familia de tokens y responde 401.
 - **CA-07:** Dados dos refresh simultáneos con el mismo token, cuando ambos compiten, entonces solo uno renueva el par y el otro falla sin emitir un segundo par válido (detección de reuso/concurrencia).
@@ -60,7 +61,7 @@ Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de
 - **CA-13:** Dada una sesión válida, cuando se llama `PUT /api/v1/visitor/me/password` con `current_password, password, password_confirmation`, entonces cambia la contraseña y revoca las demás sesiones del visitante.
 - **CA-14:** Dada una sesión válida, cuando se llama `DELETE /api/v1/visitor/me` con `password` correcta, entonces responde 204 y ejecuta el borrado físico en cascada (cuenta, tokens, códigos y progreso) revocando todo.
 - **CA-15:** Dado cualquier cliente, cuando consulta `GET /api/v1/visitor/legal/privacy-notice`, entonces la API devuelve `version` y el contenido vigente del aviso de privacidad. El texto lo provee el zoológico y no bloquea esta spec.
-- **CA-16:** Dados los códigos de verificación y recuperación, cuando se generan, entonces son de 6 dígitos, se guardan como hash, vencen a los 15 minutos, permiten máximo 5 intentos, son de un solo uso y el correo HTML distingue el propósito (`email_verification` vs `password_reset`) e indica la vigencia y uso único. Enmienda 2026-11-04.
+- **CA-16:** Dados los códigos de verificación y recuperación, cuando se generan, entonces son de 6 dígitos, se guardan como hash, vencen a los 15 minutos, permiten máximo 5 intentos, son de un solo uso y el correo HTML distingue el propósito (`email_verification` vs `password_reset`) e indica la vigencia y uso único. Enmienda.
 - **CA-17:** Dado el alta o cambio de contraseña, cuando se valida, entonces exige mínimo 8 caracteres, letras y números, y `uncompromised()` (omitible solo en entorno `local`); el hash es bcrypt.
 - **CA-18:** Dado el registro, cuando una IP supera 5 registros por hora, entonces responde 429 con mensaje en español.
 - **CA-19:** Dados los eventos de acceso (registro, login, refresh, logout, reset, borrado), cuando se registran en bitácora, entonces incluyen correo/IP/user-agent según corresponda y **nunca** contraseñas, tokens ni códigos.
@@ -72,12 +73,12 @@ Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de
 - **RN-01:** Solo adultos (18+) crean cuenta y aceptan aviso y términos; el niño juega con la cuenta del tutor y su perfil visible muestra solo `nickname` y avatar.
 - **RN-02:** El avatar se elige de un catálogo de ilustraciones incluidas en la app (sin fotos). `avatar_code` se valida contra los códigos aceptados: `jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`. El arte final puede cambiar sin cambiar los códigos.
 - **RN-03:** Sesión = token de acceso de 15 min + refresh rotatorio de 30 días con detección de reuso; la rotación es lógica propia sobre Sanctum.
-- **RN-04:** Respuestas genéricas donde aplique: «Correo o contraseña incorrectos.» y 202 en resend/forgot, para no revelar la existencia de una cuenta. Un registro con correo ya usado responde igual que uno nuevo (201 y el mismo mensaje) y no crea otra cuenta ni cambia nombre, apodo, avatar ni contraseña. Sí envía un código de un solo uso con propósito `registration_notice` al correo que ya tiene cuenta, esté verificada o no. Al validar ese código, `POST /api/v1/visitor/auth/email/verify` responde 200 con `code` `email_already_registered` y el mensaje «Ese correo ya está registrado.», sin tokens y sin abrir sesión. Un código inválido sigue en 422 «El código no es válido.» sin decir cuál propósito falló. La comparación de hashes no suma intentos al otro código: un fallo solo cuenta para el código vigente más reciente de esos dos propósitos. Enmienda de Aksel, 2026-11-05.
+- **RN-04:** Respuestas genéricas donde aplique: «Correo o contraseña incorrectos.» y 202 en resend/forgot, para no revelar la existencia de una cuenta. Un registro con correo ya usado responde igual que uno nuevo (201 y el mismo mensaje) y no crea otra cuenta ni cambia nombre, apodo, avatar ni contraseña. Sí envía un código de un solo uso con propósito `registration_notice` al correo que ya tiene cuenta, esté verificada o no. Al validar ese código, `POST /api/v1/visitor/auth/email/verify` responde 200 con `code` `email_already_registered` y el mensaje «Ese correo ya está registrado.», sin tokens y sin abrir sesión. Un código inválido sigue en 422 «El código no es válido.» sin decir cuál propósito falló. La comparación de hashes no suma intentos al otro código: un fallo solo cuenta para el código vigente más reciente de esos dos propósitos. Enmienda.
 - **RN-05:** DBR-001 y DBR-003 están en `Lista para backend` y esta spec está aprobada. El código de estos endpoints espera el plan técnico y las tasks de `api-004`. No se crean migraciones nuevas desde esta spec.
 - **RN-06:** Ningún secreto se versiona: SMTP y claves se configuran por `.env`; `.env.example` solo lleva claves sin valores.
 - **RN-07:** Rutas nombradas de Laravel bajo el prefijo `/api/v1/visitor`; sin Inertia ni Wayfinder.
 - **RN-08:** `visitors` no usa SoftDeletes: el borrado es físico e inmediato por derecho de supresión (LFPDPPP) y porque no son datos clínicos ni financieros.
-- **RN-09:** Sanctum está aprobado en ADR 0001. ADR 0011 fue aceptado el 2026-10-21 y autoriza `expo-secure-store` y AsyncStorage en la app móvil; esta spec no instala esas dependencias. El correo usa SMTP nativo de Laravel, sin SDK nuevo. El proveedor SMTP de producción se configura por `.env` y no bloquea esta spec; en desarrollo `MAIL_MAILER=log`.
+- **RN-09:** Sanctum está aprobado en ADR 0001. ADR 0011 fue aceptado y autoriza `expo-secure-store` y AsyncStorage en la app móvil; esta spec no instala esas dependencias. El correo usa SMTP nativo de Laravel, sin SDK nuevo. El proveedor SMTP de producción se configura por `.env` y no bloquea esta spec; en desarrollo `MAIL_MAILER=log`.
 - **RN-10:** Los endpoints se implementan con Actions (`RegisterVisitorAction`, `VerifyVisitorEmailAction`, `IssueVisitorTokensAction`, `RotateRefreshTokenAction`, `RevokeVisitorSessionAction`, `SendVisitorCodeAction`, `ResetVisitorPasswordAction`, `DeleteVisitorAccountAction`) y controladores delgados.
 - **RN-11:** Identificadores, rutas y campos en inglés; mensajes al visitante en español (Constitución VI).
 - **RN-12:** Los tests PHPUnit corren contra `arca_pruebas`; nunca contra `arca_zoo`.
@@ -94,7 +95,7 @@ Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de
 ### Flujo principal
 
 1. Registro de correo nuevo → 201 + código `email_verification` → verificación → par de tokens → sesión activa.
-2. Registro de correo ya usado → el mismo 201, sin otra cuenta ni cambios, + código `registration_notice` → al acertar, «Ese correo ya está registrado.» sin sesión. Enmienda de Aksel, 2026-11-05.
+2. Registro de correo ya usado → el mismo 201, sin otra cuenta ni cambios, + código `registration_notice` → al acertar, «Ese correo ya está registrado.» sin sesión. Enmienda.
 3. La app renueva con `auth/refresh` cuando el acceso vence; cada uso rota el refresh.
 4. Logout o borrado revocan la familia de tokens.
 5. Recuperación: `password/forgot` → código → `password/reset` → revoca todo.
@@ -111,13 +112,17 @@ Los cambios de esquema están pedidos en DBR-003 (`visitor-accounts`, depende de
 
 ## Dependencias, riesgos y preguntas
 
-- **Dependencias/ADR:** DBR-001 y DBR-003 (`Lista para backend`), ADR 0001 (Sanctum), ADR 0011 (aceptado el 2026-10-21; las dependencias móviles se instalan en la app, no aquí), ADR 0010 (MySQL 8.0.x). `@arca/api-client` puede ganar un modo Bearer de visitante con refresh, documentado en el checklist HTTP de `mobile-004`, sin editar el módulo de personal.
+- **Dependencias/ADR:** DBR-001 y DBR-003 (`Lista para backend`), ADR 0001 (Sanctum), ADR 0011 (aceptado; las dependencias móviles se instalan en la app, no aquí), ADR 0010 (MySQL 8.0.x). `@arca/api-client` puede ganar un modo Bearer de visitante con refresh, documentado en el checklist HTTP de `mobile-004`, sin editar el módulo de personal.
 - **Riesgos:** el refresh rotatorio propio necesita pruebas de reuso y concurrencia; `uncompromised()` requiere red (HIBP), solo omitible en `local`; en producción hace falta SMTP configurado por `.env`.
-- **Decisiones cerradas (2026-10-20):** los ocho códigos de avatar de RN-02; `GET /api/v1/visitor/legal/privacy-notice` devuelve `version` y el contenido que redacte el zoológico; el proveedor SMTP no bloquea la spec; este equipo completa los endpoints del visitante y no toca la web ni el login de personal.
-- **Preguntas pendientes:** ninguna que bloquee la aprobación funcional.
+- **Decisiones:**
+  - Se optó por los ocho códigos de avatar de RN-02, porque cubren la selección del visitante sin contenido adicional.
+  - Se optó por que `GET /api/v1/visitor/legal/privacy-notice` devuelva `version` y el contenido que redacte el zoológico, para versionar el aviso sin cambiar código.
+  - Se optó por no bloquear la spec con el proveedor SMTP de producción: se configura por `.env` y en desarrollo `MAIL_MAILER=log`.
+  - Se optó por que este equipo complete solo los endpoints del visitante, sin tocar la web ni el login de personal.
+  - Sin preguntas abiertas que bloqueen la aprobación funcional.
 
 ## Revisión
 
-- Aprobadores y fecha: Aksel, 2026-10-20, en el mismo acto que `mobile-004` y su plan técnico. El plan y el checklist los aprobó Aksel el 2026-10-21. ADR 0011 fue aceptado por Aksel el 2026-10-21, en documento aparte.
-- Cierre: Implementada el 2026-10-21. CA-01 a CA-21 tienen una prueba que los nombra. Ese día `php artisan test` desde `apps/api/src` quedó en verde (51 pruebas, 694 aserciones), incluida la suite de personal. El PR de esta entrega enlaza spec, plan y tasks.
+- Aprobación: Aprobada (funcional). El plan, el checklist y el ADR 0011 se aprobaron en documentos aparte.
+- Cierre: Implementada. CA-01 a CA-21 tienen una prueba que los nombra. En ese cierre `php artisan test` desde `apps/api/src` quedó en verde (51 pruebas, 694 aserciones), incluida la suite de personal. El PR de esta entrega enlaza spec, plan y tasks.
 - Evidencia/enlaces: `docs/adr/0011-visitor-identity-and-mobile-session.md`, `docs/database/requests/DBR-003-visitor-accounts.md`, `apps/mobile/specs/004-visitor-account.md`.

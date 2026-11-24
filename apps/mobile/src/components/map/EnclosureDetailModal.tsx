@@ -11,6 +11,7 @@ import { MapPlace } from '../../models';
 import { colors, radius, spacing } from '../../theme/tokens';
 import {
   EnclosureAnimalDetail,
+  NO_ANIMALS_MESSAGE,
   getEnclosureAnimalsList,
 } from '../../utils/enclosureAnimals';
 
@@ -83,15 +84,24 @@ export function EnclosureDetailModal({
             </Pressable>
           </View>
 
-          <AppText variant="caption" color="textMuted" style={styles.subtitleText}>
-            {`🐾 Ejemplares que habitan en este recinto (${animals.length}) • Toca cada ficha para desplegar`}
-          </AppText>
+          {animals.length > 0 ? (
+            <AppText variant="caption" color="textMuted" style={styles.subtitleText}>
+              {`🐾 Ejemplares que habitan en este recinto (${animals.length}) • Toca cada ficha para desplegar`}
+            </AppText>
+          ) : null}
 
           {/* Lista de acordeones con cada animal del recinto (boceto del usuario con V desplegable) */}
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
           >
+            {animals.length === 0 ? (
+              <View testID="enclosure-no-animals" accessibilityRole="text">
+                <AppText variant="body" color="textMuted" center>
+                  {NO_ANIMALS_MESSAGE}
+                </AppText>
+              </View>
+            ) : null}
             {animals.map((animal: EnclosureAnimalDetail) => {
               const isExpanded = Boolean(expandedAnimalIds[animal.id]);
 

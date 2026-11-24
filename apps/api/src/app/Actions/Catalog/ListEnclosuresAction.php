@@ -13,8 +13,9 @@ class ListEnclosuresAction
     public function execute(): Collection
     {
         return Enclosure::query()
-            ->with(['animals.species'])
-            ->withCount('animals')
+            ->where('is_active', 1)
+            ->with(['animals' => fn ($query) => $query->publiclyVisible(), 'animals.species'])
+            ->withCount(['animals' => fn ($query) => $query->publiclyVisible()])
             ->orderBy('id')
             ->get();
     }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react-native';
 import { AchievementsScreen } from '../../src/screens/AchievementsScreen';
+import { GameScreen } from '../../src/screens/GameScreen';
 import { countsFromCollection, mapAchievement, mapMission, profileDiscoveryCounts, type ProgressSnapshot } from '../../src/repositories/progressRepository';
 import type { VisitorCatalogItemDto } from '@arca/api-client';
 
@@ -78,6 +79,37 @@ describe('test-ca-03-progress-achievements-missions', () => {
     );
     expect(view.getByText('Observador de aves')).toBeTruthy();
     expect(view.getByText('1 de 3')).toBeTruthy();
+  });
+
+  it('CA-03 y api-005 CA-19 muestra las misiones pendientes y conserva las completadas', async () => {
+    const pendingMission = mapMission({
+      ...mission,
+      code: 'mission-jaguar',
+      title: 'Manchas con motor',
+      rule_type: 'species_keyword',
+      rule_target: 1,
+      rule_param: 'jaguar',
+      progress: 0,
+    });
+    const completedMission = mapMission({
+      ...mission,
+      progress: 0,
+      state: 'completed',
+    });
+    const view = await render(
+      <GameScreen
+        missions={[pendingMission, completedMission]}
+        onMissionPress={() => undefined}
+        onBackPress={() => undefined}
+      />,
+    );
+
+    expect(view.getByText('1 por empezar')).toBeTruthy();
+    expect(view.getByText('Manchas con motor')).toBeTruthy();
+    expect(view.getByText('0 de 1')).toBeTruthy();
+    expect(view.getByText('Misiones completadas')).toBeTruthy();
+    expect(view.getByText('Safari Matutino')).toBeTruthy();
+    expect(view.getByText('5 de 5')).toBeTruthy();
   });
 
   it('CA-01 el faltante cuenta las especies de la colección, no el total visitable', () => {

@@ -1,9 +1,11 @@
 # Plan técnico · 006 · mobile-walker-rotation
 
 - Spec: `apps/web/specs/006-mobile-walker-rotation.md`
-- Estado de spec: Aprobada
+- Estado de spec: Implementada
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
 - Estado técnico: Aprobado para tareas
-- Responsable técnico: Por identificar
+- Responsable técnico: Frontend
 
 ## Diseño de solución
 
@@ -76,6 +78,6 @@ Decisión confirmada durante implementación: se usa la regla `[hidden]` ya exis
 4. Ejecutar las pruebas dirigidas, la suite Node de la app y `/verify`; revisar cambios con `git diff --check`.
 5. Actualizar `specs/006-mobile-walker-rotation.md` y crear/actualizar las tareas enlazadas antes de terminar la implementación.
 
-Dependencias: T-01 (pruebas de control del entorno de navegador) precede a la selección adaptativa; la prueba de aceptación final sigue a cambios de código y estilos. La persona solicitante aprobó el plan técnico el 2026-10-08. La aprobación técnica queda registrada con esa aprobación; no se asigna un responsable del equipo no identificado.
+Dependencias: T-01 (pruebas de control del entorno de navegador) precede a la selección adaptativa; la prueba de aceptación final sigue a cambios de código y estilos. La persona solicitante aprobó el plan técnico. La aprobación técnica queda registrada con esa aprobación; no se asigna un responsable del equipo no identificado.
 
 Evidencia de implementación: el script usa `matchMedia('(max-width: 560px)')`, atributos `hidden` y un único intervalo cancelable de 8000 ms. El controlador se prueba con el reloj/viewport simulados; en navegador se comprobó la transición entre 1024 px y 390 px, el límite visible, el botón y la ausencia de desbordamiento. No se modificó `animations.css`; el estilo global `[hidden]` ya cumple el propósito. La app web sigue sin manifiesto `apps/web/src/package.json`; la suite manual de Node pasa las pruebas específicas, pero tiene un fallo preexistente ajeno a esta feature.

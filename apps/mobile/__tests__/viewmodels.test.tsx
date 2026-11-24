@@ -132,7 +132,7 @@ describe('ViewModels y Repositories', () => {
     await expect(animalRepository.getFeaturedAnimals()).resolves.toHaveLength(3);
     await expect(userRepository.getUser()).resolves.toMatchObject({ name: 'María García' });
     await expect(userRepository.getMissions()).resolves.toHaveLength(2);
-    await expect(userRepository.getAchievements()).resolves.toHaveLength(6);
+    await expect(userRepository.getAchievements()).resolves.toHaveLength(4);
     await expect(userRepository.getMilestones()).resolves.toHaveLength(3);
     await expect(zooRepository.getEvents()).resolves.toHaveLength(2);
     await expect(zooRepository.getNews()).resolves.toEqual([expect.objectContaining({ title: 'Nacimiento de Jirafa' })]);
@@ -140,9 +140,10 @@ describe('ViewModels y Repositories', () => {
     await expect(mapRepository.getSections()).resolves.toHaveLength(8);
   });
 
-  it('CA-16: el hook muestra el favorito al marcarlo', async () => {
+  it('sin sesión el hook no pinta la lista vieja del teléfono', async () => {
     favoriteAnimals.resetForTests();
     await AsyncStorage.clear();
+    await AsyncStorage.setItem('visitor.favorite-animal-ids', JSON.stringify(['juan']));
     const Probe = () => {
       const { ids, toggle } = useFavoriteAnimals();
       return (
@@ -155,38 +156,31 @@ describe('ViewModels y Repositories', () => {
     const view = await render(<Probe />);
     await waitFor(() => expect(view.getByText('vacio')).toBeTruthy());
     await fireEvent.press(view.getByText('vacio'));
-    await waitFor(() => expect(view.getByText('juan')).toBeTruthy());
+    expect(view.getByText('vacio')).toBeTruthy();
+    expect(await AsyncStorage.getItem('visitor.favorite-animal-ids')).toBe(JSON.stringify(['juan']));
     view.unmount();
   });
 
-  it('CA-16: ignora una respuesta que llega después de salir', async () => {
+  it('ignora la lista de la cuenta si llega después de salir', async () => {
     favoriteAnimals.resetForTests();
-    let resolveList: (ids: string[]) => void = () => undefined;
-    let listener: (ids: string[]) => void = () => undefined;
-    const list = jest.spyOn(favoriteAnimals, 'list').mockImplementation(
-      () => new Promise((resolve) => { resolveList = resolve; }),
-    );
-    const subscribe = jest.spyOn(favoriteAnimals, 'subscribe').mockImplementation((next) => {
-      listener = next;
-      return () => undefined;
-    });
+    let resolveList: (value: { data: { id: number }[] }) => void = () => undefined;
+    const client = {
+      listFavoriteSpecies: () => new Promise<{ data: { id: number }[] }>((resolve) => { resolveList = resolve; }),
+      updateFavoriteSpecies: jest.fn(),
+    };
     const Probe = () => {
-      useFavoriteAnimals();
+      useFavoriteAnimals(client, favoriteAnimals, false);
       return <Text>favoritos</Text>;
     };
 
-    try {
-      const view = await render(<Probe />);
-      await act(async () => {
-        view.unmount();
-      });
-      await act(async () => {
-        resolveList(['tarde']);
-        listener(['fuera']);
-      });
-    } finally {
-      list.mockRestore();
-      subscribe.mockRestore();
-    }
+    const view = await render(<Probe />);
+    await act(async () => {
+      view.unmount();
+    });
+    await act(async () => {
+      resolveList({ data: [{ id: 9 }] });
+      await Promise.resolve();
+    });
+    expect(await AsyncStorage.getItem('visitor.favorite-species-ids')).toBeNull();
   });
 });

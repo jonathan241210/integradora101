@@ -6,7 +6,7 @@ class TicketCancellableZoneTest extends TicketFeatureTestCase
 {
     public function test_ca14_ticket_sales_cancellable_uses_zoo_timezone(): void
     {
-        $cashier = $this->createAccount('cashier', false);
+        $cashier = $this->createAccount('cashier');
         $today = $this->insertSale($cashier, '2026-11-02 15:00:00');     // 09:00 del día D en Ciudad de México
         $yesterday = $this->insertSale($cashier, '2026-11-02 03:00:00'); // 21:00 de D-1 en Ciudad de México
 
@@ -27,5 +27,20 @@ class TicketCancellableZoneTest extends TicketFeatureTestCase
     {
         $rows = collect($this->actAs($cashier)->getJson('/api/v1/admin/tickets?timezone='.$timezone)->assertOk()->json('data'))->keyBy('folio');
         $this->assertSame($expected, $rows[$folio]['cancellable'], "folio {$folio} con timezone {$timezone}");
+    }
+
+    /** CA-07 single-business-timezone */
+    public function test_ca07_cancellable_with_business_timezone(): void
+    {
+        $cashier = $this->createAccount('cashier');
+        $sold = $this->insertSale($cashier, '2026-11-07 05:30:00'); // 6 nov 23:30 local
+
+        $this->travelTo($this->at('2026-11-07 05:45:00')); // 6 nov 23:45 local: mismo día
+        $rows = collect($this->actAs($cashier)->getJson('/api/v1/admin/tickets')->assertOk()->json('data'))->keyBy('folio');
+        $this->assertTrue($rows[$sold]['cancellable']);
+
+        $this->travelTo($this->at('2026-11-07 06:10:00')); // 7 nov 00:10 local: otro día, aunque sea el mismo día en UTC
+        $rows = collect($this->actAs($cashier)->getJson('/api/v1/admin/tickets')->assertOk()->json('data'))->keyBy('folio');
+        $this->assertFalse($rows[$sold]['cancellable']);
     }
 }

@@ -11,13 +11,20 @@ import {
  * la URL; cada cambio usa `history.replaceState` y al desmontar se quitan
  * `section` y `tab`. No guarda la pestaña en el navegador (RN-10).
  */
-export function useTulanpediaTab() {
-  const [tab, setTab] = useState<TulanpediaTab>(() => readTulanpediaTab(window.location.search));
+export function useTulanpediaTab(focusTab: TulanpediaTab | null = null, focusNonce = 0) {
+  const [tab, setTab] = useState<TulanpediaTab>(() => focusTab ?? readTulanpediaTab(window.location.search));
 
   const select = useCallback((next: TulanpediaTab) => {
     setTab(next);
     syncTulanpediaUrl(window, next);
   }, []);
+
+  // Buscador global (CA-18): abre la pestaña que indica `kind`.
+  useEffect(() => {
+    if (focusTab) select(focusTab);
+    // Solo con un nuevo enfoque.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusNonce]);
 
   useEffect(() => {
     syncTulanpediaUrl(window, tab);

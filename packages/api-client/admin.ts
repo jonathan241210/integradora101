@@ -1,10 +1,21 @@
 import type { DownloadedFile, ExtendedHttpClient } from "./http";
 import type {
+  CancellationCashierOption,
+  CancellationReportDto,
+  CancellationReviewDto,
+  CancellationReviewInput,
+  CancellationReportQuery,
+  ConsoleNoticeDto,
+  PendingReviewCountsDto,
   DashboardSummaryDto,
   EnclosureDto,
+  EnclosureQrRegenerateResponse,
+  EnclosureQrResponse,
   EventDto,
   EventInput,
-  HasMorePage,
+  GlobalSearchResponse,
+  ListPageMeta,
+  TotalPage,
   MemoryRejectInput,
   MemoryReviewDetailDto,
   MemoryReviewListQuery,
@@ -102,13 +113,27 @@ function normalizeTicketReport(raw: RawTicketReport): TicketReportDto {
   };
 }
 
-function reportParams(query: TicketReportQuery, timezone: string | undefined) {
+/**
+ * Filtros del reporte de cancelaciones (`api-022`). Nunca envía `timezone`: la API usa su
+ * zona de negocio y la informa en `period.timezone` (`api-025` RN-04, `dashboard-019`).
+ */
+function cancellationParams(query: CancellationReportQuery) {
   return {
     period: query.period,
     date: query.date,
     from: query.from,
     to: query.to,
-    timezone: query.timezone || timezone,
+    cashier_id: query.cashier_id,
+    reason_code: query.reason_code,
+  };
+}
+
+function reportParams(query: TicketReportQuery) {
+  return {
+    period: query.period,
+    date: query.date,
+    from: query.from,
+    to: query.to,
   };
 }
 
@@ -150,14 +175,31 @@ function contentJson<Input extends ContentImageInput>(input: Input) {
   return rest;
 }
 
-function normalizeHasMore<T>(
-  response: Partial<HasMorePage<T>> | T[],
-): HasMorePage<T> {
-  if (Array.isArray(response)) return { data: response, meta: { has_more: false } };
+/**
+ * Normaliza una lista con total. Si la API aún no envía `current_page`/`last_page`
+ * (o falta `meta`), cae a una sola página y `has_more` solo si la API lo indica.
+ */
+export function normalizeTotalPage<T>(
+  response: Partial<TotalPage<T>> | T[] | undefined,
+): TotalPage<T> {
+  const data = Array.isArray(response)
+    ? response
+    : Array.isArray(response?.data)
+      ? response.data
+      : [];
+  const meta: Partial<ListPageMeta> = Array.isArray(response) ? {} : (response?.meta ?? {});
+  const current = typeof meta.current_page === "number" ? meta.current_page : 1;
+  const last = typeof meta.last_page === "number" ? Math.max(1, meta.last_page) : 1;
 
   return {
-    data: Array.isArray(response.data) ? response.data : [],
-    meta: { has_more: response.meta?.has_more === true },
+    data,
+    meta: {
+      current_page: current,
+      last_page: last,
+      per_page: typeof meta.per_page === "number" ? meta.per_page : data.length,
+      total: typeof meta.total === "number" ? meta.total : data.length,
+      has_more: typeof meta.has_more === "boolean" ? meta.has_more : current < last,
+    },
   };
 }
 
@@ -190,25 +232,7 @@ function speciesSheetUpdate<Dto>(
   return http.patch<Enveloped<Dto>>(path, body).then(unwrap);
 }
 
-export type CreateAdminApiOptions = {
-  /** Zona horaria del dispositivo; por defecto la del navegador. */
-  deviceTimeZone?: () => string | undefined;
-};
-
-function browserTimeZone(): string | undefined {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-export function createAdminApi(
-  http: ExtendedHttpClient,
-  options: CreateAdminApiOptions = {},
-) {
-  const zone = () => (options.deviceTimeZone ?? browserTimeZone)() || undefined;
-
+export function createAdminApi(http: ExtendedHttpClient) {
   const content = <Dto, Input extends ContentImageInput>(resource: string) => {
     const path = `${base}/${resource}`;
 
@@ -275,7 +299,7 @@ export function createAdminApi(
       },
       async update(
         id: number,
-        input: StaffUpdateInput,
+        input: StaffUpdateInput & { password?: string },
       ): Promise<StaffAccountDto> {
         return unwrap(
           await http.patch<Enveloped<StaffAccountDto>>(
@@ -292,11 +316,53 @@ export function createAdminApi(
       async remove(id: number): Promise<void> {
         await http.delete<unknown>(`${base}/users/${id}`);
       },
-      async resetPassword(id: number, password: string): Promise<void> {
-        await http.put<unknown>(`${base}/users/${id}/password`, { password });
+      /**
+       * `currentPassword` es la contraseña de quien opera (confirmación,
+       * api-021 RN-16) y `password` la nueva de la otra cuenta (dashboard-015 CA-17).
+       */
+      async resetPassword(
+        id: number,
+        password: string,
+        currentPassword?: string,
+      ): Promise<void> {
+        await http.put<unknown>(`${base}/users/${id}/password`, {
+          password,
+          ...(currentPassword !== undefined
+            ? { current_password: currentPassword }
+            : {}),
+        });
       },
-      async resetTwoFactor(id: number): Promise<void> {
-        await http.delete<unknown>(`${base}/users/${id}/two-factor`);
+      async resetTwoFactor(id: number, password?: string): Promise<void> {
+        await http.delete<unknown>(
+          `${base}/users/${id}/two-factor`,
+          password !== undefined ? { password } : undefined,
+        );
+      },
+    },
+    /** `GET /pending-counts` (api-024): el cuerpo se devuelve tal cual, sin `data`. */
+    async pendingCounts(): Promise<PendingReviewCountsDto> {
+      return http.get<PendingReviewCountsDto>(`${base}/pending-counts`);
+    },
+    consoleNotices: {
+      /** Solo avisos no leídos del actor (api-023 CA-25). */
+      async list(): Promise<ConsoleNoticeDto[]> {
+        return unwrapList(
+          await http.get<Enveloped<ConsoleNoticeDto[]>>(`${base}/console-notices`),
+        );
+      },
+      /** 204 sin cuerpo (api-023 CA-26). */
+      async read(id: number): Promise<void> {
+        await http.post<unknown>(`${base}/console-notices/${id}/read`);
+      },
+    },
+    passwordConfirmation: {
+      async confirm(password: string): Promise<{ confirmed_until?: string }> {
+        return unwrap(
+          await http.post<Enveloped<{ confirmed_until?: string }>>(
+            `${base}/password-confirmation`,
+            { password },
+          ),
+        );
       },
     },
     news: content<NewsDto, NewsInput>("news"),
@@ -320,14 +386,46 @@ export function createAdminApi(
           ),
         );
       },
+      /** api-019: activa o desactiva un recinto (booleano JSON estricto). */
+      async setStatus(id: number, isActive: boolean): Promise<EnclosureDto> {
+        return unwrap(
+          await http.patch<Enveloped<EnclosureDto>>(
+            `${base}/enclosures/${id}/status`,
+            { is_active: isActive },
+          ),
+        );
+      },
+      /** api-019: borrado lógico; los animales conservan su recinto. */
+      async remove(id: number): Promise<void> {
+        await http.delete<unknown>(`${base}/enclosures/${id}`);
+      },
+      /** api-020: código QR activo del recinto (solo lectura). */
+      async qr(id: number): Promise<EnclosureQrResponse> {
+        return http.get<EnclosureQrResponse>(`${base}/enclosures/${id}/qr`);
+      },
+      /** api-020: genera el QR si no hay uno activo; si lo hay, devuelve el mismo. */
+      async generateQr(id: number): Promise<EnclosureQrResponse> {
+        return http.post<EnclosureQrResponse>(`${base}/enclosures/${id}/qr`, {});
+      },
+      /** api-020: desactiva los códigos activos y crea uno nuevo. */
+      async regenerateQr(id: number): Promise<EnclosureQrRegenerateResponse> {
+        return http.post<EnclosureQrRegenerateResponse>(
+          `${base}/enclosures/${id}/qr/regenerate`,
+          {},
+        );
+      },
+    },
+    /** api-019: búsqueda global de solo lectura; el servidor decide los grupos visibles. */
+    async search(q: string): Promise<GlobalSearchResponse> {
+      return http.get<GlobalSearchResponse>(`${base}/search${queryString({ q })}`);
     },
     /** Revisión de momentos de visitantes (api-010, consumida por dashboard-008). */
     memoryReview: {
       async list(
         query: MemoryReviewListQuery = {},
-      ): Promise<HasMorePage<MemoryReviewSummaryDto>> {
-        return normalizeHasMore(
-          await http.get<HasMorePage<MemoryReviewSummaryDto>>(
+      ): Promise<TotalPage<MemoryReviewSummaryDto>> {
+        return normalizeTotalPage(
+          await http.get<TotalPage<MemoryReviewSummaryDto>>(
             `${base}/memories${queryString({ ...query })}`,
           ),
         );
@@ -356,9 +454,9 @@ export function createAdminApi(
     speciesPublicationRequests: {
       async list(
         query: SpeciesRequestListQuery = {},
-      ): Promise<HasMorePage<SpeciesRequestSummaryDto>> {
-        return normalizeHasMore(
-          await http.get<HasMorePage<SpeciesRequestSummaryDto>>(
+      ): Promise<TotalPage<SpeciesRequestSummaryDto>> {
+        return normalizeTotalPage(
+          await http.get<TotalPage<SpeciesRequestSummaryDto>>(
             `${base}/species-publication-requests${queryString({ ...query })}`,
           ),
         );
@@ -411,9 +509,9 @@ export function createAdminApi(
     publishedSpecies: {
       async list(
         query: PublishedSpeciesListQuery = {},
-      ): Promise<HasMorePage<PublishedSpeciesRowDto>> {
-        return normalizeHasMore(
-          await http.get<HasMorePage<PublishedSpeciesRowDto>>(
+      ): Promise<TotalPage<PublishedSpeciesRowDto>> {
+        return normalizeTotalPage(
+          await http.get<TotalPage<PublishedSpeciesRowDto>>(
             `${base}/published-species${queryString({ ...query })}`,
           ),
         );
@@ -460,7 +558,7 @@ export function createAdminApi(
       async summary(): Promise<DashboardSummaryDto> {
         return unwrap(
           await http.get<Enveloped<DashboardSummaryDto>>(
-            `${base}/dashboard${queryString({ timezone: zone() })}`,
+            `${base}/dashboard`,
           ),
         );
       },
@@ -471,7 +569,7 @@ export function createAdminApi(
           RawTicketReport | { data: RawTicketReport; meta?: PageMeta }
         >(
           `${base}/reports/tickets${queryString({
-            ...reportParams(query, zone()),
+            ...reportParams(query),
             page: query.page,
           })}`,
         );
@@ -481,13 +579,84 @@ export function createAdminApi(
 
         return normalizeTicketReport({ ...raw, meta: rootMeta ?? raw.meta });
       },
+      async cancellations(
+        query: CancellationReportQuery,
+      ): Promise<CancellationReportDto> {
+        const body = await http.get<
+          Enveloped<CancellationReportDto> & { meta?: PageMeta }
+        >(
+          `${base}/reports/cancellations${queryString({
+            ...cancellationParams(query),
+            page: query.page,
+          })}`,
+        );
+        const report = unwrap<CancellationReportDto>(body);
+        // La API envía `meta` en la raíz, junto a `data` (igual que el reporte de boletos).
+        const rootMeta = "data" in body ? body.meta : undefined;
+
+        return rootMeta ? { ...report, meta: rootMeta } : report;
+      },
+      exportCancellations(
+        query: CancellationReportQuery,
+        format: ReportExportFormat,
+      ): Promise<DownloadedFile> {
+        return http.download(
+          `${base}/reports/cancellations/export${queryString({
+            ...cancellationParams(query),
+            format,
+          })}`,
+        );
+      },
+      /** Revisión de un cajero y día (`api-027`); responde 201 con la revisión. */
+      async createCancellationReview(
+        input: CancellationReviewInput,
+      ): Promise<CancellationReviewDto> {
+        return unwrap(
+          await http.post<Enveloped<CancellationReviewDto>>(
+            `${base}/reports/cancellations/reviews`,
+            input,
+          ),
+        );
+      },
+      /** Historial de revisiones, de la más reciente a la más antigua (`api-027`). */
+      async listCancellationReviews(
+        cashierId: number,
+        businessDate: string,
+      ): Promise<CancellationReviewDto[]> {
+        return unwrapList(
+          await http.get<Enveloped<CancellationReviewDto[]>>(
+            `${base}/reports/cancellations/reviews${queryString({
+              cashier_id: cashierId,
+              business_date: businessDate,
+            })}`,
+          ),
+        );
+      },
+      /** Cajeros para el filtro, incluidos los eliminados lógicamente (`api-022` RN-16). */
+      async cancellationCashiers(): Promise<CancellationCashierOption[]> {
+        const list = unwrapList(
+          await http.get<
+            Enveloped<
+              (Partial<CancellationCashierOption> & {
+                full_name?: string;
+                cashier_name?: string;
+              })[]
+            >
+          >(`${base}/reports/cancellations/cashiers`),
+        );
+
+        return list.map((item) => ({
+          id: Number(item.id),
+          name: item.name ?? item.full_name ?? item.cashier_name ?? String(item.id),
+        }));
+      },
       exportTickets(
         query: TicketReportQuery,
         format: ReportExportFormat,
       ): Promise<DownloadedFile> {
         return http.download(
           `${base}/reports/tickets/export${queryString({
-            ...reportParams(query, zone()),
+            ...reportParams(query),
             format,
           })}`,
         );

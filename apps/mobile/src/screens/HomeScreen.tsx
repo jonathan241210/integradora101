@@ -10,12 +10,11 @@ import {
   EventCard,
   HighlightNewsCard,
   OfflineBanner,
-  LoadingView,
   EmptyView,
   ErrorView,
 } from '../components/ui';
 import { colors, radius, spacing } from '../theme/tokens';
-import { GameScreen } from './GameScreen';
+import { GameScreen, type MissionsAccess } from './GameScreen';
 import { Animal, ZooEvent, News, Mission } from '../models';
 
 type HomePanel = 'home' | 'missions';
@@ -63,8 +62,10 @@ export interface HomeScreenProps {
   initialPanel?: HomePanel;
   missions?: Mission[];
   missionsLoading?: boolean;
+  missionsAccess?: MissionsAccess;
   pendingScans?: { clientScanId: string; code: string }[];
   onMissionPress?: (id: string) => void;
+  onAchievementsPress?: () => void;
   onRetryScansPress?: () => void;
   visitorName?: string | null;
   discoveredCount?: number | null;
@@ -92,8 +93,10 @@ export function HomeScreen({
   initialPanel = 'home',
   missions = [],
   missionsLoading = false,
+  missionsAccess,
   pendingScans = [],
   onMissionPress,
+  onAchievementsPress,
   onRetryScansPress,
   visitorName,
   discoveredCount,
@@ -119,21 +122,12 @@ export function HomeScreen({
           missions={missions}
           pendingScans={pendingScans}
           loading={missionsLoading}
+          access={missionsAccess}
           onBackPress={() => setPanel('home')}
           onMissionPress={(id) => onMissionPress?.(id)}
+          onAchievementsPress={onAchievementsPress}
           onRetryPress={onRetryScansPress}
         />
-      </ScreenContainer>
-    );
-  }
-
-  if (loading) {
-    return (
-      <ScreenContainer scroll={false}>
-        {header}
-        <View style={styles.loadingFill}>
-          <LoadingView message="Cargando el zoológico..." />
-        </View>
       </ScreenContainer>
     );
   }
@@ -183,14 +177,16 @@ export function HomeScreen({
         />
       </View>
 
-      {isEmpty ? (
+      {isEmpty && !loading ? (
         <EmptyView
           title="No hay animales o eventos por ahora"
           message="Vuelve a consultar más tarde para conocer las novedades del parque."
         />
       ) : (
         <>
-          {displayAnimals.length === 0 ? (
+          {loading && displayAnimals.length === 0 ? (
+        <Text style={[styles.emptyCopy, styles.favoriteEmpty]} accessibilityLiveRegion="polite">Cargando animales…</Text>
+      ) : displayAnimals.length === 0 ? (
         <Text style={[styles.emptyCopy, styles.favoriteEmpty]}>Marca el corazón en la ficha de un animal para verlo aquí.</Text>
       ) : (
       <FlatList
@@ -223,6 +219,7 @@ export function HomeScreen({
             <HomePreview
               title="Noticias actuales"
               emptyMessage="Aún no hay noticias publicadas"
+              loadingMessage={loading ? 'Cargando noticias…' : undefined}
               items={displayNews}
               seeMoreLabel="Ver más noticias"
               seeAllLabel="Ver todas las noticias en el portal"
@@ -237,6 +234,7 @@ export function HomeScreen({
             <HomePreview
               title="Próximos eventos"
               emptyMessage="Aún no hay eventos vigentes"
+              loadingMessage={loading ? 'Cargando eventos…' : undefined}
               items={displayEvents}
               seeMoreLabel="Ver más eventos"
               seeAllLabel="Ver todos los eventos en el portal"
@@ -289,6 +287,7 @@ function HomeSwitcher({ panel, onChange }: { panel: HomePanel; onChange: (panel:
 function HomePreview<T extends { id?: string }>({
   title,
   emptyMessage,
+  loadingMessage,
   items,
   seeMoreLabel,
   seeAllLabel,
@@ -297,6 +296,7 @@ function HomePreview<T extends { id?: string }>({
 }: {
   title: string;
   emptyMessage: string;
+  loadingMessage?: string;
   items: T[];
   seeMoreLabel: string;
   seeAllLabel: string;
@@ -312,7 +312,7 @@ function HomePreview<T extends { id?: string }>({
     <View style={styles.preview}>
       <SectionHeader title={title} />
       {visible.length === 0 ? (
-        <Text style={styles.emptyCopy}>{emptyMessage}</Text>
+        <Text style={styles.emptyCopy} accessibilityLiveRegion="polite">{loadingMessage ?? emptyMessage}</Text>
       ) : (
         visible.map((item, index) => (
           <View key={item.id ?? `${title}-${index}`}>{renderItem(item)}</View>

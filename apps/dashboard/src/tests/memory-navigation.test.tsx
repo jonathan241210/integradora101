@@ -67,7 +67,7 @@ it("CA-01 memory-navigation: el orden de las secciones existentes no cambia", ()
     "Panel principal",
     "Noticias",
     "Eventos",
-    "Reporte de boletos",
+    "Reportes",
     "Recintos",
     "Usuarios",
     "Momentos",

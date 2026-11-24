@@ -110,7 +110,7 @@ describe('Mobile — Ficha Técnica del Recinto y Acordeones de Animales (Nivel 
           longevity: 'hasta donde dure papi',
           diet: 'MANZANAS',
           reproduction: 'DVD',
-          characteristics: 'CARA Y ISTICAS',
+          funFact: 'CARA Y ISTICAS',
           veterinaryStatus: 'Estatus: Permanente',
         },
       ],

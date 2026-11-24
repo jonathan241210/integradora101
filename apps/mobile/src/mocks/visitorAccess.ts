@@ -58,7 +58,7 @@ export const HELP_SECTIONS: InfoSection[] = [
   {
     id: 'settings',
     title: 'Ajustes',
-    body: 'La cámara pide el permiso del teléfono. La ubicación solo cambia de estado en pantalla. La aplicación permanece en modo claro.',
+    body: 'La cámara y la ubicación piden el permiso del teléfono. Para quitarlos, el cambio se confirma en Ajustes del sistema. La aplicación permanece en modo claro.',
   },
 ];
 

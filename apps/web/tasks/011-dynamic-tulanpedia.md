@@ -1,10 +1,12 @@
 # Tareas · 011 · dynamic-tulanpedia
 
-- Spec: `apps/web/specs/011-dynamic-tulanpedia.md` (Estado: **Aprobada**, Jonathan, 2026-11-12; aprobar no autoriza implementar).
-- Plan: `apps/web/plan/011-dynamic-tulanpedia.md` (Estado: **Aprobado**, Jonathan, 2026-11-13).
-- Estado del checklist: **En progreso** (actualizado 2026-11-13; plan y tasks aprobados por Jonathan, responsable de backend). Coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
-- ADR de excepción: `docs/adr/0028-dynamic-tulanpedia-catalog.md` (Aceptado, 2026-11-12). Extiende `docs/adr/0024-web-static-portal-exception.md`.
-- Dependencias bloqueantes: `api-015` (Aprobada; implementada en esta rama con sus tareas marcadas con evidencia, PR pendiente) y DBR-013 (en «Lista para backend» desde el 2026-11-12; migración aplicada en `arca_pruebas`, lote 5). La verificación real contra la API (T-01 a) sigue pendiente.
+- Spec: `apps/web/specs/011-dynamic-tulanpedia.md` (Estado: **Aprobada**, por Backend; aprobar no autoriza implementar).
+- Plan: `apps/web/plan/011-dynamic-tulanpedia.md` (Estado: **Aprobado**).
+- Estado del checklist: **En progreso** (plan y tasks aprobados por Backend). Coordinación en `docs/trabajo-paralelo-momentos-especies.md`.
+- Solicitada: 2026-11-12
+- Aprobada: 2026-11-12
+- ADR de excepción: `docs/adr/0028-dynamic-tulanpedia-catalog.md`. Extiende `docs/adr/0024-web-static-portal-exception.md`.
+- Dependencias bloqueantes: `api-015` (Aprobada; implementada en esta rama con sus tareas marcadas con evidencia, PR pendiente) y DBR-013 (en «Lista para backend» desde; migración aplicada en `arca_pruebas`, lote 5). La verificación real contra la API (T-01 a) sigue pendiente.
 - Checklist: cada T-xx marcada tiene su evidencia en la línea (aportada por la sesión principal). Las no marcadas indican su pendiente.
 - Sin dependencias nuevas, sin `package.json`, sin build. Las pruebas usan `node --test` y no llaman a la API real.
 
@@ -16,11 +18,11 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
 
 - [ ] **T-01** (CA-01, CA-10, CA-13; RN-02) — **Precondiciones y línea base** (bloqueante; no es código):
   - (a) `api-015` implementada con evidencia: `curl -i -H "Origin: http://localhost:8080" http://localhost:8000/api/v1/published-species` responde `200`, con `Access-Control-Allow-Origin: http://localhost:8080` y `{"data": [...]}`; y las pruebas PHPUnit `test_ca01` a `test_ca18` de `api-015` están en verde (evidencia del equipo de backend).
-  - [x] (b) DBR-013 en «Lista para backend» con evidencia de la migración aplicada en `arca_pruebas` (responsable de BD). **Evidencia (verificado 2026-11-12, lote 5):** migración `Ran` por consulta de solo lectura de backend; fecha y responsable de la aplicación: por registrar por BD.
-  - [x] (c) Plan y tasks aprobados por Jonathan (2026-11-13), con las respuestas a las preguntas 1 a 8 del plan registradas el 2026-11-13. **Evidencia (2026-11-13): Plan y tasks de `web-011` figuran como Aprobados por Jonathan (2026-11-13) en sus encabezados, con las preguntas 1 a 8 resueltas.**
-  - [x] (d) Línea base del orden de secciones de `apps/web/src/index.html` registrada en el PR: `porque-visitar`, `animales`, `mapa`, `ubicacion`, `instalaciones`, `noticias`, `eventos`, `boletos`, `preguntas`, `galeria` (y `cognitivePanel`, de tipo diálogo). Esa lista se copia a `animals.test.mjs` en T-04. **Evidencia (2026-11-13): Lista copiada como `SECTION_BASELINE` en `apps/web/src/tests/animals.test.mjs` (test `CA-13`, en verde).**
-  - [x] (e) Línea base de regresión: número de pruebas aprobadas y fallidas de `node --test apps/web/src/tests/relocation.test.mjs` y de `node --test apps/web/src/tests/news-events.test.mjs`, antes de cualquier cambio. Los fallos preexistentes (6 en `relocation.test.mjs`, según `apps/web/tasks/009-dynamic-news-events.md`) se registran sin atribuirlos a este cambio. **Evidencia (2026-11-13): antes de cambiar código: `relocation.test.mjs` 45 pruebas, 39 aprobadas y 6 fallidas (CA-03 lion-hero-mobile-navigation, CA-04 isometric-zoo-map, CA-07 isometric-zoo-map, CA-04 visit-info-icons-and-favicon, CA-03 header-walker-layer, CA-05 cognitive-accessibility-assistant); `news-events.test.mjs` 18/18; `not-found.test.mjs` 6/6. Después de web-011 y web-010: las mismas 6 fallidas.**
-  - [x] (f) Confirmar que `apps/web/src/js/api.js` existe con la función `request` de `web-009` sin cambios pendientes. **Evidencia (2026-11-13): `js/api.js` existe con `request` sin cambios (solo se añadieron `getSpecies` y `getMemories`).**
+  - [x] (b) DBR-013 en «Lista para backend» con evidencia de la migración aplicada en `arca_pruebas` (responsable de BD). **Evidencia:** migración `Ran` por consulta de solo lectura de backend; fecha y responsable de la aplicación: por registrar por BD.
+  - [x] (c) Plan y tasks aprobados por Backend, con las respuestas a las preguntas 1 a 8 del plan registradas. **Evidencia: Plan y tasks de `web-011` figuran como Aprobados por Backend en sus encabezados, con las preguntas 1 a 8 resueltas.**
+  - [x] (d) Línea base del orden de secciones de `apps/web/src/index.html` registrada en el PR: `porque-visitar`, `animales`, `mapa`, `ubicacion`, `instalaciones`, `noticias`, `eventos`, `boletos`, `preguntas`, `galeria` (y `cognitivePanel`, de tipo diálogo). Esa lista se copia a `animals.test.mjs` en T-04. **Evidencia: Lista copiada como `SECTION_BASELINE` en `apps/web/src/tests/animals.test.mjs` (test `CA-13`, en verde).**
+  - [x] (e) Línea base de regresión: número de pruebas aprobadas y fallidas de `node --test apps/web/src/tests/relocation.test.mjs` y de `node --test apps/web/src/tests/news-events.test.mjs`, antes de cualquier cambio. Los fallos preexistentes (6 en `relocation.test.mjs`, según `apps/web/tasks/009-dynamic-news-events.md`) se registran sin atribuirlos a este cambio. **Evidencia: antes de cambiar código: `relocation.test.mjs` 45 pruebas, 39 aprobadas y 6 fallidas (CA-03 lion-hero-mobile-navigation, CA-04 isometric-zoo-map, CA-07 isometric-zoo-map, CA-04 visit-info-icons-and-favicon, CA-03 header-walker-layer, CA-05 cognitive-accessibility-assistant); `news-events.test.mjs` 18/18; `not-found.test.mjs` 6/6. Después de web-011 y web-010: las mismas 6 fallidas.**
+  - [x] (f) Confirmar que `apps/web/src/js/api.js` existe con la función `request` de `web-009` sin cambios pendientes. **Evidencia: `js/api.js` existe con `request` sin cambios (solo se añadieron `getSpecies` y `getMemories`).**
   - **Pendiente de integración (S1):** (a) `api-015` implementada con evidencia (`curl` y PHPUnit). T-01 queda sin marcar hasta que la sesión principal la aporte.
   - **Criterios de hecho:** (a) a (f) con evidencia adjunta al PR. Si (a) o (b) faltan, no se empieza T-02.
   - **Archivos:** ninguno (solo evidencia).
@@ -35,7 +37,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** los dos tests en verde; `news-events.test.mjs` sin cambios de resultado.
   - **Archivos:** `apps/web/src/js/api.js`, `apps/web/src/tests/animals.test.mjs` (nuevo).
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs` (solo los tests de esta tarea) y `node --test apps/web/src/tests/news-events.test.mjs`.
-  - **Evidencia (2026-11-13): `getSpecies()` añadido a `js/api.js` y `tests/animals.test.mjs` creado; `node --test apps/web/src/tests/animals.test.mjs`: 31 pruebas, 31 aprobadas, 0 fallidas (incluye los dos `CA-10`); `node --test apps/web/src/tests/news-events.test.mjs`: 18/18.**
+  - **Evidencia: `getSpecies` añadido a `js/api.js` y `tests/animals.test.mjs` creado; `node --test apps/web/src/tests/animals.test.mjs`: 31 pruebas, 31 aprobadas, 0 fallidas (incluye los dos `CA-10`); `node --test apps/web/src/tests/news-events.test.mjs`: 18/18.**
 
 - [x] **T-03** (CA-09, CA-19; RN-04, RN-11) — **Helpers puros:** crear `apps/web/src/js/animals.js` como script clásico (IIFE con `root`), que expone `ArcaTulanpedia.helpers` sin tocar el DOM todavía.
   - `safeImageUrl(value)`: `http`/`https` absolutas parseadas con `new URL`, o rutas que empiezan por `/` y no por `//` ni `/\`; el resto, `null`.
@@ -50,7 +52,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** tres tests en verde; `animals.js` no contiene `fetch(`.
   - **Archivos:** `apps/web/src/js/animals.js` (nuevo), `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs`.
-  - **Evidencia (2026-11-13): `js/animals.js` creado con `ArcaTulanpedia.helpers`; tests `CA-09` (safeImageUrl), `CA-19` (fieldRows) y `CA-11` (categoryLabel) en verde (31/31); `animals.js` sin `fetch(` ni `innerHTML`.**
+  - **Evidencia: `js/animals.js` creado con `ArcaTulanpedia.helpers`; tests `CA-09` (safeImageUrl), `CA-19` (fieldRows) y `CA-11` (categoryLabel) en verde (31/31); `animals.js` sin `fetch(` ni `innerHTML`.**
 
 - [x] **T-04** (CA-08, CA-12, CA-13, CA-18; RN-02) — **Marcado de `index.html`:** retirar la muestra y preparar los contenedores.
   - En `#animales`: quitar las cuatro `article.animal-card` (león, jirafa, guacamaya, tortuga), los `p.model-note` y `p.demo-note`.
@@ -68,7 +70,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** los cuatro tests en verde; `relocation.test.mjs` sin nuevos fallos respecto de T-01 (e); `index.html` abre sin errores de sintaxis en el navegador.
   - **Archivos:** `apps/web/src/index.html`, `apps/web/src/animals.css` (nuevo, mínimo), `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs`; `node --test apps/web/src/tests/relocation.test.mjs` comparado con T-01 (e).
-  - **Evidencia (2026-11-13): `index.html` sin fichas de muestra, `demo-note`, `model-note`, bloque `data-model` ni opciones fijas; `viewerLoaded` y el visor del mapa conservados; tests `CA-08`, `CA-12`, `CA-13` y `CA-18` en verde (31/31); `node --test apps/web/src/tests/relocation.test.mjs`: 39/45 con los mismos 6 fallos de la línea base (T-01 e). La apertura de `index.html` en navegador queda en T-15 (pendiente de integración (S1)); aquí solo hay verificación estática y con DOM simulado.**
+  - **Evidencia: `index.html` sin fichas de muestra, `demo-note`, `model-note`, bloque `data-model` ni opciones fijas; `viewerLoaded` y el visor del mapa conservados; tests `CA-08`, `CA-12`, `CA-13` y `CA-18` en verde (31/31); `node --test apps/web/src/tests/relocation.test.mjs`: 39/45 con los mismos 6 fallos de la línea base (T-01 e). La apertura de `index.html` en navegador queda en T-15 (pendiente de integración (S1)); aquí solo hay verificación estática y con DOM simulado.**
 
 - [x] **T-05** (CA-05, CA-06, CA-07; RN-02, RN-13) — **Estados de carga, vacío, error y reintento** en `js/animals.js`.
   - `load()`: llama una vez a `ArcaApi.getSpecies()`; un flag `busy` evita dos peticiones a la vez.
@@ -84,7 +86,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** tres tests en verde; no hay `fetch(` en `js/animals.js`; el mensaje de error no muestra el `reason`.
   - **Archivos:** `apps/web/src/js/animals.js`, `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs`.
-  - **Evidencia (2026-11-13): Estados de carga, vacío, error y reintento en `js/animals.js`; tests `CA-05`, `CA-06` y `CA-07` en verde (31/31), incluido el foco del reintento; `animals.js` sin `fetch(` y el texto de error no contiene `reason`.**
+  - **Evidencia: Estados de carga, vacío, error y reintento en `js/animals.js`; tests `CA-05`, `CA-06` y `CA-07` en verde (31/31), incluido el foco del reintento; `animals.js` sin `fetch(` y el texto de error no contiene `reason`.**
 
 - [x] **T-06** (CA-01, CA-02, CA-09, CA-11, CA-19; RN-01, RN-04, RN-08, RN-10, RN-12) — **Tarjetas, imágenes y campos.**
   - Con datos válidos, `load()` crea un `article.animal-card` por especie en el orden recibido, con la estructura de la sección «Tarjetas» del plan (`div.tp-media`, `h3`, `div.tp-details` solo si hay filas).
@@ -101,7 +103,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** cinco tests en verde; `h3` para cada nombre; ningún `innerHTML` en `js/animals.js`.
   - **Archivos:** `apps/web/src/js/animals.js`, `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs`.
-  - **Evidencia (2026-11-13): Tarjetas, imagen/placeholder y filas en `js/animals.js`; tests `CA-01`, `CA-02`, `CA-09`, `CA-11` y `CA-19` en verde (31/31), con respuestas simuladas; sin `innerHTML` en `js/`.**
+  - **Evidencia: Tarjetas, imagen/placeholder y filas en `js/animals.js`; tests `CA-01`, `CA-02`, `CA-09`, `CA-11` y `CA-19` en verde (31/31), con respuestas simuladas; sin `innerHTML` en `js/`.**
 
 - [x] **T-07** (CA-03, CA-04, CA-21, CA-22; RN-07, RN-08, RN-11) — **Filtros derivados, contador y «Limpiar filtros»** en `js/animals.js`.
   - Opciones de «Especie» (`common_name` distintos, ordenados, «Todas las especies» primero), de «Hábitat» (`habitatKey` distinto, primera forma recibida, «Todos los hábitats» primero) y de «Tipo de animal» (claves válidas con `categoryLabel`, ordenadas por etiqueta, «Todos los tipos» primero). Las opciones se crean con la DOM API.
@@ -117,7 +119,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** cuatro tests en verde; una especie sin hábitat aparece en «Todos» y en su opción de «Especie», pero no al filtrar por hábitat.
   - **Archivos:** `apps/web/src/js/animals.js`, `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs`.
-  - **Evidencia (2026-11-13): Filtros derivados, contador y «Limpiar filtros»; tests `CA-03`, `CA-04`, `CA-21` y `CA-22` en verde (31/31); una especie sin hábitat aparece en «Todos» y en su opción de «Especie», pero no al filtrar por hábitat.**
+  - **Evidencia: Filtros derivados, contador y «Limpiar filtros»; tests `CA-03`, `CA-04`, `CA-21` y `CA-22` en verde (31/31); una especie sin hábitat aparece en «Todos» y en su opción de «Especie», pero no al filtrar por hábitat.**
 
 - [x] **T-08** (CA-20, CA-24; RN-01, RN-13) — **Visibilidad y republicación.**
   - Sin código nuevo de caché: cada carga reemplaza la lista. Esta tarea comprueba ese comportamiento.
@@ -127,9 +129,9 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** dos tests en verde; `index.html` leído una vez por prueba y sin cambios entre cargas.
   - **Archivos:** `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs`. La evidencia manual de CA-24 es T-15.
-  - **Evidencia (2026-11-13): Tests `CA-20` y `CA-24` en verde (31/31) con `index.html` leído antes y después de las cargas, sin cambios. La evidencia manual de CA-24 sigue en T-15.**
+  - **Evidencia: Tests `CA-20` y `CA-24` en verde (31/31) con `index.html` leído antes y después de las cargas, sin cambios. La evidencia manual de CA-24 sigue en T-15.**
 
-- [x] **T-09** (CA-12; RN-06) — **Retirar el filtro de animales de `script.js`.** Pregunta 1 del plan resuelta (2026-11-13): el formulario de cabecera conserva sus IDs y, al enviar, solo lleva a `#animales` sin filtrar.
+- [x] **T-09** (CA-12; RN-06) — **Retirar el filtro de animales de `script.js`.** Pregunta 1 del plan resuelta: el formulario de cabecera conserva sus IDs y, al enviar, solo lleva a `#animales` sin filtrar.
   - Quitar `speciesFilter`, `habitatFilter`, `animalCount`, `noAnimals`, `animalCards`, `filterAnimals()`, los listeners de `input` (con `debounce`), de `speciesFilter`, `habitatFilter` y `clearFilters`, y la llamada inicial `filterAnimals()`.
   - Conservar `const menuToggle =` y `const searchInput = $('searchInput');`, que son anclas de `relocation.test.mjs`.
   - Quitar `normalize` y `debounce` solo si ya no tienen usos (comprobar con búsqueda).
@@ -139,7 +141,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** el test en verde; `relocation.test.mjs` y `news-events.test.mjs` sin nuevos fallos respecto de T-01 (e); cero errores de consola al cargar la página sin especies (se verifica en T-15).
   - **Archivos:** `apps/web/src/script.js`, `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs`; `node --test apps/web/src/tests/relocation.test.mjs` comparado con T-01 (e).
-  - **Evidencia (2026-11-13): Filtro de animales retirado de `script.js` (`node --check script.js` correcto); se conservan `const menuToggle =` y `const searchInput = $('searchInput');`; `normalize` y `debounce` eliminados (sin usos restantes, comprobado con `grep`); el buscador de cabecera solo lleva a `#animales`; test `CA-12` en verde; `relocation.test.mjs` 39/45 con los mismos 6 fallos de la línea base. Cero errores de consola se verifica en T-15 (pendiente de integración (S1)).**
+  - **Evidencia: Filtro de animales retirado de `script.js` (`node --check script.js` correcto); se conservan `const menuToggle =` y `const searchInput = $('searchInput');`; `normalize` y `debounce` eliminados (sin usos restantes, comprobado con `grep`); el buscador de cabecera solo lleva a `#animales`; test `CA-12` en verde; `relocation.test.mjs` 39/45 con los mismos 6 fallos de la línea base. Cero errores de consola se verifica en T-15 (pendiente de integración (S1)).**
 
 - [x] **T-10** (CA-09, CA-14; RN-09) — **Estilos de `animals.css`.**
   - `.tp-media`: `aspect-ratio: 4 / 3`, `background: var(--surface-subtle)`, `display: grid`, `place-items: center`, `overflow: hidden`, `min-width: 0`.
@@ -155,7 +157,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** dos tests en verde; `animations.css` y `styles.css` sin cambios en git.
   - **Archivos:** `apps/web/src/animals.css`, `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs`; `git diff --stat` sin `styles.css` ni `animations.css`.
-  - **Evidencia (2026-11-13): `animals.css` completo (caja `tp-media` 4:3, `object-fit: contain`, guarda de zoom, foco, 360 px); tests `CA-09` (CSS) y `CA-14` en verde (31/31); `git status` sin cambios en `styles.css` ni `animations.css`.**
+  - **Evidencia: `animals.css` completo (caja `tp-media` 4:3, `object-fit: contain`, guarda de zoom, foco, 360 px); tests `CA-09` (CSS) y `CA-14` en verde (31/31); `git status` sin cambios en `styles.css` ni `animations.css`.**
 
 - [x] **T-11** (CA-11, CA-15, CA-17; RN-03, RN-05, RN-06) — **Pruebas estáticas de seguridad y configuración.**
   - CA-11: búsqueda de `innerHTML`, `outerHTML`, `insertAdjacentHTML`, `document.write`, `eval` y `new Function` en `js/animals.js` y `js/api.js`, sin resultados.
@@ -168,7 +170,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** tres tests en verde.
   - **Archivos:** `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs`.
-  - **Evidencia (2026-11-13): Tests estáticos `CA-11`, `CA-15` y `CA-17` en verde (31/31): sin `innerHTML`/`eval`/etc., una meta `arca-api-base` igual en las tres páginas, sin `package.json`, almacenamiento ni recursos remotos.**
+  - **Evidencia: Tests estáticos `CA-11`, `CA-15` y `CA-17` en verde (31/31): sin `innerHTML`/`eval`/etc., una meta `arca-api-base` igual en las tres páginas, sin `package.json`, almacenamiento ni recursos remotos.**
 
 - [x] **T-12** (CA-16; RN-05) — **Suite completa y cobertura.**
   - Añadir `CA-16 dynamic-tulanpedia: cada criterio CA-01 a CA-24 tiene al menos un test que lo nombra`. Lee el propio archivo y comprueba los 24 nombres.
@@ -178,7 +180,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** la suite completa en verde; los 24 CA tienen su nombre; ningún test depende de la red ni de la API real.
   - **Archivos:** `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs` con el número de pruebas y de aprobadas registrado en el PR.
-  - **Evidencia (2026-11-13): Test `CA-16` en verde: los 24 nombres `CA-01` a `CA-24` presentes; imports solo `node:*`; sin `package.json`. `node --test apps/web/src/tests/animals.test.mjs`: 31 pruebas, 31 aprobadas, 0 fallidas.**
+  - **Evidencia: Test `CA-16` en verde: los 24 nombres `CA-01` a `CA-24` presentes; imports solo `node:*`; sin `package.json`. `node --test apps/web/src/tests/animals.test.mjs`: 31 pruebas, 31 aprobadas, 0 fallidas.**
 
 - [x] **T-13** (CA-23; RN-08) — **Introducción y documentación local.**
   - En `index.html`, línea ~260, reemplazar «Busca por nombre o filtra por especie y hábitat. En cada ficha encontrarás información general…» por el texto exacto de CA-23: «Filtra las especies por tipo de animal, especie o hábitat. En cada ficha verás la información que el zoológico ha publicado para la especie.». El titular «Encuentros inolvidables» y el `h2` «TulanPedia» no cambian.
@@ -188,7 +190,7 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** test en verde; el documento enlaza `docs/adr/0028-dynamic-tulanpedia-catalog.md` y no contiene valores de producción ni secretos; la tabla de etiquetas coincide con `categoryLabel`.
   - **Archivos:** `apps/web/src/index.html`, `apps/web/docs/tulanpedia-catalogo.md` (nuevo), `apps/web/src/tests/animals.test.mjs`.
   - **Verificación:** `node --test apps/web/src/tests/animals.test.mjs`; revisión de que la tabla del documento y la de `js/animals.js` son idénticas.
-  - **Evidencia (2026-11-13): Introducción de `#animales` con el texto exacto de CA-23; `apps/web/docs/tulanpedia-catalogo.md` creado (nueve secciones, enlaza `docs/adr/0028-dynamic-tulanpedia-catalog.md`, tabla de etiquetas igual a `CATEGORY_LABELS`); test `CA-23` en verde (31/31).**
+  - **Evidencia: Introducción de `#animales` con el texto exacto de CA-23; `apps/web/docs/tulanpedia-catalogo.md` creado (nueve secciones, enlaza `docs/adr/0028-dynamic-tulanpedia-catalog.md`, tabla de etiquetas igual a `CATEGORY_LABELS`); test `CA-23` en verde (31/31).**
 
 - [x] **T-14** (CA-15, CA-17; Nota de infraestructura del plan) — **Requisitos de ambiente en `infra/README.md`** (mismo PR, según `AGENTS.md`).
   - Añadir la sección «Portal público (TulanPedia)» con: origen `http://localhost:8080` en `CORS_ALLOWED_ORIGINS` (desarrollo); meta `arca-api-base` igual en las tres páginas; evidencia con `curl -i -H "Origin: http://localhost:8080" <API>/api/v1/published-species`.
@@ -196,9 +198,9 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - **Criterios de hecho:** sección presente; la evidencia `curl` documentada sin dominio real ni secretos.
   - **Archivos:** `infra/README.md`.
   - **Verificación:** revisión del diff; `git diff --check`.
-  - **Evidencia (2026-11-13): Sección «Portal público (TulanPedia) (api-015, web-011)» añadida a `infra/README.md`; `git diff --check` sin salida.**
+  - **Evidencia: Sección «Portal público (TulanPedia) (api-015, web-011)» añadida a `infra/README.md`; `git diff --check` sin salida.**
 
-- [ ] **T-15** (CA-01, CA-07, CA-09, CA-14, CA-24; manual) — **Verificación en navegador con la API real.** Pendiente de `api-015` implementada (DBR-013 ya aplicada en `arca_pruebas`, 2026-11-12).
+- [ ] **T-15** (CA-01, CA-07, CA-09, CA-14, CA-24; manual) — **Verificación en navegador con la API real.** Pendiente de `api-015` implementada (DBR-013 ya aplicada en `arca_pruebas`).
   - Con la API en `http://localhost:8000` y el portal en `php -S localhost:8080 -t apps/web/src` (origen exacto, no `127.0.0.1`):
     - CA-01: lista real, orden y campos de la respuesta.
     - CA-07: con la API apagada, mensaje de error y «Reintentar» con teclado (Enter y Espacio) y con ratón; foco como en S-5.
@@ -219,12 +221,12 @@ No hay tareas de BD propias de `apps/web`. La precondición DBR-013 se comprueba
   - `git diff --check`.
   - `/verify`: `apps/web` no tiene `package.json`; reportar la app como no inicializada, sin crearlo.
   - PR: enlazar spec, plan, tasks y ADR 0028; commit con el identificador `web-011` en inglés (por ejemplo, `feat(web-011): ...`).
-  - Estado de la spec: no cambiarlo en esta tarea. Pasa a «En progreso» o «Implementada» solo con la aprobación de Jonathan y las evidencias de T-01 a T-15. Si cambia el estado, correr `generar_config.py` y reiniciar el mapa de Neuromapa, como pide la memoria del usuario.
+  - Estado de la spec: no cambiarlo en esta tarea. Pasa a «En progreso» o «Implementada» solo con la aprobación del equipo y las evidencias de T-01 a T-15. Si cambia el estado, regenerar la configuración del mapa de Neuromapa (`generar_config.py`) y reiniciarlo.
   - **Criterios de hecho:** resultados registrados; PR con los tres artefactos enlazados; ningún CA sin prueba o sin evidencia.
   - **Archivos:** ninguno nuevo.
   - **Verificación:** salida de las tres suites, `git diff --check` y `/verify`.
-  - **Avance (2026-11-13, sin marcar):** `animals.test.mjs` 31/31; `news-events.test.mjs` 18/18; `relocation.test.mjs` 39/45 (mismos 6 fallos de la línea base); `git diff --check` sin salida; `apps/web` sin `package.json` (app no inicializada, no se creó). Faltan el PR y el commit `web-011` (no se hicieron por instrucción) y la sesión principal debe cerrar con la integración (S1).
-  - Suite web completa (sesión principal, 2026-11-13): 127/133 aprobadas; los 6 fallos son los preexistentes de `relocation.test.mjs`. Pendiente de T-16: registro de `git diff --check` en el PR, PR y commit `web-011`.
+  - **Avance:** `animals.test.mjs` 31/31; `news-events.test.mjs` 18/18; `relocation.test.mjs` 39/45 (mismos 6 fallos de la línea base); `git diff --check` sin salida; `apps/web` sin `package.json` (app no inicializada, no se creó). Faltan el PR y el commit `web-011` (no se hicieron por instrucción) y la sesión principal debe cerrar con la integración (S1).
+  - Suite web completa: 127/133 aprobadas; los 6 fallos son los preexistentes de `relocation.test.mjs`. Pendiente de T-16: registro de `git diff --check` en el PR, PR y commit `web-011`.
 
 ## Trazabilidad CA → tarea → prueba
 
@@ -279,20 +281,32 @@ Cobertura: 13 de 13 RN tienen al menos una tarea.
 
 ## Definición de terminado
 
-- Spec Aprobada, plan y tasks con el mismo NNN-slug (`011-dynamic-tulanpedia`), y plan y tasks aprobados por Jonathan (2026-11-13).
+- Spec Aprobada, plan y tasks con el mismo NNN-slug (`011-dynamic-tulanpedia`), y plan y tasks aprobados por Backend.
 - Todas las T-xx aplicables marcadas con evidencia. Ninguna marcada sin ella.
 - Un test automatizado por CA-01 a CA-24, nombrado en `apps/web/src/tests/animals.test.mjs`, en verde.
 - `/verify`: `apps/web` no inicializada (sin `package.json`), reportado como tal.
 - Sin violaciones de los seis principios (Constitution Check del plan); la excepción está en ADR 0028.
 - `infra/README.md` actualizado en el mismo PR (T-14); `apps/web/docs/tulanpedia-catalogo.md` creado (T-13).
 - PR con spec, plan y tasks enlazados; commit con `web-011`; sin secretos ni artefactos generados.
-- Estado de la spec cambiado solo con aprobación de Jonathan y evidencias.
+- Estado de la spec cambiado solo con aprobación del equipo y evidencias.
 
-## Verificación (2026-11-13)
+## Nota api-026
+
+- [x] **T-17** (api-026 CA-11; RN-07): «Dato curioso» en `FIELDS` de `src/js/animals.js` y prueba `api-026 CA-11 dynamic-tulanpedia` en `src/tests/animals.test.mjs`. El test cubre **api-026 CA-11**; CA-12 de `api-026` es de la API y no se prueba aquí (la referencia anterior a «api-026 CA-12» era un error). `node --test src/tests/*.test.mjs`: 168 pasan, 7 fallan; `animals.test.mjs`: 33/34.
+  - Los 7 fallos **ya fallaban antes de este cambio**. Evidencia: con un worktree de HEAD `01b66ba` (sin los cambios de api-026) pasan 167 y fallan los mismos 7; con el cambio pasan 168 (la prueba nueva de CA-11) y fallan los mismos 7. Ninguno toca esta tarea. Pruebas fallidas:
+    1. `CA-12 dynamic-tulanpedia: index.html conserva los IDs de la sección y las referencias a script.js, animations.js, accessibility.js, js/api.js y js/animals.js` (web-011 CA-12, por `viewerLoaded`).
+    2. `CA-03 lion-hero-mobile-navigation opera apertura, Escape, enlace y breakpoints`.
+    3. `CA-04 isometric-zoo-map sincroniza selección, resaltado y anuncio entre controles`.
+    4. `CA-07 isometric-zoo-map controla límites, estado y restablecimiento sin perder selección o foco`.
+    5. `CA-04 visit-info-icons-and-favicon baja 8 px los tres iconos sin alterar el centrado`.
+    6. `CA-03 header-walker-layer conserva clics decorativos sin cubrir controles`.
+    7. `CA-05 cognitive-accessibility-assistant mantiene el resumen inactivo y sin procesamiento`.
+
+## Verificación
 
 - Web (`node --test`, sin `package.json`): suite completa 127/133 aprobadas; 6 fallos preexistentes en `relocation.test.mjs`, ajenos a esta feature. `animals.test.mjs`: 31/31 (CA-01 a CA-24, cada uno con su nombre).
 - `/verify`: `apps/web` no tiene `package.json`; app no inicializada, sin build.
 - Casillas abiertas: T-01 (precondición a, curl y PHPUnit de `api-015`, pendiente de integración), T-15 (verificación manual en navegador), T-16 (PR, commit y `git diff --check` registrado).
 - CI: no verificado en esta sesión.
 
-Estado final de estas tareas: **En progreso** (plan y tasks aprobados por Jonathan, 2026-11-13). La spec sigue **Aprobada**.
+Estado final de estas tareas: **En progreso** (plan y tasks aprobados por Backend). La spec sigue **Aprobada**.

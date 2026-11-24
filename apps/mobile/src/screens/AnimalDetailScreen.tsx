@@ -89,6 +89,7 @@ interface AnimalDetailProps {
   onNavigatePress?: () => void;
   isFavorite?: boolean;
   onToggleFavorite?: () => void;
+  favoriteMessage?: string | null;
 }
 
 export function AnimalDetailScreen({
@@ -100,6 +101,7 @@ export function AnimalDetailScreen({
   onNavigatePress,
   isFavorite = false,
   onToggleFavorite,
+  favoriteMessage = null,
 }: AnimalDetailProps) {
   const insets = useSafeAreaInsets();
   const [photoOpen, setPhotoOpen] = useState(false);
@@ -193,6 +195,11 @@ export function AnimalDetailScreen({
               />
             ) : null}
           </View>
+          {favoriteMessage ? (
+            <AppText variant="small" color="danger" accessibilityLiveRegion="polite">
+              {favoriteMessage}
+            </AppText>
+          ) : null}
 
           <LocationPill label={animal.zone} variant="filled" />
           <AppText variant="caption" color={isDiscovered ? 'primary' : 'textMuted'}>

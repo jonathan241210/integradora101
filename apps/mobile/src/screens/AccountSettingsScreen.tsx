@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Image, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { AvatarPicker } from '../components/AvatarPicker';
 import { AppText, BackButton, Button, Card, Icon, ScreenContainer, TextField } from '../components/ui';
-import { AVATAR_LABELS, AvatarCode } from '../constants/avatarCatalog';
+import { AVATAR_IMAGES, AVATAR_LABELS, AvatarCode } from '../constants/avatarCatalog';
 import { colors, spacing } from '../theme/tokens';
 
 interface AccountSettingsScreenProps {
@@ -59,8 +59,8 @@ export function AccountSettingsScreen({
           onPress={() => setPickerOpen(true)}
           style={styles.profile}
         >
-          <View style={styles.circle}>
-            <AppText variant="small" center bold>{avatarName}</AppText>
+          <View style={styles.circle} accessibilityLabel={avatarCode ? `Avatar ${avatarName}` : 'Avatar'}>
+            {avatarCode ? <Image source={AVATAR_IMAGES[avatarCode]} accessible={false} style={styles.image} /> : null}
           </View>
           <AppText variant="caption" style={styles.editLabel}>Editar imagen</AppText>
         </Pressable>
@@ -107,8 +107,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.sm,
+    overflow: 'hidden',
   },
+  image: { width: 96, height: 96 },
   editLabel: { color: colors.secondary, fontWeight: '600' },
   actions: { backgroundColor: colors.surface, gap: 0, paddingVertical: spacing.xs },
   actionRow: { flexDirection: 'row', alignItems: 'center', minHeight: 48, gap: spacing.sm },

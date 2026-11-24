@@ -1,12 +1,11 @@
 # Plan de migración de instancia de base de datos · Aiven Cloud MySQL
 
 - **Documento:** Plan de migración y continuidad de base de datos
-- **Responsable de BD:** Víctor Adrián
-- **Responsable backend / Equipo:** Jonathan, Diego, Ian
-- **Fecha de elaboración inicial:** 2026-11-02
-- **Última actualización:** 2026-11-07 (Actualizado con DBR-008 y ventana de ejecución por vencimiento de prueba de Aiven)
-- **Rama origen:** `victor` (incluye esquema canónico normalizado hasta DBR-006 y DBR-008)
-- **Estado:** Activo / En ejecución inmediata (vencimiento de instancia gratuita de Aiven: 2026-11-07)
+- **Responsable de BD:** Responsable de BD (rol)
+- **Responsable backend / Equipo:** Equipo ARCA-NB (backend)
+- **Última actualización:** Actualizado con DBR-008 y ventana de ejecución por vencimiento de prueba de Aiven
+- **Rama origen:** rama de trabajo del responsable de BD (incluye esquema canónico normalizado hasta DBR-006 y DBR-008)
+- **Estado:** Activo / En ejecución inmediata (vencimiento de la instancia gratuita de Aiven)
 
 ---
 
@@ -14,7 +13,7 @@
 
 El entorno de base de datos compartido para desarrollo y pruebas del proyecto (`arca_pruebas`) se encuentra alojado en una instancia de prueba gratuita de **Aiven Cloud MySQL** (`mysql-230c9986-arcannb.a.aivencloud.com:15280`, ADR 0013).
 
-Hoy **2026-11-07** concluye el periodo de prueba gratuito de dicha instancia, por lo que el servicio será suspendido o eliminado por el proveedor en las próximas horas.
+El periodo de prueba gratuito de dicha instancia concluye en la fecha de corte de este plan, por lo que el servicio será suspendido o eliminado por el proveedor en las próximas horas.
 
 ### Objetivo
 Realizar una migración planificada, segura y con cero pérdida de información hacia una **nueva instancia/servicio de Aiven**, garantizando:
@@ -228,7 +227,7 @@ El responsable de BD ejecutará los siguientes controles:
 
 Una vez validada la nueva base:
 1. **Actualizar el inventario de BD:** Registrar el nuevo host en `apps/api/docs/inventario-bd-inicial.md` (sin contraseñas).
-2. **Notificar a Jonathan, Ian y Diego:** Compartir de forma segura por el canal privado los nuevos parámetros:
+2. **Notificar al equipo backend:** Compartir de forma segura por el canal privado los nuevos parámetros:
    - `DB_HOST`
    - `DB_PORT`
    - `DB_PASSWORD`
@@ -237,7 +236,7 @@ Una vez validada la nueva base:
 
 ---
 
-## 5. Checklist de ejecución (Día de corte: 2026-11-07)
+## 5. Checklist de ejecución (día de corte)
 
 - [ ] **Dump de seguridad urgente realizado** (`backup_arca_pruebas_full_seguridad.sql`).
 - [ ] **Dump de solo datos realizado** (`arca_pruebas_data_only.sql`).

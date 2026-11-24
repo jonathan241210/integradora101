@@ -1,11 +1,12 @@
 # 0022 · Escaneo QR con expo-camera (mobile-006)
 
 - Estado: Aceptado
-- Fecha: 2026-11-01
-- Aprobado por: Aksel (2026-11-01)
+- Solicitada: 2026-11-01
+- Aprobada: 2026-11-01
 - Spec relacionada: `apps/mobile/specs/006-qr-scan.md`
-- Autor: Aksel
-- Nota: Renumerado desde 0019 el 2026-11-04 para no colisionar con ADR 0019 (generación QR SVG en la API, `api-009`).
+- Aprobación: Equipo móvil
+- Autor: Equipo móvil
+- Nota: Renumerado desde 0019 para no colisionar con ADR 0019 (generación QR SVG en la API, `api-009`).
 
 ---
 
@@ -56,4 +57,4 @@ ADR 0004 ya orienta hacia `expo-camera` frente a `react-native-vision-camera`, p
 
 ## Validación y revisión
 
-Aprobado por Aksel el 2026-11-01 junto con la spec `mobile-006`. La implementación sigue plan y tasks de la misma spec.
+Aprobado por el equipo móvil junto con la spec `mobile-006`. La implementación sigue plan y tasks de la misma spec.

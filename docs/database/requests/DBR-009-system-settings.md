@@ -1,15 +1,14 @@
 # DBR-009 · system-settings
 
-- Estado: Borrador (sin aprobar; no existe migración ni SQL ejecutable)
-- Feature/spec origen: `apps/api/specs/010-configurable-system-settings.md` (Borrador; también `apps/dashboard/specs/006-system-settings-section.md`)
-- Solicitante: Jonathan (responsable funcional)
-- Responsable de BD: Víctor Adrián (pendiente de confirmar)
-- Responsable backend: Jonathan
-- Fecha: 2026-11-06
+- Estado: Descartada — fuera de alcance de esta entrega (no existe migración ni SQL ejecutable; el tope sigue en `config/arca.php`)
+- Solicitada: 2026-11-06
+- Feature/spec origen: specs `api-010-configurable-system-settings` y `dashboard-006-system-settings-section`, retiradas sin implementar (el tope de boletos sigue en configuración del servidor)
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend
 
 ## Problema y justificación
 
-El tope de boletos por venta (`ticket_sale_max_tickets`, 50 en total, `api-009` RN-29) vive en `config/arca.php`. Cambiarlo exige desplegar. La spec 010 propone que `admin` lo cambie sin desplegar, para lo que hace falta un lugar persistente y auditable donde guardar el valor. Esta DBR describe esa necesidad. No se aprueba ni se aplica con esta versión.
+El tope de boletos por venta (`ticket_sale_max_tickets`, 50 en total, `api-009` RN-29) vive en `config/arca.php`. Cambiarlo exige desplegar. La spec 010 propone que `admin` lo cambie sin desplegar, para lo que hace falta un lugar persistente y auditable donde guardar el valor. Esta DBR describe esa necesidad. Se descartó para esta entrega: no se aprueba ni se aplica.
 
 ## Estado actual
 
@@ -29,11 +28,11 @@ No existe tabla de ajustes del sistema (`system_settings` no existe). El valor v
 | Tipo | Nombre | Cambio |
 |---|---|---|
 | tabla | `system_settings` | Nueva |
-| columna | `setting_key` | VARCHAR, NOT NULL, única (la unicidad frente a filas eliminadas lógicamente queda como pregunta) |
+| columna | `setting_key` | VARCHAR, NOT NULL, única (la unicidad frente a filas eliminadas lógicamente no está decidida) |
 | columna | `value` | VARCHAR(255), NOT NULL |
 | columna | `created_by`, `updated_by` | BIGINT UNSIGNED, NULL, claves a `users` |
 | columnas | `created_at`, `updated_at`, `deleted_at` | Timestamps y SoftDeletes |
-| índice | único sobre `setting_key` | Nuevo (ver pregunta en la spec 010) |
+| índice | único sobre `setting_key` | Nuevo (ver spec 010) |
 
 ## SQL de referencia (MySQL 8.0)
 
@@ -77,15 +76,13 @@ No aplica. No se crean funciones, procedimientos, vistas ni triggers.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Víctor Adrián (pendiente de confirmar) | | Pendiente |
-| Responsable backend | Jonathan | | Pendiente |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | No aplica (DBR descartada) | |
+| Backend | No aplica (DBR descartada) | |
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas | pendiente | | |
-| staging | pendiente | | |
-| producción | pendiente | | |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| Todos | No aplica (DBR descartada) | |

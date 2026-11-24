@@ -2,9 +2,10 @@
 
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile`, manifiesto y lockfile npm del monorepo, workflow CI
-- Estado: En progreso
-- Solicitante / responsable funcional: usuario solicitante
-- Aprobación funcional: aprobada por el usuario solicitante, 2026-10-27
+- Estado: Implementada
+- Solicitada: 2026-10-27
+- Aprobada: 2026-10-27
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -63,9 +64,9 @@ No se crean ni procesan datos de usuario. No hay cambios de base de datos, permi
 
 - Dependencias/ADR: reutiliza Expo y React Native aprobados por ADR 0004; no incorpora tecnología nueva.
 - Riesgos: cambiar versiones de dependencias nativas puede requerir reconstruir binarios nativos; las versiones propuestas son las que Expo SDK 57 declara como agrupadas.
-- Preguntas pendientes: ninguna sobre el objetivo; aprobación formal de esta spec pendiente.
+- Sin preguntas abiertas sobre el objetivo.
 
 ## Revisión
 
-- Aprobadores y fecha: usuario solicitante, 2026-10-27.
+- Aprobación: Aprobada.
 - Evidencia/enlaces: error `ERESOLVE` de GitHub Actions compartido por el usuario; lista oficial de módulos de Expo SDK 57 enlazada arriba.

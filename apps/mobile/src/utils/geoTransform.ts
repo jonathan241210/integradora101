@@ -14,7 +14,7 @@ import {
  *
  * @param lat Latitud GPS del visitante.
  * @param lon Longitud GPS del visitante.
- * @returns Coordenadas { svgX, svgY } dentro del viewBox "0 0 1000 1400".
+ * @returns Coordenadas { svgX, svgY } dentro del viewBox "0 0 1600 1200".
  */
 export function geoTransform(
   lat: number,

@@ -11,8 +11,8 @@ describe('mobile-011 CA-05: sincronización y errores de persistencia', () => {
   it('precarga las implementaciones API y persiste la fecha solo al completar ambas', async () => {
     const map = new repositories.ApiMapRepository();
     const animals = new repositories.ApiAnimalRepository();
-    const fetchMap = jest.spyOn(map,'fetchAndCachePlaces').mockResolvedValue(MOCK_MAP_PLACES);
-    const fetchAnimals = jest.spyOn(animals,'fetchAndCacheAllAnimals').mockResolvedValue(MOCK_ANIMALS);
+    const fetchMap = jest.spyOn(map,'getPlaces').mockResolvedValue(MOCK_MAP_PLACES);
+    const fetchAnimals = jest.spyOn(animals,'getAllAnimals').mockResolvedValue(MOCK_ANIMALS);
     jest.spyOn(repositories,'createMapRepository').mockReturnValue(map);
     jest.spyOn(repositories,'createAnimalRepository').mockReturnValue(animals);
     const result = await syncZooData();
@@ -22,7 +22,7 @@ describe('mobile-011 CA-05: sincronización y errores de persistencia', () => {
   });
   it.each([new Error('sin conexión'),'fallo sin Error'])('devuelve diagnóstico sin guardar un éxito ficticio: %s', async cause => {
     const map = new repositories.ApiMapRepository();
-    jest.spyOn(map,'fetchAndCachePlaces').mockRejectedValue(cause);
+    jest.spyOn(map,'getPlaces').mockRejectedValue(cause);
     jest.spyOn(repositories,'createMapRepository').mockReturnValue(map);
     const write = jest.spyOn(defaultStorage,'setItem');
     expect(await syncZooData()).toEqual({ok:false,placesCount:0,animalsCount:0,syncedAt:0,error:cause instanceof Error?cause.message:'Error desconocido al precargar datos'});

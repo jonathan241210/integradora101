@@ -1,24 +1,24 @@
 # DBR-013 · species-requests
 
-- Estado: Lista para backend (Aplicada en `arca_pruebas`, lote 5, verificada el 2026-11-12). Aprobada por BD (Víctor Adrián, 2026-11-12) y backend (Jonathan, 2026-11-12). Pendiente de BD: EXPLAIN y registro de la fecha y del responsable de la aplicación («Aplicación por ambiente»).
+- Estado: Aplicada en arca_pruebas (migración verificada con `migrate:status`). Staging y producción: pendiente de despliegue (ver `infra/README.md`).
+- Solicitada: 2026-11-11
+- Aprobada: 2026-11-12
 - Feature/spec origen: `apps/api/specs/014-species-requests.md` (solicitudes de **publicación** de una especie existente: envío, selector, revisión, edición previa, publicar o rechazar). Consumidores: `apps/pwa/specs/005-species-request-submission.md` (selector y envío), `apps/dashboard/specs/010-public-content-management.md` (revisión, edición, publicar o rechazar; absorbe `dashboard-009`), `apps/api/specs/015-public-species-read.md` (lectura pública de especies publicadas) y `apps/web/specs/011-dynamic-tulanpedia.md` (consumidor de `api-015`).
-- Solicitante: por confirmar (solicitud de la sesión principal, 2026-11-11).
-- Responsable de BD: Víctor Adrián
-- Responsable backend: Jonathan (aprobación de backend, 2026-11-12)
-- Fecha de la última revisión: 2026-11-12 (decisiones 2a/2c/7/13/14/15/16/17 y migración redactada)
+- Responsable de BD: Responsable de BD (rol)
+- Responsable backend: Backend (aprobación de backend)
 
-## Historial del cambio de modelo (2026-11-11)
+## Historial del cambio de modelo
 
 - **Versión anterior (incorrecta):** la solicitud proponía una especie **nueva** que se creaba en `species` al aceptar. La tabla guardaba `common_name` propio y `species_id` era nullable hasta la aceptación.
 - **Motivo del cambio:** la especie ya existe antes de cualquier solicitud. `AnimalController::store` la crea al registrar un animal (ver «Estado actual»). Crear otra especie al aceptar duplicaría filas.
 - **Modelo actual:** la solicitud propone la **publicación** de una especie existente. `species_id` es obligatorio desde el envío (FK RESTRICT). La tabla `species_publication_requests` guarda solo lo que la publicación necesita: foto pendiente, tipo de animal, correcciones propuestas, selección de la ficha pública, estado y revisión. **No duplica `common_name`**: se lee de `species`. `species` gana una marca de publicación, la foto pública y la selección de campos publicada.
 - Qué cambia en esta DBR: contrato de la tabla, columnas nuevas en `species`, índices, preguntas (1 a 17), y la sección de decisiones para BD (2a, 2b y 2c nueva).
-- **2026-11-11 (segunda ronda, decisiones del usuario):** `request_type` (`publish` o `update`) en la tabla; `image_path` obligatoria solo en `publish`; `species.published_at` aprobada como columna (pregunta 11 resuelta); `species.unpublished_at` nueva (la necesita la derivación del estado `unpublished`, pregunta 15); historial de edición en Activitylog (pregunta 1 resuelta); SoftDeletes en la tabla de solicitudes usado por «Eliminar la publicación» (`api-014` CA-38).
-- **2026-11-12 (tercera ronda, decisiones del usuario):** sin cambio de columnas. Una especie despublicada puede recibir una solicitud `update` (`request_type = update`), y la aceptación con «Aceptar sin publicar» deja `is_published = 0` con `unpublished_at` sin cambios (`api-014` CA-08, CA-32). Los permisos y la edición de la especie despublicada no tocan esta DBR.
-- **2026-11-12 (redacción de migración, decisiones de BD):** se aprueba por BD con 2a=A (`origin` se mapea a `species.distribution`, sin columna `species.origin`), 2b columna `species.image_path`, 2c=A (tabla delgada `species_publication_requests`), 7 (`published_fields` JSON: solicitud NOT NULL, `species` NULL), 13 (se añade `species.deleted_at`), 14 (columna generada `submitted_species_id` + índice único para una sola solicitud `submitted` por especie), 15 (se guarda `species.unpublished_at`), 16 (`species_publication_requests.category` nullable, `NULL` = sin corrección) y 17 (índice `species(is_published, unpublished_at)`). Migración: `apps/api/src/database/migrations/2026_11_12_000013_species_publication_requests_schema.php` (pendiente de aplicar). Backend pendiente de firma.
-- **2026-11-12 (cuarta ronda, decisiones del usuario sobre `api-014`):** sin cambio de columnas ni de preguntas de BD. Confirman lo ya escrito: `species.published_at` es la fecha de la versión publicada vigente, se fija al publicar, republicar o aceptar una actualización con publicación (`api-014` pregunta 21, nota informativa; la fecha de primera publicación no se conserva aparte); «Eliminar la publicación» marca como eliminadas (`deleted_at`) todas las solicitudes de la especie (`api-014` CA-38, pregunta 18); la foto nueva de una especie despublicada se guarda en `media/species/` (`api-014` pregunta 15, punto c), sin efecto en la tabla. Las preguntas 1 a 17 de esta DBR no cambian.
-- **2026-11-12 (aprobación de backend y cierre de la pregunta 8):** Jonathan (responsable de backend) aprueba la DBR, con aprobación separada de la de BD. Pregunta 8 (campos extra) resuelta: no por ahora; no se añaden campos extra ni columnas, sin migración. Estado: Aprobada; no es «Lista para backend» hasta aplicar la migración en `arca_pruebas` con evidencia.
-- **2026-11-12 (verificación de la aplicación en `arca_pruebas`):** backend ejecutó consultas de solo lectura contra `arca_pruebas` (`.env` con `DB_DATABASE=arca_pruebas`). `php artisan migrate:status` muestra `2026_11_12_000013_species_publication_requests_schema` como Ran, lote 5, después de `2026_11_11_000012_visitor_memories_schema` (lote 4). `php artisan db:table` confirma las columnas, índices, FK RESTRICT y colaciones de `species` y `species_publication_requests`. No se ejecutó EXPLAIN. Se conservan las filas de prueba (5 en `species_publication_requests`, 6 en `species`, 0 publicadas) por decisión del usuario. No se sabe quién ni cuándo aplicó la migración: queda por registrar por BD. Con aprobaciones separadas de BD y backend y la migración aplicada con evidencia, la regla de estado de esta DBR y `docs/database/requests/README.md` (regla 6) permiten «Lista para backend».
+- **Segunda ronda (decisiones del usuario):** `request_type` (`publish` o `update`) en la tabla; `image_path` obligatoria solo en `publish`; `species.published_at` aprobada como columna (pregunta 11 resuelta); `species.unpublished_at` nueva (la necesita la derivación del estado `unpublished`, pregunta 15); historial de edición en Activitylog (pregunta 1 resuelta); SoftDeletes en la tabla de solicitudes usado por «Eliminar la publicación» (`api-014` CA-38).
+- **Tercera ronda (decisiones del usuario):** sin cambio de columnas. Una especie despublicada puede recibir una solicitud `update` (`request_type = update`), y la aceptación con «Aceptar sin publicar» deja `is_published = 0` con `unpublished_at` sin cambios (`api-014` CA-08, CA-32). Los permisos y la edición de la especie despublicada no tocan esta DBR.
+- **Redacción de migración (decisiones de BD):** se aprueba por BD con 2a=A (`origin` se mapea a `species.distribution`, sin columna `species.origin`), 2b columna `species.image_path`, 2c=A (tabla delgada `species_publication_requests`), 7 (`published_fields` JSON: solicitud NOT NULL, `species` NULL), 13 (se añade `species.deleted_at`), 14 (columna generada `submitted_species_id` + índice único para una sola solicitud `submitted` por especie), 15 (se guarda `species.unpublished_at`), 16 (`species_publication_requests.category` nullable, `NULL` = sin corrección) y 17 (índice `species(is_published, unpublished_at)`). Migración: `apps/api/src/database/migrations/2026_11_12_000013_species_publication_requests_schema.php` (pendiente de aplicar). Backend pendiente de firma.
+- **Cuarta ronda (decisiones del usuario sobre `api-014`):** sin cambio de columnas ni de preguntas de BD. Confirman lo ya escrito: `species.published_at` es la fecha de la versión publicada vigente, se fija al publicar, republicar o aceptar una actualización con publicación (`api-014` pregunta 21, nota informativa; la fecha de primera publicación no se conserva aparte); «Eliminar la publicación» marca como eliminadas (`deleted_at`) todas las solicitudes de la especie (`api-014` CA-38, pregunta 18); la foto nueva de una especie despublicada se guarda en `media/species/` (`api-014` pregunta 15, punto c), sin efecto en la tabla. Las preguntas 1 a 17 de esta DBR no cambian.
+- **Aprobación de backend y cierre de la pregunta 8:** el responsable de backend aprueba la DBR, con aprobación separada de la de BD. Pregunta 8 (campos extra) resuelta: no por ahora; no se añaden campos extra ni columnas, sin migración. Estado: Aprobada; no es «Lista para backend» hasta aplicar la migración en `arca_pruebas` con evidencia.
+- **Verificación de la aplicación en `arca_pruebas`:** backend ejecutó consultas de solo lectura contra `arca_pruebas` (`.env` con `DB_DATABASE=arca_pruebas`). `php artisan migrate:status` muestra `2026_11_12_000013_species_publication_requests_schema` como Ran, lote 5, después de `2026_11_11_000012_visitor_memories_schema` (lote 4). `php artisan db:table` confirma las columnas, índices, FK RESTRICT y colaciones de `species` y `species_publication_requests`. No se ejecutó EXPLAIN. Se conservan las filas de prueba (5 en `species_publication_requests`, 6 en `species`, 0 publicadas) por decisión del usuario. No se sabe quién ni cuándo aplicó la migración: queda por registrar por BD. Con aprobaciones separadas de BD y backend y la migración aplicada con evidencia, la regla de estado de esta DBR y `docs/database/requests/README.md` (regla 6) permiten «Lista para backend».
 
 ## Problema y justificación
 
@@ -29,8 +29,9 @@ Hace falta: (1) una forma de guardar cada solicitud con su estado, su foto pendi
 ## Estado actual
 
 - **Alta de animal (`apps/api/src/app/Http/Controllers/Api/AnimalController.php`, método `store`, `POST /api/v1/staff/animals`, `apps/pwa/specs/004-animal-registration.md`):** el campo `species` es texto libre (`max:100`). La transacción ejecuta `Species::firstOrCreate(['common_name' => $data['species']], ['scientific_name' => $data['species']])`. Efectos actuales: (a) la especie se crea al registrar un animal, sin revisión; (b) `scientific_name` recibe el mismo texto que el nombre común (relleno); (c) `category` queda NULL; (d) la búsqueda de `common_name` usa la collation de la base (`utf8mb4_unicode_ci`, sin distinguir mayúsculas; comportamiento a verificar en `arca_pruebas`).
-- **Tabla `species` (`docs/database/esquema-ingles.md`, sección 7):** `id` INT, `common_name` VARCHAR(100) NOT NULL, `scientific_name` VARCHAR(150) (NOT NULL en el esquema; nullable por DBR-011), `distribution` VARCHAR(255), `conservation_status` VARCHAR(100), `habitat` VARCHAR(255), `gestation_period` VARCHAR(100), `size_cm` DECIMAL(8,2), `model_3d_path` VARCHAR(255). No hay columna de foto ni de publicación.
-- **`species.category`:** existe (DBR-004), VARCHAR(30) NULL con lista cerrada (`mammal`, `bird`, `reptile`, `amphibian`, `fish`, `invertebrate`). La usan `api-006` (CA-01), las misiones de mobile (`category_species_count`, `api-005`) y el código. Verificada en `arca_pruebas` el 2026-11-12 (`db:table species`: `category` VARCHAR(30) NULL).
+- **Tabla `species` (`docs/database/esquema-ingles.md`, sección 7):** `id` INT, `common_name` VARCHAR(100) NOT NULL, `scientific_name` VARCHAR(150) (NOT NULL en el esquema; nullable por DBR-011), `distribution` VARCHAR(255), `conservation_status` VARCHAR(100), `habitat` VARCHAR(255), `gestation_period` VARCHAR(100), `size_cm` DECIMAL(8,2), `model_3d_path` VARCHAR(255). La migración DBR-013 añade columnas de foto y publicación.
+- **Verificación de esquema vivo:** `php artisan db:table species` en `arca_pruebas` mostró `published_fields` como JSON nullable y `deleted_at` como timestamp nullable; `php artisan migrate:status` mostró `2026_11_12_000013_species_publication_requests_schema` en estado `Ran`. Se comparó con la migración DBR-013 y la tarea T-30 de `api-014`; no hay divergencia y añadir `published_fields` a `SelectableSpeciesResource` no requiere una nueva DBR ni cambio de esquema.
+- **`species.category`:** existe (DBR-004), VARCHAR(30) NULL con lista cerrada (`mammal`, `bird`, `reptile`, `amphibian`, `fish`, `invertebrate`). La usan `api-006` (CA-01), las misiones de mobile (`category_species_count`, `api-005`) y el código. Verificada en `arca_pruebas` (`db:table species`: `category` VARCHAR(30) NULL).
 - **Modelo `Species`** (`apps/api/src/app/Models/Species.php`): extiende `Model`, no `BaseModel`, y no usa `SoftDeletes`. La Constitución V y `apps/api/AGENTS.md` exigen SoftDeletes en los modelos de negocio. Queda como pregunta 13.
 - `origin`, `diet`, `longevity` y `characteristics` existen en `animals` (datos por individuo; DBR-001), no en `species`.
 - No existe la tabla `species_publication_requests`. El permiso `species.review` no existe todavía; se crea con el seeder, no con migración.
@@ -45,12 +46,12 @@ Una fila por solicitud. Las reglas de elegibilidad, transiciones, correcciones y
 | Columna | Tipo propuesto | Nulabilidad | Default | Descripción y notas |
 |---|---|---|---|---|
 | `id` | BIGINT UNSIGNED AUTO_INCREMENT | NOT NULL | — | Clave primaria, como las tablas de migraciones recientes (DBR-012). |
-| `species_id` | INT | NOT NULL | — | Especie a publicar. FK a `species.id` (mismo tipo que `species.id`; BD confirma), `ON DELETE RESTRICT`. **Obligatorio desde el envío** (decisión del usuario 2026-11-11). Una especie puede tener varias filas en el tiempo (las rechazadas), pero como máximo una `submitted` (`api-014` RN-03). |
+| `species_id` | INT | NOT NULL | — | Especie a publicar. FK a `species.id` (mismo tipo que `species.id`; BD confirma), `ON DELETE RESTRICT`. **Obligatorio desde el envío** (decisión del usuario). Una especie puede tener varias filas en el tiempo (las rechazadas), pero como máximo una `submitted` (`api-014` RN-03). |
 | `request_type` | VARCHAR(10) | NOT NULL | — | Tipo de solicitud: `publish` (primera publicación, la especie está `not_published`) o `update` (la especie está `published` o `unpublished`, `api-014` CA-27). Lo decide la aplicación, no el veterinario. Validación en la aplicación; VARCHAR por portabilidad, como `status`. |
 | `scientific_name` | VARCHAR(150) | NULL | — | Corrección propuesta. NULL = sin corrección: la especie conserva su valor (`api-014` RN-16). |
 | `habitat` | VARCHAR(150) | NULL | — | Corrección propuesta de hábitat. Mismo criterio que `scientific_name`. |
 | `origin` | VARCHAR(150) | NULL | — | Corrección propuesta de origen. Su destino en `species` lo decide 2a. |
-| `category` | VARCHAR(30) | NULL | — | Tipo de animal propuesto (lista cerrada de DBR-004). Obligatorio al enviar (decidido 2026-11-11; `api-014` CA-25), pero NULL = sin corrección cuando el valor enviado es igual a `species.category` (`api-014` CA-30). Por eso la columna queda nullable. Consecuencia para la nulabilidad: pregunta 16. Se valida en la aplicación (sin CHECK salvo que BD lo añada). |
+| `category` | VARCHAR(30) | NULL | — | Tipo de animal propuesto (lista cerrada de DBR-004). Obligatorio al enviar (decidido; `api-014` CA-25), pero NULL = sin corrección cuando el valor enviado es igual a `species.category` (`api-014` CA-30). Por eso la columna queda nullable. Consecuencia para la nulabilidad: pregunta 16. Se valida en la aplicación (sin CHECK salvo que BD lo añada). |
 | `image_path` | VARCHAR(255) | NULL | — | Ruta relativa en el disco `media` de la foto pendiente (`species-requests/<uuid>.(jpg\|jpeg\|png)`). Obligatoria en `publish` (validación de aplicación); en `update` puede ser NULL (sin foto nueva, la foto publicada se mantiene; `api-014` CA-04, CA-32). Pasa a NULL al aceptar (tras copiar a `species/` y borrar la original) y al rechazar. Cambia al reemplazar la foto en la edición (`api-014` CA-23). |
 | `published_fields` | JSON | NOT NULL | — (sin default en BD) | Claves de la ficha pública elegidas por el veterinario y ajustables por `zoo-admin` mientras está `submitted` (`api-014` RN-13, CA-21, CA-22). La aplicación valida la lista cerrada. Al aceptar se copia a `species.published_fields`. MySQL 8.0 no admite un default literal en JSON; la aplicación siempre escribe la lista. |
 | `status` | VARCHAR(20) | NOT NULL | `'submitted'` | Valores: `submitted`, `accepted`, `rejected` (`api-014` RN-02). Validación en la aplicación; VARCHAR en vez de ENUM por portabilidad (igual que DBR-012). |
@@ -71,7 +72,7 @@ Son columnas nuevas. Las especies existentes quedan con `is_published = 0`, y ni
 | Columna | Tipo propuesto | Nulabilidad | Default | Motivo |
 |---|---|---|---|---|
 | `is_published` | TINYINT(1) | NOT NULL | `0` | Marca de publicación. Es el único criterio de visibilidad pública (`api-015` RN-03). Solo cambia al aceptar (`api-014` CA-31). |
-| `published_at` | TIMESTAMP | NULL | — | Fecha de la versión publicada vigente. Aprobada además de `is_published` (decisión del usuario 2026-11-11, pregunta 11). Se fija al publicar, republicar o aceptar una actualización con publicación (`api-014` CA-08, CA-36); se pone NULL al eliminar la publicación (CA-38). |
+| `published_at` | TIMESTAMP | NULL | — | Fecha de la versión publicada vigente. Aprobada además de `is_published` (decisión del usuario, pregunta 11). Se fija al publicar, republicar o aceptar una actualización con publicación (`api-014` CA-08, CA-36); se pone NULL al eliminar la publicación (CA-38). |
 | `unpublished_at` | TIMESTAMP | NULL | — | Momento de la última despublicación (`api-014` CA-35). Con `is_published = 0` y este campo no nulo, la especie está `unpublished` (RN-18). Se pone NULL al republicar y al eliminar la publicación. Se guarda (decisión 15). |
 | `image_path` | VARCHAR(255) | NULL | — | Ruta relativa de la foto pública en `media/species/` (`api-014` CA-08). Decisión 2b. |
 | `published_fields` | JSON | NULL | — | Selección de la ficha pública, copiada desde la solicitud aceptada (`api-014` RN-13, RN-14). NULL en especies no publicadas. |
@@ -117,9 +118,9 @@ No se incluye SQL, ni de referencia, por decisión del solicitante, igual que en
 
 - **Clasificación:** personal en parte. `created_by`, `updated_by` y `reviewed_by` identifican personal (veterinario y Dirección). La foto es de un animal o especie, no de personas. No es clínico ni financiero. Los datos clínicos de los animales no se tocan.
 - **SoftDeletes:** `deleted_at` en `species_publication_requests` y en `species` cumple la Constitución V (decisión 13). La aplicación no borra filas físicamente. El rechazo borra el archivo de la foto, no la fila (`api-014` CA-10). «Eliminar la publicación» (`api-014` CA-38) marca como eliminadas (`deleted_at`) las solicitudes de la especie y borra sus fotos; no borra físicamente filas de `species`. El modelo `Species` y las lecturas deben alinearse para excluir filas borradas.
-- **Publicación modifica la fila compartida:** al aceptar, las correcciones (`scientific_name`, `habitat`, `distribution` u `origin`, `category`) cambian la fila de `species`, que también lee `api-006` para la app móvil, y los animales. La publicación de especies es solo del portal (decisión del usuario 2026-11-12); mobile no la recibe. Lo que cambia es el dato compartido (ver «Impacto»).
-- **Foto pendiente (2026-11-11):** `image_path` pasa a NULL al rechazar y al aceptar, y el archivo se borra en ambos casos (`api-014` RN-04, CA-08, CA-10). En pruebas, la foto pendiente está en `media/species-requests/`, publicada por `/media` (enmienda del ADR 0026): la API no devuelve su URL, pero quien la conozca puede verla. **Recomendación antes de producción:** almacenamiento privado u otro almacenamiento (`api-014`, «Recomendación antes de producción»).
-- **Reemplazo de foto (`api-014` CA-23):** el archivo anterior se borra tras confirmar y no se conserva (decisión del 2026-11-11). La fila no se borra.
+- **Publicación modifica la fila compartida:** al aceptar, las correcciones (`scientific_name`, `habitat`, `distribution` u `origin`, `category`) cambian la fila de `species`, que también lee `api-006` para la app móvil, y los animales. La publicación de especies es solo del portal (decisión del usuario); mobile no la recibe. Lo que cambia es el dato compartido (ver «Impacto»).
+- **Foto pendiente:** `image_path` pasa a NULL al rechazar y al aceptar, y el archivo se borra en ambos casos (`api-014` RN-04, CA-08, CA-10). En pruebas, la foto pendiente está en `media/species-requests/`, publicada por `/media` (enmienda del ADR 0026): la API no devuelve su URL, pero quien la conozca puede verla. **Recomendación antes de producción:** almacenamiento privado u otro almacenamiento (`api-014`, «Recomendación antes de producción»).
+- **Reemplazo de foto (`api-014` CA-23):** el archivo anterior se borra tras confirmar y no se conserva (decisión del usuario). La fila no se borra.
 - **Retención:** sin purga automática de rechazadas (`api-014` pregunta 1, resuelta: no se purga). Las filas se conservan.
 - **Auditoría:** Activitylog registra envío, cada edición, publicación y rechazo (`api-014` CA-08, CA-10, CA-18). `reviewed_by` y `reviewed_at` guardan la última decisión.
 
@@ -130,7 +131,7 @@ No se incluye SQL, ni de referencia, por decisión del solicitante, igual que en
   1. Al publicar una especie con `category`, esta cuenta en las misiones `category_species_count` (`api-005`, `mobile-005`). Antes contaban solo las especies que ya tenían categoría; ahora también las que se publiquen.
   2. Las correcciones aceptadas cambian `scientific_name`, `habitat`, `distribution` (o `origin`) y `category` de la fila de `species`. `GET /api/v1/species` (`api-006`) ya lee esa fila y expone los datos corregidos a la app móvil para especies con animales.
   3. `api-006` ya expone `distribution`, `conservation_status`, `size_cm` y `gestation_period` de `species`. Sin cambio de contrato, pero los datos aceptados llegan a la app.
-  4. **Resuelto (decisión del usuario 2026-11-12):** despublicar o eliminar la publicación no quita la especie de la app móvil. `api-006` no filtra por `is_published` y se mantiene así a propósito (`api-014` pregunta 23). No hay spec propia para ampliar `api-006`.
+  4. **Resuelto (decisión del usuario):** despublicar o eliminar la publicación no quita la especie de la app móvil. `api-006` no filtra por `is_published` y se mantiene así a propósito (`api-014` pregunta 23). No hay spec propia para ampliar `api-006`.
 - Los índices cubren las consultas de `api-014` y `api-015`. Volumen esperado bajo.
 - **Reversión en `down()`:** eliminar la tabla solo en un ambiente sin solicitudes registradas. Quitar las columnas de `species` solo si no hay datos en ellas. Si ya hay datos, BD decide la reversión y no borra filas sin respaldo.
 - Respaldo previo recomendado antes de aplicar en cualquier ambiente.
@@ -148,10 +149,10 @@ No aplica. No hay funciones, procedimientos, vistas ni triggers. Las reglas de e
 
 ## Orden de despliegue
 
-1. Aprobación de BD (2026-11-12) con decisiones 2a/2b/2c/7/13/14/15/16/17, y aprobación de backend (Jonathan, 2026-11-12) (`docs/database/requests/README.md`, regla 4).
+1. Aprobación de BD con decisiones 2a/2b/2c/7/13/14/15/16/17, y aprobación de backend (`docs/database/requests/README.md`, regla 4).
 2. Migración creada: `apps/api/src/database/migrations/2026_11_12_000013_species_publication_requests_schema.php`. Pendiente de probar `up()`/`down()` en MySQL 8.0 aislado (no registrado).
-3. Aplicada en `arca_pruebas` (lote 5), verificada el 2026-11-12. Pendiente: registrar la fecha y el responsable de la aplicación por BD en la tabla de ambientes.
-4. Estado «Lista para backend» alcanzado el 2026-11-12: aprobaciones separadas de BD y backend y migración aplicada con evidencia. Backend implementa `api-014` (incluidos el selector, el envío, la edición `PATCH` y el seeder de `species.review` con exclusión de `admin`) y `api-015`.
+3. Aplicada en `arca_pruebas` (lote 5), verificada. Pendiente: registrar el responsable de la aplicación por BD en la tabla de ambientes.
+4. Estado «Lista para backend» alcanzado: aprobaciones separadas de BD y backend y migración aplicada con evidencia. Backend implementa `api-014` (incluidos el selector, el envío, la edición `PATCH` y el seeder de `species.review` con exclusión de `admin`) y `api-015`.
 5. Staging y producción, después, con su propio registro. Los agentes no usan `arca_zoo`.
 6. Requisito previo: DBR-001 (nombres en inglés), DBR-003 (`visitors`), DBR-004 (`species.category`) y DBR-012 (`users` y `visitor_memories` ya en el ambiente) aplicadas.
 
@@ -168,17 +169,17 @@ No aplica. No hay funciones, procedimientos, vistas ni triggers. Las reglas de e
   - `deleted_at` no se borra físicamente en la aplicación;
   - ninguna migración cambia `species.common_name`;
   - EXPLAIN de las consultas de `api-014` CA-05, CA-26 y CA-27, y de `api-015` RN-03. **Pendiente: no ejecutado.**
-- Migración creada: `apps/api/src/database/migrations/2026_11_12_000013_species_publication_requests_schema.php` (2026-11-12).
+- Migración creada: `apps/api/src/database/migrations/2026_11_12_000013_species_publication_requests_schema.php`.
 - Pruebas de backend sugeridas: `api-014` CA-01 a CA-31 (PHPUnit contra `arca_pruebas`, con `DatabaseTransactions`, sin `RefreshDatabase`).
-- Aplicación en `arca_pruebas` (lote 5): hecha, verificada el 2026-11-12 por consulta de solo lectura (ver «Aplicación por ambiente»). Pendiente: `up()`/`down()` en MySQL 8.0 aislado (no ejecutado). Los EXPLAIN de la lista anterior (no ejecutados) no son condición de «Lista para backend» según la regla de estado de esta DBR; quedan como verificación pendiente de BD.
+- Aplicación en `arca_pruebas` (lote 5): hecha, verificada por consulta de solo lectura (ver «Aplicación por ambiente»). Pendiente: `up()`/`down()` en MySQL 8.0 aislado (no ejecutado). Los EXPLAIN de la lista anterior (no ejecutados) no son condición de «Lista para backend» según la regla de estado de esta DBR; quedan como verificación pendiente de BD.
 
 ## Decisiones para el responsable de BD
 
-Esta sección registra las decisiones tomadas por BD (2026-11-12) y las opciones consideradas al redactar la migración. Las specs (`api-014`, `api-015`, `pwa-005`, `dashboard-010` y `web-011`) deben alinearse con lo decidido donde aplique.
+Esta sección registra las decisiones tomadas por BD y las opciones consideradas al redactar la migración. Las specs (`api-014`, `api-015`, `pwa-005`, `dashboard-010` y `web-011`) deben alinearse con lo decidido donde aplique.
 
 ### 2a. `origin`: mapear a `species.distribution` (A) o crear `species.origin` (B)
 
-**Decisión (BD, 2026-11-12): opción A.** `origin` se mapea a `species.distribution`; no se crea `species.origin`. La solicitud guarda la corrección propuesta en `species_publication_requests.origin` y, al aceptar, la aplicación la copia a `species.distribution`. Condiciones: la etiqueta de `pwa-005` debe referirse al área natural de la especie (no procedencia del ejemplar) y se debe dar aviso informativo a `mobile` (`api-006` expone `distribution`).
+**Decisión (BD): opción A.** `origin` se mapea a `species.distribution`; no se crea `species.origin`. La solicitud guarda la corrección propuesta en `species_publication_requests.origin` y, al aceptar, la aplicación la copia a `species.distribution`. Condiciones: la etiqueta de `pwa-005` debe referirse al área natural de la especie (no procedencia del ejemplar) y se debe dar aviso informativo a `mobile` (`api-006` expone `distribution`).
 
 | Aspecto | (A) mapear a `species.distribution` | (B) nueva columna `species.origin` VARCHAR(150) NULL |
 |---|---|---|
@@ -191,11 +192,11 @@ Esta sección registra las decisiones tomadas por BD (2026-11-12) y las opciones
 
 ### 2b. Imagen de la especie: columna `species.image_path`
 
-**Decisión (BD, 2026-11-12):** se mantiene la columna `species.image_path` (VARCHAR(255) NULL) para la foto pública en `media/species/`. Se escribe en la misma transacción que el estado y la publicación (`api-014` CA-08); la base guarda la ruta relativa, como exige ADR 0026. Si se requiere otra forma, `api-015` RN-07 cambia en un único punto de lectura.
+**Decisión (BD):** se mantiene la columna `species.image_path` (VARCHAR(255) NULL) para la foto pública en `media/species/`. Se escribe en la misma transacción que el estado y la publicación (`api-014` CA-08); la base guarda la ruta relativa, como exige ADR 0026. Si se requiere otra forma, `api-015` RN-07 cambia en un único punto de lectura.
 
 ### 2c. Forma de la solicitud: tabla delgada (A) o solo columnas en `species` (B)
 
-**Decisión (BD, 2026-11-12): opción A.** Se crea la tabla delgada `species_publication_requests` con el contrato de esta DBR, además de las columnas de publicación en `species`.
+**Decisión (BD): opción A.** Se crea la tabla delgada `species_publication_requests` con el contrato de esta DBR, además de las columnas de publicación en `species`.
 
 - **A. Tabla delgada `species_publication_requests`** (elegida): una fila por solicitud.
 - **B. Sin tabla:** la solicitud vive en columnas de `species` (no elegida).
@@ -213,39 +214,39 @@ Esta sección registra las decisiones tomadas por BD (2026-11-12) y las opciones
 
 ## Preguntas abiertas para BD y producto
 
-1. **Historial de edición.** **Resuelta, decisión del usuario 2026-11-11:** Activitylog, sin tabla `species_publication_request_revisions` (`api-014` CA-18).
-2. **Longitudes de `origin` y `habitat`.** **Resuelta, decisión del usuario 2026-11-11:** 150 caracteres para ambos.
-3. **Vínculo con `species`.** **Cambiada el 2026-11-11 con el modelo de publicación:** `species_id` es **NOT NULL desde el envío**, con FK `ON DELETE RESTRICT`. Ya no es nullable ni se llena al aceptar (`api-014` CA-24). Resuelta.
-4. **Campo `origin` en `species`.** **Resuelta (BD, 2026-11-12; decisión 2a):** se mapea a `species.distribution`; no se crea `species.origin`. Afecta a `api-015` RN-06 y `dashboard-010` CA-07.
-5. **Foto pública en `species`.** **Resuelta (BD, 2026-11-12; decisión 2b):** columna `species.image_path`. Afecta a `api-015` RN-07.
-6. **Carpeta de la foto pendiente.** **Resuelta, decisión del usuario 2026-11-11:** `media/species-requests/` es pública durante pruebas, con la enmienda del ADR 0026. Recomendación antes de producción (`api-014`).
-7. **Selección de la ficha pública.** **Resuelta (BD, 2026-11-12):** `published_fields` JSON NOT NULL en `species_publication_requests` y JSON NULL en `species`, copiado al aceptar, sin default en BD. Afecta a `api-014` RN-13 y `api-015` CA-13.
-8. **Fuente de los campos extra.** **Resuelta, decisión del usuario 2026-11-12: no por ahora.** No se añaden campos extra al formulario ni columnas a `species_publication_requests`; sin migración. La ficha pública usa solo los campos ya definidos. Se podrá retomar con una spec nueva. `conservation_status`, `size_cm` y `gestation_period` existen en `species`; `diet`, `longevity` y `characteristics` solo existen en `animals`. ¿Se añaden a la solicitud como correcciones (y se copian a `species` al aceptar) para que `pwa-005` los pida, o se excluyen de la v1? Esas seis claves no se implementan (`api-014` RN-13). Análisis en `docs/adr/0028-dynamic-tulanpedia-catalog.md`, sección «Decisión pendiente del responsable de BD: campos extra de la ficha pública» (recalculado con este modelo el 2026-11-11). La captura de `category` no forma parte de esta pregunta (pregunta 10).
-9. **Foto original tras aceptar.** **Resuelta, decisión del usuario 2026-11-11:** opción B (mover): copiar a `media/species/`, confirmar la transacción y borrar la original. `image_path` de la solicitud queda NULL (`api-014` CA-08).
-10. **Tipo de animal (`category`) en la solicitud.** **Resuelta, decisión del usuario (2026-11-11):** el veterinario elige el tipo con la lista cerrada de DBR-004; la columna `species_publication_requests.category` es una corrección (NULL = sin corrección) y la aceptación escribe el valor efectivo en `species.category`. **Por confirmar:** (a) que el tipo sea obligatorio en el envío (si no, una especie publicada puede quedar con `category` NULL y no contar en las misiones ni en el filtro de TulanPedia); (b) que `category` se publique siempre y no sea desmarcable (`api-014` RN-13).
-11. **Fecha de publicación (`published_at`).** **Resuelta, decisión del usuario 2026-11-11:** sí, se añade además de `species.is_published` (ver la tabla de `species`). Ver `api-014` pregunta 13 y 21.
-12. **Forma de la solicitud (2c).** **Resuelta (BD, 2026-11-12):** opción A, tabla delgada `species_publication_requests`. Ver la sección 2c.
-13. **Constitución V en `species`.** **Resuelta (BD, 2026-11-12):** se añade `species.deleted_at` (SoftDeletes) en la migración de DBR-013. El modelo `Species` y las lecturas (`api-015` y otras) deben alinearse para excluir filas borradas.
-14. **Unicidad de la solicitud viva por especie.** **Resuelta (BD, 2026-11-12):** además de la regla de aplicación con bloqueo (`api-014` RN-11), se añade la columna generada almacenada `submitted_species_id` (`IF(status='submitted', species_id, NULL)`) con índice único `uq_species_publication_requests_submitted_species` (MySQL 8.0).
-15. **Guardar o solo auditar la despublicación.** **Resuelta (BD, 2026-11-12):** se guarda `species.unpublished_at`. El revisor que despublica (`unpublished_by`) queda en Activitylog (`api-014` RN-12); no se añade columna `unpublished_by` en esta migración.
-16. **Nulabilidad de `species_publication_requests.category`.** **Resuelta (BD, 2026-11-12):** columna nullable (`NULL` = sin corrección), coherente con `api-014` CA-30.
-17. **Índice de la lista de publicadas.** **Resuelta (BD, 2026-11-12):** se crea `species(is_published, unpublished_at)` (`idx_species_is_published_unpublished_at`) además de `species(is_published)`. Conviene verificar con EXPLAIN en `arca_pruebas`.
+1. **Historial de edición.** **Resuelta, decisión del usuario:** Activitylog, sin tabla `species_publication_request_revisions` (`api-014` CA-18).
+2. **Longitudes de `origin` y `habitat`.** **Resuelta, decisión del usuario:** 150 caracteres para ambos.
+3. **Vínculo con `species`.** **Cambiada con el modelo de publicación:** `species_id` es **NOT NULL desde el envío**, con FK `ON DELETE RESTRICT`. Ya no es nullable ni se llena al aceptar (`api-014` CA-24). Resuelta.
+4. **Campo `origin` en `species`.** **Resuelta (BD; decisión 2a):** se mapea a `species.distribution`; no se crea `species.origin`. Afecta a `api-015` RN-06 y `dashboard-010` CA-07.
+5. **Foto pública en `species`.** **Resuelta (BD; decisión 2b):** columna `species.image_path`. Afecta a `api-015` RN-07.
+6. **Carpeta de la foto pendiente.** **Resuelta, decisión del usuario:** `media/species-requests/` es pública durante pruebas, con la enmienda del ADR 0026. Recomendación antes de producción (`api-014`).
+7. **Selección de la ficha pública.** **Resuelta (BD):** `published_fields` JSON NOT NULL en `species_publication_requests` y JSON NULL en `species`, copiado al aceptar, sin default en BD. Afecta a `api-014` RN-13 y `api-015` CA-13.
+8. **Fuente de los campos extra.** **Resuelta, decisión del usuario: no por ahora.** No se añaden campos extra al formulario ni columnas a `species_publication_requests`; sin migración. La ficha pública usa solo los campos ya definidos. Se podrá retomar con una spec nueva. `conservation_status`, `size_cm` y `gestation_period` existen en `species`; `diet`, `longevity` y `characteristics` solo existen en `animals`. ¿Se añaden a la solicitud como correcciones (y se copian a `species` al aceptar) para que `pwa-005` los pida, o se excluyen de la v1? Esas seis claves no se implementan (`api-014` RN-13). Análisis en `docs/adr/0028-dynamic-tulanpedia-catalog.md`, sección «Decisión pendiente del responsable de BD: campos extra de la ficha pública» (recalculado con este modelo). La captura de `category` no forma parte de esta pregunta (pregunta 10).
+9. **Foto original tras aceptar.** **Resuelta, decisión del usuario:** opción B (mover): copiar a `media/species/`, confirmar la transacción y borrar la original. `image_path` de la solicitud queda NULL (`api-014` CA-08).
+10. **Tipo de animal (`category`) en la solicitud.** **Resuelta, decisión del usuario:** el veterinario elige el tipo con la lista cerrada de DBR-004; la columna `species_publication_requests.category` es una corrección (NULL = sin corrección) y la aceptación escribe el valor efectivo en `species.category`. **Por confirmar:** (a) que el tipo sea obligatorio en el envío (si no, una especie publicada puede quedar con `category` NULL y no contar en las misiones ni en el filtro de TulanPedia); (b) que `category` se publique siempre y no sea desmarcable (`api-014` RN-13).
+11. **Fecha de publicación (`published_at`).** **Resuelta, decisión del usuario:** sí, se añade además de `species.is_published` (ver la tabla de `species`). Ver `api-014` pregunta 13 y 21.
+12. **Forma de la solicitud (2c).** **Resuelta (BD):** opción A, tabla delgada `species_publication_requests`. Ver la sección 2c.
+13. **Constitución V en `species`.** **Resuelta (BD):** se añade `species.deleted_at` (SoftDeletes) en la migración de DBR-013. El modelo `Species` y las lecturas (`api-015` y otras) deben alinearse para excluir filas borradas.
+14. **Unicidad de la solicitud viva por especie.** **Resuelta (BD):** además de la regla de aplicación con bloqueo (`api-014` RN-11), se añade la columna generada almacenada `submitted_species_id` (`IF(status='submitted', species_id, NULL)`) con índice único `uq_species_publication_requests_submitted_species` (MySQL 8.0).
+15. **Guardar o solo auditar la despublicación.** **Resuelta (BD):** se guarda `species.unpublished_at`. El revisor que despublica (`unpublished_by`) queda en Activitylog (`api-014` RN-12); no se añade columna `unpublished_by` en esta migración.
+16. **Nulabilidad de `species_publication_requests.category`.** **Resuelta (BD):** columna nullable (`NULL` = sin corrección), coherente con `api-014` CA-30.
+17. **Índice de la lista de publicadas.** **Resuelta (BD):** se crea `species(is_published, unpublished_at)` (`idx_species_is_published_unpublished_at`) además de `species(is_published)`. Conviene verificar con EXPLAIN en `arca_pruebas`.
 
 ## Aprobaciones
 
-| Rol | Nombre | Fecha | Resultado |
-|---|---|---|---|
-| Responsable de BD | Víctor Adrián | 2026-11-12 | Aprobada (decisiones 2a/2b/2c/7/13/14/15/16/17 registradas) |
-| Responsable backend | Jonathan | 2026-11-12 | Aprobada (la migración se aplicó en `arca_pruebas` y se verificó el 2026-11-12) |
+| Rol | Resultado | Evidencia |
+|---|---|---|
+| Responsable de BD | Aprobada (decisiones 2a/2b/2c/7/13/14/15/16/17 registradas) | Registro de esta DBR |
+| Backend | Aprobada (la migración se aplicó en `arca_pruebas` y se verificó) | Registro de esta DBR |
 
-Aprobado por: Víctor Adrián (BD, 2026-11-12) y Jonathan (backend, 2026-11-12), con aprobaciones separadas (`docs/database/requests/README.md`, regla 4). Estado: Lista para backend desde el 2026-11-12, con la migración aplicada en `arca_pruebas` y verificada (orden de despliegue, paso 4). La migración fue redactada según las decisiones de BD.
+Aprobación: responsable de BD y backend, con aprobaciones separadas (`docs/database/requests/README.md`, regla 4). Estado: Aplicada en arca_pruebas, con la migración verificada (orden de despliegue, paso 4). La migración fue redactada según las decisiones de BD.
 
 > **Recordatorio de firmas:** toda retroalimentación de un ADR, spec o DBR se firma en el propio documento en el momento de darla; no se acepta aprobar de palabra ni dejar la firma para después, porque se olvida. Quien solicita la retroalimentación pide la firma en ese mismo acto.
 
 ## Aplicación por ambiente
 
-| Ambiente | Estado | Fecha | Evidencia |
-|---|---|---|---|
-| desarrollo/pruebas (`arca_pruebas`) | Aplicada (lote 5) | Por registrar por BD (verificada el 2026-11-12) | Verificada el 2026-11-12 por consulta de solo lectura del responsable de backend: `migrate:status` = Ran, lote 5 (`2026_11_12_000013_species_publication_requests_schema`); `db:table` de `species` y `species_publication_requests` según la migración. Sin secretos. Pendiente: EXPLAIN y fecha y responsable de la aplicación por BD. |
+| Ambiente | Estado | Evidencia |
+|---|---|---|
+| `arca_pruebas` | Aplicada en arca_pruebas (lote 5) | Verificada por consulta de solo lectura del responsable de backend: `migrate:status` = Ran, lote 5 (`2026_11_12_000013_species_publication_requests_schema`); `db:table` de `species` y `species_publication_requests` según la migración. Sin secretos. Pendiente: EXPLAIN y fecha y responsable de la aplicación por BD. |
 | staging | pendiente | | |
 | producción | pendiente | | |

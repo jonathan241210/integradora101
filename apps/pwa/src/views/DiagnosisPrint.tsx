@@ -75,11 +75,11 @@ export function PrintActions({
         {children}
         {formId && (
           <Button disabled={saving} form={formId} type="submit">
-            {saving ? <Spinner label="Cargando…" /> : 'Guardar diagnóstico'}
+            {saving ? <Spinner label="Guardando diagnóstico…" /> : 'Guardar diagnóstico'}
           </Button>
         )}
         <Button disabled={pdfBusy} onClick={printSheet} type="button" variant="secondary">
-          {pdfBusy ? <Spinner label="Cargando…" /> : 'Descargar PDF'}
+          {pdfBusy ? <Spinner label="Generando PDF…" /> : 'Descargar PDF'}
         </Button>
       </div>
     </>

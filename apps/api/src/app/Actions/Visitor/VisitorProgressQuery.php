@@ -5,6 +5,7 @@ namespace App\Actions\Visitor;
 use App\Models\Achievement;
 use App\Models\Mission;
 use App\Models\Visitor;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,10 @@ class VisitorProgressQuery
     {
         $points = (int) DB::table('visitor_point_entries')->where('visitor_id', $visitor->id)->sum('points');
         $level = $this->level($points);
-        $discovered = DB::table('visitor_collections')->where('visitor_id', $visitor->id)->count();
+        $discovered = DB::table('visitor_collections')
+            ->where('visitor_id', $visitor->id)
+            ->whereIn('species_id', fn ($query) => $this->availableSpeciesIds($query))
+            ->count();
 
         return [
             'points' => $points,
@@ -99,12 +103,34 @@ class VisitorProgressQuery
     public function availableSpeciesCount(): int
     {
         return (int) DB::table('species')
-            ->whereIn('id', function ($query): void {
-                $query->select('animals.species_id')
-                    ->from('animals')
-                    ->where('animals.can_receive_visits', 1);
-            })
+            ->whereIn('id', fn ($query) => $this->availableSpeciesIds($query))
             ->count();
+    }
+
+    /**
+     * Especies disponibles (api-019 D-9, RN-14): al menos un animal en exhibición
+     * en un recinto activo y no eliminado. Criterio único para total y numerador.
+     */
+    private function availableSpeciesIds(Builder $query): void
+    {
+        $query->select('animals.species_id')
+            ->from('animals')
+            ->join('enclosures', 'enclosures.id', '=', 'animals.enclosure_id')
+            ->where('animals.can_receive_visits', 1)
+            ->where('enclosures.is_active', 1)
+            ->whereNull('enclosures.deleted_at');
+    }
+
+    public function visitableSpecies(?int $enclosureId = null): Builder
+    {
+        return DB::table('species')
+            ->where('species.is_published', true)
+            ->whereNull('species.deleted_at')
+            ->whereIn('species.id', function (Builder $query) use ($enclosureId): void {
+                $this->availableSpeciesIds($query);
+                $query->whereNull('animals.deleted_at')
+                    ->when($enclosureId !== null, fn (Builder $animals) => $animals->where('animals.enclosure_id', $enclosureId));
+            });
     }
 
     /**
@@ -115,6 +141,19 @@ class VisitorProgressQuery
     {
         $owned = DB::table($table)->where('visitor_id', $visitor->id)->get()->keyBy($foreign);
         $metrics = $this->metrics($visitor);
+        if ($mission) {
+            $achievementKeywords = Achievement::query()
+                ->where('is_active', true)
+                ->where('rule_type', 'species_keyword')
+                ->whereNotNull('rule_param')
+                ->get(['rule_target', 'rule_param'])
+                ->groupBy('rule_target')
+                ->map(fn (Collection $goals): array => $goals->pluck('rule_param')->all());
+            $speciesNames = $this->visitableSpecies()->pluck('species.common_name')->map(strval(...))->all();
+            $rows = $rows->filter(fn (Achievement|Mission $row): bool => $row->rule_type !== 'species_keyword'
+                || in_array($row->rule_param, $achievementKeywords->get($row->rule_target, []), true)
+                || $this->discoveredKeyword($speciesNames, (string) $row->rule_param))->values();
+        }
 
         return $rows->map(function (Achievement|Mission $row) use ($owned, $when, $mission, $metrics): array {
             $hit = $owned->get($row->id);
@@ -143,7 +182,7 @@ class VisitorProgressQuery
     }
 
     /**
-     * @return array{species_count: int, enclosure_count: int, missions_completed: int, categories: array<string, int>}
+     * @return array{species_count: int, enclosure_count: int, missions_completed: int, categories: array<string, int>, species_names: list<string>}
      */
     public function metrics(Visitor $visitor): array
     {
@@ -163,17 +202,23 @@ class VisitorProgressQuery
             ->groupBy('species.category')
             ->pluck('total', 'category')
             ->all();
+        $names = $this->visitableSpecies()
+            ->join('visitor_collections', 'visitor_collections.species_id', '=', 'species.id')
+            ->where('visitor_collections.visitor_id', $visitor->id)
+            ->pluck('species.common_name')
+            ->all();
 
         return [
             'species_count' => $speciesCount,
             'enclosure_count' => $enclosureCount,
             'missions_completed' => $missions,
             'categories' => $categories,
+            'species_names' => array_map(strval(...), $names),
         ];
     }
 
     /**
-     * @param  array{species_count: int, enclosure_count: int, missions_completed: int, categories: array<string, int>}  $metrics
+     * @param  array{species_count: int, enclosure_count: int, missions_completed: int, categories: array<string, int>, species_names: list<string>}  $metrics
      */
     public function metricFor(array $metrics, string $ruleType, ?string $ruleParam): int
     {
@@ -182,7 +227,43 @@ class VisitorProgressQuery
             'enclosure_count' => $metrics['enclosure_count'],
             'missions_completed' => $metrics['missions_completed'],
             'category_species_count' => (int) ($metrics['categories'][$ruleParam] ?? 0),
+            'species_keyword' => $this->discoveredKeyword($metrics['species_names'], (string) $ruleParam) ? 1 : 0,
             default => 0,
         };
+    }
+
+    /**
+     * @param  list<string>  $names
+     */
+    private function discoveredKeyword(array $names, string $ruleParam): bool
+    {
+        $keywords = array_values(array_filter(array_map(
+            fn (string $word): string => $this->fold($word),
+            explode(',', $ruleParam),
+        )));
+        if ($keywords === []) {
+            return false;
+        }
+
+        foreach ($names as $name) {
+            $words = preg_split('/[^a-z0-9]+/', $this->fold($name)) ?: [];
+            foreach ($words as $word) {
+                if ($word !== '' && in_array($word, $keywords, true)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function fold(string $value): string
+    {
+        $lower = mb_strtolower($value);
+        $folded = strtr($lower, [
+            'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u', 'ü' => 'u', 'ñ' => 'n',
+        ]);
+
+        return $folded;
     }
 }

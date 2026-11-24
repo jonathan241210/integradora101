@@ -2,9 +2,11 @@
 
 - App dueña: `pwa`, consumidora de la autenticación vigente de `api-003`.
 - Apps/paquetes afectados: `pwa`, `@arca/api-client`.
-- Estado: Aprobada
+- Estado: Implementada
+- Solicitada: 2026-11-04
+- Aprobada: 2026-11-04
 - Responsable funcional para este alcance: solicitante de esta conversación.
-- Aprobación funcional: solicitante, 2026-11-04.
+- Aprobación funcional: Aprobada (solicitante).
 
 ## Problema y objetivos
 
@@ -35,4 +37,20 @@ Como integrante del personal veterinario con cuenta activa, quiero iniciar y cer
 
 - Depende de `api-003`, de la configuración local de orígenes de Sanctum y de una cuenta veterinaria activa en `arca_pruebas`.
 - Las pantallas clínicas actuales llaman a otras rutas ausentes bajo `/api/v1/staff/`. Aprobar el inicio de sesión no habilita esas operaciones.
-- Evidencia de aprobación: «apruebo», en la conversación del 2026-11-04.
+- Evidencia de aprobación: «apruebo», registrada en la conversación con el solicitante.
+
+## Revisión (aprobada): contador de bloqueo
+
+Cuando la API bloquea el login por intentos (429 con `Retry-After`, disponible como `retryAfterSeconds` en el `ApiError` de `@arca/api-client`), la PWA muestra una cuenta regresiva en lugar de los segundos sueltos de la API. Réplica local de `dashboard-015` CA-21 a CA-25. No renumera CA existentes. El reto 2FA no existe en la PWA (CA-03 lo rechaza), por lo que no aplica.
+
+- **CA-04:** Dado un 429 con `retryAfterSeconds` en el login, entonces se muestra «Demasiados intentos. Podrás intentarlo de nuevo en 9:47» con formato `m:ss` (600 s es «10:00», 42 s es «0:42») y no los segundos de la API.
+- **CA-05:** El contador baja cada segundo sin recargar, se calcula contra un instante final (`Date.now() + s*1000`) y el intervalo se limpia al desmontar.
+- **CA-06:** Mientras corre, el botón «Iniciar sesión» queda deshabilitado; al llegar a 0 aparece «Ya puedes intentarlo de nuevo.» y el botón se habilita.
+- **CA-07:** Un 429 sin `retryAfterSeconds` válido muestra el mensaje de la API tal cual, sin contador.
+- **CA-08:** Los dígitos van en `aria-live="off"`; solo se anuncian el aviso inicial y el de fin desde una región `role="status"`.
+
+Evidencia de aprobación: registrada en la conversación con el responsable funcional.
+
+## Nota de revisión (dashboard-020 rev. (d))
+
+- **CA-09:** Dado el contador de bloqueo de CA-04 a CA-08, cuando se revisa el código, entonces `formatCountdown`, `startCountdown`, `useCountdown` y `LockoutNotice` salen de `@arca/ui` (ya no hay réplica local); el comportamiento visible no cambia. Anula la restricción «no se mueve a `packages/`» del plan.

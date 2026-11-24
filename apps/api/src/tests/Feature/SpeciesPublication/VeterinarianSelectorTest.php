@@ -66,4 +66,20 @@ class VeterinarianSelectorTest extends SpeciesPublicationTestCase
         $this->assertNull($rows[$foreign->id]['last_rejection_reason']);
         $this->assertNull($rows[$accepted->id]['last_rejection_reason']);
     }
+
+    /** CA-26 */
+    public function test_ca26_selector_exposes_published_fields(): void
+    {
+        $vet = $this->veterinarian();
+        $published = $this->makePublishedSpecies();
+        $never = $this->makeSpecies();
+        $unpublished = $this->makeUnpublishedSpecies();
+
+        $rows = collect($this->actAs($vet)->getJson(self::VET_SPECIES)->assertOk()->json('data'))->keyBy('id');
+
+        $this->assertSame(['scientific_name', 'origin', 'habitat'], $rows[$published->id]['published_fields']);
+        $this->assertSame(['scientific_name', 'origin', 'habitat'], $rows[$unpublished->id]['published_fields']);
+        $this->assertArrayHasKey('published_fields', $rows[$never->id]);
+        $this->assertNull($rows[$never->id]['published_fields']);
+    }
 }

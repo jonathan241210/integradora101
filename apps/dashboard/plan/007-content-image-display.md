@@ -1,8 +1,10 @@
 # Plan técnico · 007 · content-image-display
 
 - Spec: `apps/dashboard/specs/007-content-image-display.md`
-- Estado de spec: Aprobada (Jonathan, 2026-11-07).
-- Estado del plan: Aprobado (Jonathan, 2026-11-07).
+- Estado de spec: Implementada
+- Solicitada: 2026-11-07
+- Aprobada: 2026-11-07
+- Estado del plan: Aprobado.
 - Responsable técnico: por identificar (frontend del dashboard)
 - Dependencias de API: ninguna (`image_url` ya existe, `api-008`).
 
@@ -144,7 +146,7 @@ Los tests leen `apps/dashboard/src/styles.css` con `node:fs` (o el mismo método
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
 | I. Stack mínimo y portable | Sí | React 19, TS, Vite y CSS existentes. Sin dependencias nuevas. |
-| II. La spec manda | Sí | Spec 007 Aprobada (Jonathan, 2026-11-07) con este plan. |
+| II. La spec manda | Sí | Spec 007 Aprobada con este plan. |
 | III. Lógica separada de la interfaz | Sí | Solo presentación; no hay cálculos ni reglas de negocio. |
 | IV. Un test por criterio | Sí | CA-01 a CA-09 mapeados a `content-image-display.test.tsx` y a la verificación manual de CA-06. |
 | V. Una sola fuente de verdad para los datos | Sí | Sin datos nuevos ni escritura. |
@@ -166,7 +168,7 @@ Sin excepciones. No requiere ADR.
 
 ## Orden y aprobación
 
-1. Spec 007 (preguntas 1 a 3 resueltas) y este plan con su Constitution Check, aprobados el 2026-11-07.
+1. Spec 007 (preguntas 1 a 3 resueltas) y este plan con su Constitution Check, aprobados.
 2. `ContentThumbnail.tsx`: caja y `img` interno; pruebas de CA-05.
 3. `ImageUploadBox.tsx`: caja de vista previa; pruebas de CA-03 (marcado).
 4. `styles.css`: reglas nuevas en el bloque de `dashboard-004`; quitar `cover`; pruebas de CA-01, CA-02, CA-03, CA-04, CA-07.
@@ -181,5 +183,5 @@ Sin excepciones. No requiere ADR.
 
 | Rol | Aprueba | Estado |
 |---|---|---|
-| Responsable funcional | Spec 007 (preguntas 1 a 3) | Aprobado (Jonathan, 2026-11-07) |
-| Equipo técnico | Este plan y el Constitution Check | Aprobado (Jonathan, 2026-11-07) |
+| Responsable funcional | Spec 007 (preguntas 1 a 3) | Aprobado |
+| Equipo técnico | Este plan y el Constitution Check | Aprobado |

@@ -1,22 +1,27 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Alert, Button, Card, Field } from "@arca/ui";
+import { Alert, Button, Card, Field, LockoutNotice, useCountdown, validRetryAfter } from "@arca/ui";
 import { Icon } from "@/components/Icon";
 
 export function LoginView({
   error,
   submitting,
   sessionExpired,
+  retryAfterSeconds = null,
   onSubmit,
 }: {
   error: string;
   submitting: boolean;
   sessionExpired: boolean;
+  /** Segundos de bloqueo de un 429 (CA-21); sin ellos se muestra el mensaje de la API. */
+  retryAfterSeconds?: number | null;
   onSubmit: (email: string, password: string) => void;
 }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
+  const countdown = useCountdown(retryAfterSeconds);
+  const counting = validRetryAfter(retryAfterSeconds) !== null;
 
   useEffect(() => {
     emailRef.current?.focus();
@@ -74,7 +79,12 @@ export function LoginView({
           >
             {passwordVisible ? "Ocultar contraseña" : "Mostrar contraseña"}
           </Button>
-          {error && !sessionExpired && (
+          <LockoutNotice
+            countdown={countdown}
+            initialSeconds={validRetryAfter(retryAfterSeconds)}
+            alertClassName="auth-alert dialog-alert"
+          />
+          {error && !sessionExpired && !counting && (
             <Alert className="auth-alert" role="alert" aria-live="assertive">
               {error}
             </Alert>
@@ -82,7 +92,7 @@ export function LoginView({
           <Button
             className="auth-submit"
             type="submit"
-            disabled={submitting || !email.trim() || !password}
+            disabled={submitting || countdown.running || !email.trim() || !password}
           >
             {submitting ? "Ingresando…" : "Ingresar"}
           </Button>

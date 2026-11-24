@@ -260,4 +260,4 @@ Datos no se guardan         API retorna error        ¿Recinto seleccionado?
 
 ---
 
-**Última actualización:** Noviembre 2026
+**Última actualización:** (sin fecha)

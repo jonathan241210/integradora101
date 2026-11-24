@@ -55,7 +55,7 @@ export function clampPan(
 
 /**
  * Calcula el desplazamiento (panX, panY) necesario para centrar en el visor un punto
- * expresado en coordenadas del viewBox SVG (1000 × 1400), respetando el límite de bordes (CA-17).
+ * expresado en coordenadas del viewBox SVG (1600 × 1200), respetando el límite de bordes (CA-17).
  */
 export function computeCenterPanForSvgPoint(
   svgX: number,

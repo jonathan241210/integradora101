@@ -1,8 +1,10 @@
 # Tareas · 006 · mobile-walker-rotation
 
+- Solicitada: 2026-10-08
+- Aprobada: 2026-10-08
 - Spec: `apps/web/specs/006-mobile-walker-rotation.md` (Estado: **Aprobada**)
 - Plan: `apps/web/plan/006-mobile-walker-rotation.md` (Estado técnico: **Aprobado para tareas**)
-- Checklist: Aprobado por el solicitante, 2026-10-08
+- Checklist: Aprobado por el solicitante
 
 ## Trazabilidad
 
@@ -34,8 +36,8 @@
 - T-02 y T-03 preceden a T-04..T-06.
 - T-07 confirma la cobertura de todos los criterios y se integra después de escribir sus pruebas.
 - T-08 y T-09 cierran la validación.
-- Aprobación funcional: Solicitante, 2026-10-08.
-- Aprobación técnica del plan: Solicitante, 2026-10-08.
+- Aprobación funcional: Aprobada.
+- Aprobación técnica del plan: Aprobada.
 
 ## Evidencia parcial
 

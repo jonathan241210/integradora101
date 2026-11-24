@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { ScanResultScreen } from '../../src/screens/ScanResultScreen';
 import type { ScanPresentation } from '../../src/services/scanQueue';
 
@@ -30,7 +30,8 @@ describe('test-ca-07-progress-result-screens', () => {
     }
   });
 
-  it('CA-07 visitor-progress muestra el nombre completo en cada botón', async () => {
+  it('CA-07 y api-005 CA-17: cada especie válida abre su propia ficha con el nombre completo', async () => {
+    const openSpecies = jest.fn();
     const view = await render(
       <ScanResultScreen
         result={{
@@ -41,12 +42,49 @@ describe('test-ca-07-progress-result-screens', () => {
           unlockedSpecies: [
             { id: '1', name: 'Tigre de Bengala' },
             { id: '2', name: 'Guacamaya roja' },
+            { id: '3', name: 'Jaguar' },
+            { id: '4', name: ' ' },
           ],
         }}
         onBackPress={() => undefined}
+        onOpenSpecies={openSpecies}
       />,
     );
     expect(view.getByText('Ver Tigre de Bengala')).toBeTruthy();
     expect(view.getByText('Ver Guacamaya roja')).toBeTruthy();
+    expect(view.queryByText(/^Ver\s*$/)).toBeNull();
+    await fireEvent.press(view.getByRole('button', { name: 'Ver Jaguar' }));
+    expect(openSpecies).toHaveBeenCalledWith('3');
+  });
+
+  it('CA-07 distingue las especies nuevas de las que ya estaban en la colección', async () => {
+    const view = await render(
+      <ScanResultScreen
+        result={{
+          ...cases[0],
+          unlockedSpecies: [{ id: '1', name: 'Jaguar' }],
+          alreadyKnownSpecies: [{ id: '2', name: 'Guacamaya' }],
+        }}
+        onBackPress={jest.fn()}
+      />,
+    );
+    expect(view.getByRole('button', { name: 'Ver Jaguar' })).toBeTruthy();
+    expect(view.getByText('Ya estaban en tu colección: Guacamaya.')).toBeTruthy();
+    expect(view.queryByRole('button', { name: 'Ver Guacamaya' })).toBeNull();
+  });
+
+  it.each(['pending', 'rate_limited'] as const)('CA-06 muestra Reintentar para %s', async (kind) => {
+    const onRetryPress = jest.fn();
+    const onBackPress = jest.fn();
+    const view = await render(
+      <ScanResultScreen
+        result={{ kind, title: 'Escaneo pendiente', message: 'Vuelve a intentarlo.' }}
+        onBackPress={onBackPress}
+        onRetryPress={kind === 'pending' ? onRetryPress : undefined}
+      />,
+    );
+
+    await fireEvent.press(view.getByRole('button', { name: 'Reintentar' }));
+    expect(kind === 'pending' ? onRetryPress : onBackPress).toHaveBeenCalledTimes(1);
   });
 });

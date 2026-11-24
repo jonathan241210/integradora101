@@ -7,8 +7,16 @@ export type {
   VisitorCatalogItemDto,
   VisitorDiscoveryDto,
   VisitorDiscoveryInput,
+  VisitorFavoriteSpeciesList,
   VisitorAlreadyRegistered,
+  VisitorMemoryDto,
+  VisitorMemoryField,
+  VisitorMemoryFile,
+  VisitorMemoryList,
+  VisitorMemoryStatus,
+  VisitorMemorySubmit,
   VisitorMessage,
+  VisitorNotificationPreferences,
   VisitorProfileDto,
   VisitorProgressDto,
   VisitorRegisterInput,
@@ -17,14 +25,31 @@ export type {
   VisitorVerifyResult,
 } from "./visitor";
 export { createAdminApi } from "./admin";
-export type { AdminApi, CreateAdminApiOptions } from "./admin";
+export type { AdminApi } from "./admin";
 export type {
+  CancellationDaysToReviewDto,
+  CancellationCashierOption,
+  CancellationReconciliationCashierDto,
+  CancellationReconciliationDayDto,
+  CancellationLegendDto,
+  CancellationLevelDto,
+  CancellationSignalReasonDto,
+  CancellationReportDto,
+  CancellationReviewDto,
+  CancellationReviewInput,
+  CancellationReviewStatus,
+  CancellationTrafficLight,
+  CancellationTrafficLightDto,
+  CancellationReportQuery,
+  CancellationRowDto,
   DailySalesDto,
   DashboardSummaryDto,
   EnclosureDto,
   EventDto,
   EventInput,
   HasMorePage,
+  ListPageMeta,
+  TotalPage,
   MemoryRejectInput,
   MemoryRejectedField,
   MemoryReviewDetailDto,
@@ -53,7 +78,11 @@ export type {
   SpeciesRequestSummaryDto,
   SpeciesRequestType,
   SpeciesRequestUpdateInput,
+  ConsoleNoticeDto,
+  PendingReviewCountsDto,
   StaffAccountDto,
+  StaffAssignableRole,
+  StaffPermissionOption,
   StaffCreateInput,
   StaffDepartmentOption,
   StaffListQuery,
@@ -63,10 +92,15 @@ export type {
   TicketReportDto,
   TicketReportQuery,
   TicketRowDto,
+  GlobalSearchGroup,
+  GlobalSearchItem,
+  GlobalSearchResponse,
 } from "./admin-types";
 export { createTicketSalesApi } from "./ticket-sales";
-export type { CreateTicketSalesApiOptions, TicketSalesApi } from "./ticket-sales";
+export type { TicketSalesApi } from "./ticket-sales";
 export type {
+  CancellationReasonCode,
+  CancellationReasonDto,
   TicketCancelInput,
   TicketHistoryPage,
   TicketHistoryQuery,
@@ -103,3 +137,11 @@ export type {
   TwoFactorChallenge,
   TwoFactorQrCode,
 } from "./types";
+export { buildSpeciesRequestFormData, createVeterinarianApi } from "./veterinarian";
+export type { VeterinarianApi } from "./veterinarian";
+export type {
+  OwnSpeciesRequestDto,
+  SelectableSpeciesDto,
+  SubmitSpeciesRequestInput,
+  SubmittedSpeciesRequestDto,
+} from "./veterinarian-types";

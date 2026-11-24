@@ -19,6 +19,15 @@ export type VisitorMessage = {
   message: string;
 };
 
+export type VisitorNotificationPreferences = {
+  news_and_events: boolean;
+  memory_status: boolean;
+};
+
+export type VisitorFavoriteSpeciesList = {
+  data: { id: number }[];
+};
+
 export type VisitorAlreadyRegistered = {
   message: string;
   code: "email_already_registered";
@@ -76,6 +85,44 @@ export type VisitorDiscoveryDto = {
   code?: string;
 };
 
+export type VisitorMemoryStatus = "submitted" | "in_review" | "accepted" | "rejected";
+
+export type VisitorMemoryField = "image" | "content";
+
+export type VisitorMemoryFile = {
+  uri: string;
+  name: string;
+  mimeType: string;
+};
+
+export type VisitorMemoryDto = {
+  id: number;
+  status: VisitorMemoryStatus;
+  opinion: string | null;
+  created_at: string | null;
+  reviewed_at: string | null;
+  resubmitted_count: number;
+  rejection_reason?: string | null;
+  rejected_fields?: VisitorMemoryField[];
+  published_until?: string | null;
+  is_published?: boolean;
+};
+
+export type VisitorMemoryList = {
+  data: VisitorMemoryDto[];
+  meta: {
+    can_submit: boolean;
+    next_submission_at: string | null;
+    open_request_id: number | null;
+  };
+};
+
+export type VisitorMemorySubmit = {
+  image?: VisitorMemoryFile | Blob | null;
+  opinion?: string | null;
+  consent: boolean;
+};
+
 export type VisitorRegisterInput = {
   email: string;
   password: string;
@@ -93,7 +140,7 @@ export type CreateVisitorApiOptions = {
   getAccessToken: () => Promise<string | null>;
   getRefreshToken: () => Promise<string | null>;
   onTokens: (tokens: { accessToken: string; refreshToken: string }) => Promise<void>;
-  onSessionExpired: () => Promise<void>;
+  onSessionExpired: (accessToken: string | null) => Promise<void>;
 };
 
 type RequestOptions = {
@@ -101,7 +148,43 @@ type RequestOptions = {
   body?: unknown;
   auth?: boolean;
   retry?: boolean;
+  rotations?: number;
+  raw?: boolean;
 };
+
+function errorStatus(error: unknown): number | null {
+  if (typeof error !== "object" || error === null || !("status" in error)) return null;
+  const status = (error as { status?: unknown }).status;
+  return typeof status === "number" ? status : null;
+}
+
+function keepsSession(error: unknown): boolean {
+  const status = errorStatus(error);
+  return status === null || status === 0 || status >= 500;
+}
+
+function isFormData(value: unknown): value is FormData {
+  return typeof FormData !== "undefined" && value instanceof FormData;
+}
+
+function memoryFormData(input: VisitorMemorySubmit): FormData {
+  const form = new FormData();
+  if (input.image) {
+    if ("mimeType" in input.image) {
+      form.append("image", {
+        uri: input.image.uri,
+        name: input.image.name,
+        type: input.image.mimeType,
+      } as unknown as Blob);
+    } else {
+      form.append("image", input.image);
+    }
+  }
+  const opinion = input.opinion?.trim();
+  if (opinion) form.append("opinion", opinion);
+  form.append("consent", input.consent ? "1" : "0");
+  return form;
+}
 
 function requestUrl(baseUrl: string, path: string): string {
   const base = baseUrl.replace(/\/+$/, "");
@@ -146,6 +229,9 @@ function visitorError(
   if (retryAfterSeconds !== undefined && Number.isFinite(retryAfterSeconds)) {
     error.retryAfterSeconds = retryAfterSeconds;
   }
+  if (typeof payload.next_submission_at === "string" && error.data === undefined) {
+    error.data = { next_submission_at: payload.next_submission_at };
+  }
 
   return error;
 }
@@ -168,6 +254,8 @@ function unwrap<T>(body: unknown): T {
   return body as T;
 }
 
+const refreshFlights = new Map<string, Promise<VisitorTokenPayload>>();
+
 export function createVisitorApi({
   baseUrl,
   fetchImpl = fetch,
@@ -176,8 +264,6 @@ export function createVisitorApi({
   onTokens,
   onSessionExpired,
 }: CreateVisitorApiOptions) {
-  let refreshFlight: Promise<VisitorTokenPayload> | null = null;
-
   const send = async (
     path: string,
     options: RequestOptions,
@@ -185,14 +271,23 @@ export function createVisitorApi({
   ): Promise<Response> => {
     const method = (options.method ?? "GET").toUpperCase();
     const headers = new Headers({ Accept: "application/json" });
-    if (options.body !== undefined) headers.set("Content-Type", "application/json");
+    const hasBody = options.body !== undefined;
+    // `isFormData` no estrecha `options.body`: es una propiedad mutable.
+    const formData = hasBody && isFormData(options.body);
+    if (hasBody && !formData) headers.set("Content-Type", "application/json");
     if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
+
+    const body = !hasBody
+      ? undefined
+      : formData
+        ? (options.body as FormData)
+        : JSON.stringify(options.body);
 
     try {
       return await fetchImpl(requestUrl(baseUrl, path), {
         method,
         headers,
-        body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+        body,
       });
     } catch {
       throw visitorError(0, { message: "Sin conexión" }, null);
@@ -200,55 +295,87 @@ export function createVisitorApi({
   };
 
   const refresh = async (): Promise<VisitorTokenPayload> => {
-    if (!refreshFlight) {
-      refreshFlight = (async () => {
-        const refreshToken = await getRefreshToken();
-        if (!refreshToken) {
-          throw visitorError(401, { message: "La sesión ya no es válida. Vuelve a entrar." }, null);
-        }
-        const response = await send(
-          "/api/v1/visitor/auth/refresh",
-          { method: "POST", body: { refresh_token: refreshToken }, auth: false },
-          null,
-        );
-        const body = await readBody(response);
-        if (!response.ok) {
-          throw visitorError(response.status, body, response.headers.get("Retry-After"));
-        }
-        const payload = unwrap<VisitorTokenPayload>(body);
-        await onTokens({
-          accessToken: payload.access_token,
-          refreshToken: payload.refresh_token,
-        });
-        return payload;
-      })().finally(() => {
-        refreshFlight = null;
-      });
+    const refreshToken = await getRefreshToken();
+    if (!refreshToken) {
+      throw visitorError(401, { message: "La sesión ya no es válida. Vuelve a entrar." }, null);
     }
-    return refreshFlight;
+    const inFlight = refreshFlights.get(refreshToken);
+    if (inFlight) return inFlight;
+
+    const flight = (async () => {
+      const response = await send(
+        "/api/v1/visitor/auth/refresh",
+        { method: "POST", body: { refresh_token: refreshToken }, auth: false },
+        null,
+      );
+      const body = await readBody(response);
+      if (!response.ok) {
+        throw visitorError(response.status, body, response.headers.get("Retry-After"));
+      }
+      const payload = unwrap<VisitorTokenPayload>(body);
+      await onTokens({
+        accessToken: payload.access_token,
+        refreshToken: payload.refresh_token,
+      });
+      return payload;
+    })().finally(() => {
+      refreshFlights.delete(refreshToken);
+    });
+    refreshFlights.set(refreshToken, flight);
+    return flight;
+  };
+
+  const followNewerToken = async <T>(
+    path: string,
+    options: RequestOptions,
+    accessToken: string | null,
+  ): Promise<{ value: T } | "keep" | null> => {
+    const latest = await getAccessToken();
+    if (!latest || latest === accessToken) return null;
+    const rotations = options.rotations ?? 0;
+    if (rotations >= 3) return "keep";
+    return { value: await request<T>(path, { ...options, retry: false, rotations: rotations + 1 }) };
   };
 
   const request = async <T>(path: string, options: RequestOptions = {}): Promise<T> => {
     const accessToken = options.auth === false ? null : await getAccessToken();
     const response = await send(path, options, accessToken);
-    if (response.status === 401 && options.auth !== false && options.retry !== false) {
-      await response.body?.cancel();
-      try {
-        await refresh();
-      } catch (error) {
-        await onSessionExpired();
-        throw error;
+    if (response.status === 401 && options.auth !== false) {
+      const followed = await followNewerToken<T>(path, options, accessToken);
+      if (followed === "keep") {
+        await response.body?.cancel();
+        throw visitorError(401, { message: "La sesión ya no es válida. Vuelve a entrar." }, null);
       }
-      return request<T>(path, { ...options, retry: false });
+      if (followed) {
+        await response.body?.cancel();
+        return followed.value;
+      }
+      if (options.retry !== false) {
+        await response.body?.cancel();
+        try {
+          await refresh();
+        } catch (error) {
+          const recovered = await followNewerToken<T>(path, options, accessToken);
+          if (recovered === "keep") throw error;
+          if (recovered) return recovered.value;
+          if (keepsSession(error)) throw error;
+          await onSessionExpired(accessToken);
+          throw error;
+        }
+        return request<T>(path, { ...options, retry: false });
+      }
     }
 
     const body = await readBody(response);
     if (!response.ok) {
       if (response.status === 401 && options.auth !== false) {
-        await onSessionExpired();
+        const followed = await followNewerToken<T>(path, options, accessToken);
+        if (followed && followed !== "keep") return followed.value;
+        if (!followed) await onSessionExpired(accessToken);
       }
       throw visitorError(response.status, body, response.headers.get("Retry-After"));
     }
+    if (options.raw) return body as T;
     return unwrap<T>(body);
   };
 
@@ -311,6 +438,43 @@ export function createVisitorApi({
     collection: () => request<VisitorSpeciesDto[]>("/api/v1/visitor/collection"),
     achievements: () => request<VisitorCatalogItemDto[]>("/api/v1/visitor/achievements"),
     missions: () => request<VisitorCatalogItemDto[]>("/api/v1/visitor/missions"),
+    listVisitorMemories: () =>
+      request<VisitorMemoryList>("/api/v1/visitor/memories", { raw: true }),
+    submitVisitorMemory: (input: VisitorMemorySubmit) =>
+      request<VisitorMemoryDto>("/api/v1/visitor/memories", {
+        method: "POST",
+        body: memoryFormData(input),
+      }),
+    resubmitVisitorMemory: (id: number, input: VisitorMemorySubmit) =>
+      request<VisitorMemoryDto>(`/api/v1/visitor/memories/${id}/resubmit`, {
+        method: "POST",
+        body: memoryFormData(input),
+      }),
+    getNotificationPreferences: () =>
+      request<VisitorNotificationPreferences>("/api/v1/visitor/notification-preferences"),
+    updateNotificationPreferences: (patch: Partial<VisitorNotificationPreferences>) =>
+      request<VisitorNotificationPreferences>("/api/v1/visitor/notification-preferences", {
+        method: "PATCH",
+        body: patch,
+      }),
+    registerPushToken: (token: string) =>
+      request<{ platform: "android" }>("/api/v1/visitor/push-tokens", {
+        method: "PUT",
+        body: { token, platform: "android" },
+      }),
+    deletePushToken: (token: string) =>
+      request<void>("/api/v1/visitor/push-tokens", {
+        method: "DELETE",
+        body: { token },
+      }),
+    listFavoriteSpecies: () =>
+      request<VisitorFavoriteSpeciesList>("/api/v1/visitor/favorite-species", { raw: true }),
+    updateFavoriteSpecies: (speciesId: number, favorite: boolean) =>
+      request<VisitorFavoriteSpeciesList>(`/api/v1/visitor/favorite-species/${speciesId}`, {
+        method: "PUT",
+        body: { favorite },
+        raw: true,
+      }),
     discoveries: async (input: VisitorDiscoveryInput) => {
       try {
         return await request<VisitorDiscoveryDto>("/api/v1/visitor/discoveries", {

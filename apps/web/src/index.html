@@ -29,7 +29,7 @@
 <link rel="stylesheet" href="assets/icons/bootstrap-icons.css">
 
 <!-- CSS -->
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=web-012-4">
 <link rel="stylesheet" href="animations.css">
 <link rel="stylesheet" href="accessibility.css">
 <link rel="stylesheet" href="news-events.css">
@@ -66,14 +66,16 @@
 </script>
 
 <!-- Scripts (defer: se descargan en paralelo y se ejecutan tras parsear el HTML) -->
-<script src="script.js" defer></script>
+<script src="script.js?v=web-012-3" defer></script>
 <script src="animations.js" defer></script>
 <script src="accessibility.js" defer></script>
 <script src="js/api.js" defer></script>
-<script src="js/news-events.js" defer></script>
-<script src="js/animals.js" defer></script>
+<script src="js/search-target.js?v=web-012-3" defer></script>
+<script src="js/news-events.js?v=web-012-3" defer></script>
+<script src="js/animals.js?v=web-012-3" defer></script>
 <script src="js/memories-carousel.js" defer></script>
 <script src="js/memories.js" defer></script>
+<script src="js/search.js?v=web-012-4" defer></script>
 </head>
 
 <body>
@@ -99,7 +101,7 @@
         <a href="#animales">Animales</a>
         <a href="#mapa">Mapa</a>
         <a href="#ubicacion">Ubicación</a>
-        <a href="#instalaciones">Instalaciones</a>
+        <a href="#instalaciones" hidden>Instalaciones</a>
         <a href="#noticias">Noticias</a>
         <a href="#eventos">Eventos</a>
         <a href="#preguntas">Preguntas</a>
@@ -110,8 +112,10 @@
     <div class="top-actions">
         <form class="search" role="search" id="searchForm">
             <i class="bi bi-search" aria-hidden="true"></i>
-            <input type="search" id="searchInput" placeholder="Buscar un animal..." aria-label="Buscar animales" autocomplete="off">
+            <input type="search" id="searchInput" placeholder="Buscar en todo el portal..." aria-label="Buscar en todo el portal" aria-controls="searchResults" aria-expanded="false" maxlength="120" autocomplete="off">
+            <button class="search-submit" type="submit" aria-label="Buscar en el portal"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
         </form>
+        <div class="search-panel" id="searchResults" role="region" aria-label="Resultados de búsqueda" hidden></div>
 
         <a class="user" href="#boletos">
             <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
@@ -315,7 +319,7 @@
                 Muévete con facilidad
             </span>
             <h2>Mapa del zoológico</h2>
-            <p>Explora las zonas y servicios en una ilustración elevada del zoológico.</p>
+            <p>Consulta el plano del zoológico en 2D o explora el modelo 3D.</p>
         </div>
 
         <div class="map-layout">
@@ -327,184 +331,21 @@
                     TU RECORRIDO
                 </div>
 
-                <div class="map" role="group" aria-label="Ilustración aproximada de las zonas del zoológico">
+                <div class="map" role="group" aria-label="Mapa aéreo aproximado de las zonas del zoológico">
 
-                                    <button type="button" class="model-toggle map-toggle" id="mapModelToggle" data-model="assets/Mapa.glb" aria-pressed="false" aria-label="Ver mapa en 3D" title="Ver mapa en 3D">
+                                    <button type="button" class="model-toggle map-toggle" id="mapModelToggle" data-model="assets/mapa_corregido.glb" aria-pressed="false" aria-label="Ver mapa en 3D" aria-controls="mapScene" title="Ver mapa en 3D">
                                         <img src="assets/icon-3d-56.webp" alt="" width="28" height="28">
                                     </button>
-                    <svg class="map-symbols" aria-hidden="true" focusable="false">
-                        <symbol id="map-icon-felinos" viewBox="0 0 24 24"><path d="M12 21s-8-4.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.6-8 11-8 11Z" /></symbol>
-                        <symbol id="map-icon-aviario" viewBox="0 0 24 24"><path d="M20 4C11 4 5 7 4 13c-.6 3.5 2.5 6.5 6 6 6-1 9-7 10-15ZM4 20l8-8m-4 4h5m-1-6v5" /></symbol>
-                        <symbol id="map-icon-reptilario" viewBox="0 0 24 24"><path d="M12 3v18m-5-8 5-3 5 3m-9-6 4 3 4-3m-9 9-3 2m15-2 3 2M8 5 5 3m11 2 3-2" /><circle cx="12" cy="12" r="8" /></symbol>
-                        <symbol id="map-icon-primates" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7" /><circle cx="4" cy="11" r="2.5" /><circle cx="20" cy="11" r="2.5" /><path d="M9 14h6m-5 3h4m-2-6v2" /></symbol>
-                        <symbol id="map-icon-granja" viewBox="0 0 24 24"><path d="m3 11 9-7 9 7v9H3v-9Zm6 9v-6h6v6" /></symbol>
-                        <symbol id="map-icon-lago" viewBox="0 0 24 24"><path d="M12 3C9 7 6 10 6 14a6 6 0 0 0 12 0c0-4-3-7-6-11Z" /><path d="M8 15c1.5 1 2.5 1 4 0s2.5-1 4 0" /></symbol>
-                        <symbol id="map-icon-entrada" viewBox="0 0 24 24"><path d="M4 21V3h16v18M8 21V7h8v14m-5-7h.01" /></symbol>
-                        <symbol id="map-icon-banos" viewBox="0 0 24 24"><path d="M5 4h14v4H5zm2 4v12m10-12v12M4 20h16M9 12h6m-6 3h6" /></symbol>
-                        <symbol id="map-icon-alimentos" viewBox="0 0 24 24"><path d="M7 3v7m4-7v7M9 10v11m7-18v18m0-18c3 3 3 7 0 9" /></symbol>
-                        <symbol id="map-icon-bebederos" viewBox="0 0 24 24"><path d="M12 3C9 7 6 10 6 14a6 6 0 0 0 12 0c0-4-3-7-6-11Z" /></symbol>
-                        <symbol id="map-icon-descanso" viewBox="0 0 24 24"><path d="M12 3 5 12h4l-5 6h7v3m1-18 7 9h-4l5 6h-7" /></symbol>
-                        <symbol id="map-icon-enfermeria" viewBox="0 0 24 24"><path d="M12 21s-8-4.4-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 6.6-8 11-8 11Z" /><path d="M12 8v7m-3.5-3.5h7" /></symbol>
-                        <symbol id="map-icon-tiendas" viewBox="0 0 24 24"><path d="M4 10v11h16V10M3 10l2-6h14l2 6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0M9 21v-6h6v6" /></symbol>
-                    </svg>
-
+                    <p class="map-model-status" id="mapModelStatus" role="status" aria-live="polite" hidden></p>
                     <div class="map-scene" id="mapScene">
-                        <svg class="map-art" viewBox="0 0 900 560" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-                            <defs>
-                                <linearGradient id="map-ground" x1="0" y1="0" x2="1" y2="1">
-                                    <stop offset="0" stop-color="#d3e1b0" />
-                                    <stop offset="1" stop-color="#93b778" />
-                                </linearGradient>
-                                <pattern id="map-grass" width="36" height="36" patternUnits="userSpaceOnUse">
-                                    <path d="M5 28q4-11 8-13m8 14q-1-8 4-13" fill="none" stroke="#7e9e65" stroke-width="2" opacity=".35" />
-                                </pattern>
-                            </defs>
-
-                            <path d="M105 78 746 36 844 399 202 520 54 289Z" fill="#667e58" opacity=".24" transform="translate(0 18)" />
-                            <path d="M105 59 746 17 844 380 202 501 54 270Z" fill="url(#map-ground)" stroke="#6f9362" stroke-width="10" stroke-linejoin="round" />
-                            <path d="M105 59 746 17 844 380 202 501 54 270Z" fill="url(#map-grass)" />
-                            <path d="m94 255 118 37 138-114 138 47 91-102 158 85 69-47M203 480l99-132 146 45 118-106 170 58M184 105l75 105-89 118m385-290 17 123 146 29" fill="none" stroke="#d7bd8c" stroke-width="32" stroke-linecap="round" stroke-linejoin="round" />
-                            <path d="m94 255 118 37 138-114 138 47 91-102 158 85 69-47M203 480l99-132 146 45 118-106 170 58M184 105l75 105-89 118m385-290 17 123 146 29" fill="none" stroke="#f5e8ca" stroke-width="5" stroke-dasharray="5 13" stroke-linecap="round" />
-                            <path d="m179 105 117-14 43 86-98 47-81-39Zm281 29 113-24 36 82-99 40-70-36Zm-203 191 111-26 42 86-111 35-65-44Zm252-43 117-38 53 78-112 47-73-43Z" fill="#b2c98d" stroke="#708a62" stroke-width="7" stroke-linejoin="round" />
-                            <path d="M605 302q47-44 102-20 28 13 22 43-8 37-57 44-53 6-76-24-14-22 9-43Z" fill="#77b8b1" stroke="#4d9694" stroke-width="8" />
-                            <path d="M619 326q34-17 72 0m-67 19q30-13 59 0" fill="none" stroke="#d9f0df" stroke-width="5" stroke-linecap="round" />
-                        </svg>
-
-                        <!-- MAP MARKERS -->
-                        <button class="map-control map-marker zone z1" data-name="Felinos" type="button" aria-label="Felinos" aria-pressed="false" style="--marker-x: 25%; --marker-y: 28%">
-                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-felinos"></use></svg>
-                            <span class="map-marker-label">Felinos</span>
-                        </button>
-
-                        <button class="map-control map-marker zone z2" data-name="Aviario" type="button" aria-label="Aviario" aria-pressed="false" style="--marker-x: 56%; --marker-y: 24%">
-                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-aviario"></use></svg>
-                            <span class="map-marker-label">Aviario</span>
-                        </button>
-
-                        <button class="map-control map-marker zone z3" data-name="Reptilario" type="button" aria-label="Reptilario" aria-pressed="false" style="--marker-x: 77%; --marker-y: 42%">
-                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-reptilario"></use></svg>
-                            <span class="map-marker-label">Reptilario</span>
-                        </button>
-
-                        <button class="map-control map-marker zone z4" data-name="Primates" type="button" aria-label="Primates" aria-pressed="false" style="--marker-x: 46%; --marker-y: 55%">
-                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-primates"></use></svg>
-                            <span class="map-marker-label">Primates</span>
-                        </button>
-
-                        <button class="map-control map-marker zone z5" data-name="Granja" type="button" aria-label="Granja" aria-pressed="false" style="--marker-x: 27%; --marker-y: 75%">
-                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-granja"></use></svg>
-                            <span class="map-marker-label">Granja</span>
-                        </button>
-
-                        <button class="map-control map-marker zone z6" data-name="Lago" type="button" aria-label="Lago" aria-pressed="false" style="--marker-x: 69%; --marker-y: 72%">
-                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-lago"></use></svg>
-                            <span class="map-marker-label">Lago</span>
-                        </button>
-
-                        <button class="map-control map-marker map-point entrance" data-name="Entrada" type="button" aria-label="Entrada" aria-pressed="false" style="--marker-x: 48%; --marker-y: 91%">
-                            <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-entrada"></use></svg>
-                            <span class="map-marker-label">Entrada</span>
-                        </button>
+                        <img class="map-art" src="assets/MAPA_2D.svg" alt="Plano del zoológico" width="2160" height="2304" loading="lazy" decoding="async">
                     </div>
 
-                </div>
-
-                <div class="map-zoom-controls" role="group" aria-label="Controles de zoom del mapa">
-                    <button class="map-zoom-button" id="mapZoomOut" type="button" aria-label="Alejar mapa" aria-controls="mapScene" disabled>−</button>
-                    <button class="map-zoom-button" id="mapZoomIn" type="button" aria-label="Acercar mapa" aria-controls="mapScene">+</button>
-                    <button class="map-zoom-button map-zoom-reset" id="mapZoomReset" type="button" aria-label="Restablecer zoom del mapa" aria-controls="mapScene">Restablecer</button>
-                    <span class="map-zoom-status" id="mapZoomStatus" role="status" aria-live="polite">Vista: 100 %</span>
                 </div>
 
                 <p class="map-disclaimer">
                     <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
                     Ilustración aproximada, no está a escala y no sirve para orientarte con precisión. Consulta al personal para ubicarte en el recinto.
-                </p>
-
-            </div>
-
-            <!-- MAP LEGEND -->
-            <div class="map-legend">
-
-                <h3>
-                    <i class="bi bi-list-ul" aria-hidden="true"></i>
-                    Zonas y servicios
-                </h3>
-
-                <p>Selecciona cualquier punto para ver su referencia.</p>
-
-                <div class="legend">
-
-                    <button class="map-control map-point" type="button" data-name="Felinos" aria-label="Felinos" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-felinos"></use></svg>
-                        <span>Felinos</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Aviario" aria-label="Aviario" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-aviario"></use></svg>
-                        <span>Aviario</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Reptilario" aria-label="Reptilario" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-reptilario"></use></svg>
-                        <span>Reptilario</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Primates" aria-label="Primates" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-primates"></use></svg>
-                        <span>Primates</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Granja" aria-label="Granja" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-granja"></use></svg>
-                        <span>Granja</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Lago" aria-label="Lago" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-lago"></use></svg>
-                        <span>Lago</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Entrada" aria-label="Entrada y salida" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-entrada"></use></svg>
-                        <span>Entrada y salida</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Baños" aria-label="Baños" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-banos"></use></svg>
-                        <span>Baños</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Alimentos" aria-label="Alimentos" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-alimentos"></use></svg>
-                        <span>Alimentos</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Bebederos" aria-label="Bebederos" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-bebederos"></use></svg>
-                        <span>Bebederos</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Áreas de descanso" aria-label="Áreas de descanso" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-descanso"></use></svg>
-                        <span>Áreas de descanso</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Enfermería" aria-label="Enfermería" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-enfermeria"></use></svg>
-                        <span>Enfermería</span>
-                    </button>
-
-                    <button class="map-control map-point" type="button" data-name="Tiendas" aria-label="Tiendas" aria-pressed="false">
-                        <svg class="map-icon" aria-hidden="true" focusable="false"><use href="#map-icon-tiendas"></use></svg>
-                        <span>Tiendas</span>
-                    </button>
-
-                </div>
-
-                <p class="map-selection" id="mapSelection" aria-live="polite">
-                    <i class="bi bi-hand-index" aria-hidden="true"></i>
-                    Elige una zona o servicio del mapa.
                 </p>
 
             </div>
@@ -573,7 +414,7 @@
 
 
     <!-- INSTALACIONES -->
-    <section class="installations" id="instalaciones">
+    <section class="installations" id="instalaciones" hidden>
 
         <div class="section-heading">
             <span class="tag tag-dark">
@@ -897,7 +738,7 @@
 
     </div>
 
-    <form class="contact-form" id="contactForm">
+    <form class="contact-form" id="contactForm" hidden>
 
         <h3><i class="bi bi-envelope" aria-hidden="true"></i> Escríbenos</h3>
 
@@ -1003,30 +844,88 @@
 (function () {
   'use strict';
 
-  var viewerLoaded = false;
-
-  /* 1b. Mapa 3D: coloca tu archivo en assets/zoo-map.glb */
+  /* 1b. Mapa 3D: alterna entre la foto local y el modelo GLB */
   var mapBtn = document.getElementById('mapModelToggle');
   if (mapBtn) {
-    var mapBox = mapBtn.parentElement, mapViewer = null;
-    mapBtn.addEventListener('click', function () {
+    var mapScene = document.getElementById('mapScene');
+    var mapModelStatus = document.getElementById('mapModelStatus');
+    var mapViewer = null;
+    var viewerLoading = null;
+
+    function showMap2D() {
+      mapBtn.setAttribute('aria-pressed', 'false');
+      mapBtn.setAttribute('aria-label', 'Ver mapa en 3D');
+      mapBtn.title = 'Ver mapa en 3D';
+      mapScene.hidden = false;
+      if (mapModelStatus) mapModelStatus.hidden = true;
+      if (mapViewer) mapViewer.hidden = true;
+    }
+
+    function showMapError() {
+      showMap2D();
+      if (!mapModelStatus) return;
+      mapModelStatus.textContent = location.protocol === 'file:'
+        ? 'Abre el portal desde un servidor web para ver el mapa 3D.'
+        : 'No se pudo cargar el mapa 3D. Puedes seguir explorando el mapa en 2D.';
+      mapModelStatus.classList.add('is-error');
+      mapModelStatus.hidden = false;
+    }
+
+    function createMapViewer() {
+      mapViewer = document.createElement('model-viewer');
+      mapViewer.className = 'map-model';
+      mapViewer.id = 'mapModel';
+      mapViewer.setAttribute('src', mapBtn.dataset.model);
+      mapViewer.setAttribute('alt', 'Mapa 3D del zoológico');
+      mapViewer.setAttribute('camera-controls', '');
+      mapViewer.setAttribute('camera-orbit', '0deg 35deg 110%');
+      mapViewer.setAttribute('loading', 'eager');
+      mapViewer.setAttribute('touch-action', 'pan-y');
+      mapViewer.setAttribute('disable-zoom', '');
+      mapViewer.setAttribute('disable-pan', '');
+      mapViewer.addEventListener('load', function () {
+        if (mapBtn.getAttribute('aria-pressed') !== 'true') return;
+        mapModelStatus.hidden = true;
+      });
+      mapViewer.addEventListener('error', function () {
+        mapViewer.remove();
+        mapViewer = null;
+        if (mapBtn.getAttribute('aria-pressed') === 'true') showMapError();
+      });
+      mapBtn.after(mapViewer);
+    }
+
+    mapBtn.addEventListener('click', async function () {
       var on = mapBtn.getAttribute('aria-pressed') !== 'true';
-      mapBtn.setAttribute('aria-pressed', String(on));
-      mapBtn.title = on ? 'Ver mapa normal' : 'Ver mapa en 3D';
-      if (on && !viewerLoaded) {
-        viewerLoaded = true;
-        import('./assets/model-viewer.min.js').catch(function () {});
+      if (!on) {
+        showMap2D();
+        return;
       }
-      if (on && !mapViewer) {
-        mapViewer = document.createElement('model-viewer');
-        mapViewer.className = 'map-model';
-        mapViewer.setAttribute('src', mapBtn.dataset.model);
-        mapViewer.setAttribute('alt', 'Mapa 3D del zoológico');
-        ['camera-controls', 'touch-action'].forEach(function (a) { mapViewer.setAttribute(a, a === 'touch-action' ? 'pan-y' : ''); });
-        mapViewer.setAttribute('shadow-intensity', '1');
-        mapBtn.after(mapViewer);
+
+      if (location.protocol === 'file:') {
+        showMapError();
+        return;
       }
-      if (mapViewer) mapViewer.hidden = !on;
+
+      mapBtn.setAttribute('aria-pressed', 'true');
+      mapBtn.setAttribute('aria-label', 'Ver mapa en 2D');
+      mapBtn.title = 'Ver mapa en 2D';
+      mapModelStatus.classList.remove('is-error');
+      mapModelStatus.textContent = 'Cargando mapa 3D…';
+      mapModelStatus.hidden = false;
+      mapScene.hidden = true;
+
+      try {
+        if (!viewerLoading) viewerLoading = import('./assets/model-viewer.min.js');
+        await viewerLoading;
+        if (mapBtn.getAttribute('aria-pressed') !== 'true') return;
+        if (!mapViewer) createMapViewer();
+        mapViewer.hidden = false;
+        if (mapViewer.loaded) mapModelStatus.hidden = true;
+      } catch (error) {
+        viewerLoading = null;
+        if (mapBtn.getAttribute('aria-pressed') === 'true') showMapError();
+      }
     });
   }
 

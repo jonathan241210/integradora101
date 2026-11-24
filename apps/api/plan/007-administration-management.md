@@ -1,14 +1,16 @@
 # Plan técnico · 007 · administration-management
 
 - Spec: `apps/api/specs/007-administration-management.md`
-- Estado de spec: Aprobada (revisión aprobada por Jonathan el 2026-11-05; estado previo: Aprobada el 2026-10-30; en la spec figura En progreso desde el 2026-11-01, ver divergencia 9)
-- Responsable técnico: Jonathan (backend) / Víctor Adrián (BD)
+- Estado de spec: Implementada
+- Solicitada: 2026-10-30
+- Aprobada: 2026-10-30
+- Responsable técnico: Backend / Responsable de BD
 - Consumidores: dashboard (`dashboard-003`), mediante `@arca/api-client`
-- Estado del plan: Aprobado (2026-10-30); revisión de 2026-11-05 aprobada (sección «Decisiones de la revisión 2026-11-05»).
-- Actualización de 2026-10-30: zona horaria del dispositivo (RN-14, CA-28). Implementada (T-40 y T-41, según reporta la sesión principal); la redacción de RN-14 y CA-28 la proveyó el documentador y Jonathan la confirmó el 2026-10-30. Ver «Zona horaria» en Decisiones y la divergencia 7.
-- Actualización de 2026-10-30 (exportación): ADR 0017 (Excel y PDF) y ADR 0018 (PHP 8.4) aceptados por el equipo; Excel y PDF implementados (T-39, según reporta la sesión principal). Ver «Exportación» en Decisiones, el Constitution Check I y la divergencia 8.
+- Estado del plan: Aprobado; revisión de cuentas aprobada (sección «Decisiones de la revisión de cuentas»).
+- Actualización: zona horaria del dispositivo (RN-14, CA-28). Implementada (T-40 y T-41, según reporta la sesión principal). Ver «Zona horaria» en Decisiones y la divergencia 7.
+- Actualización (exportación): ADR 0017 (Excel y PDF) y ADR 0018 (PHP 8.4) aceptados por el equipo; Excel y PDF implementados (T-39, según reporta la sesión principal). Ver «Exportación» en Decisiones, el Constitution Check I y la divergencia 8.
 
-> **Nota de vigencia (2026-11-01):** la subida de imágenes de noticias y eventos, que aquí queda fuera (`image_path` no aceptado), la define `api-008` (`apps/api/plan/008-event-news-images.md`, Borrador). `api-008` añade campos a las mismas rutas y no cambia permisos, Actions de cuentas ni el contrato de esta feature. Los puntos «sin imagen» de `dashboard-003` quedan reemplazados por `dashboard-004`.
+> **Nota de vigencia:** la subida de imágenes de noticias y eventos, que aquí queda fuera (`image_path` no aceptado), la define `api-008` (`apps/api/plan/008-event-news-images.md`, Borrador). `api-008` añade campos a las mismas rutas y no cambia permisos, Actions de cuentas ni el contrato de esta feature. Los puntos «sin imagen» de `dashboard-003` quedan reemplazados por `dashboard-004`.
 
 ## Diseño de solución
 
@@ -24,26 +26,26 @@ Hay cinco bloques independientes entre sí, que comparten únicamente el grupo d
 
 | Bloque | Permiso de ruta | Alcance adicional |
 |---|---|---|
-| Usuarios | `users.manage` (revisión de 2026-11-05) | `UserPolicy`, sin cambios (pregunta 9 de la spec) |
+| Usuarios | `users.manage` (revisión de cuentas) | `UserPolicy`, sin cambios (pregunta 9 de la spec) |
 | Noticias | `news.manage` | — |
 | Eventos | `events.manage` | — |
 | Recintos | `enclosures.manage` | — |
 | Panel y Reporte (lectura y exportación) | `dashboard.view` / `reports.view` | — |
 
-## Decisiones de la revisión 2026-11-05 (aprobada por Jonathan el 2026-11-05)
+## Decisiones de la revisión de cuentas (aprobada)
 
-Revisión de la spec 007 (sección «Revisión 2026-11-05», aprobada de Jonathan). Las tareas son T-42 a T-48 en `tasks/007-administration-management.md`.
+Revisión de la spec 007 (sección «Revisión de cuentas», aprobada). Las tareas son T-42 a T-48 en `tasks/007-administration-management.md`.
 
 - **Permiso de ruta único para cuentas.** Las rutas de `/users` (incluida `users/options`) quedan bajo `permission:users.manage`. El grupo `users.manage|operational-staff.manage` de `routes/api.php` pasa a `users.manage`.
-- **Catálogo.** `RolesAndPermissionsSeeder` deja de declarar `operational-staff.manage` y de asignarlo a `admin` y `zoo-admin`. El seeder no borra: la fila de `permissions` queda sin efecto. Se aplica en `arca_pruebas` con el seeder, ejecutado por el responsable de BD (T-44). En producción no hay procedimiento documentado (pregunta R6 de `api-009`).
+- **Catálogo.** `RolesAndPermissionsSeeder` deja de declarar `operational-staff.manage` y de asignarlo a `admin` y `zoo-admin`. El seeder no borra: la fila de `permissions` queda sin efecto. Se aplica en `arca_pruebas` con el seeder, ejecutado por el Responsable de BD (T-44). En producción no hay procedimiento documentado (pendiente de `api-009`, pregunta R6): fuera de alcance de esta entrega.
 - **Roles asignables.** `ResolveManageableRolesAction` solo conserva la rama de `users.manage` (los cinco roles). La rama de `operational-staff.manage` se elimina (T-43).
-- **Alcance por rol.** `User::scopeManageableWith`, `UserPolicy::manages` y la comprobación de «todos los roles dentro del conjunto» (divergencia 4) no tienen efecto con un único gestor, pero se conservan sin cambios (pregunta 9 de la spec, resuelta por Jonathan el 2026-11-05).
+- **Alcance por rol.** `User::scopeManageableWith`, `UserPolicy::manages` y la comprobación de «todos los roles dentro del conjunto» (divergencia 4) no tienen efecto con un único gestor, pero se conservan sin cambios (pregunta 9 de la spec, resuelta).
 - **Cambios de pruebas.** `StaffAccountsScopeTest`, `StaffAccountOptionsTest` y `StaffAccountsStoreTest`/`StaffAccountsUpdateTest` cambian sus expectativas (T-45). `tests/Feature/Staff/SeedersTest.php` (líneas 41 y 42, que asumen `operational-staff.manage` en `zoo-admin`) se actualiza junto con `api-003` (CA-15 y RN-17; T-47).
 - **Documentación.** `docs/03-roles-y-permisos.md` y `apps/api/docs/administracion.md` (T-46).
 
 ### Decisiones de diseño
 
-- **Alcance de cuentas (CA-02, CA-04; revisado el 2026-11-05).** Desde el 2026-11-05 solo `users.manage` (`admin`) accede a cuentas; `zoo-admin` responde 403 por permiso de ruta. Con un único gestor, `ResolveManageableRolesAction` devuelve los cinco roles, y el 403 de asignación (`UserPolicy::assignRole`) se conserva (pregunta 8 de la spec, resuelta por Jonathan el 2026-11-05). Texto original del 2026-10-30: una Action `ResolveManageableRolesAction` devuelve los roles que el actor puede gestionar: con `users.manage` los cinco roles; con `operational-staff.manage` solo `cashier` y `veterinarian`. Las consultas de lista, detalle y cualquier operación se filtran por usuarios que **tengan uno de esos roles**; fuera de alcance responde 404 «Usuario no encontrado.» (el `zoo-admin` no debe poder inferir que la cuenta existe). La asignación de un rol no gestionable se rechaza con 403 «No tienes permiso para asignar ese rol.» mediante `UserPolicy::assignRole`.
+- **Alcance de cuentas (CA-02, CA-04; revisado).** Solo `users.manage` (`admin`) accede a cuentas; `zoo-admin` responde 403 por permiso de ruta. Con un único gestor, `ResolveManageableRolesAction` devuelve los cinco roles, y el 403 de asignación (`UserPolicy::assignRole`) se conserva (pregunta 8 de la spec, resuelta). Versión original previa a la revisión: una Action `ResolveManageableRolesAction` devuelve los roles que el actor puede gestionar: con `users.manage` los cinco roles; con `operational-staff.manage` solo `cashier` y `veterinarian`. Las consultas de lista, detalle y cualquier operación se filtran por usuarios que **tengan uno de esos roles**; fuera de alcance responde 404 «Usuario no encontrado.» (el `zoo-admin` no debe poder inferir que la cuenta existe). La asignación de un rol no gestionable se rechaza con 403 «No tienes permiso para asignar ese rol.» mediante `UserPolicy::assignRole`.
 - **Cuenta fuera de alcance vs. inexistente.** Se resuelven con la misma respuesta 404; el parámetro de ruta se recibe como texto y se valida con `ctype_digit` como en `EventController` (404 sin consultar la base).
 - **Sesiones (RN-04).** El driver de sesión es `database` y `sessions.user_id` está indexada. `RevokeStaffSessionsAction` borra las filas de `sessions` de la cuenta y rota `remember_token`. No depende de nada específico de Aiven: es SQL estándar de MySQL 8.0.
 - **Último `admin` (RN-03, CA-09).** `GuardAdministratorContinuityAction` cuenta cuentas con rol `admin`, `is_active = 1` y `deleted_at IS NULL` **dentro de la transacción y con `lockForUpdate()`**, para que dos peticiones simultáneas no dejen al sistema sin `admin`. Se invoca en desactivar, eliminar y cambio de rol. Autodesactivación y autoeliminación se rechazan antes, con 422.
@@ -51,9 +53,9 @@ Revisión de la spec 007 (sección «Revisión 2026-11-05», aprobada de Jonatha
 - **Contraseña (CA-05, CA-10).** Se valida con `Password::defaults()` y se guarda con el cast `hashed` de `User`. Nunca se devuelve ni se registra; el log de actividad no recibe `password` en sus propiedades.
 - **Correo único (RN-05).** `unique:users,email` sin ignorar eliminadas, como ya hace `CreateStaffAccountAction`. El correo no se edita (el Form Request de actualización no lo acepta; si llega se ignora).
 - **Reporte y panel (RN-08, RN-13).** Una sola Action, `SummarizeTicketSalesAction`, calcula totales y serie diaria; `BuildTicketReportAction`, `BuildDashboardSummaryAction` y la exportación la reutilizan. Así pantalla y archivo coinciden por construcción.
-- **Zona horaria (RN-14, CA-28; decisión de Jonathan, 2026-10-30: zona del dispositivo con respaldo en `America/Mexico_City`).** La app corre en `UTC` (`config/app.php`) y `tickets.purchased_at` se asume en UTC. La zona de cálculo y de presentación es la del dispositivo que consulta: `ResolveRequestedTimezoneAction` lee el parámetro opcional `timezone` de la petición, lo acepta solo si es `UTC` o un nombre con «/» presente en `DateTimeZone::listIdentifiers(DateTimeZone::ALL_WITH_BC)` (canónicos y alias como `US/Pacific`) [confirmado por Jonathan, 2026-10-30]; abreviaturas (`EST`) y offsets (`+05:00`) se ignoran. Si falta, está vacío o no es válido, devuelve `config('arca.report_timezone')` (`America/Mexico_City`). No lanza 422. La zona resuelta se pasa a `ResolveReportPeriodAction` (semana de lunes a domingo, mes calendario, rango personalizado, `previous_date` y `next_date`), `SummarizeTicketSalesAction`, `BuildDashboardSummaryAction` (día actual y serie), `BuildTicketReportAction`, `ExportTicketReportAction`, `TicketReportCsvWriter` (encabezado) y `PresentTicketRow` (hora de `purchased_at` en el listado). Los límites se convierten a UTC solo para consultar `tickets.purchased_at`. La zona resuelta se devuelve en `timezone` (panel), en `period.timezone` (reporte) y en el CSV. La API no guarda la zona enviada; sus cambios de horario de verano los resuelve PHP al convertir. Los totales por día se agrupan **en PHP** con `CarbonImmutable` sobre filas leídas por cursor, en vez de `CONVERT_TZ` (requiere tablas de zonas horarias cargadas y no es portable entre Aiven y local). Supuesto: `purchased_at` se asume guardado en UTC (ver Riesgos).
+- **Zona horaria (RN-14, CA-28; decisión funcional: zona del dispositivo con respaldo en `America/Mexico_City`).** La app corre en `UTC` (`config/app.php`) y `tickets.purchased_at` se asume en UTC. La zona de cálculo y de presentación es la del dispositivo que consulta: `ResolveRequestedTimezoneAction` lee el parámetro opcional `timezone` de la petición, lo acepta solo si es `UTC` o un nombre con «/» presente en `DateTimeZone::listIdentifiers(DateTimeZone::ALL_WITH_BC)` (canónicos y alias como `US/Pacific`) [confirmado]; abreviaturas (`EST`) y offsets (`+05:00`) se ignoran. Si falta, está vacío o no es válido, devuelve `config('arca.report_timezone')` (`America/Mexico_City`). No lanza 422. La zona resuelta se pasa a `ResolveReportPeriodAction` (semana de lunes a domingo, mes calendario, rango personalizado, `previous_date` y `next_date`), `SummarizeTicketSalesAction`, `BuildDashboardSummaryAction` (día actual y serie), `BuildTicketReportAction`, `ExportTicketReportAction`, `TicketReportCsvWriter` (encabezado) y `PresentTicketRow` (hora de `purchased_at` en el listado). Los límites se convierten a UTC solo para consultar `tickets.purchased_at`. La zona resuelta se devuelve en `timezone` (panel), en `period.timezone` (reporte) y en el CSV. La API no guarda la zona enviada; sus cambios de horario de verano los resuelve PHP al convertir. Los totales por día se agrupan **en PHP** con `CarbonImmutable` sobre filas leídas por cursor, en vez de `CONVERT_TZ` (requiere tablas de zonas horarias cargadas y no es portable entre Aiven y local). Supuesto: `purchased_at` se asume guardado en UTC (ver Riesgos).
 - **Dinero.** Los importes salen como **cadena con dos decimales** (`"1234.50"`), nunca como float, para no perder precisión entre PHP y JSON.
-- **Exportación (CA-22, CA-23, RN-12).** `GET /api/v1/admin/reports/tickets/export?format=csv|xlsx|pdf`. Los tres formatos están habilitados: `config('arca.report_export_formats')` = `['csv', 'xlsx', 'pdf']`, según la enmienda del ADR 0017 (aceptado el 2026-10-30).
+- **Exportación (CA-22, CA-23, RN-12).** `GET /api/v1/admin/reports/tickets/export?format=csv|xlsx|pdf`. Los tres formatos están habilitados: `config('arca.report_export_formats')` = `['csv', 'xlsx', 'pdf']`, según la enmienda del ADR 0017 (aceptado).
   - **CSV:** se escribe en streaming con `fputcsv` (UTF-8 con BOM, separador coma), sin dependencias y sin archivos temporales.
   - **Excel y PDF:** `TicketReportXlsxWriter` (OpenSpout v5.12.2) y `TicketReportPdfWriter` (Dompdf v3.1.6). El archivo se genera completo en un temporal de `ReportTempDirectory` (`storage/app/tmp-reports`, directorio dedicado, no versionado, modo 0700) antes de responder: si el generador falla, la respuesta es un error 5xx y nunca un archivo truncado con 200. El temporal se borra tras enviarlo (`deleteFileAfterSend`).
   - **Tope de PDF:** el PDF se arma en memoria; `config('arca.report_pdf_max_tickets')` = 2000 boletos por periodo. Por encima, 422 en español sobre `errors.format`, que sugiere acortar el periodo o exportar en CSV o Excel.
@@ -87,7 +89,7 @@ Revisión de la spec 007 (sección «Revisión 2026-11-05», aprobada de Jonatha
 | Documentación | `apps/api/docs/administracion.md` (todavía no existe; se crea en la implementación) | Referencia vigente de endpoints y reglas |
 | Paquetes | `packages/api-client` (ver `dashboard-003`) | Tipos y cliente del contrato |
 | Datos | `docs/database/requests/DBR-005-news-events-soft-deletes.md` (nuevo, Borrador) | Cambio de esquema que ejecuta el responsable de BD |
-| ADR | `docs/adr/0017-report-export-excel-pdf.md` (Aceptado, 2026-10-30), `docs/adr/0018-php-minimum-8-4.md` (Aceptado, 2026-10-30) | Dependencias para Excel y PDF; PHP mínimo 8.4 |
+| ADR | `docs/adr/0017-report-export-excel-pdf.md` (Aceptado), `docs/adr/0018-php-minimum-8-4.md` (Aceptado) | Dependencias para Excel y PDF; PHP mínimo 8.4 |
 | Exportación Excel/PDF | `app/Actions/Admin/Reports/`: `TicketReportXlsxWriter`, `TicketReportPdfWriter`, `ReportTempDirectory` (divergencia 8) | Exportadores de `.xlsx` y PDF y directorio temporal dedicado |
 
 ## Contrato y datos
@@ -96,7 +98,7 @@ Revisión de la spec 007 (sección «Revisión 2026-11-05», aprobada de Jonatha
 
 Middleware común: `auth:sanctum`, `staff.user`, `administrator.two-factor`.
 
-**Usuarios** — `permission:users.manage` (revisión de 2026-11-05; antes `users.manage|operational-staff.manage`)
+**Usuarios** — `permission:users.manage` (revisión de cuentas; antes `users.manage|operational-staff.manage`)
 
 | Método y ruta | Nombre | CA | Respuesta |
 |---|---|---|---|
@@ -144,7 +146,7 @@ No existe ruta de eliminación. La unicidad de nombre compara `LOWER(name)` en P
 | `GET /reports/tickets` | `admin.reports.tickets.show` | `reports.view` | 20, 21, 24 |
 | `GET /reports/tickets/export` | `admin.reports.tickets.export` | `reports.view` | 22, 23 |
 
-Parámetros del reporte: `period` (`week`, `month` o `custom`), `date` (referencia, `Y-m-d`, hoy por defecto), `from` y `to` (solo con `custom`), `page` y `timezone` (opcional, RN-14). Respuesta: `period {type, from, to, label, previous_date, next_date, timezone}`; `timezone` es la zona realmente usada (`previous_date`/`next_date` son las fechas de referencia del periodo anterior y siguiente para que el cliente no calcule periodos; `null` en `custom` y cuando el siguiente quedaría completamente en el futuro), `totals {tickets, adults, children, revenue}`, `daily [{date, tickets, adults, children, revenue}]` (todos los días del periodo, con ceros), `tickets` paginado `[{folio, purchased_at, adults, children, total}]`, con `purchased_at` en la zona de `period.timezone` (formato `Y-m-d H:i:s`, sin desfase) [confirmado por Jonathan, 2026-10-30].
+Parámetros del reporte: `period` (`week`, `month` o `custom`), `date` (referencia, `Y-m-d`, hoy por defecto), `from` y `to` (solo con `custom`), `page` y `timezone` (opcional, RN-14). Respuesta: `period {type, from, to, label, previous_date, next_date, timezone}`; `timezone` es la zona realmente usada (`previous_date`/`next_date` son las fechas de referencia del periodo anterior y siguiente para que el cliente no calcule periodos; `null` en `custom` y cuando el siguiente quedaría completamente en el futuro), `totals {tickets, adults, children, revenue}`, `daily [{date, tickets, adults, children, revenue}]` (todos los días del periodo, con ceros), `tickets` paginado `[{folio, purchased_at, adults, children, total}]`, con `purchased_at` en la zona de `period.timezone` (formato `Y-m-d H:i:s`, sin desfase) [confirmado].
 
 Respuesta del panel: `today {…totales}`, `last_7_days {…totales}`, `series [{date, revenue}]` (7 días, el actual incluido) y `timezone` (zona realmente usada, RN-14). Parámetro opcional `timezone` (identificador IANA): si falta o no es válido se usa `America/Mexico_City`.
 
@@ -160,7 +162,7 @@ Zona horaria (RN-14) en las tres rutas (`admin.dashboard.show`, `admin.reports.t
 
 ### Datos y DBR relacionada
 
-- **DBR-005** (`docs/database/requests/DBR-005-news-events-soft-deletes.md`, Borrador, responsable de BD: Víctor Adrián): agrega `deleted_at TIMESTAMP NULL` a `news` y `events`, y solicita **evaluar** un índice por `tickets.purchased_at` para el reporte. Las migraciones las crea, prueba y aplica el responsable de BD; ningún agente escribe SQL ni migraciones.
+- **DBR-005** (`docs/database/requests/DBR-005-news-events-soft-deletes.md`, Borrador, responsable de BD: Responsable de BD): agrega `deleted_at TIMESTAMP NULL` a `news` y `events`, y solicita **evaluar** un índice por `tickets.purchased_at` para el reporte. Las migraciones las crea, prueba y aplica el responsable de BD; ningún agente escribe SQL ni migraciones.
 - Sin cambios para cuentas, recintos, panel ni reporte: `users` ya tiene SoftDeletes, `created_by`/`updated_by`, `is_active`, `two_factor_*`; `sessions`, `activity_log` y los permisos ya existen (DBR-001/DBR-002).
 - Secuencia con DBR: todo lo que no es eliminar noticias/eventos se implementa sin esperar; las rutas `DELETE` de noticias/eventos, el trait `SoftDeletes` en `Event`/`News` y los CA-15 relacionados inician con DBR-005 en `Lista para backend`.
 
@@ -189,9 +191,9 @@ Convención de nombre: `test_caNN_administration_management_<descripción>()`, c
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
 | CA-01 | Lista paginada con filtros, orden por apellidos y sin campos sensibles | `StaffAccountsListTest` |
-| CA-02 | (Revisión 2026-11-05) `zoo-admin`, `executive`, `cashier` y `veterinarian` → 403 en todas las rutas de cuentas, incluida `users/options`; `admin` ve y gestiona todas; cuenta inexistente → 404 | `StaffAccountsScopeTest` (T-45) |
+| CA-02 | (Revisión de cuentas) `zoo-admin`, `executive`, `cashier` y `veterinarian` → 403 en todas las rutas de cuentas, incluida `users/options`; `admin` ve y gestiona todas; cuenta inexistente → 404 | `StaffAccountsScopeTest` (T-45) |
 | CA-03 | Alta con rol aplicado, `created_by` y respuesta 201 sin contraseña | `StaffAccountsStoreTest` |
-| CA-04 | (Revisión 2026-11-05) `admin` asigna cualquiera de los cinco roles en alta y edición; sin `users.manage` → 403 (CA-02) | `StaffAccountsStoreTest`, `StaffAccountsUpdateTest` (T-45) |
+| CA-04 | (Revisión de cuentas) `admin` asigna cualquiera de los cinco roles en alta y edición; sin `users.manage` → 403 (CA-02) | `StaffAccountsStoreTest`, `StaffAccountsUpdateTest` (T-45) |
 | CA-05 | Correo repetido (también eliminado) y contraseña débil → 422 en español | `StaffAccountsStoreTest`, `StaffAccountPasswordTest` |
 | CA-06 | Edición de datos y rol; el correo no cambia | `StaffAccountsUpdateTest` |
 | CA-07 | Desactivar/activar; sesiones revocadas; login rechazado | `StaffAccountStatusTest` |
@@ -221,8 +223,8 @@ Convención de nombre: `test_caNN_administration_management_<descripción>()`, c
 
 | Principio | Cumple | Evidencia o excepción propuesta |
 |---|---|---|
-| I. Stack mínimo y portable | Sí | Todo lo implementable usa Laravel 12, Sanctum, Fortify, Spatie y MySQL 8.0.x ya aprobados (ADR 0001). SQL estándar, sin funciones propietarias, configuración solo por `.env`. **Excel y PDF:** dependencias aprobadas por el ADR 0017 (Aceptado, 2026-10-30): OpenSpout v5.12.2 (`.xlsx`, MIT) y Dompdf v3.1.6 (PDF, LGPL-2.1, sin binarios externos). Requieren PHP 8.4+: ADR 0018 (Aceptado, 2026-10-30) fija el mínimo de `apps/api` en 8.4 (`composer.json` `^8.4`). |
-| II. La spec manda | Sí | Spec `007` con la revisión aprobada (2026-11-05); este plan, las tasks (siguiente paso) y el PR enlazan los tres archivos. Cada ruta y regla remite a su CA/RN. |
+| I. Stack mínimo y portable | Sí | Todo lo implementable usa Laravel 12, Sanctum, Fortify, Spatie y MySQL 8.0.x ya aprobados (ADR 0001). SQL estándar, sin funciones propietarias, configuración solo por `.env`. **Excel y PDF:** dependencias aprobadas por el ADR 0017 (Aceptado): OpenSpout v5.12.2 (`.xlsx`, MIT) y Dompdf v3.1.6 (PDF, LGPL-2.1, sin binarios externos). Requieren PHP 8.4+: ADR 0018 (Aceptado) fija el mínimo de `apps/api` en 8.4 (`composer.json` `^8.4`). |
+| II. La spec manda | Sí | Spec `007` con la revisión de cuentas aprobada; este plan, las tasks (siguiente paso) y el PR enlazan los tres archivos. Cada ruta y regla remite a su CA/RN. |
 | III. Lógica separada de la interfaz | Sí | Alcance, continuidad de `admin`, invalidación de sesiones, periodos y totales viven en Actions; los controladores solo delegan; el cliente no calcula (ver `dashboard-003`). |
 | IV. Un test por criterio | Sí | La tabla anterior cubre CA-01 a CA-28; `AdminCoverageTest` lo verifica automáticamente. |
 | V. Una sola fuente de verdad para los datos | Sí, con brecha registrada (no bloqueante, aprobada) | El cambio de esquema (`deleted_at` en `news` y `events`) va por DBR-005 y migración del responsable de BD. Lo clínico y financiero no se borra: `tickets` es de solo lectura y `users` usa SoftDeletes. **Brecha:** la Constitución y `AGENTS.md` piden que los modelos de negocio extiendan `BaseModel`, pero esa clase no existe y ningún modelo vigente lo hace; esta feature sigue el patrón actual y no la introduce. El equipo debe decidir si se crea `BaseModel` (cambio transversal fuera de esta spec) o se corrige la redacción. No bloquea esta feature porque no agrega auditoría por modelo: la bitácora es Activitylog explícito. |
@@ -230,8 +232,8 @@ Convención de nombre: `test_caNN_administration_management_<descripción>()`, c
 
 ## Riesgos y decisiones
 
-- **ADR requeridos (aceptados 2026-10-30):** 0017 `report-export-excel-pdf` para las librerías de Excel (OpenSpout v5.12.2) y PDF (Dompdf v3.1.6); versiones, alternativas y el aviso de `composer audit` (PKSA-wtxr-p26d-nn42, `symfony/mime`, sin actualizar) están en su enmienda. 0016 `php-minimum-8-4`: PHP mínimo 8.4.
-- **Zona horaria de `purchased_at`.** Resuelta por decisión funcional de Jonathan (Confirmado por Jonathan, 2026-10-30): se resuelve con la zona del dispositivo o la local. El almacenamiento se asume en UTC (valor por defecto de la app). Si las ventas reales o los datos de prueba se guardaran en hora local, los límites de día se desplazarían 6 horas. La conversión de entrada está en `ResolveReportPeriodAction` y la de salida en `PresentTicketRow`.
+- **ADR requeridos (aceptados):** 0017 `report-export-excel-pdf` para las librerías de Excel (OpenSpout v5.12.2) y PDF (Dompdf v3.1.6); versiones, alternativas y el aviso de `composer audit` (PKSA-wtxr-p26d-nn42, `symfony/mime`, sin actualizar) están en su enmienda. 0016 `php-minimum-8-4`: PHP mínimo 8.4.
+- **Zona horaria de `purchased_at`.** Resuelta por decisión funcional (confirmada): se resuelve con la zona del dispositivo o la local. El almacenamiento se asume en UTC (valor por defecto de la app). Si las ventas reales o los datos de prueba se guardaran en hora local, los límites de día se desplazarían 6 horas. La conversión de entrada está en `ResolveReportPeriodAction` y la de salida en `PresentTicketRow`.
 - **Zona enviada por el cliente (RN-14).** Cualquier zona aceptada (RN-14) cambia solo la presentación y el agrupado de la consulta de quien la envía; no altera datos ni permisos. Riesgo bajo. El dashboard depende de que `@arca/api-client` la envíe (`dashboard-003`, RN-11). Si la zona no es aceptada, la API responde con `America/Mexico_City` sin error.
 - **Rendimiento del reporte.** `tickets` crecerá con la venta real. Mitigación: la consulta filtra por rango de `purchased_at` (índice propuesto en DBR-005), recorre con `cursor()` y pagina el listado. Si un periodo de 366 días resultara pesado, se agrega agregación por día en SQL en una iteración posterior. El PDF se acota con el tope de 2000 boletos (ADR 0017).
 - **Carrera por el último `admin`.** Cubierta con transacción y `lockForUpdate()`.
@@ -242,32 +244,32 @@ Convención de nombre: `test_caNN_administration_management_<descripción>()`, c
 
 ## Divergencias registradas durante la implementación
 
-Estas diferencias entre el plan y el código revisado quedan registradas. Las divergencias 5 y 6 tienen decisión de Jonathan (2026-10-30) y están **Resuelta** e implementadas en código y pruebas (`StaffAccountsScopeTest`, `StaffAccountGuardsTest`).
+Estas diferencias entre el plan y el código revisado quedan registradas. Las divergencias 5 y 6 tienen decisión funcional y están **Resuelta** e implementadas en código y pruebas (`StaffAccountsScopeTest`, `StaffAccountGuardsTest`).
 
 1. **Sin `StaffOptionsResource`.** `ListStaffOptionsAction` devuelve el arreglo y `StaffAccountController@options` lo envuelve en `{data: {departments, roles}}` con `response()->json`. El contrato JSON no cambia.
 2. **Unicidad del nombre de recinto.** La comprobación (sin distinguir mayúsculas y excluyendo el propio recinto al editar) vive en `SaveEnclosureRequest` como regla de validación, no en `SaveEnclosureAction` como indicaba el plan. El 422 es «Ya existe un recinto con ese nombre.» en `errors.name`.
 3. **`staff.user` rechaza cuentas inactivas.** `EnsureStaffUser` responde 401 «Tu cuenta está desactivada.» a cualquier petición de una cuenta con `is_active = false`, incluidas las sesiones ya abiertas. Aplica a todas las rutas de personal, no solo a `/admin`.
-4. **Alcance por todos los roles.** Una cuenta es gestionable solo si tiene al menos un rol dentro del conjunto del actor y ninguno fuera de él (`User::scopeManageableWith`, `UserPolicy::manages`). Una cuenta con `cashier` y `admin` queda fuera del alcance de `zoo-admin` (404). Es más estricto que «uno de esos roles» de T-08. *Superada en su efecto práctico por la revisión de 2026-11-05: con `zoo-admin` sin `users.manage`, la gestión de cuentas es solo de `admin`. La regla se mantiene en código hasta que se decida su simplificación (pregunta 9 de la spec).*
-5. **Validación antes de resolver la cuenta. Resuelta (decisión de Jonathan, 2026-10-30).** Se resuelve la cuenta antes de validar el cuerpo: cualquier operación sobre una cuenta fuera de alcance responde 404 «Usuario no encontrado.» sin importar el contenido del body (spec CA-02 y CA-04 aclarados). Implementado: `ManagedStaffAccountRequest` resuelve la cuenta en `authorize()`, antes de validar el cuerpo (`StaffAccountsScopeTest`, CA-02).
-6. **Restablecer la propia contraseña o 2FA, o cambiar el propio rol. Resuelta (decisión de Jonathan, 2026-10-30).** No se permite desde `/api/v1/admin/users/{user}`. `PUT …/password`, `DELETE …/two-factor` y el cambio de `role` en `PATCH …/{user}` sobre la propia cuenta responden 422 con «No puedes restablecer tu propia contraseña desde la administración.», «No puedes restablecer tu propio segundo factor desde la administración.» y «No puedes cambiar tu propio rol.», respectivamente. El cambio de contraseña propio queda para otra feature. Implementado con `GuardAdministratorContinuityAction::ensureNotSelf`; el 422 usa la clave `errors.user` (`StaffAccountGuardsTest`, CA-09).
-7. **Zona horaria del dispositivo (decisión de Jonathan, 2026-10-30). Resuelta.** La spec (RN-14, CA-19, CA-20, CA-22, CA-27, CA-28) y este plan ya describen la zona enviada en `timezone`. Antes el código fijaba `config('arca.report_timezone')` en `ResolveReportPeriodAction`, `SummarizeTicketSalesAction`, `BuildDashboardSummaryAction`, `PresentTicketRow` y `TicketReportCsvWriter`, y no leía ningún parámetro; ahora lo resuelve `ResolveRequestedTimezoneAction`. Además, `PresentTicketRow`, que convierte `purchased_at` del listado, no figuraba en la lista de Actions de métricas de este plan; queda registrado aquí. Se cierra con T-40 y T-41 (tareas que reabren el alcance de T-16 a T-19, marcadas `[x]` como historial). La regla de alias (aceptar «/» y `UTC`, ignorar abreviaturas y offsets), el listado sin desfase y no mostrar la zona en la interfaz quedan confirmados por Jonathan, 2026-10-30 (propuestas técnicas originales de Claude).
+4. **Alcance por todos los roles.** Una cuenta es gestionable solo si tiene al menos un rol dentro del conjunto del actor y ninguno fuera de él (`User::scopeManageableWith`, `UserPolicy::manages`). Una cuenta con `cashier` y `admin` queda fuera del alcance de `zoo-admin` (404). Es más estricto que «uno de esos roles» de T-08. *Superada en su efecto práctico por la revisión de cuentas: con `zoo-admin` sin `users.manage`, la gestión de cuentas es solo de `admin`. La regla se mantiene en código; su simplificación queda fuera de alcance de esta entrega (pregunta 9 de la spec).*
+5. **Validación antes de resolver la cuenta. Resuelta.** Se resuelve la cuenta antes de validar el cuerpo: cualquier operación sobre una cuenta fuera de alcance responde 404 «Usuario no encontrado.» sin importar el contenido del body (spec CA-02 y CA-04 aclarados). Implementado: `ManagedStaffAccountRequest` resuelve la cuenta en `authorize()`, antes de validar el cuerpo (`StaffAccountsScopeTest`, CA-02).
+6. **Restablecer la propia contraseña o 2FA, o cambiar el propio rol. Resuelta.** No se permite desde `/api/v1/admin/users/{user}`. `PUT …/password`, `DELETE …/two-factor` y el cambio de `role` en `PATCH …/{user}` sobre la propia cuenta responden 422 con «No puedes restablecer tu propia contraseña desde la administración.», «No puedes restablecer tu propio segundo factor desde la administración.» y «No puedes cambiar tu propio rol.», respectivamente. El cambio de contraseña propio queda para otra feature. Implementado con `GuardAdministratorContinuityAction::ensureNotSelf`; el 422 usa la clave `errors.user` (`StaffAccountGuardsTest`, CA-09).
+7. **Zona horaria del dispositivo. Resuelta.** La spec (RN-14, CA-19, CA-20, CA-22, CA-27, CA-28) y este plan ya describen la zona enviada en `timezone`. Antes el código fijaba `config('arca.report_timezone')` en `ResolveReportPeriodAction`, `SummarizeTicketSalesAction`, `BuildDashboardSummaryAction`, `PresentTicketRow` y `TicketReportCsvWriter`, y no leía ningún parámetro; ahora lo resuelve `ResolveRequestedTimezoneAction`. Además, `PresentTicketRow`, que convierte `purchased_at` del listado, no figuraba en la lista de Actions de métricas de este plan; queda registrado aquí. Se cierra con T-40 y T-41 (tareas que reabren el alcance de T-16 a T-19, marcadas `[x]` como historial). La regla de alias (aceptar «/» y `UTC`, ignorar abreviaturas y offsets), el listado sin desfase y no mostrar la zona en la interfaz quedan confirmados (propuestas técnicas originales del equipo).
 
-8. **Exportación Excel y PDF (ADR 0017 aceptado, 2026-10-30). Implementada.** El plan original difería Excel y PDF y los respondía con 422. Con el ADR aceptado se añaden `TicketReportXlsxWriter` (OpenSpout), `TicketReportPdfWriter` (Dompdf) y `ReportTempDirectory` (directorio dedicado `storage/app/tmp-reports`, modo 0700), que no estaban en «Cambios por área». Quedan habilitados `xlsx` y `pdf` en `report_export_formats`, se añade `report_pdf_max_tickets` = 2000 (422 en español sobre el tope) y la ruta de exportación lleva `throttle:20,1`. Se corrige la frase «sin archivos temporales en disco» de Seguridad, que aplica solo a CSV. Cubierto por `TicketReportExportTest` (CA-23). Sin cambios de contrato.
+8. **Exportación Excel y PDF (ADR 0017 aceptado). Implementada.** El plan original difería Excel y PDF y los respondía con 422. Con el ADR aceptado se añaden `TicketReportXlsxWriter` (OpenSpout), `TicketReportPdfWriter` (Dompdf) y `ReportTempDirectory` (directorio dedicado `storage/app/tmp-reports`, modo 0700), que no estaban en «Cambios por área». Quedan habilitados `xlsx` y `pdf` en `report_export_formats`, se añade `report_pdf_max_tickets` = 2000 (422 en español sobre el tope) y la ruta de exportación lleva `throttle:20,1`. Se corrige la frase «sin archivos temporales en disco» de Seguridad, que aplica solo a CSV. Cubierto por `TicketReportExportTest` (CA-23). Sin cambios de contrato.
 
-9. **Estado de la spec (registrado el 2026-11-05).** La spec `apps/api/specs/007-administration-management.md` figura En progreso desde la reapertura del 2026-11-01, mientras este plan decía «Aprobado» y citaba «Estado de spec: Aprobada (2026-10-30)». No se corrige el historial; la revisión de 2026-11-05 deja la spec con la revisión aprobada.
+9. **Estado de la spec.** La spec `apps/api/specs/007-administration-management.md` queda en Implementada con la revisión de cuentas aprobada; el historial de reaperturas se conserva en la spec.
 
-**Preguntas pendientes (exportación; no bloquean lo ya implementado):**
-1. ¿El mensaje del 429 de la ruta de exportación debe estar en español? En el código revisado no hay mensaje propio para ese caso (Constitución VI y RN-10 de la API: mensajes en español).
-2. ¿Jonathan confirma el texto reconciliado de CA-23 y RN-12 de la spec? Se redactó a partir del ADR 0017 aceptado.
-3. El límite `throttle:20,1` de la exportación está implementado y probado, pero la spec no lo describe. ¿Se añade a la spec (CA-22 o RN-12) o se mantiene como límite técnico solo en el plan?
+**Decisiones de exportación (antes preguntas abiertas):**
+- Se optó por no añadir un mensaje propio en español para el 429 de la exportación: la ruta usa el mensaje por defecto del limitador de ritmo, que es lo implementado. Su traducción queda fuera de alcance de esta entrega.
+- Se optó por el texto reconciliado de CA-23 y RN-12 (los tres formatos disponibles, 422 solo ante formato fuera de la lista o PDF sobre el tope), porque es lo implementado con el ADR 0017 aceptado.
+- Se optó por mantener el límite `throttle:20,1` de la exportación como límite técnico del plan, sin describirlo en la spec.
 
-## Revisión boletos individuales (2026-11-05, aprobada por Jonathan el 2026-11-06)
+## Revisión boletos individuales (aprobada)
 
-Efecto de `api-009` («Boletos individuales»), aprobado el 2026-11-06. Tareas T-49 y T-51 a T-54 en `tasks/007-administration-management.md` (T-50 retirada). No reabre la revisión de cuentas (aprobada).
+Efecto de `api-009` («Boletos individuales»). Tareas T-49 y T-51 a T-54 en `tasks/007-administration-management.md` (T-50 retirada). No reabre la revisión de cuentas (aprobada).
 
 - **Conteo.** `SummarizeTicketSalesAction` suma `adult_quantity + child_quantity` de los boletos `completed` en `tickets` (total y por día), en lugar de 1 por fila (`SummarizeTicketSalesAction.php:37`). Las claves JSON no cambian. El panel (`BuildDashboardSummaryAction`), el reporte (`BuildTicketReportAction`) y la exportación (`ExportTicketReportAction`) usan esa misma Action; el cambio llega a todos los formatos.
-- **Tope de PDF (retirado el 2026-11-06).** No cambia: `ExportTicketReportAction.php:33-37` sigue contando filas del documento con `count()`, con el límite de 2000 de `report_pdf_max_tickets`.
-- **Listado.** Una fila por registro (R-C1, resuelta el 2026-11-06).
+- **Tope de PDF (retirado).** No cambia: `ExportTicketReportAction.php:33-37` sigue contando filas del documento con `count()`, con el límite de 2000 de `report_pdf_max_tickets`.
+- **Listado.** Una fila por registro (R-C1, resuelta).
 - **Cifras históricas.** Las filas anteriores con varias cantidades suben el conteo de boletos al desplegar. Se despliega junto con `dashboard-005` y `api-009`.
 - **Pruebas.** Ajustar `TicketReportTest`, `ReportExcludesCancelledTicketsTest`, `DashboardSummaryTest` y `TicketReportExportTest`; nueva `TicketCountingTest` (CA-29).
 
@@ -287,9 +289,9 @@ Efecto de `api-009` («Boletos individuales»), aprobado el 2026-11-06. Tareas T
 6. Noticias y eventos sin eliminar (CA-13, CA-14, CA-16 y parte de CA-15: activar/desactivar).
 7. **Bloqueado por DBR-005 `Lista para backend`:** `SoftDeletes` en `News`/`Event`, rutas `DELETE` y el resto de CA-15.
 8. Transversales (CA-25 a CA-27) y documentación `apps/api/docs/administracion.md`.
-9. Excel/PDF: **completado** tras aceptar el ADR 0017 (2026-10-30) con T-39, sin cambiar el contrato (ver divergencia 8).
+9. Excel/PDF: **completado** tras aceptar el ADR 0017 con T-39, sin cambiar el contrato (ver divergencia 8).
 10. Zona horaria del dispositivo (RN-14, CA-19, CA-20, CA-22, CA-28): T-40 (implementación, tras T-16 a T-19) y T-41 (pruebas de CA-28). Ambas antes de cerrar T-34 y T-35.
-11. Revisión de 2026-11-05 (cuentas solo para `admin`; retirada de `operational-staff.manage`): T-42 a T-48 en `tasks/007-administration-management.md`.. T-42 y T-44 deben ejecutarse antes de los tests de `api-009` T-75.
+11. Revisión de cuentas (solo para `admin`; retirada de `operational-staff.manage`): T-42 a T-48 en `tasks/007-administration-management.md`. T-42 y T-44 deben ejecutarse antes de los tests de `api-009` T-75.
 
 **Dependencias:** `api-003` (implementada), `api-006` (el catálogo público de eventos se beneficia del trait), DBR-005, ADR 0017 y ADR 0018 (ambos aceptados), `dashboard-003` como consumidor. `dashboard-003` puede desarrollarse en paralelo con el cliente simulado de `@arca/api-client` (su RN-08).
 
@@ -297,11 +299,11 @@ Efecto de `api-009` («Boletos individuales»), aprobado el 2026-11-06. Tareas T
 
 | Rol | Aprueba | Estado |
 |---|---|---|
-| Responsable funcional | Spec (ya aprobada) | Jonathan, 2026-10-30 |
-| Responsable funcional | Revisión 2026-11-05 (cuentas solo para `admin`; retirada de `operational-staff.manage`) | Aprobada por Jonathan, 2026-11-05 |
-| Equipo | Solución técnica y Constitution Check de este plan | Jonathan, 2026-10-30 (la brecha de `BaseModel` queda registrada como no bloqueante) |
-| Responsable de BD | DBR-005 (contenido e índice) | Lista para backend (`docs/database/requests/DBR-005-news-events-soft-deletes.md`). La zona de `purchased_at` queda resuelta por decisión funcional (Confirmado por Jonathan, 2026-10-30); el almacenamiento se asume en UTC (ver Riesgos) |
-| Equipo | ADR 0017 (Excel y PDF) y ADR 0018 (PHP mínimo 8.4) | Aceptados por el equipo, 2026-10-30 (comunicado por Jonathan). La enmienda del ADR 0017 registra las versiones fijadas |
-| Responsable funcional | Decisión de zona horaria del dispositivo (RN-14, CA-28) | Confirmado por Jonathan, 2026-10-30: zona con respaldo en `America/Mexico_City`, redacción literal de CA-28, RN-14 y aclaraciones (proveída por el documentador), alias de zona y listado sin desfase. Aprobó proceder con la implementación |
+| Responsable funcional | Spec | Aprobada |
+| Responsable funcional | Revisión de cuentas (solo para `admin`; retirada de `operational-staff.manage`) | Aprobada |
+| Equipo | Solución técnica y Constitution Check de este plan | Aprobada (la brecha de `BaseModel` queda registrada como no bloqueante) |
+| Responsable de BD | DBR-005 (contenido e índice) | Lista para backend (`docs/database/requests/DBR-005-news-events-soft-deletes.md`). La zona de `purchased_at` queda resuelta por decisión funcional; el almacenamiento se asume en UTC (ver Riesgos) |
+| Equipo | ADR 0017 (Excel y PDF) y ADR 0018 (PHP mínimo 8.4) | Aceptados por el equipo. La enmienda del ADR 0017 registra las versiones fijadas |
+| Responsable funcional | Decisión de zona horaria del dispositivo (RN-14, CA-28) | Aprobada: zona con respaldo en `America/Mexico_City`, redacción literal de CA-28, RN-14 y aclaraciones, alias de zona y listado sin desfase |
 
 Evidencias: `docs/03-roles-y-permisos.md`, `apps/api/specs/003-staff-authentication.md`, `apps/api/specs/006-public-catalog-read.md`, `apps/api/plan/003-staff-authentication.md`.

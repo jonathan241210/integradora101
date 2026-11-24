@@ -3,8 +3,9 @@
 - App dueña: `web`
 - Apps/paquetes afectados: `apps/web`, `infra`
 - Estado: Implementada
-- Solicitante / responsable funcional: Gregorio
-- Aprobación funcional: Gregorio, 2026-11-10
+- Solicitada: 2026-11-10
+- Aprobada: 2026-11-10
+- Aprobación funcional: Aprobada
 
 ## Problema y contexto
 
@@ -82,10 +83,10 @@ Los recursos existentes no se interceptan: el servidor los entrega normalmente. 
 - Dependencias/ADR: no agrega dependencias ni requiere un ADR nuevo; conserva la excepción de portal estático aceptada en ADR 0024. El requisito de despliegue se registra en `infra/README.md` conforme al ADR 0023 y a las reglas raíz.
 - Riesgos: devolver `200` por una configuración incorrecta; crear un bucle si el documento 404 no puede resolverse; enlaces relativos rotos cuando la URL inválida contiene varios segmentos; divergencia entre el servidor PHP local y el futuro servidor de producción.
 - Preguntas pendientes:
-  1. Resuelta por Gregorio el 2026-11-10: se aprueban el alcance y los criterios CA-01 a CA-06.
-  2. Resuelta para esta feature por Gregorio el 2026-11-10: mientras el servidor o proveedor de producción siga sin definirse, la implementación cubrirá el servidor PHP local y dejará el requisito de producción en el checklist, sin inventar una configuración específica.
+  1. Resuelta: se aprueban el alcance y los criterios CA-01 a CA-06.
+  2. Resuelta para esta feature: mientras el servidor o proveedor de producción siga sin definirse, la implementación cubrirá el servidor PHP local y dejará el requisito de producción en el checklist, sin inventar una configuración específica.
 
 ## Revisión
 
-- Aprobadores y fecha: aprobación funcional, técnica y del checklist por Gregorio, 2026-11-10.
+- Aprobación: aprobación funcional, técnica y del checklist registrada como Aprobada.
 - Evidencia/enlaces: `apps/web/plan/010-custom-not-found-page.md`, `apps/web/tasks/010-custom-not-found-page.md` y `apps/web/src/tests/not-found.test.mjs`. Suite enfocada: 6 tests, 6 aprobados, 0 fallidos; incluye respuesta HTTP real, archivos válidos en `200` y rechazo de traversal. Revisión visual aprobada en 360, 768 y 1366 px, sin desbordamiento y con foco visible. `git diff --check` y sintaxis PHP sin errores.

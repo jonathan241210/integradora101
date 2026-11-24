@@ -11,11 +11,8 @@ Lee `../../CONSTITUTION.md`, `../../AGENTS.md` y `../../docs/05-flujo-sdd.md` an
 Los documentos usan el mismo `NNN-slug.md`; sigue el SDD antes de editar código.
 
 ## Specs vigentes
-- 001 prototipo, 002 login real, 003 secciones de administración, 004 formularios en línea con imágenes, 005 venta de boletos y 007 content-image-display: Aprobadas.
-- 006 configuración del sistema: Borrador (solo documentada, sin plan ni tasks).
-- 008 moderación de momentos: Aprobada (2026-11-12), spec propia y vigente (separada de 010 el 2026-11-12). La implementación empieza cuando su plan y tasks estén aprobados.
-- 009 revisión de solicitudes de especie: Borrador, integrada en 010.
-- 010 public-content-management: En progreso (aprobada 2026-11-12; enmienda 2026-11-13: sección única TulanPedia con pestañas «Solicitudes» y «Publicadas»); publicación de especies, solo `zoo-admin`. DBR-013 está «Lista para backend».
+- Todas las features 001 a 021 están implementadas: prototipo (001), login real (002), secciones de administración (003), formularios en línea (004), venta de boletos (005), imágenes de contenido (007), moderación de momentos (008), revisión de solicitudes de especie (009, cubierta por 010), contenido público y TulanPedia (010), menú plegable (011), acciones de recintos y búsqueda global (012), QR de recintos (013), paginación de noticias (014), confirmación reforzada (015), reporte de cancelaciones (016), roles fijos (017), avisos de pendientes (018), zona horaria única (019), reportes unificados (020) y semáforo de cancelaciones (021). Estado detallado en cada `specs/NNN-*.md`.
+- 006 configuración del sistema: retirada (no se implementó; el tope de boletos sigue en configuración del servidor).
 
 ## Reglas de interfaz
 - SPA interna con React 19, TypeScript, Vite 7 y Tailwind CSS 4.
