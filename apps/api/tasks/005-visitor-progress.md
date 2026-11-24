@@ -38,3 +38,18 @@ Cada CA-01 a CA-14 tiene una prueba que lo nombra. Ninguna tarea crea una migrac
 - [x] **T-13** (CA-15, CA-16): Agregar cobertura de visibilidad, avance, acreditación retroactiva e idempotencia en PHPUnit.
 - [x] **T-14** (CA-15, CA-16): Verificar la API y actualizar la referencia de progreso.
   - Evidencia: `ProgressTest.php` aprobó sus 18 pruebas en `arca_pruebas`. Aprobaron también las dos pruebas unitarias y Pint para los archivos PHP modificados.
+
+## Enmienda de QR y logros · 2026-11-24
+
+Alcance y plan aprobados por la persona solicitante. Implementación autorizada en la conversación del 2026-11-24.
+
+- [x] **T-15** (CA-17) Alinear el filtro de escaneo con las especies públicas visitables. PHPUnit y Jest cubren nombres, casos mixtos y reenvíos. En el recinto Águila de `arca_pruebas`, el filtro devuelve Jaguar.
+- [x] **T-16** (CA-18) Activar las 24 definiciones y separar la visibilidad de logros de la de misiones. PHPUnit verifica catálogo, acreditaciones y seeder. El catálogo quedó aplicado y con 24 logros activos en `arca_pruebas`.
+
+## Enmienda · Misiones correspondientes a logros
+
+Plan e implementación autorizados por la persona solicitante, 2026-11-24.
+
+- [x] **T-17** (CA-15, CA-19) Aplicar en `VisitorProgressQuery` la excepción de visibilidad para misiones que comparten regla con un logro activo.
+- [x] **T-18** (CA-15, CA-16, CA-19) Verificar con PHPUnit la visibilidad, el avance y el estado de las misiones correspondientes. Actualizar la referencia del catálogo.
+  - Evidencia: CA-15, CA-16, CA-18 y CA-19 pasaron en `arca_pruebas` (4 pruebas, 73 aserciones). Pasaron las 12 pruebas unitarias y Pint.

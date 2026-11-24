@@ -26,30 +26,31 @@ class ExpoPushGateway implements PushGateway
                 throw new RuntimeException('El servicio push respondió '.$response->status().'.');
             }
 
-            $this->guardTickets($response->json('data'));
+            $this->guardTickets($response->json('data'), count($chunk));
         }
     }
 
-    private function guardTickets(mixed $tickets): void
+    private function guardTickets(mixed $tickets, int $expected): void
     {
-        if (! is_array($tickets) || $tickets === []) {
-            return;
-        }
-
+        $tickets = is_array($tickets) && array_is_list($tickets) ? array_slice($tickets, 0, $expected) : [];
+        $accepted = 0;
         $errors = 0;
         foreach ($tickets as $ticket) {
-            if (! is_array($ticket) || ($ticket['status'] ?? null) !== 'error') {
-                continue;
+            $status = is_array($ticket) ? ($ticket['status'] ?? null) : null;
+            if ($status === 'ok' && is_string($ticket['id'] ?? null) && $ticket['id'] !== '') {
+                $accepted++;
+            } elseif ($status === 'error') {
+                $errors++;
             }
-
-            $errors++;
-            Log::warning('Expo rechazó un aviso.', [
-                'error' => $ticket['details']['error'] ?? null,
-                'message' => $ticket['message'] ?? null,
-            ]);
         }
 
-        if ($errors === count($tickets)) {
+        Log::info('Tickets del proveedor push.', [
+            'accepted' => $accepted,
+            'rejected' => $errors,
+            'unconfirmed' => $expected - $accepted - $errors,
+        ]);
+
+        if ($errors > 0 && $errors === count($tickets)) {
             throw new RuntimeException('Expo rechazó todos los avisos del lote.');
         }
     }

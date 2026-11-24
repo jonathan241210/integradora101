@@ -74,11 +74,16 @@ class EnclosureQrLifecycleTest extends VisitorFeatureTestCase
         $this->assertSame(0, DB::table('visitor_point_entries')->where('visitor_id', $this->visitor->id)->count());
     }
 
+    private function placePublishedSpecies(Enclosure $enclosure): void
+    {
+        $this->makeAnimal($enclosure, $this->makeSpeciesId(['is_published' => true]));
+    }
+
     /** CA-17 enclosure-qr-management */
     public function test_ca17_escaneo_de_codigo_desactivado_responde_inactive_code(): void
     {
         $enclosure = $this->makeEnclosure();
-        $this->makeAnimal($enclosure);
+        $this->placePublishedSpecies($enclosure);
         $a = $this->makeQr($enclosure);
         $b = $this->regenerate($enclosure);
 
@@ -108,8 +113,8 @@ class EnclosureQrLifecycleTest extends VisitorFeatureTestCase
     public function test_ca21_regenerar_conserva_progreso(): void
     {
         $enclosure = $this->makeEnclosure();
-        $this->makeAnimal($enclosure);
-        $this->makeAnimal($enclosure);
+        $this->placePublishedSpecies($enclosure);
+        $this->placePublishedSpecies($enclosure);
         $a = $this->makeQr($enclosure);
         $aId = (int) DB::table('enclosure_qr_codes')->where('code', $a)->value('id');
         $this->scan($a)->assertCreated();
@@ -127,7 +132,7 @@ class EnclosureQrLifecycleTest extends VisitorFeatureTestCase
     public function test_ca22_codigo_nuevo_con_especies_conocidas_responde_already_discovered(): void
     {
         $enclosure = $this->makeEnclosure();
-        $this->makeAnimal($enclosure);
+        $this->placePublishedSpecies($enclosure);
         $a = $this->makeQr($enclosure);
         $this->scan($a)->assertCreated();
         $before = $this->counts();
@@ -138,7 +143,7 @@ class EnclosureQrLifecycleTest extends VisitorFeatureTestCase
             ->assertJsonPath('data.points_awarded', 0);
         $this->assertSame($before, $this->counts());
 
-        $this->makeAnimal($enclosure);
+        $this->placePublishedSpecies($enclosure);
         $this->scan($b)->assertCreated()->assertJsonPath('data.result', 'discovered');
         $after = $this->counts();
         $this->assertSame($before['collections'] + 1, $after['collections']);
@@ -165,7 +170,7 @@ class EnclosureQrLifecycleTest extends VisitorFeatureTestCase
     public function test_ca24_eliminar_recinto_conserva_enclosure_count_y_puntos(): void
     {
         $enclosure = $this->makeEnclosure();
-        $this->makeAnimal($enclosure);
+        $this->placePublishedSpecies($enclosure);
         $a = $this->makeQr($enclosure);
         $aId = (int) DB::table('enclosure_qr_codes')->where('code', $a)->value('id');
         $this->scan($a)->assertCreated();

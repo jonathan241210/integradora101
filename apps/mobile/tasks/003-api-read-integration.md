@@ -65,8 +65,10 @@
 - [x] **T-29** (CA-12): La frase de las misiones conserva el margen lateral del encabezado.
   - Verificación: `homeNewsEvents` CA-12 en verde.
 - [x] **T-30** (CA-01, CA-02, CA-05, CA-06): Reusar la foto pública de la especie en catálogo y ficha, mantener la caché anterior durante la actualización y verificar con Jest los casos de URL inválida, ficha en caché y apertura sin conexión.
+- [x] **T-31** (CA-05): Entregar a Inicio los resultados de la revalidación de noticias y eventos y comprobar la sustitución de las listas cacheadas con Jest.
 
 ## Evidencia
 
+- 2026-11-24: Jest aprobó 68 suites y 432 pruebas, incluidas las regresiones de caché e Inicio de CA-05. `tsc --noEmit` falló con cinco errores en componentes de mapa y RA ajenos a los archivos de la corrección.
 - Spec aprobada y primeras fases implementadas con almacenamiento en memoria.
 - ADR 0014 aceptado; `AsyncStorage` y `expo-network` instalados, hook de conectividad y banner integrados. Las pruebas y la verificación se registraron después en esta misma lista.

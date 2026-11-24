@@ -362,17 +362,18 @@ class ProgressTest extends VisitorFeatureTestCase
     {
         $this->assertSame('arca_pruebas', DB::getDatabaseName());
         $contents = file_get_contents(__FILE__);
-        foreach (range(1, 16) as $number) {
+        foreach (range(1, 18) as $number) {
             $this->assertStringContainsString(sprintf('CA-%02d visitor-progress', $number), $contents);
         }
     }
 
-    /** CA-15 visitor-progress: publicación, exhibición y recinto determinan la visibilidad. */
-    public function test_ca15_keyword_goals_list_only_visitable_species(): void
+    /** CA-15 visitor-progress: las misiones sin logro equivalente requieren una especie visitable. */
+    public function test_ca15_unpaired_keyword_missions_list_only_visitable_species(): void
     {
         [$token] = $this->visitor();
         $suffix = Str::lower(Str::random(8));
         $goals = $this->keywordGoals('leon'.$suffix);
+        $goals['achievements']->update(['rule_target' => 2]);
         $this->placeSpecies('reptile', 'Camaleón'.$suffix);
         $placement = $this->placeSpeciesWithDetails('mammal', 'León'.$suffix.' africano');
 
@@ -385,11 +386,9 @@ class ProgressTest extends VisitorFeatureTestCase
             [$placement['enclosure'], 'deleted_at', now(), null],
         ] as [$model, $field, $hidden, $visible]) {
             $model->forceFill([$field => $hidden])->save();
-            foreach ($goals as $path => $goal) {
-                $this->withVisitorToken($token)->getJson('/api/v1/visitor/'.$path)
-                    ->assertOk()
-                    ->assertJsonMissing(['code' => $goal->code]);
-            }
+            $this->withVisitorToken($token)->getJson('/api/v1/visitor/missions')
+                ->assertOk()
+                ->assertJsonMissing(['code' => $goals['missions']->code]);
             $model->forceFill([$field => $visible])->save();
         }
 
@@ -401,7 +400,7 @@ class ProgressTest extends VisitorFeatureTestCase
         }
     }
 
-    /** CA-16 visitor-progress: solo cuenta el descubrimiento visitable y se conserva lo acreditado. */
+    /** CA-16 y CA-19 visitor-progress: solo cuenta el descubrimiento visitable y se conserva lo acreditado. */
     public function test_ca16_keyword_goals_accredit_visitable_discoveries_once(): void
     {
         [$token, $visitor] = $this->visitor();
@@ -410,12 +409,12 @@ class ProgressTest extends VisitorFeatureTestCase
         $discovered = $this->placeSpeciesWithDetails('mammal', $keyword.' gris');
         $other = $this->placeSpeciesWithDetails('mammal', $keyword.' roja');
         $discovered['species']->update(['is_published' => false]);
-
-        $this->withVisitorToken($token)->postJson('/api/v1/visitor/discoveries', $this->scan($discovered['qr']->code))
-            ->assertCreated();
-        $this->assertDatabaseHas('visitor_collections', [
+        DB::table('visitor_collections')->insert([
             'visitor_id' => $visitor->id,
             'species_id' => $discovered['species']->id,
+            'enclosure_qr_code_id' => $discovered['qr']->id,
+            'discovered_at' => now(),
+            'created_at' => now(),
         ]);
         foreach ($goals as $path => $goal) {
             $this->withVisitorToken($token)->getJson('/api/v1/visitor/'.$path)
@@ -440,11 +439,12 @@ class ProgressTest extends VisitorFeatureTestCase
                 ->assertJsonFragment(['code' => $goal->code, 'state' => $states[$path], 'progress' => 0]);
         }
         $other['species']->update(['is_published' => false]);
-        foreach ($goals as $path => $goal) {
-            $this->withVisitorToken($token)->getJson('/api/v1/visitor/'.$path)
-                ->assertOk()
-                ->assertJsonMissing(['code' => $goal->code]);
-        }
+        $this->withVisitorToken($token)->getJson('/api/v1/visitor/missions')
+            ->assertOk()
+            ->assertJsonFragment(['code' => $goals['missions']->code, 'state' => 'completed', 'progress' => 0]);
+        $this->withVisitorToken($token)->getJson('/api/v1/visitor/achievements')
+            ->assertOk()
+            ->assertJsonFragment(['code' => $goals['achievements']->code, 'state' => 'unlocked', 'progress' => 0]);
 
         $discovered['species']->update(['is_published' => true]);
         foreach ($goals as $path => $goal) {
@@ -456,6 +456,80 @@ class ProgressTest extends VisitorFeatureTestCase
                 ->pluck('points')->map(intval(...))->all();
             $this->assertSame([50], $points);
         }
+    }
+
+    /** CA-17 visitor-progress */
+    public function test_ca17_mixed_enclosure_awards_only_public_visitable_species_once(): void
+    {
+        [$token, $visitor] = $this->visitor();
+        $first = $this->placeSpeciesWithDetails('mammal', 'Jaguar mexicano');
+        $second = $this->placeSpeciesWithDetails('bird', 'Águila real');
+        $private = $this->placeSpeciesWithDetails('reptile', 'Cocodrilo de pantano');
+        $private['species']->update(['is_published' => false]);
+        $closed = $this->placeSpeciesWithDetails('mammal');
+        $closed['animal']->update(['can_receive_visits' => false]);
+        $removed = $this->placeSpeciesWithDetails('mammal');
+        $removedSpecies = $this->placeSpeciesWithDetails('mammal');
+        $removedSpecies['species']->delete();
+
+        foreach ([$second, $private, $closed, $removed, $removedSpecies] as $placement) {
+            $placement['animal']->update(['enclosure_id' => $first['enclosure']->id]);
+        }
+        $removed['animal']->delete();
+        $first['animal']->replicate()->save();
+
+        $scan = $this->scan($first['qr']->code);
+        $response = $this->withVisitorToken($token)->postJson('/api/v1/visitor/discoveries', $scan)
+            ->assertCreated()
+            ->assertJsonPath('data.points_awarded', 200)
+            ->assertJsonCount(2, 'data.new_species')
+            ->assertJsonFragment(['common_name' => 'Jaguar mexicano'])
+            ->assertJsonFragment(['common_name' => 'Águila real']);
+        $this->withVisitorToken($token)->postJson('/api/v1/visitor/discoveries', $scan)
+            ->assertCreated()
+            ->assertJsonPath('data.new_species', $response->json('data.new_species'));
+        $this->assertSame(2, DB::table('visitor_collections')->where('visitor_id', $visitor->id)->count());
+    }
+
+    /** CA-18 visitor-progress */
+    public function test_ca18_shows_all_catalog_achievements_and_keeps_earned_records(): void
+    {
+        [$token, $visitor] = $this->visitor();
+        Achievement::query()->update(['is_active' => false]);
+        $this->seed(AchievementSeeder::class);
+        $first = Achievement::query()->where('code', 'mission-starter')->firstOrFail();
+        DB::table('visitor_achievements')->insert([
+            'visitor_id' => $visitor->id,
+            'achievement_id' => $first->id,
+            'unlocked_at' => now(),
+        ]);
+        $first->update(['is_active' => false]);
+        $this->seed(AchievementSeeder::class);
+        $this->assertSame(24, Achievement::query()->where('is_active', true)->count());
+        $goals = $this->keywordGoals('sincoincidencia'.Str::lower(Str::random(8)));
+
+        $this->withVisitorToken($token)->getJson('/api/v1/visitor/achievements')
+            ->assertOk()
+            ->assertJsonCount(25, 'data')
+            ->assertJsonFragment(['code' => 'mission-starter', 'state' => 'unlocked'])
+            ->assertJsonFragment(['code' => 'mission-master', 'state' => 'pending'])
+            ->assertJsonFragment(['code' => $goals['achievements']->code, 'state' => 'pending']);
+        $this->assertDatabaseMissing('visitor_point_entries', ['visitor_id' => $visitor->id]);
+    }
+
+    /** CA-19 visitor-progress: una misión asociada aparece aunque no haya una especie visitable. */
+    public function test_ca19_shows_pending_missions_with_matching_active_achievements(): void
+    {
+        [$token, $visitor] = $this->visitor();
+        $goals = $this->keywordGoals('ausente'.Str::lower(Str::random(8)));
+        $inactive = $this->keywordGoals('inactivo'.Str::lower(Str::random(8)));
+        $inactive['achievements']->update(['is_active' => false]);
+
+        $this->withVisitorToken($token)->getJson('/api/v1/visitor/missions')
+            ->assertOk()
+            ->assertJsonFragment(['code' => $goals['missions']->code, 'state' => 'pending', 'progress' => 0])
+            ->assertJsonMissing(['code' => $inactive['missions']->code]);
+        $this->assertDatabaseMissing('visitor_point_entries', ['visitor_id' => $visitor->id]);
     }
 
     /**

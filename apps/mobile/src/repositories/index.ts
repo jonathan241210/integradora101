@@ -14,13 +14,15 @@ export interface UserRepository {
   getMilestones(): Promise<{ id: string; title: string; date: string }[]>;
 }
 
+export type HomeListRefresh = 'manual' | 'push' | 'stale';
+
 export interface ZooRepository {
-  getEvents(): Promise<ZooEvent[]>;
+  getEvents(onRevalidated?: (events: ZooEvent[]) => void): Promise<ZooEvent[]>;
   getEventById(id: string): Promise<ZooEvent | null>;
-  getNews(): Promise<News[]>;
+  getNews(onRevalidated?: (news: News[]) => void): Promise<News[]>;
   getNewsById(id: string): Promise<News | null>;
   reloadNewsById(id: string): Promise<News | null>;
-  refreshNewsAndEvents(): Promise<{ news: News[]; events: ZooEvent[] }>;
+  refreshNewsAndEvents(mode?: HomeListRefresh): Promise<{ news: News[]; events: ZooEvent[] }>;
 }
 
 export interface MapRepository {

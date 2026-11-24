@@ -14,6 +14,8 @@ La app presenta el progreso que devuelve la API y guarda solo la cola de escaneo
 
 Perfil sustituye puntos, nivel y rango de demostración cuando hay sesión. La colección lista especies con `discovered`. Logros y misiones muestran el estado del servidor. Se retiran líderes y recompensas.
 
+Enmienda de CA-03 y `api-005` CA-19. Aventura consume el catálogo ampliado de la misma API. `mapMission` usa el estado `completed` del servidor para mostrar la barra completa en la lista y la ficha, incluso si la métrica actual es cero. `catalogs.test.tsx` verifica ambas presentaciones en la lista.
+
 Enmienda: `readSharedProgress` guarda una copia por repositorio. Las pantallas esperan la lectura en curso y no repiten la petición si ya hay datos. La copia se tira al cerrar sesión y al entrar en otra. `bootstrap()` regresa de inmediato si el estado ya es `authenticated`. Guardar el perfil avisa a la sesión, pero no dispara otra lectura de progreso. Ajustes sigue pidiendo el perfil una vez para mostrar nombre y correo.
 
 Enmienda visual: el resultado del escaneo es un recuadro de color (vino, dorado o crema) con icono, puntos y nombres grandes. En el perfil, las cifras se leen en el tamaño del título y el siguiente umbral es una barra chica de los puntos actuales contra ese umbral. La colección usa pastillas de estado y foto más alta. La aventura muestra la barra de la misión en vino. El inicio, con sesión, saluda con el apodo y los animales que faltan.

@@ -47,7 +47,7 @@ const CHEER: Record<ScanPresentation['kind'], string> = {
 };
 
 export function ScanResultScreen({ result, onBackPress, onRetryPress, onOpenSpecies }: ScanResultScreenProps) {
-  const unlocked = result.unlockedSpecies ?? [];
+  const unlocked = (result.unlockedSpecies ?? []).filter((species) => species.name?.trim());
   const known = result.alreadyKnownSpecies ?? [];
   const unlockedNames = unlocked.length > 0 ? unlocked.map((species) => species.name) : (result.newSpecies ?? []);
   const mood = MOOD[result.kind];
@@ -89,11 +89,11 @@ export function ScanResultScreen({ result, onBackPress, onRetryPress, onOpenSpec
               <Pressable
                 key={species.id}
                 accessibilityRole="button"
-                accessibilityLabel={`Ver ${species.name}`}
+                accessibilityLabel={`Ver ${species.name.trim()}`}
                 onPress={() => onOpenSpecies?.(species.id)}
                 style={styles.animalButton}
               >
-                <AppText variant="body" bold center color="textOnPrimary" style={styles.animalLabel}>{`Ver ${species.name}`}</AppText>
+                <AppText variant="body" bold center color="textOnPrimary" style={styles.animalLabel}>{`Ver ${species.name.trim()}`}</AppText>
               </Pressable>
             ))}
           </View>

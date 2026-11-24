@@ -88,3 +88,10 @@
   - Verificación: `favorites`, `home-route`, `navigation` y `exploration` en verde. `tsc --noEmit` en verde.
 - [x] **T-60** (CA-16): Al marcar, el corazón se llena y queda relleno; al quitar, vuelve al contorno.
   - Verificación: `exploration` cubre el anuncio de marcado y de no marcado. El movimiento del relleno no se grabó en un dispositivo.
+
+## Enmienda de arranque · 2026-11-24
+
+Alcance y plan aprobados por la persona solicitante. Implementación autorizada en la conversación del 2026-11-24.
+
+- [x] **T-61** (CA-17) Presentar Inicio mientras aún carga y cubrir la vista con Jest. Verificación automatizada en `homeNewsEvents.test.tsx`.
+- [ ] **T-62** (CA-17) Verificar en un teléfono Android el arranque en frío con y sin sesión.

@@ -12,10 +12,10 @@ class AchievementSeeder extends Seeder
         $rows = [
             ['code' => 'first-discovery', 'title' => 'Primer descubrimiento', 'description' => 'Tu primera gran aventura comienza con un descubrimiento.', 'icon' => 'pets', 'points' => 100, 'rule_type' => 'species_count', 'rule_target' => 1, 'rule_param' => null, 'sort_order' => 1],
             ['code' => 'habitat-explorer', 'title' => 'Explorador de hábitats', 'description' => 'Visitaste distintos rincones del zoológico.', 'icon' => 'explore', 'points' => 250, 'rule_type' => 'enclosure_count', 'rule_target' => 3, 'rule_param' => null, 'sort_order' => 2],
-            ['code' => 'mission-starter', 'title' => 'Misión cumplida', 'description' => 'Completaste tu primera misión de exploración.', 'icon' => 'emoji-events', 'points' => 150, 'rule_type' => 'missions_completed', 'rule_target' => 1, 'rule_param' => null, 'sort_order' => 3, 'is_active' => false],
+            ['code' => 'mission-starter', 'title' => 'Misión cumplida', 'description' => 'Completaste tu primera misión de exploración.', 'icon' => 'emoji-events', 'points' => 150, 'rule_type' => 'missions_completed', 'rule_target' => 1, 'rule_param' => null, 'sort_order' => 3],
             ['code' => 'bird-watcher', 'title' => 'Observador de aves', 'description' => 'Demuestra atención a las especies emplumadas.', 'icon' => 'visibility', 'points' => 200, 'rule_type' => 'category_species_count', 'rule_target' => 3, 'rule_param' => 'bird', 'sort_order' => 4],
             ['code' => 'zoo-photographer', 'title' => 'Mirada curiosa', 'description' => 'Recorre el zoológico y descubre nuevas especies.', 'icon' => 'photo-camera', 'points' => 300, 'rule_type' => 'species_count', 'rule_target' => 10, 'rule_param' => null, 'sort_order' => 5],
-            ['code' => 'mission-master', 'title' => 'Maestro de misiones', 'description' => 'Completa desafíos y conviértete en referente de exploración.', 'icon' => 'military-tech', 'points' => 500, 'rule_type' => 'missions_completed', 'rule_target' => 5, 'rule_param' => null, 'sort_order' => 6, 'is_active' => false],
+            ['code' => 'mission-master', 'title' => 'Maestro de misiones', 'description' => 'Completa desafíos y conviértete en referente de exploración.', 'icon' => 'military-tech', 'points' => 500, 'rule_type' => 'missions_completed', 'rule_target' => 5, 'rule_param' => null, 'sort_order' => 6],
             ['code' => 'comic-mono', 'title' => '¿El jefe de la rama?', 'description' => 'Escanea un mono.', 'icon' => 'pets', 'points' => 50, 'rule_type' => 'species_keyword', 'rule_target' => 1, 'rule_param' => 'mono', 'sort_order' => 20],
             ['code' => 'comic-ardilla', 'title' => '¿Ratatoskr?!', 'description' => 'Escanea una ardilla.', 'icon' => 'pets', 'points' => 50, 'rule_type' => 'species_keyword', 'rule_target' => 1, 'rule_param' => 'ardilla', 'sort_order' => 21],
             ['code' => 'comic-pajaro', 'title' => 'Un puntito con alas', 'description' => 'Escanea un pajarito.', 'icon' => 'visibility', 'points' => 50, 'rule_type' => 'species_keyword', 'rule_target' => 1, 'rule_param' => 'pajaro,pajarito', 'sort_order' => 22],
@@ -37,7 +37,7 @@ class AchievementSeeder extends Seeder
         ];
 
         foreach ($rows as $row) {
-            Achievement::query()->updateOrCreate(['code' => $row['code']], $row);
+            Achievement::query()->updateOrCreate(['code' => $row['code']], $row + ['is_active' => true]);
         }
     }
 }

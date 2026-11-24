@@ -12,6 +12,7 @@ use App\Models\VisitorPushToken;
 use App\Push\PushGateway;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SendPushJob implements ShouldQueue
@@ -29,14 +30,19 @@ class SendPushJob implements ShouldQueue
             return;
         }
 
+        $context = ['dispatch_id' => $dispatch->id, 'subject_type' => $dispatch->subject_type];
         if (! config('push.enabled')) {
+            Log::info('Envío push deshabilitado.', $context);
             $dispatch->forceFill(['status' => 'sent'])->save();
 
             return;
         }
 
         $messages = $this->messages($dispatch);
-        if ($messages !== []) {
+        if ($messages === []) {
+            Log::info('Sin destinos elegibles para el aviso push.', $context);
+        } else {
+            Log::info('Solicitando envío al proveedor push.', $context + ['destinations' => count($messages)]);
             $gateway->send($messages);
         }
 
@@ -70,14 +76,14 @@ class SendPushJob implements ShouldQueue
     private function contentMessages(PushDispatch $dispatch, string $type): array
     {
         if ($type === 'news') {
-            $row = News::query()->find($dispatch->subject_id);
+            $row = News::query()->publicVisible()->find($dispatch->subject_id);
             if ($row === null) {
                 return [];
             }
             $title = (string) $row->title;
             $body = 'Hay una noticia nueva.';
         } else {
-            $row = Event::query()->find($dispatch->subject_id);
+            $row = Event::query()->publicVisible()->find($dispatch->subject_id);
             if ($row === null) {
                 return [];
             }

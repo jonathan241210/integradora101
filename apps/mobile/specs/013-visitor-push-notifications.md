@@ -1,5 +1,12 @@
 # 013 · visitor-push-notifications
 
+## Enmienda · Actualización de contenido al recibir un aviso
+
+- Estado: Aprobada
+- Aprobación funcional: persona solicitante, 2026-11-24. Complementa la revalidación de caché de `mobile-003`.
+- **CA-14.** Con la app abierta, al recibir un aviso de noticia o evento, se vuelve a consultar el contenido público y se actualizan las listas visibles de Inicio. Al volver del segundo plano o recuperar la conexión, Inicio comprueba la vigencia de esas listas aunque el visitante tenga apagados los avisos. Si falla la consulta, conserva la última lista disponible.
+- **RN-07.** La preferencia de avisos controla la recepción de push. Las listas públicas de Inicio se pueden actualizar con cualquier valor de esa preferencia. Un aviso sobre un momento mantiene su flujo actual.
+
 - App dueña: `mobile`
 - Apps/paquetes afectados: `mobile` (permiso de Android, preferencias en Ajustes, registro del token y apertura al tocar el aviso); `packages/api-client` (métodos y tipos, sin lógica de negocio); `api` (reglas, texto y envío, spec `api-017`).
 - Estado: Implementada
