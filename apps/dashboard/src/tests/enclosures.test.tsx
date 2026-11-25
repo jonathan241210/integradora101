@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { EnclosuresView } from "../views/EnclosuresView";
 import {
+  defaultEnclosureFilters,
   enclosuresReducer,
   initialEnclosuresState,
   loadEnclosures,
@@ -11,6 +12,7 @@ import {
 import { apiError, createAdminApiMock, createHarness, enclosure } from "./admin-fixtures";
 
 const actions: EnclosuresViewModel["actions"] = {
+  changeFilters: vi.fn(),
   reload: vi.fn(),
   openDialog: vi.fn(),
   closeDialog: vi.fn(),
@@ -25,7 +27,10 @@ const actions: EnclosuresViewModel["actions"] = {
   qrNotFound: vi.fn(),
 };
 
-const paging = (items: unknown[]) => ({ canManage: true, page: 1, pageCount: 1, pageItems: items as never[] });
+const paging = (items: typeof initialEnclosuresState.items) => ({
+  canManage: true, filters: defaultEnclosureFilters, total: items.length,
+  page: 1, pageCount: 1, pageItems: items,
+});
 
 const ready = {
   ...initialEnclosuresState,

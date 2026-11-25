@@ -23,6 +23,7 @@ export type {
   ConsoleNoticeDto,
   DailySalesDto,
   DashboardSummaryDto,
+  EnclosureAnimalDto,
   EnclosureDto,
   EventDto,
   EventInput,

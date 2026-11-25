@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Actions\Admin\Enclosures\DeleteEnclosureAction;
+use App\Actions\Admin\Enclosures\ListEnclosureAnimalsAction;
 use App\Actions\Admin\Enclosures\ListEnclosuresAction;
 use App\Actions\Admin\Enclosures\SaveEnclosureAction;
 use App\Actions\Admin\Enclosures\SetEnclosureStatusAction;
@@ -10,6 +11,7 @@ use App\Actions\Admin\FindAdminResourceAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\SaveEnclosureRequest;
 use App\Http\Requests\Admin\SetEnclosureStatusRequest;
+use App\Http\Resources\Admin\EnclosureAnimalResource;
 use App\Http\Resources\Admin\EnclosureResource;
 use App\Models\Enclosure;
 use Illuminate\Http\JsonResponse;
@@ -20,6 +22,16 @@ class EnclosureController extends Controller
     public function index(ListEnclosuresAction $action): AnonymousResourceCollection
     {
         return EnclosureResource::collection($action->execute());
+    }
+
+    public function animals(
+        string $enclosure,
+        FindAdminResourceAction $find,
+        ListEnclosureAnimalsAction $action,
+    ): AnonymousResourceCollection {
+        $model = $find->execute(Enclosure::class, $enclosure, 'Recinto no encontrado.');
+
+        return EnclosureAnimalResource::collection($action->execute($model));
     }
 
     public function store(SaveEnclosureRequest $request, SaveEnclosureAction $action): JsonResponse

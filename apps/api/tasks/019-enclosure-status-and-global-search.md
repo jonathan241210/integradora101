@@ -1,5 +1,11 @@
 # Tareas · 019 · enclosure-status-and-global-search
 
+## Enmienda · Consulta administrativa de animales por recinto
+
+- Plan aprobado en la conversación el 2026-11-24.
+- [x] **T-53** (CA-55, CA-56): exponer lectura administrativa con Action, Resource y permiso vigente. Incorporar método y DTO de `@arca/api-client`.
+- [x] **T-54** (CA-55, CA-56): Pint pasó para los archivos PHP modificados. PHPUnit pasó las dos pruebas de `EnclosureAnimalsTest.php` con 11 aserciones en `arca_pruebas`. El manifiesto de API no declara scripts `lint` ni `test`. El paquete de cliente se verificó con el chequeo de tipos y las pruebas del consumidor.
+
 - Spec: `apps/api/specs/019-enclosure-status-and-global-search.md`
 - Plan: `apps/api/plan/019-enclosure-status-and-global-search.md`
 - DBR: `docs/database/requests/DBR-020-enclosure-status-soft-delete.md` («Lista para backend» (aplicada en `arca_pruebas`, lote 12, por el responsable funcional como responsable de BD por delegación))

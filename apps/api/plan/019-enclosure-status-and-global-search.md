@@ -1,5 +1,28 @@
 # Plan técnico · 019 · enclosure-status-and-global-search
 
+## Enmienda técnica · Consulta administrativa de animales por recinto
+
+- Estado de la enmienda: **Aprobado** en la conversación, 2026-11-24.
+- Contrato: `GET /api/v1/admin/enclosures/{enclosure}/animals`, ruta nombrada `admin.enclosures.animals.index`, en el grupo administrativo existente con Sanctum y `enclosures.manage`. La consulta es de solo lectura y usa el permiso vigente.
+- El controlador reutiliza `FindAdminResourceAction` para localizar el recinto vigente y delega en una Action la lectura mediante `Enclosure::animals()`. Se seleccionan los identificadores necesarios para resolver `species`, se carga el nombre común de la especie en la misma operación de lectura y se ordena por nombre e identificador. Un Resource entrega `{ data: [{ id, name, species_name }] }`. `name` y `species_name` admiten `null` cuando el nombre no está disponible. La colección vacía devuelve `200` con `data: []`.
+- Se conserva el alcance del conteo administrativo, incluido el borrado lógico de animales. El detalle acepta un recinto inactivo. Sin sesión devuelve 401, sin permiso devuelve 403 y un recinto ausente o borrado devuelve 404. No requiere cambios de esquema, infraestructura, auditoría de escritura ni operación offline.
+
+| Criterio | Prueba en `apps/api/src/tests/Feature/Admin/` |
+|---|---|
+| CA-55 | Consulta un recinto activo y otro inactivo, limita animales por recinto, excluye borrados, verifica campos y prueba una colección vacía. |
+| CA-56 | Prueba ausencia de sesión, falta de permiso, recinto inexistente y recinto eliminado. |
+
+| Principio | Evidencia prevista |
+|---|---|
+| I | Relaciones Eloquent existentes. La consulta es portable entre MySQL 8.0 en Aiven y local. |
+| II | Enmienda funcional aprobada en `api-019` y `dashboard-012`. Plan y checklist antes del código. |
+| III | Controlador HTTP delgado, Action para la consulta y Resource para el contrato. |
+| IV | CA-55 y CA-56 mapeados a PHPUnit. |
+| V | Se consultan las relaciones existentes de MySQL y se respetan sus alcances de borrado lógico. |
+| VI | Ruta, clase y campos en inglés. Respuestas de error y documentación en español. |
+
+Secuencia tras aprobación técnica: tareas de API, contrato de cliente, integración de dashboard y verificación de las apps afectadas.
+
 - Spec: `apps/api/specs/019-enclosure-status-and-global-search.md`
 - Estado del plan: **Aprobado**. Autoriza la implementación según sus tasks.
 - Solicitada: 2026-11-18

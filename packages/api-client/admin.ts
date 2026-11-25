@@ -8,6 +8,7 @@ import type {
   ConsoleNoticeDto,
   PendingReviewCountsDto,
   DashboardSummaryDto,
+  EnclosureAnimalDto,
   EnclosureDto,
   EnclosureQrRegenerateResponse,
   EnclosureQrResponse,
@@ -368,6 +369,11 @@ export function createAdminApi(http: ExtendedHttpClient) {
     news: content<NewsDto, NewsInput>("news"),
     events: content<EventDto, EventInput>("events"),
     enclosures: {
+      async listAnimals(id: number): Promise<EnclosureAnimalDto[]> {
+        return unwrapList(
+          await http.get<Enveloped<EnclosureAnimalDto[]>>(`${base}/enclosures/${id}/animals`),
+        );
+      },
       async list(): Promise<EnclosureDto[]> {
         return unwrapList(
           await http.get<Enveloped<EnclosureDto[]>>(`${base}/enclosures`),

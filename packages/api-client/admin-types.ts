@@ -159,6 +159,12 @@ export type EventInput = {
   remove_image?: boolean;
 };
 
+export type EnclosureAnimalDto = {
+  id: number;
+  name: string | null;
+  species_name: string | null;
+};
+
 export type EnclosureDto = {
   id: number;
   name: string;

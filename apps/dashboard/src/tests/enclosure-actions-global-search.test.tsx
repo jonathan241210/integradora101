@@ -4,19 +4,24 @@ import { describe, expect, it, vi } from "vitest";
 import { EnclosuresView } from "../views/EnclosuresView";
 import {
   clampPage,
+  defaultEnclosureFilters,
   deleteEnclosure,
   enclosureAnimalsWarning,
+  enclosureFocusPage,
   enclosurePage,
   enclosurePageCount,
   enclosuresReducer,
+  filterEnclosures,
   getEnclosureConfirmation,
   getEnclosureWarning,
   initialEnclosuresState,
+  loadEnclosureAnimals,
   loadEnclosures,
   pageAfterCreate,
   pageAfterDelete,
   setEnclosureStatus,
   type EnclosureDialog,
+  type EnclosureFilters,
   pageOfEnclosure,
   saveEnclosure,
   type EnclosuresViewModel,
@@ -26,6 +31,7 @@ import { apiError, createAdminApiMock, createHarness, enclosure } from "./admin-
 const styles = readFileSync(new URL("../styles.css", import.meta.url), "utf8");
 
 const actions: EnclosuresViewModel["actions"] = {
+  changeFilters: vi.fn(),
   reload: vi.fn(),
   openDialog: vi.fn(),
   closeDialog: vi.fn(),
@@ -43,16 +49,19 @@ const actions: EnclosuresViewModel["actions"] = {
 const many = (count: number) =>
   Array.from({ length: count }, (_, i) => enclosure({ id: i + 1, name: `Recinto ${i + 1}` }));
 
-function render(items: ReturnType<typeof many>, page: number, error = "") {
-  const state = { ...initialEnclosuresState, status: items.length === 0 ? ("empty" as const) : ("ready" as const), items, error };
+function render(items: ReturnType<typeof many>, page: number, filters = defaultEnclosureFilters) {
+  const state = { ...initialEnclosuresState, status: items.length === 0 ? ("empty" as const) : ("ready" as const), items };
+  const matching = filterEnclosures(items, filters, true);
   return renderToStaticMarkup(
     <EnclosuresView
       state={state}
       actions={actions}
       canManage
+      filters={filters}
+      total={matching.length}
       page={page}
-      pageCount={enclosurePageCount(items.length)}
-      pageItems={enclosurePage(items, page)}
+      pageCount={enclosurePageCount(matching.length)}
+      pageItems={enclosurePage(matching, page)}
     />,
   );
 }
@@ -119,6 +128,8 @@ describe("CA-10 enclosure-actions-global-search", () => {
         state={{ ...initialEnclosuresState, status: "error", error: "Fallo de red" }}
         actions={actions}
         canManage
+        filters={defaultEnclosureFilters}
+        total={0}
         page={1}
         pageCount={1}
         pageItems={[]}
@@ -159,12 +170,61 @@ const withDialog = (dialog: EnclosureDialog | null, extra: Partial<typeof initia
   ...extra,
 });
 
+describe("Ver animales del recinto (dashboard-012)", () => {
+  it("CA-49 consulta el recinto elegido y presenta el nombre y la especie según permiso", async () => {
+    const item = enclosure({ id: 7, name: "Aviario", is_active: false });
+    const dialog = { kind: "animals", item } as const;
+    const api = createAdminApiMock();
+    api.enclosures.listAnimals.mockResolvedValue([{ id: 1, name: "Luna", species_name: "Águila" }]);
+    const h = createHarness(enclosuresReducer, withDialog(dialog));
+
+    loadEnclosureAnimals(api, h.dispatch, dialog);
+    await Promise.resolve();
+
+    expect(api.enclosures.listAnimals).toHaveBeenCalledWith(7);
+    expect(renderState(h.state)).toContain("Animales de Aviario");
+    expect(renderState(h.state)).toContain("<strong>Luna</strong><span>Águila</span>");
+    expect(renderState(withDialog(null))).toContain('aria-label="Ver animales del recinto Aviario"');
+    expect(renderState(withDialog(null), false)).not.toContain("Ver animales del recinto");
+  });
+
+  it("CA-50 muestra carga, error y vacío, admite reintento e ignora un resultado antiguo", async () => {
+    const dialog = { kind: "animals", item: enclosure() } as const;
+    const api = createAdminApiMock();
+    api.enclosures.listAnimals.mockRejectedValueOnce(apiError(503, "Consulta no disponible."));
+    const h = createHarness(enclosuresReducer, withDialog(null));
+    h.dispatch({ type: "dialog-opened", dialog });
+    loadEnclosureAnimals(api, h.dispatch, dialog);
+    expect(renderState(h.state)).toContain("Cargando animales…");
+    await Promise.resolve();
+    expect(renderState(h.state)).toContain("Consulta no disponible.");
+    expect(renderState(h.state)).toContain("Reintentar");
+
+    const retry = { ...dialog };
+    h.dispatch({ type: "dialog-opened", dialog: retry });
+    loadEnclosureAnimals(api, h.dispatch, retry);
+    await Promise.resolve();
+    expect(renderState(h.state)).toContain("Este recinto no tiene animales asignados.");
+    expect(api.enclosures.listAnimals).toHaveBeenCalledTimes(2);
+
+    api.enclosures.listAnimals.mockResolvedValueOnce([{ id: 2, name: "Obsoleto", species_name: null }]);
+    loadEnclosureAnimals(api, h.dispatch, retry);
+    h.dispatch({ type: "dialog-closed" });
+    h.dispatch({ type: "dialog-opened", dialog: { ...dialog } });
+    await Promise.resolve();
+    expect(h.state.animals.items).toEqual([]);
+    expect(h.state.items).toEqual(withDialog(null).items);
+  });
+});
+
 function renderState(state: ReturnType<typeof withDialog>, canManage = true) {
   return renderToStaticMarkup(
     <EnclosuresView
       state={state}
       actions={actions}
       canManage={canManage}
+      filters={defaultEnclosureFilters}
+      total={state.items.length}
       page={1}
       pageCount={1}
       pageItems={state.items}
@@ -186,6 +246,60 @@ describe("CA-01 enclosure-actions-global-search", () => {
     expect(denied).not.toContain("Desactivar recinto");
     expect(denied).not.toContain("Eliminar recinto");
     expect(denied).not.toContain("Activar recinto");
+  });
+});
+
+describe("Filtros de Recintos (dashboard-012)", () => {
+  it("CA-45 filtra activos e inactivos sobre el catálogo completo", () => {
+    const active = many(10);
+    const inactive = enclosure({ id: 11, name: "Aviario cerrado", is_active: false });
+    const items = [...active, inactive];
+
+    expect(filterEnclosures(items, defaultEnclosureFilters, true)).toEqual(items);
+    expect(filterEnclosures(items, { ...defaultEnclosureFilters, status: "active" }, true)).toEqual(active);
+    const markup = render(items, 1, { ...defaultEnclosureFilters, status: "inactive" });
+    expect(markup).toContain('value="inactive" selected="">Inactivos');
+    expect(markup).toContain("Aviario cerrado");
+    expect(markup).not.toContain("<h2>Recinto 1</h2>");
+  });
+
+  it("CA-46 combina nombre, estado, animales y QR según el permiso", () => {
+    const match = enclosure({ id: 1, name: "Águila real" });
+    const noQr = enclosure({ ...match, id: 2, has_active_qr: false });
+    const items = [match, noQr, enclosure({ ...match, id: 3, animals_count: 0 }), enclosure({ ...match, id: 4, is_active: false }), enclosure()];
+    const filters: EnclosureFilters = { name: "  AGUILA ", status: "active", animals: "with", qr: "with" };
+
+    expect(filterEnclosures(items, filters, true)).toEqual([match]);
+    expect(filterEnclosures(items, filters, false)).toEqual([match, noQr]);
+    expect(renderState(withDialog(null))).toContain('id="enclosure-filter-qr"');
+    expect(renderState(withDialog(null), false)).not.toContain('id="enclosure-filter-qr"');
+  });
+
+  it("CA-47 usa el total filtrado y distingue cero coincidencias", () => {
+    const items = [enclosure({ id: 99, is_active: false }), ...many(11)];
+    const filters: EnclosureFilters = { ...defaultEnclosureFilters, status: "active" };
+    const markup = render(items, 1, filters);
+
+    expect(markup).toContain("Página 1 de 2 · 11 en total");
+    expect((markup.match(/data-search-id=/g) ?? [])).toHaveLength(9);
+    expect(markup.indexOf("<h2>Recinto 1</h2>")).toBeLessThan(markup.indexOf("<h2>Recinto 9</h2>"));
+    const empty = render(items, 1, { ...filters, name: "No existe" });
+    expect(empty).toContain("No hay recintos que coincidan con los filtros.");
+    expect(empty).toContain("Limpiar filtros");
+    expect(empty).not.toContain("Aún no hay recintos registrados.");
+  });
+
+  it("CA-48 reajusta la página tras cambios y localiza resultados globales ocultos", () => {
+    const items = many(10);
+    const filters: EnclosureFilters = { ...defaultEnclosureFilters, status: "active", qr: "with" };
+    const updated = items.map((item) => item.id === 10 ? { ...item, has_active_qr: false } : item);
+    const matching = filterEnclosures(updated, filters, true);
+
+    expect(pageAfterCreate(items, matching, 2)).toBe(1);
+    expect(enclosureFocusPage(updated, matching, 10)).toEqual({ page: 2, clearFilters: true });
+    expect(enclosureFocusPage(updated, matching, 9)).toEqual({ page: 1, clearFilters: false });
+    expect(enclosureFocusPage(updated, matching, 99)).toBeNull();
+    expect(pageAfterCreate(updated, filterEnclosures([...updated, enclosure({ id: 11 })], filters, true), 1)).toBe(2);
   });
 });
 

@@ -1,5 +1,19 @@
 # Tareas · 012 · enclosure-actions-global-search
 
+## Enmienda · Ver animales del recinto
+
+- Plan aprobado en la conversación el 2026-11-24.
+- [x] **T-49** (CA-49, CA-50): integrar el botón, el diálogo y la consulta en ViewModel con guardia contra respuestas obsoletas.
+- [x] **T-50** (CA-49, CA-50): se actualizó el manual. `npm run types` pasó. `npm test` pasó 969 de 970 casos, incluidos CA-49 y CA-50. Persiste el fallo por saltos de línea CRLF en `pending-review-badges.test.tsx:160`, registrado en T-48.
+
+## Enmienda · Filtros del listado de Recintos
+
+- Autorización: la persona solicitante aprobó el plan y pidió implementarlo el 2026-11-24.
+- [x] **T-45** (CA-45 a CA-48, RN-15 y RN-16): derivar coincidencias, total y página en el ViewModel e integrar actualizaciones y enfoque global.
+- [x] **T-46** (CA-45 a CA-47, RN-16): presentar los controles etiquetados, el estado sin coincidencias y la limpieza en la vista adaptable. Se actualizó el manual del dashboard.
+- [x] **T-47** (CA-45 a CA-48): añadir pruebas de Vitest identificadas por criterio para estado, combinaciones, paginación y actualizaciones con enfoque global.
+- [x] **T-48**: ejecutar `verify` en el dashboard y registrar resultados. `npm run types` y `git diff --check` pasaron. `npm test` pasó 967 de 968 pruebas, incluidas las de Recintos. El fallo en `pending-review-badges.test.tsx:160` exige saltos LF en `App.tsx`, que el checkout de Windows tiene como CRLF. El manifiesto del dashboard está en `apps/dashboard/` y no define scripts `format:check` ni `lint`.
+
 - Spec: `apps/dashboard/specs/012-enclosure-actions-global-search.md` (Aprobada)
 - Plan: `apps/dashboard/plan/012-enclosure-actions-global-search.md`
 - Dependencias: `apps/api/tasks/019-enclosure-status-and-global-search.md` (Borrador; bloque A = `admin.search`; bloque B = `setStatus`, `remove`, `is_active`), DBR-020 («Lista para backend», aplicada en `arca_pruebas`).

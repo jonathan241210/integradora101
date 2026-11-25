@@ -1,5 +1,19 @@
 # 019 · enclosure-status-and-global-search
 
+## Enmienda · Consulta administrativa de animales por recinto
+
+- Estado: Aprobada
+- Aprobación funcional: persona solicitante, 2026-11-24, en la conversación sobre `dashboard-012` CA-49 y CA-50.
+- Aplicaciones afectadas: `api`, `dashboard` y `packages/api-client`.
+- **CA-55:** Con `enclosures.manage`, la consulta de un recinto activo o inactivo devuelve solo los animales asignados que aparecen en su conteo administrativo, con los campos de identificación `id`, `name` y `species_name`. Un recinto sin animales devuelve una colección vacía.
+- **CA-56:** La consulta exige autenticación y `enclosures.manage`. Una solicitud autorizada a un recinto inexistente o eliminado devuelve 404.
+- **RN-20:** La consulta es de solo lectura. Aplica el mismo alcance de borrado lógico que `animals_count`. Los nombres nulos se conservan como tales para su presentación. No se exponen datos clínicos.
+
+### Estado actual
+
+- El 2026-11-24 se consultaron en solo lectura `information_schema.COLUMNS` e `information_schema.KEY_COLUMN_USAGE` de `arca_pruebas` usando el conector MySQL instalado en Windows. Se comprobó que `animals.enclosure_id` y `animals.species_id` son claves foráneas obligatorias hacia `enclosures.id` y `species.id`, respectivamente. `animals.name` es nullable, `species.common_name` es obligatorio y las tres tablas tienen `deleted_at`.
+- Coincide con las relaciones documentadas en `docs/database/diccionario-datos.md`, la referencia de `animals.enclosure_id` en DBR-020 y los nombres de columnas de la migración `2026_10_14_000001_rename_tables_and_columns_to_english.php`. El alcance de borrado lógico de la consulta coincide con los modelos usados por el listado administrativo. No se requiere DBR porque se reutiliza el esquema existente.
+
 - App dueña: `api`
 - Apps/paquetes afectados: `api` (dueña de la lógica, las rutas y los permisos); `dashboard` (consumidor: `dashboard-012`); `mobile` y `web` (consumidores del catálogo público, sin cambio de código en esta spec); `packages/api-client` (métodos y tipos, sin lógica de negocio).
 - Estado: Implementada. La parte de recintos depende de DBR-020 («Lista para backend»); la búsqueda global está implementada con plan y tasks aprobados.
