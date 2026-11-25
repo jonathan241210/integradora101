@@ -98,6 +98,11 @@ describe('CA-03 PWA animal-registration', () => {
     expect(markup).toContain('required=""');
     expect(markup).toContain('disabled=""');
     expect(markup).toContain('Registrar animal');
+    // pwa-013 CA-01
+    expect(markup).not.toContain('animal-stay-status');
+    expect(markup).toContain('¿Puede recibir visitas?');
+    expect(markup).toContain('<option value="1">Sí</option>');
+    expect(markup).toContain('<option value="0">No</option>');
   });
 });
 

@@ -15,7 +15,10 @@ vi.mock('@/offline/db', () => ({
   offlineDb: {
     outbox: { get: async (id: string) => mocks.outboxItems.get(id) },
     localAnimals: {
-      get: async ([, localId]: [string, string]) => ({ localId, name: 'Ejemplar', tagNumber: 'T', enclosureId: 1, sex: 'F' }),
+      get: async ([, localId]: [string, string]) => ({
+        localId, name: 'Ejemplar', tagNumber: 'T', enclosureId: 1, sex: 'F',
+        ...(localId === 'local-0' ? { canReceiveVisits: 0 } : {}),
+      }),
     },
     localEvaluations: {
       get: async () => undefined,
@@ -59,6 +62,18 @@ describe('pwa-012 · envío de la cola por lotes', () => {
   beforeEach(() => {
     mocks.syncOperations.mockReset();
     mocks.markOperationFailure.mockClear();
+  });
+
+  it('pwa-013 CA-03 y CA-05: conserva No y sincroniza borradores anteriores', async () => {
+    seedOutbox(2);
+    mocks.syncOperations.mockResolvedValue([]);
+
+    await syncNow('user:1', { force: true });
+
+    const [[current, legacy]] = mocks.syncOperations.mock.calls[0];
+    expect(current.payload).toMatchObject({ can_receive_visits: 0 });
+    expect(JSON.parse(JSON.stringify(current.payload))).not.toHaveProperty('stay_status');
+    expect(JSON.parse(JSON.stringify(legacy.payload))).not.toHaveProperty('can_receive_visits');
   });
 
   it('CA-09: divide más de 100 operaciones en lotes de máximo 100, en orden', async () => {

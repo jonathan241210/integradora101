@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use App\Rules\AnimalRegistrationFields;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use PDOException;
@@ -276,6 +277,7 @@ class StaffSyncController extends Controller
         $payload = $operation['payload'] ?? [];
 
         $data = validator($payload, [
+            ...AnimalRegistrationFields::rules(),
             'name' => ['required', 'string', 'max:100'],
             'species_id' => ['nullable', 'integer', 'exists:species,id'],
             'species' => ['nullable', 'string', 'max:100'],
@@ -290,6 +292,7 @@ class StaffSyncController extends Controller
             'enclosure_id.required' => 'Selecciona un recinto.',
             'enclosure_id.exists' => 'El recinto seleccionado no existe.',
             'sex.in' => 'Selecciona un sexo válido.',
+            ...AnimalRegistrationFields::messages(),
             'tag_number.unique' => 'La identificación ya está registrada.',
         ])->validate();
 
@@ -342,6 +345,7 @@ class StaffSyncController extends Controller
             'enclosure_id' => $data['enclosure_id'],
             'species_id' => $species->id,
             'stay_status' => 'Cuarentena_Ingreso',
+            ...AnimalRegistrationFields::attributes($data),
         ]);
 
         $op = SyncOperation::create([

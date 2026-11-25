@@ -290,6 +290,8 @@ npm run dev -- --host 0.0.0.0
 - ✅ Puedes ver y editar diagnósticos (local)
 - ✅ Los datos guardados se envían a la API
 
+En «Registrar animal», responde **Sí** o **No** en «¿Puede recibir visitas?». Si registras sin conexión, la respuesta queda en el borrador sin foto y se envía al sincronizar.
+
 ---
 
 ## Cambiar el puerto de la API

@@ -75,6 +75,8 @@ class StaffSyncTest extends FeatureTestCase
                     'tag_number' => $tag,
                     'enclosure_id' => $enclosure->id,
                     'sex' => 'hembra',
+                        'stay_status' => 'Trasladado',
+                        'can_receive_visits' => 0,
                 ],
             ]],
         ];
@@ -89,7 +91,12 @@ class StaffSyncTest extends FeatureTestCase
 
         $serverId = $first->json('data.results.0.server_id');
         $this->assertNotNull($serverId);
-        $this->assertDatabaseHas('animals', ['id' => $serverId, 'tag_number' => $tag]);
+        $this->assertDatabaseHas('animals', [
+            'id' => $serverId,
+            'tag_number' => $tag,
+            'stay_status' => 'Cuarentena_Ingreso', // pwa-013 CA-03
+            'can_receive_visits' => 0,
+        ]);
         $this->assertDatabaseHas('sync_operations', ['operation_uuid' => $operationUuid, 'status' => 'completed']);
 
         $second = $this->actingAs($staff, 'web')
