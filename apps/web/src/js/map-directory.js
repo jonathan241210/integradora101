@@ -5,6 +5,19 @@
     return Number.isFinite(value) && value >= 0 && value <= 1;
   }
 
+  function positionStartByTicketOffice(places) {
+    const ticketOffice = places.find(place => normalize(place.name) === 'boletaje');
+    if (!ticketOffice || !isMapCoordinate(ticketOffice.map_x) || !isMapCoordinate(ticketOffice.map_y)) return places;
+    // Separación en el plano de 1600 × 1200, compartida por las dos vistas.
+    const dx = 48 / 1600;
+    const dy = 20 / 1200;
+    return places.map(place => normalize(place.name) === 'inicio' ? {
+      ...place,
+      map_x: ticketOffice.map_x + (ticketOffice.map_x + dx <= 1 ? dx : -dx),
+      map_y: ticketOffice.map_y + (ticketOffice.map_y >= dy ? -dy : dy)
+    } : place);
+  }
+
   const positionedGroups = new Map();
 
   function addModelPins(model, records, group) {
@@ -126,8 +139,9 @@
         return;
       }
 
-      renderMarkers(result.data, layer);
-      records = result.data.slice().sort((a, b) => a.name.localeCompare(b.name, 'es', { numeric: true }));
+      const points = layer.id === 'placePins' ? positionStartByTicketOffice(result.data) : result.data;
+      renderMarkers(points, layer);
+      records = points.slice().sort((a, b) => a.name.localeCompare(b.name, 'es', { numeric: true }));
       render();
     } catch {
       status.textContent = messages.error;

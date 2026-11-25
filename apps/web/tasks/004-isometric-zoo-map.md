@@ -112,3 +112,7 @@ Chrome cargó el GLB y se contrastaron los 66 hotspots con la API local. Se veri
 - [x] **T-35** (CA-15). Implementar y verificar búsqueda, filtro y localización en 2D y 3D.
 
 En Chrome se verificaron la búsqueda, el filtro por tipo, la localización del registro en 2D y 3D, el estado sin coincidencias y el ancho móvil de 390 px. Pasaron las 185 pruebas del portal.
+
+## Inicio junto a Boletaje
+
+- [x] **T-36** (CA-16). Colocar Inicio junto a Boletaje en las dos vistas y verificar el caso sin coordenadas de Boletaje.

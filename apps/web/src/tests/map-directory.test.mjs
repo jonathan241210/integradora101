@@ -161,3 +161,19 @@ test('CA-15 filtra por tipo y encuentra nombres con o sin acentos', async () => 
   assert.equal(dir.mapPlaces.hidden, false);
   assert.deepEqual(dir.mapPlaces.list.names, ['Taquilla']);
 });
+
+test('CA-16 sitúa Inicio junto a Boletaje en el plano y el modelo', async () => {
+  const dir = openDirectory([], [
+    { id: 1, name: 'Inicio', map_x: .8, map_y: .2 },
+    { id: 2, name: 'Boletaje', map_x: .3, map_y: .7 }
+  ]);
+  await settle();
+  const [start, office] = dir.placePins.markers;
+  assert.ok(Math.abs(parseFloat(start.style.left) - parseFloat(office.style.left) - 3) < .00001);
+  assert.ok(Math.abs(parseFloat(start.style.top) - parseFloat(office.style.top) + 100 * 20 / 1200) < .00001);
+  const [a, b] = dir.attachModel().pins.map(pin => pin['data-position'].split(' ').map(parseFloat));
+  assert.ok(Math.abs(a[0] - b[0] - .48) < .00001 && Math.abs(a[2] - b[2] + .2) < .00001);
+  const fallback = openDirectory([], [{ id: 1, name: 'Inicio', map_x: .8, map_y: .2 }, { id: 2, name: 'Boletaje', map_x: null, map_y: .7 }]);
+  await settle();
+  assert.equal(fallback.placePins.markers[0].style.left, '80%');
+});

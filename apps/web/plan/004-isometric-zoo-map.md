@@ -133,3 +133,7 @@ Exportar la geometría del archivo suministrado a GLB y sustituir sus etiquetas 
 ## Exploración desde el directorio
 
 Filtrar en memoria las respuestas del directorio, usar una sola zona de resultados y localizar cada registro mediante su catálogo e identificador en el plano o en el modelo. Mantener los estados independientes de carga y error.
+
+## Inicio junto a Boletaje
+
+Aplicar la posición relativa a los lugares públicos antes de dibujar sus marcadores 2D y 3D. Separar los puntos 48 píxeles en horizontal y 20 en vertical en el plano de 1600 × 1200. Si falta una posición válida para Boletaje, conservar la posición pública de Inicio.

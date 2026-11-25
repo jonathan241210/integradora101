@@ -150,3 +150,7 @@ Por solicitud expresa, **CA-13** incorpora zoo_3d(3).blend al visor y representa
 ## Exploración desde el directorio
 
 **CA-15.** El visitante puede buscar por nombre, filtrar por tipo y localizar un resultado en la vista activa. Los registros sin coordenadas indican que su ubicación está pendiente.
+
+## Inicio junto a Boletaje
+
+**CA-16.** En ambos mapas del portal, Inicio aparece junto a Boletaje y el directorio permite localizarlo en esa misma posición.
