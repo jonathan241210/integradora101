@@ -158,3 +158,33 @@ Por solicitud expresa, **CA-13** incorpora zoo_3d(3).blend al visor y representa
 ## Visibilidad de los accesos
 
 **CA-17.** Entrada y Boletaje tienen rótulos completos y separados, visibles sin interacción en los dos mapas incluso si el catálogo está vacío o falla.
+
+## Identidad visual del modelo 3D · 25 de noviembre de 2026
+
+**Estado de la enmienda — Borrador.** La persona solicitante valida el diseño visual. El alcance se limita a la escena ilustrativa del portal.
+
+Como visitante, quiero reconocer el acceso y seguir con la vista el sendero principal después de girar el mapa en mi teléfono.
+
+- **CA-18.** Al abrir la vista 3D al 100 %, se distingue un pórtico junto a Entrada (Inicio) y Boletaje. Al girar la vista un cuarto de vuelta, se sigue reconociendo la abertura entre sus dos apoyos. Los dos rótulos se leen completos en la vista inicial y en la girada.
+- **CA-19.** Desde el acceso se puede seguir visualmente el trazado existente del sendero principal. Su superficie y sus bordes se distinguen del suelo y de los caminos secundarios en la vista general.
+- **CA-20.** Se reconocen grupos de vegetación baja en los bordes del terreno. Desde la vista inicial y tras un cuarto de vuelta quedan visibles el acceso y la continuidad del sendero.
+- **CA-21.** Los edificios de servicio se reconocen por la silueta de sus techos inclinados, tanto en la vista general como al acercarse. La revisión visual cubre escritorio y teléfono.
+
+**RN-08.** Las referencias son ilustrativas y siguen la distribución del plano vigente. La intervención usa la geometría y los materiales del recurso 3D local. El directorio y sus marcadores conservan las fuentes públicas y el comportamiento de CA-12 a CA-17.
+
+## Selección de un área en 3D · 25 de noviembre de 2026
+
+Estado: Aprobada. La persona solicitante precisó que seleccionar un área activa automáticamente el zoom al 200 %.
+
+- **CA-22.** Al activar el marcador de un recinto o lugar, o al localizarlo desde el directorio con el mapa en 3D, la cámara centra el área elegida y fija el zoom en 200 % desde cualquier nivel previo. El indicador y los botones de zoom reflejan el nuevo nivel.
+- **CA-23.** Una flecha anclada al marcador identifica el área seleccionada al girar el modelo. Al seleccionar otra área, la flecha pasa a su marcador. El rótulo del punto seleccionado muestra su nombre completo y admite varias líneas en celular. Permanece expandido mientras el punto esté seleccionado, incluso al mover el puntero o el foco. Restablecer recupera la vista general al 100 % y retira la flecha.
+
+## Nombres de recintos según el zoom y selección táctil en 3D
+
+**Estado de la enmienda — Borrador.** La persona solicitante valida el umbral de zoom y el tamaño táctil propuestos. El visitante utiliza los marcadores públicos existentes.
+
+- **CA-24.** Entre el 100 % y el 175 %, los nombres que permanecen visibles son Entrada (Inicio), Boletaje y el destino seleccionado, cuando sus puntos están en el encuadre. Al enfocar con el teclado o pasar el puntero por otro marcador se puede leer su nombre completo. Todos los marcadores conservan su nombre accesible.
+- **CA-25.** Desde el 200 %, incluido el acercamiento automático al seleccionar un destino, aparecen también nombres de recintos en torno al centro de la vista. Tienen prioridad los más próximos al centro que quepan sin superponerse a los nombres ya visibles. Al girar o desplazar el mapa se actualizan los nombres según el nuevo encuadre. Al alejarse al 175 % se recupera la vista de CA-24.
+- **CA-26.** En pantalla táctil, cada marcador ofrece una zona de toque de al menos 44 × 44 píxeles CSS en torno al punto visible de 10 × 10. Tocar dentro de esa zona activa la selección y el zoom al 200 %. Cuando dos zonas táctiles se superponen, tocar directamente sobre un punto selecciona ese punto.
+
+La mejora afecta a la presentación del visor 3D. Utiliza los nombres y posiciones que ya recibe el portal.

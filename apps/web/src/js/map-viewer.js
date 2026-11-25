@@ -19,6 +19,32 @@
   let planZoom = minZoom;
   let modelZoom = minZoom;
   let viewer = null;
+  let requestedSlot = null;
+  let selectedPin = null;
+
+  function clearSelection() {
+    selectedPin?.removeAttribute('aria-current');
+    selectedPin = null;
+    requestedSlot = null;
+  }
+
+  function focusRequestedArea() {
+    if (!requestedSlot || !viewer?.loaded || !plan.hidden) return;
+    const pin = viewer.querySelector('[slot="' + CSS.escape(requestedSlot) + '"]');
+    if (!pin) return;
+    clearSelection();
+    selectedPin = pin;
+    pin.setAttribute('aria-current', 'location');
+    viewer.cameraTarget = pin.getAttribute('data-position');
+    scaleModel(200, false);
+    updateControls();
+    pin.focus({ preventScroll: true });
+  }
+
+  scene.addEventListener('zoo-map-select-area', event => {
+    requestedSlot = event.detail;
+    focusRequestedArea();
+  });
 
   function updateControls() {
     const zoom = plan.hidden ? modelZoom : planZoom;
@@ -94,13 +120,16 @@
     const current = plan.hidden ? modelZoom : planZoom;
     const zoom = delta === 0 ? minZoom : current + delta;
     if (zoom < minZoom || zoom > maxZoom) return;
-    if (plan.hidden) scaleModel(zoom, delta === 0);
-    else scalePlan(zoom);
+    if (plan.hidden) {
+      if (delta === 0) clearSelection();
+      scaleModel(zoom, delta === 0);
+    } else scalePlan(zoom);
     updateControls();
   }
 
   function setView(showModel) {
     plan.hidden = showModel;
+    if (!showModel) requestedSlot = null;
     if (viewer) viewer.hidden = !showModel;
     toggle.setAttribute('aria-pressed', String(showModel));
     toggle.textContent = showModel ? 'Ver en 2D' : 'Ver en 3D';
@@ -132,10 +161,12 @@
     model.addEventListener('load', function () {
       if (viewer !== model || !plan.hidden) return;
       status.hidden = true;
+      focusRequestedArea();
       updateControls();
     });
     model.addEventListener('error', function () {
       if (viewer !== model) return;
+      clearSelection();
       viewer = null;
       modelZoom = minZoom;
       model.remove();

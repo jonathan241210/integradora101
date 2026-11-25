@@ -28,6 +28,10 @@
 
   const positionedGroups = new Map();
 
+  function selectModelPin(slot) {
+    document.getElementById('mapScene').dispatchEvent(new CustomEvent('zoo-map-select-area', { detail: slot }));
+  }
+
   function addModelPins(model, records, group) {
     const isPlace = group === 'placePins';
     for (const record of records) {
@@ -36,6 +40,7 @@
       pin.className = isPlace ? 'model-pin place-pin' : 'model-pin';
       if (record.landmark) pin.className += ' landmark-' + record.landmark;
       pin.slot = 'hotspot-' + group + '-' + record.id;
+      pin.addEventListener('click', () => selectModelPin(pin.slot));
       // El SVG mide 1600 × 1200 px. Cada píxel representa 0,01 m en este GLB.
       const x = record.map_x * 16 - 8.025897;
       const z = record.map_y * 12 - 5.140369;
@@ -83,15 +88,11 @@
   }
 
   function locate(layer, record) {
-    const model = document.getElementById('mapModel');
     const key = layer.id + '-' + record.id;
-    const hotspot = model?.querySelector('[slot="hotspot-' + key + '"]');
-    if (model?.loaded && !model.hidden && hotspot) {
-      model.cameraTarget = hotspot.getAttribute('data-position');
-      model.scrollIntoView({ block: 'center' });
-      hotspot.focus({ preventScroll: true });
+    if (document.getElementById('mapPlan').hidden) {
+      selectModelPin('hotspot-' + key);
+      document.getElementById('mapScene').scrollIntoView({ block: 'center' });
     } else {
-      if (document.getElementById('mapPlan').hidden) document.getElementById('mapModelToggle').click();
       const pin = document.getElementById(key);
       pin.scrollIntoView({ block: 'center', inline: 'center' });
       pin.focus({ preventScroll: true });

@@ -120,3 +120,13 @@ En Chrome se verificaron la búsqueda, el filtro por tipo, la localización del 
 ## Visibilidad de los accesos
 
 - [x] **T-37** (CA-17). Verificar los rótulos de los dos mapas con y sin registros públicos.
+
+## Selección de un área en 3D
+
+- [x] **T-38** (CA-22/23). Conectar marcador y directorio con el zoom al 200 %, indicar la selección con una flecha y comprobar selección sucesiva, carga y restablecimiento.
+
+Pasaron las 188 pruebas del portal. En Chrome a 1366 y 390 px con datos de prueba se verificaron la selección desde el directorio por teclado, el clic o toque en otro marcador desde un nivel superior al 200 %, la posición de la cámara, el traslado de la flecha y Restablecer.
+
+- [x] **T-39** (CA-23). Expandir el nombre del marcador seleccionado y verificar su lectura al retirar el foco, cambiar la selección y restablecer en escritorio y celular.
+
+Chrome mostró un nombre largo en varias líneas a 1366 y 390 px. El rótulo seleccionado cabía dentro del visor y seguía expandido al enfocar el control de zoom. Se comprobó el cambio a otro punto y el restablecimiento. Pasaron las 189 pruebas del portal.
