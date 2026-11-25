@@ -18,6 +18,10 @@ export default ({ config }) => {
   const cleartext = process.env.EXPO_USE_CLEARTEXT === 'true';
   const next = {
     ...config,
+    extra: {
+      ...config.extra,
+      allowCleartext: cleartext,
+    },
     android: {
       ...config.android,
       googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',

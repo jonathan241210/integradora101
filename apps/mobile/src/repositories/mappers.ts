@@ -1,5 +1,5 @@
 import { Animal, MapPlace, News, ZooEvent } from '../models';
-import { SVG_HEIGHT, SVG_WIDTH, ZOO_BOUNDS } from '../constants/zoo';
+import { FOOD_SERVICE_MAP_ANCHOR, SVG_HEIGHT, SVG_WIDTH, ZOO_BOUNDS } from '../constants/zoo';
 import { geoTransform } from '../utils/geoTransform';
 import canonicalMapMapping from '../data/canonicalMapMapping.json';
 
@@ -389,8 +389,7 @@ export function mapZooPlaceToModel(item: ApiZooPlaceResponse) {
   const isInicio = nameKey === 'inicio';
   const isComida = nameKey.includes('establecimiento') && nameKey.includes('comida');
   const inicioSvg = { mapX: 523 / SVG_WIDTH, mapY: 828 / SVG_HEIGHT, svgId: 'Inicio' };
-  const comidaSvg = { mapX: 599 / SVG_WIDTH, mapY: 551 / SVG_HEIGHT, svgId: 'establecimientos_comida' };
-  const svgOverride = isInicio ? inicioSvg : isComida ? comidaSvg : null;
+  const svgOverride = isInicio ? inicioSvg : isComida ? FOOD_SERVICE_MAP_ANCHOR : null;
   return {
     id: String(item.id),
     name: item.name,

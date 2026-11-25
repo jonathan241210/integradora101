@@ -10,6 +10,8 @@
 
 El valor del repositorio es un marcador (`https://api.example.invalid/api/v1`) y no apunta a ningún servidor real. Antes de generar el build de producción hay que sustituirlo por la URL pública de la API, ya sea editando ese valor o definiendo `EXPO_PUBLIC_API_URL` en el entorno `production` de EAS. Con el marcador, la app arranca pero no conecta con ningún servicio.
 
+El APK `preview` usa el entorno `preview` de EAS. Define allí `EXPO_PUBLIC_API_URL` como una variable visible durante la compilación. Si apunta a una API local por HTTP, el perfil habilita el tráfico tanto en el manifiesto de Android como en el cliente JavaScript. La dirección debe ser alcanzable desde el teléfono.
+
 ## URL de la API
 
 `src/config/runtime.ts` expone `resolveApiBaseUrl()`:

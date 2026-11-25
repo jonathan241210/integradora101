@@ -30,7 +30,10 @@ describe('ApiMapRepository: formatos de respuesta, caché y peticiones simultán
   it('comparte una sola petición cuando se piden los mismos datos a la vez', async () => {
     let release: (value: unknown) => void = () => {};
     const gate = new Promise((resolve) => { release = resolve; });
-    const get = jest.fn(async () => { await gate; return { data: [] }; });
+    const get = jest.fn<Promise<{ data: unknown[] }>, [string]>(async () => {
+      await gate;
+      return { data: [] };
+    });
     const repo = new ApiMapRepository(client(get), new MemoryKeyValueStorage());
 
     const zoo = Promise.all([repo.getZooPlaces(), repo.getZooPlaces()]);

@@ -36,7 +36,7 @@ La revisión final previa a las pruebas reales encontró en la app móvil:
 ## Criterios de aceptación
 
 - **CA-01:** Dado `eas.json`, cuando se revisa, entonces existe el perfil `production` sin `EXPO_USE_CLEARTEXT` y con `EXPO_PUBLIC_API_URL` en `https://`.
-- **CA-02:** Dado un build sin `EXPO_PUBLIC_API_URL`, cuando se resuelve la URL de la API, entonces no usa `10.0.2.2`: en desarrollo usa la URL local configurada y en producción falla con un mensaje claro en español. En producción, una URL que no use `https://` también falla.
+- **CA-02:** Dado un build sin `EXPO_PUBLIC_API_URL`, cuando se resuelve la URL de la API, entonces en desarrollo usa `http://localhost:8000/api/v1` y en producción informa en español que falta la configuración. Producción exige HTTPS. El APK de `preview` usa la URL configurada y admite HTTP cuando el perfil lo habilita explícitamente, incluso cuando `__DEV__` es falso.
 - **CA-03:** Dado un visitante con sesión, cuando abre inicio, perfil, juego, misiones, logros o colección, entonces ve su nombre, progreso, misiones, logros y colección obtenidos de la API.
 - **CA-04:** Dado un visitante sin sesión, cuando abre esas pantallas, entonces ve un estado vacío que lo invita a iniciar sesión, sin datos inventados.
 - **CA-05:** Dado un error de red, cuando se cargan esas pantallas, entonces se muestra un mensaje de error en español con opción de reintentar.

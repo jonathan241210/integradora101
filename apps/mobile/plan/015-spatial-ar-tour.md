@@ -53,6 +53,7 @@ Los datos geográficos siguen siendo autoridad de `apps/api`/MySQL. `path_edges`
 | CA-02 Sin línea/flechas antiguas | Test UI/snapshot lógico: overlay AR no renderiza ruta azul/chevrons SVG antiguos | `apps/mobile/__tests__/arTourOverlay.test.tsx` o nuevo test |
 | CA-03 Puntos AR por location-based | Tests unitarios de FOV/rango/priorización + test componente: solo recintos, progresivo, max 6, sin path_nodes | `apps/mobile/__tests__/arLocationMath.test.ts`, `__tests__/locationArOverlay.test.tsx` |
 | CA-04 Calibración location-based | Tests unitarios: bearing relativo, normalización heading, distancia; test UI estado baja precisión | `apps/mobile/__tests__/arLocationMath.test.ts`, test ViewModel |
+| CA-04b Cerca de ti | Resolver la selección sobre la lista de puntos cercanos. Test de UI con un recinto fuera del campo de visión | `apps/mobile/__tests__/arTourOverlay.test.tsx` |
 | CA-05 Datos zoo_places/path_nodes | Tests repositorio/mapper: consume contrato/caché y normaliza campos; path_nodes no markers AR | `apps/mobile/__tests__/mapRepository*.test.ts` |
 | CA-06 Ruteo por nodos/aristas | Test unitario: usa grafo aprobado cuando disponible; con fallback temporal usa `zooPaths.ts` sin inventar aristas | `apps/mobile/__tests__/pathfinding.test.ts` / nuevo test integración ruteo |
 | CA-07 Fallback | Test UI: sin permiso/soporte/fallo AR muestra mensaje y Mapa 2D disponible | `apps/mobile/__tests__/arTourOverlay.test.tsx` / screen test |

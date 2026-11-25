@@ -85,6 +85,7 @@ export function UserLocationMarker({
   return (
     <View
       testID="user-location-marker"
+      pointerEvents="none"
       accessibilityLabel={
         hasHeading
           ? `Tu ubicación actual, orientación ${heading} grados`

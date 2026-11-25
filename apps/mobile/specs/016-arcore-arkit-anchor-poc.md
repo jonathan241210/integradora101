@@ -11,6 +11,8 @@
 
 La spec 015 entrega AR location-based (GPS + brújula + cámara). Los puntos aparecen por dirección/FOV, pero pueden verse sobrepuestos y moverse con la cámara porque no hay anclaje AR nativo. Se requiere un PoC para evaluar ARCore/ARKit en dispositivo físico y determinar si puede ofrecer anclaje más estable para recintos/`zoo_places`.
 
+El 25 de noviembre de 2026 se retiró temporalmente el acceso a la PoC desde el mapa tras el reporte de un cierre de la app. `Iniciar AR` abre el modo por ubicación y el control `Volver al mapa 2D` permite salir de la vista de cámara.
+
 ## Objetivos
 
 - Validar técnicamente `@reactvision/react-viro@3.1.1` en un development build de Expo 57/RN 0.86.
@@ -39,7 +41,7 @@ La spec 015 entrega AR location-based (GPS + brújula + cámara). Los puntos apa
 - **CA-02 (Dev build):** Dado el stack Expo 57/RN 0.86, cuando se configura la PoC, entonces el proyecto puede generar un development build/EAS con la configuración de ViroReact documentada; Expo Go queda explícitamente no soportado para la PoC.
 - **CA-03 (Sesión AR nativa):** Dado un dispositivo compatible con ARCore, cuando el usuario abre la PoC AR, entonces se inicia una sesión AR nativa y la cámara muestra la escena AR sin bloquear la app.
 - **CA-04 (Marcadores PoC):** Dado coordenadas GPS de prueba/recintos cercanos, cuando la sesión AR está activa, entonces la PoC intenta colocar marcadores/objetos 3D en posiciones correspondientes; si la precisión/anclaje no es confiable, muestra estado claro.
-- **CA-05 (Fallback):** Dado que el dispositivo no soporta AR nativa o falla la PoC, cuando el usuario entra al modo AR, entonces puede usar el modo location-based existente.
+- **CA-05 (Fallback):** Durante la suspensión temporal de la PoC, al tocar `Iniciar AR` se abre el modo por ubicación sin mostrar `AR nativa PoC` ni la etiqueta `AR`. `Volver al mapa 2D` cierra la vista de cámara.
 - **CA-06 (Pruebas/documentación):** Dado la entrega del PoC, cuando se cierre, entonces existe documentación de instalación/build, limitaciones encontradas, y cada CA tiene evidencia o test/manual check nombrado.
 
 ## Reglas de negocio

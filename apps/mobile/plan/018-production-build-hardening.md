@@ -18,6 +18,8 @@ Fuera de alcance: geometría del mapa (`MOCK_MAP_PLACES`) y servicios fijos.
 
 ## Cambios por área
 
+En `preview`, `app.config.js` comparte `EXPO_USE_CLEARTEXT` entre el manifiesto de Android y la configuración Expo que consulta `resolveApiBaseUrl()`. Metro incorpora las variables `EXPO_PUBLIC_*` mediante referencias directas a `process.env.VARIABLE`. La prueba CA-02 cubre `preview` compilado con `__DEV__` falso, así como la restricción HTTPS de `production`.
+
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|
 | Mobile / build | `apps/mobile/eas.json`, `apps/mobile/docs/018-production-build-hardening.md` | Perfil `production` y nota de sustitución de la URL en EAS. |

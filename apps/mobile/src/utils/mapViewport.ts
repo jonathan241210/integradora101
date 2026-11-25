@@ -1,82 +1,70 @@
-import {
-  MAX_PAN_RANGE,
-  MAX_ZOOM_SCALE,
-  MIN_ZOOM_SCALE,
-  SVG_HEIGHT,
-  SVG_WIDTH,
-} from '../constants/zoo';
+import { MAX_ZOOM_SCALE, MIN_ZOOM_SCALE, SVG_HEIGHT, SVG_WIDTH } from '../constants/zoo';
 
-export interface PanOffset {
+export interface MapSize {
+  width: number;
+  height: number;
+}
+
+export interface MapPoint {
+  x: number;
+  y: number;
+}
+
+export interface MapViewport {
+  scale: number;
   panX: number;
   panY: number;
 }
 
-/**
- * Limita la escala de zoom dentro del rango permitido [MIN_ZOOM_SCALE, MAX_ZOOM_SCALE] (CA-15).
- */
 export function clampZoom(scale: number): number {
-  if (!Number.isFinite(scale)) {
-    return MIN_ZOOM_SCALE;
-  }
-  const clamped = Math.min(MAX_ZOOM_SCALE, Math.max(MIN_ZOOM_SCALE, scale));
-  return Math.round(clamped * 100) / 100;
+  if (!Number.isFinite(scale)) return MIN_ZOOM_SCALE;
+  return Math.min(MAX_ZOOM_SCALE, Math.max(MIN_ZOOM_SCALE, scale));
 }
 
-/**
- * Acota el desplazamiento (panX, panY) según el nivel de zoom actual para que el
- * lienzo no salga de los bordes visibles; en escala 1.0 devuelve (0, 0) (CA-16).
- */
-export function clampPan(
-  panX: number,
-  panY: number,
-  scale: number,
-  baseRange: number = MAX_PAN_RANGE,
-): PanOffset {
-  const safeScale = clampZoom(scale);
-  if (safeScale <= MIN_ZOOM_SCALE) {
-    return { panX: 0, panY: 0 };
-  }
+export function fitMap(size: MapSize): MapSize {
+  const width = Math.min(size.width, size.height * SVG_WIDTH / SVG_HEIGHT);
+  return { width, height: width * SVG_HEIGHT / SVG_WIDTH };
+}
 
-  const maxOffsetX = Math.round((safeScale - 1) * baseRange);
-  const maxOffsetY = Math.round((safeScale - 1) * baseRange * (SVG_HEIGHT / SVG_WIDTH));
-
-  const safePanX = Number.isFinite(panX)
-    ? Math.min(maxOffsetX, Math.max(-maxOffsetX, Math.round(panX)))
-    : 0;
-  const safePanY = Number.isFinite(panY)
-    ? Math.min(maxOffsetY, Math.max(-maxOffsetY, Math.round(panY)))
-    : 0;
-
+export function clampPan(panX: number, panY: number, scale: number, size: MapSize) {
+  const content = fitMap(size);
+  const limitX = Math.max(0, (content.width * scale - size.width) / 2);
+  const limitY = Math.max(0, (content.height * scale - size.height) / 2);
   return {
-    panX: safePanX === 0 ? 0 : safePanX,
-    panY: safePanY === 0 ? 0 : safePanY,
+    panX: limitX ? Math.max(-limitX, Math.min(limitX, panX)) : 0,
+    panY: limitY ? Math.max(-limitY, Math.min(limitY, panY)) : 0,
   };
 }
 
-/**
- * Calcula el desplazamiento (panX, panY) necesario para centrar en el visor un punto
- * expresado en coordenadas del viewBox SVG (1600 × 1200), respetando el límite de bordes (CA-17).
- */
-export function computeCenterPanForSvgPoint(
-  svgX: number,
-  svgY: number,
-  scale: number,
-  baseRange: number = MAX_PAN_RANGE,
-): PanOffset {
-  const safeScale = clampZoom(scale);
-  if (safeScale <= MIN_ZOOM_SCALE) {
-    return { panX: 0, panY: 0 };
-  }
+export function centerMap(svgX: number, svgY: number, scale: number, size: MapSize): MapViewport {
+  const content = fitMap(size);
+  return {
+    scale,
+    ...clampPan(
+      (0.5 - svgX / SVG_WIDTH) * content.width * scale,
+      (0.5 - svgY / SVG_HEIGHT) * content.height * scale,
+      scale,
+      size,
+    ),
+  };
+}
 
-  // Normalizamos respecto al centro del SVG (0.5, 0.5) → rango [-0.5, +0.5]
-  // Como transform aplica scale antes de translate, dividimos el desplazamiento visual entre 2
-  // para centrar con exactitud el punto sin pegarlo al borde del límite de pan.
-  const normalizedDeltaX = 0.5 - svgX / SVG_WIDTH;
-  const normalizedDeltaY = 0.5 - svgY / SVG_HEIGHT;
-
-  const targetPanX = normalizedDeltaX * (safeScale - 1) * baseRange;
-  const targetPanY =
-    normalizedDeltaY * (safeScale - 1) * baseRange * (SVG_HEIGHT / SVG_WIDTH);
-
-  return clampPan(targetPanX, targetPanY, safeScale, baseRange);
+export function transformMap(
+  initial: MapViewport,
+  requestedScale: number,
+  start: MapPoint,
+  current: MapPoint,
+  size: MapSize,
+): MapViewport {
+  const scale = clampZoom(requestedScale);
+  const ratio = scale / initial.scale;
+  return {
+    scale,
+    ...clampPan(
+      current.x - (start.x - initial.panX) * ratio,
+      current.y - (start.y - initial.panY) * ratio,
+      scale,
+      size,
+    ),
+  };
 }

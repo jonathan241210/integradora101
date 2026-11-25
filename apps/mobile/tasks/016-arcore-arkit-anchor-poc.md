@@ -20,8 +20,8 @@
 ## Implementación PoC
 
 - [~] **T-06** (CA-03): Scaffold de `ViroArAnchorScene.tsx` creado (fallback si Viro no disponible). Pendiente validar en dev build ARCore.
-- [~] **T-07** (CA-04, RN-05): `arGeoAnchor.ts` creado y MapScreen pasa anchors GPS cercanos. Pendiente validar precisión/anclaje en dispositivo.
-- [~] **T-08** (CA-05): Botón "AR nativa PoC" en overlay y fallback si módulo no disponible. Pendiente prueba en dispositivo.
+- [~] **T-07** (CA-04, RN-05): `arGeoAnchor.ts` creado. La conexión con `MapScreen` está suspendida y la validación de precisión/anclaje en dispositivo sigue pendiente.
+- [x] **T-08** (CA-05): Retirar temporalmente el botón `AR nativa PoC` y la etiqueta `AR`. Probar entrada al AR por ubicación y regreso al mapa 2D en `arTourOverlay.test.tsx`.
 
 ## Verificación y cierre
 

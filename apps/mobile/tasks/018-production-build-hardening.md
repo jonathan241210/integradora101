@@ -25,8 +25,10 @@
 - [x] **T-07** (CA-01, CA-02, CA-08): `__tests__/hardening/build-config.test.ts`.
 - [x] **T-08** (CA-03, CA-04, CA-05, CA-08): `__tests__/hardening/visitor-data.test.tsx`.
 - [x] **T-09** (CA-06, CA-07, CA-08): `__tests__/hardening/account-and-enclosure.test.tsx`; ajustar pruebas existentes que usaban `characteristics`.
-- [ ] **T-10** (CA-01..CA-08): Ejecutar `npm run test:coverage`, `tsc --noEmit` y registrar resultados. **Pendiente: las dependencias de `apps/mobile` no están instaladas en este entorno (sin `node_modules` de jest-expo/typescript).**
+- [x] **T-10** (CA-01..CA-08): Ejecutar `npm run test:coverage`, `tsc --noEmit` y registrar resultados. El 2026-11-24 pasaron las 476 pruebas de 73 suites, con 98,17 % de cobertura de líneas y cero errores de TypeScript.
 
 ## Calidad y entrega
 
 - [x] **T-11** (CA-01, CA-02): Documentar en `apps/mobile/docs/018-production-build-hardening.md` el marcador de URL y la sustitución en EAS.
+- [x] **T-12** (CA-02): Alinear la política HTTP de `preview` entre Android y JavaScript y cubrir la resolución de la URL en un bundle compilado sin `__DEV__`.
+  - `expo config --type introspect` confirmó la política de `preview` y `production`. `expo export --platform android` generó el bundle Hermes. El arranque del APK instalado sigue pendiente en [mobile-002 T-62](002-mobile-ui-base-visitor-journey.md).

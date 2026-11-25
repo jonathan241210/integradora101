@@ -39,7 +39,6 @@ interface ArTourOverlayProps {
   selectedPlace?: MapPlace | null;
   selectedZooPlace?: ZooPlace | null;
   nearbyPathNode?: NearbyPathNode | null;
-  onOpenNativeArPoc?: () => void;
 }
 
 function formatDistance(distanceMeters: number): string {
@@ -72,7 +71,6 @@ export function ArTourOverlay({
   selectedPlace,
   selectedZooPlace,
   nearbyPathNode,
-  onOpenNativeArPoc,
 }: ArTourOverlayProps) {
   const [isEnclosureModalOpen, setIsEnclosureModalOpen] = useState(false);
 
@@ -99,39 +97,20 @@ export function ArTourOverlay({
       </View>
 
       <View style={styles.topContainer}>
-        <View style={styles.topRow}>
-          <Pressable
-            testID="close-ar-tour-button"
-            accessibilityRole="button"
-            accessibilityLabel="Volver al mapa 2D"
-            onPress={onClose}
-            style={styles.closeCircleButton}
-          >
-            <AppText variant="body" bold color="text">✕</AppText>
-          </Pressable>
-
-          <View style={styles.topActions}>
-            {onOpenNativeArPoc ? (
-              <Pressable
-                testID="open-native-ar-poc-button"
-                accessibilityRole="button"
-                accessibilityLabel="Probar AR nativa PoC"
-                onPress={onOpenNativeArPoc}
-                style={styles.stopPill}
-              >
-                <AppText variant="caption" bold color="primary">AR nativa PoC</AppText>
-              </Pressable>
-            ) : null}
-            <View style={styles.stopPill}>
-              <AppText variant="caption" bold color="primary">AR</AppText>
-            </View>
-          </View>
-        </View>
+        <Pressable
+          testID="close-ar-tour-button"
+          accessibilityRole="button"
+          accessibilityLabel="Volver al mapa 2D"
+          onPress={onClose}
+          style={styles.closeCircleButton}
+        >
+          <AppText variant="body" bold color="text">✕</AppText>
+        </Pressable>
       </View>
 
       <EnclosureDetailModal
         visible={isEnclosureModalOpen}
-        place={selectedPlace}
+        place={selectedPlace ?? null}
         onClose={() => setIsEnclosureModalOpen(false)}
       />
 
@@ -234,18 +213,11 @@ export function ArTourOverlay({
 
 const styles = StyleSheet.create({
   overlay: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, zIndex: 99, justifyContent: 'space-between' },
-  topContainer: { paddingHorizontal: spacing.md, paddingTop: spacing.xl, gap: spacing.xs },
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  topActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  topContainer: { paddingHorizontal: spacing.md, paddingTop: spacing.xl },
   closeCircleButton: {
-    width: 38, height: 38, borderRadius: 19, backgroundColor: colors.surfaceOverlay,
+    alignSelf: 'flex-start', width: 44, height: 44, borderRadius: 22, backgroundColor: colors.surfaceOverlay,
     alignItems: 'center', justifyContent: 'center', elevation: 4, shadowColor: colors.text,
     shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.18, shadowRadius: 3,
-  },
-  stopPill: {
-    backgroundColor: colors.surfaceOverlay, paddingHorizontal: spacing.sm, paddingVertical: 6,
-    borderRadius: radius.pill, elevation: 3, shadowColor: colors.text,
-    shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.12, shadowRadius: 2,
   },
   arrivalCard: {
     backgroundColor: colors.surfaceOverlay, borderRadius: radius.md, padding: spacing.md,

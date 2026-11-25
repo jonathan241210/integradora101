@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from '../ui';
 import { colors, spacing } from '../../theme/tokens';
 import type { ArAnchorPoint } from '../../utils/arGeoAnchor';
@@ -56,7 +56,9 @@ export function ViroArAnchorScene({ anchors, onClose }: ViroArAnchorSceneProps) 
         <AppText variant="caption" color="textMuted" style={styles.message}>
           Esta PoC requiere development build/EAS con @reactvision/react-viro. Expo Go no soporta ARCore/ARKit nativo.
         </AppText>
-        <AppText variant="caption" color="primary" onPress={onClose}>Volver</AppText>
+        <Pressable accessibilityRole="button" onPress={onClose}>
+          <AppText variant="caption" color="primary">Volver</AppText>
+        </Pressable>
       </View>
     );
   }
@@ -69,11 +71,11 @@ export function ViroArAnchorScene({ anchors, onClose }: ViroArAnchorSceneProps) 
         initialScene={{ scene: () => <AnchorSceneContent anchors={anchors} /> }}
         style={styles.ar}
       />
-      <View style={styles.topBar}>
-        <AppText variant="caption" bold color="textOnPrimary" onPress={onClose}>
+      <Pressable accessibilityRole="button" onPress={onClose} style={styles.topBar}>
+        <AppText variant="caption" bold color="textOnPrimary">
           Cerrar AR nativa
         </AppText>
-      </View>
+      </Pressable>
     </View>
   );
 }
