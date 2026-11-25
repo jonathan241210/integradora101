@@ -25,7 +25,7 @@ trait CreatesStaffUsers
         $permissions = [$permission];
         if ($role === 'veterinarian') {
             // api-028: /staff/* exige medical-records.*; el rol real los tiene (RolesAndPermissionsSeeder).
-            foreach (['medical-records.view', 'medical-records.create', 'medical-records.update'] as $name) {
+            foreach (['medical-records.view', 'medical-records.create', 'medical-records.update', 'animals.update'] as $name) {
                 $permissions[] = Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
             }
         }

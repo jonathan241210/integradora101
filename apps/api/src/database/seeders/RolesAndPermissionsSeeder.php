@@ -29,6 +29,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'medical-records.update',
             'specimens.view',
             'specimens.update',
+            'animals.update',
             'users.manage',
             'news.manage',
             'events.manage',
@@ -84,6 +85,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'medical-records.update',
                 'specimens.view',
                 'specimens.update',
+                'animals.update',
                 'public-content.view',
             ],
         ];
