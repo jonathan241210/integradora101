@@ -124,10 +124,10 @@ describe("CA-05 pending-review-badges", () => {
   it("CA-05 pending-review-badges: puntito por sección", () => {
     const counts = { species_requests: 2, memories: 1 };
 
-    expect(link("tulanpedia", "TulanPedia", counts)).toContain("sidebar-link__dot");
+    expect(link("tulanpedia", "Zoopedia", counts)).toContain("sidebar-link__dot");
     expect(link("memories", "Momentos", counts)).toContain("sidebar-link__dot");
     expect(link("news", "Noticias", counts)).not.toContain("sidebar-link__dot");
-    expect(link("tulanpedia", "TulanPedia", { memories: 3 })).not.toContain("sidebar-link__dot");
+    expect(link("tulanpedia", "Zoopedia", { memories: 3 })).not.toContain("sidebar-link__dot");
     expect(link("memories", "Momentos", { species_requests: 3 })).not.toContain("sidebar-link__dot");
   });
 });
@@ -141,7 +141,7 @@ describe("CA-06 pending-review-badges", () => {
     api.pendingCounts.mockResolvedValueOnce({ species_requests: 3, memories: 0 });
     await load(PENDING_MIN_INTERVAL_MS);
     expect(link("memories", "Momentos", h.state.counts)).not.toContain("sidebar-link__dot");
-    expect(link("tulanpedia", "TulanPedia", h.state.counts)).toContain("sidebar-link__dot");
+    expect(link("tulanpedia", "Zoopedia", h.state.counts)).toContain("sidebar-link__dot");
   });
 });
 
@@ -180,11 +180,11 @@ describe("CA-09 pending-review-badges", () => {
   it("CA-09 pending-review-badges: nombre accesible y puntito decorativo", () => {
     const counts = { species_requests: 2, memories: 1 };
 
-    expect(link("tulanpedia", "TulanPedia", counts)).toContain('aria-label="TulanPedia, con solicitudes pendientes"');
+    expect(link("tulanpedia", "Zoopedia", counts)).toContain('aria-label="Zoopedia, con solicitudes pendientes"');
     expect(link("memories", "Momentos", counts)).toContain('aria-label="Momentos, con momentos pendientes de revisión"');
     expect(link("memories", "Momentos", {})).toContain('aria-label="Momentos"');
     expect(link("news", "Noticias", counts)).toContain('aria-label="Noticias"');
-    expect(link("tulanpedia", "TulanPedia", counts)).toContain('class="sidebar-link__dot" aria-hidden="true"');
+    expect(link("tulanpedia", "Zoopedia", counts)).toContain('class="sidebar-link__dot" aria-hidden="true"');
     expect(renderToStaticMarkup(<NotificationAlert item={{ id: 1, tone: "info", message: "x" }} onDismiss={vi.fn()} />)).toContain('role="status"');
   });
 });

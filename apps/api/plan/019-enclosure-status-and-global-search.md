@@ -428,3 +428,5 @@ Pedida por el responsable funcional: «busco una noticia y salen primero eventos
 - **Sección nombrada en la consulta** (dashboard, `viewmodels/search-intent.ts`): si la consulta incluye una palabra de sección (noticia/s, nota/s; evento/s, actividad/es; recinto/s; usuario/s, cuenta/s, empleado/s, personal; momento/s, recuerdo/s; especie/s, tulanpedia; boleto/s, folio/s), esa palabra no se envía a la API (si queda texto suficiente) y el grupo de esa sección se muestra primero, antes que el de la sección actual.
 - **Palabras de sección y vacías no son acciones** (dashboard, `splitSearchQuery`): antes una palabra como «noticia» se reconocía como parte de una acción («Publicar noticia») y se quitaba de la consulta enviada a la API, por lo que la búsqueda usaba una sola palabra. Ahora esas palabras siempre llegan a la búsqueda.
 - **Tests:** pendientes por indicación del responsable funcional (no correrlos en esta ronda). Afectan a CA-37, CA-41, CA-43 (dashboard) y CA-50 a CA-54 (API); deben actualizarse antes del PR.
+
+**Nombre visible del catálogo (CA-23).** Actualizar la etiqueta de presentación del grupo y comprobar el contrato del buscador.

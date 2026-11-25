@@ -10,7 +10,7 @@ const SECTION_WORDS: Record<string, string[]> = {
   enclosures: ["recinto", "recintos"],
   users: ["usuario", "usuarios", "cuenta", "cuentas", "empleado", "empleados", "personal"],
   memories: ["momento", "momentos", "recuerdo", "recuerdos"],
-  tulanpedia: ["especie", "especies", "tulanpedia"],
+  tulanpedia: ["especie", "especies", "zoopedia", "tulanpedia"],
   "ticket-history": ["boleto", "boletos", "folio", "folios"],
 };
 

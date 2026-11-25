@@ -246,7 +246,8 @@ test('CA-23 dynamic-tulanpedia: la introducción de #animales dice exactamente e
   assert.ok(animalesHtml.includes(`<p>${intro}</p>`));
   assert.ok(!/busca por nombre/i.test(animalesHtml));
   assert.ok(animalesHtml.includes('Encuentros inolvidables'));
-  assert.ok(animalesHtml.includes('<h2>TulanPedia</h2>'));
+  assert.ok(animalesHtml.includes('<h2>Zoopedia</h2>'));
+  assert.match(indexHtml, /<a href="#animales"[^>]*>\s*(?:<i[^>]*><\/i>\s*)?Zoopedia\s*<\/a>/);
 });
 
 /* ---------- Estados: CA-05, CA-06, CA-07 ---------- */
@@ -604,7 +605,7 @@ test('CA-14 dynamic-tulanpedia: CSS con min-width 0, max-width 100% en imágenes
   assert.match(animalsCss, /\.tp-media \{[^}]*min-width: 0/);
   assert.match(animalsCss, /#animalRetry:focus-visible[\s\S]*?#clearFilters:focus-visible[\s\S]*?outline: 3px solid var\(--primary\)/);
   assert.match(animalsCss, /@media \(max-width: 480px\)[\s\S]*width: 100%/);
-  assert.match(animalesHtml, /<h2>TulanPedia<\/h2>/);
+  assert.match(animalesHtml, /<h2>Zoopedia<\/h2>/);
   assert.match(animalesHtml, /id="animalStatus" role="status"/);
   const m = mount({ fetchImpl: ok([sp(1)]) });
   await flush();

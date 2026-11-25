@@ -27,6 +27,7 @@
 | Borrador offline | `OfflineDraft` | Captura local pendiente de sincronización/confirmación por API |
 | Registro de aceptación | `AcceptanceCriterion` | Criterio verificable, identificado como CA-xx en specs |
 | Regla de negocio | `BusinessRule` | Restricción funcional registrada como RN-xx |
-| Zoopedia | `Zoopedia` | Experiencia educativa de juego pendiente de decisión tecnológica |
+| Zoopedia (catálogo) | `#animales` (portal), `tulanpedia` (Dashboard) | Catálogo de especies publicadas por el zoológico |
+| Zoopedia (juego) | `Zoopedia` | Experiencia educativa de juego pendiente de decisión tecnológica |
 
 Los nombres anteriores son contratos de dominio propuestos; si una spec requiere otro concepto, registra su definición y usa un identificador coherente en inglés.

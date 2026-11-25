@@ -56,7 +56,7 @@ const navigationCandidates: NavigationCandidate[] = [
     permission: "memories.review",
   },
   {
-    item: { id: "tulanpedia", label: "TulanPedia", icon: "animals" },
+    item: { id: "tulanpedia", label: "Zoopedia", icon: "animals" },
     permission: "species.review",
   },
   {

@@ -7,7 +7,7 @@ import {
 } from "./tulanpedia-tab";
 
 /**
- * ViewModel de las pestañas de TulanPedia (CA-63). La pestaña inicial sale de
+ * ViewModel de las pestañas de Zoopedia (CA-63). La pestaña inicial sale de
  * la URL; cada cambio usa `history.replaceState` y al desmontar se quitan
  * `section` y `tab`. No guarda la pestaña en el navegador (RN-10).
  */

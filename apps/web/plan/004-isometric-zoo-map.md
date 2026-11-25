@@ -137,3 +137,13 @@ Filtrar en memoria las respuestas del directorio, usar una sola zona de resultad
 ## Inicio junto a Boletaje
 
 Aplicar la posición relativa a los lugares públicos antes de dibujar sus marcadores 2D y 3D. Separar los puntos 48 píxeles en horizontal y 20 en vertical en el plano de 1600 × 1200. Si falta una posición válida para Boletaje, conservar la posición pública de Inicio.
+
+## Visibilidad de los accesos
+
+Representar ambos hitos cartográficos con los IDs públicos cuando existan, usando el centro canónico de Boletaje si faltan coordenadas. Las referencias locales se limitan al dibujo.
+
+## Selección de un área en 3D
+
+Para CA-22 y CA-23, el directorio y los marcadores activan la misma operación en el visor. El visor centra la cámara en la posición del marcador y aplica el nivel absoluto del 200 % con el controlador de zoom existente. Una flecha de CSS acompaña al marcador activo. Restablecer limpia la selección. Si el modelo está cargando, se aplica la última selección cuando esté listo.
+
+Para CA-23, el rótulo usa el mismo estado de selección que la flecha. Su ancho se ajusta al nombre y al espacio del visor, con salto de línea para nombres largos.

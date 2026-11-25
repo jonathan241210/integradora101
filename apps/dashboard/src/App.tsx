@@ -54,7 +54,7 @@ const sectionTitles: Record<SectionId, string> = {
   users: "Usuarios",
   memories: "Momentos",
   "ticket-history": "Historial de boletos",
-  tulanpedia: "TulanPedia",
+  tulanpedia: "Zoopedia",
 };
 
 function App() {
@@ -64,7 +64,7 @@ function App() {
   const session = useAuthSession(redirectToPwa);
   const shell = useDashboardShell();
   const [focusTarget, setFocusTarget] = useState<FocusTarget | null>(null);
-  // Acción sin elemento: solo pide la pestaña de TulanPedia (CA-36).
+  // Acción sin elemento: solo pide la pestaña de Zoopedia (CA-36).
   const [tabRequest, setTabRequest] = useState<{ tab: TulanpediaTab; nonce: number } | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const focusNonce = useRef(0);
@@ -158,7 +158,7 @@ function App() {
     if (session.state.status !== "authenticated") shell.reset();
   }, [session.state.status]);
 
-  // CA-63: `?section=tulanpedia` abre TulanPedia solo si la navegación (permiso) la incluye.
+  // CA-63: `?section=tulanpedia` abre Zoopedia solo si la navegación (permiso) la incluye.
   useEffect(() => {
     if (session.state.status !== "authenticated") {
       deepLinkHandled.current = false;

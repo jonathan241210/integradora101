@@ -11,7 +11,7 @@ import { publishedStateWith, publishedViewModel, row } from "./species-published
  * CA cruzados de dashboard-010 (plan, pregunta 7, decisión 2026-11-13): la verificación
  * de fondo vive en api-015, api-014 y web-011; aquí solo se prueba la parte de UI del
  * dashboard con respuestas simuladas. CA-42, CA-43 y CA-48 no tienen parte en el
- * dashboard (TulanPedia y almacenamiento son de web y API) y no se simulan aquí.
+ * dashboard (Zoopedia y almacenamiento son de web y API) y no se simulan aquí.
  */
 
 const read = (path: string) => readFileSync(fileURLToPath(new URL(path, import.meta.url)), "utf8");

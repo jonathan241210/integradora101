@@ -39,14 +39,14 @@ const styles = read("styles.css");
 const sections: SearchSectionInfo[] = [
   { id: "users", label: "Usuarios", icon: "users" },
   { id: "enclosures", label: "Recintos", icon: "building" },
-  { id: "tulanpedia", label: "TulanPedia", icon: "animals" },
+  { id: "tulanpedia", label: "Zoopedia", icon: "animals" },
 ];
 const groups = [
   { section: "users", label: "Usuarios", items: [{ id: 1, title: "Lobo Pérez", subtitle: "Cuenta" }] },
   { section: "enclosures", label: "Recintos", items: [{ id: 2, title: "Recinto Lobos", subtitle: "Activo" }] },
   {
     section: "tulanpedia",
-    label: "TulanPedia",
+    label: "Zoopedia",
     items: [{ id: 3, title: "Lobo gris", subtitle: "Publicada", kind: "published-species" as const }],
   },
   { section: "news", label: "Noticias", items: [] },
@@ -168,10 +168,11 @@ describe("CA-15 enclosure-actions-global-search", () => {
     expect(ordered.map((group) => group.heading)).toEqual([
       "En esta sección",
       "En Usuarios",
-      "En TulanPedia",
+      "En Zoopedia",
       "Secciones",
     ]);
     expect(ordered.some((group) => group.key === "api-news")).toBe(false);
+    expect(orderSearchGroups(groups, "enclosures", sections, "Zoopedia lobo")[0]?.key).toBe("api-tulanpedia");
     expect(orderSearchGroups(groups, "news", sections, "lobo").map((g) => g.heading)).not.toContain("En esta sección");
   });
 });
@@ -210,7 +211,7 @@ describe("CA-17 enclosure-actions-global-search", () => {
 });
 
 describe("CA-18 enclosure-actions-global-search", () => {
-  it("otra sección navega y TulanPedia abre la pestaña según kind", () => {
+  it("otra sección navega y Zoopedia abre la pestaña según kind", () => {
     expect(resolveFocusAction("users", { section: "enclosures" })).toBe("navigate");
     expect(tabForKind("published-species")).toBe("published");
     expect(tabForKind("species-request")).toBe("requests");

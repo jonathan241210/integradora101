@@ -8,7 +8,7 @@ Sistema multiplataforma para el Zoológico Municipal Nicolás Bravo, de la Presi
 ## Necesidades que atiende
 1. **Administración y finanzas:** venta de boletos en taquilla, cancelaciones con motivo, reportes de cancelaciones con semáforo de revisión, y administración de cuentas y contenidos.
 2. **Atención médico-veterinaria:** registro de ejemplares y evaluaciones clínicas (diagnóstico rápido e intenso, con exportación a PDF) que funciona sin conexión y se sincroniza al volver la red.
-3. **Experiencia del visitante:** portal público con noticias, eventos, Tulanpedia y memorias; app móvil con mapa del zoológico, escaneo QR de recintos, recorrido con realidad aumentada, progreso, logros, especies favoritas, memorias y avisos push.
+3. **Experiencia del visitante:** portal público con noticias, eventos, Zoopedia y memorias; app móvil con mapa del zoológico, escaneo QR de recintos, recorrido con realidad aumentada, progreso, logros, especies favoritas, memorias y avisos push.
 
 ## Componentes
 | App | Público | Tecnología | Funciones principales |
@@ -16,7 +16,7 @@ Sistema multiplataforma para el Zoológico Municipal Nicolás Bravo, de la Presi
 | `apps/api` | Todas las apps | Laravel 12, PHP 8.4+ | Única autoridad de negocio y datos: autenticación, permisos, taquilla, expediente clínico, catálogo, contenidos, sincronización offline, avisos push |
 | `apps/dashboard` | Personal administrativo | React 19 + TS + Vite | Taquilla, reportes de cancelaciones, consola de cuentas, noticias, eventos, especies, recintos y QR, moderación de memorias, búsqueda global |
 | `apps/pwa` | Personal veterinario | React 19 + TS + Vite, offline | Registro y lista de ejemplares, diagnósticos, seguimiento, borradores offline sincronizados |
-| `apps/web` | Público | HTML/CSS/JS estático (ADR 0024, 0028, 0031) | Portal institucional: noticias, eventos, Tulanpedia, memorias, mapa, asistente de accesibilidad |
+| `apps/web` | Público | HTML/CSS/JS estático (ADR 0024, 0028, 0031) | Portal institucional: noticias, eventos, Zoopedia, memorias, mapa, asistente de accesibilidad |
 | `apps/mobile` | Visitantes | React Native 0.86 + Expo SDK 57 (Android) | Mapa del zoológico, QR, realidad aumentada, cuenta, progreso, favoritos, memorias, avisos push |
 | `packages/` | Clientes | TypeScript | `@arca/api-client` (cliente tipado), `@arca/tokens` (tokens de diseño), `@arca/ui` (componentes); `config` y `assets` solo documentados |
 | `tools/zoo-mapper` | Equipo | Web estática | Herramienta para levantar coordenadas del mapa |

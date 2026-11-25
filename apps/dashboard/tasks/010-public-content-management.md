@@ -368,3 +368,5 @@ Estado final de estas tareas: **En progreso** (plan y tasks aprobados por el res
 - [x] **T-53** (CA-82): `PHOTO_HELP_TEXT`; sin «Quitar foto actual».
 - [x] **T-54** (CA-81, CA-82): `tests/species-photo-upload.test.tsx`; ajuste de `species-request-edit` y `published-species-edit` («Elegir imagen»); cobertura hasta CA-82.
 - [x] **T-55** (CA-81; verificación manual): revisión a ojo en navegador (360, 768, 1366 px). — Fuera de alcance de esta entrega: revisión manual en navegador, pendiente y sin evidencia registrada.
+
+**Nombre visible del catálogo (CA-01 y CA-63).** Comprobar el nombre «Zoopedia» en las pruebas de CA-01 y CA-63.

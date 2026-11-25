@@ -1,5 +1,5 @@
 /**
- * Pestaña activa de TulanPedia y su reflejo en la URL (dashboard-010 CA-63,
+ * Pestaña activa de Zoopedia y su reflejo en la URL (dashboard-010 CA-63,
  * RN-17). Funciones puras: sin router y sin almacenamiento del navegador.
  * La URL solo lleva la sección y la pestaña; nunca identificadores ni permisos.
  */
@@ -17,7 +17,7 @@ export function readTulanpediaTab(search: string): TulanpediaTab {
   return tab === "published" ? "published" : "requests";
 }
 
-/** ¿La URL pide abrir TulanPedia? */
+/** ¿La URL pide abrir Zoopedia? */
 export function isTulanpediaSearch(search: string): boolean {
   return new URLSearchParams(search).get("section") === "tulanpedia";
 }
@@ -53,7 +53,7 @@ export function syncTulanpediaUrl(win: UrlWindow, tab: TulanpediaTab): void {
   );
 }
 
-/** Al salir de TulanPedia la URL no conserva `section` ni `tab`. */
+/** Al salir de Zoopedia la URL no conserva `section` ni `tab`. */
 export function leaveTulanpediaUrl(win: UrlWindow): void {
   win.history.replaceState(
     win.history.state,

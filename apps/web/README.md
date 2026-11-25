@@ -1,10 +1,10 @@
 # Portal público para visitantes
 
-El portal es un sitio estático ubicado en `src/`. En la sección **Mapa del zoológico**, el plano SVG y el modelo 3D se sirven desde el propio portal. El directorio consulta los recintos activos y lugares de interés visibles en la API pública (`/api/v1/enclosures` y `/api/v1/zoo-places`). Las noticias, los eventos, TulanPedia y la galería también consumen la API.
+El portal es un sitio estático ubicado en `src/`. En la sección **Mapa del zoológico**, el plano SVG y el modelo 3D se sirven desde el propio portal. El directorio consulta los recintos activos y lugares de interés visibles en la API pública (`/api/v1/enclosures` y `/api/v1/zoo-places`). Las noticias, los eventos, Zoopedia y la galería también consumen la API.
 
 Los mapas 2D y 3D muestran en su posición los registros públicos con coordenadas válidas. El modelo 3D se exportó de `zoo_3d(3).blend`. Los círculos indican recintos y los cuadrados, lugares de interés. Al tocar un marcador, pasar el puntero o enfocarlo con el teclado se muestra el nombre completo. Los registros sin coordenadas se pueden consultar en el directorio.
 
-El directorio permite buscar por nombre y filtrar recintos o lugares de interés. Al elegir un resultado con ubicación, el portal muestra su marcador en el plano o centra la cámara del modelo.
+El directorio permite buscar por nombre y filtrar recintos o lugares de interés. Al elegir un resultado con ubicación, el portal muestra su marcador en el plano o centra la cámara del modelo 3D al 200 %. Tocar un marcador 3D produce el mismo acercamiento. La flecha y el rótulo con el nombre completo identifican el área seleccionada hasta elegir otra o pulsar **Restablecer**.
 
 Los controles **−**, **+** y **Restablecer** aparecen debajo del mapa. Cada vista conserva su nivel de zoom al alternar. En el plano 2D ampliado puedes desplazarte hasta los bordes manteniendo presionado el botón izquierdo del mouse y arrastrando, o con las barras, el teclado o el tacto.
 

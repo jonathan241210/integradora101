@@ -39,6 +39,7 @@ function openMap() {
   nodes.mapScene.appendChild = child => assert.equal(child, model);
   vm.runInNewContext(controller, {
     CustomEvent: class {},
+    CSS: { escape: value => value },
     document: { dispatchEvent() {}, getElementById: id => nodes[id], createElement: () => model },
     location: { protocol: 'http:' },
     customElements: { get: () => true }
@@ -124,4 +125,48 @@ test('CA-14 isometric-zoo-map arrastra solo el plano ampliado y termina el movim
     plan.dispatch(end,mouse); move(0,0);
     assert.deepEqual([plan.scrollLeft,plan.scrollTop],[x-10,y-15]);
   }
+});
+
+test('CA-22 y CA-23 centra cada selección al 200 %, mueve la flecha y restablece al 100 %', async () => {
+  const ui = openMap();
+  const pins = new Map(['hotspot-placePins-1', 'hotspot-enclosurePins-1'].map((slot, index) => {
+    const pin = element();
+    pin.focus = () => {};
+    pin.setAttribute('data-position', index + 'm 0m 2m');
+    return ['[slot="' + slot + '"]', pin];
+  }));
+  ui.model.querySelector = selector => pins.get(selector);
+  const [first, second] = pins.values();
+  const select = slot => ui.mapScene.dispatch('zoo-map-select-area', { detail: slot });
+
+  await ui.mapModelToggle.dispatch('click');
+  select('hotspot-enclosurePins-1');
+  select('hotspot-placePins-1');
+  ui.model.loaded = true;
+  ui.model.dispatch('load');
+  assert.equal(ui.model.cameraTarget, first.getAttribute('data-position'));
+  assert.equal(ui.model.cameraOrbit, '1rad 0.7rad 48%');
+  assert.equal(ui.mapZoomValue.textContent, '200 %');
+  assert.equal(first.getAttribute('aria-current'), 'location');
+
+  ui.mapZoomIn.dispatch('click');
+  assert.equal(ui.mapZoomValue.textContent, '225 %');
+  select('hotspot-enclosurePins-1');
+  assert.equal(ui.mapZoomValue.textContent, '200 %');
+  assert.equal(ui.model.cameraTarget, second.getAttribute('data-position'));
+  assert.equal(first.getAttribute('aria-current'), undefined);
+  assert.equal(second.getAttribute('aria-current'), 'location');
+  ui.mapZoomReset.dispatch('click');
+  assert.equal(second.getAttribute('aria-current'), undefined);
+  assert.equal(ui.model.cameraTarget, 'auto auto auto');
+  assert.equal(ui.mapZoomValue.textContent, '100 %');
+});
+
+test('CA-23 el nombre 3D seleccionado admite varias líneas y persiste al perder el foco', () => {
+  const styles = readFileSync(new URL('../styles.css', import.meta.url), 'utf8');
+  const rule = styles.match(/\.model-pin\[aria-current="location"\] span\s*\{([^}]+)\}/)?.[1];
+  assert.ok(rule, 'El rótulo expandido depende de la selección del marcador');
+  assert.match(rule, /white-space:\s*normal/);
+  assert.match(rule, /overflow-wrap:\s*anywhere/);
+  assert.match(rule, /width:\s*max-content/);
 });

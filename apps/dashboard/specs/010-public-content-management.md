@@ -398,3 +398,5 @@ Aprobada. Solo presentación; la API no cambia. CA nuevos a continuación de CA-
 - **CA-82 (reglas):** Solo `jpg`, `jpeg` y `png`, máximo 5 MB (`StoreSpeciesPublicationRequest` y `ValidatesSpeciesSheetEdit`: `mimes:jpg,jpeg,png`, `max:5120`); ayuda «JPG o PNG · máximo 5 MB» y errores en español («Elige una imagen JPG o PNG.», «La foto no puede superar 5 MB.»). No hay «Quitar foto actual»: la API no permite quitarla y la foto es obligatoria en la ficha publicada.
 
 Los CA-81 y CA-82 se suman a la cobertura de CA-46.
+
+**Nombre visible del catálogo (CA-01 y CA-63).** El menú, el encabezado, las pestañas, los mensajes y las acciones de búsqueda usan el nombre «Zoopedia». Los enlaces guardados con `section=tulanpedia` abren la misma sección.

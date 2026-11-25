@@ -1,6 +1,6 @@
 # Búsqueda global del portal
 
-El formulario «Buscar en todo el portal» de la portada localiza texto visible de sus secciones y contenido público publicado de TulanPedia, noticias, eventos y momentos.
+El formulario «Buscar en todo el portal» de la portada localiza texto visible de sus secciones y contenido público publicado de Zoopedia, noticias, eventos y momentos.
 
 ## Uso
 

@@ -49,7 +49,7 @@ describe("dashboard-010 revisión 2026-11-21: alineación al patrón de Reportes
     const section = source("sections/TulanpediaSection.tsx");
 
     expect(section).toMatch(/eyebrow="Administración"/);
-    expect(section).toMatch(/title="TulanPedia"/);
+    expect(section).toMatch(/title="Zoopedia"/);
     expect(section.indexOf("<SectionHeading")).toBeLessThan(section.indexOf("<TulanpediaTabs"));
     expect(requestsList()).not.toContain("<h1");
     expect(publishedList()).not.toContain("<h1");

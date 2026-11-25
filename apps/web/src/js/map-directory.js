@@ -6,19 +6,31 @@
   }
 
   function positionStartByTicketOffice(places) {
-    const ticketOffice = places.find(place => normalize(place.name) === 'boletaje');
-    if (!ticketOffice || !isMapCoordinate(ticketOffice.map_x) || !isMapCoordinate(ticketOffice.map_y)) return places;
-    // Separación en el plano de 1600 × 1200, compartida por las dos vistas.
-    const dx = 48 / 1600;
-    const dy = 20 / 1200;
-    return places.map(place => normalize(place.name) === 'inicio' ? {
-      ...place,
-      map_x: ticketOffice.map_x + (ticketOffice.map_x + dx <= 1 ? dx : -dx),
-      map_y: ticketOffice.map_y + (ticketOffice.map_y >= dy ? -dy : dy)
-    } : place);
+    const start = places.find(place => ['inicio', 'entrada'].includes(normalize(place.name)));
+    const office = places.find(place => ['boletaje', 'taquilla'].includes(normalize(place.name)));
+    // Centro de Boletaje en el plano canónico, para la consulta sin conexión.
+    const x = office && isMapCoordinate(office.map_x) && isMapCoordinate(office.map_y) ? office.map_x : 0.3066;
+    const y = office && isMapCoordinate(office.map_x) && isMapCoordinate(office.map_y) ? office.map_y : 0.6847;
+    const ticketPin = { ...office, id: office?.id ?? 'plan-office', name: office?.name ?? 'Boletaje', landmark: 'office', map_x: x, map_y: y };
+    const startPin = { ...start, id: start?.id ?? 'plan-start', name: start?.name ?? 'Entrada', landmark: 'start',
+      map_x: x + (x <= .97 ? .03 : -.03), map_y: y + (y >= 20 / 1200 ? -20 / 1200 : 20 / 1200) };
+    const points = places.map(place => place === start ? startPin : place === office ? ticketPin : place);
+    if (!start) points.push(startPin);
+    if (!office) points.push(ticketPin);
+    return points;
+  }
+
+  function landmarkLabel(record) {
+    if (record.landmark === 'start') return 'Entrada';
+    if (record.landmark === 'office') return 'Boletaje';
+    return record.name;
   }
 
   const positionedGroups = new Map();
+
+  function selectModelPin(slot) {
+    document.getElementById('mapScene').dispatchEvent(new CustomEvent('zoo-map-select-area', { detail: slot }));
+  }
 
   function addModelPins(model, records, group) {
     const isPlace = group === 'placePins';
@@ -26,14 +38,16 @@
       const pin = document.createElement('button');
       pin.type = 'button';
       pin.className = isPlace ? 'model-pin place-pin' : 'model-pin';
+      if (record.landmark) pin.className += ' landmark-' + record.landmark;
       pin.slot = 'hotspot-' + group + '-' + record.id;
+      pin.addEventListener('click', () => selectModelPin(pin.slot));
       // El SVG mide 1600 × 1200 px. Cada píxel representa 0,01 m en este GLB.
       const x = record.map_x * 16 - 8.025897;
       const z = record.map_y * 12 - 5.140369;
       pin.setAttribute('data-position', x + 'm ' + (isPlace ? 0.425 : 0.265) + 'm ' + z + 'm');
       pin.setAttribute('data-normal', '0 1 0');
       const label = document.createElement('span');
-      label.textContent = record.name;
+      label.textContent = landmarkLabel(record);
       pin.appendChild(label);
       model.appendChild(pin);
     }
@@ -53,11 +67,12 @@
       const marker = document.createElement('button');
       marker.type = 'button';
       marker.className = 'map-pin';
+      if (record.landmark) marker.className += ' landmark-' + record.landmark;
       marker.id = layer.id + '-' + record.id;
       marker.style.left = record.map_x * 100 + '%';
       marker.style.top = record.map_y * 100 + '%';
       const label = document.createElement('span');
-      label.textContent = record.name;
+      label.textContent = landmarkLabel(record);
       marker.appendChild(label);
       marker.addEventListener('click', () => marker.focus());
       markers.appendChild(marker);
@@ -73,15 +88,11 @@
   }
 
   function locate(layer, record) {
-    const model = document.getElementById('mapModel');
     const key = layer.id + '-' + record.id;
-    const hotspot = model?.querySelector('[slot="hotspot-' + key + '"]');
-    if (model?.loaded && !model.hidden && hotspot) {
-      model.cameraTarget = hotspot.getAttribute('data-position');
-      model.scrollIntoView({ block: 'center' });
-      hotspot.focus({ preventScroll: true });
+    if (document.getElementById('mapPlan').hidden) {
+      selectModelPin('hotspot-' + key);
+      document.getElementById('mapScene').scrollIntoView({ block: 'center' });
     } else {
-      if (document.getElementById('mapPlan').hidden) document.getElementById('mapModelToggle').click();
       const pin = document.getElementById(key);
       pin.scrollIntoView({ block: 'center', inline: 'center' });
       pin.focus({ preventScroll: true });
@@ -104,7 +115,7 @@
       group.hidden = Boolean(type.value && type.value !== group.id);
       if (!records) return;
       const query = normalize(search.value);
-      const matches = records.filter(record => normalize(record.name).includes(query));
+      const matches = records.filter(record => (normalize(record.name).includes(query) || normalize(landmarkLabel(record)).includes(query) || (record.landmark === 'start' && 'inicio'.includes(query))));
       const items = document.createDocumentFragment();
       for (const record of matches) {
         const item = document.createElement('li');
@@ -134,16 +145,14 @@
     renderGroups.push(render);
     try {
       const result = await load();
-      if (!result.ok) {
-        status.textContent = messages.error;
-        return;
-      }
+      if (!result.ok) throw new Error(messages.error);
 
       const points = layer.id === 'placePins' ? positionStartByTicketOffice(result.data) : result.data;
       renderMarkers(points, layer);
-      records = points.slice().sort((a, b) => a.name.localeCompare(b.name, 'es', { numeric: true }));
+      records = points.filter(point => typeof point.id !== 'string' || !point.id.startsWith('plan-')).sort((a, b) => a.name.localeCompare(b.name, 'es', { numeric: true }));
       render();
     } catch {
+      if (layer.id === 'placePins') renderMarkers(positionStartByTicketOffice([]), layer);
       status.textContent = messages.error;
     }
   }

@@ -452,3 +452,5 @@ Decisiones tomadas en el plan, no preguntas: etiquetas de tipo de animal propues
 ## Nota (dashboard-020 rev. (d)): paginación con total
 
 Los reductores de `species-requests.ts` y `published-species.ts` guardan `lastPage` y `total`; las vistas los pasan a `Pagination` de `@arca/ui`. El resumen de conteos sigue sin implementarse. Ver `plan/020`.
+
+**Nombre visible del catálogo (CA-01 y CA-63).** Actualizar las etiquetas de presentación y reconocer Zoopedia en las consultas que nombran la sección.

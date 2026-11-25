@@ -382,3 +382,5 @@ Reglas: T-31 a T-46 hechas con la evidencia de abajo; T-47 pendiente (PR y commi
 - Segunda corrida: `GlobalSearchRanking|Normalization|Relevance|Results|EnclosureStatusSearchCoverage` 15 tests en verde (210 aserciones); `GlobalSearchUsers|Records|Tulanpedia|ReadOnly|Typo|Match|Fields|Cap|Throttle|Security|Validation|AdminCoverage` 24 tests en verde (301 aserciones).
 - Pint aplicado a `app/Actions/Admin/Search` y `tests/Feature/Admin`: passed.
 - Desviaciones: las frases (CA-51, CA-52) deben empezar en el inicio de una palabra (no dentro de «pelobo» para «lobo»); `best_score` de un título literal incluye B = 2 porque la frase empieza el título; id exacto = 100010044. Frase solo con 2 o más palabras.
+
+**Nombre visible del catálogo (CA-23).** Comprobar el nombre «Zoopedia» en las pruebas de CA-23.

@@ -149,10 +149,10 @@ describe("navegación de communications y executive (dashboard-017)", () => {
     ],
   });
 
-  it("CA-07 fixed-roles-account-management: communications ve Noticias, Eventos, Momentos y TulanPedia y su primera sección es Noticias", () => {
+  it("CA-07 fixed-roles-account-management: communications ve Noticias, Eventos, Momentos y Zoopedia y su primera sección es Noticias", () => {
     const items = getNavigationForProfile(communications);
 
-    expect(labels(items)).toEqual(["Noticias", "Eventos", "Momentos", "TulanPedia"]);
+    expect(labels(items)).toEqual(["Noticias", "Eventos", "Momentos", "Zoopedia"]);
     expect(items[0]?.id).toBe("news");
   });
 

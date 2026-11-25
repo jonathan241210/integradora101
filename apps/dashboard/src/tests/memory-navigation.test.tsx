@@ -71,7 +71,7 @@ it("CA-01 memory-navigation: el orden de las secciones existentes no cambia", ()
     "Recintos",
     "Usuarios",
     "Momentos",
-    "TulanPedia",
+    "Zoopedia",
   ]);
 
   const without = profile({ permissions: all.permissions.filter((item) => item !== "memories.review") });
