@@ -10,8 +10,16 @@ import {
   SVG_WIDTH,
 } from '../constants/zoo';
 import { SVG_UNIT_TO_METERS } from '../constants/zooPaths';
+import { toZooPlaceMarker, withCanonicalFoodAnchor } from './useMapMarkers';
 
 const defaultRepository = createMapRepository();
+
+function findMapPlace(id: string | null, places: MapPlace[], zooPlaces: ZooPlace[]) {
+  const place = places.find((item) => item.id === id);
+  if (place) return withCanonicalFoodAnchor(place);
+  const zooPlace = zooPlaces.find((item) => `zoo-place-${item.id}` === id);
+  return zooPlace ? toZooPlaceMarker(zooPlace) : null;
+}
 
 export function useMapViewModel(repository: MapRepository = defaultRepository) {
   const [places, setPlaces] = useState<MapPlace[]>([]);
@@ -63,13 +71,13 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
   );
 
   const selectedPlace = useMemo(
-    () => filteredPlaces.find((place) => place.id === selectedPlaceId) ?? null,
-    [filteredPlaces, selectedPlaceId],
+    () => findMapPlace(selectedPlaceId, filteredPlaces, zooPlaces),
+    [filteredPlaces, selectedPlaceId, zooPlaces],
   );
 
   const destinationPlace = useMemo(
-    () => places.find((place) => place.id === destinationPlaceId) ?? null,
-    [destinationPlaceId, places],
+    () => findMapPlace(destinationPlaceId, places, zooPlaces),
+    [destinationPlaceId, places, zooPlaces],
   );
 
   const focusedSectionId = useMemo(() => {
@@ -82,6 +90,7 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
   );
 
   const selectPlace = useCallback((id: string) => {
+    setFocusedPlaceId(null);
     setSelectedPlaceId(id);
     setDismissedArrivalPlaceId(null);
   }, []);

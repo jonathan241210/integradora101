@@ -4,6 +4,10 @@
 - **Responsable:** Frontend
 - **Estado actual:** V1 a V4 y las enmiendas implementadas y probadas en Jest
 
+La enmienda [mobile-017](../specs/017-canonical-zoo-map-svg.md#enmienda--etiquetas-lugares-y-zoom-táctil-del-mapa-2d) define el visor 2D vigente. Los servicios para visitantes, incluidos Baños, Comida y Boletaje, se muestran en vino. Los demás puntos se muestran en verde y todos muestran un halo azul al seleccionarlos. El nombre sigue en la ficha y en la etiqueta accesible. Con ubicación activa, la ruta por los senderos conecta la posición del visitante con el punto seleccionado o el destino fijado. Comida aparece dentro de su rectángulo, con un respaldo local cuando falta el punto de la API. Se puede acercar y alejar de `1×` a `4×` con dos dedos o con los botones y restablecer la vista a `2.2×`.
+
+Al seleccionar un punto aparece una barra con su nombre y «Ver detalles». Si abres la ficha, los detalles del siguiente punto también se muestran desplegados hasta que toques «Ver menos». «Cerrar» o tocar un espacio vacío ocultan la ficha y conservan el modo para la próxima selección. En los detalles se puede consultar la descripción y fijar o cancelar el destino.
+
 ---
 
 ## 1. Fase V1 — Mapa 2D Esquemático de Consulta (Completada)
@@ -62,6 +66,8 @@ Para la evolución continua del Mapa 2D se han consolidado cuatro frentes estrat
 ---
 
 ## 4. Fase V4 — Guía con Cámara y Realidad Aumentada (Futura)
+
+El mapa ofrece AR por ubicación mediante **Iniciar AR** y permite salir con **Volver al mapa 2D**. El panel **Cerca de ti** abre las fichas de los recintos aunque queden fuera del campo de visión. El acceso a la [prueba de AR nativa con ARCore/ARKit](../specs/016-arcore-arkit-anchor-poc.md) está suspendido temporalmente tras un reporte de cierre de la app.
 
 Sustituye la idea de un "recorrido 3D tipo videojuego" por una **guía interactiva en el mundo real a través de la cámara** (estilo Live View):
 

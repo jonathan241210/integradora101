@@ -14,6 +14,10 @@ Implementar una PoC aislada usando `@reactvision/react-viro@3.1.1` para abrir un
 
 La conversión GPS→AR local se tratará como aproximación de PoC: se anclará la posición del usuario como origen local y se colocarán objetos en coordenadas relativas calculadas por distancia/bearing. Se documentará deriva y requisitos de calibración.
 
+## Suspensión temporal del acceso desde el mapa
+
+Retirar el acceso a Viro de `MapScreen` y eliminar el botón `AR nativa PoC` y la etiqueta `AR` de `ArTourOverlay`. La escena y los componentes experimentales quedan disponibles en el repositorio para la futura validación de la PoC en dispositivo. `arTourOverlay.test.tsx` verifica CA-05 entrando por `Iniciar AR` y volviendo al mapa 2D.
+
 ## Cambios por área
 
 | Área/app | Archivos o módulos previstos | Propósito |

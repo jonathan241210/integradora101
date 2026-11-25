@@ -30,3 +30,32 @@
 ## Calidad y entrega
 
 - [ ] **T-13** (CA-10): Actualizar docs mobile/DBR evidencia afectada y preparar resumen con trazabilidad spec/plan/tasks. Pendiente: la parte de DBR-019 no se revisó en esta entrega.
+
+## Enmienda · Etiquetas, lugares y zoom táctil del mapa 2D
+
+- Spec y plan aprobados por la persona solicitante el 2026-11-24.
+- Estado del checklist: Aprobado por la persona solicitante el 2026-11-24.
+
+### Marcadores y ficha
+
+- [x] **T-14** (CA-11): Retirar las etiquetas visuales en `ZooMapSvg` y mantener el nombre accesible en `MapMarker`.
+- [x] **T-15** (CA-12, RN-08): Compartir el anclaje existente de `establecimientos_comida` entre el marcador de API y el respaldo móvil. Aplicarlo también al respaldo de caché antigua y suprimir ese respaldo solo cuando haya un marcador válido de comida.
+- [x] **T-16** (CA-13): Reutilizar `MapPlaceCard` para abrir y cerrar la ficha de cualquier lugar desde el mapa 2D, preservando encuadre y destino activo.
+- [x] **T-17** (CA-11): Cubrir en `mapAccessibility.test.tsx` la ausencia de texto de marcador en el SVG y la selección del punto por su nombre accesible.
+- [x] **T-18** (CA-12, CA-13): Cubrir en `mapScreen.test.tsx` el anclaje, deduplicación y respaldo de Comida, además de apertura y cierre de la ficha con el viewport intacto.
+
+### Visor
+
+- [x] **T-19** (CA-14, RN-09): Ampliar el rango a `1×`–`4×`. Integrar en el visor el gesto con dos dedos, su centro, límites según las dimensiones medidas y transición al arrastre, conservando botones y toques de marcadores.
+- [x] **T-20** (CA-14): Cubrir en `mapViewport.test.tsx` acercamiento y alejamiento, anclaje del centro, límites, transición al arrastre, toque simple, botones y restablecimiento.
+
+### Verificación
+
+- [x] **T-21** (CA-11 a CA-14): Ejecutar TypeScript, Jest y la verificación móvil disponible. Actualizar la referencia del mapa y registrar los resultados.
+  - El 2026-11-24 pasaron `tsc --noEmit`, las 483 pruebas de 73 suites y la exportación del bundle Android. La app no declara scripts `format:check` ni `lint`.
+- [ ] **T-22** (CA-11 a CA-14): Verificar el plano en Android, incluido Comida en su rectángulo, la respuesta y ruta de los puntos cercanos y el zoom con dos dedos.
+  - ADB no detectó ningún dispositivo. Queda pendiente la verificación visual y del gesto en un Android con el APK instalado, así como reconocer los dos lugares reportados originalmente.
+- [x] **T-23** (CA-13): Unificar el verde y el halo azul, ajustar las áreas de toque de los puntos vecinos y usar la selección común para alimentar la ruta y fijar el destino. Cubrir el estilo en `mapAccessibility.test.tsx` y la selección y el trazado de dos puntos cercanos en `mapScreen.test.tsx`.
+- [x] **T-24** (CA-13): Aplicar vino a los servicios al visitante y conservar verde para los demás puntos. Verificar los tipos usados en `arca_pruebas` y cubrir color y halo en `mapAccessibility.test.tsx`.
+- [x] **T-25** (CA-13): Implementar la barra compacta y desplegable, el cierre al tocar un espacio vacío y las pruebas de selección, encuadre y destino. Ajuste aprobado por la persona solicitante el 2026-11-24. Pasaron las 483 pruebas, TypeScript y la exportación del bundle Android. La prueba táctil del APK instalado se registra en T-22.
+- [x] **T-26** (CA-13): Conservar los detalles desplegados entre selecciones hasta tocar «Ver menos». Verificar el cambio de punto, el cierre desde el fondo y el encuadre. Pasaron las 483 pruebas y TypeScript.

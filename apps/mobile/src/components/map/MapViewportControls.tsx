@@ -66,7 +66,7 @@ export function MapViewportControls({
         style={styles.controlButton}
       >
         <AppText variant="caption" bold color="text">
-          {`${zoomScale}x`}
+          {`${Number(zoomScale.toFixed(2))}x`}
         </AppText>
       </Pressable>
 

@@ -22,6 +22,13 @@ export const ZOO_BOUNDS = {
  */
 export const ZOO_ENTRANCE_SVG = { svgX: 523, svgY: 828 };
 
+export const FOOD_SERVICE_MAP_ID = 'food-court';
+export const FOOD_SERVICE_MAP_ANCHOR = {
+  svgId: 'establecimientos_comida',
+  mapX: 599 / SVG_WIDTH,
+  mapY: 551 / SVG_HEIGHT,
+};
+
 /**
  * Coordenadas GPS de la entrada principal (Inicio, DBR-019).
  */
@@ -46,10 +53,10 @@ export const ROUTE_LINE_WIDTH = 3;
  * Parámetros de zoom, desplazamiento y centrado del visor del mapa.
  */
 export const MIN_ZOOM_SCALE = 1.0;
-export const MAX_ZOOM_SCALE = 2.5;
+export const MAX_ZOOM_SCALE = 4;
+export const INITIAL_MAP_ZOOM = 2.2;
 export const ZOOM_STEP = 0.5;
 export const CENTER_LOCATION_ZOOM = 2.0;
-export const MAX_PAN_RANGE = 180;
 
 /**
  * Segmentos del contorno del zoológico extraídos de la capa "contorno" (layer1) del SVG canónico.

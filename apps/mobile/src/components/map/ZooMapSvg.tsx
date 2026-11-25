@@ -8,6 +8,8 @@ import { colors } from '../../theme/tokens';
 
 interface ZooMapSvgProps {
   highlightedSectionId?: string | null;
+  selectedPlaceId?: string | null;
+  routeTargetId?: string | null;
   places?: MapPlace[];
 }
 
@@ -20,48 +22,49 @@ function esc(value: string): string {
     .replace(/'/g, '&apos;');
 }
 
-function pinColor(kind: MapPlace['kind']): string {
-  if (kind === 'zoo_place') return colors.base;
-  return colors.enclosure;
-}
-
-function buildMarker(place: MapPlace, selected: boolean): string {
+function buildMarker(place: MapPlace, selected: boolean, showHalo: boolean): string {
   const cx = (place.mapX * SVG_WIDTH).toFixed(1);
   const cy = (place.mapY * SVG_HEIGHT).toFixed(1);
   const r = selected ? 11 : 9;
   const strokeW = selected ? 3 : 2;
-  const color = pinColor(place.kind);
+  const color = place.kind === 'service' || place.isVisitorService ? colors.base : colors.enclosure;
   const fill = selected ? color : colors.surface;
   const inner = selected ? colors.surface : color;
-  const labelY = (place.mapY * SVG_HEIGHT + (selected ? 18 : 16)).toFixed(1);
-  const name = esc(place.name.length > 18 ? place.name.slice(0, 17) + 'â€¦' : place.name);
-  const id = esc(place.sectionId || place.id);
+  const id = esc(place.id);
+  const halo = showHalo
+    ? `<circle cx="${cx}" cy="${cy}" r="16" fill="${colors.info}" fill-opacity="0.22" stroke="${colors.info}" stroke-width="2"/>`
+    : '';
   return `<g id="pin-${id}" data-kind="${esc(place.kind)}">
+  ${halo}
   <circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="${color}" stroke-width="${strokeW}"/>
   <circle cx="${cx}" cy="${cy}" r="${selected ? 3.2 : 2.6}" fill="${inner}"/>
-  <text x="${cx}" y="${labelY}" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="${selected ? 8 : 7}" font-weight="700" fill="${colors.text}" paint-order="stroke" stroke="${colors.background}" stroke-width="2">${name}</text>
 </g>`;
 }
 
-function injectMarkers(svg: string, places: MapPlace[], highlightedSectionId?: string | null): string {
+function injectMarkers(
+  svg: string,
+  places: MapPlace[],
+  selectedPlaceId?: string | null,
+  routeTargetId?: string | null,
+): string {
   if (!places.length) return svg;
   const markers = places
     .filter((p) => typeof p.mapX === 'number' && typeof p.mapY === 'number')
-    .map((p) => buildMarker(p, !!highlightedSectionId && (p.sectionId === highlightedSectionId || p.id === highlightedSectionId)))
+    .map((p) => buildMarker(p, p.id === selectedPlaceId, p.id === selectedPlaceId && p.id !== routeTargetId))
     .join('\n');
   if (!markers) return svg;
   const layer = `\n<g id="dynamic-markers">\n${markers}\n</g>\n`;
   return svg.replace(/<\/svg>\s*$/, `${layer}</svg>`);
 }
 
-function ZooMapSvgComponent({ highlightedSectionId, places = [] }: ZooMapSvgProps) {
+function ZooMapSvgComponent({ highlightedSectionId, selectedPlaceId, routeTargetId, places = [] }: ZooMapSvgProps) {
   const xml = useMemo(
-    () => injectMarkers(ZOO_MAP_CANONICAL_SVG, places, highlightedSectionId),
-    [places, highlightedSectionId],
+    () => injectMarkers(ZOO_MAP_CANONICAL_SVG, places, selectedPlaceId, routeTargetId),
+    [places, selectedPlaceId, routeTargetId],
   );
 
   return (
-    <View style={{ width: '100%', height: '100%' }}>
+    <View pointerEvents="none" style={{ width: '100%', height: '100%' }}>
       <SvgXml
         xml={xml}
         width="100%"

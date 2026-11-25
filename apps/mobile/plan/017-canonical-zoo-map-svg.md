@@ -54,7 +54,7 @@ Nota de cierre: las rutas de prueba de esta tabla son las previstas por el plan.
 | CA-01 SVG canónico 1600x1200 | Render test de `ZooMapSvg` verifica `viewBox="0 0 1600 1200"` y presencia de capas/caminos/recintos; no referencia 1000x1400 | `apps/mobile/__tests__/components/map/ZooMapSvg.test.tsx` |
 | CA-02 Contrato de coordenadas | Unit test de mapper: usa `map_x/map_y` normalizados cuando existen; no usa GPS fallback | `apps/mobile/__tests__/repositories/mappers.test.ts` |
 | CA-03 Fallback GPS | Unit test de mapper/geoTransform: sin `map_x/map_y` y con GPS usa `geoTransform` 1600x1200; sin coords no genera marcador falso | `apps/mobile/__tests__/repositories/mappers.test.ts`, `__tests__/utils/geoTransform.test.ts` |
-| CA-04 Zoo places visibles | UI test MapScreen/ZooMapSvg/marker: renderiza `zoo_places` con `map_x/map_y` y diferenciación visual/accesible | `apps/mobile/__tests__/screens/MapScreen.test.tsx` |
+| CA-04 Zoo places visibles | UI test MapScreen/ZooMapSvg/marker: renderiza `zoo_places` con `map_x/map_y` y nombre y tipo accesibles | `apps/mobile/__tests__/mapScreen.test.tsx` |
 | CA-05 IDs SVG estables | Test de componente/artefacto: formas mapeables exponen IDs estables; artefacto de mapeo contiene `svg_id` y estado | `apps/mobile/__tests__/components/map/ZooMapSvg.test.tsx`, `__tests__/data/canonicalMapMapping.test.ts` |
 | CA-06 Sin capa decorativa engañosa | Render test: no existen nodos `icons_auto`/marcadores decorativos en el SVG canónico renderizado | `apps/mobile/__tests__/components/map/ZooMapSvg.test.tsx` |
 | CA-07 Recalibración de overlays | Tests de viewport/ruta/marker: `DestinationRouteLine` viewBox 1600x1200, `UserLocationMarker` y pan/zoom usan nuevas constantes | `apps/mobile/__tests__/components/map/DestinationRouteLine.test.tsx`, `__tests__/utils/mapViewport.test.ts` |
@@ -94,3 +94,47 @@ Ninguna excepción se implementa sin revisión y acuerdo requeridos. Si algo no 
 7. Registrar evidencia DBR-019 y limitaciones de calibración/dispositivo.
 
 - **Aprobación:** funcional aprobada (spec). La aprobación técnica de este plan no está registrada en el repositorio; debe registrarse para cerrar el plan.
+
+## Enmienda · Etiquetas, lugares y zoom táctil del mapa 2D
+
+- Spec de la enmienda: Aprobada por la persona solicitante el 2026-11-24.
+- Estado del plan: Aprobado.
+- Aprobación técnica de la enmienda: persona solicitante, 2026-11-24.
+
+### Diseño y cambios por área
+
+1. **Marcadores.** Retirar el texto que agrega `ZooMapSvg` debajo de los puntos. Los servicios locales y los tipos de servicio al visitante de la API (baños, comida y boletaje) usan el token vino. El resto usa el verde de los recintos y todos comparten el halo azul. `MapMarker` mantiene el nombre y tipo en la etiqueta accesible. Acotar el ancho táctil según el vecino más próximo para que ambos centros sigan disponibles. El ViewModel resuelve cualquier marcador seleccionable desde la misma selección usada por `MapPlaceCard` y por el destino existente. Con GPS se reutilizan la polilínea y su halo de destino. Al cerrar la ficha se conserva el encuadre y cualquier destino fijado.
+2. **Comida.** Compartir el anclaje existente de `establecimientos_comida` entre el mapper de `zoo_places` y el respaldo móvil `food-court`. Mostrar el marcador de la API cuando esté visible y tenga coordenadas utilizables, incluidas las respuestas en caché. La presencia de otros lugares no afecta al respaldo de comida. Corregir al renderizar las coordenadas antiguas del respaldo que pueda contener la caché.
+3. **Zoom.** Ampliar el rango común a `1×`–`4×` en `constants/zoo.ts`. Reutilizar `PanResponder` y registrar el punto medio y la distancia inicial de los dedos. Calcular el desplazamiento en coordenadas del visor, compensar el cambio de escala alrededor del punto medio y acotarlo con el tamaño medido del plano y del visor. Al añadir o retirar un dedo, tomar la transformación vigente como origen para evitar saltos. El visor captura el arrastre y el gesto con dos dedos y deja que los toques simples lleguen a los marcadores. Aplicar una sola transformación al SVG, marcadores, GPS y ruta. El botón de restablecer conserva la vista inicial vigente de `2.2×`.
+
+### Contrato y datos
+
+La ficha 2D empieza compacta al abrir el mapa. `MapScreen` conserva el modo expandido entre selecciones y cierres. La clave del punto reinicia el desplazamiento de la ficha cuando cambia el contenido. Un botón táctil de fondo cierra la ficha desde un espacio vacío, detrás de los marcadores y dentro del visor que captura los gestos. Los botones explícitos permiten desplegar, plegar y cerrar con lector de pantalla. Los detalles tienen desplazamiento propio cuando superan el espacio disponible.
+
+El cliente reutiliza los endpoints y repositorios actuales. Consume los campos disponibles de `zoo_places` y la caché existente. La consulta en `arca_pruebas` documentada en la spec confirmó que se puede trabajar con el esquema vigente. No se requiere DBR nueva, cambio de permisos, almacenamiento adicional ni dependencias.
+
+### Mapeo de criterios a pruebas
+
+| Criterio | Prueba automatizada | Ubicación en móvil |
+|---|---|---|
+| CA-11 | El SVG carece de texto de marcador y el punto sigue siendo accesible y seleccionable. | `__tests__/mapAccessibility.test.tsx` |
+| CA-12 | Se ve un solo punto de comida en el anclaje canónico con datos de API. El respaldo se usa si falta ese lugar aunque haya otros lugares, incluso con coordenadas antiguas en caché. | `__tests__/mapScreen.test.tsx` |
+| CA-13 | Solo los servicios usan vino y todos los puntos usan el halo azul. Dos vecinos conservan áreas táctiles independientes y cada toque muestra su barra y conduce la polilínea al punto correcto. Se comprueba desplegar y plegar, reemplazar la ficha con otro punto, cerrar desde el fondo y conservar el encuadre y el destino fijado. | `__tests__/mapScreen.test.tsx`, `__tests__/mapAccessibility.test.tsx` |
+| CA-14 | Separar y juntar los dedos cambia la escala, el centro del gesto conserva su anclaje dentro de los límites y ambos métodos respetan `1×`–`4×`. Se cubren el cambio de número de dedos, el arrastre, el toque simple y el restablecimiento. | `__tests__/mapViewport.test.tsx` |
+
+La prueba manual en Android verificará el gesto con dos dedos y las fichas de los puntos señalados. Se ejecutarán TypeScript y la suite móvil.
+
+### Constitution Check
+
+| Principio | Cumple | Evidencia |
+|---|---|---|
+| I. Stack mínimo y portable | Sí | React Native y RN-SVG aprobados en ADR 0004 y ADR 0015. |
+| II. La spec manda | Sí | Spec y plan de la enmienda aprobados. El checklist del mismo NNN registra las tareas y su revisión antes del código. |
+| III. Lógica separada de la interfaz | Sí | Geometría en utilidades y estado de presentación en ViewModels. Los componentes muestran el plano y las fichas. |
+| IV. Un test por criterio | Previsto | CA-11 a CA-14 tienen coberturas automatizadas identificadas. |
+| V. Una sola fuente de verdad | Sí | Se reutilizan datos de API y caché. El respaldo se limita a la geometría fija del plano. |
+| VI. Código en inglés, personas en español | Sí | Identificadores en inglés. Texto visible, accesibilidad y documentación en español. |
+
+### Secuencia y aprobación
+
+Implementar y probar primero los marcadores y las fichas, después el visor y sus gestos. El riesgo principal es que un arrastre intercepte el toque de un marcador o que el cambio de dedos produzca un salto. Las pruebas cubrirán ambos casos. La aprobación técnica corresponde al equipo de móvil o a la persona solicitante si ejerce ese rol.

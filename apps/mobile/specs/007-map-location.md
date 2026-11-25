@@ -262,6 +262,8 @@ flowchart TD
 
 ## Enmienda V2.2 — Controles Interactivos del Mapa (Zoom, Desplazamiento y Centrado)
 
+El rango, el gesto y el restablecimiento descritos en esta sección son los de V2.2. La enmienda [mobile-017 CA-14](017-canonical-zoo-map-svg.md#enmienda--etiquetas-lugares-y-zoom-táctil-del-mapa-2d) define los controles vigentes del plano canónico.
+
 - Estado: **Implementada**
 - Solicitante / responsable funcional: Equipo ARCA-NB
 - Sin nuevas dependencias externas (usa primitivas de React Native + controles accesibles para cumplir `CA-07`).

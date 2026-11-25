@@ -1,4 +1,5 @@
 import { Achievement, Animal, User, Mission, ZooEvent, News, MapPlace, MapSection } from '../models';
+import { FOOD_SERVICE_MAP_ANCHOR, FOOD_SERVICE_MAP_ID } from '../constants/zoo';
 
 export const MOCK_ANIMALS: Animal[] = [
   {
@@ -249,13 +250,12 @@ export const MOCK_MAP_PLACES: MapPlace[] = [
     gpsLon: -98.7204, // TODO: reemplazar con medición real
   },
   {
-    id: 'food-court',
+    id: FOOD_SERVICE_MAP_ID,
     name: 'Comida',
     kind: 'service',
     sectionId: 'zone-services',
     description: 'Puesto de alimentos y bebidas.',
-    mapX: 0.70,
-    mapY: 0.83,
+    ...FOOD_SERVICE_MAP_ANCHOR,
     visible: true,
     gpsLat: 20.0809, // TODO: reemplazar con medición real
     gpsLon: -98.7208, // TODO: reemplazar con medición real

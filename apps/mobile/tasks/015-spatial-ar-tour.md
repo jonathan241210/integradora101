@@ -28,10 +28,10 @@
 - [x] **T-13** (CA-06, RN-06): Fallback temporal confirmado: ruteo sigue usando `zooPaths.ts` (`pathfinding.ts`); no se inventan aristas. `path_nodes` se cargan desde API/caché para integración futura; `path_edges` queda diferido.
 - [x] **T-14** (CA-06): `pathfinding.test.ts` incluye test que nombra **CA-06** para fallback con `zooPaths.ts` y grafo inválido/sin aristas sin ruta inventada. CA-06 completo por BD diferido hasta T-02.
 - [ ] **T-15** (CA-07, CA-08, RN-01): Revisar permisos, textos en español, accesibilidad de controles AR/Mapa 2D, y privacidad (sin captura/grabación). Ajustar labels/hints y estados de error.
-- [ ] **T-16** (CA-07, CA-08): Agregar tests que nombren **CA-07** y **CA-08** para mensajes de permiso denegado, fallback, y ausencia de APIs de captura/grabación en el flujo AR.
+- [~] **T-16** (CA-07, CA-08): `arTourOverlay.test.tsx` cubre la denegación o el fallo del permiso de cámara y el regreso al mapa 2D (**CA-07**). Queda pendiente verificar la ausencia de captura o grabación (**CA-08**).
 - [~] **T-20** (CA-04b, CA-04c, RN-07): Implementar panel dinámico "Cerca de ti" en AR con recintos/`zoo_places` cercanos (GPS/FOV), selección por toque, tarjeta simple, llegada <=20 m y visitados en sesión. Quitar botones Anterior/Siguiente y flujo estático de tour. **En progreso (enmienda).**
 - [x] **T-22** (CA-03, CA-05): Mostrar `path_nodes` cercanos como tarjeta contextual (no punto AR físico), usando datos GPS cargados desde API/caché. Evidencia: `nearbyPathNode` en `MapScreen` + `ar-nearby-path-node-card` en `ArTourOverlay`.
-- [ ] **T-21** (CA-04b, CA-04c): Agregar tests que nombren **CA-04b** y **CA-04c** para panel cercano, selección, llegada y visitados en sesión.
+- [x] **T-21** (CA-04b, CA-04c): `arTourOverlay.test.tsx` cubre la selección de recintos y lugares en el panel cercano, la apertura de fichas y los avisos de llegada con estado visitado en sesión.
 
 ## Calidad y entrega
 

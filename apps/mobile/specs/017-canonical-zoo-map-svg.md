@@ -53,7 +53,7 @@ Esta spec define la integración del SVG canónico en mobile, el contrato de coo
 - **CA-01 (SVG canónico 1600x1200):** Dado que el visitante abre la pestaña Mapa, cuando la pantalla carga, entonces se renderiza el SVG canónico con `viewBox 0 0 1600 1200`, fondo/caminos/recintos/lugares/contorno visibles, sin depender del SVG esquemático anterior de `1000x1400`.
 - **CA-02 (Contrato de coordenadas):** Dado un recinto o `zoo_place` con `map_x` y `map_y` válidos (0..1), cuando se renderiza el mapa, entonces su marcador se posiciona usando esas coordenadas normalizadas sobre el viewBox canónico; no se usa GPS si `map_x/map_y` están presentes.
 - **CA-03 (Fallback GPS):** Dado un recinto visible sin `map_x/map_y` pero con `gps_lat/gps_lon`, cuando se renderiza el mapa, entonces se usa `geoTransform` recalibrado al viewBox canónico; si no hay coordenadas utilizables, el punto no se dibuja en posición falsa y se registra/gestiona de forma controlada (sin crash).
-- **CA-04 (Zoo places visibles):** Dado un `zoo_place` visible con `map_x/map_y`, cuando el mapa carga, entonces se muestra un marcador diferenciable de recinto; los `zoo_places` sin forma SVG pero con datos válidos pueden mostrarse como marcador de datos si tienen `map_x/map_y` o GPS calibrado, según regla definida en plan.
+- **CA-04 (Zoo places visibles):** Dado un `zoo_place` visible con `map_x/map_y`, cuando el mapa carga, entonces se muestra un marcador cuyo nombre y tipo se identifican en la ficha y en la etiqueta accesible. Los `zoo_places` sin forma SVG pero con datos válidos pueden mostrarse como marcador de datos si tienen `map_x/map_y` o GPS calibrado, según regla definida en plan. La apariencia común de los marcadores está descrita en CA-13.
 - **CA-05 (IDs SVG estables):** Dado el SVG canónico, cuando se inspecciona, entonces las formas mapeables tienen IDs estables (`svg_id`) para recintos y lugares; la relación `svg_id` ↔ registro DBR/BD queda documentada en artefacto de mapeo, no inferida por texto visible en UI.
 - **CA-06 (Sin capa decorativa engañosa):** Dado el mapa canónico, cuando se renderiza, entonces no se muestran marcadores decorativos `icons_auto` como fuente de verdad; los marcadores visibles provienen de datos/mapeo.
 - **CA-07 (Recalibración de overlays):** Dado el nuevo viewBox, cuando el usuario usa pan/zoom, centra ubicación, ve punto azul o ruta azul, entonces `DestinationRouteLine`, `UserLocationMarker`, viewport y cálculo de ruta operan en el mismo sistema de coordenadas `1600x1200` sin desplazamientos evidentes.
@@ -119,3 +119,36 @@ Esta spec define la integración del SVG canónico en mobile, el contrato de coo
   - `apps/api/src/database/data/dbr019-enclosures-gps-update.json`
   - `apps/api/src/database/data/dbr019-zoo-places-normalized.json`
   - `apps/api/src/database/seeders/Dbr019MapCoordinatesSeeder.php`
+
+## Enmienda · Etiquetas, lugares y zoom táctil del mapa 2D
+
+- Estado: Aprobada
+- App dueña y afectada: `mobile`.
+- Aprobación funcional: persona solicitante, 2026-11-24.
+
+### Problema y alcance
+
+Los nombres que acompañan a los marcadores saturan el plano. Aparece un punto de comida fuera del área esperada, los puntos de lugar se presentan como botones sin acción y el zoom se limita a `2.5×` mediante botones. El ajuste cubre la pestaña Mapa en 2D y reutiliza el trazado existente para todos los marcadores. El mapa en AR, los permisos, el cálculo de rutas, los contratos de API y la persistencia quedan fuera de alcance.
+
+### Estado actual · 2026-11-24
+
+- `ZooMapSvg` agrega texto con contorno claro debajo de los marcadores. El SVG base ya carece de texto y círculos decorativos.
+- El plano tiene la forma `establecimientos_comida`. La app ya ubica el marcador del lugar de la API dentro de esa forma. El respaldo local `food-court`, correspondiente al plano anterior, conserva otras coordenadas y sigue visible cuando llega el lugar de la API, porque el filtro busca `food`.
+- Los marcadores basados en `zoo_places` reciben un manejador vacío. La consulta de lugares visibles en `arca_pruebas` confirmó seis candidatos con coordenadas, incluido Establecimientos de comida. El color por sí solo no identifica los dos reportados.
+- `php artisan db:table zoo_places --database=mysql` confirmó `map_x`, `map_y` e `is_visible` según la migración `2026_11_17_000019` y la DBR-019. La relación entre el lugar de comida y su forma ya existe en la app. La enmienda reutiliza los datos existentes y no requiere cambios de esquema ni DBR.
+
+### Criterios de aceptación
+
+- **CA-11:** Al abrir el mapa 2D, se ven los puntos sin nombres flotantes ni contornos claros de texto. Cada punto conserva un nombre accesible y al seleccionarlo se puede leer el nombre en la ficha.
+- **CA-12:** Al abrir el mapa con el lugar de comida de la API disponible, se ve un solo punto de comida dentro de `establecimientos_comida`. Al abrirlo sin conexión y sin ese lugar en la caché, el respaldo local se muestra dentro del mismo rectángulo y sigue siendo seleccionable.
+- **CA-13:** Los marcadores de servicios al visitante se muestran en vino y el resto en verde. Todos usan el mismo halo azul al seleccionarlos. La ficha empieza como una barra compacta con el nombre y «Ver detalles». Al desplegarla se muestra el tipo o descripción y la acción de fijar o cancelar el destino. Seleccionar otro punto reemplaza el contenido y conserva el modo expandido hasta tocar «Ver menos». El botón «Cerrar» o un toque en un espacio vacío cierran la ficha y conservan ese modo para la próxima selección, el encuadre y el destino fijado, si lo hay. Los gestos de arrastre y zoom siguen operando con la ficha visible. Con ubicación activa, el punto seleccionado se conecta a la ruta existente por los senderos.
+- **CA-14:** El mapa permite ampliar y reducir con dos dedos y con los botones accesibles. El límite es `4×` y el mínimo sigue en `1×`. Al acercar con dos dedos, el mapa mantiene el área bajo el centro del gesto cuando lo permiten los bordes. Los marcadores, la ruta y la posición del visitante se mueven junto al plano. El arrastre con un dedo y el botón de restablecer siguen disponibles.
+
+### Reglas y validación
+
+- **RN-08:** Se conserva el plano canónico y su sistema de coordenadas. El punto de comida usa la forma ya identificada tanto con API como con el respaldo local. Se mantienen las reglas existentes de visibilidad de los demás lugares.
+- **RN-09:** Se mantienen los botones de zoom como alternativa al gesto, conforme a [`mobile-007` CA-15 y RN-16](007-map-location.md). No se requieren nuevos permisos ni dependencias para el gesto.
+- El zoom y los cambios del mapa se comprueban con pruebas automatizadas que nombren CA-11 a CA-14. En Android se verifica el gesto con dos dedos y se contrastan los puntos con el plano.
+- Para verificar los dos puntos reportados en el teléfono, queda pendiente una captura con ambos marcados o sus nombres. La misma acción de abrir ficha se aplica a todos los puntos visibles de lugar.
+- La persona solicitante confirmó el 2026-11-24 que el comportamiento de selección y ruta debe ser el mismo para los lugares y los recintos. La revisión en solo lectura de `arca_pruebas` confirmó 60 recintos y 6 lugares con coordenadas visibles, con centros distintos después de aplicar los anclajes de Inicio y Comida. Varias parejas están separadas por menos de 32 unidades del SVG.
+- La persona solicitante aprobó la barra compacta con detalles desplegables y cierre al tocar un espacio vacío del mapa el 2026-11-24.

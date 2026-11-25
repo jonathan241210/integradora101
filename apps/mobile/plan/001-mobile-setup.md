@@ -9,6 +9,8 @@
 ## Diseño de solución
 La aplicación móvil en `apps/mobile` usa React Native **0.86.3** con **Expo SDK 57**, conforme al ADR 0004 aprobado. El workspace raíz ya está configurado con `npm workspaces` y un lockfile compartido. `expo-router` resuelve las rutas bajo `src/app`; Metro observa el monorepo y permite resolver las dependencias de runtime anidadas y los paquetes `@arca/*`. Las dependencias de React Native se mantienen alineadas con las versiones que `npx expo install --check` recomienda para SDK 57. El flujo local de inicio es `npx expo start` desde `apps/mobile`.
 
+El mantenimiento del 2026-11-24 sube Expo a `57.0.34` y alinea los parches recomendados de Metro Runtime, Constants, Dev Client, Image Picker, Location, Notifications y Router en el manifiesto móvil y el lockfile del monorepo.
+
 ## Cambios por área
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|

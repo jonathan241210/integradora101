@@ -106,6 +106,7 @@ export interface MapPlace {
   id: string;
   name: string;
   kind: MapPlaceKind;
+  isVisitorService?: boolean;
   sectionId: string;
   description?: string;
   mapX: number;
