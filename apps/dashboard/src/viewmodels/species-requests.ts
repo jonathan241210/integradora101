@@ -740,7 +740,7 @@ export function acceptDialogCopy(
     return {
       title: "Aceptar sin publicar",
       message:
-        "¿Aceptar sin publicar? Los cambios quedarán guardados, pero la especie seguirá oculta en el catálogo. Podrás republicarla desde TulanPedia, pestaña «Publicadas».",
+        "¿Aceptar sin publicar? Los cambios quedarán guardados, pero la especie seguirá oculta en el catálogo. Podrás republicarla desde Zoopedia, pestaña «Publicadas».",
       confirmLabel: "Confirmar",
       danger: false,
     };

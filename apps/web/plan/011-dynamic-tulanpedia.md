@@ -389,3 +389,5 @@ Aprobaciones requeridas:
 | Equipo (ADR) | ADR 0028 | Aceptado |
 
 Evidencias requeridas para marcar la spec como Implementada: las de T-16 y los resultados de T-15. Este plan no cambia el estado de la spec ni de las tasks.
+
+**Nombre visible del catálogo (CA-23).** Actualizar ambos textos del HTML y verificar el enlace y el título del catálogo.

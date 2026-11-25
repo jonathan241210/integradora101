@@ -1,4 +1,4 @@
-/* TulanPedia dinámica (web-011). Script clásico: expone ArcaTulanpedia.
+/* Zoopedia dinámica (web-011). Script clásico: expone ArcaTulanpedia.
    Todo texto de la API se escribe con textContent; este módulo no accede a la red
    (la lectura ocurre solo en js/api.js, función getSpecies). */
 (function (root) {

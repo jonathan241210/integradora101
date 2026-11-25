@@ -246,12 +246,12 @@ const INVENTORY: { screen: string; file: string; skeleton: string; kind: string 
   { screen: "Reportes / Boletos", file: "views/TicketReportView.tsx", skeleton: "TicketReportSkeleton", kind: "reporte" },
   { screen: "Reportes / Cancelaciones", file: "views/CancellationReportView.tsx", skeleton: "CancellationReportSkeleton", kind: "reporte" },
   { screen: "Historial de taquilla", file: "views/TicketHistoryView.tsx", skeleton: "TableSkeleton", kind: "tabla" },
-  { screen: "TulanPedia / Solicitudes", file: "views/SpeciesRequestsView.tsx", skeleton: "TableSkeleton", kind: "tabla" },
+  { screen: "Zoopedia / Solicitudes", file: "views/SpeciesRequestsView.tsx", skeleton: "TableSkeleton", kind: "tabla" },
   { screen: "Momentos", file: "views/MemoriesView.tsx", skeleton: "TableSkeleton", kind: "tabla" },
   { screen: "Noticias", file: "views/NewsView.tsx", skeleton: 'CardGridSkeleton kind="news"', kind: "tarjetas" },
   { screen: "Eventos", file: "views/EventsView.tsx", skeleton: 'CardGridSkeleton kind="events"', kind: "tarjetas" },
   { screen: "Recintos", file: "views/EnclosuresView.tsx", skeleton: 'CardGridSkeleton kind="enclosures"', kind: "tarjetas" },
-  { screen: "TulanPedia / Publicadas", file: "views/PublishedSpeciesView.tsx", skeleton: 'CardGridSkeleton kind="species"', kind: "tarjetas" },
+  { screen: "Zoopedia / Publicadas", file: "views/PublishedSpeciesView.tsx", skeleton: 'CardGridSkeleton kind="species"', kind: "tarjetas" },
   { screen: "Panel principal", file: "views/DashboardView.tsx", skeleton: "DashboardSummarySkeleton", kind: "panel" },
   { screen: "Detalle de especie publicada", file: "views/PublishedSpeciesDetailView.tsx", skeleton: "DetailSkeleton", kind: "detalle" },
   { screen: "Detalle de solicitud", file: "views/SpeciesRequestDetailView.tsx", skeleton: "DetailSkeleton", kind: "detalle" },
@@ -328,7 +328,7 @@ describe("CA-61 unified-reports-and-feedback (loading-skeletons): las tablas lle
   it.each([
     ["Usuarios", "views/UsersView.tsx"],
     ["Historial de taquilla", "views/TicketHistoryView.tsx"],
-    ["TulanPedia Solicitudes", "views/SpeciesRequestsView.tsx"],
+    ["Zoopedia Solicitudes", "views/SpeciesRequestsView.tsx"],
     ["Momentos", "views/MemoriesView.tsx"],
   ])("%s pasa a su esqueleto las mismas columnas de su DataTable", (_screen, file) => {
     const text = source(file);
@@ -362,7 +362,7 @@ describe("CA-62 unified-reports-and-feedback (loading-skeletons): las tarjetas u
     expect(count(markup, "arca-skeleton-card ")).toBe(cards);
   });
 
-  it("TulanPedia Publicadas lleva la imagen 4:3 de su tarjeta", () => {
+  it("Zoopedia Publicadas lleva la imagen 4:3 de su tarjeta", () => {
     const markup = renderToStaticMarkup(<CardGridSkeleton kind="species" delayMs={0} />);
 
     expect(markup).toContain("aspect-ratio:4 / 3");

@@ -29,7 +29,7 @@ export function TulanpediaTabs({
 
   return (
     <>
-      <div className="section-tabs" role="tablist" aria-label="TulanPedia" onKeyDown={onKeyDown}>
+      <div className="section-tabs" role="tablist" aria-label="Zoopedia" onKeyDown={onKeyDown}>
         {tulanpediaTabs.map((item) => (
           <button
             key={item.id}

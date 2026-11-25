@@ -204,9 +204,9 @@ Orígenes de navegador (los que ve el usuario): `http://localhost:5173` (PWA), `
 
 Los proxies de PWA y dashboard reenvían con `changeOrigin: false`, así que la API ve el host del navegador (`localhost:5173` o `localhost:5174`) y lo compara con `SANCTUM_STATEFUL_DOMAINS`.
 
-## 8. Flujo de prueba extremo a extremo: publicación de una especie en TulanPedia
+## 8. Flujo de prueba extremo a extremo: publicación de una especie en Zoopedia
 
-Caso: la especie ya existe (se crea hoy al registrar un animal en la PWA). El veterinario solicita publicarla en TulanPedia, `zoo-admin` revisa la solicitud en el dashboard y, si la acepta, la especie aparece en el portal.
+Caso: la especie ya existe (se crea hoy al registrar un animal en la PWA). El veterinario solicita publicarla en Zoopedia, `zoo-admin` revisa la solicitud en el dashboard y, si la acepta, la especie aparece en el portal.
 
 **Hoy no se puede ejecutar de punta a punta.** El flujo está en Borrador y no tiene código en ninguna app (búsqueda sin coincidencias en `apps/api`, `apps/pwa`, `apps/dashboard` y `apps/web`).
 
@@ -215,7 +215,7 @@ Caso: la especie ya existe (se crea hoy al registrar un animal en la PWA). El ve
 | 1 | `veterinario@arca.local` en `http://localhost:5173` | Inicia sesión y entra a la PWA (`home = pwa`). | Implementado: [pwa-003](../apps/pwa/specs/003-staff-login.md), Aprobada. |
 | 2 | Veterinario en la PWA | Elige una especie existente y envía la solicitud de publicación o de actualización (también sobre una especie despublicada); consulta «Mis solicitudes». | **Por crear.** [pwa-005](../apps/pwa/specs/005-species-request-submission.md) en Borrador. Depende de [api-014](../apps/api/specs/014-species-requests.md) (Aprobada) y de [DBR-013](database/requests/DBR-013-species-requests.md) (aprobada por BD y backend; migración aplicada en `arca_pruebas`, lote 5, verificada; «Lista para backend»). |
 | 3 | `direccion_zoo@arca.local` en `http://localhost:5174` | Inicia sesión con 2FA, revisa la solicitud y la publica (o la acepta sin publicar, si la especie está despublicada). Después gestiona la publicación en «Especies publicadas». | **Por crear.** [dashboard-010](../apps/dashboard/specs/010-public-content-management.md) Aprobada (absorbe dashboard-009). Requiere `species.review`, que [api-014](../apps/api/specs/014-species-requests.md) asigna en su tarea futura T-SEED; hoy el seeder no lo define. |
-| 4 | Visitante en `http://localhost:8080` | La especie publicada aparece en TulanPedia. | **Por crear.** [web-011](../apps/web/specs/011-dynamic-tulanpedia.md) Aprobada. Depende de [ADR 0028](adr/0028-dynamic-tulanpedia-catalog.md) (Aceptado). Hoy TulanPedia muestra fichas de muestra fijas en `index.html`. |
+| 4 | Visitante en `http://localhost:8080` | La especie publicada aparece en Zoopedia. | **Por crear.** [web-011](../apps/web/specs/011-dynamic-tulanpedia.md) Aprobada. Depende de [ADR 0028](adr/0028-dynamic-tulanpedia-catalog.md) (Aceptado). Hoy Zoopedia muestra fichas de muestra fijas en `index.html`. |
 
 Partes que sí puedes probar hoy: el login del veterinario en la PWA, la lectura pública de especies (`GET /api/v1/species`, [api-006](../apps/api/specs/006-public-catalog-read.md), Aprobada) y las noticias y eventos del portal ([web-009](../apps/web/specs/009-dynamic-news-events.md)).
 

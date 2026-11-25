@@ -26,7 +26,7 @@ class GlobalSearchResultsTest extends AdminFeatureTestCase
         $this->assertSame(['users', 'news', 'events', 'enclosures', 'tulanpedia'], array_column($groups, 'section'));
         $news = collect($groups)->firstWhere('section', 'news')['items'][0];
         $this->assertSame(['field' => 'Descripción', 'snippet' => 'Resumen '.$tag], $news['match']);
-        $this->assertSame(['Usuarios', 'Noticias', 'Eventos', 'Recintos', 'TulanPedia'], array_column($groups, 'label'));
+        $this->assertSame(['Usuarios', 'Noticias', 'Eventos', 'Recintos', 'Zoopedia'], array_column($groups, 'label'));
         foreach ($groups as $group) {
             $this->assertSame(['section', 'label', 'best_score', 'items'], array_keys($group));
             foreach ($group['items'] as $item) {

@@ -1,4 +1,4 @@
-/* TulanPedia dinámica (web-011). Solo clases con prefijo tp-; usa los tokens de styles.css. */
+/* Zoopedia dinámica (web-011). Solo clases con prefijo tp-; usa los tokens de styles.css. */
 
 .tp-status { margin: 0 0 20px; display: grid; justify-items: center; gap: 14px; padding: 24px 16px; text-align: center; color: var(--muted-foreground); font-size: 17px; }
 .tp-status[hidden] { display: none; }

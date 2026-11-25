@@ -120,7 +120,7 @@ El hosting y el servidor de producción siguen por definir. Cuando se elijan, se
 - [ ] Los enlaces «Volver al inicio», «Ver noticias» y «Ver eventos» funcionan desde una URL inexistente con varios segmentos.
 - [ ] **Evidencia:** `curl -I <PORTAL>/ruta/inexistente` responde `404` y `curl -I <PORTAL>/index.html` responde `200`; se adjunta además una captura de la página institucional.
 
-## Portal público (TulanPedia) (api-015, web-011)
+## Portal público (Zoopedia) (api-015, web-011)
 
 - [ ] `CORS_ALLOWED_ORIGINS` incluye el origen exacto del portal (en desarrollo, `http://localhost:8080`), el mismo requisito de `web-009`. `127.0.0.1:8080` es otro origen.
 - [ ] DBR-013 aplicada en el ambiente (columnas `is_published`, `published_fields`, `image_path`, `deleted_at` en `species`) (api-015).

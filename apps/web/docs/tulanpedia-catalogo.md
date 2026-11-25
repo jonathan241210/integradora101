@@ -1,4 +1,4 @@
-# Portal: TulanPedia dinámica
+# Portal: Zoopedia dinámica
 
 Referencia local de `web-011` (`specs/011-dynamic-tulanpedia.md`). Excepción de arquitectura: `docs/adr/0028-dynamic-tulanpedia-catalog.md`, que extiende el patrón de `docs/adr/0024-web-static-portal-exception.md` (HTML y JavaScript estático, sin `@arca/api-client`, sin build, pruebas con `node --test`).
 

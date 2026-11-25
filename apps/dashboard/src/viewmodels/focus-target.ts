@@ -56,7 +56,7 @@ export function resolveFocusAction(
   return currentSection === target.section ? "locate-only" : "navigate";
 }
 
-/** TulanPedia: `kind` decide la pestaña (CA-18). */
+/** Zoopedia: `kind` decide la pestaña (CA-18). */
 export function tabForKind(kind: FocusTarget["kind"]): TulanpediaTab | null {
   if (kind === "published-species") return "published";
   if (kind === "species-request") return "requests";

@@ -6,7 +6,7 @@ import { PublishedSpeciesSection } from "./PublishedSpeciesSection";
 import { SpeciesRequestsSection } from "./SpeciesRequestsSection";
 
 /**
- * TulanPedia (dashboard-010 CA-63): pestañas «Solicitudes» y «Publicadas».
+ * Zoopedia (dashboard-010 CA-63): pestañas «Solicitudes» y «Publicadas».
  * «Solicitudes» abre con el filtro «Pendiente»; el aviso de «Publicadas»
  * cambia a ella (CA-64). El detalle no tiene URL propia (CA-65). Un solo encabezado fijo
  * con las pestañas debajo, como «Reportes» (CA-66).
@@ -18,7 +18,7 @@ export function TulanpediaSection({ focus = null }: { focus?: { tab: TulanpediaT
     <>
       <SectionHeading
         eyebrow="Administración"
-        title="TulanPedia"
+        title="Zoopedia"
         description="Revisa las solicitudes de especies y gestiona las especies publicadas."
       />
       <TulanpediaTabs active={tab} onSelect={select}>

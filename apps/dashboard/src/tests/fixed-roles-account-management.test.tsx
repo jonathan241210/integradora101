@@ -110,13 +110,13 @@ describe("alta y edición de cuentas (dashboard-017)", () => {
   it("CA-02 fixed-roles-account-management: el rol elegido muestra las secciones que abre según sus permisos", () => {
     expect(sectionsForPermissions(["news.manage", "species.review", "public-content.view"])).toEqual([
       "Noticias",
-      "TulanPedia",
+      "Zoopedia",
     ]);
     expect(roleSummary("communications", staffOptions.roles)?.sections).toEqual([
       "Noticias",
       "Eventos",
       "Momentos",
-      "TulanPedia",
+      "Zoopedia",
     ]);
     expect(roleSummary("admin", staffOptions.roles)).toBeNull();
 
@@ -132,7 +132,7 @@ describe("alta y edición de cuentas (dashboard-017)", () => {
     );
 
     expect(creating).toContain("Secciones que abre este rol");
-    expect(creating).toContain("Noticias, Eventos, Momentos, TulanPedia");
+    expect(creating).toContain("Noticias, Eventos, Momentos, Zoopedia");
     expect(editing).toContain("Venta, Historial");
     expect(render(readyState({ items: [] }))).not.toContain("Secciones que abre este rol");
   });

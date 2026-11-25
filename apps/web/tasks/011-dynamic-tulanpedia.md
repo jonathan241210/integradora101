@@ -310,3 +310,5 @@ Cobertura: 13 de 13 RN tienen al menos una tarea.
 - CI: no verificado en esta sesión.
 
 Estado final de estas tareas: **En progreso** (plan y tasks aprobados por Backend). La spec sigue **Aprobada**.
+
+**Nombre visible del catálogo (CA-23).** Comprobar el nombre «Zoopedia» en las pruebas de CA-23.

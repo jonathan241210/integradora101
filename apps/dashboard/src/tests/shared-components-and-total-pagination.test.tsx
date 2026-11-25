@@ -83,7 +83,7 @@ describe("CA-50 unified-reports-and-feedback", () => {
 });
 
 describe("CA-51 unified-reports-and-feedback", () => {
-  it("TulanPedia (Solicitudes y Publicadas) pagina con total y números de página", () => {
+  it("Zoopedia (Solicitudes y Publicadas) pagina con total y números de página", () => {
     const requests = renderToStaticMarkup(
       <SpeciesRequestsView
         {...viewModelFor(
@@ -288,7 +288,7 @@ describe("CA-28 ticket-cancellation-report", () => {
 });
 
 describe("CA-80 public-content-management", () => {
-  it("Solicitudes y Publicadas de TulanPedia muestran páginas con total (current_page, last_page y total de meta)", () => {
+  it("Solicitudes y Publicadas de Zoopedia muestran páginas con total (current_page, last_page y total de meta)", () => {
     expect(read("apps/dashboard/src/viewmodels/species-requests.ts")).toContain("lastPage: page.meta.last_page");
     expect(read("apps/dashboard/src/viewmodels/published-species.ts")).toContain("total: page.meta.total");
     expect(read("apps/dashboard/src/views/SpeciesRequestsView.tsx")).toContain("lastPage={list.lastPage}");

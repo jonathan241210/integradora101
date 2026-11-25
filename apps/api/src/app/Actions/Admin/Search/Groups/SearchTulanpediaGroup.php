@@ -15,7 +15,7 @@ class SearchTulanpediaGroup extends SearchGroup
 
     public function label(): string
     {
-        return 'TulanPedia';
+        return 'Zoopedia';
     }
 
     public function permission(): string

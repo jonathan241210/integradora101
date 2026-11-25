@@ -235,7 +235,7 @@ it("CA-62 species-request-decisions: textos de los diálogos de aceptar", async 
     "¿Aceptar y publicar esta especie? Quedará visible en el catálogo público para los visitantes.",
   );
   expect(acceptDialogCopy(detail, "accept-unpublished").message).toBe(
-    "¿Aceptar sin publicar? Los cambios quedarán guardados, pero la especie seguirá oculta en el catálogo. Podrás republicarla desde TulanPedia, pestaña «Publicadas».",
+    "¿Aceptar sin publicar? Los cambios quedarán guardados, pero la especie seguirá oculta en el catálogo. Podrás republicarla desde Zoopedia, pestaña «Publicadas».",
   );
 
   const { h } = await opened(detail);

@@ -279,3 +279,5 @@ Pedida por el responsable funcional: «busco una noticia y salen primero eventos
 - **Motivo de cancelación en la búsqueda de boletos (`api-022` CA-26, RN-17):** el campo «Motivo de cancelación» muestra la etiqueta del motivo (`cancellation_reason_label`, o «Sin clasificar (anterior)» si el código es nulo), no el texto libre. El comentario no cambia de campo. No cambia el CA de búsqueda de `ticket-history`; solo cambia el valor que se muestra.
 - **Fecha de compra en la zona de negocio (`api-025` RN-02, CA-02):** «Fecha de compra» se formatea con `arca.timezone` en lugar de `config('app.timezone')` (UTC). Corrige el valor de esta spec, que `api-025` ya anotaba como divergencia.
 - Esta nota no añade grupos, permisos ni campos de búsqueda. La implementación la hace `api-022` T-19 y `api-025` T-08.
+
+**Nombre visible del catálogo (CA-23).** El grupo de especies de la búsqueda administrativa devuelve `label` con el valor «Zoopedia» y conserva la clave `section` con el valor `tulanpedia`.

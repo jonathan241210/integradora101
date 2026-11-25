@@ -29,7 +29,7 @@ describe("CA-36 enclosure-actions-global-search", () => {
     expect(plan).toEqual({ type: "section", section: "users", tab: null });
   });
 
-  it("la acción de TulanPedia lleva la pestaña; una sección no permitida se ignora", () => {
+  it("la acción de Zoopedia lleva la pestaña; una sección no permitida se ignora", () => {
     const tab = resolveSelection(
       result({ section: "tulanpedia", id: null, isAction: true, action: { id: "species.reject", label: "Rechazar solicitud", opens: null, tab: "requests" } }),
       context,
