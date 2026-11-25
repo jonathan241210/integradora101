@@ -160,6 +160,7 @@ export function viewModelFor(
       closeDecision: noop,
       changeRejectReason: noop,
       confirmDecision: noop,
+      toggleModel3d: noop,
       dismissNotice: noop,
       ...actionSpies,
     },

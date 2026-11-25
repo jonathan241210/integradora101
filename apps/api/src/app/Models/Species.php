@@ -29,6 +29,7 @@ class Species extends Model
         'gestation_period',
         'size_cm',
         'model_3d_path',
+        'model_3d_enabled',
         'is_published',
         'published_at',
         'unpublished_at',
@@ -39,6 +40,7 @@ class Species extends Model
     protected function casts(): array
     {
         return [
+            'model_3d_enabled' => 'boolean',
             'is_published' => 'boolean',
             'published_at' => 'datetime',
             'unpublished_at' => 'datetime',

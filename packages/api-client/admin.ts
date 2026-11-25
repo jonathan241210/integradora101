@@ -511,6 +511,17 @@ export function createAdminApi(http: ExtendedHttpClient) {
       image(id: number): Promise<DownloadedFile> {
         return http.download(`${base}/species-publication-requests/${id}/image`);
       },
+      async toggleModel3d(
+        id: number,
+        enabled: boolean,
+      ): Promise<SpeciesRequestDetailDto> {
+        return unwrap(
+          await http.patch<Enveloped<SpeciesRequestDetailDto>>(
+            `${base}/species-publication-requests/${id}/model-3d`,
+            { enabled },
+          ),
+        );
+      },
     },
     publishedSpecies: {
       async list(

@@ -24,6 +24,8 @@ class ListPublishedSpeciesAction
                 'species.distribution',
                 'species.habitat',
                 'species.image_path',
+                'species.model_3d_path',
+                'species.model_3d_enabled',
                 'species.fun_fact',
                 'species.published_fields',
             ])

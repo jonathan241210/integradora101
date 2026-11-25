@@ -163,3 +163,23 @@ it("CA-15 species-request-detail: acciones por estado", () => {
   expect(rejected).toContain("Volver a la lista");
   expect(requestActions(requestDetail({ status: "accepted" }), false).canEdit).toBe(false);
 });
+
+it("CA-01..CA-04 api-032/dashboard-022: muestra aviso y switch de modelo 3D después de las acciones de aceptación", () => {
+  const detected = render(detailState(requestDetail({ model_3d: { status: "detected", detected_model_3d_path: "models/leon.glb", model_3d_url: "/media/models/leon.glb", enabled: true, can_toggle: true } })));
+  expect(detected).toContain("Se detectó un modelo 3D y se asignará automáticamente al aceptar.");
+  expect(detected.indexOf("Aceptar y publicar")).toBeLessThan(detected.indexOf("Se detectó un modelo 3D"));
+  expect(detected).toContain('role="switch"');
+  expect(detected).toContain("Desactivar modelo 3D");
+
+  const assigned = render(detailState(requestDetail({ model_3d: { status: "assigned", detected_model_3d_path: "models/leon.glb", model_3d_url: "/media/models/leon.glb", enabled: true, can_toggle: true } })));
+  expect(assigned).toContain("Modelo 3D ya asignado.");
+  expect(assigned).toContain("Desactivar modelo 3D");
+
+  const disabled = render(detailState(requestDetail({ model_3d: { status: "assigned", detected_model_3d_path: "models/leon.glb", model_3d_url: "/media/models/leon.glb", enabled: false, can_toggle: true } })));
+  expect(disabled).toContain("Modelo 3D desactivado. No se mostrará en el portal hasta que lo actives.");
+  expect(disabled).toContain("Activar modelo 3D");
+
+  const missing = render(detailState(requestDetail({ model_3d: { status: "missing", detected_model_3d_path: null, model_3d_url: null, enabled: true, can_toggle: false } })));
+  expect(missing).toContain("No hay modelo 3D disponible. Comunícate con Sistemas.");
+  expect(missing).not.toContain('role="switch"');
+});

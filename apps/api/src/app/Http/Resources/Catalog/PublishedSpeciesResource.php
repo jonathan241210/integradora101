@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Catalog;
 
 use App\Actions\Catalog\ResolvePublishedSpeciesImageUrlAction;
+use App\Actions\Catalog\ResolvePublishedSpeciesModel3dUrlAction;
 use App\Models\Species;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -34,6 +35,10 @@ class PublishedSpeciesResource extends JsonResource
             'common_name' => $this->common_name,
             'category' => $this->category,
             'image_url' => app(ResolvePublishedSpeciesImageUrlAction::class)->execute($this->image_path),
+            'model_3d_url' => app(ResolvePublishedSpeciesModel3dUrlAction::class)->execute(
+                $this->model_3d_path,
+                (bool) ($this->model_3d_enabled ?? true),
+            ),
         ];
 
         foreach (self::FIELD_COLUMNS as $key => $column) {

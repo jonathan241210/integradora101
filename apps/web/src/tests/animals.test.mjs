@@ -100,11 +100,13 @@ const plain = (value) => JSON.parse(JSON.stringify(value));
 const flush = async () => { for (let i = 0; i < 12; i += 1) await new Promise((r) => setImmediate(r)); };
 const json = (body, ok = true) => Promise.resolve({ ok, status: ok ? 200 : 500, json: () => Promise.resolve(body) });
 
-function mount({ base = 'http://localhost:8000/api/v1', fetchImpl, timers, withApp = true, location, searchTarget } = {}) {
+function mount({ base = 'http://localhost:8000/api/v1', fetchImpl, timers, withApp = true, location, searchTarget, loadModelViewer } = {}) {
+  const sandboxLoadModelViewer = loadModelViewer;
   const doc = makeDocument(base === null ? undefined : base);
   const calls = [];
   const sandbox = {
     document: doc, URLSearchParams, AbortController, URL, console, location, ArcaSearchTarget: searchTarget,
+    ArcaLoadModelViewer: sandboxLoadModelViewer,
     setTimeout: timers?.setTimeout ?? setTimeout, clearTimeout: timers?.clearTimeout ?? clearTimeout,
     fetch: (url, opts) => { calls.push({ url, opts }); return fetchImpl(url, opts); }
   };
@@ -232,12 +234,13 @@ test('CA-13 dynamic-tulanpedia: el orden de secciones coincide con la línea bas
   assert.ok(ids.indexOf('animales') < ids.indexOf('mapa'));
 });
 
-test('CA-18 dynamic-tulanpedia: #animales no tiene carrusel, visor 3D, data-model, .glb ni la jirafa', () => {
-  for (const forbidden of ['carousel', 'carrusel', 'model-viewer', 'data-model', '.glb', 'jirafa', 'Jirafa', 'giraffe']) {
+test('CA-18 dynamic-tulanpedia: #animales no tiene carrusel, data-model ni jirafa estática; el 3D de especies se renderiza dinámicamente (web-014)', () => {
+  for (const forbidden of ['carousel', 'carrusel', 'data-model', 'jirafa', 'Jirafa', 'giraffe']) {
     assert.ok(!animalesHtml.includes(forbidden), forbidden);
   }
+  assert.ok(!animalesHtml.includes('<model-viewer'), 'sin model-viewer estático en HTML');
   for (const code of [animalsJs, animalsCss]) {
-    assert.ok(!/carousel|\.glb|model-viewer|data-model/i.test(code));
+    assert.ok(!/carousel|data-model/i.test(code), 'sin carousel/data-model en código dinámico');
   }
 });
 
@@ -666,4 +669,68 @@ test('api-026 CA-11 dynamic-tulanpedia: «Dato curioso» se muestra solo si la A
   assert.equal(byTag(a, 'img').filter((n) => n.src === 'x').length, 0, 'no se crea ningún elemento a partir del texto');
   for (const card of [b, c]) assert.deepEqual(byTag(card, 'dt').map((n) => n.textContent), ['Hábitat']);
   assert.ok(/fun_fact/.test(animalsJs) && !/innerHTML|insertAdjacentHTML|outerHTML/.test(animalsJs));
+});
+
+/* ---------- web-014: Modelos 3D en TulanPedia ---------- */
+test('CA-25 dynamic-tulanpedia: safeModelUrl acepta http/https y rutas relativas seguras; rechaza esquemas y rutas inseguras', () => {
+  const { safeModelUrl } = mount({ fetchImpl: ok([]) }).app().helpers;
+  assert.equal(safeModelUrl('https://x.test/models/a.glb'), 'https://x.test/models/a.glb');
+  assert.equal(safeModelUrl('/storage/models/a.glb'), '/storage/models/a.glb');
+  for (const bad of [null, '', 'javascript:alert(1)', 'data:model/gltf-binary,AA', '//evil.test/a.glb', '/\\evil', 'models/a.glb']) {
+    assert.equal(safeModelUrl(bad), null, String(bad));
+  }
+});
+
+test('CA-26 dynamic-tulanpedia: muestra botón 3D solo cuando model_3d_url es válido', async () => {
+  const m = mount({ fetchImpl: ok([
+    sp(1, { common_name: 'Jaguar', model_3d_url: '/storage/models/jaguar.glb' }),
+    sp(2, { common_name: 'Tigre', model_3d_url: 'javascript:alert(1)' }),
+    sp(3, { common_name: 'Pato' })
+  ]) });
+  await flush();
+  const [a, b, c] = m.cards();
+  assert.equal(byClass(a, 'tp-model-toggle').length, 1);
+  assert.equal(byClass(b, 'tp-model-toggle').length, 0);
+  assert.equal(byClass(c, 'tp-model-toggle').length, 0);
+  assert.equal(byClass(a, 'tp-model-toggle')[0].getAttribute('aria-label'), 'Ver modelo 3D de Jaguar');
+});
+
+test('CA-27 dynamic-tulanpedia: al activar 3D carga visor, crea model-viewer inline y actualiza estado accesible', async () => {
+  let loads = 0;
+  const m = mount({
+    fetchImpl: ok([sp(1, { common_name: 'Jaguar', model_3d_url: '/storage/models/jaguar.glb' })]),
+    loadModelViewer: () => { loads += 1; return Promise.resolve(); }
+  });
+  await flush();
+  const card = m.cards()[0];
+  const btn = byClass(card, 'tp-model-toggle')[0];
+  btn.click();
+  await flush();
+  assert.equal(loads, 1);
+  assert.equal(btn.getAttribute('aria-pressed'), 'true');
+  assert.equal(btn.getAttribute('aria-label'), 'Ver foto de Jaguar');
+  const viewers = byTag(card, 'model-viewer');
+  assert.equal(viewers.length, 1);
+  assert.equal(viewers[0].getAttribute('src'), '/storage/models/jaguar.glb');
+  assert.equal(viewers[0].getAttribute('alt'), 'Modelo 3D de Jaguar');
+});
+
+test('CA-28 dynamic-tulanpedia: al desactivar 3D o fallar la carga, restaura la foto', async () => {
+  const m = mount({
+    fetchImpl: ok([sp(1, { common_name: 'Jaguar', image_url: '/img/jaguar.jpg', model_3d_url: '/storage/models/jaguar.glb' })]),
+    loadModelViewer: () => Promise.reject(new Error('fail'))
+  });
+  await flush();
+  const card = m.cards()[0];
+  const btn = byClass(card, 'tp-model-toggle')[0];
+  btn.click();
+  await flush();
+  assert.equal(btn.getAttribute('aria-pressed'), 'false');
+  const viewers = byTag(card, 'model-viewer');
+  assert.ok(viewers.length === 0 || viewers[0].hidden === true);
+});
+
+test('CA-29 dynamic-tulanpedia: no usa innerHTML ni inserta scripts; solo usa model-viewer local por carga perezosa', () => {
+  assert.ok(!/innerHTML|outerHTML|insertAdjacentHTML|document\.write|eval\(/.test(animalsJs));
+  assert.ok(animalsJs.includes('ArcaLoadModelViewer') || animalsJs.includes('model-viewer.min.js'));
 });

@@ -25,6 +25,7 @@ class AcceptSpeciesPublicationRequestAction
         private readonly CopySpeciesImageAction $copyImage,
         private readonly DeleteManagedSpeciesImageAction $deleteImage,
         private readonly LogSpeciesPublicationAction $audit,
+        private readonly ResolveSpeciesModel3dDetectionAction $detectModel3d,
     ) {}
 
     /** Accepts a submitted request and returns the id of its species (CA-08). */
@@ -83,6 +84,19 @@ class AcceptSpeciesPublicationRequestAction
             $previousPath = $species->image_path;
             $copied = $this->copyImage->execute($originalPath);
             $species->image_path = $copied;
+        }
+
+        $model3d = $this->detectModel3d->execute(
+            $species->common_name,
+            $species->model_3d_path,
+            (bool) ($species->model_3d_enabled ?? true),
+        );
+        if (
+            ($model3d['enabled'] ?? true)
+            && ($model3d['status'] ?? null) === 'detected'
+            && ! empty($model3d['detected_model_3d_path'])
+        ) {
+            $species->model_3d_path = $model3d['detected_model_3d_path'];
         }
 
         if ($publishNow) {
