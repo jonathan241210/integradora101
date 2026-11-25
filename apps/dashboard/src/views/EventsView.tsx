@@ -18,10 +18,11 @@ import type { EventDto } from "@/viewmodels/admin-types";
 import { confirmationFromCopy } from "@/viewmodels/confirmation";
 import {
   getEventConfirmation,
+  isEventEffectivelyActive,
   type EventFormValues,
   type EventsViewModel,
 } from "@/viewmodels/events-management";
-import { formatDate, formatTime } from "@/viewmodels/formatters";
+import { businessToday, formatDate, formatTime } from "@/viewmodels/formatters";
 import { visibleImageUrl } from "@/viewmodels/inline-content";
 import { useEventsPagination } from "@/viewmodels/useEventsPagination";
 
@@ -215,9 +216,15 @@ export function EventsView({ state, actions, focus = null }: EventsViewModel & {
                   <ContentThumbnail url={item.image_url} name={item.name} />
                   <div className="content-card__body">
                     <div className="content-card__meta">
-                      <Badge tone={item.is_active ? "success" : "neutral"}>
-                        {item.is_active ? "Activo" : "Inactivo"}
-                      </Badge>
+                      {(() => {
+                        const today = businessToday();
+                        const end = item.end_date?.slice(0, 10);
+                        const expired = item.is_active && !!end && end < today;
+                        const effective = isEventEffectivelyActive(item);
+                        const tone = effective ? "success" : expired ? "warning" : "neutral";
+                        const label = effective ? "Activo" : expired ? "Vencido" : "Inactivo";
+                        return <Badge tone={tone}>{label}</Badge>;
+                      })()}
                     </div>
                     <h3>{item.name}</h3>
                     <p>{schedule(item)}</p>

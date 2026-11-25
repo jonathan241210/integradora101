@@ -42,6 +42,18 @@ export function formatDate(value: string | null | undefined): string {
  */
 export const BUSINESS_TIMEZONE_FALLBACK = "America/Mexico_City";
 
+const businessDateParts = new Intl.DateTimeFormat("en-CA", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: BUSINESS_TIMEZONE_FALLBACK,
+});
+
+/** Fecha actual en la zona de negocio (`YYYY-MM-DD`). */
+export function businessToday(): string {
+  return businessDateParts.format(new Date());
+}
+
 const zonedDateTime = new Intl.DateTimeFormat("es-MX", {
   dateStyle: "medium",
   timeStyle: "short",
