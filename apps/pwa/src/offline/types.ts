@@ -44,6 +44,7 @@ export interface LocalAnimal {
   speciesName?: string;
   enclosureId: number;
   sex: string;
+  canReceiveVisits?: 0 | 1;
   birthDate?: string;
   origin?: string;
   notes?: string;

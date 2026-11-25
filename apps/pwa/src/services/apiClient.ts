@@ -68,6 +68,7 @@ export type AnimalProfile = {
   characteristics: string | null;
   entry_date: string | null;
   stay_status: string | null;
+  can_receive_visits?: number | boolean | null;
   enclosure: string | null;
   photo_path: string | null;
   species: {
@@ -155,6 +156,7 @@ export type NewAnimal = {
   tag_number: string;
   enclosure_id: number;
   sex: string;
+  can_receive_visits?: 0 | 1;
   birth_date?: string;
   origin?: string;
   notes?: string;
@@ -209,6 +211,22 @@ export async function uploadAnimalPhoto(animalId: number, file: File): Promise<{
       : apiMessage(status === 0 ? null : error, 'No se pudo actualizar la foto del animal.');
     throw new ApiError(message, status);
   }
+}
+
+export type UpdateAnimalStatusInput = {
+  stay_status?: string;
+  can_receive_visits?: 0 | 1;
+  reason?: string;
+};
+
+export async function updateAnimalStatus(
+  animalId: number,
+  payload: UpdateAnimalStatusInput,
+): Promise<{ id: number; stay_status: string; can_receive_visits: number; updated_at: string | null }> {
+  return (await request<{ data: { id: number; stay_status: string; can_receive_visits: number; updated_at: string | null } }>(
+    `/api/v1/staff/animals/${animalId}`,
+    { method: 'PATCH', body: payload },
+  )).data;
 }
 
 export async function createEvaluation(

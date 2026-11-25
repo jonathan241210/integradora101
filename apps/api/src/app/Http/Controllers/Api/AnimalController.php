@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Actions\Staff\UpdateAnimalStatusAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Staff\UpdateAnimalStatusRequest;
 use App\Models\Animal;
 use App\Models\ClinicalEvaluation;
 use App\Models\Enclosure;
 use App\Models\Species;
+use App\Rules\AnimalRegistrationFields;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -84,6 +87,7 @@ class AnimalController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
+            ...AnimalRegistrationFields::rules(),
             'name' => ['required', 'string', 'max:100'],
             'species_id' => ['nullable', 'integer', 'exists:species,id'],
             'species' => ['nullable', 'string', 'max:100'],
@@ -98,6 +102,7 @@ class AnimalController extends Controller
             'enclosure_id.required' => 'Selecciona un recinto.',
             'enclosure_id.exists' => 'Este recinto no está disponible para asignar animales.',
             'sex.in' => 'Selecciona un sexo válido.',
+            ...AnimalRegistrationFields::messages(),
             'photo.image' => 'El archivo debe ser una imagen válida.',
             'photo.max' => 'La imagen no debe superar 5 MB.',
             'photo.mimes' => 'La imagen debe ser JPG, JPEG o PNG.',
@@ -142,6 +147,7 @@ class AnimalController extends Controller
                 'enclosure_id' => $data['enclosure_id'],
                 'species_id' => $species->id,
                 'stay_status' => 'Cuarentena_Ingreso',
+                ...AnimalRegistrationFields::attributes($data),
             ]);
 
             // Guardar foto si viene
@@ -185,6 +191,19 @@ class AnimalController extends Controller
 
         return response()->json(['data' => [
             'photo_path' => $animal->photo_path,
+        ]]);
+    }
+
+    public function update(UpdateAnimalStatusRequest $request, Animal $animal, UpdateAnimalStatusAction $action): JsonResponse
+    {
+        $result = $action->execute($animal, $request->validated());
+        $updated = $result['animal'];
+
+        return response()->json(['data' => [
+            'id' => $updated->id,
+            'stay_status' => $updated->stay_status,
+            'can_receive_visits' => (int) $updated->can_receive_visits,
+            'updated_at' => $updated->updated_at?->toIso8601String(),
         ]]);
     }
 }

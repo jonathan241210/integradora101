@@ -83,6 +83,10 @@ Route::prefix('staff')->name('staff.')->group(function () {
             Route::post('clinical-evaluations', [ClinicalEvaluationController::class, 'store'])->name('clinical-evaluations.store');
             Route::post('sync/operations', [StaffSyncController::class, 'operations'])->name('sync.operations');
         });
+
+        Route::middleware(['permission:animals.update', 'throttle:staff-api'])->group(function () {
+            Route::patch('animals/{animal}', [AnimalController::class, 'update'])->whereNumber('animal')->name('animals.update');
+        });
     });
 });
 

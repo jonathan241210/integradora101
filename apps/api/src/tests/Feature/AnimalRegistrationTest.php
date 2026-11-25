@@ -46,6 +46,7 @@ class AnimalRegistrationTest extends FeatureTestCase
             'id' => $response->json('data.id'),
             'tag_number' => $payload['tag_number'],
             'enclosure_id' => $enclosure->id,
+            'stay_status' => 'Cuarentena_Ingreso', // pwa-013 CA-05
         ]);
     }
 
@@ -71,7 +72,17 @@ class AnimalRegistrationTest extends FeatureTestCase
             'birth_date' => '2022-03-10',
             'origin' => 'rescue',
             'notes' => 'Observación de prueba',
+            'can_receive_visits' => 0,
         ];
+
+        // pwa-013 CA-04
+        $this->actingAs($staff, 'web')
+            ->postJson('/api/v1/staff/animals', array_replace($payloadExisting, [
+                'can_receive_visits' => 2,
+            ]))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('can_receive_visits');
+        $this->assertDatabaseMissing('animals', ['tag_number' => $payloadExisting['tag_number']]);
 
         $responseExisting = $this->actingAs($staff, 'web')
             ->postJson('/api/v1/staff/animals', $payloadExisting)
@@ -85,6 +96,8 @@ class AnimalRegistrationTest extends FeatureTestCase
             'enclosure_id' => $enclosure->id,
             'birth_date' => '2022-03-10',
             'characteristics' => 'Observación de prueba',
+            'stay_status' => 'Cuarentena_Ingreso', // pwa-013 CA-02
+            'can_receive_visits' => 0,
         ]);
 
         $newSpeciesName = 'Especie nueva '.bin2hex(random_bytes(5));

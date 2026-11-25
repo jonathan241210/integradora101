@@ -112,6 +112,7 @@ async function buildOperationInput(item: OutboxItem, userScope: string): Promise
       payload: {
         name: local.name,
         tag_number: local.tagNumber,
+        can_receive_visits: local.canReceiveVisits,
         enclosure_id: local.enclosureId,
         sex: local.sex === 'F' || local.sex === 'hembra' ? 'hembra' : 'macho',
         birth_date: local.birthDate,

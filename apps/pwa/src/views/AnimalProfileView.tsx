@@ -1,4 +1,4 @@
-import { Alert, Badge, Button, Card, Dialog } from '@arca/ui';
+import { Alert, Badge, Button, Card, Dialog, SelectField, TextAreaField } from '@arca/ui';
 import { Fragment, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { exportSheetPdf } from '@/viewmodels/pdfExport';
@@ -19,6 +19,24 @@ const evaluationLabels: Record<string, { label: string; tone: 'success' | 'warni
   Historia_Clinica_Completa: { label: 'Diagnóstico intenso', tone: 'warning' },
   Revision_Rapida: { label: 'Diagnóstico rápido / revisión', tone: 'info' },
 };
+
+const STAY_STATUS_LABELS: Record<string, string> = {
+  Cuarentena_Ingreso: 'Cuarentena de ingreso',
+  Permanente: 'Permanente',
+  Resguardo_Profepa: 'Resguardo Profepa',
+  Liberado: 'Liberado',
+  Trasladado: 'Trasladado',
+};
+
+const STAY_STATUS_TRANSITIONS: Record<string, string[]> = {
+  Cuarentena_Ingreso: ['Permanente', 'Resguardo_Profepa'],
+  Permanente: ['Resguardo_Profepa', 'Trasladado', 'Liberado'],
+  Resguardo_Profepa: ['Permanente', 'Trasladado', 'Liberado'],
+  Trasladado: [],
+  Liberado: [],
+};
+
+const NON_VISITABLE_STATUSES = new Set(['Resguardo_Profepa', 'Trasladado', 'Liberado']);
 
 const systemLabels: Record<string, string> = {
   'general-condition': 'Condición física general',
@@ -605,7 +623,7 @@ export function AnimalProfileView({
   mvzName?: string;
 }) {
   const { animal, loading, error, reload } = useAnimal(animalId, userScope);
-  const { uploadAnimalPhoto } = useAnimalActions();
+  const { uploadAnimalPhoto, updateAnimalStatus } = useAnimalActions();
   const { error: printError } = usePrintDocument();
   const [pdfBusy, setPdfBusy] = useState(false);
   const [pdfError, setPdfError] = useState('');
@@ -613,6 +631,66 @@ export function AnimalProfileView({
   const [singlePdfEvaluation, setSinglePdfEvaluation] = useState<AnimalEvaluation | null>(null);
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoMessage, setPhotoMessage] = useState('');
+  const [editOpen, setEditOpen] = useState(false);
+  const [editStayStatus, setEditStayStatus] = useState('');
+  const [editCanReceiveVisits, setEditCanReceiveVisits] = useState<'0' | '1'>('1');
+  const [editReason, setEditReason] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [editSuccess, setEditSuccess] = useState('');
+
+  const openEditDialog = () => {
+    if (!animal) return;
+    setEditStayStatus(animal.stay_status ?? '');
+    const visits = animal.can_receive_visits === 0 || animal.can_receive_visits === false ? '0' : '1';
+    setEditCanReceiveVisits(visits);
+    setEditReason('');
+    setEditError('');
+    setEditSuccess('');
+    setEditOpen(true);
+  };
+
+  const handleEditStayStatusChange = (value: string) => {
+    setEditStayStatus(value);
+    if (NON_VISITABLE_STATUSES.has(value)) {
+      setEditCanReceiveVisits('0');
+    }
+  };
+
+  const submitEdit = async () => {
+    if (!animal) return;
+    setEditSaving(true);
+    setEditError('');
+    setEditSuccess('');
+    try {
+      const nextStatus = editStayStatus;
+      const nextVisits = NON_VISITABLE_STATUSES.has(nextStatus) ? 0 : (editCanReceiveVisits === '1' ? 1 : 0);
+      const payload: { stay_status?: string; can_receive_visits?: 0 | 1; reason?: string } = {};
+      if (nextStatus !== (animal.stay_status ?? '')) {
+        payload.stay_status = nextStatus;
+        payload.reason = editReason.trim();
+      }
+      if (nextVisits !== (animal.can_receive_visits === 0 || animal.can_receive_visits === false ? 0 : 1)) {
+        payload.can_receive_visits = nextVisits;
+      }
+      if (!payload.stay_status && payload.can_receive_visits === undefined) {
+        setEditError('No hay cambios para guardar.');
+        return;
+      }
+      if (payload.stay_status && !payload.reason) {
+        setEditError('Indica el motivo del cambio de estatus.');
+        return;
+      }
+      await updateAnimalStatus(animal.id, payload);
+      setEditSuccess('Estatus actualizado correctamente.');
+      setEditOpen(false);
+      await reload();
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : 'No se pudo actualizar el estatus.');
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   const downloadFullPdf = async () => {
     const sheet = document.getElementById('profile-full-sheet');
@@ -690,6 +768,55 @@ export function AnimalProfileView({
       </div>
       {(printError || pdfError) && <Alert className="no-print" role="alert">{printError || pdfError}</Alert>}
       {photoMessage && <Alert className="no-print" role="status">{photoMessage}</Alert>}
+      {editSuccess && <Alert className="no-print" role="status">{editSuccess}</Alert>}
+      <Dialog
+        open={editOpen}
+        title="Editar estado y exhibición"
+        className="no-print"
+        onClose={() => { if (!editSaving) setEditOpen(false); }}
+      >
+        <div className="data-form">
+          {editError && <Alert role="alert">{editError}</Alert>}
+          <SelectField
+            label="Estatus de estancia"
+            name="edit-stay-status"
+            value={editStayStatus}
+            onChange={(e) => handleEditStayStatusChange(e.currentTarget.value)}
+          >
+            {(animal.stay_status ? [animal.stay_status, ...(STAY_STATUS_TRANSITIONS[animal.stay_status] ?? [])] : Object.keys(STAY_STATUS_LABELS))
+              .filter((value, index, arr) => arr.indexOf(value) === index)
+              .map((value) => (
+                <option key={value} value={value}>{STAY_STATUS_LABELS[value] ?? value}</option>
+              ))}
+          </SelectField>
+          <SelectField
+            label="¿Puede recibir visitas?"
+            name="edit-can-receive-visits"
+            value={NON_VISITABLE_STATUSES.has(editStayStatus) ? '0' : editCanReceiveVisits}
+            onChange={(e) => setEditCanReceiveVisits(e.currentTarget.value as '0' | '1')}
+            disabled={NON_VISITABLE_STATUSES.has(editStayStatus)}
+          >
+            <option value="1">Sí</option>
+            <option value="0">No</option>
+          </SelectField>
+          {editStayStatus !== (animal.stay_status ?? '') && (
+            <TextAreaField
+              label="Motivo del cambio de estatus"
+              name="edit-reason"
+              value={editReason}
+              onChange={(e) => setEditReason(e.currentTarget.value)}
+              placeholder="Describe el motivo del cambio"
+              required
+            />
+          )}
+          <div className="form-actions">
+            <Button type="button" variant="secondary" onClick={() => setEditOpen(false)} disabled={editSaving}>Cancelar</Button>
+            <Button type="button" variant="primary" onClick={() => void submitEdit()} disabled={editSaving}>
+              {editSaving ? <Spinner label="Guardando…" /> : 'Guardar cambios'}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
       {createPortal(<ProfilePrintSheet animal={animal} />, document.body)}
       {singlePdfEvaluation && createPortal(<SingleEvaluationPrintSheet animal={animal} evaluation={singlePdfEvaluation} />, document.body)}
 
@@ -711,8 +838,14 @@ export function AnimalProfileView({
           </p>
           <div className="profile-badges">
             {animal.sex && <Badge tone="info">{sexLabels[animal.sex] ?? animal.sex}</Badge>}
-            {animal.stay_status && <Badge tone="neutral">{animal.stay_status.replace(/_/g, ' ')}</Badge>}
+            {animal.stay_status && <Badge tone="neutral">{STAY_STATUS_LABELS[animal.stay_status] ?? animal.stay_status.replace(/_/g, ' ')}</Badge>}
+            <Badge tone={animal.can_receive_visits === 0 || animal.can_receive_visits === false ? 'warning' : 'success'}>
+              {animal.can_receive_visits === 0 || animal.can_receive_visits === false ? 'No recibe visitas' : 'Puede recibir visitas'}
+            </Badge>
             {animal.enclosure && <Badge tone="success">{animal.enclosure}</Badge>}
+          </div>
+          <div className="form-actions" style={{ marginTop: '0.75rem' }}>
+            <Button type="button" variant="secondary" onClick={openEditDialog}>Editar estado y exhibición</Button>
           </div>
         </div>
       </Card>

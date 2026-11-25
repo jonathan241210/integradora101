@@ -82,24 +82,30 @@ export function AnimalFormView({ userScope }: { userScope?: string } = {}) {
         tag_number: values['animal-tag'],
         enclosure_id: Number(values['animal-enclosure']),
         sex: values['animal-sex'],
+        can_receive_visits: values['animal-can-receive-visits'] === '1' ? 1 : 0,
         birth_date: values['animal-birth-date'] || undefined,
         origin: values['animal-origin'] || undefined,
         notes: values['animal-notes'] || undefined,
-      };
+      } satisfies Parameters<typeof createAnimal>[0];
 
-      // Si no hay conexión, encolar sin foto (la foto se agrega después)
-      if (!isOnline()) {
-        await queueAnimal(userScope!, {
+      function saveDraft(scope: string) {
+        return queueAnimal(scope, {
           name: animalData.name,
           tagNumber: animalData.tag_number,
           speciesId: matched?.id,
           speciesName: matched ? matched.common_name : speciesInput,
           enclosureId: animalData.enclosure_id,
           sex: animalData.sex,
+          canReceiveVisits: animalData.can_receive_visits,
           birthDate: animalData.birth_date,
           origin: animalData.origin,
           notes: animalData.notes,
         });
+      }
+
+      // Si no hay conexión, encolar sin foto (la foto se agrega después)
+      if (!isOnline() && userScope) {
+        await saveDraft(userScope);
         return { queued: true };
       }
 
@@ -114,20 +120,10 @@ export function AnimalFormView({ userScope }: { userScope?: string } = {}) {
           formData.append('photo', selectedFile);
           return await createAnimalWithPhoto(formData);
         }
-        return await createAnimal(animalData as any);
+        return await createAnimal(animalData);
       } catch (error) {
         if (userScope && isTemporarySyncFailure(error)) {
-          await queueAnimal(userScope, {
-            name: animalData.name,
-            tagNumber: animalData.tag_number,
-            speciesId: matched?.id,
-            speciesName: matched ? matched.common_name : speciesInput,
-            enclosureId: animalData.enclosure_id,
-            sex: animalData.sex,
-            birthDate: animalData.birth_date,
-            origin: animalData.origin,
-            notes: animalData.notes,
-          });
+          await saveDraft(userScope);
           return { queued: true };
         }
         throw error;
@@ -248,6 +244,11 @@ export function AnimalFormView({ userScope }: { userScope?: string } = {}) {
                   <option value="macho">Macho</option>
                 </SelectField>
                 <Field label="Fecha de nacimiento" name="animal-birth-date" type="date" />
+                <SelectField defaultValue="" label="¿Puede recibir visitas?" name="animal-can-receive-visits" required>
+                  <option disabled value="">Seleccionar</option>
+                  <option value="1">Sí</option>
+                  <option value="0">No</option>
+                </SelectField>
                 <SelectField defaultValue="" label="Origen" name="animal-origin">
                   <option value="">Sin especificar</option>
                   <option value="rescue">Rescate</option>
