@@ -6,6 +6,7 @@
 - Solicitada: 2026-10-08
 - Aprobada: 2026-10-08
 - Aprobación funcional: Aprobada
+- Enmienda del 24 de noviembre de 2026 aprobada al final del documento.
 
 ## Problema y contexto
 
@@ -106,3 +107,46 @@ La corrección del visor mantiene el contrato de la enmienda aprobada y utiliza 
 
 - Aprobación funcional: Aprobada.
 - Se retiran los botones sobre el plano y los controles de zoom 2D. El botón de alternar permanece accesible. El visor permite la rotación y cede el desplazamiento vertical a la página.
+
+## Enmienda del 24 de noviembre de 2026 · planos y directorio público
+
+**Estado de la enmienda: Implementada.** El 24 de noviembre de 2026 la persona solicitante confirmó ambos catálogos y la disposición en escritorio y celular.
+
+Como visitante, quiero consultar el plano y los nombres de los recintos y lugares de interés registrados en el zoológico desde la misma sección. La persona solicitante aportó un plano PNG de 1600 × 1200 píxeles y el generador de Blender `mapa_zoo_v3_blender.py`. El directorio incluye los recintos activos y los lugares públicos de los catálogos que también alimentan el mapa móvil.
+
+- **CA-01 y CA-02 revisados.** Al abrir el mapa se ve completo el PNG aportado en su proporción original. Al activar el control 3D se muestra la escena exportada del archivo de Blender, incluidos sus recintos y rótulos. El mismo control permite volver al plano.
+- **CA-05 revisado.** En escritorio el directorio aparece a la derecha del mapa en ambas vistas. En móvil aparece debajo, con los nombres legibles y sin desplazamiento horizontal.
+- **CA-08.** El panel muestra por nombre los elementos de las listas públicas de recintos y lugares de interés, agrupados por procedencia. Incluye también los registros que carecen de coordenadas. Al volver a cargar la página se reflejan los cambios publicados en los catálogos.
+- **CA-09.** Cada grupo distingue la carga, una lista vacía y un error de consulta. Si falla un grupo, el otro puede mostrar sus resultados. El cambio entre vistas del mapa sigue disponible aunque falle el directorio.
+- **RN-07.** Las fuentes del directorio son `GET /api/v1/enclosures` y `GET /api/v1/zoo-places`, de lectura anónima. El servidor determina la visibilidad. Los rótulos de los archivos gráficos son parte de la ilustración. La identidad de cada registro del directorio la determina su catálogo y su identificador, incluso si dos registros comparten nombre.
+
+Los criterios vigentes sobre el aviso del plano ilustrativo, el uso del control por teclado y el desplazamiento vertical en 3D siguen aplicando. El alcance se limita al portal público, los dos recursos visuales y la lectura de los catálogos existentes.
+
+### Estado actual de los datos
+
+El 24 de noviembre de 2026 se consultó el esquema de `arca_pruebas` con `php artisan db:table enclosures` y `php artisan db:table zoo_places`. Se confirmaron `id`, `name`, `is_active` y `deleted_at` para recintos, así como `id`, `name`, `place_type`, `is_visible` y `deleted_at` para lugares. Los campos necesarios concuerdan con el diccionario de datos, las DBR-019 y DBR-020 y sus migraciones. El directorio consume el contrato público existente y no requiere DBR.
+
+La evidencia de la revisión funcional y las pruebas de los criterios queda registrada en las tareas T-26 a T-28. [Resultados de web-004](../tasks/004-isometric-zoo-map.md)
+
+## Zoom en los mapas 2D y 3D · 24 de noviembre de 2026
+
+La persona solicitante pidió incorporar zoom a las dos vistas de esta misma feature. Esta enmienda recupera los controles de acercar, alejar y restablecer y los hace aplicables al plano y al modelo actuales.
+
+- **CA-02 y CA-10.** El plano y el modelo disponen de controles accesibles de zoom, un porcentaje visible y la acción Restablecer. Cada vista abre al 100 % y conserva su propio nivel al alternar. Los controles indican sus límites. Al ampliar el plano se pueden recorrer sus bordes dentro del marco.
+- **CA-07 y CA-11.** El zoom del modelo conserva la rotación y respeta el desplazamiento vertical de la página. Si el modelo está cargando se espera a que esté listo para ampliar. Si falla, vuelve a estar disponible el zoom del plano.
+
+## Sustitución del plano 2D por SVG
+
+Por solicitud expresa, CA-01 muestra el SVG mejorado suministrado, con su área de dibujo de 1600 × 1200.
+
+## Marcadores públicos del plano
+
+**CA-12.** A petición de la persona solicitante, los marcadores del plano 2D muestran el nombre y la posición publicados por la API. Cada uno se identifica por catálogo e ID. Los registros sin posición válida se conservan en el directorio.
+
+## Modelo de Blender y arrastre del plano
+
+Por solicitud expresa, **CA-13** incorpora zoo_3d(3).blend al visor y representa los nombres y coordenadas públicos en la escena. **CA-14** permite arrastrar el plano ampliado con el botón principal del mouse en ambos ejes.
+
+## Exploración desde el directorio
+
+**CA-15.** El visitante puede buscar por nombre, filtrar por tipo y localizar un resultado en la vista activa. Los registros sin coordenadas indican que su ubicación está pendiente.

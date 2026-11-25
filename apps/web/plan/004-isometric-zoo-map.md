@@ -101,3 +101,35 @@ No se requiere excepción constitucional ni ADR.
 La aprobación funcional del alcance ampliado fue otorgada por el solicitante. La aprobación técnica de este plan revisado y del checklist de tareas está pendiente. La revisión anterior de la escena tampoco pudo ejecutarse con navegador integrado; esta ampliación incluirá una revisión visual nueva de los viewports y no se marcará completa hasta registrarla.
 
 El bot?n carga `assets/mapa_corregido.glb` bajo HTTP o HTTPS. El visor solicita el modelo al activarse, respeta el retorno a 2D durante la carga y permite volver a intentar despu?s de un error.
+
+## Enmienda del 24 de noviembre de 2026
+
+La revisión funcional aprobada al final de la spec reemplaza el contrato anterior de recursos y columna lateral. El trabajo comprende tres pasos.
+
+1. Distribuir el PNG original y exportar la escena del generador en una sesión limpia de Blender. Convertir los rótulos a mallas y conservar las geometrías, los materiales y el encuadre aéreo. Cargar el GLB a demanda con el visor local y ajustar el marco al formato 4:3 del plano.
+2. Añadir un directorio semántico junto a la tarjeta, debajo en pantallas estrechas. Reutilizar el cliente público de la portada para consultar en paralelo las rutas nombradas `enclosures.index` y `zoo-places.index`. Cada grupo renderiza nombres como texto y comunica sus estados con independencia del mapa y del otro grupo.
+3. Verificar PNG y GLB (CA-01/02), controles y aviso (CA-03/04/07), disposición adaptable (CA-05), suite completa (CA-06) y nombres, duplicados legítimos, lentitud, listas vacías y fallos parciales (CA-08/09). Probar ambas vistas en navegador.
+
+**Revisión constitucional I–VI.** Se aprovechan el visor y el cliente existentes (I). La enmienda de web-004 delimita los cambios (II). La API decide la visibilidad y el portal presenta el resultado (III). Se asignan pruebas a los criterios en la suite estática (IV). Los catálogos públicos continúan siendo la fuente de verdad y se verificó el esquema de arca_pruebas (V). Los identificadores de código van en inglés y la interfaz en español (VI). El ADR 0033 registra la excepción de III y IV acotada al nuevo directorio. La portada mantiene su funcionamiento sin sesión ni almacenamiento de datos del visitante.
+
+La persona solicitante aprobó este plan, el ADR 0033 y la ejecución de los tres pasos el 24 de noviembre de 2026.
+
+## Zoom en ambas vistas · 24 de noviembre de 2026
+
+El controlador del mapa gestionará botones comunes y una escala independiente por vista, del 100 al 300 % en pasos de 25 puntos. El PNG crecerá en un área desplazable, conservando el centro visible al cambiar de escala. En 3D se ajustará el radio de la cámara del visor local alrededor del punto de interés. Los botones quedarán fuera del área que se amplía. Se comprobarán los límites, el cambio de vista y la recuperación de errores (CA-02/07/10/11), con pruebas del controlador y del modelo en navegador. El cambio de presentación utiliza los recursos y catálogos vigentes.
+
+## Sustitución del plano 2D por SVG
+
+Usar el SVG original como imagen local del plano 2D en el marco 4:3 y verificar su referencia, área de dibujo y zoom.
+
+## Marcadores públicos del plano
+
+Reutilizar las dos lecturas del directorio para situar los marcadores por map_x y map_y normalizados, sobre la misma superficie que se amplía. Ocultar la capa ilustrativa icons_auto. La consulta de arca_pruebas de esta revisión confirmó ambas columnas en las dos tablas (DBR-008 y DBR-019). El contrato público existente cubre el cambio sin migraciones.
+
+## Modelo de Blender y arrastre del plano
+
+Exportar la geometría del archivo suministrado a GLB y sustituir sus etiquetas estáticas por hotspots de model-viewer. Los 57 puntos comunes entre Blender y el SVG confirman 0,01 m por píxel y un origen glTF de (−8,02590, −5,14037) en X/Z. Aplicar esta transformación a los registros posicionados que ya recibe el directorio. El arrastre usa captura de puntero en el plano 2D ampliado.
+
+## Exploración desde el directorio
+
+Filtrar en memoria las respuestas del directorio, usar una sola zona de resultados y localizar cada registro mediante su catálogo e identificador en el plano o en el modelo. Mantener los estados independientes de carga y error.

@@ -67,6 +67,12 @@
   }
 
   root.ArcaApi = {
+    getEnclosures: function () {
+      return request('/enclosures', null, 'list');
+    },
+    getZooPlaces: function () {
+      return request('/zoo-places', null, 'list');
+    },
     getNews: function (options) {
       var opts = options || {};
       return request('/news', { page: opts.page, limit: opts.limit }, 'list');

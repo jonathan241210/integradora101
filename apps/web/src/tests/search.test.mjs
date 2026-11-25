@@ -299,9 +299,11 @@ test('test_ca04_static_result_highlights_its_destination', async () => {
 });
 
 test('test_ca04_all_pages_load_current_navigation_and_shared_highlight', () => {
+  const sharedStyles = htmlSource.match(/href="styles\.css\?v=[\w-]+"/)?.[0];
+  assert.ok(sharedStyles, 'La portada debe versionar la hoja de estilos compartida');
   for (const page of ['index.html', 'noticias.html', 'eventos.html']) {
     const html = readFileSync(path.join(webSource, page), 'utf8');
-    assert.match(html, /href="styles\.css\?v=web-012-4"/);
+    assert.ok(html.includes(sharedStyles), page);
     assert.match(html, /src="js\/search-target\.js\?v=web-012-3"/);
     assert.match(html, /src="js\/news-events\.js\?v=web-012-3"/);
     assert.ok(html.indexOf('js/search-target.js') < html.indexOf('js/news-events.js'));

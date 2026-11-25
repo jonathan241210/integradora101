@@ -29,7 +29,7 @@
 <link rel="stylesheet" href="assets/icons/bootstrap-icons.css">
 
 <!-- CSS -->
-<link rel="stylesheet" href="styles.css?v=web-012-4">
+<link rel="stylesheet" href="styles.css?v=directory-search">
 <link rel="stylesheet" href="animations.css">
 <link rel="stylesheet" href="accessibility.css">
 <link rel="stylesheet" href="news-events.css">
@@ -69,7 +69,9 @@
 <script src="script.js?v=web-012-3" defer></script>
 <script src="animations.js" defer></script>
 <script src="accessibility.js" defer></script>
-<script src="js/api.js" defer></script>
+<script src="js/api.js?v=web-004-v3" defer></script>
+<script src="js/map-directory.js?v=directory-search" defer></script>
+<script src="js/map-viewer.js?v=blend-pins" defer></script>
 <script src="js/search-target.js?v=web-012-3" defer></script>
 <script src="js/news-events.js?v=web-012-3" defer></script>
 <script src="js/animals.js?v=web-012-3" defer></script>
@@ -326,21 +328,29 @@
 
             <div class="mapcard">
 
-                <div class="map-title">
-                    <i class="bi bi-signpost-2" aria-hidden="true"></i>
-                    TU RECORRIDO
-                </div>
-
                 <div class="map" role="group" aria-label="Mapa aéreo aproximado de las zonas del zoológico">
 
-                                    <button type="button" class="model-toggle map-toggle" id="mapModelToggle" data-model="assets/mapa_corregido.glb" aria-pressed="false" aria-label="Ver mapa en 3D" aria-controls="mapScene" title="Ver mapa en 3D">
-                                        <img src="assets/icon-3d-56.webp" alt="" width="28" height="28">
-                                    </button>
+                    <button type="button" class="model-toggle map-toggle" id="mapModelToggle" data-model="assets/zoo-map.glb" aria-pressed="false" aria-controls="mapScene">
+                        Ver en 3D
+                    </button>
                     <p class="map-model-status" id="mapModelStatus" role="status" aria-live="polite" hidden></p>
                     <div class="map-scene" id="mapScene">
-                        <img class="map-art" src="assets/MAPA_2D.svg" alt="Plano del zoológico" width="2160" height="2304" loading="lazy" decoding="async">
+                        <div class="map-plan" id="mapPlan" role="region" aria-label="Plano 2D del zoológico">
+                            <div class="map-surface">
+                                <img class="map-art" src="assets/zoo-map-v3.svg" alt="Plano del zoológico con sus recintos y senderos." width="1600" height="1200" loading="lazy" decoding="async">
+                                <div class="map-pins" id="enclosurePins"></div>
+                                <div class="map-pins" id="placePins"></div>
+                            </div>
+                        </div>
                     </div>
 
+                </div>
+
+                <div class="map-zoom-controls" id="mapZoomControls" role="group" aria-label="Zoom del mapa" hidden>
+                    <button type="button" id="mapZoomOut" aria-label="Alejar mapa" aria-controls="mapScene">−</button>
+                    <output id="mapZoomValue" aria-label="Zoom del mapa" aria-live="polite">100 %</output>
+                    <button type="button" id="mapZoomIn" aria-label="Acercar mapa" aria-controls="mapScene">+</button>
+                    <button type="button" id="mapZoomReset" aria-controls="mapScene">Restablecer</button>
                 </div>
 
                 <p class="map-disclaimer">
@@ -349,6 +359,33 @@
                 </p>
 
             </div>
+
+            <aside class="map-directory" id="mapDirectory" aria-labelledby="mapDirectoryTitle">
+                <h3 id="mapDirectoryTitle">Directorio del zoológico</h3>
+                <noscript>Activa JavaScript para consultar el directorio.</noscript>
+                <div class="directory-filters">
+                    <label for="directorySearch">Buscar en el directorio</label>
+                    <input type="search" id="directorySearch" placeholder="Nombre del recinto o lugar" autocomplete="off">
+                    <label for="directoryType">Mostrar</label>
+                    <select id="directoryType">
+                        <option value="">Todos</option>
+                        <option value="mapEnclosures">Recintos</option>
+                        <option value="mapPlaces">Lugares de interés</option>
+                    </select>
+                </div>
+                <div class="directory-results">
+                <div class="map-directory-group" id="mapEnclosures">
+                    <h4 id="mapEnclosuresTitle">Recintos</h4>
+                    <p role="status"></p>
+                    <ul aria-labelledby="mapEnclosuresTitle" hidden></ul>
+                </div>
+                <div class="map-directory-group" id="mapPlaces">
+                    <h4 id="mapPlacesTitle">Lugares de interés</h4>
+                    <p role="status"></p>
+                    <ul aria-labelledby="mapPlacesTitle" hidden></ul>
+                </div>
+                </div>
+            </aside>
 
         </div>
 
@@ -843,91 +880,6 @@
 <script>
 (function () {
   'use strict';
-
-  /* 1b. Mapa 3D: alterna entre la foto local y el modelo GLB */
-  var mapBtn = document.getElementById('mapModelToggle');
-  if (mapBtn) {
-    var mapScene = document.getElementById('mapScene');
-    var mapModelStatus = document.getElementById('mapModelStatus');
-    var mapViewer = null;
-    var viewerLoading = null;
-
-    function showMap2D() {
-      mapBtn.setAttribute('aria-pressed', 'false');
-      mapBtn.setAttribute('aria-label', 'Ver mapa en 3D');
-      mapBtn.title = 'Ver mapa en 3D';
-      mapScene.hidden = false;
-      if (mapModelStatus) mapModelStatus.hidden = true;
-      if (mapViewer) mapViewer.hidden = true;
-    }
-
-    function showMapError() {
-      showMap2D();
-      if (!mapModelStatus) return;
-      mapModelStatus.textContent = location.protocol === 'file:'
-        ? 'Abre el portal desde un servidor web para ver el mapa 3D.'
-        : 'No se pudo cargar el mapa 3D. Puedes seguir explorando el mapa en 2D.';
-      mapModelStatus.classList.add('is-error');
-      mapModelStatus.hidden = false;
-    }
-
-    function createMapViewer() {
-      mapViewer = document.createElement('model-viewer');
-      mapViewer.className = 'map-model';
-      mapViewer.id = 'mapModel';
-      mapViewer.setAttribute('src', mapBtn.dataset.model);
-      mapViewer.setAttribute('alt', 'Mapa 3D del zoológico');
-      mapViewer.setAttribute('camera-controls', '');
-      mapViewer.setAttribute('camera-orbit', '0deg 35deg 110%');
-      mapViewer.setAttribute('loading', 'eager');
-      mapViewer.setAttribute('touch-action', 'pan-y');
-      mapViewer.setAttribute('disable-zoom', '');
-      mapViewer.setAttribute('disable-pan', '');
-      mapViewer.addEventListener('load', function () {
-        if (mapBtn.getAttribute('aria-pressed') !== 'true') return;
-        mapModelStatus.hidden = true;
-      });
-      mapViewer.addEventListener('error', function () {
-        mapViewer.remove();
-        mapViewer = null;
-        if (mapBtn.getAttribute('aria-pressed') === 'true') showMapError();
-      });
-      mapBtn.after(mapViewer);
-    }
-
-    mapBtn.addEventListener('click', async function () {
-      var on = mapBtn.getAttribute('aria-pressed') !== 'true';
-      if (!on) {
-        showMap2D();
-        return;
-      }
-
-      if (location.protocol === 'file:') {
-        showMapError();
-        return;
-      }
-
-      mapBtn.setAttribute('aria-pressed', 'true');
-      mapBtn.setAttribute('aria-label', 'Ver mapa en 2D');
-      mapBtn.title = 'Ver mapa en 2D';
-      mapModelStatus.classList.remove('is-error');
-      mapModelStatus.textContent = 'Cargando mapa 3D…';
-      mapModelStatus.hidden = false;
-      mapScene.hidden = true;
-
-      try {
-        if (!viewerLoading) viewerLoading = import('./assets/model-viewer.min.js');
-        await viewerLoading;
-        if (mapBtn.getAttribute('aria-pressed') !== 'true') return;
-        if (!mapViewer) createMapViewer();
-        mapViewer.hidden = false;
-        if (mapViewer.loaded) mapModelStatus.hidden = true;
-      } catch (error) {
-        viewerLoading = null;
-        if (mapBtn.getAttribute('aria-pressed') === 'true') showMapError();
-      }
-    });
-  }
 
   /* 2. Navegación: marca la sección activa */
   var links = document.querySelectorAll('#mainNav a[href^="#"]');

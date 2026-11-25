@@ -44,6 +44,7 @@ Los Architecture Decision Records (ADR) documentan el contexto, opciones, decisi
 - [0030 · Selector de galería para momentos del visitante (expo-image-picker)](0030-expo-image-picker-visitor-memories.md) — Aceptado
 - [0031 · Búsqueda global del portal con HTML y JavaScript estático](0031-global-portal-search-static-exception.md) — Aceptado (autoriza `web-012` con spec, plan y tasks aprobados)
 - [0032 · Prueba de concepto ViroReact con ARCore y ARKit](0032-viroreact-arcore-arkit-poc.md) — Aceptado
+- [0033 · Directorio público del mapa del zoológico](0033-public-map-directory.md) — Aceptado
 
 ## Plantilla
 
