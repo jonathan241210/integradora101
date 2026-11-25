@@ -266,6 +266,34 @@ export function SpeciesRequestDetailView({ state, dirty, actions }: SpeciesReque
               </Button>
             )}
             </div>
+            {data.model_3d && (available.canAcceptPublish || available.canAcceptUnpublished) && (
+              <div className="species-detail__model3d">
+                <Alert
+                  role="status"
+                  className={`species-detail__model3d-notice species-detail__model3d-notice--${data.model_3d.status}`}
+                >
+                  {!data.model_3d.enabled && data.model_3d.status !== "missing"
+                    ? "Modelo 3D desactivado. No se mostrará en el portal hasta que lo actives."
+                    : data.model_3d.status === "assigned"
+                      ? "Modelo 3D ya asignado."
+                      : data.model_3d.status === "detected"
+                        ? "Se detectó un modelo 3D y se asignará automáticamente al aceptar."
+                        : "No hay modelo 3D disponible. Comunícate con Sistemas."}
+                </Alert>
+                {data.model_3d.can_toggle && data.model_3d.status !== "missing" && (
+                  <label className="species-detail__model3d-toggle">
+                    <input
+                      type="checkbox"
+                      role="switch"
+                      checked={data.model_3d.enabled}
+                      disabled={state.busy}
+                      onChange={(event) => actions.toggleModel3d(event.target.checked)}
+                    />
+                    <span>{data.model_3d.enabled ? "Desactivar modelo 3D" : "Activar modelo 3D"}</span>
+                  </label>
+                )}
+              </div>
+            )}
             {available.canReject && (
               <div className="species-detail__actions-danger">
                 <Button

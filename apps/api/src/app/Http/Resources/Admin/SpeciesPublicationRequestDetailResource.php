@@ -12,6 +12,14 @@ class SpeciesPublicationRequestDetailResource extends JsonResource
     {
         $species = $this->species;
 
+        $model3d = $this->resource->getAttribute('model_3d_detection') ?? [
+            'status' => 'missing',
+            'detected_model_3d_path' => null,
+            'model_3d_url' => null,
+            'enabled' => (bool) ($species->model_3d_enabled ?? true),
+            'can_toggle' => false,
+        ];
+
         return [
             'id' => $this->id,
             'species_id' => $this->species_id,
@@ -41,6 +49,13 @@ class SpeciesPublicationRequestDetailResource extends JsonResource
                 'fun_fact' => $this->fun_fact ?? $species->fun_fact,
                 'published_fields' => $this->published_fields ?? [],
                 'has_new_photo' => $this->image_path !== null,
+            ],
+            'model_3d' => [
+                'status' => $model3d['status'],
+                'detected_model_3d_path' => $model3d['detected_model_3d_path'],
+                'model_3d_url' => $model3d['model_3d_url'],
+                'enabled' => (bool) ($model3d['enabled'] ?? true),
+                'can_toggle' => (bool) ($model3d['can_toggle'] ?? false),
             ],
         ];
     }

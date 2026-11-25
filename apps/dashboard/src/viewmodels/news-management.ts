@@ -1,4 +1,5 @@
 import type { AdminApi, NewsDto, NewsInput } from "./admin-types";
+import { businessToday } from "./formatters";
 import { emptyImage, type ImagePreview, type ImageValue } from "./image-field";
 import {
   confirmContentAction,
@@ -118,6 +119,17 @@ export function confirmNewsAction(
   preview: ImagePreview,
 ): Promise<boolean> {
   return confirmContentAction(newsConfig, api, dispatch, state, preview);
+}
+
+/** Visibilidad efectiva en portal (misma regla base que api-011: activa, publicada y no vencida). */
+export function isNewsEffectivelyActive(item: NewsDto): boolean {
+  if (!item.is_active) return false;
+  const today = businessToday();
+  const published = item.published_date?.slice(0, 10);
+  const end = item.end_date?.slice(0, 10);
+  if (published && published > today) return false;
+  if (end && end < today) return false;
+  return true;
 }
 
 export function getNewsConfirmation(

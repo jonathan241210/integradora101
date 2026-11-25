@@ -634,6 +634,36 @@ export async function acceptRequest(ctx: RequestsContext, publish: boolean): Pro
   }
 }
 
+/** Activa o desactiva el modelo 3D de la especie (api-032/dashboard-022). */
+export async function toggleRequestModel3d(
+  ctx: RequestsContext,
+  enabled: boolean,
+): Promise<boolean> {
+  const state = ctx.getState();
+  const detail = state.detail.data;
+
+  if (!detail || state.busy) return false;
+
+  ctx.dispatch({ type: "decision-started" });
+
+  try {
+    const data = await ctx.api.speciesPublicationRequests.toggleModel3d(detail.id, enabled);
+
+    if (!ctx.isCurrent()) return false;
+
+    ctx.dispatch({
+      type: "decision-done",
+      notice: enabled ? "Modelo 3D activado." : "Modelo 3D desactivado.",
+    });
+    ctx.dispatch({ type: "detail-loaded", data });
+    await loadRequestPhotos(ctx, data);
+
+    return true;
+  } catch (error) {
+    return failDecision(ctx, detail.id, error);
+  }
+}
+
 /** Rechaza con motivo de 1 a 500 caracteres (CA-13, CA-14). */
 export async function rejectRequest(ctx: RequestsContext, reason: string): Promise<boolean> {
   const state = ctx.getState();
@@ -796,6 +826,7 @@ export type SpeciesRequestsViewModel = {
     closeDecision: () => void;
     changeRejectReason: (reason: string) => void;
     confirmDecision: () => void;
+    toggleModel3d: (enabled: boolean) => void;
     dismissNotice: () => void;
   };
 };

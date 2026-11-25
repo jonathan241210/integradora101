@@ -43,7 +43,7 @@
     return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
   }
 
-  function safeImageUrl(value) {
+  function safeHttpUrl(value) {
     if (typeof value !== 'string') return null;
     var url = value.trim();
     if (!url) return null;
@@ -58,6 +58,9 @@
     if (url.charAt(0) === '/' && url.charAt(1) !== '/' && url.charAt(1) !== '\\') return url;
     return null;
   }
+
+  var safeImageUrl = safeHttpUrl;
+  var safeModelUrl = safeHttpUrl;
 
   function categoryLabel(key) {
     if (Object.prototype.hasOwnProperty.call(CATEGORY_LABELS, key)) return CATEGORY_LABELS[key];
@@ -135,6 +138,22 @@
     return media;
   }
 
+  var modelViewerLoading = null;
+
+  function loadModelViewer() {
+    if (modelViewerLoading) return modelViewerLoading;
+    if (typeof root.ArcaLoadModelViewer === 'function') {
+      modelViewerLoading = Promise.resolve(root.ArcaLoadModelViewer());
+      return modelViewerLoading;
+    }
+    try {
+      modelViewerLoading = Function('return import("../assets/model-viewer.min.js")')();
+    } catch (e) {
+      modelViewerLoading = Promise.reject(e);
+    }
+    return modelViewerLoading;
+  }
+
   function buildCard(species) {
     var card = el('article', 'animal-card');
     var id = Number(species && species.id);
@@ -142,9 +161,77 @@
       card.setAttribute('id', 'animal-' + id);
       card.setAttribute('tabindex', '-1');
     }
-    card.appendChild(buildMedia(species));
+    var media = buildMedia(species);
+    card.appendChild(media);
     var body = el('div', 'animal-card-body');
     body.appendChild(el('h3', null, species.common_name));
+
+    var modelUrl = safeModelUrl(species && species.model_3d_url);
+    if (modelUrl) {
+      var btn = el('button', 'tp-model-toggle');
+      btn.setAttribute('type', 'button');
+      btn.setAttribute('aria-pressed', 'false');
+      btn.setAttribute('aria-label', 'Ver modelo 3D de ' + species.common_name);
+      btn.setAttribute('title', 'Ver modelo 3D');
+      var icon = el('img');
+      icon.setAttribute('src', 'assets/icon-3d-56.webp');
+      icon.setAttribute('alt', '');
+      icon.setAttribute('width', '28');
+      icon.setAttribute('height', '28');
+      btn.appendChild(icon);
+      var viewer = null;
+      btn.addEventListener('click', function () {
+        var on = btn.getAttribute('aria-pressed') !== 'true';
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.setAttribute('aria-label', (on ? 'Ver foto de ' : 'Ver modelo 3D de ') + species.common_name);
+        btn.setAttribute('title', on ? 'Ver foto' : 'Ver modelo 3D');
+        if (on) {
+          if (!viewer) {
+            viewer = root.document.createElement('model-viewer');
+            viewer.setAttribute('class', 'tp-card-model');
+            viewer.setAttribute('src', modelUrl);
+            viewer.setAttribute('alt', 'Modelo 3D de ' + species.common_name);
+            viewer.setAttribute('camera-controls', '');
+            viewer.setAttribute('auto-rotate', '');
+            viewer.setAttribute('shadow-intensity', '1');
+            viewer.setAttribute('exposure', '1.1');
+            viewer.setAttribute('loading', 'lazy');
+            media.appendChild(viewer);
+          }
+          viewer.hidden = false;
+          var img = media.querySelector ? media.querySelector('img:not([alt=""])') : null;
+          // hide photo if present
+          Array.prototype.forEach.call(media.children, function (child) {
+            if (child.tagName === 'IMG' && child.getAttribute('alt') === species.common_name) {
+              child.style = child.style || {};
+              child.style.visibility = 'hidden';
+            }
+          });
+          loadModelViewer().catch(function () {
+            btn.setAttribute('aria-pressed', 'false');
+            btn.setAttribute('aria-label', 'Ver modelo 3D de ' + species.common_name);
+            btn.setAttribute('title', 'Ver modelo 3D');
+            if (viewer) viewer.hidden = true;
+            Array.prototype.forEach.call(media.children, function (child) {
+              if (child.tagName === 'IMG' && child.getAttribute('alt') === species.common_name) {
+                child.style = child.style || {};
+                child.style.visibility = '';
+              }
+            });
+          });
+        } else {
+          if (viewer) viewer.hidden = true;
+          Array.prototype.forEach.call(media.children, function (child) {
+            if (child.tagName === 'IMG' && child.getAttribute('alt') === species.common_name) {
+              child.style = child.style || {};
+              child.style.visibility = '';
+            }
+          });
+        }
+      });
+      media.appendChild(btn);
+    }
+
     var rows = fieldRows(species);
     if (rows.length > 0) {
       var details = el('div', 'tp-details');
@@ -384,6 +471,7 @@
   root.ArcaTulanpedia = {
     helpers: {
       safeImageUrl: safeImageUrl,
+      safeModelUrl: safeModelUrl,
       categoryLabel: categoryLabel,
       habitatKey: habitatKey,
       fieldRows: fieldRows,

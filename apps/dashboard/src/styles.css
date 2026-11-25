@@ -1112,7 +1112,7 @@ button:disabled {
 
 .ticket-total-card span,
 .ticket-total-card small {
-  color: rgb(255 255 255 / 76%);
+  color: color-mix(in srgb, white 76%, transparent);
   font-size: 11px;
 }
 
@@ -1121,7 +1121,7 @@ button:disabled {
 }
 
 .ticket-total-card .arca-badge {
-  background: rgb(255 255 255 / 14%);
+  background: color-mix(in srgb, white 14%, transparent);
   color: var(--primary-foreground);
 }
 
@@ -1368,7 +1368,7 @@ button:disabled {
   gap: 16px;
   padding: clamp(24px, 6vw, 38px);
   border-color: var(--border);
-  box-shadow: 0 18px 55px rgb(0 0 0 / 12%);
+  box-shadow: 0 18px 55px color-mix(in srgb, black 12%, transparent);
 }
 
 .login-card .demo-banner {
@@ -1502,7 +1502,7 @@ button:disabled {
     inset: 0;
     display: block;
     border: 0;
-    background: rgb(0 0 0 / 38%);
+    background: color-mix(in srgb, black 38%, transparent);
   }
 
   .dashboard-main {
@@ -3603,6 +3603,91 @@ ul.enclosure-grid {
   margin: 0;
   color: var(--muted-foreground);
   font-size: 13px;
+}
+
+.species-detail__model3d {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  flex-basis: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface-subtle);
+}
+
+.species-detail__model3d .arca-alert {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 1.4;
+  flex: 1 1 260px;
+}
+
+.species-detail__model3d-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--foreground);
+  user-select: none;
+}
+
+.species-detail__model3d-toggle input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted-foreground) 28%, var(--border));
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex: 0 0 auto;
+}
+
+.species-detail__model3d-toggle input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--foreground) 20%, transparent);
+  transition: transform 0.2s ease;
+}
+
+.species-detail__model3d-toggle input[type="checkbox"]:checked {
+  background: var(--primary);
+}
+
+.species-detail__model3d-toggle input[type="checkbox"]:checked::after {
+  transform: translateX(20px);
+}
+
+.species-detail__model3d-toggle input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.species-detail__model3d-toggle input[type="checkbox"]:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.species-detail__model3d-toggle input[type="checkbox"]:disabled + span {
+  opacity: 0.7;
 }
 
 /* Ficha pública de solo lectura: chips. Un campo nuevo de la ficha se añade a

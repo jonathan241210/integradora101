@@ -77,7 +77,7 @@ class PublishedSpeciesTest extends FeatureTestCase
         $item = $this->getJson(self::URL)->assertOk()->json('data.0');
 
         $this->assertSame(
-            ['id', 'common_name', 'category', 'image_url', 'scientific_name', 'origin', 'habitat'],
+            ['id', 'common_name', 'category', 'image_url', 'model_3d_url', 'scientific_name', 'origin', 'habitat'],
             array_keys($item)
         );
         $this->assertNull($item['category']);
@@ -234,7 +234,7 @@ class PublishedSpeciesTest extends FeatureTestCase
 
         $a = $this->species($base);
         $item = collect($this->getJson(self::URL)->json('data'))->firstWhere('id', $a);
-        $this->assertSame(['id', 'common_name', 'category', 'image_url', 'scientific_name', 'origin', 'habitat'], array_keys($item));
+        $this->assertSame(['id', 'common_name', 'category', 'image_url', 'model_3d_url', 'scientific_name', 'origin', 'habitat'], array_keys($item));
         foreach (['conservation_status', 'size_cm', 'gestation_period', 'diet', 'longevity', 'characteristics'] as $key) {
             $this->assertArrayNotHasKey($key, $item);
         }
@@ -249,13 +249,13 @@ class PublishedSpeciesTest extends FeatureTestCase
 
         $c = $this->species($base + ['published_fields' => []]);
         $item = collect($this->getJson(self::URL)->json('data'))->firstWhere('id', $c);
-        $this->assertSame(['id', 'common_name', 'category', 'image_url'], array_keys($item));
+        $this->assertSame(['id', 'common_name', 'category', 'image_url', 'model_3d_url'], array_keys($item));
         DB::table('species')->where('id', $c)->update(['is_published' => 0]);
 
         // NULL published_fields with is_published = 1 behaves as an empty list.
         $d = $this->species(['common_name' => 'Nulo', 'habitat' => 'Selva', 'published_fields' => null]);
         $item = collect($this->getJson(self::URL)->json('data'))->firstWhere('id', $d);
-        $this->assertSame(['id', 'common_name', 'category', 'image_url'], array_keys($item));
+        $this->assertSame(['id', 'common_name', 'category', 'image_url', 'model_3d_url'], array_keys($item));
     }
 
     /** CA-14 */

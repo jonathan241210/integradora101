@@ -7,11 +7,13 @@ use App\Actions\Admin\SpeciesPublication\ListSpeciesPublicationRequestsAction;
 use App\Actions\Admin\SpeciesPublication\RejectSpeciesPublicationRequestAction;
 use App\Actions\Admin\SpeciesPublication\ShowSpeciesPublicationAction;
 use App\Actions\Admin\SpeciesPublication\ShowSpeciesPublicationRequestAction;
+use App\Actions\Admin\SpeciesPublication\ToggleSpeciesPublicationRequestModel3dAction;
 use App\Actions\Admin\SpeciesPublication\UpdateSpeciesPublicationRequestAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\AcceptSpeciesPublicationRequest;
 use App\Http\Requests\Admin\ListSpeciesPublicationRequestsRequest;
 use App\Http\Requests\Admin\RejectSpeciesPublicationRequest;
+use App\Http\Requests\Admin\ToggleSpeciesPublicationRequestModel3dRequest;
 use App\Http\Requests\Admin\UpdateSpeciesPublicationRequest;
 use App\Http\Resources\Admin\SpeciesPublicationDetailResource;
 use App\Http\Resources\Admin\SpeciesPublicationRequestDetailResource;
@@ -55,6 +57,17 @@ class SpeciesPublicationRequestController extends Controller
         $speciesId = $action->execute($request->user(), $id, $request->publishFlag());
 
         return response()->json((new SpeciesPublicationDetailResource($show->execute($speciesId)))->resolve($request));
+    }
+
+    public function toggleModel3d(
+        int $id,
+        ToggleSpeciesPublicationRequestModel3dRequest $request,
+        ToggleSpeciesPublicationRequestModel3dAction $action,
+        ShowSpeciesPublicationRequestAction $show,
+    ): JsonResponse {
+        $action->execute($request->user(), $id, $request->boolean('enabled'));
+
+        return $this->detail($id, $show);
     }
 
     private function detail(int $id, ShowSpeciesPublicationRequestAction $action): JsonResponse

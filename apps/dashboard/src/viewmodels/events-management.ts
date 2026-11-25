@@ -1,5 +1,5 @@
 import type { AdminApi, EventDto, EventInput } from "./admin-types";
-import { formatTime } from "./formatters";
+import { businessToday, formatTime } from "./formatters";
 import { emptyImage, type ImagePreview, type ImageValue } from "./image-field";
 import {
   confirmContentAction,
@@ -121,6 +121,15 @@ export function confirmEventAction(
   preview: ImagePreview,
 ): Promise<boolean> {
   return confirmContentAction(eventsConfig, api, dispatch, state, preview);
+}
+
+/** Visibilidad efectiva en portal (api-006: activo y no vencido). */
+export function isEventEffectivelyActive(item: EventDto): boolean {
+  if (!item.is_active) return false;
+  const today = businessToday();
+  const end = item.end_date?.slice(0, 10);
+  if (end && end < today) return false;
+  return true;
 }
 
 export function getEventConfirmation(

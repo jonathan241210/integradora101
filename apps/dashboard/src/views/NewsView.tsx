@@ -17,7 +17,8 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { formatDate } from "@/viewmodels/formatters";
 import { visibleImageUrl } from "@/viewmodels/inline-content";
 import { confirmationFromCopy } from "@/viewmodels/confirmation";
-import { getNewsConfirmation, type NewsFormValues, type NewsViewModel } from "@/viewmodels/news-management";
+import { businessToday } from "@/viewmodels/formatters";
+import { getNewsConfirmation, isNewsEffectivelyActive, type NewsFormValues, type NewsViewModel } from "@/viewmodels/news-management";
 import { useContentPagination } from "@/viewmodels/useEventsPagination";
 
 export function NewsView({ state, actions, focus = null }: NewsViewModel & {
@@ -194,9 +195,17 @@ export function NewsView({ state, actions, focus = null }: NewsViewModel & {
                   <ContentThumbnail url={item.image_url} name={item.title} />
                   <div className="content-card__body">
                     <div className="content-card__meta">
-                      <Badge tone={item.is_active ? "success" : "neutral"}>
-                        {item.is_active ? "Activa" : "Inactiva"}
-                      </Badge>
+                      {(() => {
+                        const today = businessToday();
+                        const end = item.end_date?.slice(0, 10);
+                        const published = item.published_date?.slice(0, 10);
+                        const expired = item.is_active && !!end && end < today;
+                        const scheduled = item.is_active && !!published && published > today;
+                        const effective = isNewsEffectivelyActive(item);
+                        const tone = effective ? "success" : expired ? "warning" : "neutral";
+                        const label = effective ? "Activa" : expired ? "Vencida" : scheduled ? "Programada" : "Inactiva";
+                        return <Badge tone={tone}>{label}</Badge>;
+                      })()}
                       <time dateTime={item.published_date}>{formatDate(item.published_date)}</time>
                     </div>
                     <h3>{item.title}</h3>

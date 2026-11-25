@@ -320,6 +320,8 @@ Route::prefix('admin')
                 ->whereNumber('id')->middleware('step-up:none')->name('species-publication-requests.reject');
             Route::post('species-publication-requests/{id}/accept', [SpeciesPublicationRequestController::class, 'accept'])
                 ->whereNumber('id')->middleware('step-up:none')->name('species-publication-requests.accept');
+            Route::patch('species-publication-requests/{id}/model-3d', [SpeciesPublicationRequestController::class, 'toggleModel3d'])
+                ->whereNumber('id')->middleware('step-up:none')->name('species-publication-requests.model-3d.update');
 
             Route::get('published-species', [PublishedSpeciesController::class, 'index'])
                 ->name('published-species.index');

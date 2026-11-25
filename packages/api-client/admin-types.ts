@@ -592,6 +592,14 @@ export type SpeciesRequestDetailDto = {
     /** api-026 CA-15: dato curioso que se publicaría. */
     fun_fact?: string | null;
   };
+  /** api-032: detección automática de modelo 3D por convención. */
+  model_3d?: {
+    status: "assigned" | "detected" | "missing";
+    detected_model_3d_path: string | null;
+    model_3d_url: string | null;
+    enabled: boolean;
+    can_toggle: boolean;
+  };
 };
 
 /**

@@ -17,6 +17,7 @@ import {
   saveRequestEdit,
   speciesRequestsReducer,
   startRequestEdit,
+  toggleRequestModel3d,
   type RequestsContext,
   type SpeciesRequestsViewModel,
 } from "./species-requests";
@@ -119,6 +120,7 @@ export function useSpeciesRequests(): SpeciesRequestsViewModel {
             void acceptRequest(sameDetail(), current.pendingAction === "accept-publish");
           }
         },
+        toggleModel3d: (enabled) => void toggleRequestModel3d(sameDetail(), enabled),
         dismissNotice: () => dispatch({ type: "notice-dismissed" }),
       },
     }),
