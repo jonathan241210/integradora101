@@ -229,6 +229,7 @@ Route::prefix('admin')
 
         Route::middleware('permission:enclosures.manage')->group(function () {
             Route::get('enclosures', [AdminEnclosureController::class, 'index'])->name('enclosures.index');
+            Route::get('enclosures/{enclosure}/animals', [AdminEnclosureController::class, 'animals'])->name('enclosures.animals.index');
             Route::post('enclosures', [AdminEnclosureController::class, 'store'])->middleware('step-up:none')->name('enclosures.store');
             Route::patch('enclosures/{enclosure}', [AdminEnclosureController::class, 'update'])->middleware('step-up:none')->name('enclosures.update');
             Route::patch('enclosures/{enclosure}/status', [AdminEnclosureController::class, 'status'])->middleware('step-up:none')->name('enclosures.status');

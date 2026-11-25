@@ -331,6 +331,7 @@ export function createAdminApiMock(overrides: Partial<Record<string, unknown>> =
     },
     enclosures: {
       list: vi.fn(async (..._args: unknown[]) => [enclosure()]),
+      listAnimals: vi.fn<AdminApi["enclosures"]["listAnimals"]>(async () => []),
       create: vi.fn(async (..._args: unknown[]) => enclosure()),
       rename: vi.fn(async (..._args: unknown[]) => enclosure()),
       setStatus: vi.fn(async (..._args: unknown[]) => enclosure()),

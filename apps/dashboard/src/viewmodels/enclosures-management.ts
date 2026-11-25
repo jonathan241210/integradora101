@@ -1,4 +1,4 @@
-import type { AdminApi, EnclosureDto } from "./admin-types";
+import type { AdminApi, EnclosureAnimalDto, EnclosureDto } from "./admin-types";
 import { runUnprotected, type RunProtected } from "./step-up";
 import {
   initialManagedListState,
@@ -11,31 +11,69 @@ import {
 
 import type { ConfirmationCopy } from "./confirmation";
 import { hasActiveQr, type EnclosureQrFocus, type EnclosureQrIntent } from "./enclosure-qr";
+import { foldText } from "./search-tolerance";
+
+export type EnclosureFilters = {
+  name: string;
+  status: "all" | "active" | "inactive";
+  animals: "all" | "with" | "without";
+  qr: "all" | "with" | "without";
+};
+
+export const defaultEnclosureFilters: EnclosureFilters = {
+  name: "", status: "all", animals: "all", qr: "all",
+};
+
+export function filterEnclosures(items: EnclosureDto[], filters: EnclosureFilters, canManage: boolean) {
+  const name = foldText(filters.name.trim());
+
+  return items.filter((item) =>
+    (!name || foldText(item.name).includes(name)) &&
+    (filters.status === "all" || item.is_active === (filters.status === "active")) &&
+    (filters.animals === "all" || (item.animals_count > 0) === (filters.animals === "with")) &&
+    (!canManage || filters.qr === "all" || hasActiveQr(item) === (filters.qr === "with")),
+  );
+}
+
+type EnclosureAnimalsDialog = { kind: "animals"; item: EnclosureDto };
 
 export type EnclosureDialog =
   | { kind: "create" }
+  | EnclosureAnimalsDialog
   | { kind: "rename"; item: EnclosureDto }
   | { kind: "status"; item: EnclosureDto }
   | { kind: "delete"; item: EnclosureDto }
   /** Diálogo del QR (dashboard-013): consulta o genera y enfoca según el buscador. */
   | { kind: "qr"; item: EnclosureDto; intent: EnclosureQrIntent; focus: EnclosureQrFocus };
 
-export type EnclosuresState = ManagedListState<EnclosureDto, EnclosureDialog>;
+const initialAnimalsState = initialManagedListState<EnclosureAnimalDto, never>();
+
+export type EnclosuresState = ManagedListState<EnclosureDto, EnclosureDialog> & {
+  animals: typeof initialAnimalsState;
+};
 export type EnclosuresAction =
   | ManagedListAction<EnclosureDto, EnclosureDialog>
+  | { type: "animals-list-updated"; dialog: EnclosureAnimalsDialog; action: ManagedListAction<EnclosureAnimalDto, never> }
   /** Cierra el diálogo y conserva el error de la operación para mostrarlo en la sección. */
   | { type: "dialog-dismissed-keep-error" }
   /** Actualiza `has_active_qr` de la tarjeta sin recargar ni cambiar el orden (dashboard-013 CA-16). */
   | { type: "qr-status-set"; id: number; hasQr: boolean };
 export type EnclosuresDispatch = (action: EnclosuresAction) => void;
 
-export const initialEnclosuresState: EnclosuresState =
-  initialManagedListState<EnclosureDto, EnclosureDialog>();
+export const initialEnclosuresState: EnclosuresState = {
+  ...initialManagedListState<EnclosureDto, EnclosureDialog>(),
+  animals: initialAnimalsState,
+};
 
 export function enclosuresReducer(
   state: EnclosuresState,
   action: EnclosuresAction,
 ): EnclosuresState {
+  if (action.type === "animals-list-updated") {
+    if (state.dialog !== action.dialog) return state;
+    return { ...state, animals: managedListReducer(state.animals, action.action) };
+  }
+
   if (action.type === "dialog-dismissed-keep-error") {
     return { ...state, dialog: null, saving: false };
   }
@@ -49,7 +87,17 @@ export function enclosuresReducer(
     };
   }
 
-  return managedListReducer(state, action);
+  const next = managedListReducer(state, action);
+  return { ...next, animals: next.dialog === state.dialog ? state.animals : initialAnimalsState };
+}
+
+export function loadEnclosureAnimals(api: AdminApi, dispatch: EnclosuresDispatch, dialog: EnclosureAnimalsDialog) {
+  let active = true;
+  void loadManagedList<EnclosureAnimalDto, never>((action) => {
+    if (active) dispatch({ type: "animals-list-updated", dialog, action });
+  }, () => api.enclosures.listAnimals(dialog.item.id));
+
+  return () => { active = false; };
 }
 
 export function loadEnclosures(
@@ -123,6 +171,14 @@ export function pageOfEnclosure(
   const index = items.findIndex((item) => item.id === id);
 
   return index < 0 ? null : Math.floor(index / size) + 1;
+}
+
+export function enclosureFocusPage(items: EnclosureDto[], matchingItems: EnclosureDto[], id: number) {
+  const visiblePage = pageOfEnclosure(matchingItems, id);
+  if (visiblePage !== null) return { page: visiblePage, clearFilters: false };
+
+  const catalogPage = pageOfEnclosure(items, id);
+  return catalogPage === null ? null : { page: catalogPage, clearFilters: true };
 }
 
 /** Tras crear: página del primer recinto nuevo; si no hay uno nuevo, conserva la actual. */
@@ -254,11 +310,14 @@ export async function deleteEnclosure(
 
 export type EnclosuresViewModel = {
   canManage: boolean;
+  filters: EnclosureFilters;
+  total: number;
   page: number;
   pageCount: number;
   pageItems: EnclosureDto[];
   state: EnclosuresState;
   actions: {
+    changeFilters: (filters: EnclosureFilters) => void;
     goToPage: (page: number) => void;
     reload: () => void;
     openDialog: (dialog: EnclosureDialog) => void;

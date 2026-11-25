@@ -44,6 +44,7 @@ export type {
   CancellationRowDto,
   DailySalesDto,
   DashboardSummaryDto,
+  EnclosureAnimalDto,
   EnclosureDto,
   EventDto,
   EventInput,

@@ -1,5 +1,65 @@
 # Plan técnico · 012 · enclosure-actions-global-search
 
+## Enmienda técnica · Ver animales del recinto
+
+- Estado de la enmienda: **Aprobado** en la conversación, 2026-11-24.
+- Dependencia: enmienda de lectura administrativa en `api-019` CA-55 y CA-56. `@arca/api-client` expondrá `admin.enclosures.listAnimals(id)` con un DTO limitado a identificación.
+- `EnclosuresView` muestra «Ver animales» en cada tarjeta con `enclosures.manage`. Reutiliza `Dialog` y el patrón de carga y reintento. El título incluye el nombre del recinto. Se muestran el nombre y la especie con «Sin nombre» o «Especie no disponible» cuando corresponda. El foco vuelve al botón al cerrar y el estado de filtros y paginación se conserva.
+- El ViewModel abre un detalle de solo lectura, consulta a demanda por identificador y descarta resultados de solicitudes anteriores al cerrar o cambiar de recinto. Una respuesta vacía tiene un mensaje propio. El error permite repetir la consulta del recinto abierto. El detalle no se guarda en persistencia ni funciona offline.
+
+| Criterio | Prueba en `apps/dashboard/src/tests/` |
+|---|---|
+| CA-49 | Verifica el botón según permiso, el identificador pedido y el listado de nombre y especie para el recinto seleccionado. |
+| CA-50 | Verifica carga, vacío, error, reintento, descarte de respuesta obsoleta y conservación de filtros y página. |
+
+| Principio | Evidencia prevista |
+|---|---|
+| I | `@arca/ui`, React y cliente existentes, sin dependencias nuevas. |
+| II | Enmienda funcional aprobada. Plan y checklist antes del código. |
+| III | View declarativa y consulta en ViewModel vía `@arca/api-client`. |
+| IV | CA-49 y CA-50 mapeados a Vitest. |
+| V | API como fuente del detalle, sin persistencia local. |
+| VI | Identificadores en inglés, UI y documentación en español. |
+
+Secuencia tras aprobación técnica: checklist, implementación coordinada con `api-019`, pruebas y `verify`.
+
+## Enmienda técnica · Filtros del listado de Recintos
+
+- Spec: enmienda aprobada por la persona solicitante el 2026-11-24.
+- Estado de la enmienda del plan: **Aprobado**. La persona solicitante aprobó el plan y autorizó su implementación en la conversación el 2026-11-24.
+
+### Diseño y contrato
+
+- `EnclosuresView.tsx` presenta un campo de nombre, selectores de estado, animales y QR, y el botón «Limpiar filtros». Se reutilizan `Field`, `SelectField`, `Button` y `Pagination` de `@arca/ui`. Los controles se adaptan al ancho de la pantalla y conservan etiquetas visibles y navegación por teclado.
+- `enclosures-management.ts` aplica los filtros al catálogo en el orden recibido. Reutiliza `hasActiveQr` y la normalización de texto existente cuando sea compatible con la búsqueda por nombre.
+- `useEnclosuresManagement.ts` guarda los filtros de la sección, deriva el total y la página visible de las coincidencias, y reinicia la página al cambiar o limpiar filtros. Ante actualizaciones, conserva una página válida y enfoca un recinto nuevo si coincide. Ante un resultado nuevo de búsqueda global, conserva los filtros si incluyen el recinto y los limpia si lo ocultan. El enfoque global tiene precedencia sobre el ajuste de página de una actualización de lista.
+- Se reutilizan `adminApi.enclosures.list()` y las operaciones vigentes. El filtro QR se habilita con la misma condición que permite mostrar la información de QR en la tarjeta. Los estados de carga, error y lista vacía se gestionan con los componentes actuales. La ausencia de coincidencias tiene un mensaje específico con opción de limpieza.
+- Los filtros operan en memoria con los campos existentes de la respuesta. La API conserva permisos y reglas de negocio. No se requieren consultas adicionales, DBR, migraciones, sincronización offline, requisitos de servidor ni cambios de portabilidad MySQL. Se conserva el stack y las dependencias actuales.
+
+### Pruebas de aceptación
+
+| Criterio | Prueba prevista en `apps/dashboard/src/tests/` |
+|---|---|
+| CA-45 | Catálogo mixto de más de nueve recintos. Comprobar «Todos», «Activos» e «Inactivos» y coincidencias fuera de la página original. |
+| CA-46 | Combinación de filtros, nombre con tildes y mayúsculas, y disponibilidad del selector de QR según permiso. |
+| CA-47 | Reinicio al cambiar o limpiar, conservación del orden, total, nueve coincidencias por página y estado sin resultados. |
+| CA-48 | Actualización de coincidencias tras modificar el catálogo, ajuste de página y navegación desde el buscador global con y sin filtros compatibles. |
+
+### Constitution Check
+
+| Principio | Evidencia prevista |
+|---|---|
+| I | Dependencias existentes de React, TypeScript y `@arca/ui`. |
+| II | Enmienda funcional aprobada. La implementación depende de la aprobación de esta enmienda técnica y su checklist. |
+| III | View declarativa, estado y filtrado en ViewModel, operaciones de negocio mediante `@arca/api-client`. |
+| IV | CA-45 a CA-48 mapeados a pruebas de Vitest. |
+| V | Filtrado de los campos ya recibidos de la API, sin persistencia adicional. |
+| VI | Identificadores en inglés y etiquetas, mensajes y documentación en español. |
+
+Tras la aprobación técnica se detallarán las tareas, se implementarán ViewModel y View, se añadirán las pruebas y se ejecutará `verify` para el dashboard. La revisión técnica debe confirmar la precedencia del enfoque global y la actualización del total al cambiar un filtro o una tarjeta.
+
+## Plan original
+
 - Spec: `apps/dashboard/specs/012-enclosure-actions-global-search.md` (Aprobada)
 - Estado del plan: **Aprobado**. Autoriza la implementación según sus tasks.
 - Solicitada: 2026-11-18

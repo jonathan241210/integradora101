@@ -277,3 +277,39 @@ Pedida por el responsable funcional: «busco una noticia y salen primero eventos
 - **Tests:** actualizados para CA-37, CA-41 y CA-43 del dashboard; la verificación completa queda registrada en tasks. La cobertura de API CA-50 a CA-54 se verifica en su propia suite.
 
 - Nota (c): la paginación de esta pantalla usa el componente único `Pagination` (`dashboard-020` CA-43 a CA-48); su comportamiento (tamaño de página, reinicio al filtrar) y los CA de esta spec no cambian.
+
+## Enmienda propuesta · Filtros del listado de Recintos
+
+- Estado: Aprobada
+- Aprobación funcional de la enmienda: persona solicitante, 2026-11-24, en la conversación.
+- Alcance: la sección Recintos del dashboard. El personal que ya puede consultar el listado podrá filtrar con los datos que recibe actualmente. Se conservan los permisos vigentes para gestionar recintos y consultar su QR.
+- Datos: la vista utiliza nombre, estado, indicador de QR activo y cantidad de animales del listado existente. Esta enmienda es de presentación, sin cambios de API, persistencia, esquema ni DBR.
+
+### Criterios de aceptación
+
+- **CA-45 (estado):** La sección ofrece «Todos», «Activos» e «Inactivos». La opción inicial es «Todos». Al elegir «Activos» o «Inactivos», solo aparecen recintos de ese estado, incluso si antes estaban en otra página.
+- **CA-46 (filtros combinados):** El personal puede buscar por nombre, sin distinguir mayúsculas ni acentos, y filtrar por cantidad de animales («Todos», «Con animales», «Sin animales»). Si tiene acceso a la información de QR, puede escoger «Todos», «Con QR activo» o «Sin QR activo». Se muestran los recintos que cumplen todos los filtros seleccionados.
+- **CA-47 (paginación y resultados):** Cambiar o limpiar filtros vuelve a la primera página. La cuadrícula conserva el orden del catálogo y muestra hasta nueve coincidencias por página. El total corresponde a las coincidencias. Si ninguna coincide, se informa y se ofrece limpiar los filtros.
+- **CA-48 (acciones y búsqueda global):** Al activar, desactivar, crear, renombrar, eliminar o generar un QR, las coincidencias se actualizan y la página se ajusta si queda fuera de rango. Un resultado del buscador global restablece los filtros si ocultan el recinto buscado y abre la página que lo contiene. El recálculo tras crear de CA-09 se aplica cuando el nuevo recinto coincide con los filtros vigentes.
+
+### Reglas
+
+- **RN-15:** El filtrado se calcula sobre el catálogo completo recibido antes de dividirlo en páginas. Los filtros combinados usan una intersección y limpiarlos devuelve todos los recintos del listado.
+- **RN-16:** Los filtros son temporales en la sección. La falta de coincidencias y la falta de recintos registrados se presentan como estados distintos. Los controles tienen etiquetas visibles y se pueden usar con el teclado.
+
+## Enmienda propuesta · Ver animales del recinto
+
+- Estado: Aprobada
+- Aprobación funcional: persona solicitante, 2026-11-24, en la conversación.
+- Alcance funcional: consulta de solo lectura para el personal que ya accede a Recintos. Se propone mostrar el nombre y la especie de cada animal asignado cuando estén disponibles. El detalle no incluye expedientes clínicos ni permite reasignar animales.
+
+### Criterios de aceptación
+
+- **CA-49:** Cada tarjeta ofrece «Ver animales». Al pulsarlo, se abre un diálogo que identifica el recinto y muestra únicamente los animales asignados a ese recinto. La consulta funciona tanto para recintos activos como inactivos.
+- **CA-50:** El diálogo muestra carga, un mensaje cuando el recinto no tiene animales y una opción de reintento si falla la consulta. Al cerrarlo se conservan los filtros y la página de Recintos.
+- **RN-17:** El detalle respeta el permiso vigente `enclosures.manage` y solo presenta información básica de identificación.
+
+### Estado actual
+
+- Revisión del código, 2026-11-24: el listado administrativo solo entrega `animals_count`. La consulta pública excluye recintos inactivos y animales no visibles para visitantes.
+- Esquema vivo verificado en `arca_pruebas` el 2026-11-24. La evidencia, la decisión sobre DBR y los criterios del proveedor quedan en la enmienda a `api-019`.

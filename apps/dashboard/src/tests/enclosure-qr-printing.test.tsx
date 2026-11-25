@@ -28,6 +28,7 @@ import {
   getEnclosureWarning,
   initialEnclosuresState,
   qrDialogForCard,
+  defaultEnclosureFilters,
   type EnclosuresViewModel,
 } from "../viewmodels/enclosures-management";
 import {
@@ -65,6 +66,7 @@ afterEach(() => {
 });
 
 const noopActions: EnclosuresViewModel["actions"] = {
+  changeFilters: vi.fn(),
   reload: vi.fn(), openDialog: vi.fn(), closeDialog: vi.fn(), dismissNotice: vi.fn(), save: vi.fn(),
   goToPage: vi.fn(), toggleStatus: vi.fn(), requestDelete: vi.fn(), confirm: vi.fn(),
   openQr: vi.fn(), setHasQr: vi.fn(), qrNotFound: vi.fn(),
@@ -75,6 +77,7 @@ function renderList(items: ReturnType<typeof enclosure>[], canManage = true, dia
 
   return renderToStaticMarkup(
     <EnclosuresView state={state} actions={noopActions} canManage={canManage} page={1}
+      filters={defaultEnclosureFilters} total={items.length}
       pageCount={enclosurePageCount(items.length)} pageItems={enclosurePage(items, 1)} />,
   );
 }
@@ -133,10 +136,10 @@ describe("CA-01 enclosure-qr-printing", () => {
 
     expect(withQr).toContain('aria-label="Ver QR del recinto Lobos"');
     expect(withQr).toContain(">Ver QR<");
-    expect(withQr).not.toContain("Sin QR");
+    expect(withQr).not.toContain(">Sin QR</span>");
     expect(without).toContain('aria-label="Generar QR del recinto Osos"');
     expect(without).toContain(">Generar QR<");
-    expect(without).toContain("Sin QR");
+    expect(without).toContain(">Sin QR</span>");
     expect(qrCardButton(true, "Lobos").ariaLabel).toBe("Ver QR del recinto Lobos");
   });
 

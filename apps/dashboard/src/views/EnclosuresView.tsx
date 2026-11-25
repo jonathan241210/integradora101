@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Badge, Button, Card, Dialog, Field, Pagination } from "@arca/ui";
+import { Badge, Button, Card, Dialog, Field, Pagination, SelectField } from "@arca/ui";
 import { ActionError } from "@/components/DashboardNotifications";
 import { FieldErrors, fieldErrorProps } from "@/components/FieldErrors";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -13,8 +13,10 @@ import type { EnclosureDto } from "@/viewmodels/admin-types";
 import { formatCount } from "@/viewmodels/formatters";
 import { hasActiveQr, qrCardButton, QR_TEXTS } from "@/viewmodels/enclosure-qr";
 import {
+  defaultEnclosureFilters,
   getEnclosureConfirmation,
   getEnclosureWarning,
+  type EnclosureFilters,
   type EnclosuresViewModel,
 } from "@/viewmodels/enclosures-management";
 
@@ -62,13 +64,15 @@ function EnclosureForm({
   );
 }
 
-export function EnclosuresView({ state, actions, page, pageCount, pageItems, canManage }: EnclosuresViewModel) {
+export function EnclosuresView({ state, actions, filters, total, page, pageCount, pageItems, canManage }: EnclosuresViewModel) {
   const { dialog } = state;
   const formDialog = dialog?.kind === "create" || dialog?.kind === "rename" ? dialog : null;
   const confirmation = getEnclosureConfirmation(dialog);
   const warning = getEnclosureWarning(dialog);
   const qrDialog = dialog?.kind === "qr" ? dialog : null;
+  const animalsDialog = dialog?.kind === "animals" ? dialog : null;
   const sectionError = dialog === null ? state.actionError : "";
+  const hasFilters = Boolean(filters.name || filters.status !== "all" || filters.animals !== "all" || (canManage && filters.qr !== "all"));
 
   return (
     <>
@@ -84,6 +88,52 @@ export function EnclosuresView({ state, actions, page, pageCount, pageItems, can
           Crear recinto
         </Button>
       </div>
+      {state.status === "ready" && (
+        <div className="enclosure-filters" role="group" aria-label="Filtros de recintos">
+          <Field
+            id="enclosure-filter-name"
+            label="Buscar por nombre"
+            type="search"
+            value={filters.name}
+            onChange={(event) => actions.changeFilters({ ...filters, name: event.target.value })}
+          />
+          <SelectField
+            id="enclosure-filter-status"
+            label="Estado"
+            value={filters.status}
+            onChange={(event) => actions.changeFilters({ ...filters, status: event.target.value as EnclosureFilters["status"] })}
+          >
+            <option value="all">Todos</option>
+            <option value="active">Activos</option>
+            <option value="inactive">Inactivos</option>
+          </SelectField>
+          <SelectField
+            id="enclosure-filter-animals"
+            label="Animales"
+            value={filters.animals}
+            onChange={(event) => actions.changeFilters({ ...filters, animals: event.target.value as EnclosureFilters["animals"] })}
+          >
+            <option value="all">Todos</option>
+            <option value="with">Con animales</option>
+            <option value="without">Sin animales</option>
+          </SelectField>
+          {canManage && (
+            <SelectField
+              id="enclosure-filter-qr"
+              label="Código QR"
+              value={filters.qr}
+              onChange={(event) => actions.changeFilters({ ...filters, qr: event.target.value as EnclosureFilters["qr"] })}
+            >
+              <option value="all">Todos</option>
+              <option value="with">Con QR activo</option>
+              <option value="without">Sin QR activo</option>
+            </SelectField>
+          )}
+          <Button variant="secondary" disabled={!hasFilters} onClick={() => actions.changeFilters(defaultEnclosureFilters)}>
+            Limpiar filtros
+          </Button>
+        </div>
+      )}
       <ListStatusMessage
         status={state.status}
         error={state.error}
@@ -92,7 +142,10 @@ export function EnclosuresView({ state, actions, page, pageCount, pageItems, can
         emptyText="Aún no hay recintos registrados."
         onRetry={actions.reload}
       />
-      {state.status === "ready" && (
+      {state.status === "ready" && total === 0 && (
+        <p className="state-message" role="status">No hay recintos que coincidan con los filtros.</p>
+      )}
+      {state.status === "ready" && total > 0 && (
         <ul className="enclosure-grid" aria-label="Recintos">
           {pageItems.map((enclosure) => (
             <li key={enclosure.id} data-search-id={`enclosures:${enclosure.id}`}>
@@ -124,6 +177,13 @@ export function EnclosuresView({ state, actions, page, pageCount, pageItems, can
                   </Button>
                   {canManage && (
                     <>
+                      <Button
+                        variant="secondary"
+                        aria-label={`Ver animales del recinto ${enclosure.name}`}
+                        onClick={() => actions.openDialog({ kind: "animals", item: enclosure })}
+                      >
+                        Ver animales
+                      </Button>
                       {/* Acción «QR del recinto» (dashboard-013 CA-01, CA-18) */}
                       <Button
                         variant="secondary"
@@ -154,11 +214,11 @@ export function EnclosuresView({ state, actions, page, pageCount, pageItems, can
           ))}
         </ul>
       )}
-      {state.status === "ready" && state.items.length > 0 && (
+      {state.status === "ready" && total > 0 && (
         <Pagination
           page={page}
           lastPage={pageCount}
-          total={state.items.length}
+          total={total}
           onPageChange={actions.goToPage}
         />
       )}
@@ -185,6 +245,38 @@ export function EnclosuresView({ state, actions, page, pageCount, pageItems, can
           onNotFound={actions.qrNotFound}
         />
       )}
+
+      <Dialog
+        open={animalsDialog !== null}
+        title={animalsDialog ? `Animales de ${animalsDialog.item.name}` : "Animales del recinto"}
+        onClose={actions.closeDialog}
+        className="form-dialog"
+      >
+        {animalsDialog && (
+          <>
+            <ListStatusMessage
+              status={state.animals.status}
+              error={state.animals.error}
+              loadingText="Cargando animales…"
+              emptyText="Este recinto no tiene animales asignados."
+              onRetry={() => actions.openDialog({ ...animalsDialog })}
+            />
+            {state.animals.status === "ready" && (
+              <ul className="enclosure-animal-list" aria-label="Animales asignados">
+                {state.animals.items.map((animal) => (
+                  <li key={animal.id}>
+                    <strong>{animal.name?.trim() || "Sin nombre"}</strong>
+                    <span>{animal.species_name?.trim() || "Especie no disponible"}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="dialog-actions">
+              <Button variant="secondary" onClick={actions.closeDialog}>Cerrar</Button>
+            </div>
+          </>
+        )}
+      </Dialog>
 
       <Dialog
         open={formDialog !== null}

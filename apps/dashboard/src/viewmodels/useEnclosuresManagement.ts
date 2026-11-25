@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 import type { FocusDialogAction } from "./focus-target";
 import { adminApi } from "@/services/arca-api";
 import { useRunProtected } from "./step-up-context";
@@ -6,10 +6,13 @@ import {
   enclosuresReducer,
   initialEnclosuresState,
   loadEnclosures,
+  loadEnclosureAnimals,
   saveEnclosure,
   clampPage,
   deleteEnclosure,
-  pageOfEnclosure,
+  defaultEnclosureFilters,
+  enclosureFocusPage,
+  filterEnclosures,
   setEnclosureStatus,
   enclosurePage,
   enclosureDialogForFocus,
@@ -29,9 +32,15 @@ export function useEnclosuresManagement(
   const protect = useRunProtected();
 
   const [requestedPage, setRequestedPage] = useState(1);
+  const [filters, setFilters] = useState(defaultEnclosureFilters);
+  const matchingItems = useMemo(
+    () => filterEnclosures(state.items, filters, canManage),
+    [state.items, filters, canManage],
+  );
+  const focusedNonce = useRef<number | null>(null);
   const openedNonce = useRef<number | null>(null);
   const previousItems = useRef<typeof state.items | null>(null);
-  const pageCount = enclosurePageCount(state.items.length);
+  const pageCount = enclosurePageCount(matchingItems.length);
   const page = clampPage(requestedPage, pageCount);
 
   useEffect(() => {
@@ -39,23 +48,30 @@ export function useEnclosuresManagement(
   }, []);
 
   useEffect(() => {
+    if (state.dialog?.kind === "animals") {
+      return loadEnclosureAnimals(adminApi, dispatch, state.dialog);
+    }
+  }, [state.dialog]);
+
+  useEffect(() => {
     const previous = previousItems.current;
     previousItems.current = state.items;
 
     if (previous !== null && previous !== state.items) {
-      setRequestedPage((current) => pageAfterCreate(previous, state.items, current));
+      setRequestedPage((current) => pageAfterCreate(previous, matchingItems, current));
     }
-  }, [state.items]);
+  }, [state.items, matchingItems]);
 
   // Buscador global (CA-20): salta a la página que contiene el recinto buscado.
   useEffect(() => {
-    if (!focus || state.status !== "ready") return;
-    const target = pageOfEnclosure(state.items, focus.id);
+    if (!focus || state.status !== "ready" || focusedNonce.current === focus.nonce) return;
+    const target = enclosureFocusPage(state.items, matchingItems, focus.id);
+    if (!target) return;
 
-    if (target !== null) setRequestedPage(target);
-    // Solo al pedir un nuevo enfoque o cuando llega la lista.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [focus?.nonce, focus?.id, state.items]);
+    focusedNonce.current = focus.nonce;
+    if (target.clearFilters) setFilters(defaultEnclosureFilters);
+    setRequestedPage(target.page);
+  }, [focus, state.status, state.items, matchingItems]);
 
   // Abre la confirmación de la acción elegida sin ejecutarla (CA-37, CA-38).
   useEffect(() => {
@@ -72,11 +88,17 @@ export function useEnclosuresManagement(
 
   return {
     canManage,
+    filters,
+    total: matchingItems.length,
     page,
     pageCount,
-    pageItems: enclosurePage(state.items, page),
+    pageItems: enclosurePage(matchingItems, page),
     state,
     actions: {
+      changeFilters: (next) => {
+        setFilters(next);
+        setRequestedPage(1);
+      },
       goToPage: (next) => setRequestedPage(clampPage(next, pageCount)),
       reload: () => void loadEnclosures(adminApi, dispatch),
       openDialog: (dialog) => dispatch({ type: "dialog-opened", dialog }),
