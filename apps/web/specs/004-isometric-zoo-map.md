@@ -154,3 +154,7 @@ Por solicitud expresa, **CA-13** incorpora zoo_3d(3).blend al visor y representa
 ## Inicio junto a Boletaje
 
 **CA-16.** En ambos mapas del portal, Inicio aparece junto a Boletaje y el directorio permite localizarlo en esa misma posición.
+
+## Visibilidad de los accesos
+
+**CA-17.** Entrada y Boletaje tienen rótulos completos y separados, visibles sin interacción en los dos mapas incluso si el catálogo está vacío o falla.

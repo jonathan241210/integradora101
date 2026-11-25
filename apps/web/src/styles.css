@@ -1458,3 +1458,13 @@ textarea {
 .model-pin { position: relative; width: 10px; height: 10px; padding: 0; border-radius: 50%; border: 2px solid var(--surface); background: var(--primary); cursor: pointer; }
 .model-pin.place-pin { background: var(--sidebar); border-radius: 2px; }
 .model-pin span { font-size: .55rem; }
+
+/* Los dos accesos llevan rótulos permanentes a lados opuestos de sus puntos. */
+.map-pin.landmark-start, .map-pin.landmark-office,
+.model-pin.landmark-start, .model-pin.landmark-office { z-index: 3; }
+:is(.map-pin, .model-pin):is(.landmark-start, .landmark-office) span {
+  max-width: none; padding: .12rem .3rem; border-radius: .25rem;
+  font: 700 .75rem/1.25 var(--sans); background: var(--primary); color: var(--foreground-light);
+}
+:is(.map-pin, .model-pin).landmark-start span { top: auto; bottom: 100%; left: 50%; transform: none; }
+:is(.map-pin, .model-pin).landmark-office span { left: auto; right: 50%; transform: none; }

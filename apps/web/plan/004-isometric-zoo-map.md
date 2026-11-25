@@ -137,3 +137,7 @@ Filtrar en memoria las respuestas del directorio, usar una sola zona de resultad
 ## Inicio junto a Boletaje
 
 Aplicar la posición relativa a los lugares públicos antes de dibujar sus marcadores 2D y 3D. Separar los puntos 48 píxeles en horizontal y 20 en vertical en el plano de 1600 × 1200. Si falta una posición válida para Boletaje, conservar la posición pública de Inicio.
+
+## Visibilidad de los accesos
+
+Representar ambos hitos cartográficos con los IDs públicos cuando existan, usando el centro canónico de Boletaje si faltan coordenadas. Las referencias locales se limitan al dibujo.

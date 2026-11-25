@@ -116,3 +116,7 @@ En Chrome se verificaron la búsqueda, el filtro por tipo, la localización del 
 ## Inicio junto a Boletaje
 
 - [x] **T-36** (CA-16). Colocar Inicio junto a Boletaje en las dos vistas y verificar el caso sin coordenadas de Boletaje.
+
+## Visibilidad de los accesos
+
+- [x] **T-37** (CA-17). Verificar los rótulos de los dos mapas con y sin registros públicos.

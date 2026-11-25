@@ -140,11 +140,11 @@ test('CA-13 isometric-zoo-map posiciona y nombra los hotspots tanto antes como d
   const model = dir.attachModel();
   finish([{ id: 2, name: 'Entrada', map_x: 1, map_y: 0 }, { id: 4, name: 'Sin posición', map_x: null, map_y: null }]);
   await settle();
-  assert.deepEqual(model.pins.map(p => p.slot), ['hotspot-enclosurePins-2','hotspot-placePins-2']);
-  assert.deepEqual(model.pins.map(p => p.label.textContent), ['Lémur','Entrada']);
+  assert.deepEqual(model.pins.map(p => p.slot), ['hotspot-enclosurePins-2','hotspot-placePins-2','hotspot-placePins-plan-office']);
+  assert.deepEqual(model.pins.map(p => p.label.textContent), ['Lémur','Entrada','Boletaje']);
   const [x,y,z] = model.pins[0]['data-position'].split(' ').map(parseFloat);
   assert.ok(Math.abs(x + .025897) < .00001 && y === .265 && Math.abs(z + 2.140369) < .00001);
-  assert.equal(dir.attachModel().pins.length, 2);
+  assert.equal(dir.attachModel().pins.length, 3);
 });
 
 test('CA-15 filtra por tipo y encuentra nombres con o sin acentos', async () => {
@@ -175,5 +175,15 @@ test('CA-16 sitúa Inicio junto a Boletaje en el plano y el modelo', async () =>
   assert.ok(Math.abs(a[0] - b[0] - .48) < .00001 && Math.abs(a[2] - b[2] + .2) < .00001);
   const fallback = openDirectory([], [{ id: 1, name: 'Inicio', map_x: .8, map_y: .2 }, { id: 2, name: 'Boletaje', map_x: null, map_y: .7 }]);
   await settle();
-  assert.equal(fallback.placePins.markers[0].style.left, '80%');
+  assert.ok(Math.abs(parseFloat(fallback.placePins.markers[0].style.left) - 33.66) < .00001);
+});
+
+test('CA-17 muestra Entrada y Boletaje en ambos mapas aunque el catálogo falle o esté vacío', async () => {
+  for (const response of [null, []]) {
+    const dir = openDirectory([], response);
+    await settle();
+    assert.deepEqual(dir.placePins.markers.map(pin => pin.label.textContent), ['Entrada', 'Boletaje']);
+    assert.deepEqual(dir.attachModel().pins.map(pin => pin.label.textContent), ['Entrada', 'Boletaje']);
+    assert.equal(dir.mapPlaces.list.names.length, 0);
+  }
 });
