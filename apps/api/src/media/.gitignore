@@ -7,15 +7,18 @@
 !/memories/
 !/species/
 !/species-requests/
+!/models/
 
-# Inside each folder: only .gitkeep and lowercase images.
+# Inside each folder: only .gitkeep, lowercase images, and approved .glb models.
 /news/*
 /events/*
 /memories/*
 /species/*
 /species-requests/*
+/models/*
 !/*/.gitkeep
 !/*/*.jpg
 !/*/*.jpeg
 !/*/*.png
 !/*/*.webp
+!/*/*.glb
