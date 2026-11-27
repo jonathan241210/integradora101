@@ -266,7 +266,7 @@ export function DiagnosisIntenseView({ mvzName = '', userScope }: { mvzName?: st
             </fieldset>
             <h4>Contención química</h4>
             <div className="table-scroll">
-              <table className="print-table">
+              <table className="print-table restraint-edit-table">
                 <thead>
                   <tr>
                     {restraintColumns.map(([key, label]) => (
@@ -276,9 +276,9 @@ export function DiagnosisIntenseView({ mvzName = '', userScope }: { mvzName?: st
                 </thead>
                 <tbody>
                   {Array.from({ length: chemicalRestraintRows }, (_, row) => (
-                    <tr key={row}>
+                    <tr key={row} data-row-label={`Aplicación ${row + 1}`}>
                       {restraintColumns.map(([key, label, type]) => (
-                        <td key={key}>
+                        <td key={key} data-label={label}>
                           <input
                             aria-label={`${label}, fila ${row + 1}`}
                             className="table-input"

@@ -38,7 +38,7 @@ const speciesRequestShortcut: (typeof shortcuts)[number] = {
   title: 'Solicitar publicación de especie',
   description: 'Proponer una especie para el catálogo público y ver tus solicitudes',
   section: 'species-request',
-  icon: 'paw',
+  icon: 'species',
 };
 
 export function HomeView({

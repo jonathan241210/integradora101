@@ -63,8 +63,8 @@ export function SyncStatusView({ userScope }: { userScope: string }) {
       </div>
 
       <Card className="form-card">
-        <div className="form-actions" style={{ justifyContent: 'space-between', marginBottom: '1rem' }}>
-          {snapshot && <span>{rows.filter((r) => r.status !== 'synced').length} pendiente(s)</span>}
+        <div className="sync-toolbar">
+          {snapshot && <span className="sync-toolbar__count">{rows.filter((r) => r.status !== 'synced').length} pendiente(s)</span>}
           <Button onClick={() => void handleSync()} disabled={busy} type="button">
             {busy ? <Spinner label="Sincronizando…" /> : 'Sincronizar ahora'}
           </Button>
@@ -74,7 +74,7 @@ export function SyncStatusView({ userScope }: { userScope: string }) {
           <p>No hay registros en la cola de sincronización.</p>
         ) : (
           <div className="table-scroll">
-            <table className="profile-table">
+            <table className="profile-table responsive-table">
               <thead>
                 <tr>
                   <th>Tipo</th>
@@ -88,12 +88,12 @@ export function SyncStatusView({ userScope }: { userScope: string }) {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.id}>
-                    <td>{typeLabel(row.entityType)}</td>
-                    <td>{row.ref}</td>
-                    <td>{new Date(row.createdAt).toLocaleString('es-MX')}</td>
-                    <td>{row.status === 'syncing' ? <Spinner label="Subiendo…" /> : (statusLabels[row.status] ?? row.status)}</td>
-                    <td>{row.attempts}</td>
-                    <td>{row.lastError ? toUserSyncMessage(row.lastError) : (row.status === 'synced' ? 'Subido correctamente' : '—')}</td>
+                    <td data-label="Tipo">{typeLabel(row.entityType)}</td>
+                    <td data-label="Referencia">{row.ref}</td>
+                    <td data-label="Fecha">{new Date(row.createdAt).toLocaleString('es-MX')}</td>
+                    <td data-label="Estado">{row.status === 'syncing' ? <Spinner label="Subiendo…" /> : (statusLabels[row.status] ?? row.status)}</td>
+                    <td data-label="Intentos">{row.attempts}</td>
+                    <td data-label="Último resultado">{row.lastError ? toUserSyncMessage(row.lastError) : (row.status === 'synced' ? 'Subido correctamente' : '—')}</td>
                   </tr>
                 ))}
               </tbody>
