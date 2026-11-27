@@ -363,3 +363,23 @@ En las versiones V1 a V3 del mapa móvil, los recintos y puntos de interés prov
 ## Corrección de regresiones — CA-07 y CA-17
 
 Se aplica la corrección aprobada de tokens y centrado: componentes y pantallas consumen roles semánticos compartidos en lugar de colores literales, y centrar la ubicación activa aplica `CENTER_LOCATION_ZOOM` y calcula el desplazamiento con la misma escala. No cambian criterios, dependencias ni contratos. La evidencia de las pruebas existentes se registra en plan y tasks.
+
+## Enmienda V5 — Búsqueda de servicios y filtro de `zoo_place`
+
+- **Estado:** Aprobada (solicitante en sesión, 2026-11-27)
+- **Responsable funcional:** Equipo ARCA-NB
+
+### Objetivo
+
+Permitir buscar animales y servicios/lugares desde la búsqueda, y hacer que el filtro "Animales" no muestre marcadores `zoo_place`.
+
+### Criterios de aceptación (V5)
+
+- **CA-24 (Búsqueda de animales y servicios):** Dada la pantalla de búsqueda, cuando el visitante escribe texto, entonces el sistema busca coincidencias en animales y en servicios/lugares visibles del mapa (`MapPlace` visibles y `zoo_place` visibles con coordenadas), mostrando resultados en español. El filtro Todos/Animales/Servicios limita el tipo de resultado.
+- **CA-25 (Seleccionar servicio/lugar):** Dado un resultado de servicio/lugar en la búsqueda, cuando el visitante lo selecciona, entonces la app navega al mapa y enfoca el marcador correspondiente.
+- **CA-26 (Filtro Animales sin zoo_place):** Dado el filtro "Animales" en el mapa, cuando se renderizan marcadores, entonces solo se muestran puntos de tipo animal; los marcadores `zoo_place` no se muestran. Con "Servicios" se muestran servicios y `zoo_place` visibles; con "Todo" se mantiene el comportamiento actual.
+
+### Reglas de negocio (V5)
+
+- **RN-22 (Búsqueda sin lógica en vista):** La vista de búsqueda recibe resultados y callbacks; la carga/filtrado vive en ruta/ViewModel/repositorios.
+- **RN-23 (Compatibilidad de foco):** El foco del mapa debe aceptar IDs de `MapPlace` y `zoo-place-{id}` sin mostrar error falso.

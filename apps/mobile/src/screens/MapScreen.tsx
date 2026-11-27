@@ -117,7 +117,7 @@ export function MapScreen({
     );
   }, [userPosition, activeTargetPlace]);
 
-  const { allMapPins, hitWidths } = useMapMarkers(filteredPlaces, zooPlaces);
+  const { allMapPins, hitWidths } = useMapMarkers(filteredPlaces, zooPlaces, filter);
   const selectedMarkerId = selectedPlace?.id ?? focusedPlaceId;
 
   const arTour = useArTourViewModel({
@@ -315,12 +315,12 @@ export function MapScreen({
           <AppText variant="title">Mapa del zoológico</AppText>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Buscar animales"
+            accessibilityLabel="Buscar"
             onPress={onSearchPress}
             style={styles.searchLink}
           >
             <AppText variant="body" bold style={styles.searchLinkText}>
-              Buscar animales
+              Buscar
             </AppText>
           </Pressable>
           <View style={styles.filters}>

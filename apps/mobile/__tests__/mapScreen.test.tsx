@@ -244,6 +244,23 @@ describe('MapScreen', () => {
     expect(view.getByTestId('zoo-map-svg')).toBeTruthy();
   });
 
+  it('test-ca-04: el filtro Animales oculta zoo_places y Servicios los mantiene', async () => {
+    const view = await render(<LiveMap repository={restaurantRepository(facilities)} />);
+    await waitFor(() => expect(view.getByTestId('map-marker-juan')).toBeTruthy());
+    expect(view.getByTestId('map-marker-zoo-place-15')).toBeTruthy();
+    expect(view.getByTestId('map-marker-zoo-place-16')).toBeTruthy();
+
+    await fireEvent.press(view.getByText('Animales'));
+    expect(view.getByTestId('map-marker-juan')).toBeTruthy();
+    expect(view.queryByTestId('map-marker-zoo-place-15')).toBeNull();
+    expect(view.queryByTestId('map-marker-zoo-place-16')).toBeNull();
+
+    await fireEvent.press(view.getByText('Servicios'));
+    expect(view.queryByTestId('map-marker-juan')).toBeNull();
+    expect(view.getByTestId('map-marker-zoo-place-15')).toBeTruthy();
+    expect(view.getByTestId('map-marker-zoo-place-16')).toBeTruthy();
+  });
+
   it('test-ca-04: muestra un estado vacío en español si el filtro no tiene resultados', async () => {
     const view = await render(<LiveMap repository={emptyRepository} />);
 

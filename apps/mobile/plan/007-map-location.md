@@ -583,3 +583,10 @@ Archivos funcionales y de estilo afectados se determinarán mediante la búsqued
 Las correcciones ya presentes en el árbol local se revisaron para su publicación. `MapScreen` aplica el zoom de centrado y los componentes del mapa consumen los nuevos roles de `@arca/tokens` a través de su adaptador. Las constantes cromáticas locales de ubicación/ruta se sustituyen por tokens. Se conservan las pruebas y sus expectativas.
 
 La ejecución dirigida de `architecture.test.ts`, `mapAccessibility.test.tsx` y `mapViewport.test.tsx` aprobó 3 suites y 11 pruebas. No hay verificación visual nueva en dispositivo; no se declara ese resultado como validado visualmente.
+
+## Enmienda V5 � B�squeda de servicios y filtro de zoo_place
+
+- Estado: aprobada por solicitante en sesi�n (2026-11-27).
+- CA: CA-24, CA-25, CA-26. RN: RN-22, RN-23.
+- Cambios: `useMapMarkers` excluye `zoo_place` en filtro `animal`; `SearchScreen`/ruta buscan animales y servicios/lugares; foco de mapa acepta `zoo-place-{id}`.
+- Pruebas: `mapScreen.test.tsx` (CA-04/CA-26), `exploration.test.tsx` y verificaci�n manual indicada al usuario.

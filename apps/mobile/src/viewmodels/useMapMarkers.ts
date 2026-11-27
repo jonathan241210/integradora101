@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { FOOD_SERVICE_MAP_ANCHOR, FOOD_SERVICE_MAP_ID, SVG_HEIGHT, SVG_WIDTH } from '../constants/zoo';
-import type { MapPlace, ZooPlace } from '../models';
+import type { MapFilter, MapPlace, ZooPlace } from '../models';
 
 const visitorServiceTypes = new Set(['servicios', 'restroom', 'food', 'ticketing']);
 
@@ -50,9 +50,11 @@ function getMarkerHitWidths(places: MapPlace[]) {
   return widths;
 }
 
-export function useMapMarkers(filteredPlaces: MapPlace[], zooPlaces: ZooPlace[]) {
+export function useMapMarkers(filteredPlaces: MapPlace[], zooPlaces: ZooPlace[], filter: MapFilter = 'all') {
   return useMemo(() => {
-    const zooPlaceMarkers = zooPlaces.map(toZooPlaceMarker).filter((place) => place !== null);
+    const zooPlaceMarkers = filter === 'animal'
+      ? []
+      : zooPlaces.map(toZooPlaceMarker).filter((place) => place !== null);
     const hasFoodMarker = zooPlaceMarkers.some((place) => place.svgId === FOOD_SERVICE_MAP_ANCHOR.svgId);
     const visiblePlaces = filteredPlaces.filter((place) => {
       if (place.id === FOOD_SERVICE_MAP_ID) return !hasFoodMarker;
@@ -61,5 +63,5 @@ export function useMapMarkers(filteredPlaces: MapPlace[], zooPlaces: ZooPlace[])
 
     const allMapPins = [...visiblePlaces, ...zooPlaceMarkers];
     return { allMapPins, hitWidths: getMarkerHitWidths(allMapPins) };
-  }, [filteredPlaces, zooPlaces]);
+  }, [filter, filteredPlaces, zooPlaces]);
 }

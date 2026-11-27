@@ -316,3 +316,10 @@ Se continÃºa desde T-63 de la enmienda anterior para evitar duplicar identificad
 - Spec: `apps/mobile/specs/007-map-location.md` (Enmienda V4, Aprobada).
 - Tareas: no hay T-xx registradas para esta enmienda en este archivo. Pendiente registrarlas o confirmar que la integraciÃ³n se cerrÃ³ sin tareas propias.
 - Cobertura existente: `apps/mobile/__tests__/apiMapRepository.test.ts` nombra CA-21, CA-22 y CA-23 de la spec.
+
+## Enmienda V5 — Búsqueda de servicios y filtro de zoo_place
+
+- [x] **T-67** (CA-26): Excluir marcadores `zoo_place` cuando el filtro del mapa es `animal`; mantenerlos en `service` y `all`.
+- [x] **T-68** (CA-24, CA-25, RN-22): Extender búsqueda para incluir servicios/lugares del mapa y enfocar el marcador al seleccionar.
+- [x] **T-69** (RN-23): Permitir foco de mapa para IDs `zoo-place-{id}` sin `focusNotFound` falso.
+- [x] **T-70** (CA-24, CA-25, CA-26): Actualizar/agregar pruebas de mapa y búsqueda; ejecutar verificación dirigida.

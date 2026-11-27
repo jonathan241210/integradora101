@@ -82,11 +82,16 @@ export function useMapViewModel(repository: MapRepository = defaultRepository) {
 
   const focusedSectionId = useMemo(() => {
     const focusedPlace = places.find((place) => place.id === focusedPlaceId);
-    return focusedPlace?.sectionId ?? null;
-  }, [focusedPlaceId, places]);
+    if (focusedPlace?.sectionId) return focusedPlace.sectionId;
+    const focusedZooPlace = zooPlaces.find((place) => `zoo-place-${place.id}` === focusedPlaceId);
+    return focusedZooPlace?.svgId ?? null;
+  }, [focusedPlaceId, places, zooPlaces]);
 
   const focusNotFound = Boolean(
-    focusedPlaceId && !isLoading && !places.some((place) => place.id === focusedPlaceId),
+    focusedPlaceId
+      && !isLoading
+      && !places.some((place) => place.id === focusedPlaceId)
+      && !zooPlaces.some((place) => `zoo-place-${place.id}` === focusedPlaceId),
   );
 
   const selectPlace = useCallback((id: string) => {

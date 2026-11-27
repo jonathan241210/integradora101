@@ -44,7 +44,7 @@ describe('Exploration Core Views', () => {
       />
     );
     
-    const input = view.getByPlaceholderText('Buscar animal...');
+    const input = view.getByPlaceholderText('Buscar animal o servicio...');
     await fireEvent.changeText(input, 'Tigre');
     expect(onQueryChange).toHaveBeenCalledWith('Tigre');
     expect(view.getByText('León Africano')).toBeTruthy();
