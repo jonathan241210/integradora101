@@ -7,7 +7,7 @@ type IconProps = {
 
 const icons: Record<string, string> = {
   home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
-  animals: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="8" cy="8" rx="5" ry="6"/><path d="M2 14c0 2 3 4 6 4s6-2 6-4M15 8c0 1.5 2 3 4 3s4-1.5 4-3M14 14c0 2 2.5 4 4.5 4s4.5-2 4.5-4"/></svg>',
+  animals: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.6" cy="11" r="1.6"/><circle cx="9" cy="6.4" r="1.6"/><circle cx="15" cy="6.4" r="1.6"/><circle cx="19.4" cy="11" r="1.6"/><path d="M12 11.5c-2.6 0-5 2.2-5.3 4.6-.2 1.5.9 2.9 2.5 2.9 1.1 0 1.8-.5 2.8-.5s1.7.5 2.8.5c1.6 0 2.7-1.4 2.5-2.9-.3-2.4-2.7-4.6-5.3-4.6z"/></svg>',
   diagnosis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/><path d="M12 11v4M10 15h4"/></svg>',
   review: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>',
   sync: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 1-15.5 6.36"/><path d="M3 12a9 9 0 0 1 15.5-6.36"/><polyline points="21 3 21 9 15 9"/><polyline points="3 21 3 15 9 15"/></svg>',
@@ -21,7 +21,8 @@ const icons: Record<string, string> = {
   plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
   logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 17v3H4V4h6v3M14 8l4 4-4 4M8 12h10"/></svg>',
   lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
-  paw: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="2"/><path d="M8 7C6.5 5.5 4.5 4.5 2.5 5M16 7c1.5-1.5 3.5-2.5 5.5-2M7 16c-1.5 1.5-2.5 3.5-2 5.5M17 16c1.5 1.5 2.5 3.5 2 5.5"/></svg>',
+  paw: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="4.6" cy="11" r="1.6"/><circle cx="9" cy="6.4" r="1.6"/><circle cx="15" cy="6.4" r="1.6"/><circle cx="19.4" cy="11" r="1.6"/><path d="M12 11.5c-2.6 0-5 2.2-5.3 4.6-.2 1.5.9 2.9 2.5 2.9 1.1 0 1.8-.5 2.8-.5s1.7.5 2.8.5c1.6 0 2.7-1.4 2.5-2.9-.3-2.4-2.7-4.6-5.3-4.6z"/></svg>',
+  species: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5a2 2 0 0 1 2-2h5a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H4a2 2 0 0 1-2-2V5z"/><path d="M22 5a2 2 0 0 0-2-2h-5a3 3 0 0 0-3 3v14a2 2 0 0 1 2-2h6a2 2 0 0 0 2-2V5z"/></svg>',
 };
 
 export function Icon({ name, size = 24, className = '', ...props }: IconProps) {

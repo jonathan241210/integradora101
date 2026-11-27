@@ -160,7 +160,7 @@ function RestraintTables({ restraints }: { restraints: Restraint[] }) {
         <>
           <h4>Contención química</h4>
           <div className="table-scroll">
-            <table className="profile-table">
+            <table className="profile-table responsive-table">
               <thead>
                 <tr>
                   <th scope="col">Medicamento</th>
@@ -173,11 +173,11 @@ function RestraintTables({ restraints }: { restraints: Restraint[] }) {
               <tbody>
                 {chemical.map((item) => (
                   <tr key={item.id}>
-                    <td>{item.drug ?? '—'}</td>
-                    <td>{item.dose_mg_per_kg ?? '—'}</td>
-                    <td>{item.dose_ml ?? '—'}</td>
-                    <td>{item.administered_time ? item.administered_time.slice(0, 5) : '—'}</td>
-                    <td>{item.notes ?? '—'}</td>
+                    <td data-label="Medicamento">{item.drug ?? '—'}</td>
+                    <td data-label="Dosis (mg/kg)">{item.dose_mg_per_kg ?? '—'}</td>
+                    <td data-label="Dosis (ml)">{item.dose_ml ?? '—'}</td>
+                    <td data-label="Hora">{item.administered_time ? item.administered_time.slice(0, 5) : '—'}</td>
+                    <td data-label="Observaciones">{item.notes ?? '—'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -191,7 +191,7 @@ function RestraintTables({ restraints }: { restraints: Restraint[] }) {
           <h4>Contención física</h4>
           {physicalMethods.length > 0 ? (
             <div className="table-scroll">
-              <table className="profile-table">
+              <table className="profile-table responsive-table responsive-table--compact">
                 <thead>
                   <tr>
                     <th scope="col">Método</th>
@@ -201,8 +201,8 @@ function RestraintTables({ restraints }: { restraints: Restraint[] }) {
                 <tbody>
                   {physicalMethods.map(([label, value]) => (
                     <tr key={label}>
-                      <td>{label}</td>
-                      <td>{yesNo(value)}</td>
+                      <td data-label="Método">{label}</td>
+                      <td data-label="Aplicado">{yesNo(value)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -844,7 +844,7 @@ export function AnimalProfileView({
             </Badge>
             {animal.enclosure && <Badge tone="success">{animal.enclosure}</Badge>}
           </div>
-          <div className="form-actions" style={{ marginTop: '0.75rem' }}>
+          <div className="profile-hero-actions">
             <Button type="button" variant="secondary" onClick={openEditDialog}>Editar estado y exhibición</Button>
           </div>
         </div>
@@ -888,7 +888,7 @@ export function AnimalProfileView({
           <p className="profile-muted">Este animal aún no tiene diagnósticos ni revisiones registrados.</p>
         ) : (
           <div className="table-scroll">
-            <table className="profile-table">
+            <table className="profile-table responsive-table profile-history-table">
               <thead>
                 <tr>
                   <th scope="col">Fecha</th>
@@ -916,14 +916,14 @@ export function AnimalProfileView({
                   return (
                     <Fragment key={evaluation.id}>
                       <tr>
-                        <td>{formatDate(evaluation.evaluation_date)}</td>
-                        <td><Badge tone={kind.tone}>{kind.label}</Badge></td>
-                        <td>{summary.length > 80 ? `${summary.slice(0, 80)}…` : summary}</td>
-                        <td>{followUpStatusLabel(evaluation.follow_up_status)}</td>
-                        <td>{evaluation.next_review_date ? shortDate(evaluation.next_review_date) : '—'}</td>
-                        <td>{evaluation.veterinarian ?? '—'}</td>
-                        <td>
-                          <div className="form-actions" style={{ gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <td data-label="Fecha">{formatDate(evaluation.evaluation_date)}</td>
+                        <td data-label="Tipo"><Badge tone={kind.tone}>{kind.label}</Badge></td>
+                        <td data-label="Motivo / diagnóstico">{summary.length > 80 ? `${summary.slice(0, 80)}…` : summary}</td>
+                        <td data-label="Estado">{followUpStatusLabel(evaluation.follow_up_status)}</td>
+                        <td data-label="Próxima revisión">{evaluation.next_review_date ? shortDate(evaluation.next_review_date) : '—'}</td>
+                        <td data-label="MVZ">{evaluation.veterinarian ?? '—'}</td>
+                        <td data-label="Acciones">
+                          <div className="profile-row-actions">
                             <Button
                               type="button"
                               variant="ghost"
@@ -943,8 +943,8 @@ export function AnimalProfileView({
                         </td>
                       </tr>
                       {open && (
-                        <tr>
-                          <td colSpan={7}>
+                        <tr className="profile-evaluation-row">
+                          <td colSpan={7} className="profile-evaluation-cell">
                             <EvaluationItem evaluation={evaluation} />
                           </td>
                         </tr>

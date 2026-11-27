@@ -121,7 +121,7 @@ Se ejecutan desde `apps/api/src` con `.env` configurado para `arca_pruebas`. Son
 
 ## Calidad y CI
 
-`.github/workflows/ci.yml` ejecuta en cada push y PR a `main` y `DevOps`: pruebas unitarias de la API, pruebas con cobertura de mobile, tipos, pruebas y build del dashboard, y pruebas y build de la PWA. Localmente, `php artisan test` (API), `npm test --workspace=<app>` y la skill `/verify`. El resultado de la revisión final de seguridad y rendimiento está en [auditoría final](docs/auditoria-final-entrega.md); el plan, los casos y la bitácora de pruebas están en `docs/pruebas/`.
+`.github/workflows/ci.yml` ejecuta en cada push y PR a `main` y `DevOps`: pruebas unitarias de la API, pruebas con cobertura de mobile, tipos, pruebas y build del dashboard, y pruebas y build de la PWA. Localmente, `php artisan test` (API), `npm test --workspace=<app>` y la skill `/verify`. El resultado de la revisión final de seguridad y rendimiento está en [auditoría final](docs/auditoria-final-entrega.md); el plan, los casos y la bitácora de pruebas se mantienen exclusivamente en `docs/pruebas/01-plan-de-pruebas.docx`, `docs/pruebas/02-casos-de-prueba.docx` y `docs/pruebas/03-bitacora-de-pruebas.docx` ([reglas de actualización](docs/pruebas/README.md)).
 
 ## Flujo SDD
 

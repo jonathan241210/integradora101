@@ -987,8 +987,44 @@ select:focus-visible {
 }
 
 .mobile-navigation,
-.mobile-logout {
+.mobile-logout,
+.mobile-topbar-logout {
   display: none;
+}
+
+.sync-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.sync-toolbar__count {
+  color: var(--dashboard-muted-foreground);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.profile-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.profile-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 @keyframes view-enter {
@@ -1068,9 +1104,25 @@ select:focus-visible {
     gap: 4px;
   }
 
-  /* Con el ítem de especies (rol veterinarian) el menú tiene seis opciones. */
+  /* Con 6 o 7 secciones se mantiene una sola fila con desplazamiento horizontal suave (pwa-015 CA-01). */
   .navigation-mobile:has(> :nth-child(6)) {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .navigation-mobile:has(> :nth-child(6))::-webkit-scrollbar {
+    display: none;
+  }
+
+  .navigation-mobile:has(> :nth-child(6)) .navigation-item {
+    flex: 0 0 max(68px, calc(100% / 5.35));
+    scroll-snap-align: center;
   }
 
   .navigation-mobile .navigation-item {
@@ -1905,8 +1957,20 @@ select:focus-visible {
 }
 
 .print-signature {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
   margin: 0;
   font-weight: 600;
+}
+
+.print-signature__line {
+  flex: 1 1 140px;
+  min-width: 120px;
+  max-width: 260px;
+  height: 1em;
+  border-bottom: 1px solid currentColor;
 }
 
 @media print {
@@ -2751,4 +2815,406 @@ select:focus-visible {
 /* pwa-005 / api-026: «Dato curioso» ocupa todo el ancho de la rejilla */
 .species-request-form__wide {
   grid-column: 1 / -1;
+}
+
+/* pwa-015: adaptación móvil integral (solo pantalla; preserva escritorio e impresión) */
+@media screen and (max-width: 760px) {
+  .topbar {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .topbar-title {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .topbar-title h1 {
+    overflow-wrap: anywhere;
+  }
+
+  .mobile-topbar-logout {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+  }
+
+  .mobile-topbar-logout__btn {
+    min-height: 44px;
+    padding: 8px 10px;
+    gap: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  /* CA-02: avisos flotantes arriba en móvil para no tapar navegación ni acciones */
+  .sync-notices {
+    inset-block-start: max(12px, env(safe-area-inset-top));
+    inset-block-end: auto;
+    inset-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right));
+    width: auto;
+    max-height: 45dvh;
+  }
+
+  /* CA-03 y CA-04: tablas de perfil y Sync como tarjetas apiladas en móvil */
+  .table-scroll:has(> .responsive-table),
+  .table-scroll:has(> .restraint-edit-table) {
+    overflow-x: visible;
+  }
+
+  .responsive-table {
+    display: block;
+    width: 100%;
+    border: 0;
+  }
+
+  .responsive-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .responsive-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .responsive-table tbody tr {
+    display: grid;
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .responsive-table tbody tr:nth-child(even) {
+    background: var(--surface);
+  }
+
+  .responsive-table tbody td {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
+    padding: 0;
+    border: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .responsive-table tbody td::before {
+    content: attr(data-label);
+    color: var(--dashboard-muted-foreground);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .responsive-table--compact tbody td {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 4px 8px;
+  }
+
+  .responsive-table--compact tbody td::before {
+    grid-column: 1 / -1;
+  }
+
+  .responsive-table tbody tr.profile-evaluation-row {
+    padding: 0;
+    border: 0;
+    background: transparent;
+  }
+
+  .responsive-table tbody td.profile-evaluation-cell {
+    display: block;
+  }
+
+  .responsive-table tbody td.profile-evaluation-cell::before {
+    display: none;
+  }
+
+  .profile-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .profile-toolbar .arca-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .profile-hero {
+    padding: 18px;
+    gap: 16px;
+  }
+
+  .profile-hero-text {
+    width: 100%;
+  }
+
+  .profile-hero-actions .arca-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .profile-evaluation {
+    padding: 14px;
+  }
+
+  .profile-vitals {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .profile-data {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .profile-row-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding-top: 6px;
+  }
+
+  .profile-row-actions .arca-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .sync-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .sync-toolbar .arca-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* CA-05: tabla editable de contención química como bloques apilados sin duplicar inputs */
+  .restraint-edit-table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .restraint-edit-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .restraint-edit-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .restraint-edit-table tbody tr {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-subtle);
+  }
+
+  .restraint-edit-table tbody tr::before {
+    content: attr(data-row-label);
+    color: var(--dashboard-primary);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .restraint-edit-table tbody td {
+    display: grid;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+  }
+
+  .restraint-edit-table tbody td::before {
+    content: attr(data-label);
+    color: var(--dashboard-foreground);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .restraint-edit-table .table-input {
+    min-height: 44px;
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+    font-size: 14px;
+  }
+
+  /* CA-05: áreas táctiles cómodas en formularios clínicos y fotos */
+  .check-group {
+    gap: 6px 14px;
+    padding: 12px;
+  }
+
+  .check-group label {
+    min-height: 44px;
+    gap: 10px;
+    padding: 4px 2px;
+  }
+
+  .check-group input[type="checkbox"],
+  .check-group input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    accent-color: var(--primary);
+  }
+
+  .score-input {
+    min-height: 44px;
+    width: 76px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+  }
+
+  .clear-image-btn {
+    top: 8px;
+    right: 8px;
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .review-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .review-actions .arca-button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media screen and (max-width: 520px) {
+  .topbar {
+    flex-wrap: nowrap;
+    align-items: center;
+  }
+
+  /* CA-05: acciones apiladas a ancho completo en móvil estrecho */
+  .form-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .form-actions .arca-button {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  /* CA-06: listado de animales y paginación en móvil estrecho */
+  .animals-results-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .animals-sort {
+    width: 100%;
+    margin-inline-start: 0;
+    justify-content: space-between;
+  }
+
+  .animals-sort select {
+    flex: 1 1 180px;
+  }
+
+  .animal-row-button {
+    grid-template-columns: 36px minmax(0, 1fr);
+    gap: 6px 10px;
+    min-height: 56px;
+    padding: 12px 2px;
+  }
+
+  .animal-row-button > .arca-badge {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+
+  .animals-card .pagination-bar {
+    display: grid;
+    justify-content: stretch;
+    padding: 12px 0 4px;
+  }
+
+  .animals-card .pagination-bar__summary {
+    text-align: center;
+  }
+
+  .animals-card .pagination-bar__actions {
+    justify-content: center;
+  }
+
+  .animals-card .pagination-bar__actions > .arca-button:first-child,
+  .animals-card .pagination-bar__actions > .arca-button:last-child {
+    flex: 1 1 calc(50% - 4px);
+    min-height: 44px;
+  }
+
+  .animals-card .pagination-bar__actions > .arca-button:last-child {
+    order: 1;
+  }
+
+  .animals-card .pagination-bar__actions > :not(:first-child):not(:last-child) {
+    order: 2;
+  }
+
+  /* CA-06: control segmentado, chips y acciones en solicitud de especies */
+  .segmented {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+    border-radius: 14px;
+  }
+
+  .segmented__item {
+    min-height: 44px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    text-align: center;
+  }
+
+  .ficha-chip {
+    min-height: 44px;
+  }
+
+  .own-request__actions .arca-button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  /* CA-06: diálogos compactos con botones apilados */
+  .arca-dialog {
+    width: calc(100% - 24px);
+    padding: 18px;
+  }
+
+  .arca-dialog .form-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

@@ -20,7 +20,7 @@ export function ReviewFormView({
         </p>
       </div>
       <Card className="form-card">
-        <div className="form-actions" style={{ gap: '0.75rem', flexWrap: 'wrap' }}>
+        <div className="review-actions">
           <Button onClick={() => onNavigate?.('diagnosis-intense')} type="button">
             Diagnóstico intenso
           </Button>

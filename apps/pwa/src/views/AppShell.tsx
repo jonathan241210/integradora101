@@ -1,5 +1,5 @@
 import { Button } from '@arca/ui';
-import { useEffect, useState, type ComponentType } from 'react';
+import { useEffect, useRef, useState, type ComponentType } from 'react';
 import {
   getNavigationSections,
   getSectionLabel,
@@ -119,6 +119,18 @@ export function AppShell({
             <p>ZooHealth <span aria-hidden="true">/</span> Módulo veterinario</p>
             <h1>{currentLabel}</h1>
           </div>
+          <div className="mobile-topbar-logout no-print">
+            <Button
+              aria-label="Cerrar sesión"
+              className="mobile-topbar-logout__btn"
+              disabled={signingOut}
+              onClick={onLogout}
+              variant="ghost"
+            >
+              <Icon name="logout" size={18} aria-hidden />
+              <span>Salir</span>
+            </Button>
+          </div>
         </header>
 
         <main className="view-content" key={activeSection}>
@@ -135,12 +147,6 @@ export function AppShell({
             roles={roles}
           />
         </main>
-
-        <div className="mobile-logout">
-          <Button disabled={signingOut} onClick={onLogout} variant="ghost">
-            Cerrar sesión
-          </Button>
-        </div>
       </div>
 
       <nav className="mobile-navigation" aria-label="Navegación principal">
@@ -175,12 +181,20 @@ function Navigation({
     'diagnosis-intense': 'intense',
     'diagnosis-quick': 'quick',
     'review-form': 'review',
-    'species-request': 'paw',
+    'species-request': 'species',
     sync: 'sync',
   };
 
+  const navRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (variant !== 'mobile') return;
+    const activeItem = navRef.current?.querySelector<HTMLElement>('[aria-current="page"]');
+    activeItem?.scrollIntoView?.({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [activeSection, variant]);
+
   return (
-    <div className={`navigation navigation-${variant}`}>
+    <div className={`navigation navigation-${variant}`} ref={navRef}>
       {getNavigationSections(roles).map((section) => (
         <button
           aria-current={isNavigationActive(section.id, activeSection) ? 'page' : undefined}

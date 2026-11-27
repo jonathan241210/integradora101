@@ -231,7 +231,8 @@ export function DiagnosisQuickView({ mvzName = '', userScope }: { mvzName?: stri
             </fieldset>
           </div>
           <p className="print-signature">
-            Nombre y firma del veterinario: ______________________
+            <span>Nombre y firma del veterinario:</span>
+            <span className="print-signature__line" aria-hidden="true" />
           </p>
         </form>
         <PrintFooter />
