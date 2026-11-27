@@ -43,6 +43,7 @@ Sistema del Zoológico Municipal Nicolás Bravo (Tulancingo). Monorepo con Spec-
 - SPAs con rutas del cliente y API con rutas Laravel nombradas; no usar Inertia ni Wayfinder.
 - Dependencia o tecnología nueva requiere ADR aprobado en `docs/adr/`.
 - Cada app documenta su arquitectura con `docs/templates/arquitectura-app.md`; toda excepción requiere ADR, y Payments no se implementa sin spec, ADR/proveedor y aprobación.
+- Documentación de pruebas: en `docs/pruebas/` solo se modifican los tres archivos vigentes (`01-plan-de-pruebas.docx`, `02-casos-de-prueba.docx` y `03-bitacora-de-pruebas.docx`) para registrar nuevas corridas, casos o hallazgos; no crear copias fechadas ni anexos paralelos. Ver `docs/pruebas/README.md`.
 - No leer ni modificar `PLANTILLA_V4_Con colores/`; la referencia permitida es `ANALISIS_PLANTILLA_V4.md`.
 - No commitear `.env` ni secretos; no editar `vendor/`, `node_modules/` ni archivos generados.
 
