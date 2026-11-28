@@ -119,10 +119,12 @@
         </form>
         <div class="search-panel" id="searchResults" role="region" aria-label="Resultados de búsqueda" hidden></div>
 
+        <!-- Acceso directo a la sección de boletos oculto.
         <a class="user" href="#boletos">
             <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
-            Comprar boletos
+            Ver precios de entrada
         </a>
+        -->
     </div>
 
 </header>
@@ -146,7 +148,7 @@
             <p>Explora nuevos hábitats, conoce a sus habitantes y descubre cómo podemos cuidar juntos la vida silvestre.</p>
 
             <div class="actions">
-                <a href="#boletos" class="btn btn-primary">
+                <a href="#ubicacion" class="btn btn-primary">
                     <i class="bi bi-ticket-perforated" aria-hidden="true"></i>
                     Planear mi visita
                     <i class="bi bi-arrow-right" aria-hidden="true"></i>
@@ -210,7 +212,7 @@
             <i class="bi bi-ticket-perforated info-icon" aria-hidden="true"></i>
             <span>
                 <small>Tu visita comienza aquí</small>
-                <a href="#boletos">
+                <a href="#preguntas">
                     <strong>
                         Consulta boletos y precios
                         <i class="bi bi-arrow-right" aria-hidden="true"></i>
@@ -541,7 +543,7 @@
     </section>
 
 
-    <!-- BOLETOS -->
+    <!-- Sección de boletos oculta.
     <section class="ticket-section" id="boletos">
 
         <div class="ticket-intro">
@@ -553,11 +555,11 @@
 
             <h2>Un día inolvidable empieza aquí</h2>
 
-            <p>Elige una fecha y calcula el costo estimado de tu grupo. Esta demostración no procesa pagos ni reserva entradas.</p>
+            <p>Consulta los precios de entrada para planear tu visita.</p>
 
             <div class="price-note">
                 <strong><i class="bi bi-tag" aria-hidden="true"></i> Precios de entrada</strong>
-                <span>Adulto: $25 MXN · Niño: $16 MXN</span>
+                <span>Adulto: $25 MXN · Niño: $16.20MXN</span>
             </div>
 
         </div>
@@ -580,7 +582,7 @@
 
                 <label for="children">
                     Niños
-                    <span>$16 MXN c/u</span>
+                    <span>$16.20MXN c/u</span>
                     <input id="children" name="children" type="number" min="0" max="20" value="0" inputmode="numeric" required>
                 </label>
 
@@ -654,6 +656,7 @@
         <div class="receipt" id="receipt" hidden aria-live="polite"></div>
 
     </section>
+    -->
 
 
     <!-- PREGUNTAS -->
@@ -677,7 +680,7 @@
 
             <details>
                 <summary><i class="bi bi-ticket" aria-hidden="true"></i> ¿Cuánto cuestan los boletos?</summary>
-                <p>Los precios del formulario ($25 MXN adulto y $16 MXN niño) son de referencia para esta demostración. Confirma las tarifas oficiales directamente con el zoológico.</p>
+                <p>Los precios del formulario ($25 MXN adulto y $16.20MXN niño) son de referencia para esta demostración. Confirma las tarifas oficiales directamente con el zoológico.</p>
             </details>
 
             <details>
@@ -697,7 +700,7 @@
 
             <details>
                 <summary><i class="bi bi-arrow-repeat" aria-hidden="true"></i> ¿Cómo puedo cambiar o cancelar mis boletos?</summary>
-                <p>Esta página es una demostración y no emite boletos reales. Para compras y cambios, contacta directamente al zoológico.</p>
+                <p>Para compras y cambios, contacta directamente al zoológico.</p>
             </details>
 
         </div>

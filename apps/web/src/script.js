@@ -71,89 +71,93 @@
   });
 
   /* ---------- Boletos ---------- */
-  const TICKET_PRICE = { adult: 25, child: 16 };
-  const MAX_PER_TYPE = 20;
-  const CLOSED_DAY = 1; // lunes (0 = domingo)
+  function initializeTicketDemo(ticketForm) {
+    const TICKET_PRICE = { adult: 25, child: 16 };
+    const MAX_PER_TYPE = 20;
+    const CLOSED_DAY = 1; // lunes (0 = domingo)
 
-  const ticketForm = $('ticketForm');
-  const ticketTotal = $('ticketTotal');
-  const adultsInput = $('adults');
-  const childrenInput = $('children');
-  const visitDate = $('visitDate');
-  const receipt = $('receipt');
+    const ticketTotal = $('ticketTotal');
+    const adultsInput = $('adults');
+    const childrenInput = $('children');
+    const visitDate = $('visitDate');
+    const receipt = $('receipt');
 
-  const readQuantity = input => {
-    const value = Math.floor(Number(input.value));
-    return Number.isFinite(value) ? Math.min(Math.max(value, 0), MAX_PER_TYPE) : 0;
-  };
+    const readQuantity = input => {
+      const value = Math.floor(Number(input.value));
+      return Number.isFinite(value) ? Math.min(Math.max(value, 0), MAX_PER_TYPE) : 0;
+    };
 
-  function updateTicketTotal() {
-    const adults = readQuantity(adultsInput);
-    const children = readQuantity(childrenInput);
-    const total = adults * TICKET_PRICE.adult + children * TICKET_PRICE.child;
-    ticketTotal.textContent = formatMXN(total);
-    return { adults, children, total };
-  }
-
-  adultsInput.addEventListener('input', updateTicketTotal);
-  childrenInput.addEventListener('input', updateTicketTotal);
-
-  // Fecha mínima: hoy (en hora local)
-  const now = new Date();
-  visitDate.min = [
-    now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, '0'),
-    String(now.getDate()).padStart(2, '0')
-  ].join('-');
-
-  // El zoológico no abre los lunes
-  visitDate.addEventListener('input', () => {
-    const picked = visitDate.value ? new Date(`${visitDate.value}T12:00:00`) : null;
-    visitDate.setCustomValidity(
-      picked && picked.getDay() === CLOSED_DAY
-        ? 'El zoológico cierra los lunes. Elige de martes a domingo.'
-        : ''
-    );
-  });
-
-  ticketForm.addEventListener('submit', event => {
-    event.preventDefault();
-    if (!ticketForm.reportValidity()) return;
-
-    const { adults, children, total } = updateTicketTotal();
-    if (adults + children === 0) {
-      showToast('Selecciona al menos un boleto.');
-      return;
+    function updateTicketTotal() {
+      const adults = readQuantity(adultsInput);
+      const children = readQuantity(childrenInput);
+      const total = adults * TICKET_PRICE.adult + children * TICKET_PRICE.child;
+      ticketTotal.textContent = formatMXN(total);
+      return { adults, children, total };
     }
 
-    const name = $('visitorName').value.trim();
-    const email = $('visitorEmail').value.trim();
-    const date = new Date(`${visitDate.value}T12:00:00`);
+    adultsInput.addEventListener('input', updateTicketTotal);
+    childrenInput.addEventListener('input', updateTicketTotal);
 
-    const title = document.createElement('h3');
-    title.textContent = 'Comprobante de muestra';
+    // Fecha mínima: hoy (en hora local)
+    const now = new Date();
+    visitDate.min = [
+      now.getFullYear(),
+      String(now.getMonth() + 1).padStart(2, '0'),
+      String(now.getDate()).padStart(2, '0')
+    ].join('-');
 
-    const details = document.createElement('p');
-    details.textContent = `${name} · ${email} · ${date.toLocaleDateString('es-MX')} · ${adults} adulto(s) · ${children} niño(s)`;
+    // El zoológico no abre los lunes
+    visitDate.addEventListener('input', () => {
+      const picked = visitDate.value ? new Date(`${visitDate.value}T12:00:00`) : null;
+      visitDate.setCustomValidity(
+        picked && picked.getDay() === CLOSED_DAY
+          ? 'El zoológico cierra los lunes. Elige de martes a domingo.'
+          : ''
+      );
+    });
 
-    const amount = document.createElement('strong');
-    amount.textContent = `Total estimado: ${formatMXN(total)}`;
+    ticketForm.addEventListener('submit', event => {
+      event.preventDefault();
+      if (!ticketForm.reportValidity()) return;
 
-    const note = document.createElement('p');
-    note.textContent = 'Sin valor de entrada y sin pago realizado. Confirma las tarifas oficiales con el zoológico.';
+      const { adults, children, total } = updateTicketTotal();
+      if (adults + children === 0) {
+        showToast('Selecciona al menos un boleto.');
+        return;
+      }
 
-    const printButton = document.createElement('button');
-    printButton.type = 'button';
-    printButton.className = 'btn btn-outline';
-    printButton.textContent = 'Imprimir comprobante';
-    printButton.addEventListener('click', () => window.print());
+      const name = $('visitorName').value.trim();
+      const email = $('visitorEmail').value.trim();
+      const date = new Date(`${visitDate.value}T12:00:00`);
 
-    receipt.replaceChildren(title, details, amount, note, printButton);
-    receipt.hidden = false;
-    receipt.scrollIntoView({ behavior: scrollBehavior(), block: 'nearest' });
-  });
+      const title = document.createElement('h3');
+      title.textContent = 'Comprobante de muestra';
 
-  updateTicketTotal();
+      const details = document.createElement('p');
+      details.textContent = `${name} · ${email} · ${date.toLocaleDateString('es-MX')} · ${adults} adulto(s) · ${children} niño(s)`;
+
+      const amount = document.createElement('strong');
+      amount.textContent = `Total estimado: ${formatMXN(total)}`;
+
+      const note = document.createElement('p');
+      note.textContent = 'Sin valor de entrada y sin pago realizado. Confirma las tarifas oficiales con el zoológico.';
+
+      const printButton = document.createElement('button');
+      printButton.type = 'button';
+      printButton.className = 'btn btn-outline';
+      printButton.textContent = 'Imprimir comprobante';
+      printButton.addEventListener('click', () => window.print());
+
+      receipt.replaceChildren(title, details, amount, note, printButton);
+      receipt.hidden = false;
+      receipt.scrollIntoView({ behavior: scrollBehavior(), block: 'nearest' });
+    });
+
+    updateTicketTotal();
+  }
+
+  const ticketForm = $('ticketForm');
+  if (ticketForm) initializeTicketDemo(ticketForm);
 
   /* ---------- Contacto ---------- */
   $('contactForm').addEventListener('submit', event => {
