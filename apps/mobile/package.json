@@ -9,8 +9,8 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
-    "@arca/api-client": "*",
-    "@arca/tokens": "file:../../packages/tokens",
+    "@arca/api-client": "file:./local-pkgs/api-client",
+    "@arca/tokens": "file:./local-pkgs/tokens",
     "@expo/metro-runtime": "~57.0.19",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/native": "^7.5.0",

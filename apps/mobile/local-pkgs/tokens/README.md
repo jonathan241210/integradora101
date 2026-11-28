@@ -1,0 +1,32 @@
+# @arca/tokens
+
+**Estado:** tokens semánticos CSS y React Native inicializados; la actualización dinámica desde `GET /api/theme` queda pendiente de integración aprobada.
+
+Centraliza valores semánticos de marca para SPAs y React Native. Los defaults son los documentados en `docs/04-sistema-de-diseno.md` y corresponden al contrato externo de solo lectura `settings_colores`. Las apps consumen tokens, no copian colores directos en componentes. Una integración dinámica futura podrá actualizar el tema desde `GET /api/theme` tras validación; Mobile actualmente usa estos defaults estáticos.
+
+| Clave externa | Default | Token/CSS |
+|---|---|---|
+| `color-base` | `#661a2f` | `--sidebar` |
+| `color-primario` | `#87293a` | `--primary` |
+| `color-secundario` | `#b79159` | `--secondary` |
+| `color-complemento` | `#DEC9A3` | `--accent` |
+| `colorFuenteB` | `#ffffff` | `--foreground-light` y variantes `*-foreground` según contraste |
+| `colorFuenteN` | `#000000` | `--foreground` / `--primary-foreground` según superficie |
+| `tamanio-texto` | `16px` | tamaño de fuente base |
+| `fuente` | `Lato`, sans-serif; peso 400 | familia y peso tipográfico |
+| `anio` | `2023` | metadato, sin token CSS |
+| `extra` | `variable comodin` | valor reservado, sin token CSS |
+
+Los hex son valores de fallback centralizados, no clases ni literales para vistas. Mantener modo claro como tema inicial y verificar contraste/accesibilidad. Mapeo normativo: `docs/04-sistema-de-diseno.md`.
+
+### Adaptación para React Native
+
+`index.ts` exporta el objeto `colors` que consume React Native mediante el adaptador de tema de Mobile. Sus tokens `base`, `primary`, `secondary`, `accent` y los foregrounds corresponden a los defaults de la tabla anterior. `background`, `surface`, `border` y `primarySoft` son aliases neutrales de las superficies CSS (`--surface-page`, `--surface`, `--border` y `--surface-subtle`); `danger` usa el token semántico CSS `--danger`. Los textos sobre `primary`/`base` y `danger` usan blanco; sobre `secondary`/`accent`, negro.
+
+Los valores `placeholderTint` de animales son fixtures ilustrativos de Mobile cuando una ficha no tiene fotografía; no representan ni sustituyen colores de marca.
+
+Mobile también consume roles nativos para información (`info`, superficies y pulso), éxito (`success` y superficies), sombras y capas translúcidas (`overlay*`, `surfaceOverlay*`). Estos valores se centralizan en `index.ts`; los estados de éxito usan la paleta secundaria institucional. Los componentes SVG pueden combinar un token con `fillOpacity` o `strokeOpacity`. Esta adaptación mantiene el tema estático actual y no añade acceso ni escrituras a `settings_colores`.
+
+### Tokens del prototipo administrativo
+
+El paquete conserva los defaults del contrato institucional y proporciona aliases `--dashboard-*` como valores base para la UI compartida. La SPA de administración puede mapear esos aliases a `--sidebar`, `--primary`, `--secondary`, `--accent` y tokens semánticos desde su hoja de estilos; ese mapeo no cambia los defaults globales del paquete ni la fuente externa `settings_colores`. En la demo del dashboard, los aliases se enlazan a la paleta institucional en `apps/dashboard/src/styles.css`. Una integración operativa futura deberá definir cómo aplicar el tema validado por `GET /api/theme`.
