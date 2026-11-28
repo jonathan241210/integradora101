@@ -57,7 +57,7 @@ export function MemoriesScreen({
   if (loading) {
     return (
       <ScreenContainer scroll={false}>
-        <TitledLoading title="Mis memorias" message="Cargando memorias…" />
+        <TitledLoading title="Mis momentos" message="Cargando momentos…" />
       </ScreenContainer>
     );
   }
@@ -70,7 +70,7 @@ export function MemoriesScreen({
         <BackButton onPress={onBack} accessibilityLabel="Volver al perfil" />
         <View style={styles.titleRow}>
           <Icon name="images" size={28} color={colors.primary} />
-          <AppText variant="title">Mis memorias</AppText>
+          <AppText variant="title">Mis momentos</AppText>
         </View>
         <AppText variant="body" color="textMuted">
           El zoológico revisa cada foto antes de mostrarla en el portal.
@@ -94,7 +94,7 @@ export function MemoriesScreen({
         )}
 
         {items.length === 0 && !error ? (
-          <EmptyView title="Aún no hay memorias" message="Cuando envíes una foto, su estado aparecerá aquí." />
+          <EmptyView title="Aún no hay momentos" message="Cuando envíes una foto, su estado aparecerá aquí." />
         ) : (
           items.map((item) => {
             const pill = pillColors(item.status);

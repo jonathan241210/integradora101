@@ -23,7 +23,7 @@ export function MemoryUnavailableScreen({
   return (
     <ScreenContainer>
       <View style={styles.page}>
-        <BackButton onPress={onBack} accessibilityLabel="Volver a mis memorias" />
+        <BackButton onPress={onBack} accessibilityLabel="Volver a mis momentos" />
         <View style={styles.titleRow}>
           <Icon name="images" size={28} color={colors.primary} />
           <AppText variant="title">{title}</AppText>

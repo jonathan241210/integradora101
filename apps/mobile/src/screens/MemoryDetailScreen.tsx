@@ -21,8 +21,8 @@ export function MemoryDetailScreen({ detail, onBack }: MemoryDetailScreenProps) 
   return (
     <ScreenContainer>
       <View style={styles.page}>
-        <BackButton onPress={onBack} accessibilityLabel="Volver a mis memorias" />
-        <AppText variant="title">Tu memoria</AppText>
+        <BackButton onPress={onBack} accessibilityLabel="Volver a mis momentos" />
+        <AppText variant="title">Tu momento</AppText>
 
         <Card style={styles.sent}>
           <AppText variant="subheading" bold color="primary">Lo que enviaste</AppText>

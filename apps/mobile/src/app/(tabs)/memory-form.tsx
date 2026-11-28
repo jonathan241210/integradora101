@@ -100,7 +100,7 @@ export default function MemoryFormRoute() {
   if (id != null && liveRow == null && lookedUpId !== id) {
     return (
       <ScreenContainer scroll={false}>
-        <TitledLoading title="Tu memoria" message="Buscando tu memoria…" />
+        <TitledLoading title="Tu momento" message="Buscando tu momento…" />
       </ScreenContainer>
     );
   }
@@ -109,12 +109,12 @@ export default function MemoryFormRoute() {
     const failed = memories.error != null;
     return (
       <MemoryUnavailableScreen
-        title="Tu memoria"
+        title="Tu momento"
         message={memories.error ?? 'No encontramos esa petición.'}
         detail={failed
-          ? 'No pudimos abrir esta memoria. Inténtalo de nuevo.'
+          ? 'No pudimos abrir este momento. Inténtalo de nuevo.'
           : 'Puede que ya no esté en tu cuenta.'}
-        actionLabel={failed ? 'Reintentar' : 'Ver mis memorias'}
+        actionLabel={failed ? 'Reintentar' : 'Ver mis momentos'}
         onAction={failed
           ? () => {
               setLookedUpId(null);
@@ -144,7 +144,7 @@ export default function MemoryFormRoute() {
       : OPEN_TEXT;
     return (
       <ScreenContainer>
-        <BackButton onPress={() => goBackWithinTabs(router)} accessibilityLabel="Volver a mis memorias" />
+        <BackButton onPress={() => goBackWithinTabs(router)} accessibilityLabel="Volver a mis momentos" />
         <AppText variant="body">{message}</AppText>
       </ScreenContainer>
     );

@@ -8,7 +8,7 @@ Si la persona lo niega, Ajustes muestra: «Los avisos del sistema están apagado
 
 Hay dos canales: «Noticias y eventos» (`news-and-events`) y «Momentos» (`memories`). El título y el cuerpo llegan en el aviso; la app no los reescribe. El icono del aviso es la silueta blanca de `src/assets/icon/iconZoo.png`, teñida en vino. El icono de la app es el archivo a color y el nombre visible es ARCA-NB.
 
-Al tocar un aviso de momento, la app abre `/memory-form` con ese id. Espera la lista («Buscando tu memoria…») si esa petición aún no está en memoria. Si la lista la trae, se ve la ficha o la corrección. Si no, la pantalla «Tu memoria» dice que no está en la cuenta, o pide reintentar si la lectura falló. No hay otra bandeja de avisos.
+Al tocar un aviso de momento, la app abre `/memory-form` con ese id. Espera la lista («Buscando tu momento…») si esa petición aún no está en memoria. Si la lista la trae, se ve la ficha o la corrección. Si no, la pantalla «Tu momento» dice que no está en la cuenta, o pide reintentar si la lectura falló. No hay otra bandeja de avisos.
 
 El push no funciona en Expo Go. La barra con la app cerrada se comprueba en un APK de distribución. La cuenta de Expo, la credencial de FCM y el token de la API están en la sección siguiente. La cola y la preferencia que deben estar activas están en `apps/api/docs/visitante-push.md`.
 

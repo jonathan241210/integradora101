@@ -10,7 +10,7 @@
 
 ## Diseño de solución
 
-El visitante entra desde Perfil a «Mis memorias». Ahí ve sus peticiones y, si la API lo permite, abre el formulario. La API decide el estado, el límite semanal, la petición abierta, el motivo y el plazo. La app traduce y no guarda la foto.
+El visitante entra desde Perfil a «Mis momentos». Ahí ve sus peticiones y, si la API lo permite, abre el formulario. La API decide el estado, el límite semanal, la petición abierta, el motivo y el plazo. La app traduce y no guarda la foto.
 
 MVVM se mantiene: las pantallas reciben props; un hook pide la lista y otro envía o reenvía. La red pasa por `@arca/api-client` en modo Bearer. No hay pestaña nueva.
 
@@ -18,7 +18,7 @@ El ADR 0030 está Aceptado. `expo-image-picker` se instala en el corte de implem
 
 ```text
 Perfil (View)
-  → «Mis memorias»
+  → «Mis momentos»
       → useVisitorMemories (ViewModel)
           → @arca/api-client GET /visitor/memories
       → formulario
@@ -32,8 +32,8 @@ Perfil (View)
 | Área/app | Archivos o módulos previstos | Propósito |
 |---|---|---|
 | Paquete | `packages/api-client/visitor.ts` | `listVisitorMemories`, `submitVisitorMemory`, `resubmitVisitorMemory`. Tipos en inglés. Sin reglas de plazo ni de límite |
-| Perfil | `apps/mobile/src/screens/ProfileScreen.tsx` y `apps/mobile/src/app/(tabs)/profile.tsx` | Una fila «Mis memorias» que abre la lista. El resto del perfil se queda |
-| Lista | `apps/mobile/src/screens/MemoriesScreen.tsx` y `apps/mobile/src/app/(tabs)/memories.tsx` | Título «Mis memorias». Estados en español, motivo, plazo y el aviso de límite. Sin recuadro de petición abierta. `href: null` en el layout de pestañas, y la barra sigue marcando Perfil |
+| Perfil | `apps/mobile/src/screens/ProfileScreen.tsx` y `apps/mobile/src/app/(tabs)/profile.tsx` | Una fila «Mis momentos» que abre la lista. El resto del perfil se queda |
+| Lista | `apps/mobile/src/screens/MemoriesScreen.tsx` y `apps/mobile/src/app/(tabs)/memories.tsx` | Título «Mis momentos». Estados en español, motivo, plazo y el aviso de límite. Sin recuadro de petición abierta. `href: null` en el layout de pestañas, y la barra sigue marcando Perfil |
 | Ficha | `apps/mobile/src/screens/MemoryDetailScreen.tsx` | Enviada, en proceso o aceptada: solo lectura de lo enviado y del estado |
 | Formulario | `apps/mobile/src/screens/MemoryFormScreen.tsx` y `apps/mobile/src/app/(tabs)/memory-form.tsx` | Alta y corrección. Si el id aún no está en memoria, la ruta pide la lista una vez. Si sigue ausente, `MemoryUnavailableScreen` |
 | ViewModels | `apps/mobile/src/viewmodels/useVisitorMemories.ts` y `useMemoryForm.ts` (nuevos) | Leen la lista, arman el multipart y traducen 422, 429 y la falta de red |
@@ -58,9 +58,9 @@ Traducción visible: `submitted` → «Enviada», `in_review` → «En proceso»
 
 El botón «Enviar petición» espera imagen y consentimiento. La opinión vacía se puede enviar (CA-02). Más de 300 caracteres, un tipo distinto de JPG, PNG o WebP, o más de 5 MB, se avisan en la app y no salen a la red (CA-03).
 
-Con `meta.can_submit` en falso se muestra «Podrás enviar otra memoria a partir del {fecha y hora}.» y no se ofrece el alta (CA-14). Con `open_request_id` la lista no muestra «Ya tienes una petición abierta.» ni ofrece otra alta (CA-15). Al tocar la petición se ve lo enviado y el estado, sin campos. Un 422 `open_request` sigue mostrando ese texto en el intento de envío. Un 429 usa el texto del límite.
+Con `meta.can_submit` en falso se muestra «Podrás enviar otro momento a partir del {fecha y hora}.» y no se ofrece el alta (CA-14). Con `open_request_id` la lista no muestra «Ya tienes una petición abierta.» ni ofrece otra alta (CA-15). Al tocar la petición se ve lo enviado y el estado, sin campos. Un 422 `open_request` sigue mostrando ese texto en el intento de envío. Un 429 usa el texto del límite.
 
-Un 201 o un 200 de reenvío sustituye esa fila, marca `open_request_id` con su id cuando el estado sigue abierto, y muestra «Tu petición se envió. El zoológico la revisará; todavía no está publicada.» en la lista (CA-04, CA-16). La ruta vuelve a «Mis memorias». Mientras la petición viaja, un indicador tapa la pantalla y un segundo toque no dispara otro envío (CA-05).
+Un 201 o un 200 de reenvío sustituye esa fila, marca `open_request_id` con su id cuando el estado sigue abierto, y muestra «Tu petición se envió. El zoológico la revisará; todavía no está publicada.» en la lista (CA-04, CA-16). La ruta vuelve a «Mis momentos». Mientras la petición viaja, un indicador tapa la pantalla y un segundo toque no dispara otro envío (CA-05).
 
 La lista vuelve a llamar a `GET /visitor/memories` al abrirse y cuando la app regresa a primer plano (CA-06). No se queda con la copia de la sesión.
 
@@ -76,7 +76,7 @@ El ADR 0030 ya está Aceptado. Las pruebas del formulario usan un selector simul
 
 ## Seguridad, offline y operación
 
-- El archivo sale por HTTPS junto con el token de `expo-secure-store`. No se copia a un almacén permanente de la app ni se muestra en «Mis memorias» (RN-14).
+- El archivo sale por HTTPS junto con el token de `expo-secure-store`. No se copia a un almacén permanente de la app ni se muestra en «Mis momentos» (RN-14).
 - Sin red, el envío y el reenvío muestran «Sin conexión» y no encolan la imagen (CA-10).
 - 401 y 403 `email_not_verified` llevan a la verificación de `mobile-004`. 403, 404, 413 y 415 muestran un mensaje en español. Ningún error afirma que la petición se guardó (CA-09).
 - El texto de la casilla es el de referencia de `api-010` RN-08. La app no se publica con ese texto hasta que el zoológico lo apruebe (`mobile-010` RN-07).
@@ -87,7 +87,7 @@ El ADR 0030 ya está Aceptado. Las pruebas del formulario usan un selector simul
 
 | Criterio | Prueba automatizada | App/ubicación |
 |---|---|---|
-| CA-01 | Perfil muestra «Mis memorias» y no hay pestaña nueva; el permiso se pide al elegir la foto, no al abrir Perfil | `apps/mobile/__tests__/visitor-memories.test.tsx` |
+| CA-01 | Perfil muestra «Mis momentos» y no hay pestaña nueva; el permiso se pide al elegir la foto, no al abrir Perfil | `apps/mobile/__tests__/visitor-memories.test.tsx` |
 | CA-02 | El botón espera imagen y consentimiento, y queda activo con la opinión vacía | El mismo archivo |
 | CA-03 | Tipo, tamaño u opinión de más de 300 caracteres no llaman al cliente | El mismo archivo |
 | CA-04 | Un 201 muestra «Enviada» y el texto de revisión, sin decir que ya está en el portal | El mismo archivo |
@@ -121,7 +121,7 @@ El ADR 0030 ya está Aceptado. Las pruebas del formulario usan un selector simul
 
 - La dependencia y el permiso de `app.json` se añaden en la implementación, con el ADR 0030 ya Aceptado. No se añaden antes de las tasks.
 - El texto de la casilla no se publica hasta la redacción del zoológico (RN-07).
-- `mobile-013` CA-10 abre `/memory-form` con el id. Enmienda: no es otra bandeja. Si la petición no está en memoria, se pide la lista una vez; si sigue ausente, se muestra «Tu memoria».
+- `mobile-013` CA-10 abre `/memory-form` con el id. Enmienda: no es otra bandeja. Si la petición no está en memoria, se pide la lista una vez; si sigue ausente, se muestra «Tu momento».
 - Quien deja una rechazada sin corregir no puede enviar otra, porque la API lo trata como petición abierta. La app solo muestra el aviso (CA-15).
 
 ## Orden y aprobación

@@ -173,7 +173,7 @@ describe('Momentos del visitante', () => {
     jest.mocked(ImagePicker.launchImageLibraryAsync).mockClear();
   });
 
-  it('CA-01 Perfil muestra Mis memorias, no hay pestaña nueva y el permiso se pide al elegir la foto', async () => {
+  it('CA-01 Perfil muestra Mis momentos, no hay pestaña nueva y el permiso se pide al elegir la foto', async () => {
     const profile = await render(
       <ProfileScreen
         user={visitor}
@@ -184,7 +184,7 @@ describe('Momentos del visitante', () => {
         onSettingsPress={() => undefined}
       />,
     );
-    expect(profile.getByRole('button', { name: 'Mis memorias' })).toBeTruthy();
+    expect(profile.getByRole('button', { name: 'Mis momentos' })).toBeTruthy();
     expect(ImagePicker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
 
     const bar = await render(
@@ -205,7 +205,7 @@ describe('Momentos del visitante', () => {
     );
     expect(bar.getByText('Home')).toBeTruthy();
     expect(bar.getByText('Perfil')).toBeTruthy();
-    expect(bar.queryByText('Mis memorias')).toBeNull();
+    expect(bar.queryByText('Mis momentos')).toBeNull();
 
     const view = await render(<FormProbe repo={repository()} />);
     expect(ImagePicker.requestMediaLibraryPermissionsAsync).not.toHaveBeenCalled();
@@ -526,20 +526,20 @@ describe('Momentos del visitante', () => {
     const onBack = jest.fn();
     const view = await render(
       <MemoryUnavailableScreen
-        title="Tu memoria"
+        title="Tu momento"
         message="No encontramos esa petición."
         detail="Puede que ya no esté en tu cuenta."
-        actionLabel="Ver mis memorias"
+        actionLabel="Ver mis momentos"
         onAction={onAction}
         onBack={onBack}
       />,
     );
-    await waitFor(() => expect(view.getByText('Tu memoria')).toBeTruthy());
+    await waitFor(() => expect(view.getByText('Tu momento')).toBeTruthy());
     expect(view.getByText('No encontramos esa petición.')).toBeTruthy();
     expect(view.getByText('Puede que ya no esté en tu cuenta.')).toBeTruthy();
     await act(async () => {
-      fireEvent.press(view.getByRole('button', { name: 'Ver mis memorias' }));
-      fireEvent.press(view.getByRole('button', { name: 'Volver a mis memorias' }));
+      fireEvent.press(view.getByRole('button', { name: 'Ver mis momentos' }));
+      fireEvent.press(view.getByRole('button', { name: 'Volver a mis momentos' }));
     });
     expect(onAction).toHaveBeenCalledTimes(1);
     expect(onBack).toHaveBeenCalledTimes(1);

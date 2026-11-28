@@ -150,7 +150,7 @@ Para probar un flujo completo, abre una ficha y su foto, inicia sesión con un v
 - El avatar del perfil es uno de los ocho PNG de `src/assets/avatars/`, nombrados con el código (`jaguar`, `lion`, `elephant`, `macaw`, `monkey`, `turtle`, `deer`, `wolf`). Perfil, edición de cuenta y el selector muestran esa imagen. No se sube una foto propia.
 - El catálogo del visitante muestra una especie solo si está publicada y algún animal de un recinto puede recibir visitas. Inicio, Colección y Perfil cuentan esa lista, no el total crudo de `GET /species`.
 - Favoritos: el corazón y «Animales favoritos» salen de la cuenta. Sin red se muestra la última copia.
-- Memorias: la entrada en Perfil se llama «Mis memorias». Con una petición abierta no hay alta nueva; al tocarla se ve lo enviado y el estado, sin editar. El límite semanal dice «otra memoria».
+- Memorias: la entrada en Perfil se llama «Mis momentos». Con una petición abierta no hay alta nueva; al tocarla se ve lo enviado y el estado, sin editar. El límite semanal dice «otro momento».
 - Ajustes: cámara y ubicación piden el permiso del teléfono. Para quitarlos se abren los ajustes del sistema.
 - El mapa (007) y el recorrido 3D (009) siguen abiertos. Esta nota no los cierra. La distribución (008) sigue en borrador.
 - Si la instalación o el arranque falla, comparte con el equipo el comando ejecutado, las versiones de `node --version` y `npm --version`, y el mensaje completo de error; no borres el lockfile ni cambies versiones para intentar resolverlo.

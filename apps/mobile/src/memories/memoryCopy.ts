@@ -62,7 +62,7 @@ export function formatMemoryDate(iso: string, withTime = false): string {
 }
 
 export function weeklyText(iso: string): string {
-  return `Podrás enviar otra memoria a partir del ${formatMemoryDate(iso, true)}.`;
+  return `Podrás enviar otro momento a partir del ${formatMemoryDate(iso, true)}.`;
 }
 
 export function publicationLine(item: Pick<VisitorMemoryDto, 'status' | 'published_until' | 'is_published'>): string | null {

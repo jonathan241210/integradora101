@@ -64,7 +64,7 @@ Esta guía describe la validación de la spec 002. Lo que sigue ya no es el esta
 
 - El catálogo, la cuenta, el progreso, los favoritos y las memorias usan la API cuando existe `EXPO_PUBLIC_API_URL`.
 - El QR pide la cámara. En Ajustes, cámara y ubicación piden el permiso del teléfono.
-- El listado de logros se llama «Salón de logros». La sección de Perfil se llama «Mis memorias».
+- El listado de logros se llama «Salón de logros». La sección de Perfil se llama «Mis momentos».
 - El círculo del perfil muestra el PNG del avatar (`src/assets/avatars/<código>.png`), no el nombre del animal.
 - El mapa y el recorrido 3D no están cerrados. Los avisos push no se revalidan en esta nota.
 - Los botones para simular resultados QR solo aparecen en builds de desarrollo.
