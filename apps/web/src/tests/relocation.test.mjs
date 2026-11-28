@@ -570,7 +570,7 @@ test('CA-03 visit-info-icons-and-favicon conserva las etiquetas y prueba todos l
   const source = readFileSync(testFile, 'utf8');
   assert.match(html, /<small>Horario<\/small>/);
   assert.match(html, /<strong>Tulancingo de Bravo, Hidalgo<\/strong>/);
-  assert.match(html, /<a href="#boletos">[\s\S]*?Consulta boletos y precios/);
+  assert.match(html, /<a href="#preguntas">\s*<strong>\s*Consulta boletos y precios/);
   for (const criterion of [
     'CA-01 visit-info-icons-and-favicon',
     'CA-02 visit-info-icons-and-favicon',
@@ -824,7 +824,7 @@ test('CA-04 header-walker-layer conserva navegación y rotación responsive apro
   assert.match(html, /id="menuToggle"[^>]*aria-controls="mainNav"[^>]*aria-expanded="false"/);
   assert.match(html, /<nav[^>]*id="mainNav"[^>]*aria-label="Navegación principal"/);
   assert.match(html, /id="searchInput"/);
-  assert.match(html, /Comprar boletos/);
+  assert.doesNotMatch(html.replace(/<!--[\s\S]*?-->/g, ''), /href="#boletos"/);
   assert.match(css, /@media \(max-width:\s*560px\)/);
 });
 
