@@ -78,11 +78,11 @@ export function ProfileScreen({ user, displayName, avatarCode, placeholder = fal
         <Pressable
           onPress={onMemoriesPress}
           accessibilityRole="button"
-          accessibilityLabel="Mis memorias"
+          accessibilityLabel="Mis momentos"
         >
           <Card style={styles.memoriesCard}>
             <Icon name="images" size={22} color={colors.primary} />
-            <AppText variant="subheading" bold style={styles.memoriesLabel}>Mis memorias</AppText>
+            <AppText variant="subheading" bold style={styles.memoriesLabel}>Mis momentos</AppText>
             <Icon name="chevron-forward" size={20} color={colors.textMuted} />
           </Card>
         </Pressable>

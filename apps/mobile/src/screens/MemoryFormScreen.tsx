@@ -73,7 +73,7 @@ export function MemoryFormScreen({
   return (
     <ScreenContainer busyMessage={busy ? 'Enviando petición…' : null}>
       <View style={styles.page}>
-        <BackButton onPress={onBack} accessibilityLabel="Volver a mis memorias" />
+        <BackButton onPress={onBack} accessibilityLabel="Volver a mis momentos" />
         <AppText variant="title">{title}</AppText>
 
         {reason ? (

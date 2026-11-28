@@ -46,7 +46,7 @@ Ninguna tarea añade alcance. Las vistas no importan `@arca/api-client` ni `fetc
 - [x] **T-06** (CA-09, CA-10; RN-01): toque del aviso.
   - Depende de: T-04.
   - Archivo: `apps/mobile/src/push/usePushNavigation.ts`.
-  - Cambios: `type` `news` abre `/news-detail` con `id`. `type` `event` abre `/event-detail` con `id`. Si el detalle ya no existe, muestra «Ya no está disponible.» y se queda en el inicio. `type` `memory` abre `/memory-form` con ese `id`. Enmienda: esa ruta espera la lista si el id no está en memoria y, si sigue ausente, muestra «Tu memoria». No se crea otra bandeja. El título y el cuerpo del sistema no se cambian, y el aviso del momento no añade motivo ni opinión.
+  - Cambios: `type` `news` abre `/news-detail` con `id`. `type` `event` abre `/event-detail` con `id`. Si el detalle ya no existe, muestra «Ya no está disponible.» y se queda en el inicio. `type` `memory` abre `/memory-form` con ese `id`. Enmienda: esa ruta espera la lista si el id no está en memoria y, si sigue ausente, muestra «Tu momento». No se crea otra bandeja. El título y el cuerpo del sistema no se cambian, y el aviso del momento no añade motivo ni opinión.
   - Hecho cuando: T-15 y T-16 pasan.
 
 ## Pruebas
@@ -62,7 +62,7 @@ Las pruebas viven en `apps/mobile/__tests__/push-notifications.test.tsx`, con cl
 - [x] **T-13** (CA-07): cerrar sesión y borrar la cuenta llaman a `deletePushToken` antes de terminar el flujo de `mobile-004`.
 - [x] **T-14** (CA-08): el módulo declara los canales `news-and-events` y `memories` con los nombres visibles de la spec, y conserva el título y el cuerpo del payload. La barra con la app cerrada no se afirma aquí.
 - [x] **T-15** (CA-09): un payload `news` o `event` navega al detalle de ese `id`. Si la ficha no existe, se muestra «Ya no está disponible.» y la app permanece en el inicio.
-- [x] **T-16** (CA-10): un payload `memory` abre `/memory-form` con ese `id`. Enmienda: la pantalla «Tu memoria» se afirma en `visitor-memories.test.tsx` cuando la petición no está.
+- [x] **T-16** (CA-10): un payload `memory` abre `/memory-form` con ese `id`. Enmienda: la pantalla «Tu momento» se afirma en `visitor-memories.test.tsx` cuando la petición no está.
 - [x] **T-17** (CA-11): el árbol cubierto por la prueba no tiene una pantalla de lista de avisos.
 - [x] **T-18** (CA-12): `SettingsScreen` no importa `@arca/api-client` ni `fetch`. La prueba no decide si una noticia se envía.
 

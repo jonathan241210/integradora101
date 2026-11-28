@@ -75,7 +75,7 @@ Al tocar:
 - `type` `news` abre `/news-detail` con `id`.
 - `type` `event` abre `/event-detail` con `id`.
 - Si el detalle responde que ya no existe, la app muestra «Ya no está disponible.» y se queda en el inicio (CA-09).
-- `type` `memory` abre `/memory-form` con `id` (`mobile-010`). Enmienda: la ruta espera la lista si el id no está en memoria. Si sigue ausente, muestra «Tu memoria». No se crea otra pantalla de bandeja.
+- `type` `memory` abre `/memory-form` con `id` (`mobile-010`). Enmienda: la ruta espera la lista si el id no está en memoria. Si sigue ausente, muestra «Tu momento». No se crea otra pantalla de bandeja.
 
 No se añade una pantalla de historial (CA-11). Las vistas no importan `fetch` ni el cliente HTTP (CA-12).
 
@@ -104,7 +104,7 @@ El flujo de `mobile-004` CA-11 y el de borrado de cuenta llaman antes a `DELETE 
 | CA-07 | Cerrar sesión llama a `deletePushToken` antes del logout | El mismo archivo, sobre el flujo de sesión simulado |
 | CA-08 | El módulo declara los dos canales y conserva título y cuerpo del payload | El mismo archivo. La barra con la app cerrada es evidencia manual del PR |
 | CA-09 | Un payload `news` o `event` navega al detalle; el caso agotado muestra «Ya no está disponible.» | El mismo archivo |
-| CA-10 | Un payload `memory` abre `/memory-form` con ese `id`. Si la lista no lo trae, se muestra «Tu memoria» | El mismo archivo para la ruta. La pantalla vacía está en `apps/mobile/__tests__/visitor-memories.test.tsx` |
+| CA-10 | Un payload `memory` abre `/memory-form` con ese `id`. Si la lista no lo trae, se muestra «Tu momento» | El mismo archivo para la ruta. La pantalla vacía está en `apps/mobile/__tests__/visitor-memories.test.tsx` |
 | CA-11 | No existe una pantalla de lista de avisos en el árbol cubierto por la prueba | El mismo archivo |
 | CA-12 | `SettingsScreen` no importa el cliente HTTP | El mismo archivo, revisión del módulo de pantalla |
 | CA-13 | Los nombres de las pruebas incluyen CA-01 a CA-07 y CA-09 a CA-12 | El mismo archivo |
